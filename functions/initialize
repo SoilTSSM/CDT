@@ -1,0 +1,28 @@
+##Change to function, and load once only
+
+#### refresh environment
+rm(list=ls(envir=EnvQcOutlierData),envir=EnvQcOutlierData)
+rm(list=ls(envir=EnvQcZeroChkData),envir=EnvQcZeroChkData)
+rm(list=ls(envir=EnvInterpolation),envir=EnvInterpolation)
+rm(list=ls(envir=EnvMultiPP),envir=EnvMultiPP)
+rm(list=ls(envir=EnvHomogzData),envir=EnvHomogzData)
+
+##Left panel command refresh
+tkdestroy(lcmd.frame)
+lcmd.frame_homo<<-NULL
+lcmd.frame_qc<<-NULL
+lcmd.frame_chk<<-NULL
+lcmd.frame_extrdata<<-NULL
+lcmd.frame_assdata<<-NULL
+#lcmd.frame_plot1<<-NULL
+
+lcmd.frame_mergePlot<<-NULL
+lcmd.frame_CDTffrtPlot<<-NULL
+lcmd.frame_grdNcdfPlot<<-NULL
+
+lcmd.frame_rhtests<<-NULL
+lcmd.frame_interpol<<-NULL
+lcmd.frame_valid<<-NULL
+lcmd.frame_qc0Chck<<-NULL
+
+

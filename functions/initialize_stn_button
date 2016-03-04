@@ -1,0 +1,15 @@
+##Change to function, and load once only
+##assing widgets to global variable inside function: 
+##assign('stn.choix.cb',stn.choix.cb,envir=.GlobalEnv)
+
+stn.choix<<-c('')
+tclvalue(stn.choix.val)<-stn.choix[1]
+tkconfigure(stn.choix.cb,values=stn.choix, textvariable=stn.choix.val)
+tkconfigure(stn.choix.cb,state='normal')
+tkconfigure(setting.button,state='disabled')		
+tkconfigure(stn.choix.prev,state='disabled')
+tkconfigure(stn.choix.next,state='disabled')
+
+tkconfigure(spinH,state='disabled')
+tkconfigure(spinV,state='disabled')
+

@@ -1,0 +1,4 @@
+UseOtherTclTk = 1
+Windows = { "C:/Tcl/bin" ; "C:/Tcl/lib/tcl8.5" }
+MacOS = { "/usr/local/bin" ; "/usr/local/lib/tcl8.6" }
+Linux = { "/usr/local/bin" ; "/usr/local/lib/tcl8.6" }
