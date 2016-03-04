@@ -335,8 +335,7 @@ execMergeRain<-function(origdir){
 	usemask<-as.character(gal.params$blankGrd)
 	if(usemask=="1") outMask<-NULL
 	if(usemask=="2"){
-		dem.grd<-krige(formula = dem ~ 1,locations=mrgRaindat$demData2$demGrd,
-		newdata=newlocation.merging,nmax=4,nmin =2,debug.level=0)
+		dem.grd<-krige(formula = dem ~ 1,locations=mrgRaindat$demData2$demGrd, newdata=newlocation.merging,nmax=4,nmin =2,debug.level=0)
 		dem<-ifelse(dem.grd@data$var1.pred<0,0,dem.grd@data$var1.pred)
 		outMask<-matrix(dem,nrow=nlon0,ncol=nlat0)
 		outMask[outMask==0]<-NA
@@ -366,8 +365,7 @@ execMergeRain<-function(origdir){
 
 	VarioModel<-c("Sph", "Exp", "Gau")
 
-	paramsMRG<-list(ijGrd=ijGrd,nlon0=nlon0,nlat0=nlat0,xy.dim=xy.dim,outMask=outMask,
-	newlocation.merging=newlocation.merging)
+	paramsMRG<-list(ijGrd=ijGrd,nlon0=nlon0,nlat0=nlat0,xy.dim=xy.dim,outMask=outMask, newlocation.merging=newlocation.merging)
 
 	ret<-MergingFunction(freqData,istart,iend,gal.params,mrgRaindat,VarioModel,paramsMRG,origdir)
 	if(!is.null(ret)){

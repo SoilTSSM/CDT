@@ -30,13 +30,11 @@ init.params<-function(action,period){
 		names(use.method)<-c('Parameters','Values')
 		file.date.format<-data.frame(c('file.format','date.format','vars'),c("1","1","2"))
 		names(file.date.format)<-c('Parameters','Values')
-		ref.series.choix<-data.frame(c('diff.ratio','weight.mean','use.elv','interp.dem','min.stn','max.stn','max.dist','elv.diff','min.rho'),
-		c('1','1','0','1','2','7','100','200','0.5'))
+		ref.series.choix<-data.frame(c('diff.ratio','weight.mean','use.elv','interp.dem','min.stn','max.stn','max.dist','elv.diff','min.rho'), c('1','1','0','1','2','7','100','200','0.5'))
 		names(ref.series.choix)<-c('Parameters','Values')
 		compute.var<-data.frame(c('function','miss.frac'),c('mean','0.95'))
 		names(compute.var)<-c('Parameters','Values')
-		Adjust.method<-data.frame(c('minAdjmo','minAdjdk','minAdjdy','SegAdjmo','SegAdjdk','SegAdjdy'),
-		c('32','32','32','0','0','0'))
+		Adjust.method<-data.frame(c('minAdjmo','minAdjdk','minAdjdy','SegAdjmo','SegAdjdk','SegAdjdy'), c('32','32','32','0','0','0'))
 		names(Adjust.method)<-c('Parameters','Values')
 		ref.series.user<-'0'
 		stn.user.choice<-NULL
@@ -57,8 +55,7 @@ init.params<-function(action,period){
 		names(rhtests.pars)<-c('Parameters','Values')
 		single.series<-'0'
 		use.ref.series<-'0'
-		ref.series.choix<-data.frame(c('weight.mean','use.elv','interp.dem','min.stn','max.stn','max.dist','elv.diff','min.rho'),
-		c('Distance','0','1','2','7','100','200','0.5'))
+		ref.series.choix<-data.frame(c('weight.mean','use.elv','interp.dem','min.stn','max.stn','max.dist','elv.diff','min.rho'), c('Distance','0','1','2','7','100','200','0.5'))
 		names(ref.series.choix)<-c('Parameters','Values')
 		ref.series.user<-'0'
 		stn.user.choice<-NULL
@@ -158,33 +155,28 @@ init.params<-function(action,period){
 
 ###Merging rainfall
 	if(action=='merge.rain'){
-		file.io<-data.frame(c('stn.file','DEM.file','RFE.file','RFE.dir','dir2save','shp.file','DEM.file'),
-		c('','','','',getwd(),'',''))
+		file.io<-data.frame(c('stn.file','DEM.file','RFE.file','RFE.dir','dir2save','shp.file','DEM.file'), c('','','','',getwd(),'',''))
 		names(file.io)<-c('Parameters','Values')
 		prefix<-data.frame(c('adjPrefix','mrgPrefix','mrgSuffix'),	c("rr_adj","rr_mrg","ALL"))
 		names(prefix)<-c('Parameters','Values')
 		CreateGrd<-'1'
 		NewGrd<-'0'
 		blankGrd<-'1'
-		dates.mrg<-data.frame(c('istart.yrs','istart.mon','istart.dek',
-		'iend.yrs','iend.mon','iend.dek'),c('1983','1','1','2014','12','3'))
+		dates.mrg<-data.frame(c('istart.yrs','istart.mon','istart.dek', 'iend.yrs','iend.mon','iend.dek'),c('1983','1','1','2014','12','3'))
 		names(dates.mrg)<-c('Parameters','Values')
-		params.int<-data.frame(c('nmin.stn','min.non0','max.nbrs','max.RnR.dist'),c('10','7','4','0.75'))
+		params.int<-data.frame(c('nmin.stn','min.non0','max.RnR.dist','max.dist','min.nbrs','max.nbrs'),c('10','7','0.75','1.0','3','5'))
 		names(params.int)<-c('Parameters','Values')
-		new.grid<-data.frame(c('minLon','maxLon','resLon','minLat','maxLat','resLat'),
-		c('42','52','0.1','-26','-12','0.1'))
+		new.grid<-data.frame(c('minLon','maxLon','resLon','minLat','maxLat','resLat'), c('42','52','0.1','-26','-12','0.1'))
 		names(new.grid)<-c('Parameters','Values')
 		params.mrg<-data.frame(c('interpMethod','RainNoRain'),c('IDW','GaugeSatellite'))
 		names(params.mrg)<-c('Parameters','Values')
 		ret.params<-list(action=action,period=period,file.io=file.io,prefix=prefix,dates.mrg=dates.mrg,
-		NewGrd=NewGrd,CreateGrd=CreateGrd,blankGrd=blankGrd,params.int=params.int,
-		new.grid=new.grid,params.mrg=params.mrg)
+		NewGrd=NewGrd,CreateGrd=CreateGrd,blankGrd=blankGrd,params.int=params.int, new.grid=new.grid,params.mrg=params.mrg)
 	}
 ####dekadal update
 
 	if(action=='merge.dekrain'){
-		file.io<-data.frame(c('stn.file','RFE.dir','Bias.dir','dir2save','DEM.file','shp.file'),
-		c('','','',getwd(),'',''))
+		file.io<-data.frame(c('stn.file','RFE.dir','Bias.dir','dir2save','DEM.file','shp.file'), c('','','',getwd(),'',''))
 		names(file.io)<-c('Parameters','Values')
 		prefix<-data.frame(c('rfeFileFormat','meanBiasPrefix'),	c("rfe%s_%s-dk%s.nc","Gauge-rfe_mean.bias"))
 		names(prefix)<-c('Parameters','Values')
@@ -204,8 +196,7 @@ init.params<-function(action,period){
 #################################################################
 ##compute regression parameters for downscaling
 	if(action=='coefdown.temp'){
-		file.io<-data.frame(c('stn.file','DEM.file','dir2save'),
-		c('','',getwd()))
+		file.io<-data.frame(c('stn.file','DEM.file','dir2save'), c('','',getwd()))
 		names(file.io)<-c('Parameters','Values')
 		dates.coef<-data.frame(c('year1','year2'),c('1961','2010'))
 		names(dates.coef)<-c('Parameters','Values')
@@ -214,17 +205,14 @@ init.params<-function(action,period){
 
 ######downscaling
 	if(action=='down.temp'){
-		file.io<-data.frame(c('stn.file','DEM.file','sampleReanalysis.file','dirReanalysis','dir2save'),
-		c('','','','',getwd()))
+		file.io<-data.frame(c('stn.file','DEM.file','sampleReanalysis.file','dirReanalysis','dir2save'), c('','','','',getwd()))
 		names(file.io)<-c('Parameters','Values')
 		IO.file.format<-data.frame(c('Reanalysis.file.format','downPrefix'),c("tmax_%s%s%s.nc","tmax_down"))
 		names(IO.file.format)<-c('Parameters','Values')
 		CreateGrd<-'1'
-		new.grid<-data.frame(c('minLon','maxLon','resLon','minLat','maxLat','resLat'),
-		c('42','52','0.1','-26','-12','0.1'))
+		new.grid<-data.frame(c('minLon','maxLon','resLon','minLat','maxLat','resLat'), c('42','52','0.1','-26','-12','0.1'))
 		names(new.grid)<-c('Parameters','Values')
-		dates.down<-data.frame(c('istart.yrs','istart.mon','istart.dek',
-		'iend.yrs','iend.mon','iend.dek'),c('1961','1','1','2014','12','3'))
+		dates.down<-data.frame(c('istart.yrs','istart.mon','istart.dek', 'iend.yrs','iend.mon','iend.dek'),c('1961','1','1','2014','12','3'))
 		names(dates.down)<-c('Parameters','Values')
 		ret.params<-list(action=action,period=period,file.io=file.io,IO.file.format=IO.file.format,
 		CreateGrd=CreateGrd,new.grid=new.grid,dates.down=dates.down)
@@ -233,14 +221,12 @@ init.params<-function(action,period){
 ##Bias coeff
 
 	if(action=='coefbias.temp'){
-		file.io<-data.frame(c('stn.file','DEM.file','dirDown','dir2save'),
-		c('','','',getwd()))
+		file.io<-data.frame(c('stn.file','DEM.file','dirDown','dir2save'), c('','','',getwd()))
 		names(file.io)<-c('Parameters','Values')
 		dates.coef<-data.frame(c('year1','year2'),c('1961','2010'))
 		names(dates.coef)<-c('Parameters','Values')
 		bias.method<-'Bias-kriging'
-		prefix<-data.frame(c('downPrefix','meanBiasPrefix'),
-		c("tmax_down","tmax_JRAMeanBias_KR"))
+		prefix<-data.frame(c('downPrefix','meanBiasPrefix'), c("tmax_down","tmax_JRAMeanBias_KR"))
 		names(prefix)<-c('Parameters','Values')
 		ret.params<-list(action=action,period=period,file.io=file.io,
 		dates.coef=dates.coef,bias.method=bias.method,prefix=prefix)
@@ -249,15 +235,12 @@ init.params<-function(action,period){
 ##Adjustment
 
 	if(action=='adjust.temp'){
-		file.io<-data.frame(c('stn.file','DEM.file','Down.dir','Bias.dir','dir2save'),
-		c('','','','',getwd()))
+		file.io<-data.frame(c('stn.file','DEM.file','Down.dir','Bias.dir','dir2save'), c('','','','',getwd()))
 		names(file.io)<-c('Parameters','Values')
 		bias.method<-'Bias-kriging'
-		prefix<-data.frame(c('downPrefix','meanBiasPrefix','adjPrefix'),
-		c("tmax_down","tmax_JRAMeanBias_KR","tmax_adj"))
+		prefix<-data.frame(c('downPrefix','meanBiasPrefix','adjPrefix'), c("tmax_down","tmax_JRAMeanBias_KR","tmax_adj"))
 		names(prefix)<-c('Parameters','Values')
-		dates.adj<-data.frame(c('istart.yrs','istart.mon','istart.dek',
-		'iend.yrs','iend.mon','iend.dek'),c('1961','1','1','2014','12','3'))
+		dates.adj<-data.frame(c('istart.yrs','istart.mon','istart.dek', 'iend.yrs','iend.mon','iend.dek'),c('1961','1','1','2014','12','3'))
 		names(dates.adj)<-c('Parameters','Values')
 		ret.params<-list(action=action,period=period,file.io=file.io,bias.method=bias.method,
 		prefix=prefix,dates.adj=dates.adj)
@@ -267,25 +250,18 @@ init.params<-function(action,period){
 ##Merging
 
 	if(action=='merge.temp'){
-		file.io<-data.frame(c('stn.file','DEM.file','shp.file','Adj.dir','dir2save'),
-		c('','','','',getwd()))
+		file.io<-data.frame(c('stn.file','DEM.file','shp.file','Adj.dir','dir2save'), c('','','','',getwd()))
 		names(file.io)<-c('Parameters','Values')
 		blankGrd<-'1'
-		prefix<-data.frame(c('adjPrefix','mrgPrefix','mrgSuffix'),
-		c("tmax_adj","tmax_mrg","ALL"))
+		prefix<-data.frame(c('adjPrefix','mrgPrefix','mrgSuffix'), c("tmax_adj","tmax_mrg","ALL"))
 		names(prefix)<-c('Parameters','Values')
-		dates.mrg<-data.frame(c('istart.yrs','istart.mon','istart.dek',
-		'iend.yrs','iend.mon','iend.dek'),c('1961','1','1','2014','12','3'))
+		dates.mrg<-data.frame(c('istart.yrs','istart.mon','istart.dek', 'iend.yrs','iend.mon','iend.dek'),c('1961','1','1','2014','12','3'))
 		names(dates.mrg)<-c('Parameters','Values')
 		params.mrg<-data.frame(c('min.nbrs','max.nbrs','nmin','interpMethod'),c('3','5','10','IDW'))
 		names(params.mrg)<-c('Parameters','Values')
 		ret.params<-list(action=action,period=period,file.io=file.io,blankGrd=blankGrd,
 		prefix=prefix,dates.mrg=dates.mrg,params.mrg=params.mrg)
 	}
-
-
-
-
 
 #############################################################################################3
 
@@ -343,21 +319,15 @@ init.params<-function(action,period){
 ###########################################
 
 	if(action=='extrct.ts'){
-		file.io<-data.frame(c('NetCDF.dir','Shp.file','file2save'),
-		c('','',getwd()))
+		file.io<-data.frame(c('NetCDF.dir','Shp.file','file2save'), c('','',getwd()))
 		names(file.io)<-c('Parameters','Values')
-		prefix<-data.frame(c('cdfFileFormat','tsPrefix'),
-		c("rr_mrg_%s%s%s.nc","rr_adj"))
+		prefix<-data.frame(c('cdfFileFormat','tsPrefix'), c("rr_mrg_%s%s%s.nc","rr_adj"))
 		names(prefix)<-c('Parameters','Values')
-		dates.ts<-data.frame(c('istart.yrs','istart.mon','istart.dek',
-		'iend.yrs','iend.mon','iend.dek'),c('1983','1','1','2014','12','3'))
+		dates.ts<-data.frame(c('istart.yrs','istart.mon','istart.dek', 'iend.yrs','iend.mon','iend.dek'),c('1983','1','1','2014','12','3'))
 		names(dates.ts)<-c('Parameters','Values')
 
 		ret.params<-list(action=action,period=period,file.io=file.io,prefix=prefix,dates.ts=dates.ts)
 	}
-
-
-
 
 #############
 	return(ret.params)

@@ -328,24 +328,24 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 
 	###################
 	min.nbrs.l<-tklabel.h(fr.C3,'Min.stn',txt.stbr1,
-	'Minimum number of neighbours used to interpolate  data',
-	'Minimum number of neighbours used to interpolate  data')
+	'Minimum number of neighbours used to interpolate the bias',
+	'Minimum number of neighbours used to interpolate the bias')
 	max.nbrs.l<-tklabel.h(fr.C3,'Max.stn',txt.stbr1,
-	'Maximum number of neighbours used to interpolate  data',
-	'Maximum number of neighbours used to interpolate  data')
+	'Maximum number of neighbours used to interpolate the bias',
+	'Maximum number of neighbours used to interpolate the bias')
 	max.dst.l<-tklabel.h(fr.C3,'Max.dist',txt.stbr1,
-	'Maximum distance (in degree) used to interpolate the bias',
-	'Maximum distance (in degree) used to interpolate the bias')
+	'Maximum distance (in  decimal degree) to be used to interpolate the bias',
+	'Maximum distance (in  decimal degree) to be used to interpolate the bias')
 
 	min.nbrs.v<-tkentry.h(fr.C3,txt.stbr1,
-	'Minimum number of neighbours used to interpolate data',
-	'Minimum number of neighbours used to interpolate data')
+	'Minimum number of neighbours to be used to interpolate the bias',
+	'Minimum number of neighbours to be used to interpolate the bias')
 	max.nbrs.v<-tkentry.h(fr.C3,txt.stbr1,
-	'Maximum number of neighbours used to interpolate data',
-	'Maximum number of neighbours used to interpolate data')
+	'Maximum number of neighbours to be used to interpolate the bias',
+	'Maximum number of neighbours to be used to interpolate the bias')
 	max.dst.v<-tkentry.h(fr.C3,txt.stbr1,
-	'Maximum distance (in degree) used to interpolate the bias',
-	'Maximum distance (in degree) used to interpolate the bias')
+	'Maximum distance (in  decimal degree) to be used to interpolate the bias',
+	'Maximum distance (in  decimal degree) to be used to interpolate the bias')
 
 	tkgrid(min.nbrs.l,row=0,column=0,sticky='ew',padx=1,pady=1)
 	tkgrid(min.nbrs.v,row=0,column=1,sticky='ew',padx=1,pady=1)
@@ -1305,55 +1305,77 @@ getParamMering<-function(tt,gal.params){
 
 	###########
 	nmin.l<-tklabel.h(fr.C,'min.nb.stn',txt.stbr1,
-	'Minimum number of gauges with data used to do merging',
-	'Minimum number of gauges with data used to do merging')
+	'Minimum number of gauges with data to be used to do the merging',
+	'Minimum number of gauges with data to be used to do the merging')
 	min.non.zero.l<-tklabel.h(fr.C,'min.non.zero ',txt.stbr1,
-	'Minimum number of non-zero gauge values to perform merging',
-	'Minimum number of non-zero gauge values to perform merging')
-	max.nbrs.l<-tklabel.h(fr.C,'max.nb.stn',txt.stbr1,
-	'Maximum number of neighbor gauge to use for interpolation',
-	'Maximum number of neighbor gauge to use for interpolation')
+	'Minimum number of non-zero gauge values to perform the merging',
+	'Minimum number of non-zero gauge values to perform the merging')
 	max.rnr.dst.l<-tklabel.h(fr.C,'max.RnR.dist',txt.stbr1,
 	'Maximum distance (in decimal degrees) for interpolating Rain-noRain mask',
 	'Maximum distance (in decimal degrees) for interpolating Rain-noRain mask')
+	max.dst.l<-tklabel.h(fr.C,'Max.dist',txt.stbr1,
+	'Maximum distance (in  decimal degree) to be used to interpolate data',
+	'Maximum distance (in  decimal degree) to be used to interpolate data')
+	min.nbrs.l<-tklabel.h(fr.C,'Min.stn',txt.stbr1,
+	'Minimum number of neighbours to be used to interpolate data',
+	'Minimum number of neighbours to be used to interpolate data')
+	max.nbrs.l<-tklabel.h(fr.C,'Max.stn',txt.stbr1,
+	'Maximum number of neighbours to be used to interpolate data',
+	'Maximum number of neighbours to be used to interpolate data')
 
 
 	nmin.v<-tkentry.h(fr.C,txt.stbr1,
-	'Minimum number of gauges with data used to do merging',
-	'Minimum number of gauges with data used to do merging')
+	'Minimum number of gauges with data to be used to do the merging',
+	'Minimum number of gauges with data to be used to do the merging')
 	min.non.zero.v<-tkentry.h(fr.C,txt.stbr1,
-	'Minimum number of non-zero gauge values to perform merging',
-	'Minimum number of non-zero gauge values to perform merging')
-	max.nbrs.v<-tkentry.h(fr.C,txt.stbr1,
-	'Maximum number of neighbor gauge to use for interpolation',
-	'Maximum number of neighbor gauge to use for interpolation')
+	'Minimum number of non-zero gauge values to perform the merging',
+	'Minimum number of non-zero gauge values to perform the merging')
 	max.rnr.dst.v<-tkentry.h(fr.C,txt.stbr1,
 	'Maximum distance (in decimal degrees) for interpolating Rain-no-Rain mask',
 	'Maximum distance (in decimal degrees) for interpolating Rain-no-Rain mask')
+	max.dst.v<-tkentry.h(fr.C,txt.stbr1,
+	'Maximum distance (in  decimal degree) to be used to interpolate data',
+	'Maximum distance (in  decimal degree) to be used to interpolate data')
+	min.nbrs.v<-tkentry.h(fr.C,txt.stbr1,
+	'Minimum number of neighbours to be used to interpolate data',
+	'Minimum number of neighbours to be used to interpolate data')
+	max.nbrs.v<-tkentry.h(fr.C,txt.stbr1,
+	'Maximum number of neighbours to be used to interpolate data',
+	'Maximum number of neighbours to be used to interpolate data')
 
 	tkgrid(nmin.l,row=0,column=0,sticky='ew',padx=1,pady=1)
 	tkgrid(nmin.v,row=0,column=1,sticky='ew',padx=1,pady=1)
 	tkgrid(min.non.zero.l,row=0,column=2,sticky='ew',padx=1,pady=1)
 	tkgrid(min.non.zero.v,row=0,column=3,sticky='ew',padx=1,pady=1)
-	tkgrid(max.nbrs.l,row=1,column=0,sticky='ew',padx=1,pady=1)
-	tkgrid(max.nbrs.v,row=1,column=1,sticky='ew',padx=1,pady=1)
-	tkgrid(max.rnr.dst.l,row=1,column=2,sticky='ew',padx=1,pady=1)
-	tkgrid(max.rnr.dst.v,row=1,column=3,sticky='ew',padx=1,pady=1)
+	tkgrid(max.rnr.dst.l,row=1,column=0,sticky='ew',padx=1,pady=1)
+	tkgrid(max.rnr.dst.v,row=1,column=1,sticky='ew',padx=1,pady=1)
+	tkgrid(max.dst.l,row=1,column=2,sticky='ew',padx=1,pady=1)
+	tkgrid(max.dst.v,row=1,column=3,sticky='ew',padx=1,pady=1)
+	tkgrid(min.nbrs.l,row=2,column=0,sticky='ew',padx=1,pady=1)
+	tkgrid(min.nbrs.v,row=2,column=1,sticky='ew',padx=1,pady=1)
+	tkgrid(max.nbrs.l,row=2,column=2,sticky='ew',padx=1,pady=1)
+	tkgrid(max.nbrs.v,row=2,column=3,sticky='ew',padx=1,pady=1)
 
 	tkconfigure(nmin.l,anchor='e',justify='right')
 	tkconfigure(min.non.zero.l,anchor='e',justify='right')
-	tkconfigure(max.nbrs.l,anchor='e',justify='right')
 	tkconfigure(max.rnr.dst.l,anchor='e',justify='right')
+	tkconfigure(max.dst.l,anchor='e',justify='right')
+	tkconfigure(min.nbrs.l,anchor='e',justify='right')
+	tkconfigure(max.nbrs.l,anchor='e',justify='right')
 
 	nmin <- tclVar(as.character(gal.params$params.int$Values[1]))
 	min.non.zero <- tclVar(as.character(gal.params$params.int$Values[2]))
-	max.nbrs <- tclVar(as.character(gal.params$params.int$Values[3]))
-	max.rnr.dst <- tclVar(as.character(gal.params$params.int$Values[4]))
+	max.rnr.dst <- tclVar(as.character(gal.params$params.int$Values[3]))
+	max.dst <- tclVar(as.character(gal.params$params.int$Values[4]))
+	min.nbrs <- tclVar(as.character(gal.params$params.int$Values[5]))
+	max.nbrs <- tclVar(as.character(gal.params$params.int$Values[6]))
 
 	tkconfigure(nmin.v,width=4,textvariable=nmin,justify='right')
 	tkconfigure(min.non.zero.v,width=4,textvariable=min.non.zero,justify='right')
-	tkconfigure(max.nbrs.v,width=4,textvariable=max.nbrs,justify='right')
 	tkconfigure(max.rnr.dst.v,width=4,textvariable=max.rnr.dst,justify='right')
+	tkconfigure(max.dst.v,width=4,textvariable=max.dst,justify='right')
+	tkconfigure(min.nbrs.v,width=4,textvariable=min.nbrs,justify='right')
+	tkconfigure(max.nbrs.v,width=4,textvariable=max.nbrs,justify='right')
 
 	####################################
 	interpMethod <- tclVar(as.character(gal.params$params.mrg$Values[1]))
@@ -1384,8 +1406,7 @@ getParamMering<-function(tt,gal.params){
 
 	tkconfigure(bt.prm.OK,command=function(){
 		gal.params$params.mrg$Values<<-c(tclvalue(interpMethod),tclvalue(RainNoRain))
-		gal.params$params.int$Values<<-c(tclvalue(nmin),tclvalue(min.non.zero),
-		tclvalue(max.nbrs),tclvalue(max.rnr.dst))
+		gal.params$params.int$Values<<-c(tclvalue(nmin),tclvalue(min.non.zero), tclvalue(max.rnr.dst),tclvalue(max.dst),tclvalue(min.nbrs),tclvalue(max.nbrs))
 		tkgrab.release(tt1)
 		tkdestroy(tt1)
 		tkfocus(tt)

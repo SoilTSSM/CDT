@@ -370,20 +370,12 @@ MergingFunction<-function(freqData,istart,iend,gal.params,mrgRaindat,VarioModel,
 
 	grd.out<-var.def.ncdf("precip", "mm",xy.dim,-99,longname=" Merged Station-Satellite Rainfall", prec="single")
 
-	nmin<-as.numeric(as.character(gal.params$params.int$Values[1]))
-	nozero<-as.numeric(as.character(gal.params$params.int$Values[2]))
-	max.nbrs<-as.numeric(as.character(gal.params$params.int$Values[3]))
-	max.RnR.dist<-as.numeric(as.character(gal.params$params.int$Values[4]))
-	interpMethod<-as.character(gal.params$params.mrg$Values[1])
-	RainNoRain<-as.character(gal.params$params.mrg$Values[2])
-
 	stn.ID<-mrgRaindat$stnData$id
 	stn.lon<-mrgRaindat$stnData$lon
 	stn.lat<-mrgRaindat$stnData$lat
 	stn.dates<-mrgRaindat$stnData$dates
 	stn.data<-mrgRaindat$stnData$data
 	nstn<-length(stn.lon)
-
 
 	rfeDir<-as.character(gal.params$file.io$Values[4])
 	rfeFileFormat<-as.character(gal.params$prefix$Values[1])
@@ -476,8 +468,7 @@ MergingFunction<-function(freqData,istart,iend,gal.params,mrgRaindat,VarioModel,
 		mrg.dates2<-mrg.dates1[jfl]
 
 		#####Merging
-		out.mrg<-mergingProcs(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,mrg.dates2,
-					newlocation.merging,bGrd,nmin,max.nbrs,nozero,interpMethod,RainNoRain,max.RnR.dist)
+		out.mrg<-mergingProcs(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,mrg.dates2, newlocation.merging,bGrd)
 		dim(out.mrg) <- c(nlon0,nlat0)
 		out.mrg[is.na(out.mrg)] <- -99
 
@@ -498,7 +489,15 @@ MergingFunction<-function(freqData,istart,iend,gal.params,mrgRaindat,VarioModel,
 
 ########################################################################################################
 
-mergingProcs<-function(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,mrg.dates2,newlocation.merging,bGrd,nmin,max.nbrs,nozero,interpMethod,RainNoRain,max.RnR.dist){
+mergingProcs<-function(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,mrg.dates2,newlocation.merging,bGrd){
+	nmin<-as.numeric(as.character(gal.params$params.int$Values[1]))
+	nozero<-as.numeric(as.character(gal.params$params.int$Values[2]))
+	max.RnR.dist<-as.numeric(as.character(gal.params$params.int$Values[3]))
+	maxdist<-as.numeric(as.character(gal.params$params.int$Values[4]))
+	min.nbrs<-as.numeric(as.character(gal.params$params.int$Values[5]))
+	max.nbrs<-as.numeric(as.character(gal.params$params.int$Values[6]))
+	interpMethod<-as.character(gal.params$params.mrg$Values[1])
+	RainNoRain<-as.character(gal.params$params.mrg$Values[2])
 
 	#rfe over stn location
 	rfe_gg <- rfe.val[ijGrd]
@@ -511,15 +510,6 @@ mergingProcs<-function(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,
 	dff[dff < q1] <- NA
 	dff[dff > q2] <- NA
 	ix<-which(!is.na(dff))
-
-	##take maxdist  as one  fifth of the largest diagonal of the bounding box
-	# vbbox<-bbox(newlocation.merging)
-	# maxdist<-as.numeric(dist(t(vbbox)))/5
-	maxdist<-1
-
-	##minimun number of stations used to interpolate
-	nmin_interp<-3
-	if(max.nbrs<=nmin_interp) max.nbrs<-nmin_interp+1
 
 	##Take rfe for Initial values
 	out.mrg<-rfe.vec
@@ -541,22 +531,22 @@ mergingProcs<-function(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,
 			pred.rr <- predict(rr.glm, newdata=grd.newloc, se.fit=T)
 
 			if(interpMethod=="IDW"){
-				grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=nmin_interp,nmax=max.nbrs,maxdist=maxdist, debug.level=0) 
+				grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist, debug.level=0) 
 				res.pred<-grd.rr$var1.pred
 			}else if(interpMethod=="Kriging"){
-				grd.rr<-try(autoKrige(res~1,input_data=rr.stn,new_data=newlocation.merging,model=VarioModel,block=bGrd,nmin=nmin_interp,nmax=max.nbrs,maxdist=maxdist, debug.level=0), silent=TRUE) 
+				grd.rr<-try(autoKrige(res~1,input_data=rr.stn,new_data=newlocation.merging,model=VarioModel,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist, debug.level=0), silent=TRUE) 
 				is.okKR <- !inherits(grd.rr, "try-error")
 				if(is.okKR){
 					res.pred<-grd.rr$krige_output$var1.pred
 				}else{
-					grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=nmin_interp,nmax=max.nbrs,maxdist=maxdist, debug.level=0) 
+					grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist, debug.level=0) 
 					res.pred<-grd.rr$var1.pred
 				}
 			}
 			out.mrg<- as.numeric(res.pred+pred.rr$fit)
 			out.mrg<-ifelse(out.mrg<0,0,out.mrg)
 		}else{
-			grd.rr <- idw(dff~1,locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=nmin_interp,nmax=max.nbrs,maxdist=maxdist,debug.level=0) 
+			grd.rr <- idw(dff~1,locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist,debug.level=0) 
 			out.mrg<- grd.rr$var1.pred + rfe.vec
 			out.mrg<-ifelse(out.mrg<0,0,out.mrg)
 		}
@@ -567,15 +557,15 @@ mergingProcs<-function(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,
 		cells<-newlocation.merging@grid
 
 		##smoothing???
-		img.out.mrg<-as.image(out.mrg, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
-		smooth.out.mrg<-image.smooth(img.out.mrg, theta= 0.03)
-		out.mrg <-c(smooth.out.mrg$z)
+		# img.out.mrg<-as.image(out.mrg, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
+		# smooth.out.mrg<-image.smooth(img.out.mrg, theta= 0.03)
+		# out.mrg <-c(smooth.out.mrg$z)
 
 		#Rain-non-Rain Mask
 		if(RainNoRain!='None') {
 			rr.stn$rnr <- ifelse(rr.stn$gg >=1,1,0)
 			if (RainNoRain=='Gauge') {#Gauge only
-				rnr.grd<-krige(rnr~1, locations=rr.stn, newdata=newlocation.merging,block=bGrd,nmin=nmin_interp,nmax=max.nbrs,maxdist=max.RnR.dist,debug.level=0)
+				rnr.grd<-krige(rnr~1, locations=rr.stn, newdata=newlocation.merging,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=max.RnR.dist,debug.level=0)
 				rnr.pred<-ifelse(is.na(rnr.grd$var1.pred),1,rnr.grd$var1.pred)
 				RnoR<-round(rnr.pred)
 			} else if(RainNoRain=='Satellite') {#Satellite only
@@ -583,7 +573,7 @@ mergingProcs<-function(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,
 				RnoR[is.na(RnoR)]<-1
 			} else if(RainNoRain=='GaugeSatellite') {
 				rfe.rnr <- ifelse(rfe.vec >=1, 1, 0)
-				rnr.grd<-krige(rnr~1, locations=rr.stn, newdata=newlocation.merging,block=bGrd,nmin=nmin_interp,nmax=max.nbrs,maxdist=max.RnR.dist, debug.level=0)
+				rnr.grd<-krige(rnr~1, locations=rr.stn, newdata=newlocation.merging,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=max.RnR.dist, debug.level=0)
 				RnoR <-rnr.grd$var1.pred
 				RnoR<-round(RnoR)
 				ix <- which(is.na(RnoR))
