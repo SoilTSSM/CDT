@@ -58,8 +58,12 @@ GlmCoefDownscaling<-function(stn.data,stn.dates,dem.stn,year1,year2,origdir){
 ReanalysisDownscaling<-function(freqData,coef,istart,iend,dem.reanal,dem,reanalInfo,
 newlocation.merging,xy.dim,nlon0,nlat0,origdir,dirJRA,rfe.file.format,downPrefix){
 
+	min.nbrs<-as.numeric(as.character(gal.params$params.int$Values[1]))
+	max.nbrs<-as.numeric(as.character(gal.params$params.int$Values[2]))
+	max.dst<-as.numeric(as.character(gal.params$params.int$Values[3]))
+
 	#Defines netcdf output
-#	out.tt <- var.def.ncdf("temp", "DegC",xy.dim, NA, longname= "Dwonscaled temperature from reanalysis data", prec="single")
+	# out.tt <- var.def.ncdf("temp", "DegC",xy.dim, NA, longname= "Dwonscaled temperature from reanalysis data", prec="single")
 	out.tt <- var.def.ncdf("temp", "DegC",xy.dim, -99, longname= "Dwonscaled temperature from reanalysis data", prec="single")
 
 	##Get all Reanalysis Files
@@ -137,7 +141,7 @@ newlocation.merging,xy.dim,nlon0,nlat0,origdir,dirJRA,rfe.file.format,downPrefix
 		tt.est.grd <- a*grd.loc1$dem + b
 
 		#Interpoate residuals at new grid
-		grd.temp <- idw(res~1, locations=tt.xyz, newdata=grd.loc1,nmax=4, idp=2.0,debug.level=0)
+		grd.temp <- idw(res~1, locations=tt.xyz, newdata=grd.loc1,nmin=min.nbrs,nmax=max.nbrs,maxdist=max.dst,idp=2.0,debug.level=0)
 		p <- grd.temp$var1.pred + tt.est.grd
 		p <- p*tt.sd + tt.mean
 
@@ -157,7 +161,6 @@ newlocation.merging,xy.dim,nlon0,nlat0,origdir,dirJRA,rfe.file.format,downPrefix
 }
 #######################################################################################
 
-#################################################
 # Extract model values at all station locations
 
 ExtractReanal2Stn<-function(freqData,ijGrd,nstn,coef.dates,downscaledDir,downPrefix){
@@ -227,13 +230,17 @@ Variogrm_modeling<-function(bias.df,stn.lon,stn.lat){
 }
 
 #################
-interpBias<-function(stn.lon,stn.lat,bs,newlocation.merging,max.nbrs,vgm_model,nlon0,nlat0){
+interpBias<-function(stn.lon,stn.lat,bs,newlocation.merging,vgm_model,nlon0,nlat0){
+	min.nbrs<-as.numeric(as.character(gal.params$params.int$Values[1]))
+	max.nbrs<-as.numeric(as.character(gal.params$params.int$Values[2]))
+	max.dst<-as.numeric(as.character(gal.params$params.int$Values[3]))
+
 	bias.stn <- data.frame(lon=stn.lon,lat=stn.lat,bias=bs)
 	ix <- which(!is.na(bias.stn$bias))
 	if(length(ix)>8){
 		bias.stn<-bias.stn[ix,]
 		coordinates(bias.stn)<- ~lon + lat
-		pbias<- krige(bias~1, locations=bias.stn, newdata=newlocation.merging,nmax=max.nbrs,maxdist=3, model=vgm_model,debug.level=0)
+		pbias<- krige(bias~1, locations=bias.stn, newdata=newlocation.merging,nmin=min.nbrs,nmax=max.nbrs,maxdist=max.dst, model=vgm_model,debug.level=0)
 	 	grd.bias <- pbias$var1.pred
  	}else{
 		grd.bias <-rep(1,nlon0*nlat0)
@@ -246,7 +253,7 @@ interpBias<-function(stn.lon,stn.lat,bs,newlocation.merging,max.nbrs,vgm_model,n
 ##########################################3
 ###Mean Bias calcul for Bias-kriging method
 ComputeMeanBias<-function(freqData,stnDatas,model_stn,coef.dates,xy.dim,nlon0,nlat0,
-newlocation.merging,max.nbrs,dirBias,meanBiasPrefix){
+newlocation.merging,dirBias,meanBiasPrefix){
 
 	stn.lon<-stnDatas$lon
 	stn.lat<-stnDatas$lat
@@ -311,7 +318,7 @@ newlocation.merging,max.nbrs,dirBias,meanBiasPrefix){
 		}
 	}
 
-############
+	############
 	# Grid Bias
 	#Defines netcdf output
 	grd.bs <- var.def.ncdf("grid", "",xy.dim, NA, longname= "Gridded Station/Reanalysis Bias", prec="single")
@@ -334,7 +341,7 @@ newlocation.merging,max.nbrs,dirBias,meanBiasPrefix){
 			for(d in 1:endmon[m]){
 				bs <- bias[dek2,]
 
-		 		grd.bias<-interpBias(stn.lon,stn.lat,bs,newlocation.merging,max.nbrs,vgm_model,nlon0,nlat0)
+		 		grd.bias<-interpBias(stn.lon,stn.lat,bs,newlocation.merging,vgm_model,nlon0,nlat0)
 
 			 	outfl<-file.path(dirBias,paste(meanBiasPrefix,'_',dek2,'.nc',sep=''),fsep = .Platform$file.sep)
 			 	nc2 <- create.ncdf(outfl,grd.bs)
@@ -363,7 +370,7 @@ newlocation.merging,max.nbrs,dirBias,meanBiasPrefix){
 			for(d in 1:3){
 				bs <- bias[dek2,]
 
-				grd.bias<-interpBias(stn.lon,stn.lat,bs,newlocation.merging,max.nbrs,vgm_model,nlon0,nlat0)
+				grd.bias<-interpBias(stn.lon,stn.lat,bs,newlocation.merging,vgm_model,nlon0,nlat0)
 			 	outfl<-file.path(dirBias,paste(meanBiasPrefix,'_',dek2,'.nc',sep=''),fsep = .Platform$file.sep)
 			 	nc2 <- create.ncdf(outfl,grd.bs)
 			 	put.var.ncdf(nc2,grd.bs,grd.bias)
@@ -383,7 +390,7 @@ newlocation.merging,max.nbrs,dirBias,meanBiasPrefix){
 			vgm_model <-Variogrm_modeling(bias.df,stn.lon,stn.lat)
 			bs <- bias[m,]
 
-			grd.bias<-interpBias(stn.lon,stn.lat,bs,newlocation.merging,max.nbrs,vgm_model,nlon0,nlat0)
+			grd.bias<-interpBias(stn.lon,stn.lat,bs,newlocation.merging,vgm_model,nlon0,nlat0)
 		 	outfl<-file.path(dirBias,paste(meanBiasPrefix,'_',m,'.nc',sep=''),fsep = .Platform$file.sep)
 		 	nc2 <- create.ncdf(outfl,grd.bs)
 		 	put.var.ncdf(nc2,grd.bs,grd.bias)
@@ -522,8 +529,7 @@ downscaledDir,biasDirORFile,adjDir,downPrefix,meanBiasPrefix,adjPrefix){
 		put.var.ncdf(nc2,grd.bsadj,temp.adj)
 		close.ncdf(nc2)
 
-		insert.txt(main.txt.out,paste("Downscaled data adjusted successfully:",
-		paste(downPrefix,'_',adj.dates[jfl],'.nc',sep='')))
+		insert.txt(main.txt.out,paste("Downscaled data adjusted successfully:",paste(downPrefix,'_',adj.dates[jfl],'.nc',sep='')))
 		tcl("update")
 	}
 }
@@ -663,10 +669,13 @@ MergeTemp<-function(mrgParam){
 	istart<-mrgParam$dates[2]
 	iend<-mrgParam$dates[3]
 
-	min.nbrs<-as.numeric(mrgParam$parms[1])
-	max.nbrs<-as.numeric(mrgParam$parms[2])
-	nmin<-as.numeric(mrgParam$parms[3])
-	interpMethod<-mrgParam$parms[4]
+	params.mrg<-as.character(gal.params$params.mrg$Values)
+	nmin<-as.numeric(params.mrg[1])
+	min.nbrs<-as.numeric(params.mrg[2])
+	max.nbrs<-as.numeric(params.mrg[3]) 
+	max.dst<- as.numeric(params.mrg[4])
+	interpMethod<-params.mrg[5]
+
 
 	mrgd.tt <- var.def.ncdf('temp', "DegC",xy.dim, -99, longname='Reanalysis merged with station', prec="single")
 
@@ -701,8 +710,7 @@ MergeTemp<-function(mrgParam){
 		close.ncdf(nc)
 
 		mod.vec <- as.vector(tt.mod)
-		newlocation.merging<-SpatialPointsDataFrame(coords=newlocation.merging, data=data.frame(mod=mod.vec),
-		proj4string = CRS(as.character(NA)))
+		newlocation.merging<-SpatialPointsDataFrame(coords=newlocation.merging, data=data.frame(mod=mod.vec), proj4string = CRS(as.character(NA)))
 
 		ic <- which(stn.dates==mrg.dates[jfl])
 		mod.stn <- tt.mod[ijGrd]
@@ -722,18 +730,16 @@ MergeTemp<-function(mrgParam){
 
 			tt.stn$diff<-tt.stn$tt-tt.stn$mod
 			if(interpMethod=="IDW"){
-				grd.res <- krige(diff~1,locations=tt.stn,newdata=newlocation.merging,
-				nmax=max.nbrs,nmin=min.nbrs,debug.level=0)
+				grd.res <- krige(diff~1,locations=tt.stn,newdata=newlocation.merging, nmax=max.nbrs,nmin=min.nbrs,maxdist=max.dst,debug.level=0)
 				tt.mrg<-grd.res$var1.pred+tt.mrg
 			}else if(interpMethod=="Kriging"){
-				KRtest<-try(grd.res <- autoKrige(diff~1,input_data=tt.stn,new_data=newlocation.merging,
-				model =VarioModel,nmin=min.nbrs,nmax=max.nbrs, debug.level=0), silent=TRUE)
+				KRtest<-try(grd.res <- autoKrige(diff~1,input_data=tt.stn,new_data=newlocation.merging, model =VarioModel,nmin=min.nbrs,nmax=max.nbrs,maxdist=max.dst, debug.level=0), silent=TRUE)
 				is.okKR <- !inherits(KRtest, "try-error")
 				if(is.okKR){
 					tt.mrg<-grd.res$krige_output$var1.pred+tt.mrg
 				}else{
 					grd.res <- krige(diff~1,locations=tt.stn,newdata=newlocation.merging,
-					nmax=max.nbrs,nmin=min.nbrs,debug.level=0)
+					nmax=max.nbrs,nmin=min.nbrs,maxdist=max.dst,debug.level=0)
 					tt.mrg<-grd.res$var1.pred+tt.mrg
 				}
 			}

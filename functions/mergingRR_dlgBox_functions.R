@@ -588,9 +588,9 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 	#################
 
 	pr.relief.set2<-c('sunken','sunken','sunken','sunken','flat')
-	for(i in 0:3) assign(paste('fr.C',i,sep=''),tkframe(fr.C,relief=pr.relief.set2[i+1],borderwidth=2))
-	for(i in 0:3) tkgrid(get(paste('fr.C',i,sep='')))
-	for(i in 0:3) tkgrid.configure(get(paste('fr.C',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
+	for(i in 0:1) assign(paste('fr.C',i,sep=''),tkframe(fr.C,relief=pr.relief.set2[i+1],borderwidth=2))
+	for(i in 0:1) tkgrid(get(paste('fr.C',i,sep='')))
+	for(i in 0:1) tkgrid.configure(get(paste('fr.C',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 	#####
 
 	for(i in 0:5) assign(paste('fr.C0',i,sep=''),tkframe(fr.C0))

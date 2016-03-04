@@ -79,7 +79,7 @@ TreatDownscalingTemp<-function(origdir,freqData){
 
 	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
 
-##############
+	##############
 	##if DEM data from the DEM Used to compute coef
 	#coefDir<-file.path(dirname(file.pars[1]),'DataUsed2Compute_Coef.RData',fsep = .Platform$file.sep)
 	#load(coefDir)
@@ -251,7 +251,6 @@ execCoefBiasCompute<-function(origdir){
 	year1<-as.numeric(as.character(gal.params$dates.coef$Values[1]))
 	year2<-as.numeric(as.character(gal.params$dates.coef$Values[2]))
 	coef.dates<-c(year1,year2)
-	max.nbrs<-5
 
 	downPrefix<-as.character(gal.params$prefix$Values[1])
 	meanBiasPrefix<-as.character(gal.params$prefix$Values[2])
@@ -297,13 +296,13 @@ execCoefBiasCompute<-function(origdir){
 	xy.dim<-list(dx,dy)
 
 	#############
-#	coefBiasTempdat$demData$dem<-dem
-#	#coefBiasTempdat$newgrid<-newlocation.merging
-#	dimInfos<-list(nlon0=nlon0,nlat0=nlat0,xy.dim=xy.dim,ijGrd=ijGrd,dem.stn=dem.stn)
-#	coefBiasTempdat$dimInfos<-dimInfos
+	# coefBiasTempdat$demData$dem<-dem
+	# #coefBiasTempdat$newgrid<-newlocation.merging
+	# dimInfos<-list(nlon0=nlon0,nlat0=nlat0,xy.dim=xy.dim,ijGrd=ijGrd,dem.stn=dem.stn)
+	# coefBiasTempdat$dimInfos<-dimInfos
 
-#	outfile<-file.path(origdir,'DataUsed2Compute_Coef.RData',fsep = .Platform$file.sep)
-#	save(coefBiasTempdat,file=outfile)
+	# outfile<-file.path(origdir,'DataUsed2Compute_Coef.RData',fsep = .Platform$file.sep)
+	# save(coefBiasTempdat,file=outfile)
 	###########
 
 	# Extract model values at all station locations
@@ -314,7 +313,7 @@ execCoefBiasCompute<-function(origdir){
 		dirouts1<-file.path(origdir,'Mean_bias',fsep = .Platform$file.sep)
 		if(!file.exists(dirouts1)) dir.create(dirouts1,showWarnings=FALSE)
 		ComputeMeanBias(freqData,coefBiasTempdat$stnData,model_stn,coef.dates,xy.dim,
-		nlon0,nlat0,newlocation.merging,max.nbrs,dirouts1,meanBiasPrefix)
+		nlon0,nlat0,newlocation.merging,dirouts1,meanBiasPrefix)
 	}
 
 	#method 2
@@ -448,13 +447,13 @@ execAjdBiasDownTemp<-function(origdir){
 	xy.dim<-list(dx,dy)
 
 	#############
-#	coefBiasTempdat$demData$dem<-dem
-#	#coefBiasTempdat$newgrid<-newlocation.merging
-#	dimInfos<-list(nlon0=nlon0,nlat0=nlat0,xy.dim=xy.dim,ijGrd=ijGrd,dem.stn=dem.stn)
-#	coefBiasTempdat$dimInfos<-dimInfos
+	# coefBiasTempdat$demData$dem<-dem
+	# #coefBiasTempdat$newgrid<-newlocation.merging
+	# dimInfos<-list(nlon0=nlon0,nlat0=nlat0,xy.dim=xy.dim,ijGrd=ijGrd,dem.stn=dem.stn)
+	# coefBiasTempdat$dimInfos<-dimInfos
 
-#	outfile<-file.path(origdir,'DataUsed2Compute_Coef.RData',fsep = .Platform$file.sep)
-#	save(coefBiasTempdat,file=outfile)
+	# outfile<-file.path(origdir,'DataUsed2Compute_Coef.RData',fsep = .Platform$file.sep)
+	# save(coefBiasTempdat,file=outfile)
 	###########
 
 	#method 1
@@ -537,11 +536,6 @@ execMergeTemp<-function(origdir){
 	freqData<-gal.params$period
 	mrgTempdat<-TreatmergeTemp(origdir,freqData)
 
-	min.nbrs<-as.character(gal.params$params.mrg$Values[1])
-	max.nbrs<- as.character(gal.params$params.mrg$Values[2])
-	nmin<-as.character(gal.params$params.mrg$Values[3])
-	interpMethod<- as.character(gal.params$params.mrg$Values[4])
-
 	datesSE<-as.numeric(as.character(gal.params$dates.mrg$Values))
 	istart<-as.Date(paste(datesSE[1],datesSE[2],datesSE[3],sep='-'))
 	iend<-as.Date(paste(datesSE[4],datesSE[5],datesSE[6],sep='-'))
@@ -579,7 +573,7 @@ execMergeTemp<-function(origdir){
 
 	if(usemask=="1") outMask<-NULL
 	if(usemask=="2"){
-		dem.grd<-krige(formula = dem ~ 1,locations=mrgTempdat$demData$demGrd,newdata=newlocation.merging,nmax=4,nmin =2,debug.level=0)
+		dem.grd<-krige(formula = dem ~ 1,locations=mrgTempdat$demData$demGrd,newdata=newlocation.merging,nmax=5,nmin =3,debug.level=0)
 		dem<-ifelse(dem.grd@data$var1.pred<0,0,dem.grd@data$var1.pred)
 		#or
 		#dem<-adjdownTempdat$demData$demGrd@data[,1]
@@ -613,8 +607,7 @@ execMergeTemp<-function(origdir){
 
 	VarioModel<-c("Sph", "Exp", "Gau")
 
-	mrgParam<-list(dates=c(freqData,istart,iend),prefix=c(adjPrefix,mrgPrefix,mrgSuffix),
-	dirs=c(adjDir,origdir),parms=c(min.nbrs,max.nbrs,nmin,interpMethod),
+	mrgParam<-list(dates=c(freqData,istart,iend),prefix=c(adjPrefix,mrgPrefix,mrgSuffix),dirs=c(adjDir,origdir),
 	mrgInfo=list(nlon0=nlon0,nlat0=nlat0,ijGrd=ijGrd,xy.dim=xy.dim,VarioModel=VarioModel),
 	mrgData=list(stnData=mrgTempdat$stnData,outMask=outMask,newlocation.merging=newlocation.merging))
 	MergeTemp(mrgParam)

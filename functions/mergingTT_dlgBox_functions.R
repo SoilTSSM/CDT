@@ -24,7 +24,7 @@ coefDownGetInfoTemp<-function(parent.win,gal.params){
 	for(i in 0:2) tkgrid(get(paste('fr.A',i,sep='')))
 	for(i in 0:2) tkgrid.configure(get(paste('fr.A',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
-###################
+	###################
 	fr.A00<-tkframe(fr.A0)
 	#fr.A01<-tkframe(fr.A0)
 	tkgrid(fr.A00,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
@@ -39,7 +39,7 @@ coefDownGetInfoTemp<-function(parent.win,gal.params){
 	status.bar.display(cb.period,txt.stbr1,'Choose the time step of the data')
 	tkgrid(cb.period)
 
-##########################################3
+	##########################################3
 
 	fr.A10<-tkframe(fr.A1)
 	fr.A11<-tkframe(fr.A1)
@@ -78,7 +78,7 @@ coefDownGetInfoTemp<-function(parent.win,gal.params){
 	})
 
 
-#######
+	#######
 
 	fr.A21<-tkframe(fr.A2)
 	fr.A22<-tkframe(fr.A2)
@@ -105,14 +105,14 @@ coefDownGetInfoTemp<-function(parent.win,gal.params){
 			}
 	})
 
-#########################################
+	#########################################
 	pr.relief.set<-c('sunken','sunken','sunken')
 	for(i in 0:1) assign(paste('fr.B',i,sep=''),tkframe(fr.B,relief=pr.relief.set[i+1],borderwidth=2))
 	for(i in 0:1) tkgrid(get(paste('fr.B',i,sep='')))
 	for(i in 0:1) tkgrid.configure(get(paste('fr.B',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
 
-################################################3
+	################################################3
 	fr.B01<-tkframe(fr.B0)
 	fr.B02<-tkframe(fr.B0)
 	tkgrid(fr.B01,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
@@ -182,7 +182,7 @@ coefDownGetInfoTemp<-function(parent.win,gal.params){
 	tkconfigure(years2.v,width=6,textvariable=year2,justify='right')
 
 
-##############
+	##############
 
 	bt.opt.OK<-tkbutton(frMRG1, text="OK")
 	bt.opt.CA<-tkbutton(frMRG1, text="Cancel")
@@ -241,8 +241,6 @@ coefDownGetInfoTemp<-function(parent.win,gal.params){
 }
 
 
-
-
 #################################################################################################3
 downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	file.list<-openFile_ttkcomboList()
@@ -272,7 +270,7 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	for(i in 0:3) tkgrid(get(paste('fr.A',i,sep='')))
 	for(i in 0:3) tkgrid.configure(get(paste('fr.A',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
-###################
+	###################
 	fr.A00<-tkframe(fr.A0)
 	#fr.A01<-tkframe(fr.A0)
 	tkgrid(fr.A00,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
@@ -288,18 +286,17 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	tkgrid(cb.period)
 
 
-
-#######
+	#######
 	for(i in 0:5) assign(paste('fr.A1',i,sep=''),tkframe(fr.A1))
 	for(i in 0:5) tkgrid(get(paste('fr.A1',i,sep='')))
 	for(i in 0:5) tkgrid.configure(get(paste('fr.A1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 
 
-####
+	####
 	file.coef <- tclVar()
 	tclvalue(file.coef) <- as.character(gal.params$file.io$Values[1])
 
-###
+	###
 	frA10.txt<-tklabel(fr.A10,text='Downscaling Coefficients file')
 	tkgrid(frA10.txt)
 
@@ -320,7 +317,7 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 		}
 	})
 
-####
+	####
 	frA12.txt<-tklabel(fr.A12,text='Directory of Reanalysis files')
 	tkgrid(frA12.txt)
 
@@ -338,7 +335,7 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 		else tclvalue(dir.rfe)<-dir4rfe
 	})
 
-######
+	######
 	file.grdrfe <- tclVar()
 	tclvalue(file.grdrfe) <- as.character(gal.params$file.io$Values[3])
 
@@ -376,7 +373,7 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 		}
 	})
 
-################################################3
+	################################################3
 	fr.A21<-tkframe(fr.A2)
 	fr.A22<-tkframe(fr.A2)
 	tkgrid(fr.A21,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
@@ -415,7 +412,7 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 		}
 	})
 
-#######
+	#######
 	fr.A31<-tkframe(fr.A3)
 	fr.A32<-tkframe(fr.A3)
 	tkgrid(fr.A31,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
@@ -441,7 +438,7 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 			}
 	})
 
-#################################
+	#################################
 
 	pr.relief.set2<-c('sunken','sunken','sunken','flat')
 	for(i in 0:3) assign(paste('fr.C',i,sep=''),tkframe(fr.C,relief=pr.relief.set2[i+1],borderwidth=2))
@@ -534,7 +531,7 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 		}
 	})
 
-###############
+	###############
 	frC12.txt<-tklabel(fr.C12,text='Downscaled data filename prefix')
 	tkgrid(frC12.txt)
 
@@ -571,7 +568,7 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	tkgrid(bt.getNewgrid,row=0,column=1,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
 
-##############
+	##############
 	#bt.opt.OK<-tkbutton(fr.C3, text="OK")
 	#bt.opt.CA<-tkbutton(fr.C3, text="Cancel")
 	#tkgrid(bt.opt.OK,row=0,column=0,sticky='w',padx=5,pady=1,ipadx=10,ipady=1)
@@ -674,6 +671,7 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	tkwait.window(tt)
 	return(gal.params)
 }
+
 #################################################################################################3
 
 biasGetInfoTempDown<-function(parent.win,gal.params){
@@ -701,7 +699,7 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 	for(i in 0:4) tkgrid(get(paste('fr.A',i,sep='')))
 	for(i in 0:4) tkgrid.configure(get(paste('fr.A',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
-#####################################################################
+	#####################################################################
 
 	fr.A00<-tkframe(fr.A0)
 	tkgrid(fr.A00,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
@@ -716,7 +714,7 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 	tkgrid(cb.period)
 
 
-#########################################3
+	#########################################3
 	fr.A10<-tkframe(fr.A1)
 	fr.A11<-tkframe(fr.A1)
 	tkgrid(fr.A10,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
@@ -753,7 +751,7 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 		}
 	})
 
-#####################################
+	#####################################
 
 	fr.A20<-tkframe(fr.A2)
 	fr.A21<-tkframe(fr.A2)
@@ -793,7 +791,7 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 		}
 	})
 
-#########################################3
+	#########################################3
 
 	fr.A30<-tkframe(fr.A3)
 	fr.A31<-tkframe(fr.A3)
@@ -818,7 +816,7 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 	})
 
 
-#######
+	#######
 	fr.A40<-tkframe(fr.A4)
 	fr.A41<-tkframe(fr.A4)
 	tkgrid(fr.A40,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
@@ -847,11 +845,11 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 
 	#################################
 	pr.relief.set2<-c('sunken','sunken','sunken','sunken')
-	for(i in 0:2) assign(paste('fr.B',i,sep=''),tkframe(fr.B,relief=pr.relief.set2[i+1],borderwidth=2))
-	for(i in 0:2) tkgrid(get(paste('fr.B',i,sep='')))
-	for(i in 0:2) tkgrid.configure(get(paste('fr.B',i,sep='')),row=i,column=0,sticky='nswe',padx=1,pady=1,ipadx=1,ipady=5)
+	for(i in 0:3) assign(paste('fr.B',i,sep=''),tkframe(fr.B,relief=pr.relief.set2[i+1],borderwidth=2))
+	for(i in 0:3) tkgrid(get(paste('fr.B',i,sep='')))
+	for(i in 0:3) tkgrid.configure(get(paste('fr.B',i,sep='')),row=i,column=0,sticky='nswe',padx=1,pady=1,ipadx=1,ipady=2)
 
-##############
+	##############
 	fr.B00<-tkframe(fr.B0)
 	fr.B01<-tkframe(fr.B0)
 	tkgrid(fr.B00,row=0,column=0,sticky='we',padx=1,pady=2,ipadx=1,ipady=0)
@@ -869,21 +867,21 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 	'Method to be used to correct downscaled data: Mean Bias  using Kriging Interpolation or Regression using Quantile matching')
 	tkgrid(cb.biasMethod)
 
-##################
+	##################
 	for(i in 0:3) assign(paste('fr.B1',i,sep=''),tkframe(fr.B1))
 	for(i in 0:3) tkgrid(get(paste('fr.B1',i,sep='')))
 	for(i in 0:3) tkgrid.configure(get(paste('fr.B1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 
 
 	frB10.txt<-tklabel(fr.B10,text='Downscaled data filename prefix')
-	tkgrid(frB10.txt,pady=2)
+	tkgrid(frB10.txt,pady=1)
 
 	downPrefix<-tclVar(as.character(gal.params$prefix$Values[1]))
 	downPrefix.v<-tkentry.h(fr.B11,txt.stbr1,'Prefix for the file name of the downscaled reanalysis data','Prefix for the file name of the downscaled reanalysis data')
 	tkconfigure(downPrefix.v,width=largeur,textvariable=downPrefix,justify='left')
-	tkgrid(downPrefix.v,sticky='w',pady=2)
+	tkgrid(downPrefix.v,sticky='w',pady=1)
 
-###############
+	###############
 	frB12.txt<-tklabel(fr.B12,text='Mean bias filename prefix')
 	tkgrid(frB12.txt,pady=2)
 
@@ -894,7 +892,7 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 	if(as.character(gal.params$bias.method)=='Regression-QM') statebias<-'disabled'
 
 	tkconfigure(meanBiasPrefix.v,width=largeur,textvariable=meanBiasPrefix,justify='left',state=statebias)
-	tkgrid(meanBiasPrefix.v,sticky='w',pady=2)
+	tkgrid(meanBiasPrefix.v,sticky='w',pady=1)
 
 	############
 	tkbind(cb.biasMethod,"<<ComboboxSelected>>",function(){
@@ -912,10 +910,10 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 	years1.v<-tkentry.h(fr.B2,txt.stbr1,'Start year to be used to correct downscaled data','Start year to be used to correct downscaled data')
 	years2.v<-tkentry.h(fr.B2,txt.stbr1,'End year to be used to correct downscaled data','End year to be used to correct downscaled data')
 
-	tkgrid(years1.l,row=0,column=0,padx=5,pady=4)
-	tkgrid(years1.v,row=0,column=1,padx=5,pady=4)
-	tkgrid(years2.l,row=1,column=0,padx=5,pady=4)
-	tkgrid(years2.v,row=1,column=1,padx=5,pady=4)
+	tkgrid(years1.l,row=0,column=0,padx=5,pady=1)
+	tkgrid(years1.v,row=0,column=1,padx=5,pady=1)
+	tkgrid(years2.l,row=1,column=0,padx=5,pady=1)
+	tkgrid(years2.v,row=1,column=1,padx=5,pady=1)
 
 	tkconfigure(years1.l,anchor='e',justify='right')
 	tkconfigure(years2.l,anchor='e',justify='right')
@@ -925,8 +923,48 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 
 	tkconfigure(years1.v,width=8,textvariable=year1,justify='right')
 	tkconfigure(years2.v,width=8,textvariable=year2,justify='right')
+	
+	##################
+	min.nbrs.l<-tklabel.h(fr.B3,'Min.stn',txt.stbr1,
+	'Minimum number of neighbours used to interpolate the bias',
+	'Minimum number of neighbours used to interpolate the bias')
+	max.nbrs.l<-tklabel.h(fr.B3,'Max.stn',txt.stbr1,
+	'Maximum number of neighbours used to interpolate the bias',
+	'Maximum number of neighbours used to interpolate the bias')
+	max.dst.l<-tklabel.h(fr.B3,'Max.dist',txt.stbr1,
+	'Maximum distance (in  decimal degree) to be used to interpolate the bias',
+	'Maximum distance (in  decimal degree) to be used to interpolate the bias')
 
-##############################
+	min.nbrs.v<-tkentry.h(fr.B3,txt.stbr1,
+	'Minimum number of neighbours to be used to interpolate the bias',
+	'Minimum number of neighbours to be used to interpolate the bias')
+	max.nbrs.v<-tkentry.h(fr.B3,txt.stbr1,
+	'Maximum number of neighbours to be used to interpolate the bias',
+	'Maximum number of neighbours to be used to interpolate the bias')
+	max.dst.v<-tkentry.h(fr.B3,txt.stbr1,
+	'Maximum distance (in  decimal degree) to be used to interpolate the bias',
+	'Maximum distance (in  decimal degree) to be used to interpolate the bias')
+
+	tkgrid(min.nbrs.l,row=0,column=0,sticky='ew',padx=1,pady=1)
+	tkgrid(min.nbrs.v,row=0,column=1,sticky='ew',padx=1,pady=1)
+	tkgrid(max.nbrs.l,row=0,column=2,sticky='ew',padx=1,pady=1)
+	tkgrid(max.nbrs.v,row=0,column=3,sticky='ew',padx=1,pady=1)
+	tkgrid(max.dst.l,row=1,column=0,sticky='ew',padx=1,pady=1)
+	tkgrid(max.dst.v,row=1,column=1,sticky='ew',padx=1,pady=1)
+
+	tkconfigure(min.nbrs.l,anchor='e',justify='right')
+	tkconfigure(max.nbrs.l,anchor='e',justify='right')
+	tkconfigure(max.dst.l,anchor='e',justify='right')
+
+	min.nbrs <- tclVar(as.character(gal.params$params.int$Values[1]))
+	max.nbrs <- tclVar(as.character(gal.params$params.int$Values[2]))
+	max.dst <- tclVar(as.character(gal.params$params.int$Values[3]))
+
+	tkconfigure(min.nbrs.v,width=4,textvariable=min.nbrs,justify='right')
+	tkconfigure(max.nbrs.v,width=4,textvariable=max.nbrs,justify='right')
+	tkconfigure(max.dst.v,width=4,textvariable=max.dst,justify='right')
+
+	##############################
 
 	bt.prm.OK<-tkbutton(frMRG1, text=" OK ")
 	bt.prm.CA<-tkbutton(frMRG1, text="Cancel")
@@ -955,6 +993,7 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 			gal.params$bias.method<<-tclvalue(biasMethod)
 			gal.params$prefix$Values<<-c(tclvalue(downPrefix),tclvalue(meanBiasPrefix))
 			gal.params$dates.coef$Values<<-c(tclvalue(year1),tclvalue(year2))
+			gal.params$params.int$Values<<-c(tclvalue(min.nbrs),tclvalue(max.nbrs),tclvalue(max.dst))
 
 			tkgrab.release(tt)
 			tkdestroy(tt)
@@ -1016,7 +1055,7 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	for(i in 0:4) tkgrid(get(paste('fr.A',i,sep='')))
 	for(i in 0:4) tkgrid.configure(get(paste('fr.A',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
-#####################################################################
+	#####################################################################
 
 	fr.A00<-tkframe(fr.A0)
 	tkgrid(fr.A00,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
@@ -1031,7 +1070,7 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	tkgrid(cb.period)
 
 
-#########################################3
+	#########################################3
 	fr.A10<-tkframe(fr.A1)
 	fr.A11<-tkframe(fr.A1)
 	tkgrid(fr.A10,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
@@ -1068,7 +1107,7 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 		}
 	})
 
-#####################################
+	#####################################
 
 	fr.A20<-tkframe(fr.A2)
 	fr.A21<-tkframe(fr.A2)
@@ -1108,7 +1147,7 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 		}
 	})
 
-#########################################3
+	#########################################3
 
 	fr.A30<-tkframe(fr.A3)
 	fr.A31<-tkframe(fr.A3)
@@ -1133,7 +1172,7 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	})
 
 
-###############################3
+	###############################3
 	fr.A32<-tkframe(fr.A3)
 	fr.A33<-tkframe(fr.A3)
 	tkgrid(fr.A32,row=2,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
@@ -1159,7 +1198,7 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	})
 
 
-#######
+	#######
 	fr.A40<-tkframe(fr.A4)
 	fr.A41<-tkframe(fr.A4)
 	tkgrid(fr.A40,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
@@ -1192,7 +1231,7 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	for(i in 0:2) tkgrid(get(paste('fr.B',i,sep='')))
 	for(i in 0:2) tkgrid.configure(get(paste('fr.B',i,sep='')),row=i,column=0,sticky='nswe',padx=1,pady=1,ipadx=1,ipady=5)
 
-##############
+	##############
 	fr.B00<-tkframe(fr.B0)
 	fr.B01<-tkframe(fr.B0)
 	tkgrid(fr.B00,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
@@ -1210,7 +1249,7 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	'Method to be used to correct downscaled data: Mean Bias  using Kriging Interpolation or Regression using Quantile matching')
 	tkgrid(cb.biasMethod)
 
-##################
+	##################
 	for(i in 0:5) assign(paste('fr.B1',i,sep=''),tkframe(fr.B1))
 	for(i in 0:5) tkgrid(get(paste('fr.B1',i,sep='')))
 	for(i in 0:5) tkgrid.configure(get(paste('fr.B1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
@@ -1224,7 +1263,7 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	tkconfigure(downPrefix.v,width=largeur,textvariable=downPrefix,justify='left')
 	tkgrid(downPrefix.v,sticky='w',pady=1)
 
-###############
+	###############
 	frB12.txt<-tklabel(fr.B12,text='Mean bias filename prefix')
 	tkgrid(frB12.txt,pady=1)
 
@@ -1236,7 +1275,7 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 
 	tkconfigure(meanBiasPrefix.v,width=largeur,textvariable=meanBiasPrefix,justify='left',state=statebias)
 	tkgrid(meanBiasPrefix.v,sticky='w',pady=2)
-###############
+	###############
 	frB14.txt<-tklabel(fr.B14,text='Adjusted data filename prefix')
 	tkgrid(frB14.txt,pady=1)
 
@@ -1275,8 +1314,7 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 		}
 	})
 
-
-#######################
+	#######################
 	infobulle(fr.B2,'Start and end date for adjusting downscaled data')
 	status.bar.display(fr.B2,txt.stbr1,'Start and end date for adjusting downscaled data')
 
@@ -1337,7 +1375,7 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 		}
 	})
 
-##############################
+	##############################
 
 	bt.prm.OK<-tkbutton(frMRG1, text=" OK ")
 	bt.prm.CA<-tkbutton(frMRG1, text="Cancel")
@@ -1362,8 +1400,6 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 			tkmessageBox(message="Choose or enter the path to directory to save results",icon="warning",type="ok")
 			tkwait.window(tt)
 		}else{
-
-
 
 			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily',
 			ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
@@ -1405,8 +1441,6 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	return(gal.params)
 }
 
-
-
 #######################################################################################################################################
 
 mrgGetInfoTemp<-function(parent.win,gal.params){
@@ -1435,7 +1469,7 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	for(i in 0:3) tkgrid(get(paste('fr.A',i,sep='')))
 	for(i in 0:3) tkgrid.configure(get(paste('fr.A',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
-#####################################################################
+	#####################################################################
 
 	fr.A00<-tkframe(fr.A0)
 	tkgrid(fr.A00,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
@@ -1450,7 +1484,7 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	tkgrid(cb.period)
 
 
-#########################################3
+	#########################################3
 	fr.A10<-tkframe(fr.A1)
 	fr.A11<-tkframe(fr.A1)
 	fr.A12<-tkframe(fr.A1)
@@ -1460,7 +1494,7 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	tkgrid(fr.A12,row=2,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(fr.A13,row=3,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
-#######
+	#######
 	file.stnfl <- tclVar()
 	tclvalue(file.stnfl) <- as.character(gal.params$file.io$Values[1])
 
@@ -1492,7 +1526,7 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 		}
 	})
 
-##############
+	##############
 
 	frA12.txt<-tklabel(fr.A12,text='Directory of ajdusted data')
 	tkgrid(frA12.txt)
@@ -1511,7 +1545,7 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 		else tclvalue(dir.down)<-dir4down
 	})
 
-#####################################
+	#####################################
 
 	fr.A20<-tkframe(fr.A2)
 	fr.A21<-tkframe(fr.A2)
@@ -1561,7 +1595,7 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 		}
 	})
 
-####################################
+	####################################
 	file.blkshp <- tclVar()
 	tclvalue(file.blkshp) <- as.character(gal.params$file.io$Values[3])
 
@@ -1601,7 +1635,7 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	})
 
 
-#########################################3
+	#########################################3
 
 
 	fr.A30<-tkframe(fr.A3)
@@ -1636,7 +1670,7 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	for(i in 0:3) tkgrid(get(paste('fr.B',i,sep='')))
 	for(i in 0:3) tkgrid.configure(get(paste('fr.B',i,sep='')),row=i,column=0,sticky='nswe',padx=1,pady=1,ipadx=1,ipady=5)
 
-##############
+	##############
 	fr.B00<-tkframe(fr.B0)
 	fr.B01<-tkframe(fr.B0)
 	tkgrid(fr.B00,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
@@ -1656,7 +1690,7 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	'Blank grid outside the country boundaries  or over ocean given by the DEM mask or the shapefile')
 	tkgrid(cb.blankGrd)
 
-##################
+	##################
 	for(i in 0:3) assign(paste('fr.B1',i,sep=''),tkframe(fr.B1))
 	for(i in 0:3) tkgrid(get(paste('fr.B1',i,sep='')))
 	for(i in 0:3) tkgrid.configure(get(paste('fr.B1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
@@ -1670,7 +1704,7 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	tkconfigure(adjPrefix.v,width=largeur,textvariable=adjPrefix,justify='left')
 	tkgrid(adjPrefix.v,sticky='w',pady=1)
 
-###############
+	###############
 	frB12.txt<-tklabel(fr.B12,text='Merged data filename prefix')
 	tkgrid(frB12.txt,pady=1)
 
@@ -1708,7 +1742,7 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	})
 
 
-#######################
+	#######################
 	infobulle(fr.B2,'Start and end date for merging data')
 	status.bar.display(fr.B2,txt.stbr1,'Start and end date for merging data')
 
@@ -1769,15 +1803,15 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 		}
 	})
 
-############
-bt.opt.set<-tkbutton.h(fr.B3, text="Options - Settings",txt.stbr1,'Set general options for merging','Set general options for merging')
+	############
+	bt.opt.set<-tkbutton.h(fr.B3, text="Options - Settings",txt.stbr1,'Set general options for merging','Set general options for merging')
 	tkgrid(bt.opt.set,sticky='we',padx=25,pady=5,ipadx=1,ipady=1)
 	tkconfigure(bt.opt.set,command=function(){
 		gal.params<<-getParamMeringTemp(tt,gal.params)
 	})
 
 
-##############################
+	##############################
 
 	bt.prm.OK<-tkbutton(frMRG1, text=" OK ")
 	bt.prm.CA<-tkbutton(frMRG1, text="Cancel")
@@ -1844,7 +1878,6 @@ bt.opt.set<-tkbutton.h(fr.B3, text="Options - Settings",txt.stbr1,'Set general o
 	return(gal.params)
 }
 
-
 #########################################################################################
 
 getParamMeringTemp<-function(tt,gal.params){
@@ -1861,45 +1894,56 @@ getParamMeringTemp<-function(tt,gal.params){
 	fr.C<-tkframe(frmrg0,relief="sunken",borderwidth=2)
 	tkgrid(fr.C,row=0,column=0,sticky='ew',padx=1,pady=1)
 
-	min.nbrs.l<-tklabel.h(fr.C,'Min.stn',txt.stbr1,'Minimum number of neighbours used to interpolate data',
-	'Minimum number of neighbours used to interpolate  data')
-	max.nbrs.l<-tklabel.h(fr.C,'Max.stn',txt.stbr1,'Maximum number of neighbours used to interpolate  data',
-	'Maximum number of neighbours used to interpolate  data')
-	nmin.l<-tklabel.h(fr.C,'Nmin',txt.stbr1,'Minimum number of gauges with data used to do merging',
-	'Minimum number of gauges with data used to do merging')
+	nmin.l<-tklabel.h(fr.C,'Nmin',txt.stbr1,'Minimum number of gauges with data to be used to do the merging',
+	'Minimum number of gauges with data to be used to do the merging')
+	min.nbrs.l<-tklabel.h(fr.C,'Min.stn',txt.stbr1,'Minimum number of neighbours to be used to interpolate data',
+	'Minimum number of neighbours to be used to interpolate  data')
+	max.nbrs.l<-tklabel.h(fr.C,'Max.stn',txt.stbr1,'Maximum number of neighbours to be used to interpolate  data',
+	'Maximum number of neighbours to be used to interpolate  data')
+	max.dst.l<-tklabel.h(fr.C,'Max.dist',txt.stbr1,
+	'Maximum distance (in  decimal degree) to be used to interpolate data',
+	'Maximum distance (in  decimal degree) to be used to interpolate data')
 
-	min.nbrs.v<-tkentry.h(fr.C,txt.stbr1,'Minimum number of neighbours used to interpolate data',
-	'Minimum number of neighbours used to interpolate data')
-	max.nbrs.v<-tkentry.h(fr.C,txt.stbr1,'Maximum number of neighbours used to interpolate data',
-	'Maximum number of neighbours used to interpolate data')
-	nmin.v<-tkentry.h(fr.C,txt.stbr1,'Minimum number of gauges with data used to do merging',
-	'Minimum number of gauges with data used to do merging')
+	nmin.v<-tkentry.h(fr.C,txt.stbr1,'Minimum number of gauges with data to be used to do the merging',
+	'Minimum number of gauges with data to be used to do the merging')
+	min.nbrs.v<-tkentry.h(fr.C,txt.stbr1,'Minimum number of neighbours to be used to interpolate data',
+	'Minimum number of neighbours to be used to interpolate data')
+	max.nbrs.v<-tkentry.h(fr.C,txt.stbr1,'Maximum number of neighbours to be used to interpolate data',
+	'Maximum number of neighbours to beused to interpolate data')
+	max.dst.v<-tkentry.h(fr.C,txt.stbr1,
+	'Maximum distance (in  decimal degree) to be used to interpolate data',
+	'Maximum distance (in  decimal degree) to be used to interpolate data')
 
 
-	tkgrid(min.nbrs.l,row=0,column=0,sticky='ew',padx=1,pady=1)
-	tkgrid(min.nbrs.v,row=0,column=1,sticky='ew',padx=1,pady=1)
-	tkgrid(max.nbrs.l,row=0,column=2,sticky='ew',padx=1,pady=1)
-	tkgrid(max.nbrs.v,row=0,column=3,sticky='ew',padx=1,pady=1)
-	tkgrid(nmin.l,row=1,column=0,sticky='ew',padx=1,pady=1)
-	tkgrid(nmin.v,row=1,column=1,sticky='ew',padx=1,pady=1)
+	tkgrid(nmin.l,row=0,column=0,sticky='ew',padx=1,pady=1)
+	tkgrid(nmin.v,row=0,column=1,sticky='ew',padx=1,pady=1)
+	tkgrid(min.nbrs.l,row=0,column=2,sticky='ew',padx=1,pady=1)
+	tkgrid(min.nbrs.v,row=0,column=3,sticky='ew',padx=1,pady=1)
+	tkgrid(max.nbrs.l,row=1,column=0,sticky='ew',padx=1,pady=1)
+	tkgrid(max.nbrs.v,row=1,column=1,sticky='ew',padx=1,pady=1)
+	tkgrid(max.dst.l,row=1,column=2,sticky='ew',padx=1,pady=1)
+	tkgrid(max.dst.v,row=1,column=3,sticky='ew',padx=1,pady=1)
 
+	tkconfigure(nmin.l,anchor='e',justify='right')
 	tkconfigure(min.nbrs.l,anchor='e',justify='right')
 	tkconfigure(max.nbrs.l,anchor='e',justify='right')
-	tkconfigure(nmin.l,anchor='e',justify='right')
+	tkconfigure(max.dst.l,anchor='e',justify='right')
 
-	min.nbrs<-tclVar(as.character(gal.params$params.mrg$Values[1]))
-	max.nbrs <- tclVar(as.character(gal.params$params.mrg$Values[2]))
-	nmin <- tclVar(as.character(gal.params$params.mrg$Values[3]))
+	nmin <- tclVar(as.character(gal.params$params.mrg$Values[1]))
+	min.nbrs<-tclVar(as.character(gal.params$params.mrg$Values[2]))
+	max.nbrs <- tclVar(as.character(gal.params$params.mrg$Values[3]))
+	max.dst <- tclVar(as.character(gal.params$params.mrg$Values[4]))
 
+	tkconfigure(nmin.v,width=4,textvariable=nmin,justify='right')
 	tkconfigure(min.nbrs.v,width=4,textvariable=min.nbrs,justify='right')
 	tkconfigure(max.nbrs.v,width=4,textvariable=max.nbrs,justify='right')
-	tkconfigure(nmin.v,width=4,textvariable=nmin,justify='right')
+	tkconfigure(max.dst.v,width=4,textvariable=max.dst,justify='right')
 
-####################################
+	####################################
 	fr.D<-tkframe(frmrg0,relief="sunken",borderwidth=2)
 	tkgrid(fr.D,row=1,column=0,rowspan=1,sticky='nsew',padx=1,pady=1)
 
-	interpMethod <- tclVar(as.character(gal.params$params.mrg$Values[4]))
+	interpMethod <- tclVar(as.character(gal.params$params.mrg$Values[5]))
 	txt.interpMethod<-tklabel(fr.D,text='Interpolation method')
 	cb.interpMethod<-ttkcombobox(fr.D, values=c('IDW', 'Kriging'), textvariable=interpMethod)
 	infobulle(cb.interpMethod,'Interpolation techniques: Kriging or  Inverse Distance Weighted')
@@ -1916,8 +1960,7 @@ getParamMeringTemp<-function(tt,gal.params){
 	tkgrid(bt.prm.CA,row=0,column=1,sticky='e',padx=5,pady=1,ipadx=1,ipady=1)
 
 	tkconfigure(bt.prm.OK,command=function(){
-		gal.params$params.mrg$Values<<-c(tclvalue(min.nbrs),tclvalue(max.nbrs),tclvalue(nmin),
-		tclvalue(interpMethod))
+		gal.params$params.mrg$Values<<-c(tclvalue(nmin),tclvalue(min.nbrs),tclvalue(max.nbrs),tclvalue(max.dst),tclvalue(interpMethod))
 
 		tkgrab.release(tt1)
 		tkdestroy(tt1)
