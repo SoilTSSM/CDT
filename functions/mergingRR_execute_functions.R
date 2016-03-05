@@ -1,6 +1,6 @@
 
-TreatbiasRain<-function(origdir,freqData){
-
+TreatbiasRain<-function(origdir){
+	freqData<-gal.params$period
 	file.pars<-as.character(gal.params$file.io$Values)
 	dir.create(origdir,showWarnings=FALSE)
 
@@ -56,7 +56,7 @@ TreatbiasRain<-function(origdir,freqData){
 execBiasRain<-function(origdir){
 
 	freqData<-gal.params$period
-	mrgRaindat<-TreatbiasRain(origdir,freqData)
+	mrgRaindat<-TreatbiasRain(origdir)
 	if(is.null(mrgRaindat)) return(NULL)
 
 	create.grd<-as.character(gal.params$CreateGrd)
@@ -108,9 +108,9 @@ execBiasRain<-function(origdir){
 	outfile<-file.path(origdir,'DataUsed2ComputeBias.RData',fsep = .Platform$file.sep)
 	save(mrgRaindat,file=outfile)
 
-	rfe_stn <-ExtractRFE2Stn(freqData,ijGrd,gal.params,mrgRaindat)
+	rfe_stn <-ExtractRFE2Stn(ijGrd,gal.params,mrgRaindat)
 	if(is.null(rfe_stn)) return(NULL)
-	ret<-ComputeMeanBiasRain(freqData,rfe_stn,gal.params,mrgRaindat,paramGrd,origdir)
+	ret<-ComputeMeanBiasRain(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir)
 	if(!is.null(ret)){
 		if(ret==0) return(0)
 		else return(ret)
