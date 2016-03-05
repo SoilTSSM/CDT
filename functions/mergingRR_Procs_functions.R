@@ -258,8 +258,7 @@ AjdMeanBiasRain<-function(freqData,istart,iend,rfeData,paramGrd,gal.params,origd
 	}
 	if(freqData=='dekadal'){
 		adj.dates<-seq(as.Date(istart,format='%Y%m%d'),as.Date(iend,format='%Y%m%d'),'day')
-		adj.dates<-paste(format(adj.dates[which(as.numeric(format(adj.dates,'%d'))<=3)],'%Y%m'),
-		as.numeric(format(adj.dates[which(as.numeric(format(adj.dates,'%d'))<=3)],'%d')),sep='')
+		adj.dates<-paste(format(adj.dates[which(as.numeric(format(adj.dates,'%d'))<=3)],'%Y%m'), as.numeric(format(adj.dates[which(as.numeric(format(adj.dates,'%d'))<=3)],'%d')),sep='')
 		testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(adj.dates,1,4),substr(adj.dates,5,6),substr(adj.dates,7,7)),fsep = .Platform$file.sep)
 	}
 	if(freqData=='monthly'){
@@ -342,8 +341,10 @@ AjdMeanBiasRain<-function(freqData,istart,iend,rfeData,paramGrd,gal.params,origd
 ########################################################################################################
 ###Merging
 
-MergingFunction<-function(freqData,istart,iend,gal.params,mrgRaindat,VarioModel,paramsMRG,origdir){
-
+MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
+	freqData<-gal.params$period
+	istart<-paramsMRG$istart
+	iend<-paramsMRG$iend
 	ijGrd<-paramsMRG$ijGrd
 	nlon0<-paramsMRG$nlon0
 	nlat0<-paramsMRG$nlat0
@@ -378,29 +379,24 @@ MergingFunction<-function(freqData,istart,iend,gal.params,mrgRaindat,VarioModel,
 	if(freqData=='daily'){
 		mrg.dates<-format(seq(as.Date(istart,format='%Y%m%d'),as.Date(iend,format='%Y%m%d'),'day'),'%Y%m%d')
 		if(gal.params$NewGrd=='1'){
-			testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(mrg.dates,1,4),substr(mrg.dates,5,6),
-			substr(mrg.dates,7,8)),fsep = .Platform$file.sep)
+			testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(mrg.dates,1,4),substr(mrg.dates,5,6), substr(mrg.dates,7,8)),fsep = .Platform$file.sep)
 		}else{
 			testfile<-file.path(rfeDir,paste(rfeFileFormat,'_',mrg.dates,'.nc',sep=''),fsep = .Platform$file.sep)
 		}
 	}
 	if(freqData=='dekadal'){
 		mrg.dates<-seq(as.Date(istart,format='%Y%m%d'),as.Date(iend,format='%Y%m%d'),'day')
-		mrg.dates<-paste(format(mrg.dates[which(as.numeric(format(mrg.dates,'%d'))<=3)],'%Y%m'),
-		as.numeric(format(mrg.dates[which(as.numeric(format(mrg.dates,'%d'))<=3)],'%d')),sep='')
+		mrg.dates<-paste(format(mrg.dates[which(as.numeric(format(mrg.dates,'%d'))<=3)],'%Y%m'), as.numeric(format(mrg.dates[which(as.numeric(format(mrg.dates,'%d'))<=3)],'%d')),sep='')
 		if(gal.params$NewGrd=='1'){
-			testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(mrg.dates,1,4),substr(mrg.dates,5,6),
-			substr(mrg.dates,7,7)),fsep = .Platform$file.sep)
+			testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(mrg.dates,1,4),substr(mrg.dates,5,6), substr(mrg.dates,7,7)),fsep = .Platform$file.sep)
 		}else{
 			testfile<-file.path(rfeDir,paste(rfeFileFormat,'_',mrg.dates,'.nc',sep=''),fsep = .Platform$file.sep)
 		}
 	}
 	if(freqData=='monthly'){
-		mrg.dates<-format(seq(as.Date(paste(istart,'1',sep=''),format='%Y%m%d'),
-		as.Date(paste(iend,'1',sep=''),format='%Y%m%d'),'month'),'%Y%m')
+		mrg.dates<-format(seq(as.Date(paste(istart,'1',sep=''),format='%Y%m%d'), as.Date(paste(iend,'1',sep=''),format='%Y%m%d'),'month'),'%Y%m')
 		if(gal.params$NewGrd=='1'){
-			testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(mrg.dates,1,4),substr(mrg.dates,5,6)),
-			fsep = .Platform$file.sep)
+			testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(mrg.dates,1,4),substr(mrg.dates,5,6)), fsep = .Platform$file.sep)
 		}else{
 			testfile<-file.path(rfeDir,paste(rfeFileFormat,'_',mrg.dates,'.nc',sep=''),fsep = .Platform$file.sep)
 		}

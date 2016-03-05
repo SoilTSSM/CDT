@@ -365,9 +365,9 @@ execMergeRain<-function(origdir){
 
 	VarioModel<-c("Sph", "Exp", "Gau")
 
-	paramsMRG<-list(ijGrd=ijGrd,nlon0=nlon0,nlat0=nlat0,xy.dim=xy.dim,outMask=outMask, newlocation.merging=newlocation.merging)
+	paramsMRG<-list(istart=istart,iend=iend,ijGrd=ijGrd,nlon0=nlon0,nlat0=nlat0,xy.dim=xy.dim,outMask=outMask, newlocation.merging=newlocation.merging)
 
-	ret<-MergingFunction(freqData,istart,iend,gal.params,mrgRaindat,VarioModel,paramsMRG,origdir)
+	ret<-MergingFunction(mrgRaindat,VarioModel,paramsMRG,origdir)
 	if(!is.null(ret)){
 		if(ret==0) return(0)
 		else return(ret)
