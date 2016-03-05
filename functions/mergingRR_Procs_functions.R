@@ -69,8 +69,8 @@ ExtractRFE2Stn<-function(ijGrd,gal.params,mrgRaindat){
 calcBiasRain<-function(i,ix1,stn.data,rfe_stn){
 	stn.val <- as.numeric(stn.data[ix1,i])
 	stn.rfe<-as.numeric(rfe_stn[ix1,i])
-	ix0 <- !is.na(stn.val) & !is.na(rfe.stn)
-	ix1 <- stn.val>0  & rfe.stn>0
+	ix0 <- !is.na(stn.val) & !is.na(stn.rfe)
+	ix1 <- stn.val>0  & stn.rfe>0
 	ix<- which(ix0 & ix1)
 	bs <- NA
 	if(length(ix)>0){
