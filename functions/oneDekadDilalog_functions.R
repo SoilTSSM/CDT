@@ -8,7 +8,6 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 	if (Sys.info()["sysname"] == "Windows") largeur1<-23
 	else largeur1<-21
 
-
 	tt<-tktoplevel()
 	tkgrab.set(tt)
 	tkfocus(tt)
@@ -27,39 +26,17 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 	for(i in 0:3) tkgrid(get(paste('fr.A',i,sep='')))
 	for(i in 0:3) tkgrid.configure(get(paste('fr.A',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
-
-###################
-#	fr.A00<-tkframe(fr.A0)
-#	#fr.A01<-tkframe(fr.A0)
-#	tkgrid(fr.A00,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
-#	#tkgrid(fr.A01,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
-
-#	file.period <- tclVar()
-#	tclvalue(file.period) <- ifelse(as.character(gal.params$period)=='daily',
-#	'Daily data',ifelse(as.character(gal.params$period)=='dekadal','Dekadal data','Monthly data'))
-
-#	cb.period<-ttkcombobox(fr.A00, values=c('Daily data','Dekadal data','Monthly data'), textvariable=file.period)
-#	infobulle(cb.period,'Choose the time step of the data')
-#	status.bar.display(cb.period,txt.stbr1,'Choose the time step of the data')
-#	tkgrid(cb.period)
-
-
-###################
-
 	fr.A00<-tkframe(fr.A0)
 	fr.A01<-tkframe(fr.A0)
 	tkgrid(fr.A00,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 	tkgrid(fr.A01,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 
-
 	file.stnfl <- tclVar()
 	tclvalue(file.stnfl) <- as.character(gal.params$file.io$Values[1])
 
-###
 	frA00.txt<-tklabel(fr.A00,text='Station data file')
 	tkgrid(frA00.txt)
 
-###
 	cb.stnfl<-ttkcombobox(fr.A01, values=unlist(file.list), textvariable=file.stnfl)
 	infobulle(cb.stnfl,'Choose the file in the list')
 	status.bar.display(cb.stnfl,txt.stbr1,'Choose the file containing the gauge data')
@@ -85,8 +62,6 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 		}
 	})
 
-###
-
 	fr.A10<-tkframe(fr.A1)
 	fr.A11<-tkframe(fr.A1)
 	fr.A12<-tkframe(fr.A1)
@@ -96,7 +71,6 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 	tkgrid(fr.A11,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 	tkgrid(fr.A12,row=2,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 	tkgrid(fr.A13,row=3,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
-
 
 	frA10.txt<-tklabel(fr.A10,text='Directory of RFE files')
 	tkgrid(frA10.txt)
@@ -114,7 +88,6 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 		if(is.na(dir4rfe)) tclvalue(dir.rfe)<-""
 		else tclvalue(dir.rfe)<-dir4rfe
 	})
-#######
 
 	frA12.txt<-tklabel(fr.A12,text="Directory of mean bias files")
 	tkgrid(frA12.txt)
@@ -134,9 +107,6 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 		else tclvalue(dir.bias)<-dir4bias
 	})
 
-
-
-#######
 	fr.A20<-tkframe(fr.A2)
 	fr.A21<-tkframe(fr.A2)
 	tkgrid(fr.A20,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
@@ -161,7 +131,7 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 				tclvalue(file.save1)<-file2save1
 			}
 	})
-###############
+	###############
 
 	fr.A30<-tkframe(fr.A3)
 	fr.A31<-tkframe(fr.A3)
@@ -171,7 +141,6 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 	tkgrid(fr.A31,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 	tkgrid(fr.A32,row=2,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 	tkgrid(fr.A33,row=3,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
-
 
 	#####
 	frA30.txt<-tklabel(fr.A30,text="Elevation data(NetCDF)")
@@ -210,7 +179,7 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 		}
 	})
 
-####################################
+	####################################
 	file.blkshp <- tclVar()
 	tclvalue(file.blkshp) <- as.character(gal.params$file.io$Values[6])
 
@@ -247,16 +216,14 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 			return(NULL)
 		}
 	})
-
-
-###############################################
+	###############################################
 
 	pr.relief.set2<-c('sunken','sunken','sunken')
 	for(i in 0:2) assign(paste('fr.C',i,sep=''),tkframe(fr.C,relief=pr.relief.set2[i+1],borderwidth=2))
 	for(i in 0:2) tkgrid(get(paste('fr.C',i,sep='')))
 	for(i in 0:2) tkgrid.configure(get(paste('fr.C',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
-###############################
+	###############################
 	for(i in 0:2) assign(paste('fr.C0',i,sep=''),tkframe(fr.C0))
 	for(i in 0:2) tkgrid(get(paste('fr.C0',i,sep='')))
 	for(i in 0:2) tkgrid.configure(get(paste('fr.C0',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=0,ipadx=1,ipady=0)
@@ -270,8 +237,7 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 	tkgrid(frC00.txt,row=0,column=0,sticky='ew',padx=1,pady=1)
 	tkgrid(en.rfeflformat,row=1,column=0,sticky='ew',padx=1,pady=1)
 
-
-####
+	####
 	frC01.txt<-tklabel(fr.C01,text='Mean bias filename prefix',anchor='w',justify='left')
 
 	meanbsprefix <-tclVar(as.character(gal.params$prefix$Values[2]))
@@ -282,8 +248,7 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 	tkgrid(frC01.txt,row=0,column=0,sticky='ew',padx=1,pady=1)
 	tkgrid(en.meanbsprefix,row=1,column=0,sticky='ew',padx=1,pady=1)
 
-######
-
+	######
 	infobulle(fr.C02,'Date of merging')
 	status.bar.display(fr.C02,txt.stbr1,'Date of merging')
 
@@ -308,9 +273,7 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 	tkgrid(mon1.v,row=1,column=2,sticky='ew',padx=1,pady=1)
 	tkgrid(day1.v,row=1,column=3,sticky='ew',padx=1,pady=1)
 
-###########################################
-
-
+	###########################################
 	blankGrd <- tclVar(as.character(gal.params$blankGrd))
 	tclvalue(blankGrd) <- ifelse(as.character(gal.params$blankGrd)=='1',
 	'None',ifelse(as.character(gal.params$blankGrd)=='2','Use DEM','Use ESRI shapefile'))
@@ -339,68 +302,81 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 	tkgrid(txt.RainNoRain,row=4,column=0,sticky='ew',padx=1,pady=1)
 	tkgrid(cb.RainNoRain,row=5,column=0,sticky='ew',padx=1,pady=1)
 
-############################################
+	############################################
 
-	nmin.l<-tklabel.h(fr.C2,'min.nb.stn',txt.stbr1,'Minimum number of gauges with data used to do merging',
-	'Minimum number of gauges with data used to do merging')
-	min.non.zero.l<-tklabel.h(fr.C2,'min.non.zero ',txt.stbr1,
-	'Minimum number of non-zero gauge values to perform merging',
-	'Minimum number of non-zero gauge values to perform merging')
-	max.nbrs.l<-tklabel.h(fr.C2,'max.nb.stn',txt.stbr1,'Maximum number of neighbor gauge to use for interpolation',
-	'Maximum number of neighbor gauge to use for interpolation')
-	max.rnr.dst.l<-tklabel.h(fr.C2,'max.RnR.dist',txt.stbr1,
+	nmin.l<-tklabel.h(fr.C2,'NminStn',txt.stbr1,
+	'Minimum number of gauges with data to be used to do the merging',
+	'Minimum number of gauges with data to be used to do the merging')
+	min.non.zero.l<-tklabel.h(fr.C2,'NminNo0',txt.stbr1,
+	'Minimum number of non-zero gauge values to perform the merging',
+	'Minimum number of non-zero gauge values to perform the merging')
+	max.rnr.dst.l<-tklabel.h(fr.C2,'MaxRnRDist',txt.stbr1,
 	'Maximum distance (in decimal degrees) for interpolating Rain-noRain mask',
 	'Maximum distance (in decimal degrees) for interpolating Rain-noRain mask')
-
+	max.dst.l<-tklabel.h(fr.C2,'MaxDist',txt.stbr1,
+	'Maximum distance (in  decimal degree) to be used to interpolate data',
+	'Maximum distance (in  decimal degree) to be used to interpolate data')
+	min.nbrs.l<-tklabel.h(fr.C2,'MinStn',txt.stbr1,
+	'Minimum number of neighbours to be used to interpolate data',
+	'Minimum number of neighbours to be used to interpolate data')
+	max.nbrs.l<-tklabel.h(fr.C2,'MaxStn',txt.stbr1,
+	'Maximum number of neighbours to be used to interpolate data',
+	'Maximum number of neighbours to be used to interpolate data')
 
 	nmin.v<-tkentry.h(fr.C2,txt.stbr1,
-	'Minimum number of gauges with data used to do merging',
-	'Minimum number of gauges with data used to do merging')
+	'Minimum number of gauges with data to be used to do the merging',
+	'Minimum number of gauges with data to be used to do the merging')
 	min.non.zero.v<-tkentry.h(fr.C2,txt.stbr1,
-	'Minimum number of non-zero gauge values to perform merging',
-	'Minimum number of non-zero gauge values to perform merging')
-	max.nbrs.v<-tkentry.h(fr.C2,txt.stbr1,
-	'Maximum number of neighbor gauge to use for interpolation',
-	'Maximum number of neighbor gauge to use for interpolation')
+	'Minimum number of non-zero gauge values to perform the merging',
+	'Minimum number of non-zero gauge values to perform the merging')
 	max.rnr.dst.v<-tkentry.h(fr.C2,txt.stbr1,
 	'Maximum distance (in decimal degrees) for interpolating Rain-no-Rain mask',
 	'Maximum distance (in decimal degrees) for interpolating Rain-no-Rain mask')
+	max.dst.v<-tkentry.h(fr.C2,txt.stbr1,
+	'Maximum distance (in  decimal degree) to be used to interpolate data',
+	'Maximum distance (in  decimal degree) to be used to interpolate data')
+	min.nbrs.v<-tkentry.h(fr.C2,txt.stbr1,
+	'Minimum number of neighbours to be used to interpolate data',
+	'Minimum number of neighbours to be used to interpolate data')
+	max.nbrs.v<-tkentry.h(fr.C2,txt.stbr1,
+	'Maximum number of neighbours to be used to interpolate data',
+	'Maximum number of neighbours to be used to interpolate data')
 
 	tkgrid(nmin.l,row=0,column=0,sticky='ew',padx=1,pady=1)
 	tkgrid(nmin.v,row=0,column=1,sticky='ew',padx=1,pady=1)
-	tkgrid(min.non.zero.l,row=1,column=0,sticky='ew',padx=1,pady=1)
-	tkgrid(min.non.zero.v,row=1,column=1,sticky='ew',padx=1,pady=1)
-	tkgrid(max.nbrs.l,row=2,column=0,sticky='ew',padx=1,pady=1)
-	tkgrid(max.nbrs.v,row=2,column=1,sticky='ew',padx=1,pady=1)
-	tkgrid(max.rnr.dst.l,row=3,column=0,sticky='ew',padx=1,pady=1)
-	tkgrid(max.rnr.dst.v,row=3,column=1,sticky='ew',padx=1,pady=1)
+	tkgrid(min.non.zero.l,row=0,column=2,sticky='ew',padx=1,pady=1)
+	tkgrid(min.non.zero.v,row=0,column=3,sticky='ew',padx=1,pady=1)
+	tkgrid(max.rnr.dst.l,row=1,column=0,sticky='ew',padx=1,pady=1)
+	tkgrid(max.rnr.dst.v,row=1,column=1,sticky='ew',padx=1,pady=1)
+	tkgrid(max.dst.l,row=1,column=2,sticky='ew',padx=1,pady=1)
+	tkgrid(max.dst.v,row=1,column=3,sticky='ew',padx=1,pady=1)
+	tkgrid(min.nbrs.l,row=2,column=0,sticky='ew',padx=1,pady=1)
+	tkgrid(min.nbrs.v,row=2,column=1,sticky='ew',padx=1,pady=1)
+	tkgrid(max.nbrs.l,row=2,column=2,sticky='ew',padx=1,pady=1)
+	tkgrid(max.nbrs.v,row=2,column=3,sticky='ew',padx=1,pady=1)
 
 	tkconfigure(nmin.l,anchor='e',justify='right')
 	tkconfigure(min.non.zero.l,anchor='e',justify='right')
-	tkconfigure(max.nbrs.l,anchor='e',justify='right')
 	tkconfigure(max.rnr.dst.l,anchor='e',justify='right')
+	tkconfigure(max.dst.l,anchor='e',justify='right')
+	tkconfigure(min.nbrs.l,anchor='e',justify='right')
+	tkconfigure(max.nbrs.l,anchor='e',justify='right')
 
 	nmin <- tclVar(as.character(gal.params$params.int$Values[1]))
 	min.non.zero <- tclVar(as.character(gal.params$params.int$Values[2]))
-	max.nbrs <- tclVar(as.character(gal.params$params.int$Values[3]))
-	max.rnr.dst <- tclVar(as.character(gal.params$params.int$Values[4]))
+	max.rnr.dst <- tclVar(as.character(gal.params$params.int$Values[3]))
+	max.dst <- tclVar(as.character(gal.params$params.int$Values[4]))
+	min.nbrs <- tclVar(as.character(gal.params$params.int$Values[5]))
+	max.nbrs <- tclVar(as.character(gal.params$params.int$Values[6]))
 
-	tkconfigure(nmin.v,width=8,textvariable=nmin,justify='right')
-	tkconfigure(min.non.zero.v,width=8,textvariable=min.non.zero,justify='right')
-	tkconfigure(max.nbrs.v,width=8,textvariable=max.nbrs,justify='right')
-	tkconfigure(max.rnr.dst.v,width=8,textvariable=max.rnr.dst,justify='right')
-
-###########################################
-#	bt.opt.set<-tkbutton.h(fr.C2, text="Options - Settings",txt.stbr1,
-#	'Set general options for merging','Set general options for merging')
-#	tkgrid(bt.opt.set,sticky='we',padx=25,pady=5,ipadx=1,ipady=1)
-#	tkconfigure(bt.opt.set,command=function(){
-#		gal.params<<-getParamMering(tt,gal.params)
-#	})
-
-
-############################################
-
+	tkconfigure(nmin.v,width=4,textvariable=nmin,justify='right')
+	tkconfigure(min.non.zero.v,width=4,textvariable=min.non.zero,justify='right')
+	tkconfigure(max.rnr.dst.v,width=4,textvariable=max.rnr.dst,justify='right')
+	tkconfigure(max.dst.v,width=4,textvariable=max.dst,justify='right')
+	tkconfigure(min.nbrs.v,width=4,textvariable=min.nbrs,justify='right')
+	tkconfigure(max.nbrs.v,width=4,textvariable=max.nbrs,justify='right')
+	
+	############################################
 	tkbind(cb.blankGrd,"<<ComboboxSelected>>",function(){
 		if(tclvalue(blankGrd)=="None"){
 			tkconfigure(cb.grddem,state='disabled')
@@ -422,9 +398,7 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 		}
 	})
 
-
-############################################
-
+	############################################
 	bt.prm.OK<-tkbutton(frMRG1, text=" OK ")
 	bt.prm.CA<-tkbutton(frMRG1, text="Cancel")
 	tkgrid(bt.prm.OK,row=0,column=0,sticky='w',padx=5,pady=1,ipadx=10,ipady=1)
@@ -449,13 +423,11 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 		}else{
 			gal.params$prefix$Values<<-c(tclvalue(rfeflformat),tclvalue(meanbsprefix))
 			valfl<-as.character(gal.params$file.io$Values)
-			gal.params$file.io$Values<<-c(tclvalue(file.stnfl),tclvalue(dir.rfe),tclvalue(dir.bias),
-			tclvalue(file.save1),tclvalue(file.grddem),tclvalue(file.blkshp))
+			gal.params$file.io$Values<<-c(tclvalue(file.stnfl),tclvalue(dir.rfe),tclvalue(dir.bias), tclvalue(file.save1),tclvalue(file.grddem),tclvalue(file.blkshp))
 			gal.params$dates.mrg$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon),tclvalue(istart.day))
 			gal.params$blankGrd<<-ifelse(tclvalue(blankGrd)=='None','1',ifelse(tclvalue(blankGrd)=='Use DEM','2','3'))
 			gal.params$params.mrg$Values<<-c(tclvalue(interpMethod),tclvalue(RainNoRain))
-			gal.params$params.int$Values<<-c(tclvalue(nmin),tclvalue(min.non.zero),
-			tclvalue(max.nbrs),tclvalue(max.rnr.dst))
+			gal.params$params.int$Values<<-c(tclvalue(nmin),tclvalue(min.non.zero), tclvalue(max.rnr.dst),tclvalue(max.dst),tclvalue(min.nbrs),tclvalue(max.nbrs))
 
 			tkgrab.release(tt)
 			tkdestroy(tt)

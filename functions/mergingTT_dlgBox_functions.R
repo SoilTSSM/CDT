@@ -925,13 +925,13 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 	tkconfigure(years2.v,width=8,textvariable=year2,justify='right')
 	
 	##################
-	min.nbrs.l<-tklabel.h(fr.B3,'Min.stn',txt.stbr1,
+	min.nbrs.l<-tklabel.h(fr.B3,'MinStn',txt.stbr1,
 	'Minimum number of neighbours used to interpolate the bias',
 	'Minimum number of neighbours used to interpolate the bias')
-	max.nbrs.l<-tklabel.h(fr.B3,'Max.stn',txt.stbr1,
+	max.nbrs.l<-tklabel.h(fr.B3,'MaxStn',txt.stbr1,
 	'Maximum number of neighbours used to interpolate the bias',
 	'Maximum number of neighbours used to interpolate the bias')
-	max.dst.l<-tklabel.h(fr.B3,'Max.dist',txt.stbr1,
+	max.dst.l<-tklabel.h(fr.B3,'MaxDist',txt.stbr1,
 	'Maximum distance (in  decimal degree) to be used to interpolate the bias',
 	'Maximum distance (in  decimal degree) to be used to interpolate the bias')
 
@@ -1896,11 +1896,11 @@ getParamMeringTemp<-function(tt,gal.params){
 
 	nmin.l<-tklabel.h(fr.C,'Nmin',txt.stbr1,'Minimum number of gauges with data to be used to do the merging',
 	'Minimum number of gauges with data to be used to do the merging')
-	min.nbrs.l<-tklabel.h(fr.C,'Min.stn',txt.stbr1,'Minimum number of neighbours to be used to interpolate data',
+	min.nbrs.l<-tklabel.h(fr.C,'MinStn',txt.stbr1,'Minimum number of neighbours to be used to interpolate data',
 	'Minimum number of neighbours to be used to interpolate  data')
-	max.nbrs.l<-tklabel.h(fr.C,'Max.stn',txt.stbr1,'Maximum number of neighbours to be used to interpolate  data',
+	max.nbrs.l<-tklabel.h(fr.C,'MaxStn',txt.stbr1,'Maximum number of neighbours to be used to interpolate  data',
 	'Maximum number of neighbours to be used to interpolate  data')
-	max.dst.l<-tklabel.h(fr.C,'Max.dist',txt.stbr1,
+	max.dst.l<-tklabel.h(fr.C,'MaxDist',txt.stbr1,
 	'Maximum distance (in  decimal degree) to be used to interpolate data',
 	'Maximum distance (in  decimal degree) to be used to interpolate data')
 

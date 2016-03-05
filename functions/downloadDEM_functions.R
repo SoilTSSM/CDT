@@ -82,7 +82,8 @@ getDEMFun<-function(parent.win){
 			tkfocus(parent.win)
 			if(testConnection()){
 				insert.txt(main.txt.out,"Downloading.................")
-				return(ExecDownload_DEM(minlon,maxlon,minlat,maxlat,outdir))
+				#return(ExecDownload_DEM(minlon,maxlon,minlat,maxlat,outdir))
+				ExecDownload_DEM(minlon,maxlon,minlat,maxlat,outdir)
 			}else{
 				insert.txt(main.txt.out,'No internet connection',format=TRUE)
 				return(NULL)
@@ -111,6 +112,7 @@ getDEMFun<-function(parent.win){
 		return(NULL)
 	})
 	tkwait.window(tt)
+	return(0)
 }
 
 ###################
@@ -168,21 +170,27 @@ getDEM<-function(minlon,maxlon,minlat,maxlat,outdir){
 	ym<-read.table(file.path(apps.dir,'country','Latitude.txt',fsep = .Platform$file.sep))
 	xm<-round(xm[,1],4)
 	ym<-round(ym[,1],4)
-
-	if(ret==0){
-		down<-try(aggregateDEM(destfile,xm,ym,outdir,'z',"Elevation and bathymetric data",res1=TRUE),silent=TRUE)
-		if(!inherits(down, "try-error")) insert.txt(main.txt.out,'Download finished')
-		else insert.txt(main.txt.out,gsub('[\r\n]','',down[1]),format=TRUE)
-	}else{
-		insert.txt(main.txt.out,'Download failed for DEM 2-min',format=TRUE)
-		if(ret1==0){
-			down<-try(aggregateDEM(destfile,xm,ym,outdir,'z_bedrock',"Global Relief Model"),silent=TRUE)
-			if(!inherits(down, "try-error")) insert.txt(main.txt.out,'Download finished')
+	if(!inherits(ret, "try-error")){
+		if(ret==0){
+			down<-try(aggregateDEM(destfile,xm,ym,outdir,'z',"Elevation and bathymetric data",res1=TRUE),silent=TRUE)
+			if(!inherits(down, "try-error")) insert.txt(main.txt.out,'Download finished for DEM 2-min')
 			else insert.txt(main.txt.out,gsub('[\r\n]','',down[1]),format=TRUE)
-		}else{
-			insert.txt(main.txt.out,'Download failed for DEM 1-min',format=TRUE)
-			insert.txt(main.txt.out,'Download failed ',format=TRUE)
 		}
+	}else{
+		if(!inherits(ret1, "try-error")){
+			if(ret1==0){
+				down<-try(aggregateDEM(destfile1,xm,ym,outdir,'z_bedrock',"Global Relief Model"),silent=TRUE)
+				if(!inherits(down, "try-error")) insert.txt(main.txt.out,'Download finished for DEM 1-min')
+				else insert.txt(main.txt.out,gsub('[\r\n]','',down[1]),format=TRUE)
+			}
+		}else{
+			unlink(destfile1)
+			insert.txt(main.txt.out,'Download failed for DEM 1-min',format=TRUE)
+			insert.txt(main.txt.out,gsub('[\r\n]','',ret1[1]),format=TRUE)
+		}
+		unlink(destfile)
+		insert.txt(main.txt.out,'Download failed for DEM 2-min',format=TRUE)
+		insert.txt(main.txt.out,gsub('[\r\n]','',ret[1]),format=TRUE)
 	}
 }
 

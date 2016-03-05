@@ -556,11 +556,6 @@ mergingProcs<-function(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,
 
 		cells<-newlocation.merging@grid
 
-		##smoothing???
-		# img.out.mrg<-as.image(out.mrg, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
-		# smooth.out.mrg<-image.smooth(img.out.mrg, theta= 0.03)
-		# out.mrg <-c(smooth.out.mrg$z)
-
 		#Rain-non-Rain Mask
 		if(RainNoRain!='None') {
 			rr.stn$rnr <- ifelse(rr.stn$gg >=1,1,0)
@@ -582,7 +577,7 @@ mergingProcs<-function(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,
 
 				##smoothing???
 				img.RnoR<-as.image(RnoR, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
-				smooth.RnoR<-image.smooth(img.RnoR, theta= 0.03)
+				smooth.RnoR<-image.smooth(img.RnoR, theta= 0.08)
 				RnoR <-round(c(smooth.RnoR$z))
 			}
 			out.mrg <- out.mrg * RnoR

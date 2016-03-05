@@ -183,7 +183,7 @@ init.params<-function(action,period){
 		blankGrd<-'1'
 		dates.mrg<-data.frame(c('istart.yrs','istart.mon','istart.dek'),c('2015','8','3'))
 		names(dates.mrg)<-c('Parameters','Values')
-		params.int<-data.frame(c('nmin.stn','min.non0','max.nbrs','max.RnR.dist'),c('10','7','4','0.75'))
+		params.int<-data.frame(c('nmin.stn','min.non0','max.RnR.dist','max.dist','min.nbrs','max.nbrs'),c('10','7','0.75','1.0','3','5'))
 		names(params.int)<-c('Parameters','Values')
 		params.mrg<-data.frame(c('interpMethod','RainNoRain'),c('IDW','GaugeSatellite'))
 		names(params.mrg)<-c('Parameters','Values')

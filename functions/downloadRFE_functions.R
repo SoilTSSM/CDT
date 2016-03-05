@@ -18,13 +18,12 @@ DownloadRFE<-function(parent.win){
 	tkgrid(fr.A02,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
 	fileSource <- tclVar('10-DAYS TAMSAT')
-	cb.period<-ttkcombobox(fr.A02, values=c('10-DAYS TAMSAT','10-DAYS CHIRP',
-	'------------------','DAILY TAMSAT','DAILY CHIRPS'), textvariable=fileSource,width=24)
+	cb.period<-ttkcombobox(fr.A02, values=c('10-DAYS TAMSAT','10-DAYS CHIRP', '------------------','DAILY TAMSAT','DAILY CHIRPS'), textvariable=fileSource,width=24)
 	infobulle(cb.period,'Choose the data source')
 	status.bar.display(cb.period,txt.stbr1,'Choose the data source')
 	tkgrid(cb.period)
 
-#####################
+	#####################
 	fr.B2<-tkframe(frA,relief='sunken',borderwidth=2)
 	tkgrid(fr.B2,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 	infobulle(fr.B2,'Start and end date for the merging')
@@ -106,7 +105,7 @@ DownloadRFE<-function(parent.win){
 		}
 	})
 
-##################
+	##################
 	frGrd0<-tkframe(frB,relief='sunken',borderwidth=2)
 	tkgrid(frGrd0,row=0,column=1,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 	fr_grd<-ttklabelframe(frGrd0,text="Area of interest",relief="groove",borderwidth=2)
@@ -139,7 +138,7 @@ DownloadRFE<-function(parent.win){
 	tkgrid(grd_llat,row=2, column=0,sticky="ew")
 	tkgrid(grd_vlat1,row=2, column=1,sticky="ew")
 	tkgrid(grd_vlat2,row=2, column=2,sticky="ew")
-########
+	########
 	fr.A1<-tkframe(frB,relief='sunken',borderwidth=2)
 	tkgrid(fr.A1,row=1,column=1,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 	fr.A11<-tkframe(fr.A1)
@@ -192,14 +191,18 @@ DownloadRFE<-function(parent.win){
 ExecDownload_SatData<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir){
 
 	tkconfigure(main.win,cursor='watch');tcl('update')
-	downloadRFE_fun(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir)
+	ret<-downloadRFE_fun(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir)
 	tkconfigure(main.win,cursor='')
-	insert.txt(main.txt.out,"Download Done!")
+	if(!is.null(ret)){
+		if(ret==0) insert.txt(main.txt.out,"Download Done!")
+		else if(ret==-1) insert.txt(main.txt.out,"Some files could not be downloaded",format=TRUE)
+		else insert.txt(main.txt.out,"Download Failed!",format=TRUE)
+	}else insert.txt(main.txt.out,"Download Failed!",format=TRUE)
 }
 
 ##########
 downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir){
-
+	outRet<-0
 	if(datasrc=='10-DAYS TAMSAT'){
 		url<-'http://www.met.reading.ac.uk/~tamsat/public_data'
 		outdir0<-file.path(outdir,'Dekad_TAMSAT_Africa',fsep = .Platform$file.sep)
@@ -249,11 +252,13 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 			test <- try(suppressWarnings(readLines(link, n = 1)), silent = TRUE)
 			if(inherits(test, "try-error")){
 				insert.txt(main.txt.out,paste('Cannot open the connection or file does not exist:',file0),format=TRUE)
+				outRet<- -1
 				next
 			}else{
 				ret<-try(download.file(link,destfile0,mode="wb",quiet=TRUE),silent=TRUE)
 				if(ret!=0){
 					insert.txt(main.txt.out,paste('Échec du téléchargement pour:',file0),format=TRUE)
+					outRet<- -1
 					next
 				}else{
 					insert.txt(main.txt.out,paste('Téléchargement pour:',file0,'terminé'))
@@ -288,7 +293,7 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 			tcl("update")
 		}
 	}
-#####################################################
+	#####################################################
 
 	if(datasrc=='DAILY TAMSAT'){
 		url<-'http://www.met.reading.ac.uk/~tamsat/public_data'
@@ -331,11 +336,13 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 			test <- try(suppressWarnings(readLines(link, n = 1)), silent = TRUE)
 			if(inherits(test, "try-error")){
 				insert.txt(main.txt.out,paste('Cannot open the connection or file does not exist:',file0),format=TRUE)
+				outRet<- -1
 				next
 			}else{
 				ret<-try(download.file(link,destfile0,mode="wb",quiet=TRUE),silent=TRUE)
 				if(ret!=0){
 					insert.txt(main.txt.out,paste('Échec du téléchargement pour:',file0),format=TRUE)
+					outRet<- -1
 					next
 				}else{
 					insert.txt(main.txt.out,paste('Téléchargement pour:',file0,'terminé'))
@@ -371,7 +378,7 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 		}
 	}
 
-#####################################################
+	#####################################################
 
 	if(datasrc=='10-DAYS CHIRP'){
 		url<-'http://iridl.ldeo.columbia.edu/SOURCES/.UCSB/.CHIRP/.v1p0/.dekad/.prcp'
@@ -421,16 +428,16 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 			ret<-try(download.file(link,destfile,mode="wb",quiet=TRUE),silent=TRUE)
 			if(ret!=0){
 				insert.txt(main.txt.out,paste('Échec du téléchargement pour:',fileout),format=TRUE)
+				outRet<- -1
 				next
 			}else{
-				insert.txt(main.txt.out,paste('Extraction de:',fileout,'sur',
-				paste('bbox',minlon,minlat,maxlon,maxlat,sep=':'),'terminée'))
+				insert.txt(main.txt.out,paste('Extraction de:',fileout,'sur',paste('bbox',minlon,minlat,maxlon,maxlat,sep=':'),'terminée'))
 			}
 			tcl("update")
 		}
 	}
 
-#####################################################
+	#####################################################
 
 	if(datasrc=='DAILY CHIRPS'){
 		url<-'http://iridl.ldeo.columbia.edu/SOURCES/.UCSB/.CHIRPS/.v2p0/.daily/.global/.0p05/.prcp'
@@ -466,6 +473,7 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 			ret<-try(download.file(link,destfile,mode="wb",quiet=TRUE),silent=TRUE)
 			if(ret!=0){
 				insert.txt(main.txt.out,paste('Échec du téléchargement pour:',fileout),format=TRUE)
+				outRet<- -1
 				next
 			}else{
 				insert.txt(main.txt.out,paste('Extraction de:',fileout,'sur',
@@ -475,6 +483,6 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 		}
 	}
 
-##
+	return(outRet)
 }
 

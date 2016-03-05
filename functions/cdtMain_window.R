@@ -184,6 +184,10 @@ tcl("wm", "protocol", main.win, "WM_DELETE_WINDOW", function() {
 	tkdestroy(main.win)
 })
 
+# tkbind(main.win,"<Control-C>",function(){
+# return(NULL)
+# })
+
 #####**************************** LOAD Functions ************************######
 
 #source(file.path(apps.dir,'functions','loadAll_functions.R',fsep = .Platform$file.sep))

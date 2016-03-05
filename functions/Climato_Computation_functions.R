@@ -822,9 +822,6 @@ seasonal_lstOmat<-function(freq,ListOfMatrix,dates,smon,lmon,fun,minfrac=1){
 }
 
 
-
-
-
 #######################################################
 daily2dekadal_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longname,outformat){
 	dates<-as.character(dates)
@@ -835,10 +832,8 @@ daily2dekadal_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longna
 	day<-as.character(substr(dates,7,8))
 	jour<-as.numeric(day)
 
-	nbs<-ifelse(jour[1]<=10,10,ifelse(jour[1]>10 & jour[1]<=20,10,
-	rev((28:31)[which(!is.na(as.Date(paste(an[1],mois[1],28:31,sep='-'))))])[1]-20))
-	nbe<-ifelse(jour[length(an)]<=10,10,ifelse(jour[length(an)]>10 & jour[length(an)]<=20,10,
-	rev((28:31)[which(!is.na(as.Date(paste(an[length(an)],mois[length(an)],28:31,sep='-'))))])[1]-20))
+	nbs<-ifelse(jour[1]<=10,10,ifelse(jour[1]>10 & jour[1]<=20,10, rev((28:31)[which(!is.na(as.Date(paste(an[1],mois[1],28:31,sep='-'))))])[1]-20))
+	nbe<-ifelse(jour[length(an)]<=10,10,ifelse(jour[length(an)]>10 & jour[length(an)]<=20,10, rev((28:31)[which(!is.na(as.Date(paste(an[length(an)],mois[length(an)],28:31,sep='-'))))])[1]-20))
 
 	jour[jour<=10]<-1
 	jour[jour>10 & jour<=20]<-2
@@ -861,17 +856,19 @@ daily2dekadal_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longna
 	grd <- var.def.ncdf(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="single")
 
 	for(j in seq_along(nna[,1])){
-		don<-matrix(missval,nrow=nx,ncol=ny)
+		#don<-matrix(missval,nrow=nx,ncol=ny)
 		xdates<-as.character(nna[j,1])
 		idx<-which(paste(an,mois,jour,sep='')%in%xdates)
 		if(length(idx)/nna[j,2]<minfrac){
-			don<-don
+			#don<-don
+			next
 		}else{
 			filein<-sprintf(informat,an[idx],mois[idx],day[idx])
 			ncfiles<-file.path(file.pars[1],filein,fsep = .Platform$file.sep)
 			isFexist<-file.exists(ncfiles)
 			if(sum(isFexist)/nna[j,2]<minfrac){
-				don<-don
+				#don<-don
+				next
 			}else{
 				ncfiles<-ncfiles[isFexist]
 				vartmp<-lapply(seq_along(ncfiles),function(ik){
@@ -927,17 +924,19 @@ daily2monthly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longna
 	grd <- var.def.ncdf(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="single")
 
 	for(j in seq_along(nna[,1])){
-		don<-matrix(missval,nrow=nx,ncol=ny)
+		#don<-matrix(missval,nrow=nx,ncol=ny)
 		xdates<-as.character(nna[j,1])
 		idx<-which(paste(an,mois,sep='')%in%xdates)
 		if(length(idx)/nna[j,2]<minfrac){
-			don<-don
+			#don<-don
+			next
 		}else{
 			filein<-sprintf(informat,an[idx],mois[idx],day[idx])
 			ncfiles<-file.path(file.pars[1],filein,fsep = .Platform$file.sep)
 			isFexist<-file.exists(ncfiles)
 			if(sum(isFexist)/nna[j,2]<minfrac){
-				don<-don
+				#don<-don
+				next
 			}else{
 				ncfiles<-ncfiles[isFexist]
 				vartmp<-lapply(seq_along(ncfiles),function(ik){
@@ -994,17 +993,19 @@ daily2yearly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longnam
 	grd <- var.def.ncdf(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="single")
 
 	for(j in seq_along(nna[,1])){
-		don<-matrix(missval,nrow=nx,ncol=ny)
+		#don<-matrix(missval,nrow=nx,ncol=ny)
 		xdates<-as.character(nna[j,1])
 		idx<-which(an%in%xdates)
 		if(length(idx)/nna[j,2]<minfrac){
-			don<-don
+			#don<-don
+			next
 		}else{
 			filein<-sprintf(informat,an[idx],mois[idx],day[idx])
 			ncfiles<-file.path(file.pars[1],filein,fsep = .Platform$file.sep)
 			isFexist<-file.exists(ncfiles)
 			if(sum(isFexist)/nna[j,2]<minfrac){
-				don<-don
+				#don<-don
+				next
 			}else{
 				ncfiles<-ncfiles[isFexist]
 				vartmp<-lapply(seq_along(ncfiles),function(ik){
@@ -1053,17 +1054,19 @@ dekadal2monthly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,long
 	grd <- var.def.ncdf(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="single")
 
 	for(j in seq_along(nna[,1])){
-		don<-matrix(missval,nrow=nx,ncol=ny)
+		#don<-matrix(missval,nrow=nx,ncol=ny)
 		xdates<-as.character(nna[j,1])
 		idx<-which(paste(an,mois,sep='')%in%xdates)
 		if(length(idx)/3<minfrac){
-			don<-don
+			#don<-don
+			next
 		}else{
 			filein<-sprintf(informat,an[idx],mois[idx],dek[idx])
 			ncfiles<-file.path(file.pars[1],filein,fsep = .Platform$file.sep)
 			isFexist<-file.exists(ncfiles)
 			if(sum(isFexist)/3<minfrac){
-				don<-don
+				#don<-don
+				next
 			}else{
 				ncfiles<-ncfiles[isFexist]
 				vartmp<-lapply(seq_along(ncfiles),function(ik){
@@ -1112,17 +1115,19 @@ dekadal2yearly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longn
 	grd <- var.def.ncdf(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="single")
 
 	for(j in seq_along(nna[,1])){
-		don<-matrix(missval,nrow=nx,ncol=ny)
+		#don<-matrix(missval,nrow=nx,ncol=ny)
 		xdates<-as.character(nna[j,1])
 		idx<-which(an%in%xdates)
 		if(length(idx)/36<minfrac){
-			don<-don
+			#don<-don
+			next
 		}else{
 			filein<-sprintf(informat,an[idx],mois[idx],dek[idx])
 			ncfiles<-file.path(file.pars[1],filein,fsep = .Platform$file.sep)
 			isFexist<-file.exists(ncfiles)
 			if(sum(isFexist)/36<minfrac){
-				don<-don
+				#don<-don
+				next
 			}else{
 				ncfiles<-ncfiles[isFexist]
 				vartmp<-lapply(seq_along(ncfiles),function(ik){
@@ -1170,17 +1175,19 @@ monthly2yearly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longn
 	grd <- var.def.ncdf(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="single")
 
 	for(j in seq_along(nna[,1])){
-		don<-matrix(missval,nrow=nx,ncol=ny)
+		#don<-matrix(missval,nrow=nx,ncol=ny)
 		xdates<-as.character(nna[j,1])
 		idx<-which(an%in%xdates)
 		if(length(idx)/12<minfrac){
-			don<-don
+			#don<-don
+			next
 		}else{
 			filein<-sprintf(informat,an[idx],mois[idx])
 			ncfiles<-file.path(file.pars[1],filein,fsep = .Platform$file.sep)
 			isFexist<-file.exists(ncfiles)
 			if(sum(isFexist)/12<minfrac){
-				don<-don
+				#don<-don
+				next
 			}else{
 				ncfiles<-ncfiles[isFexist]
 				vartmp<-lapply(seq_along(ncfiles),function(ik){

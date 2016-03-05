@@ -86,15 +86,20 @@ ExeAggTimeSeries<-function(gal.params){
 		varid.out<-as.character(gal.params$netcdf.var$Values[1])
 		longname<-as.character(gal.params$netcdf.var$Values[2])
 
+		istart<-paste(istart.yrs,istart.mon,istart.day,sep='-')
+		iend<-paste(iend.yrs,iend.mon,iend.day,sep='-')
+		dstart<-as.Date(istart,format='%Y-%m-%d')
+		dend<-as.Date(iend,format='%Y-%m-%d')
+
 		if(period=='daily'){
-			daty<-seq(as.Date(paste(istart.yrs,istart.mon,istart.day,sep='-')),as.Date(paste(iend.yrs,iend.mon,iend.day,sep='-')),'day')
+			daty<-seq(dstart,dend,'day')
 			dates<-format(daty,'%Y%m%d')
 		}else if(period=='dekadal'){
-			daty<-seq(as.Date(paste(istart.yrs,istart.mon,istart.day,sep='-')),as.Date(paste(iend.yrs,iend.mon,iend.day,sep='-')),'day')
+			daty<-seq(dstart,dend,'day')
 			idays<-as.numeric(format(daty,'%d'))<4
 			dates<-paste(format(daty[idays],'%Y%m'),as.numeric(format(daty[idays],'%d')),sep='')
 		}else if(period=='monthly'){
-			daty<-seq(as.Date(paste(istart.yrs,istart.mon,istart.day,sep='-')),as.Date(paste(iend.yrs,iend.mon,iend.day,sep='-')),'month')
+			daty<-seq(dstart,dend,'month')
 			dates<-format(daty,'%Y%m')
 		}
 

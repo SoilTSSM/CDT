@@ -1,6 +1,4 @@
 
-#########################################
-
 Treat1DekRain<-function(){
 
 	file.pars<-as.character(gal.params$file.io$Values)
@@ -10,14 +8,26 @@ Treat1DekRain<-function(){
 	donne<-file.opfiles[[jfile]][[2]]
 
 	#######get data
-	stn.lon<-as.numeric(donne[2,-1])
-	stn.lat<-as.numeric(donne[3,-1])
-#	stn.id<-donne$id
-#	elv<-donne$elv
-	dates<-donne[nrow(donne),1]
-	donne<-as.numeric(donne[nrow(donne),-1])
+	donne<-splitCDTData(donne,'dekadal')
+	if(is.null(donne)) return(NULL)
+	stn.lon<-donne$lon
+	stn.lat<-donne$lat
+	dates<-donne$dates
+	donne<-donne$data
 
-	stnlist<-list(lon=stn.lon,lat=stn.lat,dates=dates,data=donne)
+	daty<-as.character(gal.params$dates.mrg$Values)
+	yrs<-as.numeric(daty[1])
+	mon<-as.numeric(daty[2])
+	dek<-as.numeric(daty[3])
+	daty1<-paste(format(as.Date(paste(yrs,mon,dek,sep='-')),'%Y%m'),dek,sep='')
+
+	ix<-which(dates%in%daty1)
+	if(length(ix)==0){
+		insert.txt(main.txt.out,"The input date does not match the date in the station data file",format=TRUE)
+		return(NULL)
+	}
+	donne1<-as.numeric(donne[ix,])
+	stnlist<-list(lon=stn.lon,lat=stn.lat,dates=daty1,data=donne1)
 
 	###get elevation data
 	if(gal.params$blankGrd=="2"){
@@ -47,14 +57,17 @@ Treat1DekRain<-function(){
 
 mergeOneDekadRain<-function(){
 	mrgRaindat<-Treat1DekRain()
-
+	if(is.null(mrgRaindat)) return(NULL)
 	VarioModel<-c("Sph", "Exp", "Gau")
 
 	origdir<-as.character(gal.params$file.io$Values[4])
 	nmin<-as.numeric(as.character(gal.params$params.int$Values[1]))
 	nozero<-as.numeric(as.character(gal.params$params.int$Values[2]))
-	max.nbrs<-as.numeric(as.character(gal.params$params.int$Values[3]))
-	max.RnR.dist<-as.numeric(as.character(gal.params$params.int$Values[4]))
+	max.RnR.dist<-as.numeric(as.character(gal.params$params.int$Values[3]))
+	maxdist<-as.numeric(as.character(gal.params$params.int$Values[4]))
+	min.nbrs<-as.numeric(as.character(gal.params$params.int$Values[5]))
+	max.nbrs<-as.numeric(as.character(gal.params$params.int$Values[6]))
+
 	interpMethod<-as.character(gal.params$params.mrg$Values[1])
 	RainNoRain<-as.character(gal.params$params.mrg$Values[2])
 
@@ -134,8 +147,7 @@ mergeOneDekadRain<-function(){
 	usemask<-as.character(gal.params$blankGrd)
 	if(usemask=="1") outMask<-NULL
 	if(usemask=="2"){
-		dem.grd<-krige(formula = dem ~ 1,locations=mrgRaindat$demData$demGrd,
-		newdata=newlocation.merging,nmax=4,nmin =2,debug.level=0)
+		dem.grd<-krige(formula = dem ~ 1,locations=mrgRaindat$demData$demGrd,newdata=newlocation.merging,nmax=8,nmin =3,debug.level=0)
 		dem<-ifelse(dem.grd@data$var1.pred<0,0,dem.grd@data$var1.pred)
 		outMask<-matrix(dem,nrow=nlon0,ncol=nlat0)
 		outMask[outMask==0]<-NA
@@ -156,7 +168,7 @@ mergeOneDekadRain<-function(){
 	#Index of new grid over stations
 	stn.loc <- data.frame(lon=stn.lon, lat=stn.lat)
 	stn.loc <- SpatialPoints(stn.loc)
-	ijGrd <- over(stn.loc, grid.loc)
+	ijGrd <- unname(over(stn.loc, geometry(grid.loc)))
 
 	#rfe over stn location
 	rfe_gg <- rfe.adj[ijGrd]
@@ -168,11 +180,8 @@ mergeOneDekadRain<-function(){
 	dff[dff < q1] <- NA
 	dff[dff > q2] <- NA
 	ix<-which(!is.na(dff))
-
-
 	rfe.vec<-c(rfe.adj )
 	out.mrg<-rfe.vec  ##Initial rfe
-
 
 	if(sum(stn.data,na.rm=TRUE)>0 & length(ix)>=nmin){
 
@@ -192,35 +201,35 @@ mergeOneDekadRain<-function(){
 			pred.rr <- predict(rr.glm, newdata=grd.newloc, se.fit=T)
 
 			if(interpMethod=="IDW"){
-				grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,nmax=max.nbrs, debug.level=0)
+				grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist, debug.level=0)
 				res.pred<-grd.rr$var1.pred
 			}else if(interpMethod=="Kriging"){
-				grd.rr<-try(autoKrige(res~1,input_data=rr.stn,new_data=newlocation.merging,model=VarioModel,nmax=max.nbrs, debug.level=0), silent=TRUE)
-				is.okKR <- !inherits(grd.rr, "try-error")
-				if(is.okKR){
+				grd.rr<-try(autoKrige(res~1,input_data=rr.stn,new_data=newlocation.merging,model=VarioModel,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist, debug.level=0), silent=TRUE)
+				if(!inherits(grd.rr, "try-error")){
 					res.pred<-grd.rr$krige_output$var1.pred
 				}else{
-					grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,nmax=max.nbrs, debug.level=0)
+					grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist, debug.level=0)
 					res.pred<-grd.rr$var1.pred
 				}
 			}
 			out.mrg<- as.numeric(res.pred+pred.rr$fit)
 			out.mrg<-ifelse(out.mrg<0,0,out.mrg)
 		}else{
-			grd.rr <- idw(dff~1,locations=rr.stn,newdata=newlocation.merging,nmax=max.nbrs,debug.level=0)
+			grd.rr <- idw(dff~1,locations=rr.stn,newdata=newlocation.merging,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist,debug.level=0)
 			out.mrg<- grd.rr$var1.pred + rfe.vec
 			out.mrg<-ifelse(out.mrg<0,0,out.mrg)
 		}
 		# Take RFE for areas where interpolation/merging was not possible
 		ix <- which(is.na(out.mrg))
 		out.mrg[ix] <- rfe.vec[ix]
+		
+		cells<-as(newlocation.merging,'SpatialPixels')@grid
 
 		#Rain-non-Rain Mask
 		if(RainNoRain!='None') {
 			rr.stn$rnr <- ifelse(rr.stn$gg >=1,1,0)
 			if (RainNoRain=='Gauge') {#Gauge only
-				rnr.grd<-krige(rnr~1, locations=rr.stn, newdata=newlocation.merging,
-				nmax=max.nbrs,maxdist=max.RnR.dist,debug.level=0)
+				rnr.grd<-krige(rnr~1, locations=rr.stn, newdata=newlocation.merging,nmin=min.nbrs,nmax=max.nbrs,maxdist=max.RnR.dist,debug.level=0)
 				rnr.pred<-ifelse(is.na(rnr.grd$var1.pred),1,rnr.grd$var1.pred)
 				RnoR<-round(rnr.pred)
 				RnoR[is.na(RnoR)]<-1
@@ -229,13 +238,16 @@ mergeOneDekadRain<-function(){
 				RnoR[is.na(RnoR)]<-1
 			} else if(RainNoRain=='GaugeSatellite') {
 				rfe.rnr <- ifelse(rfe.vec >=1, 1, 0)
-				rnr.grd<-krige(rnr~1, locations=rr.stn, newdata=newlocation.merging,
-				nmax=max.nbrs,maxdist=max.RnR.dist, debug.level=0)
+				rnr.grd<-krige(rnr~1, locations=rr.stn, newdata=newlocation.merging,nmin=min.nbrs,nmax=max.nbrs,maxdist=max.RnR.dist, debug.level=0)
 				RnoR <-rnr.grd$var1.pred
 				RnoR<-round(RnoR)
 				ix <- which(is.na(RnoR))
 				RnoR[ix] <- rfe.rnr[ix]
 				RnoR[is.na(RnoR)]<-1
+				##smoothing???
+				img.RnoR<-as.image(RnoR, x=coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
+				smooth.RnoR<-image.smooth(img.RnoR, theta= 0.08)
+				RnoR <-round(c(smooth.RnoR$z))
 			}
 			out.mrg <- out.mrg * RnoR
 		}
@@ -247,7 +259,7 @@ mergeOneDekadRain<-function(){
 	#Apply mask for area of interest
 	if(!is.null(outMask)) out.mrg[is.na(outMask)] <- -99
 
-	outfl<-file.path(origdir,paste('rr_mrg','_',daty1,'.nc',sep=''),fsep = .Platform$file.sep)
+	outfl<-file.path(origdir,paste('rr_mrg','_',daty1,'_MON.nc',sep=''),fsep = .Platform$file.sep)
 	nc2 <- create.ncdf(outfl,grd.out)
 	put.var.ncdf(nc2,grd.out,out.mrg)
 	close.ncdf(nc2)
