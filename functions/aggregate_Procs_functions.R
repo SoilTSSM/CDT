@@ -58,6 +58,7 @@ AggregateQcData<-function(){
 }
 
 ###################################################
+
 AggregateHomData0<-function(){
 	outdirs<-as.character(gal.params$file.io)
 	datfin<-file.path(outdirs,'AggregateData',fsep = .Platform$file.sep)
@@ -66,10 +67,10 @@ AggregateHomData0<-function(){
 	chkdir<-file.path(outdirs,'AdjustedData',fsep = .Platform$file.sep)
 
 	load(file.path(outdirs,'OriginalData','Parameters.RData',fsep = .Platform$file.sep))
-	infohead<-cbind(paramsGAL$data[[1]]$id,paramsGAL$data[[1]]$lon,paramsGAL$data[[1]]$lat,paramsGAL$data[[1]]$elv)
+	infohead0<-cbind(paramsGAL$data[[1]]$id,paramsGAL$data[[1]]$lon,paramsGAL$data[[1]]$lat,paramsGAL$data[[1]]$elv)
 	StnId<-as.character(paramsGAL$data[[1]]$id)
 	ggid<-list.files(chkdir)
-	if(length(ggid)){
+	if(length(ggid)==0){
 		insert.txt(main.txt.out,'No tested stations found or Wrong directory',format=TRUE)
 		return(NULL)
 	}
@@ -104,7 +105,7 @@ AggregateHomData0<-function(){
 
 		if(ncol(infohead)==3) capition<-c('Stations','LON',paste(prefix[xfl],'LAT',sep='/'))
 		if(ncol(infohead)==4) capition<-c('Stations','LON','LAT',paste(prefix[xfl],'ELV',sep='/'))
-		infohead<-t(cbind(capition,t(infohead)))
+		infohead<-t(cbind(capition,t(infohead0)))
 
 		donne1<-t(cbind(infohead,t(cbind(dates,donne1))))
 		donne2<-t(cbind(infohead,t(cbind(dates,donne2))))
