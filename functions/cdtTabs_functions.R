@@ -84,7 +84,6 @@ infoTabs<-function(parent){
 	return(id.tabs+1)
 }
 
-
 ########################################################################
 #display array in Onglet
 
