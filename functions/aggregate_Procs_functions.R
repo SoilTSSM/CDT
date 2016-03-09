@@ -58,6 +58,69 @@ AggregateQcData<-function(){
 }
 
 ###################################################
+AggregateHomData0<-function(){
+	outdirs<-as.character(gal.params$file.io)
+	datfin<-file.path(outdirs,'AggregateData',fsep = .Platform$file.sep)
+	if(!file.exists(datfin)) dir.create(datfin,showWarnings=FALSE,recursive=TRUE)
+
+	chkdir<-file.path(outdirs,'AdjustedData',fsep = .Platform$file.sep)
+
+	load(file.path(outdirs,'OriginalData','Parameters.RData',fsep = .Platform$file.sep))
+	infohead<-cbind(paramsGAL$data[[1]]$id,paramsGAL$data[[1]]$lon,paramsGAL$data[[1]]$lat,paramsGAL$data[[1]]$elv)
+	StnId<-as.character(paramsGAL$data[[1]]$id)
+	ggid<-list.files(chkdir)
+	if(length(ggid)){
+		insert.txt(main.txt.out,'No tested stations found or Wrong directory',format=TRUE)
+		return(NULL)
+	}
+
+	suffix<-c('DLY','DEK','MON')
+	prefix<-c('DAILY','DEKADAL','MONTHLY')
+
+	for(xfl in 1:3){
+		if(is.null(paramsGAL$data1[[xfl]]))	next	
+		dates<-paramsGAL$data1[[xfl]][[1]]$date
+		donne1<-round(paramsGAL$data1[[xfl]][[1]]$data,1)
+		donne3<-donne2<-donne1
+		for(j in 1:length(ggid)){
+			xpos<-StnId%in%ggid[j]
+			filein2<-file.path(chkdir,ggid[j],fsep = .Platform$file.sep)
+			fileChoix<-file.path(filein2,paste(ggid[j],'_CHOICE.txt',sep=''),fsep = .Platform$file.sep)
+			filein2<-file.path(filein2,paste(ggid[j],'_',suffix[xfl],'.txt',sep=''),fsep = .Platform$file.sep)
+			dat<-read.table(filein2)
+			chx<-read.table(fileChoix)
+			idx<-chx[,1]
+			donne1[,xpos]<-dat[,3]
+			donne2[,xpos]<-dat[,4]
+			if(idx==1){
+				tschx<-dat[,3]
+			}else if(idx==2){
+				tschx<-dat[,4]
+			}else if(idx==3){
+				tschx<-dat[,2]
+			}else tschx<-dat[,2]
+			donne3[,xpos]<-tschx
+		}
+
+		if(ncol(infohead)==3) capition<-c('Stations','LON',paste(prefix[xfl],'LAT',sep='/'))
+		if(ncol(infohead)==4) capition<-c('Stations','LON','LAT',paste(prefix[xfl],'ELV',sep='/'))
+		infohead<-t(cbind(capition,t(infohead)))
+
+		donne1<-t(cbind(infohead,t(cbind(dates,donne1))))
+		donne2<-t(cbind(infohead,t(cbind(dates,donne2))))
+		donne3<-t(cbind(infohead,t(cbind(dates,donne3))))
+		donne1[is.na(donne1)]<- paramsGAL$dataPars[[1]][[2]]$miss.val
+		donne2[is.na(donne2)]<- paramsGAL$dataPars[[1]][[2]]$miss.val
+		donne3[is.na(donne3)]<- paramsGAL$dataPars[[1]][[2]]$miss.val
+		write.table(donne1,file.path(datfin,paste('AdjMean_',suffix[xfl],'_',paramsGAL$inputPars$file.io$Values[1],sep=''),fsep = .Platform$file.sep),col.names=F,row.names=F,quote=F)
+		write.table(donne2,file.path(datfin,paste('AdjQM_',suffix[xfl],'_',paramsGAL$inputPars$file.io$Values[1],sep=''),fsep = .Platform$file.sep),col.names=F,row.names=F,quote=F)
+		write.table(donne3,file.path(datfin,paste('Combined-Adj_',suffix[xfl],'_',paramsGAL$inputPars$file.io$Values[1],sep=''),fsep = .Platform$file.sep),col.names=F,row.names=F,quote=F)
+	}
+	return(0)
+}
+
+###################################################
+
 AggregateHomData<-function(){
 	outdirs<-as.character(gal.params$file.io)
 	datfin<-file.path(outdirs,'AggregateData',fsep = .Platform$file.sep)

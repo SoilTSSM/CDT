@@ -83,9 +83,16 @@ plotCPTFun<-function(ret.results,stat.fun,replotBreak){
 		}
 	}
 
-	if(!is.null(dyobj)) dycptm<-dyseg[dydx]
-	if(!is.null(dkobj)) dkcptm<-dkseg[dkdx]
+	if(!is.null(dyobj)){
+		dycptm<-dyseg[dydx]
+		dyseg[is.na(dyx)]<-NA
+	} 
+	if(!is.null(dkobj)){
+		dkcptm<-dkseg[dkdx]
+		dkseg[is.na(dkx)]<-NA
+	} 
 	mocptm<-moseg[modx]
+	moseg[is.na(mox)]<-NA
 
 
 	#######

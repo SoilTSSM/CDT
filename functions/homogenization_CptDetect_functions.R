@@ -102,10 +102,10 @@ getMean.cptSeg<-function(obj,x){
 		ed<-ints[2:nt]-1
 		mns<-numeric(n)
 		for(i in 1:(nt-1)) 	mns[st[i]:ed[i]]<-rep(mean(x[st[i]:ed[i]],na.rm=T),ed[i]-st[i]+1)
-		mns[is.na(x)]<-NA
+		# mns[is.na(x)]<-NA
 	}else{
 		mns<-rep(mean(x,na.rm=T),n)
-		mns[is.na(x)]<-NA
+		# mns[is.na(x)]<-NA
 	}
 	return(mns)
 }
@@ -121,10 +121,10 @@ getMean.cptSeg1<-function(obj,x){
 		ed<-ints[2:nt]-1
 		mns<-numeric(n)
 		for(i in 1:(nt-1)) 	mns[st[i]:ed[i]]<-rep(mean(x[st[i]:ed[i]],na.rm=T),ed[i]-st[i]+1)
-		mns[is.na(x)]<-NA
+		# mns[is.na(x)]<-NA
 	}else{
 		mns<-rep(mean(x,na.rm=T),n)
-		mns[is.na(x)]<-NA
+		# mns[is.na(x)]<-NA
 	}
 	return(mns)
 }
@@ -144,10 +144,10 @@ getTrend.cptSeg<-function(obj,x){
 		ed<-ints[2:nt]-1
 		mns<-numeric(n)
 		for(i in 1:(nt-1)) mns[st[i]:ed[i]]<-mean(x[st[i]:ed[i]],na.rm=T)-beta*(((ed[i]-st[i]+1)+1)/2)+beta*(1:(ed[i]-st[i]+1))
-		mns[is.na(x)]<-NA
+		# mns[is.na(x)]<-NA
 	}else{
 		mns<-mean(x,na.rm=T)-(beta*((n+1)/2))+beta*(1:n)
-		mns[is.na(x)]<-NA
+		# mns[is.na(x)]<-NA
 	}
 	return(mns)
 }
@@ -164,10 +164,10 @@ getTrend.cptSeg1<-function(obj,x){
 		ed<-ints[2:nt]-1
 		mns<-numeric(n)
 		for(i in 1:(nt-1)) mns[st[i]:ed[i]]<-mean(x[st[i]:ed[i]],na.rm=T)-beta*(((ed[i]-st[i]+1)+1)/2)+beta*(1:(ed[i]-st[i]+1))
-		mns[is.na(x)]<-NA
+		# mns[is.na(x)]<-NA
 	}else{
 		mns<-mean(x,na.rm=T)-(beta*((n+1)/2))+beta*(1:n)
-		mns[is.na(x)]<-NA
+		# mns[is.na(x)]<-NA
 	}
 	return(mns)
 }

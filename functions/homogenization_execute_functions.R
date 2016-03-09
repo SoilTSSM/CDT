@@ -78,8 +78,11 @@ computeHomogData<-function(gal.params){
 			assign('mon_data',list(list(date=dmdaty,data=dmdonne)),envir=EnvHomogzData)
 			##dekadal data
 			assign('dek_data',list(list(date=EnvHomogzData$donnees1$dates,data=EnvHomogzData$donnees1$data)),envir=EnvHomogzData)
+			assign('dly_data',NULL,envir=EnvHomogzData)
 		}else if(freqdata=='monthly'){
 			assign('mon_data',list(list(date=EnvHomogzData$donnees1$dates,data=EnvHomogzData$donnees1$data)),envir=EnvHomogzData)
+			assign('dek_data',NULL,envir=EnvHomogzData)
+			assign('dly_data',NULL,envir=EnvHomogzData)
 		}else{
 			return(NULL)
 		}
@@ -154,6 +157,7 @@ computeHomogData<-function(gal.params){
 				##dekadal data
 				EnvHomogzData$dek_data[[2]]<-list(date=rdates,data=rdat)
 			}
+			assign('dly_data',NULL,envir=EnvHomogzData)
 		}else if(freqdata=='monthly'){
 			###monthly data
 			assign('mon_data',list(list(date=cdates,data=cdat)),envir=EnvHomogzData)
@@ -161,6 +165,8 @@ computeHomogData<-function(gal.params){
 				###monthly data
 				EnvHomogzData$mon_data[[2]]<-list(date=rdates,data=rdat)
 			}
+			assign('dek_data',NULL,envir=EnvHomogzData)
+			assign('dly_data',NULL,envir=EnvHomogzData)
 		}else{
 			return(NULL)
 		}

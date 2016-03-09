@@ -346,9 +346,15 @@ homogen.get.info<-function(parent.win,gal.params){
 
 			if(file.exists(fileparams)){
 				load(fileparams)
+
 				intest1<- paramsGAL$inputPars$period==gal.params$period & all(file.opfiles[[jfile]][3:4]%in%paramsGAL$dataPars[[1]])
 				if(intest1){
+					assign('donnees1',paramsGAL$data[[1]],envir=EnvHomogzData)
+					assign('dly_data',paramsGAL$data1$dly_data,envir=EnvHomogzData)
+					assign('dek_data',paramsGAL$data1$dek_data,envir=EnvHomogzData)
+					assign('mon_data',paramsGAL$data1$mon_data,envir=EnvHomogzData)
 					if(xtest){
+						assign('donnees2',paramsGAL$data[[2]],envir=EnvHomogzData)
 						if(length(paramsGAL$dataPars)==1){
 							paramsGAL<-getRefSrData()
 							assign('donnees2',paramsGAL$data[[2]],envir=EnvHomogzData)
@@ -366,19 +372,22 @@ homogen.get.info<-function(parent.win,gal.params){
 					}
 					if(tclvalue(cb.1series.val)=="0") stn.choix<<-as.character(paramsGAL$data[[1]]$id)
 					else stn.choix<<-getf.no.ext(tclvalue(file.choix1a))
-
 					paramsGAL$inputPars<-gal.params
 					save(paramsGAL,file=fileparams)
 					rm(paramsGAL)
 				}else{
 					retDonPar<-getInitDataParams(gal.params)
+
 					assign('donnees1',retDonPar[[1]]$data[[1]],envir=EnvHomogzData)
 					if(xtest) assign('donnees2',retDonPar[[1]]$data[[2]],envir=EnvHomogzData)
 					gal.params<<-retDonPar[[1]]$inputPars
 					stn.choix<<-retDonPar[[2]]
 					#calculate mon/dek
 					computeHomogData(gal.params)
-					rm(retDonPar)
+					paramsGAL<-retDonPar[[1]]
+					paramsGAL$data1<-list(dly_data=EnvHomogzData$dly_data,dek_data=EnvHomogzData$dek_data,mon_data=EnvHomogzData$mon_data)
+					save(paramsGAL,file=fileparams)
+					rm(retDonPar,paramsGAL)
 				}
 			}else{
 				retDonPar<-getInitDataParams(gal.params)
@@ -388,7 +397,10 @@ homogen.get.info<-function(parent.win,gal.params){
 				stn.choix<<-retDonPar[[2]]
 				#calculate mon/dek
 				computeHomogData(gal.params)
-				rm(retDonPar)
+				paramsGAL<-retDonPar[[1]]
+				paramsGAL$data1<-list(dly_data=EnvHomogzData$dly_data,dek_data=EnvHomogzData$dek_data,mon_data=EnvHomogzData$mon_data)
+				save(paramsGAL,file=fileparams)
+				rm(retDonPar,paramsGAL)
 			}
 
 			##################
