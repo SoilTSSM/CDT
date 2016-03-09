@@ -193,7 +193,7 @@ ExecHomData<-function(get.stn){
 				#monthly
 				moref<-RefSer$retmon$refs
 				momsg<-RefSer$retmon$msg
-				if(!is.null(momsg)) nsert.txt(main.txt.out,paste(get.stn,'::',momsg$msg,'==>',momsg$msg1,'for monthly data'),format=TRUE)
+				if(!is.null(momsg)) insert.txt(main.txt.out,paste(get.stn,'::',momsg$msg,'==>',momsg$msg1,'for monthly data'),format=TRUE)
 				if(freqdata!='monthly'){
 					#dekadal
 					dkref<-RefSer$retdek$refs
