@@ -103,8 +103,8 @@ AggregateHomData0<-function(){
 			donne3[,xpos]<-tschx
 		}
 
-		if(ncol(infohead)==3) capition<-c('Stations','LON',paste(prefix[xfl],'LAT',sep='/'))
-		if(ncol(infohead)==4) capition<-c('Stations','LON','LAT',paste(prefix[xfl],'ELV',sep='/'))
+		if(ncol(infohead0)==3) capition<-c('Stations','LON',paste(prefix[xfl],'LAT',sep='/'))
+		if(ncol(infohead0)==4) capition<-c('Stations','LON','LAT',paste(prefix[xfl],'ELV',sep='/'))
 		infohead<-t(cbind(capition,t(infohead0)))
 
 		donne1<-t(cbind(infohead,t(cbind(dates,donne1))))
