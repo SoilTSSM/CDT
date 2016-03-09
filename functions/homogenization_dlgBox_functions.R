@@ -318,7 +318,7 @@ homogen.get.info<-function(parent.win,gal.params){
 						donstn1<-splitTsData(file.opfiles[[jfile1]][[2]],gal.params$period,as.character(gal.params$file.date.format$Values[1]),as.character(gal.params$file.date.format$Values[2]))
 						donOut<-list(donstn,donstn1)
 						parsFile<-list(file.opfiles[[jfile]][3:4],file.opfiles[[jfile1]][3:4])
-					} 
+					}
 					if(!is.null(donstn)) stn.choix<-getf.no.ext(tclvalue(file.choix1a))
 					else tkwait.window(tt)
 				}
@@ -332,7 +332,7 @@ homogen.get.info<-function(parent.win,gal.params){
 				donstn1<-splitTsData(file.opfiles[[jfile1]][[2]],gal.params$period,as.character(gal.params$file.date.format$Values[1]),as.character(gal.params$file.date.format$Values[2]))
 				if(is.null(donstn1)){
 					tkmessageBox(message="Data to be used for reference series not found or in the wrong format",icon="warning",type="ok")
-					tkwait.window(tt)	
+					tkwait.window(tt)
 				}
 				load(fileparams)
 				paramsGAL$data[[2]]<-donstn1
@@ -361,8 +361,8 @@ homogen.get.info<-function(parent.win,gal.params){
 								assign('donnees2',paramsGAL$data[[2]],envir=EnvHomogzData)
 								##recalculate
 								computeHomogData(gal.params)
-							} 
-						} 
+							}
+						}
 					}
 					if(tclvalue(cb.1series.val)=="0") stn.choix<<-as.character(paramsGAL$data[[1]]$id)
 					else stn.choix<<-getf.no.ext(tclvalue(file.choix1a))
@@ -389,7 +389,7 @@ homogen.get.info<-function(parent.win,gal.params){
 				#calculate mon/dek
 				computeHomogData(gal.params)
 				rm(retDonPar)
-			} 
+			}
 
 			##################
 			##set choix stn

@@ -517,22 +517,22 @@ mergingProcs<-function(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,
 			pred.rr <- predict(rr.glm, newdata=grd.newloc, se.fit=T)
 
 			if(interpMethod=="IDW"){
-				grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist, debug.level=0) 
+				grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist, debug.level=0)
 				res.pred<-grd.rr$var1.pred
 			}else if(interpMethod=="Kriging"){
-				grd.rr<-try(autoKrige(res~1,input_data=rr.stn,new_data=newlocation.merging,model=VarioModel,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist, debug.level=0), silent=TRUE) 
+				grd.rr<-try(autoKrige(res~1,input_data=rr.stn,new_data=newlocation.merging,model=VarioModel,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist, debug.level=0), silent=TRUE)
 				is.okKR <- !inherits(grd.rr, "try-error")
 				if(is.okKR){
 					res.pred<-grd.rr$krige_output$var1.pred
 				}else{
-					grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist, debug.level=0) 
+					grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist, debug.level=0)
 					res.pred<-grd.rr$var1.pred
 				}
 			}
 			out.mrg<- as.numeric(res.pred+pred.rr$fit)
 			out.mrg<-ifelse(out.mrg<0,0,out.mrg)
 		}else{
-			grd.rr <- idw(dff~1,locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist,debug.level=0) 
+			grd.rr <- idw(dff~1,locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=maxdist,debug.level=0)
 			out.mrg<- grd.rr$var1.pred + rfe.vec
 			out.mrg<-ifelse(out.mrg<0,0,out.mrg)
 		}

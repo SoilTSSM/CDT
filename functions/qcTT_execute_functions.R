@@ -100,7 +100,7 @@ execQctempFun<-function(get.stn){
 		if(const.chk=="1"){ #with c.check
 			jstn1<-which(as.character(EnvQcOutlierData$donnees1$id)==get.stn)
 			jstn2<-which(as.character(EnvQcOutlierData$donnees2$id)==get.stn)
-			
+
 			idstn<-as.character(EnvQcOutlierData$donnees1$id)[jstn1]
 			donne<-EnvQcOutlierData$donnees1$data
 			dates<-EnvQcOutlierData$donnees1$dates
@@ -128,7 +128,7 @@ execQctempFun<-function(get.stn){
 					TxData<-NULL
 					TxDate<-NULL
 					int.check<-FALSE
-				}	
+				}
 				tx.test<-FALSE
 			}
 			testpars<-list(tx.test=tx.test,int.check=int.check,omit=FALSE,period=gal.params$period)
@@ -168,7 +168,7 @@ execQctempFun<-function(get.stn){
 					TxData<-EnvQcOutlierData$donnees1$var$var
 					TxDate<-EnvQcOutlierData$donnees1$dates
 					TnData<-EnvQcOutlierData$donnees2$var$var
-					TnDate<-EnvQcOutlierData$donnees2$dates	
+					TnDate<-EnvQcOutlierData$donnees2$dates
 					tx.test<-TRUE
 				}else{
 					TxData<-EnvQcOutlierData$donnees2$var$var
@@ -228,9 +228,9 @@ ExecQcTemp<-function(get.stn){
 
 		outsdir<-file.path(EnvQcOutlierData$baseDir,'Outputs',jlstn,fsep = .Platform$file.sep)
 		# ##create by default
-		# corrdirstn<-file.path(EnvQcOutlierData$baseDir,'CorrectedData',jlstn,fsep = .Platform$file.sep)
-		# if(!file.exists(corrdirstn)) dir.create(corrdirstn,showWarnings=FALSE,recursive=TRUE)
-		# file_corrected<-file.path(corrdirstn,paste(jlstn,'.txt',sep=''),fsep = .Platform$file.sep)
+		corrdirstn<-file.path(EnvQcOutlierData$baseDir,'CorrectedData',jlstn,fsep = .Platform$file.sep)
+		if(!file.exists(corrdirstn)) dir.create(corrdirstn,showWarnings=FALSE,recursive=TRUE)
+		file_corrected<-file.path(corrdirstn,paste(jlstn,'.txt',sep=''),fsep = .Platform$file.sep)
 
 		qcout<-try(execQctempFun(jlstn), silent=TRUE)
 		if(!inherits(qcout, "try-error")){
@@ -246,7 +246,7 @@ ExecQcTemp<-function(get.stn){
 				ret.res<-list(action=gal.params$action,period=gal.params$period,station=jlstn,res=qcout,outputdir=outsdir,AllOrOne=gal.params$AllOrOne)
 				save(ret.res,file=fileoutRdata)
 
-				## Default: not replace outliers if less/greater than limsup 
+				## Default: not replace outliers if less/greater than limsup
 				lenNoRepl<-rep(NA,nrow(qcout))
 				resqc<-as.numeric(qcout$values)
 				limsup<-as.numeric(gal.params$parameter[[2]][as.character(gal.params$parameter[[2]][,1])==jlstn,2:3])
@@ -265,7 +265,8 @@ ExecQcTemp<-function(get.stn){
 				}
 
 				##Default: replace by NA (uncomment line below)
-				#xdat[match(qcout$dates,dates)]<-NA
+				
+				xdat[match(qcout$dates[is.na(lenNoRepl)],dates)]<-NA
 				msg<-paste("Quality control finished successfully for", jlstn)
 				status<-'ok'
 			}else{
@@ -286,8 +287,8 @@ ExecQcTemp<-function(get.stn){
 		}
 
 		# ##create by default
-		# sdon<-data.frame(dates,xdat)
-		# write.table(sdon,file_corrected,col.names=FALSE,row.names=FALSE)
+		sdon<-data.frame(dates,xdat)
+		write.table(sdon,file_corrected,col.names=FALSE,row.names=FALSE)
 		on.exit({
 			if(status=='ok') insert.txt(main.txt.out,msg)
 			if(status=='no') insert.txt(main.txt.out,msg,format=TRUE)

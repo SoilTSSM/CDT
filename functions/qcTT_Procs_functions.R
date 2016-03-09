@@ -85,7 +85,7 @@ outlierTxTnQc<-function(x,Tsdata,xparams,testpars){
 		dates<-Tsdata$tn.date
 		x0<-Tsdata$tn.data
 		if(is.null(x)) x<-x0
-	} 
+	}
 
 	idCI<-confTxTnQc(x,x0,dates,xparams,testpars$period)
 	outLow<-outUpp<-NULL
@@ -103,7 +103,7 @@ outlierTxTnQc<-function(x,Tsdata,xparams,testpars){
 
 ############################################################
 
-txtnQcSingleSeriesCalc<-function(idstn,Tsdata,xparams,testpars){	
+txtnQcSingleSeriesCalc<-function(idstn,Tsdata,xparams,testpars){
 	outQc0<-data.frame(NA,NA,NA)
 	if(testpars$int.check){
 		resInt<-intConsistCheck(Tsdata,testpars)
@@ -111,7 +111,7 @@ txtnQcSingleSeriesCalc<-function(idstn,Tsdata,xparams,testpars){
 		x1<-resInt$var
 	}else x1<-NULL
 	names(outQc0)<-c('dates','values','tx_LT_tn.check')
-	
+
 	outQcCI<-outlierTxTnQc(x1,Tsdata,xparams,testpars)
 	outQc1<-merge(outQc0,outQcCI,by.x='dates',by.y='dates',all=T)
 	outQc1<-outQc1[!is.na(outQc1$dates),]
@@ -129,7 +129,7 @@ txtnQcSingleSeriesCalc<-function(idstn,Tsdata,xparams,testpars){
 txtnChooseNeignbors<-function(xpos,XX,xparams){
 	idNA<-as.logical(apply(XX,2,function(x) (length(x[!is.na(x)])/(2*xparams$win+1))>0.8))
 	##Distance
-	coordStn<-matrix(c(xparams$coords[xpos,1],xparams$coords[xpos,2]),ncol=2) 
+	coordStn<-matrix(c(xparams$coords[xpos,1],xparams$coords[xpos,2]),ncol=2)
 	coordNei<-matrix(c(xparams$coords[,1],xparams$coords[,2]),ncol=2)
 	dist<-as.numeric(rdist.earth(coordStn,coordNei, miles=FALSE))
 	idR<-dist<xparams$spthres[2]
@@ -272,7 +272,7 @@ txtnQcSpatialCheck<-function(xpos,idstn,Tsdata,xparams,testpars){
 	outQc<-merge(outQc0,outQc1,by.x='dates',by.y='dates',all=T)
 	outQc<-outQc[!is.na(outQc$dates),]
 	if(nrow(outQc)>0){
-		
+
 		stat1<-outQc$outlier.check.stat
 		stat1<-ifelse(is.na(stat1),0,stat1)
 		stat2<-outQc$spatial.reg.stat

@@ -84,7 +84,7 @@ computeHomogData<-function(gal.params){
 			return(NULL)
 		}
 	}else{
-		if(EnvHomogzData$donnees1$nbvar==3){ 
+		if(EnvHomogzData$donnees1$nbvar==3){
 			cdates<-EnvHomogzData$donnees1$dates
 			if(varcat=="1") cdat<-EnvHomogzData$donnees1$var$rr
 			if(varcat=="2") cdat<-EnvHomogzData$donnees1$var$tx
@@ -160,11 +160,11 @@ computeHomogData<-function(gal.params){
 			if(useref=='1'){
 				###monthly data
 				EnvHomogzData$mon_data[[2]]<-list(date=rdates,data=rdat)
-			}	
+			}
 		}else{
 			return(NULL)
-		}	
-	}	
+		}
+	}
 	save(paramsGAL,file=fileparams)
 	#return(0)
 }

@@ -222,7 +222,7 @@ mergeOneDekadRain<-function(){
 		# Take RFE for areas where interpolation/merging was not possible
 		ix <- which(is.na(out.mrg))
 		out.mrg[ix] <- rfe.vec[ix]
-		
+
 		cells<-as(newlocation.merging,'SpatialPixels')@grid
 
 		#Rain-non-Rain Mask

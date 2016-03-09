@@ -375,7 +375,7 @@ mergeDekadInfoRain<-function(parent.win,gal.params){
 	tkconfigure(max.dst.v,width=4,textvariable=max.dst,justify='right')
 	tkconfigure(min.nbrs.v,width=4,textvariable=min.nbrs,justify='right')
 	tkconfigure(max.nbrs.v,width=4,textvariable=max.nbrs,justify='right')
-	
+
 	############################################
 	tkbind(cb.blankGrd,"<<ComboboxSelected>>",function(){
 		if(tclvalue(blankGrd)=="None"){

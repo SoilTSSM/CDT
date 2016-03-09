@@ -4,68 +4,57 @@ AggregateQcData<-function(){
 	datfin<-file.path(outdirs,'AggregateData',fsep = .Platform$file.sep)
 	if(!file.exists(datfin)) dir.create(datfin,showWarnings=FALSE,recursive=TRUE)
 
+	outputdir<-file.path(outdirs,'Outputs',fsep = .Platform$file.sep)
+	outptID<-list.files(outputdir)
 	chkdir<-file.path(outdirs,'CorrectedData',fsep = .Platform$file.sep)
-	orgdir<-file.path(outdirs,'OriginalData',fsep = .Platform$file.sep)
+	corrctID<-list.files(chkdir)
 
-	load(file.path(orgdir,'FilesPars',fsep = .Platform$file.sep))
-	filein<-FileParamsVal[1]
-	xfile<-list.files(orgdir)
-	ifl<-grep(eval(filein),xfile)
-	xfile<-xfile[ifl]
-	info<-grep('Infos',xfile)
-	fdonne<-xfile[-info]
-	filein0<-file.path(orgdir,xfile[info],fsep = .Platform$file.sep)
+	load(file.path(outdirs,'OriginalData','Parameters.RData',fsep = .Platform$file.sep))
+	infohead<-cbind(paramsGAL$data$id,paramsGAL$data$lon,paramsGAL$data$lat,paramsGAL$data$elv)
+	stnID<-as.character(paramsGAL$data$id)
 
-	gginfo<-read.table(filein0,header=T)
-	ggid<-as.character(gginfo$IDs)
-	ggelv<-gginfo$Elv
-	if(sum(!is.na(ggelv))==0){
-		infohead<-t(gginfo[,1:3])
-	}else{
-		infohead<-t(gginfo)
-	}
-	infohead1<-t(infohead)
-	period<-strsplit(fdonne,'_')[[1]][1]
-	if(period=='DAILY') outsuffix<-'_DLY.txt'
-	if(period=='DEKADAL') outsuffix<-'_DEK.txt'
-	if(period=='MONTHLY') outsuffix<-'_MON.txt'
-
-	filein1<-file.path(orgdir,fdonne,fsep = .Platform$file.sep)
-	ggdates<-read.table(filein1,header=F)
-	ggdates<-ggdates[,1]
-	miss<-NULL
-	for(j in 1:length(ggid)){
-		filein2<-file.path(chkdir,ggid[j],fsep = .Platform$file.sep)
-		filein2<-file.path(filein2,paste(ggid[j],outsuffix,sep=''),fsep = .Platform$file.sep)
-		if(file.exists(filein2)){
-			dat<-read.table(filein2)
-			ggdates<-cbind(ggdates,dat[,2])
-		}else{
-			miss<-c(miss,j)
-		}
-	}
-	if(!is.null(miss)) infohead<-infohead[,- miss]
-	if(is.null(dim(infohead))){
-		if(length(infohead)==3) capition<-c('Stations','LON',paste(period,'LAT',sep='/'))
-		if(length(infohead)==4) capition<-c('Stations','LON','LAT',paste(period,'ELV',sep='/'))
-	}else{
-		if(nrow(infohead)==3) capition<-c('Stations','LON',paste(period,'LAT',sep='/'))
-		if(nrow(infohead)==4) capition<-c('Stations','LON','LAT',paste(period,'ELV',sep='/'))
+	existStn<-stnID%in%corrctID
+	noChck<-!stnID%in%outptID
+	stnID<-stnID[existStn]
+	noTraiteStn<-infohead[!existStn,]
+	noQcChkStn<-infohead[noChck,]
+	infohead<-infohead[existStn,]
+	if(length(stnID)==0){
+		insert.txt(main.txt.out,'No checked stations found or Wrong directory',format=TRUE)
+		return(NULL)
 	}
 
-	infohead<-cbind(capition,infohead)
-	donne<-rbind(infohead,ggdates)
-	donne[is.na(donne)]<- -99
-	write.table(donne,file.path(datfin,fdonne,fsep = .Platform$file.sep),col.names=F,row.names=F,quote=F)
-	if(!is.null(miss)){
-		faileds<-list('Stations not aggregated',infohead1[miss,])
+	if(nrow(noTraiteStn)>0 | nrow(noQcChkStn)>0){
+		if(nrow(noQcChkStn)>0) faileds0<-list('Stations not Checked',noQcChkStn)
+		else faileds0<-NULL
+		if(nrow(noTraiteStn)>0) faileds1<-list('Stations not aggregated',noTraiteStn)
+		else faileds1<-NULL
+		faileds<-list(faileds0,faileds1)
 		containertab<-displayConsOutputTabs(tknotes,faileds,title='Failed Stations')
 		ntab<-length(tab.type)
 		tab.type[[ntab+1]]<<-'ctxt'
 		tab.data[[ntab+1]]<<-containertab
 		tkselect(tknotes,ntab)
 	}
-	return(0)
+
+	stn.don<-read.table(file.path(chkdir,stnID[1],paste(stnID[1],'.txt',sep=''),fsep = .Platform$file.sep))
+	aggData<-stn.don[,1]
+
+	for(jj in stnID){
+		filein<-file.path(chkdir,jj,paste(jj,'.txt',sep=''),fsep = .Platform$file.sep)
+		stn.don<-read.table(filein)
+		aggData<-cbind(aggData,stn.don[,2])
+	}
+
+	if(is.null(paramsGAL$data$elv)) capition<-c('Stations','LON',paste('DAILY','LAT',sep='/'))
+	else capition<-c('Stations','LON','LAT',paste('DAILY','ELV',sep='/'))
+	infohead<-cbind(capition,t(infohead))
+	aggData<-t(cbind(t(infohead),t(aggData)))
+	aggData[is.na(aggData)]<-paramsGAL$dataPars[[2]]$miss.val
+
+	fileout<-file.path(datfin,paste('Checked',paramsGAL$inputPars$file.io$Values[1],sep='_'),fsep = .Platform$file.sep)
+	write.table(aggData,fileout,col.names=F,row.names=F,quote=F)
+	return(0)	
 }
 
 ###################################################
@@ -414,10 +403,9 @@ AggregateZeroChkData<-function(){
 	corrctID<-list.files(zchkdir)
 
 	load(file.path(outdirs,'OriginalData','Parameters.RData',fsep = .Platform$file.sep))
-	flstninfo<-file.path(outdirs,'OriginalData',paste('Infos',paramsGAL$inputPars$file.io$Values[1],sep='_'),fsep = .Platform$file.sep)
-	infohead<-read.table(flstninfo,header=T)
-	nfh<-ncol(infohead)
-	stnID<-as.character(infohead[,1])
+	infohead<-cbind(paramsGAL$data$id,paramsGAL$data$lon,paramsGAL$data$lat,paramsGAL$data$elv)
+	stnID<-as.character(paramsGAL$data$id)
+
 	existStn<-stnID%in%corrctID
 	noChck<-!stnID%in%outptID
 	stnID<-stnID[existStn]
@@ -451,8 +439,8 @@ AggregateZeroChkData<-function(){
 		aggData<-cbind(aggData,stn.don[,2])
 	}
 
-	if(ncol(infohead)==3) capition<-c('Stations','LON',paste('DAILY','LAT',sep='/'))
-	if(ncol(infohead)==4) capition<-c('Stations','LON','LAT',paste('DAILY','ELV',sep='/'))
+	if(is.null(paramsGAL$data$elv)) capition<-c('Stations','LON',paste('DAILY','LAT',sep='/'))
+	else capition<-c('Stations','LON','LAT',paste('DAILY','ELV',sep='/'))
 	infohead<-cbind(capition,t(infohead))
 	aggData<-t(cbind(t(infohead),t(aggData)))
 	aggData[is.na(aggData)]<-paramsGAL$dataPars[[2]]$miss.val

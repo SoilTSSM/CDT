@@ -672,7 +672,7 @@ MergeTemp<-function(mrgParam){
 	params.mrg<-as.character(gal.params$params.mrg$Values)
 	nmin<-as.numeric(params.mrg[1])
 	min.nbrs<-as.numeric(params.mrg[2])
-	max.nbrs<-as.numeric(params.mrg[3]) 
+	max.nbrs<-as.numeric(params.mrg[3])
 	max.dst<- as.numeric(params.mrg[4])
 	interpMethod<-params.mrg[5]
 

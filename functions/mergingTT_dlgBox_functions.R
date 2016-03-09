@@ -923,7 +923,7 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 
 	tkconfigure(years1.v,width=8,textvariable=year1,justify='right')
 	tkconfigure(years2.v,width=8,textvariable=year2,justify='right')
-	
+
 	##################
 	min.nbrs.l<-tklabel.h(fr.B3,'MinStn',txt.stbr1,
 	'Minimum number of neighbours used to interpolate the bias',

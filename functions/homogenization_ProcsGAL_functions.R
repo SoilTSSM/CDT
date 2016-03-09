@@ -132,7 +132,7 @@ getrefSeries1S<-function(xpos,ypos){
 		refdek<-EnvHomogzData$dek_data[[1]]$data[,ypos]
 		datmon<-EnvHomogzData$mon_data[[1]]$data[,xpos]
 		refmon<-EnvHomogzData$mon_data[[1]]$data[,ypos]
-		
+
 		dydates<-EnvHomogzData$dly_data[[1]]$date
 		dkdates<-EnvHomogzData$dek_data[[1]]$date
 		modates<-EnvHomogzData$mon_data[[1]]$date

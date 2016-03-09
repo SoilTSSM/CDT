@@ -32,7 +32,7 @@ plotOutliers0<-function(jmo,outqcf,xdates,xdat){
 		if(gal.params$action=='qc.temp'){
 			if(Sys.info()["sysname"] == "Windows") ylab<-expression(paste("Dekadal", ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,"temperature[ " * degree,'C]'))
 			else ylab<-paste('Dekadal',ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,'temperature [°C]')
-		}			
+		}
 		xlabels<-format(as.Date(datym[datymid],format='%Y%m%d'), '%Y')
 	}
 	if(gal.params$period=='monthly'){
@@ -44,7 +44,7 @@ plotOutliers0<-function(jmo,outqcf,xdates,xdat){
 		if(gal.params$action=='qc.temp'){
 			if(Sys.info()["sysname"] == "Windows") ylab<-expression(paste("Monthly", ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,"temperature[ " * degree,'C]'))
 			else ylab<-paste('Monthly',ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,'temperature [°C]')
-		}			
+		}
 		xlabels<-format(as.Date(paste(datym,'15',sep=''),format='%Y%m%d'), '%Y')
 	}
 

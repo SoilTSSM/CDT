@@ -147,7 +147,7 @@ aggregateDEM<-function(destfile,xm,ym,outdir,varid,longname,res1=FALSE){
 	nc2 <- create.ncdf(outfl,demnc)
 	put.var.ncdf(nc2,demnc,newobj$z)
 	close.ncdf(nc2)
-}	
+}
 
 #######################
 
@@ -170,27 +170,29 @@ getDEM<-function(minlon,maxlon,minlat,maxlat,outdir){
 	ym<-read.table(file.path(apps.dir,'country','Latitude.txt',fsep = .Platform$file.sep))
 	xm<-round(xm[,1],4)
 	ym<-round(ym[,1],4)
-	if(!inherits(ret, "try-error")){
+
+	aggregateDEM2Merge<-function(ret,destfile,res1,varid,longname,msg){
 		if(ret==0){
-			down<-try(aggregateDEM(destfile,xm,ym,outdir,'z',"Elevation and bathymetric data",res1=TRUE),silent=TRUE)
-			if(!inherits(down, "try-error")) insert.txt(main.txt.out,'Download finished for DEM 2-min')
-			else insert.txt(main.txt.out,gsub('[\r\n]','',down[1]),format=TRUE)
-		}
-	}else{
-		if(!inherits(ret1, "try-error")){
-			if(ret1==0){
-				down<-try(aggregateDEM(destfile1,xm,ym,outdir,'z_bedrock',"Global Relief Model"),silent=TRUE)
-				if(!inherits(down, "try-error")) insert.txt(main.txt.out,'Download finished for DEM 1-min')
-				else insert.txt(main.txt.out,gsub('[\r\n]','',down[1]),format=TRUE)
+			down<-try(aggregateDEM(destfile,xm,ym,outdir,varid,longname,res1),silent=TRUE)
+			if(!inherits(down, "try-error")) insert.txt(main.txt.out,msg)
+			else{
+				insert.txt(main.txt.out,'Unable to aggregate DEM for mering',format=TRUE)
+				insert.txt(main.txt.out,gsub('[\r\n]','',down[1]),format=TRUE)
 			}
-		}else{
-			unlink(destfile1)
-			insert.txt(main.txt.out,'Download failed for DEM 1-min',format=TRUE)
-			insert.txt(main.txt.out,gsub('[\r\n]','',ret1[1]),format=TRUE)
-		}
+		}else insert.txt(main.txt.out,gsub('[\r\n]','',ret[1]),format=TRUE)
+	}
+
+	aggregateFailedMsg<-function(ret,destfile,msg){
 		unlink(destfile)
-		insert.txt(main.txt.out,'Download failed for DEM 2-min',format=TRUE)
+		insert.txt(main.txt.out,msg,format=TRUE)
 		insert.txt(main.txt.out,gsub('[\r\n]','',ret[1]),format=TRUE)
+	}
+
+	if(!inherits(ret, "try-error")) aggregateDEM2Merge(ret,destfile,TRUE,'z',"Elevation and bathymetric data",'Download finished for DEM 2-min')
+	else{
+		if(!inherits(ret1, "try-error")) aggregateDEM2Merge(ret1,destfile1,FALSE,'z_bedrock',"Global Relief Model",'Download finished for DEM 1-min')
+		else aggregateFailedMsg(ret1,destfile1,'Download failed for DEM 1-min')
+		aggregateFailedMsg(ret,destfile,'Download failed for DEM 2-min')
 	}
 }
 

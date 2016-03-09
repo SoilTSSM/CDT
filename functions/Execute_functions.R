@@ -114,6 +114,8 @@ execute.fun<-function(get.stn){
 	}
 
 	####################################################################
+	##Merge Rainfall
+
 	##Output message
 	merging_end_msg<-function(outret,outtxt,msgOK,msgFail){
 		if(!inherits(outret, "try-error")){
@@ -132,8 +134,9 @@ execute.fun<-function(get.stn){
 			insert.txt(outtxt,gsub('[\r\n]','',outret[1]),format=TRUE)
 		}
 	}
-	##Merge Rainfall
+	
 
+	############################### 
 	##compute mean Gauge-RFE bias
 	if(gal.params$action=='coefbias.rain'){
 		origdir<-file.path(as.character(gal.params$file.io$Values[5]),
@@ -142,6 +145,7 @@ execute.fun<-function(get.stn){
 		merging_end_msg(mrg2run,main.txt.out,"Computing mean Gauge-RFE bias finished successfully","Computing mean Gauge-RFE bias failed")
 	}
 
+	###############################
 	##Adjust bias
 	if(gal.params$action=='rmbias.rain'){
 		daty<-as.character(gal.params$dates.adj$Values)
@@ -159,6 +163,7 @@ execute.fun<-function(get.stn){
 		merging_end_msg(mrg2run,main.txt.out,"Adjusting mean Gauge-RFE bias finished successfully","Adjusting mean Gauge-RFE bias failed")
 	}
 
+	###############################
 	##Merging
 	if(gal.params$action=='merge.rain'){
 		daty<-as.character(gal.params$dates.mrg$Values)
@@ -176,6 +181,7 @@ execute.fun<-function(get.stn){
 		merging_end_msg(mrg2run,main.txt.out,"Rainfall merging finished successfully","Rainfall merging failed")
 	}
 
+	###############################
 	####Merging 1 dekad
 	if(gal.params$action=='merge.dekrain'){
 		mrg2run<-try(mergeOneDekadRain(), silent=TRUE)
@@ -236,7 +242,6 @@ execute.fun<-function(get.stn){
 		}
 	}
 
-
 	##############################
 	##bias correction
 	if(gal.params$action=='adjust.temp'){
@@ -259,7 +264,6 @@ execute.fun<-function(get.stn){
 			insert.txt(main.txt.out,gsub('[\r\n]','',mrg2run[1]),format=TRUE)
 		}
 	}
-
 
 	##############################
 	##Merging
@@ -284,8 +288,8 @@ execute.fun<-function(get.stn){
 		}
 	}
 
-
 	################################################################################
+	
 	if(gal.params$action=="chk.coords"){
 		chk2run<-try(RetChkCrd<-excludeOutStnFun(gal.params), silent=TRUE)
 		if(!inherits(chk2run, "try-error")){
@@ -311,6 +315,7 @@ execute.fun<-function(get.stn){
 		}
 		return(NULL)
 	}
+
 	#####
 	if(gal.params$action=="agg.zc"){
 		agg2run<-try(AggregateZeroChkData(), silent=TRUE)
@@ -340,6 +345,7 @@ execute.fun<-function(get.stn){
 		}
 		return(NULL)
 	}
+
 	#####
 	if(gal.params$action=="agg.stn"){
 		agg2run<-try(AggregateDataCDT(gal.params), silent=TRUE)

@@ -8,7 +8,7 @@ plotSpatialCheck<-function(ijsp,dem,shpf,ZoomXYval,showval){
 		lat<-EnvQcOutlierData$donnees$lat
 		idStn<-as.character(EnvQcOutlierData$donnees$id)
 
-		arrData<-EnvQcOutlierData$donnees$data	
+		arrData<-EnvQcOutlierData$donnees$data
 		outdates<-as.character(outqcf$dates)
 		outlq<-as.character(outqcf$spatial.check)
 		#outdates1<-outdates[!is.na(outlq) & as.numeric(outlq)>0]

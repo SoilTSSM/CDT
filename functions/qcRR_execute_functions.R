@@ -61,7 +61,7 @@ execQcrainFun<-function(get.stn){
 	single.series<-as.character(gal.params$use.method$Values[1])
 	uselv<-as.character(gal.params$use.method$Values[2])
 	interp.dem<-as.character(gal.params$use.method$Values[3])
-	
+
 	if(single.series=="0"){
 		stn.id<-as.character(bounds[,1])
 		jstn<-which(stn.id==get.stn)
@@ -144,9 +144,9 @@ ExecQcRain<-function(get.stn){
 
 		outsdir<-file.path(EnvQcOutlierData$baseDir,'Outputs',jlstn,fsep = .Platform$file.sep)
 		# ##create by default
-		# corrdirstn<-file.path(EnvQcOutlierData$baseDir,'CorrectedData',jlstn,fsep = .Platform$file.sep)
-		# if(!file.exists(corrdirstn)) dir.create(corrdirstn,showWarnings=FALSE,recursive=TRUE)
-		# file_corrected<-file.path(corrdirstn,paste(jlstn,'.txt',sep=''),fsep = .Platform$file.sep)
+		corrdirstn<-file.path(EnvQcOutlierData$baseDir,'CorrectedData',jlstn,fsep = .Platform$file.sep)
+		if(!file.exists(corrdirstn)) dir.create(corrdirstn,showWarnings=FALSE,recursive=TRUE)
+		file_corrected<-file.path(corrdirstn,paste(jlstn,'.txt',sep=''),fsep = .Platform$file.sep)
 
 		qcout<-try(execQcrainFun(jlstn), silent=TRUE)
 		if(!inherits(qcout, "try-error")){
@@ -162,7 +162,7 @@ ExecQcRain<-function(get.stn){
 				ret.res<-list(action=gal.params$action,period=gal.params$period,station=jlstn,res=qcout,outputdir=outsdir,AllOrOne=gal.params$AllOrOne)
 				save(ret.res,file=fileoutRdata)
 
-				## Default: not replace outliers if less than limsup 
+				## Default: not replace outliers if less than limsup
 				lenNoRepl<-rep(NA,nrow(qcout))
 				resqc<-as.numeric(qcout$values)
 				limsup<-as.numeric(gal.params$parameter[[2]][as.character(gal.params$parameter[[2]][,1])==jlstn,2])
@@ -181,7 +181,9 @@ ExecQcRain<-function(get.stn){
 				}
 
 				##Default: replace by NA (uncomment line below)
-				#xdat[match(qcout$dates,dates)]<-NA
+
+				xdat[match(qcout$dates[is.na(lenNoRepl)],dates)]<-NA
+
 				msg<-paste("Quality control finished successfully for", jlstn)
 				status<-'ok'
 			}else{
@@ -202,8 +204,8 @@ ExecQcRain<-function(get.stn){
 		}
 
 		# ##create by default
-		# sdon<-data.frame(dates,xdat)
-		# write.table(sdon,file_corrected,col.names=FALSE,row.names=FALSE)
+		sdon<-data.frame(dates,xdat)
+		write.table(sdon,file_corrected,col.names=FALSE,row.names=FALSE)
 		on.exit({
 			if(status=='ok') insert.txt(main.txt.out,msg)
 			if(status=='no') insert.txt(main.txt.out,msg,format=TRUE)

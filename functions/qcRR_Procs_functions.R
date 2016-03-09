@@ -1,19 +1,14 @@
 
 ######
 #Gamma upper limit
-rainGammaTest<-function(x,alpha,limsup,period){
+rainGammaTest<-function(x,alpha,limsup){
 	###Wilson & Hilferty transformation
 	n<-length(x)
-	if(period=='daily') nonzeroL<-30*5
-	if(period=='dekadal') nonzeroL<-3*5
-	if(period=='monthly') nonzeroL<-5
 	ret<-NULL
-	if(n>nonzeroL){
-		Y<-(x/n)^(1/3)
-		Y1<-Y[x<limsup]
-		#Y1<-Y         #tres sensible a des extrems
-		f<-qt(1-(1-alpha)/2,df=length(Y1)-1)
-
+	if(n>5){
+		# Y<-(x/n)^(1/3)
+		# Y1<-Y[x<limsup]
+		# f<-qt(1-(1-alpha)/2,df=length(Y1)-1)
 		# q50<-quantile(Y1,prob=0.5)
 		# iqr<-IQR(Y1)
 		# if(iqr>0){
@@ -22,11 +17,22 @@ rainGammaTest<-function(x,alpha,limsup,period){
 		# 	ret<-cbind(test,stats[test])
 		# }
 
-		muy<-sd(Y1)  #muy<-1-2/(9*n)
-		sdy<-mean(Y1)  #sdy<-sqrt(2/(9*n))
+		# muy<-sd(Y1)  #muy<-1-2/(9*n)
+		# sdy<-mean(Y1)  #sdy<-sqrt(2/(9*n))
+		# if(sdy>0){
+		# 	stats<-(Y-muy)/(f*sdy)
+		# 	test<-which(stats>1)
+		# 	ret<-cbind(test,stats[test])
+		# }
+
+		Y<-x^(1/3)
+		Y1<-Y[x<limsup]
+		muy<-mean(Y1)
+		sdy<-sd(Y1)
 		if(sdy>0){
-			stats<-(Y-muy)/(f*sdy)
-			test<-which(stats>1)
+			me<-qt(1-(1-alpha),df=length(Y1)-1)*sdy*sqrt(1+(1/length(Y1)))
+			stats<-x/(muy+me)^3
+			test<-which(stats>1)	
 			ret<-cbind(test,stats[test])
 		}
 	}
@@ -37,24 +43,30 @@ rainGammaTest<-function(x,alpha,limsup,period){
 #########
 ConfIntGammaQc<-function(x,dates,thres,limsup,period){
 	alpha<-thres/100
+	if(period=='daily') nonzeroL<-30 #at least 30 days of non zero values
+	if(period=='dekadal') nonzeroL<-9
+	if(period=='monthly') nonzeroL<-5
+
 	dates<-as.character(dates)
-	#idTs<-!is.na(x) & x>0
-	idTs<-!is.na(x)
+	idTs<-!is.na(x) & x>0
 	oId<-c(1:length(x))[idTs]
 	dates<-dates[idTs]
 	x<-x[idTs]
-	dt<-as.numeric(substr(dates,5,6))
-	upLim<-tapply(x,list(as.factor(dt)),rainGammaTest,alpha=alpha,limsup=limsup,period=period)
-	isnull<-sapply(upLim,function(x) is.null(x))
-	upLim<-upLim[!isnull]
-	nMo<-sapply(upLim,function(x) nrow(x))
-	xMo<-as.numeric(names(nMo))
-	xMo<-xMo[nMo>0]
-	nMo<-unname(nMo[nMo>0])
-	mo<-rep(xMo,nMo)
-	ret<-do.call(rbind,upLim)
-	id<-as.numeric(sapply(seq_along(mo),function(j) oId[dt==mo[j]][ret[j,1]]))
-	id.out<-cbind(id,ret[,2])
+	id.out<-NULL
+	if(length(x)>nonzeroL){
+		dt<-as.numeric(substr(dates,5,6))
+		upLim<-tapply(x,list(as.factor(dt)),rainGammaTest,alpha=alpha,limsup=limsup)
+		isnull<-sapply(upLim,function(x) is.null(x))
+		upLim<-upLim[!isnull]
+		nMo<-sapply(upLim,function(x) nrow(x))
+		xMo<-as.numeric(names(nMo))
+		xMo<-xMo[nMo>0]
+		nMo<-unname(nMo[nMo>0])
+		mo<-rep(xMo,nMo)
+		ret<-do.call(rbind,upLim)
+		id<-as.numeric(sapply(seq_along(mo),function(j) oId[dt==mo[j]][ret[j,1]]))
+		id.out<-cbind(id,ret[,2])
+	}
 	return(id.out)
 }
 
@@ -63,7 +75,7 @@ ConfIntGammaQc<-function(x,dates,thres,limsup,period){
 UpperOutlierQc<-function(x,dates,thres,limsup,period){
 	idCI<-ConfIntGammaQc(x,dates,thres,limsup,period)
 	outQcCI<-data.frame(NA,NA,NA,NA)
-	if(nrow(idCI)>0) outQcCI<-data.frame(dates[idCI[,1]],x[idCI[,1]],2,round(idCI[,2],4))
+	if(!is.null(idCI))  if(nrow(idCI)>0) outQcCI<-data.frame(dates[idCI[,1]],x[idCI[,1]],2,round(idCI[,2],4))
 	names(outQcCI)<-c('dates','values','upper.outlier','upper.outlier.stat')
 	return(outQcCI)
 }
