@@ -46,8 +46,13 @@ AggregateQcData<-function(){
 		aggData<-cbind(aggData,stn.don[,2])
 	}
 
-	if(is.null(paramsGAL$data$elv)) capition<-c('Stations','LON',paste('DAILY','LAT',sep='/'))
-	else capition<-c('Stations','LON','LAT',paste('DAILY','ELV',sep='/'))
+	period<-paramsGAL$inputPars$period
+	if(period=='daily') pdate<-'DAILY'
+	if(period=='dekadal') pdate<-'DEKADAL'
+	if(period=='Monthly') pdate<-'MONTHLY'
+
+	if(is.null(paramsGAL$data$elv)) capition<-c('Stations','LON',paste(pdate,'LAT',sep='/'))
+	else capition<-c('Stations','LON','LAT',paste(pdate,'ELV',sep='/'))
 	infohead<-cbind(capition,t(infohead))
 	aggData<-t(cbind(t(infohead),t(aggData)))
 	aggData[is.na(aggData)]<-paramsGAL$dataPars[[2]]$miss.val
