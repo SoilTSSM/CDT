@@ -333,10 +333,10 @@ execute.fun<-function(get.stn){
 
 	#####
 	if(gal.params$action=="agg.hom"){
-		orgdir2<-file.path(as.character(gal.params$file.io),'Data',fsep = .Platform$file.sep)
-		if(file.exists(orgdir2)) agg2run<-try(AggregateHomData(), silent=TRUE)
+		orgdir<-file.path(as.character(gal.params$file.io),'Data',fsep = .Platform$file.sep)
+		if(file.exists(orgdir)) agg2run<-try(AggregateHomData(), silent=TRUE)
 		else agg2run<-try(AggregateHomData0(), silent=TRUE)
-		
+
 		if(!inherits(agg2run, "try-error")){
 			if(!is.null(agg2run)){
 				if(agg2run==0) 	insert.txt(main.txt.out,"Aggregation finished successfully")

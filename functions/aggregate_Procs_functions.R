@@ -133,23 +133,11 @@ AggregateHomData<-function(){
 	if(!file.exists(datfin)) dir.create(datfin,showWarnings=FALSE,recursive=TRUE)
 
 	chkdir<-file.path(outdirs,'AdjustedData',fsep = .Platform$file.sep)
-#	orgdir<-file.path(outdirs,'OriginalData',fsep = .Platform$file.sep)
-
-	orgdir1<-file.path(outdirs,'OriginalData',fsep = .Platform$file.sep)
-	orgdir2<-file.path(outdirs,'Data',fsep = .Platform$file.sep)
-	if(file.exists(orgdir1)) orgdir<-orgdir1
-	else if(file.exists(orgdir2))  orgdir<-orgdir2
-	else{
-		insert.txt(main.txt.out,'Wrong directory containing <AdjustedData>',format=TRUE)
-		return(NULL)
-	}
+	orgdir<-file.path(outdirs,'Data',fsep = .Platform$file.sep)
 
 	xfile<-list.files(orgdir)
 	info<-grep('Infos_',xfile)
-#	pars<-grep('FilesPars',xfile)
-
-	if(file.exists(orgdir1)) pars<-grep('FilesPars',xfile)
-	if(file.exists(orgdir2)) pars<-grep('RefSeries_Data',xfile)
+	pars<-grep('RefSeries_Data',xfile)
 
 	filein<-file.path(orgdir,xfile[info],fsep = .Platform$file.sep)
 	gginfo<-read.table(filein,header=T)
