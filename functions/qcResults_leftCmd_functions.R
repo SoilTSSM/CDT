@@ -1,6 +1,6 @@
 
 ################
-QcCmdBut<-function(){
+QcCmdBut<-function(stateReplaceAll){
 
 	file.list<-openFile_ttkcomboList()
 
@@ -26,7 +26,6 @@ QcCmdBut<-function(){
 	cmd.tab3 <- bwAddTab(tknote.cmd,text="Zoom")
 	bwRaiseTab(tknote.cmd,cmd.tab1)
 
-
 	#######################################################################################################
 
 	#Tab1
@@ -37,39 +36,44 @@ QcCmdBut<-function(){
 	tkgrid(scrw1)
 	subfr1<-bwScrollableFrame(scrw1,width=wscrlwin,height=hscrlwin)
 
-	#NDD state
-	#statndd<-tclvalue(statendd)
 
 	stats<-tclVar('0.0')
-	cbValstat <- tclVar("0")
-
+	# cbValstat <- tclVar("0")
 
 	btPreview.tab1<-tkbutton(subfr1, text="Output Preview")
-	#btNdd.tab1<-tkbutton(subfr1, text="Dry Day Check",state=statndd)
 	sep1.tab1<-ttkseparator(subfr1)
 	btSetting.tab1<-tkbutton(subfr1, text="Outlier-Settings")
 	btReplace.tab1<-tkbutton(subfr1, text="Replace")
 	sep2.tab1<-ttkseparator(subfr1)
 	labThresReplace.tab1<-tklabel(subfr1,text='Statistic threshold',anchor='e',justify='right')
-	enThresReplace.tab1<-tkentry(subfr1,textvariable=stats,width=6)
-	cbtThresReplace.tab1<-tkcheckbutton(subfr1,variable=cbValstat)
+	enThresReplace.tab1<-tkentry(subfr1,textvariable=stats,width=4)
+	# cbtThresReplace.tab1<-tkcheckbutton(subfr1,variable=cbValstat)
+	btThresReplace.tab1<-tkbutton(subfr1, text="Replace")
 	sep3.tab1<-ttkseparator(subfr1)
+	btAllReplace.tab1<-tkbutton(subfr1, text="Replace all outliers with NA",state=stateReplaceAll)
 
+	infobulle(btSetting.tab1,'Edit results')
+	status.bar.display(btSetting.tab1,txt.stbr1,'Edit results')
+	infobulle(btReplace.tab1,'Replaces outliers with missing values after editing')
+	status.bar.display(btReplace.tab1,txt.stbr1,'Replaces outliers with missing values after editing')
 	infobulle(enThresReplace.tab1,'Replace outliers with missing if the statistic\nis greater than or equal to this threshold\nand the box in the right is checked')
 	status.bar.display(enThresReplace.tab1,txt.stbr1,'Replace outliers with missing  if the statistic is greater than  or equal to this threshold and the box in the right is checked')
+	infobulle(btThresReplace.tab1,'Replace outliers with missing if the statistic\nis greater than or equal to this threshold\nand the box in the right is checked')
+	status.bar.display(btThresReplace.tab1,txt.stbr1,'Replace outliers with missing  if the statistic is greater than  or equal to this threshold and the box in the right is checked')
+	infobulle(btAllReplace.tab1,'Replaces all outliers with missing values at one time,\ntaking into account the statistic threshold')
+	status.bar.display(btAllReplace.tab1,txt.stbr1,'Replaces all outliers with missing values at one time, taking into account the statistic threshold')
 
-
-	#tkgrid(btPreview.tab1,row=0,column=0,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
-	#tkgrid(btNdd.tab1,row=0,column=4,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(btPreview.tab1,row=0,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(sep1.tab1,row=1,column=0,sticky='we',rowspan=1,columnspan=8,pady=5)
 	tkgrid(btSetting.tab1,row=2,column=0,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(btReplace.tab1,row=2,column=4,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(sep2.tab1,row=3,column=0,sticky='we',rowspan=1,columnspan=8,pady=5)
-	tkgrid(labThresReplace.tab1,row=4,column=0,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(enThresReplace.tab1,row=4,column=4,sticky='we',rowspan=1,columnspan=3,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(cbtThresReplace.tab1,row=4,column=7,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(labThresReplace.tab1,row=4,column=0,sticky='we',rowspan=1,columnspan=3,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(enThresReplace.tab1,row=4,column=3,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	# tkgrid(cbtThresReplace.tab1,row=4,column=7,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(btThresReplace.tab1,row=4,column=5,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(sep3.tab1,row=5,column=0,sticky='we',rowspan=1,columnspan=8,pady=5)
+	tkgrid(btAllReplace.tab1,row=6,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
 
 	#######################################################################################################
 
@@ -230,7 +234,7 @@ QcCmdBut<-function(){
 	cbShowVal.tab3<-tkcheckbutton(subfr3,text="Show station values",variable=vShowVal,anchor='w',justify='left')
 	cbSHP.tab3 <- tkcheckbutton(subfr3,text="Add administrative boundaries to map",variable=cbValshp,anchor='w',justify='left')
 	cbDEM.tab3 <- tkcheckbutton(subfr3,text="Add DEM to map",variable=cbValdem,anchor='w',justify='left')
-##
+	##
 	tkgrid(xentr1.tab3,row=1,column=0,sticky='we',rowspan=1,columnspan=1)
 	tkgrid(xentr2.tab3,row=1,column=2,sticky='we',rowspan=1,columnspan=1)
 	tkgrid(yentr1.tab3,row=2,column=1,sticky='we',rowspan=1,columnspan=1)
@@ -599,8 +603,8 @@ QcCmdBut<-function(){
 		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
-###################################################
-# replace outliers
+	###################################################
+	# replace outliers
 	tkconfigure(btReplace.tab1,command=function(){
 		if(!is.null(ret.results)){
 			if(gal.params$AllOrOne=='one'){
@@ -610,7 +614,7 @@ QcCmdBut<-function(){
 				ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
 				IJstation<-ret.results$station[[ijstn]]
 			}
-			isOK<-try(replaceOutlier(tclvalue(stats),tclvalue(cbValstat)),silent=TRUE)
+			isOK<-try(replaceOutlier(IJstation,tclvalue(stats),isReplace=FALSE),silent=TRUE)
 			if(!inherits(isOK, "try-error")){
 				insert.txt(main.txt.out,paste("Outliers replacement finished successfully for", IJstation))
 			}else{
@@ -620,15 +624,57 @@ QcCmdBut<-function(){
 		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
-###################################################
-##plot outliers by month
+	#######################
+	# replace outliers with threshold
+	tkconfigure(btThresReplace.tab1,command=function(){
+		if(!is.null(ret.results)){
+			if(gal.params$AllOrOne=='one'){
+				IJstation<-ret.results$station
+			}
+			if(gal.params$AllOrOne=='all'){
+				ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
+				IJstation<-ret.results$station[[ijstn]]
+			}
+			isOK<-try(replaceOutlier(IJstation,tclvalue(stats),isReplace=TRUE),silent=TRUE)
+			if(!inherits(isOK, "try-error")){
+				insert.txt(main.txt.out,paste("Outliers replacement finished successfully for", IJstation))
+			}else{
+				insert.txt(main.txt.out,paste("Outliers replacement failed for", IJstation),format=TRUE)
+				insert.txt(main.txt.out,gsub('[\r\n]','',isOK[1]),format=TRUE)
+			}
+		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+	})
+
+	####################
+	##replace all outliers with threshold
+	tkconfigure(btAllReplace.tab1,command=function(){
+		if(!is.null(ret.results)){
+			stns<-unlist(ret.results$station)
+			tkconfigure(main.win,cursor='watch');tcl("update","idletasks")
+			lapply(stns,function(IJstation){
+				isOK<-try(replaceOutlier(IJstation,tclvalue(stats),isReplace=TRUE),silent=TRUE)
+				if(!inherits(isOK, "try-error")){
+					insert.txt(main.txt.out,paste("Outliers replacement finished successfully for", IJstation))
+				}else{
+					insert.txt(main.txt.out,paste("Outliers replacement failed for", IJstation),format=TRUE)
+					insert.txt(main.txt.out,gsub('[\r\n]','',isOK[1]),format=TRUE)
+				}
+				tcl("update")
+			})
+			tkconfigure(main.win,cursor='')
+			insert.txt(main.txt.out,"Outliers replacement finished!")
+		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+	})
+
+	###################################################
+	##plot outliers by month
 	nmois<-format(ISOdate(2014,1:12,1),"%B")
 	ncmois<-1:12
 	ncmois<-ifelse(ncmois<10,paste('0',ncmois,sep=''),ncmois)
 	xnmois<-data.frame(nmois,ncmois)
 	noteQcOutlierCheck<-NULL
 
-#####
+	#####
 
 	tkconfigure(btOutlNext.tab2,command=function(){
 		if(!is.null(ret.results) & !is.null(gal.params)){
@@ -646,7 +692,7 @@ QcCmdBut<-function(){
 		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
-#####
+	#####
 	tkconfigure(btOutlPrev.tab2,command=function(){
 		if(!is.null(ret.results) & !is.null(gal.params)){
 			imois<-as.numeric(tclvalue(tcl(combOutlmonth.tab2,"current")))+1
@@ -663,7 +709,7 @@ QcCmdBut<-function(){
 		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
-#####
+	#####
 	tkbind(combOutlmonth.tab2,"<<ComboboxSelected>>",function(){
 		if(!is.null(ret.results) & !is.null(gal.params)){
 			jmo<-as.character(xnmois[which(xnmois[,1]==tclvalue(tkget(combOutlmonth.tab2))),2])
@@ -676,12 +722,12 @@ QcCmdBut<-function(){
 		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
-###################################################
-##plot spatial check
+	###################################################
+	##plot spatial check
 	noteQcSpatCheck<-NULL
 	actualSTN<-'INITSTN'
 	qcoutDate<<-NULL
-##########
+	##########
 	tkconfigure(btSpChkNext.tab2,command=function(){
 		if(!is.null(ret.results) & !is.null(gal.params)){
 			spchkoutdates<-isSpatialCheckOk()
@@ -718,8 +764,7 @@ QcCmdBut<-function(){
 		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
-
-##########
+	##########
 	tkconfigure(btSpChkPrev.tab2,command=function(){
 		if(!is.null(ret.results) & !is.null(gal.params)){
 			spchkoutdates<-isSpatialCheckOk()
@@ -756,7 +801,7 @@ QcCmdBut<-function(){
 		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
-##########
+	##########
 	tkbind(combSpChkDate.tab2,"<<ComboboxSelected>>",function(){
 		if(!is.null(ret.results) & !is.null(gal.params)){
 			spchkoutdates<-isSpatialCheckOk()

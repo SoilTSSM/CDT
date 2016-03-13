@@ -122,6 +122,16 @@ AggregateHomData0<-function(){
 		write.table(donne2,file.path(datfin,paste('AdjQM_',suffix[xfl],'_',paramsGAL$inputPars$file.io$Values[1],sep=''),fsep = .Platform$file.sep),col.names=F,row.names=F,quote=F)
 		write.table(donne3,file.path(datfin,paste('Combined-Adj_',suffix[xfl],'_',paramsGAL$inputPars$file.io$Values[1],sep=''),fsep = .Platform$file.sep),col.names=F,row.names=F,quote=F)
 	}
+
+	noTraiteStn<-StnId[!StnId%in%ggid]
+	if(length(noTraiteStn)>0){
+		faileds<-list('Not Tested Stations',noTraiteStn)
+		containertab<-displayConsOutputTabs(tknotes,faileds,title='Not Tested Stations')
+		ntab<-length(tab.type)
+		tab.type[[ntab+1]]<<-'ctxt'
+		tab.data[[ntab+1]]<<-containertab
+		tkselect(tknotes,ntab)
+	}
 	return(0)
 }
 

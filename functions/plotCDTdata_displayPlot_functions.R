@@ -79,7 +79,7 @@ plotCDTdata<-function(donne,atLev,listCol,ocrds,units){
 	plotStn<-levelplot(z~lon+lat,data=donne,at=ticks,
 	prepanel=prepanel.default.xyplot,
 	panel = function(x,y,z,...){
-		panel.lines(ocrds,col="gray",lwd=0.5)
+		panel.lines(ocrds,col="black",lwd=0.5)
 		panel.abline(h = grid.y, v =grid.x , col = "lightgray",lty=3)
 		panel.levelplot.points(x,y,z,type ="p",cex=1,pch=21,...)
 	},colorkey = FALSE,

@@ -32,7 +32,7 @@ PlotMergingOutputCmd<-function(){
 	cmd.tab3 <- bwAddTab(tknote.cmd,text="Options")
 	bwRaiseTab(tknote.cmd,cmd.tab1)
 	
-#######################################################################################################
+	#######################################################################################################
 
 	#Tab1
 	frTab1<-tkframe(cmd.tab1)
@@ -153,49 +153,49 @@ PlotMergingOutputCmd<-function(){
 		}
 	})		
 
-#######################################################################################################
+	#######################################################################################################
 
-addNcdfFun<-function(nfr,contFrame){
-	frameNcdf<-ttklabelframe(contFrame,text=paste("NetCDF data file",nfr),relief='groove')
+	addNcdfFun<-function(nfr,contFrame){
+		frameNcdf<-ttklabelframe(contFrame,text=paste("NetCDF data file",nfr),relief='groove')
 
-	file.netcdf <- tclVar()
-	combNetcdf.tab2<-ttkcombobox(frameNcdf,values=unlist(file.list),textvariable=file.netcdf,width=largeur)
-	btNetcdf.tab2<-tkbutton(frameNcdf, text="...") 
-	tkconfigure(btNetcdf.tab2,command=function(){
-		nc.opfiles<-getOpenNetcdf(main.win,all.opfiles)
-		if(!is.null(nc.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'netcdf'
-			file.opfiles[[nopf+1]]<<-nc.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]] 
-			tclvalue(file.netcdf)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combNetcdf.tab2,values=unlist(file.list), textvariable=file.netcdf)
-		}else return(NULL)
-	})
-	infobulle(combNetcdf.tab2,'Choose a NetCDF data in the list')
-	status.bar.display(combNetcdf.tab2,txt.stbr1,'Choose the file containing the NetCDF data')
-	infobulle(btNetcdf.tab2,'Browse file if not listed')
-	status.bar.display(btNetcdf.tab2,txt.stbr1,'Browse file if not listed')
+		file.netcdf <- tclVar()
+		combNetcdf.tab2<-ttkcombobox(frameNcdf,values=unlist(file.list),textvariable=file.netcdf,width=largeur)
+		btNetcdf.tab2<-tkbutton(frameNcdf, text="...") 
+		tkconfigure(btNetcdf.tab2,command=function(){
+			nc.opfiles<-getOpenNetcdf(main.win,all.opfiles)
+			if(!is.null(nc.opfiles)){
+				nopf<-length(type.opfiles)
+				type.opfiles[[nopf+1]]<<-'netcdf'
+				file.opfiles[[nopf+1]]<<-nc.opfiles
+				file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]] 
+				tclvalue(file.netcdf)<-file.opfiles[[nopf+1]][[1]]
+				tkconfigure(combNetcdf.tab2,values=unlist(file.list), textvariable=file.netcdf)
+			}else return(NULL)
+		})
+		infobulle(combNetcdf.tab2,'Choose a NetCDF data in the list')
+		status.bar.display(combNetcdf.tab2,txt.stbr1,'Choose the file containing the NetCDF data')
+		infobulle(btNetcdf.tab2,'Browse file if not listed')
+		status.bar.display(btNetcdf.tab2,txt.stbr1,'Browse file if not listed')
 
-	#######################
-	ncdf_name<-tclVar(paste('NetCDF',nfr))	
-	ncdfLab.tab2<-tklabel(frameNcdf,text='Title',anchor='e',justify='right')
-	ncdfEd.tab2<-tkentry(frameNcdf, width=14,textvariable=ncdf_name,justify = "left")
-	infobulle(ncdfEd.tab2,'Title of the panel')
-	status.bar.display(ncdfEd.tab2,txt.stbr1,'Title of the panel')
+		#######################
+		ncdf_name<-tclVar(paste('NetCDF',nfr))	
+		ncdfLab.tab2<-tklabel(frameNcdf,text='Title',anchor='e',justify='right')
+		ncdfEd.tab2<-tkentry(frameNcdf, width=14,textvariable=ncdf_name,justify = "left")
+		infobulle(ncdfEd.tab2,'Title of the panel')
+		status.bar.display(ncdfEd.tab2,txt.stbr1,'Title of the panel')
 
-	#######################
-	tkgrid(combNetcdf.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=2,ipadx=1,ipady=1)
-	tkgrid(btNetcdf.tab2,row=0,column=5,sticky='e',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
-	tkgrid(ncdfLab.tab2,row=1,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
-	tkgrid(ncdfEd.tab2,row=1,column=1,sticky='we',rowspan=1,columnspan=4,padx=1,pady=2,ipadx=1,ipady=1)
+		#######################
+		tkgrid(combNetcdf.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=2,ipadx=1,ipady=1)
+		tkgrid(btNetcdf.tab2,row=0,column=5,sticky='e',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
+		tkgrid(ncdfLab.tab2,row=1,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
+		tkgrid(ncdfEd.tab2,row=1,column=1,sticky='we',rowspan=1,columnspan=4,padx=1,pady=2,ipadx=1,ipady=1)
 
-	######
-	tkgrid(frameNcdf,row=nfr,column=0,sticky='we')
-	return(list(list(frameNcdf,combNetcdf.tab2),file.netcdf,ncdf_name))
-}
+		######
+		tkgrid(frameNcdf,row=nfr,column=0,sticky='we')
+		return(list(list(frameNcdf,combNetcdf.tab2),file.netcdf,ncdf_name))
+	}
 	
-#######################################################################################################
+	#######################################################################################################
 	#Tab2	
 	frTab2<-tkframe(cmd.tab2) #,relief='sunken',bd=2
 	tkgrid(frTab2,padx=5,pady=5,ipadx=2,ipady=2)
@@ -218,7 +218,7 @@ addNcdfFun<-function(nfr,contFrame){
 	##########
 	tkgrid(addNcdfData.tab2,row=0,column=0,sticky='we',pady=2)
 	
-#######################################################################################################
+	#######################################################################################################
 
 	#Tab3	
 	frTab3<-tkframe(cmd.tab3) #,relief='sunken',bd=2
@@ -229,13 +229,12 @@ addNcdfFun<-function(nfr,contFrame){
 	subfr3<-bwScrollableFrame(scrw3,width=wscrlwin,height=hscrlwin)
 
 	wPreview<-wscrlwin-10
-
 	nb.color<-tclVar('10')
 	preset.color <- tclVar()
-	tclvalue(preset.color) <- 'rainbow'
+	tclvalue(preset.color) <- 'tim.colors'
 
 	labPresetCol.tab3<-tklabel(subfr3,text='Presets colorkey',anchor='w',justify='left')
-	combPresetCol.tab3<-ttkcombobox(subfr3,values=c('rainbow','heat.colors','cm.colors','topo.colors','terrain.colors'), textvariable=preset.color,width=13)
+	combPresetCol.tab3<-ttkcombobox(subfr3,values=c('tim.colors','rainbow','heat.colors','cm.colors','topo.colors','terrain.colors'), textvariable=preset.color,width=13)
 	nbPresetCol.tab3<-tkentry(subfr3, width=3,textvariable=nb.color,justify = "left")
 
 	reverse.color <- tclVar(0)
@@ -255,6 +254,13 @@ addNcdfFun<-function(nfr,contFrame){
 	chkCustoLev.tab3<-tkcheckbutton(subfr3,variable=custom.level,text='User customized  levels',anchor='w',justify='left')
 	butCustoLev.tab3<-tkbutton(subfr3, text="Custom",state='disabled')
 
+	infobulle(combPresetCol.tab3,'Predefined color palettes')
+	status.bar.display(combPresetCol.tab3,txt.stbr1,'Predefined color palettes')
+	infobulle(nbPresetCol.tab3,'Number of color levels to be in the palette')
+	status.bar.display(nbPresetCol.tab3,txt.stbr1,'Number of color levels to be in the palette')
+	infobulle(chkRevCol.tab3,'Reverse the color palettes')
+	status.bar.display(chkRevCol.tab3,txt.stbr1,'Reverse the color palettes')
+
 	#####
 	tkgrid(labPresetCol.tab3,row=0,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(combPresetCol.tab3,row=0,column=2,sticky='we',rowspan=1,columnspan=3,padx=1,pady=1,ipadx=1,ipady=1)
@@ -271,10 +277,9 @@ addNcdfFun<-function(nfr,contFrame){
 	tkgrid(chkCustoLev.tab3,row=7,column=0,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(butCustoLev.tab3,row=7,column=4,sticky='w',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 
-
 	########################
 	##Preview Color
-	kolor<-getGradientColor(rainbow(10),0:wPreview)
+	kolor<-getGradientColor(tim.colors(10),0:wPreview)
 	tkdelete(previewPresetCol.tab3,'gradlines0')
 	for(i in 0:wPreview) tkcreate(previewPresetCol.tab3, "line",i,0,i,20,fill=kolor[i],tags='gradlines0')
 
@@ -343,10 +348,8 @@ addNcdfFun<-function(nfr,contFrame){
 		atLev<<-customLevels(main.win,atLev)
 	})
 	
-	
-	
-#######################################################################################################
-	
+	#######################################################################################################
+
 	notebookTab<-NULL
 	#######
 
@@ -388,7 +391,7 @@ addNcdfFun<-function(nfr,contFrame){
 		}
 	})	
 
-#######################################################################################################
+	#######################################################################################################
 
 	tcl('update')
 	tkgrid(cmd.frame,sticky='nswe',pady=5)

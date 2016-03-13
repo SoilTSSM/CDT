@@ -36,7 +36,7 @@ plotMergingOutData<-function(allDATA,atLev,listCol,ocrds,units){
 	plotStn<-levelplot(donStn$value~donStn$x+donStn$y,at=ticks,
 	prepanel=prepanel.default.xyplot,
 	panel = function(x,y,z,...){
-		panel.lines(ocrds,col="gray",lwd=0.5)
+		panel.lines(ocrds,col="black",lwd=0.5)
 		panel.abline(h=grid.y, v=grid.x , col="lightgray",lty=3)
 		panel.levelplot.points(x,y,z,type ='p',cex=0.9,...)
 	},colorkey = FALSE)
@@ -56,7 +56,7 @@ plotMergingOutData<-function(allDATA,atLev,listCol,ocrds,units){
 		interpolate = TRUE,region = TRUE,
 		panel = function(...){
 			panel.levelplot(...)
-			panel.lines(ocrds,col="gray",lwd=0.5)
+			panel.lines(ocrds,col="black",lwd=0.5)
 			panel.abline(h=grid.y, v=grid.x , col="lightgray",lty=3)
 		},colorkey = FALSE)
 		PlotObj0<-c(PlotObj0,plotXYdon)

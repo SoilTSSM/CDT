@@ -31,7 +31,7 @@ PlotCDTDataFormatCmd<-function(){
 	cmd.tab2 <- bwAddTab(tknote.cmd,text="Options")
 	bwRaiseTab(tknote.cmd,cmd.tab1)
 	
-#######################################################################################################
+	#######################################################################################################
 
 	#Tab1
 	frTab1<-tkframe(cmd.tab1)
@@ -145,9 +145,8 @@ PlotCDTDataFormatCmd<-function(){
 			tkconfigure(day1.tab1,state='disabled')
 		}
 	})		
-
 	
-#######################################################################################################
+	#######################################################################################################
 
 	#Tab2	
 	frTab2<-tkframe(cmd.tab2) #,relief='sunken',bd=2
@@ -158,13 +157,12 @@ PlotCDTDataFormatCmd<-function(){
 	subfr2<-bwScrollableFrame(scrw2,width=wscrlwin,height=hscrlwin)
 
 	wPreview<-wscrlwin-10
-
 	nb.color<-tclVar('10')
 	preset.color <- tclVar()
-	tclvalue(preset.color) <- 'rainbow'
+	tclvalue(preset.color) <- 'tim.colors'
 
 	labPresetCol.tab2<-tklabel(subfr2,text='Presets colorkey',anchor='w',justify='left')
-	combPresetCol.tab2<-ttkcombobox(subfr2,values=c('rainbow','heat.colors','cm.colors','topo.colors','terrain.colors'), textvariable=preset.color,width=13)
+	combPresetCol.tab2<-ttkcombobox(subfr2,values=c('tim.colors','rainbow','heat.colors','cm.colors','topo.colors','terrain.colors'), textvariable=preset.color,width=13)
 	nbPresetCol.tab2<-tkentry(subfr2, width=3,textvariable=nb.color,justify = "left")
 
 	reverse.color <- tclVar(0)
@@ -184,6 +182,13 @@ PlotCDTDataFormatCmd<-function(){
 	chkCustoLev.tab2<-tkcheckbutton(subfr2,variable=custom.level,text='User customized  levels',anchor='w',justify='left')
 	butCustoLev.tab2<-tkbutton(subfr2, text="Custom",state='disabled')
 
+	infobulle(combPresetCol.tab2,'Predefined color palettes')
+	status.bar.display(combPresetCol.tab2,txt.stbr1,'Predefined color palettes')
+	infobulle(nbPresetCol.tab2,'Number of color levels to be in the palette')
+	status.bar.display(nbPresetCol.tab2,txt.stbr1,'Number of color levels to be in the palette')
+	infobulle(chkRevCol.tab2,'Reverse the color palettes')
+	status.bar.display(chkRevCol.tab2,txt.stbr1,'Reverse the color palettes')
+
 	#####
 	tkgrid(labPresetCol.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(combPresetCol.tab2,row=0,column=2,sticky='we',rowspan=1,columnspan=3,padx=1,pady=1,ipadx=1,ipady=1)
@@ -200,10 +205,9 @@ PlotCDTDataFormatCmd<-function(){
 	tkgrid(chkCustoLev.tab2,row=7,column=0,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(butCustoLev.tab2,row=7,column=4,sticky='w',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 
-
 	########################
 	##Preview Color
-	kolor<-getGradientColor(rainbow(10),0:wPreview)
+	kolor<-getGradientColor(tim.colors(10),0:wPreview)
 	tkdelete(previewPresetCol.tab2,'gradlines0')
 	for(i in 0:wPreview) tkcreate(previewPresetCol.tab2, "line",i,0,i,20,fill=kolor[i],tags='gradlines0')
 
@@ -255,15 +259,15 @@ PlotCDTDataFormatCmd<-function(){
 	})
 	
 	atLev<-NULL
-#	initLev<-NULL
+	# initLev<-NULL
 	tkconfigure(butCustoLev.tab2,command=function(){
-#		if(is.null(initLev) & is.null(atLev)){
+		# if(is.null(initLev) & is.null(atLev)){
 		if(is.null(atLev)){
 			donne<-getCDTdata(file.stnfl,file.period)
 			donne<-getCDTdata1Date(donne,tclvalue(idate_yrs),tclvalue(idate_mon),tclvalue(idate_day))
 			if(!is.null(donne)){
 				atLev<-pretty(donne$z)
-#				initLev<<-1
+				# initLev<<-1
 			}
 		}
 		atLev<<-customLevels(main.win,atLev)

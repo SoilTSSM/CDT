@@ -23,16 +23,7 @@ QcOutFormat<-function(){
 
 ###################################################################
 
-getOutlier.params<-function(){
-	if(gal.params$AllOrOne=='one'){
-		IJoutputdir<-ret.results$outputdir
-		IJstation<-ret.results$station
-	}
-	if(gal.params$AllOrOne=='all'){
-		ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
-		IJoutputdir<-ret.results$outputdir[[ijstn]]
-		IJstation<-ret.results$station[[ijstn]]
-	}
+getOutlier.params<-function(IJstation,IJoutputdir){
 	flqcout<-file.path(IJoutputdir,paste(IJstation,'.txt',sep=''),fsep = .Platform$file.sep)
 	if(ret.results$action=='qc.rain'){
 		dates<-EnvQcOutlierData$donnees$dates
@@ -71,17 +62,15 @@ getOutlier.params<-function(){
 }
 
 ######################################
-replaceOutlier<-function(thresStat,isReplace){
-	outlparams<-getOutlier.params()
-	if(gal.params$AllOrOne=='one'){
-		IJoutputdir<-ret.results$outputdir
-		IJstation<-ret.results$station
-	}
-	if(gal.params$AllOrOne=='all'){
-		ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
+replaceOutlier<-function(IJstation,thresStat,isReplace){
+
+	if(gal.params$AllOrOne=='one') IJoutputdir<-ret.results$outputdir
+	if(gal.params$AllOrOne=='all'){ 
+		ijstn<-which(as.character(gal.params$parameter[[2]][,1])==IJstation)
 		IJoutputdir<-ret.results$outputdir[[ijstn]]
-		IJstation<-ret.results$station[[ijstn]]
 	}
+
+	outlparams<-getOutlier.params(IJstation,IJoutputdir)
 
 	corrdir<-file.path(paste(head(unlist(strsplit(IJoutputdir,.Platform$file.sep)),n=-2),sep ='',collapse=.Platform$file.sep),'CorrectedData',fsep = .Platform$file.sep)
 	if(!file.exists(corrdir)) dir.create(corrdir,showWarnings=FALSE,recursive=TRUE)
@@ -94,7 +83,7 @@ replaceOutlier<-function(thresStat,isReplace){
 	xdat<-outlparams$value
 	if(!is.null(outqcf)){
 		outdates<-as.character(outqcf$dates)
-		if(isReplace=='1'){
+		if(isReplace){
 			thstat<-as.numeric(thresStat)
 			stats<-as.numeric(as.character(outqcf$statistic))
 			outdates1<-outdates[which(stats>=thstat)]
@@ -116,11 +105,21 @@ replaceOutlier<-function(thresStat,isReplace){
 	write.table(sdon,filecor,col.names=FALSE,row.names=FALSE)
 }
 
-########################
+######################################
 
 
 isSpatialCheckOk<-function(){
-	qcout<-getOutlier.params()$qcout
+	if(gal.params$AllOrOne=='one'){
+		IJoutputdir<-ret.results$outputdir
+		IJstation<-ret.results$station
+	}
+	if(gal.params$AllOrOne=='all'){
+		ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
+		IJoutputdir<-ret.results$outputdir[[ijstn]]
+		IJstation<-ret.results$station[[ijstn]]
+	}
+
+	qcout<-getOutlier.params(IJstation,IJoutputdir)$qcout
 	if(ret.results$action=='qc.rain'){
 		xxout<-as.character(qcout$spatial.check)
 		outdts<-qcout[!is.na(xxout),c('stn','dates','spatial.check')]

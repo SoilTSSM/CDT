@@ -13,10 +13,9 @@ InterpolationPanelCmd<-function(){
 		wscrlwin<-w.scale(17.7) #18
 		hscrlwin<-h.scale(31.5)
 	}else{
-		wscrlwin<-w.scale(20.7)  #21
+		wscrlwin<-w.scale(21)  #20.7
 		hscrlwin<-h.scale(37)
 	}
-
 
 	###################
 
@@ -29,12 +28,10 @@ InterpolationPanelCmd<-function(){
 	cmd.tab1 <- bwAddTab(tknote.cmd,text="General")
 	cmd.tab2 <- bwAddTab(tknote.cmd,text="Options")
 	cmd.tab3 <- bwAddTab(tknote.cmd,text="Interpolation")
-#	cmd.tab4 <- bwAddTab(tknote.cmd,text="Extraction")
+	cmd.tab4 <- bwAddTab(tknote.cmd,text="Colors Options")
 	bwRaiseTab(tknote.cmd,cmd.tab1)
 
-
-
-#######################################################################################################
+	#######################################################################################################
 
 	#Tab1
 	frTab1<-tkframe(cmd.tab1)
@@ -202,7 +199,7 @@ InterpolationPanelCmd<-function(){
 	})
 
 
-#######################################################################################################
+	#######################################################################################################
 
 	#Tab2
 	frTab2<-tkframe(cmd.tab2) #,relief='sunken',bd=2
@@ -261,9 +258,8 @@ InterpolationPanelCmd<-function(){
 	tkgrid(idp.tab2,row=1,column=3,sticky='we',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
 	tkgrid(elvdiffL.tab2,row=2,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
 	tkgrid(elvdiff.tab2,row=2,column=1,sticky='we',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
-#	tkgrid(omaxL.tab2,row=2,column=2,sticky='we',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
-#	tkgrid(omax.tab2,row=2,column=3,sticky='we',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
-
+	# tkgrid(omaxL.tab2,row=2,column=2,sticky='we',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
+	# tkgrid(omax.tab2,row=2,column=3,sticky='we',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
 
 	##############
 	frameOpt2<-ttklabelframe(subfr2,text="Fitting a variogram",relief='groove')
@@ -325,44 +321,15 @@ InterpolationPanelCmd<-function(){
 		}
 	})
 
-
 	##############
 	tkgrid(useELV.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
-
 	tkgrid(combDem.tab2,row=1,column=1,sticky='we',rowspan=1,columnspan=6,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(btDem.tab2,row=1,column=7,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
-
-	#############################
-	frameShp<-ttklabelframe(subfr2,text="Shapefiles for boundary",relief='groove')
-
-	file.plotShp <- tclVar()
-	combShp.tab1<-ttkcombobox(frameShp, values=unlist(file.list), textvariable=file.plotShp,width=largeur)
-	btShp.tab1<-tkbutton(frameShp, text="...")
-	tkconfigure(btShp.tab1,command=function(){
-		shp.opfiles<-getOpenShp(main.win,all.opfiles)
-		if(!is.null(shp.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'shp'
-			file.opfiles[[nopf+1]]<<-shp.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.plotShp)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combStnfl.tab1,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(combgrdCDF.tab1,values=unlist(file.list), textvariable=file.grdCDF)
-			tkconfigure(combDem.tab2,values=unlist(file.list), textvariable=file.plotDem)
-			tkconfigure(combShp.tab1,values=unlist(file.list), textvariable=file.plotShp)
-		}
-	})
-
-	#############################
-	tkgrid(combShp.tab1,row=0,column=0,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(btShp.tab1,row=0,column=4,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
-
 
 	#############################
 	tkgrid(frameOpt1,row=0,column=0,sticky='we')
 	tkgrid(frameOpt2,row=1,column=0,sticky='we',pady=3)
 	tkgrid(frameOpt3,row=2,column=0,sticky='we',pady=3)
-	tkgrid(frameShp,row=3,column=0,sticky='we')
 
 	#######################################################################################################
 	tkbind(combInterp.tab1,"<<ComboboxSelected>>",function(){
@@ -429,7 +396,6 @@ InterpolationPanelCmd<-function(){
 		}
 	})
 
-
 	######
 	tkbind(useELV.tab2,"<Button-1>",function(){
 		if(tclvalue(useELV)=='0'){
@@ -441,9 +407,7 @@ InterpolationPanelCmd<-function(){
 		}
 	})
 
-	######
-
-#######################################################################################################
+	#######################################################################################################
 
 	#Tab3
 	frTab3<-tkframe(cmd.tab3)
@@ -454,22 +418,54 @@ InterpolationPanelCmd<-function(){
 	tkgrid(scrw3)
 	subfr3<-bwScrollableFrame(scrw3,width=wscrlwin,height=hscrlwin)
 
-	file.save1 <-tclVar()
-	lab1.tab3<-tklabel(subfr3,text='File to save interpolated data',anchor='w',justify='left')
-	fl2sav.tab3<-tkentry(subfr3,textvariable=file.save1,width=largeur-8)
-	bfl2sav.tab3<-tkbutton(subfr3, text="...")
-	tkconfigure(bfl2sav.tab3,command=function(){
-		file2save <- tkgetSaveFile(initialdir=getwd(),initialfile = "",filetypes = "{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}")
-		if(is.na(file2save)) tclvalue(file.save1)<-""
-		else tclvalue(file.save1)<-file2save
-	})
-
 	plotData.tab3<-tkbutton(subfr3, text="Plot Data")
 	plotVgm.tab3<-tkbutton(subfr3, text="Plot Variogram",state='disabled')
 	InterpData.tab3<-tkbutton(subfr3, text="Interpolate")
 	plotInterpVal.tab3<-tkbutton(subfr3, text="Plot Interpolated values")
 	remData.tab3<-tkbutton(subfr3, text="Delete some observations")
 
+	#############################
+	frameSaveInt<-ttklabelframe(subfr3,text="File to save interpolated data",relief='groove')
+	
+	file.save1 <-tclVar()
+	fl2sav.tab3<-tkentry(frameSaveInt,textvariable=file.save1,width=largeur) 
+	bfl2sav.tab3<-tkbutton(frameSaveInt, text="...")
+	tkconfigure(bfl2sav.tab3,command=function(){
+		file2save <- tkgetSaveFile(initialdir=getwd(),initialfile = "",filetypes = "{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}")
+		if(is.na(file2save)) tclvalue(file.save1)<-""
+		else tclvalue(file.save1)<-file2save
+	})
+
+	#############################
+	tkgrid(fl2sav.tab3,row=0,column=0,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(bfl2sav.tab3,row=0,column=4,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+
+	#############################
+	frameShp<-ttklabelframe(subfr3,text="Shapefiles for boundary",relief='groove')
+
+	file.plotShp <- tclVar()
+	combShp.tab3<-ttkcombobox(frameShp, values=unlist(file.list), textvariable=file.plotShp,width=largeur - 1) 
+	btShp.tab3<-tkbutton(frameShp, text="...")
+	tkconfigure(btShp.tab3,command=function(){
+		shp.opfiles<-getOpenShp(main.win,all.opfiles)
+		if(!is.null(shp.opfiles)){
+			nopf<-length(type.opfiles)
+			type.opfiles[[nopf+1]]<<-'shp'
+			file.opfiles[[nopf+1]]<<-shp.opfiles
+			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
+			tclvalue(file.plotShp)<-file.opfiles[[nopf+1]][[1]]
+			tkconfigure(combStnfl.tab1,values=unlist(file.list), textvariable=file.stnfl)
+			tkconfigure(combgrdCDF.tab1,values=unlist(file.list), textvariable=file.grdCDF)
+			tkconfigure(combDem.tab2,values=unlist(file.list), textvariable=file.plotDem)
+			tkconfigure(combShp.tab3,values=unlist(file.list), textvariable=file.plotShp)
+		}
+	})
+
+	#############################
+	tkgrid(combShp.tab3,row=0,column=0,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(btShp.tab3,row=0,column=4,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+
+	#############
 	sep1.tab3<-ttkseparator(subfr3)
 	sep2.tab3<-ttkseparator(subfr3)
 	sep3.tab3<-ttkseparator(subfr3)
@@ -477,33 +473,38 @@ InterpolationPanelCmd<-function(){
 	sep5.tab3<-ttkseparator(subfr3)
 
 	#############
-	tkgrid(lab1.tab3,row=0,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(fl2sav.tab3,row=1,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(bfl2sav.tab3,row=1,column=5,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(sep1.tab3,row=2,column=0,sticky='we',rowspan=1,columnspan=6,pady=5)
-	tkgrid(tklabel(subfr3,text=' ',width=3),row=3,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(plotData.tab3,row=3,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(tklabel(subfr3,text=' ',width=3),row=3,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(sep2.tab3,row=4,column=0,sticky='we',rowspan=1,columnspan=6,pady=3)
-	tkgrid(plotVgm.tab3,row=5,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(sep3.tab3,row=6,column=0,sticky='we',rowspan=1,columnspan=6,pady=3)
-	tkgrid(InterpData.tab3,row=7,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(sep4.tab3,row=8,column=0,sticky='we',rowspan=1,columnspan=6,pady=3)
-	tkgrid(plotInterpVal.tab3,row=9,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(sep5.tab3,row=10,column=0,sticky='we',rowspan=1,columnspan=6,pady=3)
-	tkgrid(remData.tab3,row=11,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 
-	###############
+	tkgrid(tklabel(subfr3,text=' ',width=3),row=0,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(plotData.tab3,row=0,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(tklabel(subfr3,text=' ',width=3),row=0,column=4,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(sep1.tab3,row=1,column=0,sticky='we',rowspan=1,columnspan=6,pady=1)
+	tkgrid(plotVgm.tab3,row=2,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(sep2.tab3,row=3,column=0,sticky='we',rowspan=1,columnspan=6,pady=1)
+	tkgrid(InterpData.tab3,row=4,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(sep3.tab3,row=5,column=0,sticky='we',rowspan=1,columnspan=6,pady=1)
+	tkgrid(plotInterpVal.tab3,row=6,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(sep4.tab3,row=7,column=0,sticky='we',rowspan=1,columnspan=6,pady=1)
+	tkgrid(remData.tab3,row=8,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	
+	tkgrid(sep5.tab3,row=9,column=0,sticky='we',rowspan=1,columnspan=6,pady=2)
+	tkgrid(frameSaveInt,row=10,column=0,sticky='we',rowspan=1,columnspan=6,pady=1)
+
+	tkgrid(frameShp,row=11,column=0,sticky='we',rowspan=1,columnspan=6,pady=1)
+
+	#######################################################################################################
+
 	##Used to change some obs
 	assign('donnees',NULL,envir=EnvInterpolation)
 	assign('getDEMFirst',NULL,envir=EnvInterpolation)
 	assign('filechange','',envir=EnvInterpolation)
+	atLev<-NULL
 
+	###############
 	getDONNE<-function(){
 		if(is.null(EnvInterpolation$donnees)){
 			donne<-getCDTdata(file.stnfl,file.period)
 			donne<-getCDTdata1Date(donne,tclvalue(idate_yrs),tclvalue(idate_mon),tclvalue(idate_day))
-#			assign('elvStn',donne$elv,envir=EnvInterpolation)
+			# assign('elvStn',donne$elv,envir=EnvInterpolation)
 			if(tclvalue(useELV)=='1'){
 				if(EnvInterpolation$filechange!=tclvalue(file.plotDem) | is.null(EnvInterpolation$getDEMFirst)){
 					demdata<-getNcdfOpenData(file.plotDem)[[2]]
@@ -560,24 +561,20 @@ InterpolationPanelCmd<-function(){
 	notebookTab0<-NULL
 
 	tkconfigure(plotData.tab3,command=function(){
+		if(tclvalue(custom.color)=='0' | length(listCol)==0){
+			n<-as.numeric(tclvalue(nb.color))
+			if(is.na(n)) n<-10
+			colFun<-match.fun(tclvalue(preset.color))
+			listCol<-colFun(n)
+			if(tclvalue(reverse.color)=='1') listCol<-rev(listCol)
+		}
 
 		donne<-getDONNE()
+		###########
+		if(tclvalue(custom.level)=='0' | length(atLev)==0){
+			if(!is.null(donne)) atLev<<-pretty(donne$z)
+		}
 
-############
-##comment after
-#		assign("donne",donne,envir=.GlobalEnv)
-#
-#		interpolParams<-list(mthd=tclvalue(Interp.Method),grdChx=tclvalue(varCreateGrd),ncfila=tclvalue(file.grdCDF),grdCR=newgrdPars,
-#		file2save=tclvalue(file.save1),vgmChx=tclvalue(fitVgmChx),VgmMod=tclvalue(fitVgmMod),vgmModList=vgmModList,useELV=tclvalue(useELV),
-#		maxdist=tclvalue(maxdist_vars),nmin=tclvalue(nmin_vars),nmax=tclvalue(nmax_vars),idp=tclvalue(idp_vars),omax=tclvalue(omax_vars),elvdiff=tclvalue(elvdiff_vars))
-#		assign('interpolParams',interpolParams,envir=.GlobalEnv)
-#
-#		demdata<-getNcdfOpenData(file.plotDem)[[2]]
-#		assign("demdata",demdata,envir=.GlobalEnv)
-###########
-
-		if(!is.null(donne)) atLev<-pretty(donne$z)
-		listCol<-rainbow(10)
 		shpf<-getShpOpenData(file.plotShp)[[2]]
 		units<-NA
 
@@ -635,8 +632,18 @@ InterpolationPanelCmd<-function(){
 	notebookTab2<-NULL
 
 	tkconfigure(plotInterpVal.tab3,command=function(){
-		if(!is.null(outNCdata)) atLev<-pretty(outNCdata[[2]]$value)
-		listCol<-rainbow(10)
+		if(tclvalue(custom.color)=='0' | length(listCol)==0){
+			n<-as.numeric(tclvalue(nb.color))
+			if(is.na(n)) n<-10
+			colFun<-match.fun(tclvalue(preset.color))
+			listCol<-colFun(n)
+			if(tclvalue(reverse.color)=='1') listCol<-rev(listCol)
+		}
+
+		if(tclvalue(custom.level)=='0' | length(atLev)==0){
+			if(!is.null(outNCdata)) atLev<<-pretty(outNCdata[[2]]$value)
+		}
+
 		shpf<-getShpOpenData(file.plotShp)[[2]]
 		units<-NA
 
@@ -656,12 +663,12 @@ InterpolationPanelCmd<-function(){
 		donne<-getDONNE()
 
 		if(!is.null(donne)){
-#			retNBTab<-tableInterpNotebookTab_unik(tknotes,donne,notebookTab3,tab.type,tab.data)
-#			notebookTab3<<-retNBTab$notebookTab
-#			tab.type<<-retNBTab$tab.type
-#			tab.data<<-retNBTab$tab.data
-#			popupAddRemoveRow(tknotes)
-#
+			# retNBTab<-tableInterpNotebookTab_unik(tknotes,donne,notebookTab3,tab.type,tab.data)
+			# notebookTab3<<-retNBTab$notebookTab
+			# tab.type<<-retNBTab$tab.type
+			# tab.data<<-retNBTab$tab.data
+			# popupAddRemoveRow(tknotes)
+
 			if(is.null(donne$elv)) elv<-NA
 			else elv<-donne$elv
 			dat2disp<-data.frame(id=donne$id,lon=donne$lon,lat=donne$lat,z=donne$z,elv=elv)
@@ -680,7 +687,131 @@ InterpolationPanelCmd<-function(){
 	})
 
 
-#######################################################################################################
+	#######################################################################################################
+
+	#Tab4
+	frTab4<-tkframe(cmd.tab4)
+	tkgrid(frTab4,padx=0,pady=1,ipadx=1,ipady=1)
+	tkgrid.columnconfigure(frTab4,0,weight=1)
+
+	scrw4<-bwScrolledWindow(frTab4)
+	tkgrid(scrw4)
+	subfr4<-bwScrollableFrame(scrw4,width=wscrlwin,height=hscrlwin)
+
+	wPreview<-wscrlwin-10
+	nb.color<-tclVar('10')
+	preset.color <- tclVar()
+	tclvalue(preset.color) <- 'tim.colors'
+
+	labPresetCol.tab4<-tklabel(subfr4,text='Presets colorkey',anchor='w',justify='left')
+	combPresetCol.tab4<-ttkcombobox(subfr4,values=c('tim.colors','rainbow','heat.colors','cm.colors','topo.colors','terrain.colors'), textvariable=preset.color,width=13)
+	nbPresetCol.tab4<-tkentry(subfr4, width=3,textvariable=nb.color,justify = "left")
+
+	reverse.color <- tclVar(0)
+	labRevCol.tab4<-tklabel(subfr4,text='Reverse',anchor='e',justify='right')
+	chkRevCol.tab4<-tkcheckbutton(subfr4,variable=reverse.color,anchor='w',justify='left')
+
+	sep1.tab4<-ttkseparator(subfr4)
+	previewPresetCol.tab4<-tkcanvas(subfr4,width=wPreview,height=20,bg='white')
+
+	sep2.tab4<-ttkseparator(subfr4)
+	custom.color <- tclVar(0)
+	chkCustoCol.tab4<-tkcheckbutton(subfr4,variable=custom.color,text='User customized  colorkey',anchor='w',justify='left')
+	butCustoCol.tab4<-tkbutton(subfr4, text="Custom",state='disabled')
+
+	sep3.tab4<-ttkseparator(subfr4)
+	custom.level <- tclVar(0)
+	chkCustoLev.tab4<-tkcheckbutton(subfr4,variable=custom.level,text='User customized  levels',anchor='w',justify='left')
+	butCustoLev.tab4<-tkbutton(subfr4, text="Custom",state='disabled')
+
+	infobulle(combPresetCol.tab4,'Predefined color palettes')
+	status.bar.display(combPresetCol.tab4,txt.stbr1,'Predefined color palettes')
+	infobulle(nbPresetCol.tab4,'Number of color levels to be in the palette')
+	status.bar.display(nbPresetCol.tab4,txt.stbr1,'Number of color levels to be in the palette')
+	infobulle(chkRevCol.tab4,'Reverse the color palettes')
+	status.bar.display(chkRevCol.tab4,txt.stbr1,'Reverse the color palettes')
+
+	#####
+	tkgrid(labPresetCol.tab4,row=0,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(combPresetCol.tab4,row=0,column=2,sticky='we',rowspan=1,columnspan=3,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(nbPresetCol.tab4,row=0,column=5,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(labRevCol.tab4,row=1,column=2,sticky='e',rowspan=1,columnspan=3,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(chkRevCol.tab4,row=1,column=5,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+
+	tkgrid(sep1.tab4,row=2,column=0,sticky='we',rowspan=1,columnspan=6,pady=5)
+	tkgrid(previewPresetCol.tab4,row=3,column=0,sticky='w',rowspan=1,columnspan=6,padx=1,pady=1)
+	tkgrid(sep2.tab4,row=4,column=0,sticky='we',rowspan=1,columnspan=6,pady=5)
+	tkgrid(chkCustoCol.tab4,row=5,column=0,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(butCustoCol.tab4,row=5,column=4,sticky='w',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(sep3.tab4,row=6,column=0,sticky='we',rowspan=1,columnspan=6,pady=5)
+	tkgrid(chkCustoLev.tab4,row=7,column=0,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(butCustoLev.tab4,row=7,column=4,sticky='w',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+
+	########################
+	##Preview Color
+	kolor<-getGradientColor(tim.colors(10),0:wPreview)
+	tkdelete(previewPresetCol.tab4,'gradlines0')
+	for(i in 0:wPreview) tkcreate(previewPresetCol.tab4, "line",i,0,i,20,fill=kolor[i],tags='gradlines0')
+
+	tkbind(combPresetCol.tab4,"<<ComboboxSelected>>",function(){
+		n<-as.numeric(tclvalue(nb.color))
+		colFun<-match.fun(tclvalue(preset.color))
+		listCol<-colFun(n)
+		if(tclvalue(reverse.color)=='1') listCol<-rev(listCol)
+		kolor<-getGradientColor(listCol,0:wPreview)
+		tkdelete(previewPresetCol.tab4,'gradlines0')
+		for(i in 0:wPreview) tkcreate(previewPresetCol.tab4, "line",i,0,i,20,fill=kolor[i],tags='gradlines0')
+	})
+
+	#reverse
+	tkbind(chkRevCol.tab4,"<Button-1>",function(){
+		if(tclvalue(custom.color)=='0'){
+			n<-as.numeric(tclvalue(nb.color))
+			colFun<-match.fun(tclvalue(preset.color))
+			listCol<-colFun(n)
+			if(tclvalue(reverse.color)=='0') listCol<-rev(listCol)
+			kolor<-getGradientColor(listCol,0:wPreview)
+			tkdelete(previewPresetCol.tab4,'gradlines0')
+			for(i in 0:wPreview) tkcreate(previewPresetCol.tab4, "line",i,0,i,20,fill=kolor[i],tags='gradlines0')
+		}
+	})
+	
+	########################
+	##Customized color	
+	tkbind(chkCustoCol.tab4,"<Button-1>",function(){
+		if(tclvalue(custom.color)=='0') tkconfigure(butCustoCol.tab4,state='normal')
+		else tkconfigure(butCustoCol.tab4,state='disabled')
+	})
+
+	listCol<-NULL	
+	tkconfigure(butCustoCol.tab4,command=function(){
+		listCol<<-createColorkey(main.win,listCol)
+		if(!is.null(listCol) & length(listCol)>0){
+			kolor<-getGradientColor(listCol,0:wPreview)
+			tkdelete(previewPresetCol.tab4,'gradlines0')
+			for(i in 0:wPreview) tkcreate(previewPresetCol.tab4, "line",i,0,i,20,fill=kolor[i],tags='gradlines0')
+		}
+	})
+
+	########################
+	##Customized level	
+	tkbind(chkCustoLev.tab4,"<Button-1>",function(){
+		if(tclvalue(custom.level)=='0') tkconfigure(butCustoLev.tab4,state='normal')
+		else tkconfigure(butCustoLev.tab4,state='disabled')
+	})
+	
+	tkconfigure(butCustoLev.tab4,command=function(){
+		if(is.null(atLev)){
+			donne<-getCDTdata(file.stnfl,file.period)
+			donne<-getCDTdata1Date(donne,tclvalue(idate_yrs),tclvalue(idate_mon),tclvalue(idate_day))
+			if(!is.null(donne)){
+				atLev<-pretty(donne$z)
+			}
+		}
+		atLev<<-customLevels(main.win,atLev)
+	})
+
+	#######################################################################################################
 	tcl('update')
 	tkgrid(cmd.frame,sticky='nswe',pady=5)
 	tkgrid.columnconfigure(cmd.frame,0,weight=1)
@@ -690,8 +821,6 @@ InterpolationPanelCmd<-function(){
 
 
 #######################################################################################################
-#######################################################################################################
-
 
 
 editVgmModel<-function(tt,vgmModList){

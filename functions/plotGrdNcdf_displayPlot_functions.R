@@ -83,7 +83,7 @@ plotNetCDFdata<-function(donne,atLev,listCol,ocrds,units){
 	interpolate = TRUE,region = TRUE,
 	panel = function(...){
 		panel.levelplot(...)
-		panel.lines(ocrds,col="gray",lwd=0.5)
+		panel.lines(ocrds,col="black",lwd=0.5)
 		panel.abline(h = grid.y, v =grid.x , col = "lightgray",lty=3)
 	},colorkey = FALSE,
 	par.settings=parSettings,

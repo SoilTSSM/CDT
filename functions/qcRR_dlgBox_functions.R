@@ -428,8 +428,14 @@ qc.get.info.rain<-function(parent.win,gal.params){
 			}
 			
 			tkconfigure(stn.choix.cb,values=stn.choix, textvariable=stn.choix.val)
-			if(gal.params$AllOrOne=='one') tkconfigure(setting.button,state='normal')
-			if(gal.params$AllOrOne=='all') tkconfigure(setting.button,state='disabled')
+			if(gal.params$AllOrOne=='one'){
+				tkconfigure(setting.button,state='normal')
+				stateReplaceAll<-'disabled'
+			} 
+			if(gal.params$AllOrOne=='all'){
+				tkconfigure(setting.button,state='disabled')
+				stateReplaceAll<-'normal'
+			} 
 			if(tclvalue(cb.1series.val)=='0'){
 				tkconfigure(stn.choix.prev,state='normal')
 				tkconfigure(stn.choix.next,state='normal')
@@ -439,7 +445,7 @@ qc.get.info.rain<-function(parent.win,gal.params){
 			
 			####button command
 			if(is.null(lcmd.frame_qc)){
-				lcmd.frame<<-QcCmdBut()
+				lcmd.frame<<-QcCmdBut(stateReplaceAll)
 				lcmd.frame_qc<<-1
 			}
 			gal.params$retpar<<-gal.params$retpar+1

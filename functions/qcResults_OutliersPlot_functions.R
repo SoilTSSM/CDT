@@ -1,5 +1,15 @@
 plotOutliers<-function(jmo){
-	outlparams<-getOutlier.params()
+	if(gal.params$AllOrOne=='one'){
+		IJoutputdir<-ret.results$outputdir
+		IJstation<-ret.results$station
+	}
+	if(gal.params$AllOrOne=='all'){
+		ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
+		IJoutputdir<-ret.results$outputdir[[ijstn]]
+		IJstation<-ret.results$station[[ijstn]]
+	}
+
+	outlparams<-getOutlier.params(IJstation,IJoutputdir)
 
 	if(!is.null(outlparams)){
 		outqcf<-outlparams$qcout

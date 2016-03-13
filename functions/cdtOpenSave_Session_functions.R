@@ -25,15 +25,21 @@ OpenOldCDTtask<-function(){
 	if(gal.params$action=='qc.rain'	| gal.params$action=='qc.temp' | gal.params$action=='homog' | gal.params$action=='zero.check'){
 		if(gal.params$action=='qc.rain'	| gal.params$action=='qc.temp'){
 			EnvQcOutlierData<<-EnvQcOutlierData
-			if(gal.params$AllOrOne=='one') tkconfigure(setting.button,state='normal')
-			if(gal.params$AllOrOne=='all') tkconfigure(setting.button,state='disabled')
+			if(gal.params$AllOrOne=='one'){
+				tkconfigure(setting.button,state='normal')
+				stateReplaceAll<-'disabled'
+			} 
+			if(gal.params$AllOrOne=='all'){
+				tkconfigure(setting.button,state='disabled')
+				stateReplaceAll<-'normal'
+			} 
 			if(as.character(gal.params$use.method$Values[1])=='0'){
 				tkconfigure(stn.choix.prev,state='normal')
 				tkconfigure(stn.choix.next,state='normal')
 			}
 			if(gal.params$action=='qc.temp') tclvalue(XYCoordinates)<<-paste(c(as.character(gal.params$parameter[[2]][,4]),as.character(gal.params$parameter[[2]][,5])),sep='',collapse=' ')
 			if(gal.params$action=='qc.rain') tclvalue(XYCoordinates)<<-paste(c(as.character(gal.params$parameter[[2]][,3]),as.character(gal.params$parameter[[2]][,4])),sep='',collapse=' ')
-			lcmd.frame<<-QcCmdBut()
+			lcmd.frame<<-QcCmdBut(stateReplaceAll)
 			lcmd.frame_qc<<-1
 		}else if(gal.params$action=='homog'){
 			EnvHomogzData<<-EnvHomogzData
