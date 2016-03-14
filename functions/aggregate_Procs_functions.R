@@ -10,9 +10,14 @@ AggregateQcData<-function(){
 	corrctID<-list.files(chkdir)
 
 	load(file.path(outdirs,'OriginalData','Parameters.RData',fsep = .Platform$file.sep))
-	infohead<-cbind(paramsGAL$data$id,paramsGAL$data$lon,paramsGAL$data$lat,paramsGAL$data$elv)
-	stnID<-as.character(paramsGAL$data$id)
-
+	if(paramsGAL$inputPars$action=="qc.rain"){	
+		infohead<-cbind(paramsGAL$data$id,paramsGAL$data$lon,paramsGAL$data$lat,paramsGAL$data$elv)
+		stnID<-as.character(paramsGAL$data$id)
+	}
+	if(paramsGAL$inputPars$action=="qc.temp"){
+		infohead<-cbind(paramsGAL$data[[1]]$id,paramsGAL$data[[1]]$lon,paramsGAL$data[[1]]$lat,paramsGAL$data[[1]]$elv)
+		stnID<-as.character(paramsGAL$data[[1]]$id)
+	}
 	existStn<-stnID%in%corrctID
 	noChck<-!stnID%in%outptID
 	stnID<-stnID[existStn]
@@ -51,11 +56,12 @@ AggregateQcData<-function(){
 	if(period=='dekadal') pdate<-'DEKADAL'
 	if(period=='Monthly') pdate<-'MONTHLY'
 
-	if(is.null(paramsGAL$data$elv)) capition<-c('Stations','LON',paste(pdate,'LAT',sep='/'))
+	if(ncol(infohead)==3) capition<-c('Stations','LON',paste(pdate,'LAT',sep='/'))
 	else capition<-c('Stations','LON','LAT',paste(pdate,'ELV',sep='/'))
 	infohead<-cbind(capition,t(infohead))
 	aggData<-t(cbind(t(infohead),t(aggData)))
-	aggData[is.na(aggData)]<-paramsGAL$dataPars[[2]]$miss.val
+	if(paramsGAL$inputPars$action=="qc.rain") aggData[is.na(aggData)]<-paramsGAL$dataPars[[2]]$miss.val
+	if(paramsGAL$inputPars$action=="qc.temp") aggData[is.na(aggData)]<-paramsGAL$dataPars[[1]][[2]]$miss.val
 
 	fileout<-file.path(datfin,paste('Checked',paramsGAL$inputPars$file.io$Values[1],sep='_'),fsep = .Platform$file.sep)
 	write.table(aggData,fileout,col.names=F,row.names=F,quote=F)

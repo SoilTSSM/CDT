@@ -343,6 +343,7 @@ qc.get.info.rain<-function(parent.win,gal.params){
 			getInitDataParams<-function(gal.params){					
 				if(tclvalue(cb.1series.val)=="0"){
 					donstn<-splitCDTData(file.opfiles[[jfile]][[2]],gal.params$period)
+					xycrds<-NULL
 					if(!is.null(donstn)){
 						# limUp<-apply(donstn$data,2,function(x){
 						# 	x<-x[!is.na(x) & x>0]

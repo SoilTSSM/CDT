@@ -441,6 +441,7 @@ qc.get.info.txtn<-function(parent.win,gal.params){
 						donOut<-list(donstn,donstn1)
 						parsFile<-list(file.opfiles[[jfile]][3:4],file.opfiles[[jfile1]][3:4])
 					} 
+					xycrds<-NULL
 					if(!is.null(donstn)){
 						# limUL<-apply(donstn$data,2,function(x){
 						# 	x<-x[!is.na(x)]

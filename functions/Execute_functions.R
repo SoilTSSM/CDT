@@ -308,7 +308,10 @@ execute.fun<-function(get.stn){
 	if(gal.params$action=="agg.qc"){
 		agg2run<-try(AggregateQcData(), silent=TRUE)
 		if(!inherits(agg2run, "try-error")){
-			insert.txt(main.txt.out,"Aggregation finished successfully")
+			if(!is.null(agg2run)){
+				if(agg2run==0) insert.txt(main.txt.out,"Aggregation finished successfully")
+				else insert.txt(main.txt.out,"Aggregation failed",format=TRUE)
+			} else insert.txt(main.txt.out,"Aggregation failed",format=TRUE)
 		}else{
 			insert.txt(main.txt.out,"Aggregation failed",format=TRUE)
 			insert.txt(main.txt.out,gsub('[\r\n]','',agg2run[1]),format=TRUE)
@@ -321,8 +324,8 @@ execute.fun<-function(get.stn){
 		agg2run<-try(AggregateZeroChkData(), silent=TRUE)
 		if(!inherits(agg2run, "try-error")){
 			if(!is.null(agg2run)){
-			if(agg2run==0) insert.txt(main.txt.out,"Aggregation finished successfully")
-			else insert.txt(main.txt.out,"Aggregation failed",format=TRUE)
+				if(agg2run==0) insert.txt(main.txt.out,"Aggregation finished successfully")
+				else insert.txt(main.txt.out,"Aggregation failed",format=TRUE)
 			} else insert.txt(main.txt.out,"Aggregation failed",format=TRUE)
 		}else{
 			insert.txt(main.txt.out,"Aggregation failed",format=TRUE)
@@ -353,7 +356,10 @@ execute.fun<-function(get.stn){
 	if(gal.params$action=="agg.stn"){
 		agg2run<-try(AggregateDataCDT(gal.params), silent=TRUE)
 		if(!inherits(agg2run, "try-error")){
-			insert.txt(main.txt.out,"Aggregation finished successfully")
+			if(!is.null(agg2run)){
+				if(agg2run==0) 	insert.txt(main.txt.out,"Aggregation finished successfully")
+				else insert.txt(main.txt.out,"Aggregation failed",format=TRUE)
+			}else insert.txt(main.txt.out,"Aggregation failed",format=TRUE)
 		}else{
 			insert.txt(main.txt.out,"Aggregation failed",format=TRUE)
 			insert.txt(main.txt.out,gsub('[\r\n]','',agg2run[1]),format=TRUE)
@@ -365,11 +371,12 @@ execute.fun<-function(get.stn){
 	if(gal.params$action=="agg.ts"){
 		agg2run<-try(ExeAggTimeSeries(gal.params), silent=TRUE)
 		if(!inherits(agg2run, "try-error")){
-			insert.txt(main.txt.out,
-			paste("Conversion from",as.character(gal.params$period),"to",as.character(gal.params$period1),"data finished successfully"))
+			if(!is.null(agg2run)){
+				if(agg2run==0) insert.txt(main.txt.out,paste("Conversion from",as.character(gal.params$period),"to",as.character(gal.params$period1),"data finished successfully"))
+				else insert.txt(main.txt.out,paste("Conversion from",as.character(gal.params$period),"to",as.character(gal.params$period1),"data failed"),format=TRUE)
+			}else insert.txt(main.txt.out,paste("Conversion from",as.character(gal.params$period),"to",as.character(gal.params$period1),"data failed"),format=TRUE)
 		}else{
-			insert.txt(main.txt.out,
-			paste("Conversion from",as.character(gal.params$period),"to",as.character(gal.params$period1),"data failed"),format=TRUE)
+			insert.txt(main.txt.out,paste("Conversion from",as.character(gal.params$period),"to",as.character(gal.params$period1),"data failed"),format=TRUE)
 			insert.txt(main.txt.out,gsub('[\r\n]','',agg2run[1]),format=TRUE)
 		}
 		return(NULL)
