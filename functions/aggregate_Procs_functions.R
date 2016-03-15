@@ -201,7 +201,15 @@ AggregateHomData<-function(){
 			}
 		}
 
-		if(!is.null(miss)) infohead1<-infohead[,- miss]
+		if(!is.null(miss)){
+			infohead1<-infohead[,- miss]	
+			faileds<-list('Not Tested Stations',infohead[1,miss])
+			containertab<-displayConsOutputTabs(tknotes,faileds,title='Not Tested Stations')
+			ntab<-length(tab.type)
+			tab.type[[ntab+1]]<<-'ctxt'
+			tab.data[[ntab+1]]<<-containertab
+			tkselect(tknotes,ntab)
+		} 
 		if(nrow(infohead)==3) capition<-c('Stations','LON',paste(period,'LAT',sep='/'))
 		if(nrow(infohead)==4) capition<-c('Stations','LON','LAT',paste(period,'ELV',sep='/'))
 		infohead2<-cbind(capition,infohead1)
