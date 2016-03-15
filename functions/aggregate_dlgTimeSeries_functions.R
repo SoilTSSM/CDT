@@ -204,7 +204,6 @@ mainDialogAggTs<-function(parent.win,gal.params){
 				gal.params<<-oneStnDataAgg(main.win,gal.params,tclvalue(OriginData))
 				settingdone<<-1
 			})
-##
 		}else if(tclvalue(DataType)=='CDT data format'){
 			tkdestroy(cb.stnfl)
 			cb.stnfl<-ttkcombobox(fr.B1, values=unlist(file.list), textvariable=file.stnfl,width=wtkcombo)
@@ -234,7 +233,6 @@ mainDialogAggTs<-function(parent.win,gal.params){
 			tkconfigure(bt.file.save,command=function() fileORdir2Save(file.save1,isFile=TRUE))
 
 			tkconfigure(bt.opt.set,state='disabled')
-##
 		}else if(tclvalue(DataType)=='NetCDF gridded data'){
 			tkdestroy(cb.stnfl)
 			cb.stnfl<-tkentry(fr.B1, textvariable=file.stnfl,width=largeur)
@@ -603,7 +601,6 @@ oneStnDataAgg<-function(top.win,gal.params,speriod){
 	tkconfigure(dtfrmt1,variable=rbdtfrmt,value="1")
 	tkconfigure(dtfrmt2,variable=rbdtfrmt,value="0")
 
-##
 	bt.fileformat<-tkbutton(fdf2,text=" OK ")
 	bt.prm.CA<-tkbutton(fdf2, text="Cancel")
 	tkgrid(bt.fileformat,row=0,column=0,sticky='w',padx=5,pady=1,ipadx=5,ipady=1)

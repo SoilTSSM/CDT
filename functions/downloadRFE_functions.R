@@ -204,7 +204,8 @@ ExecDownload_SatData<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,o
 downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir){
 	outRet<-0
 	if(datasrc=='10-DAYS TAMSAT'){
-		url<-'http://www.met.reading.ac.uk/~tamsat/public_data'
+		#url<-'http://www.met.reading.ac.uk/~tamsat/public_data'
+		url<-'http://tamsat.org.uk/public_data'
 		outdir0<-file.path(outdir,'Dekad_TAMSAT_Africa',fsep = .Platform$file.sep)
 		if(!file.exists(outdir0)) dir.create(outdir0,showWarnings=FALSE,recursive=TRUE)
 		outdir1<-file.path(outdir,'Dekad_TAMSAT_Extracted',fsep = .Platform$file.sep)
@@ -280,8 +281,7 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 					xdat[is.na(xdat)] <- -99
 					dx <- dim.def.ncdf("Lon", "degreeE", xm)
 					dy <- dim.def.ncdf("Lat", "degreeN", ym)
-					rfeout <- var.def.ncdf('rfe', "mm",
-					list(dx,dy), -99,longname= "TAMSAT 10-days rainfall estimate", prec="single")
+					rfeout <- var.def.ncdf('rfe', "mm", list(dx,dy), -99,longname= "TAMSAT 10-days rainfall estimate", prec="single")
 					outfl<-file.path(outdir1,file0,fsep = .Platform$file.sep)
 					nc2 <- create.ncdf(outfl,rfeout)
 					put.var.ncdf(nc2,rfeout,xdat)
@@ -296,7 +296,8 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 	#####################################################
 
 	if(datasrc=='DAILY TAMSAT'){
-		url<-'http://www.met.reading.ac.uk/~tamsat/public_data'
+		# url<-'http://www.met.reading.ac.uk/~tamsat/public_data'
+		url<-'http://tamsat.org.uk/public_data'
 		outdir0<-file.path(outdir,'Daily_TAMSAT_Africa',fsep = .Platform$file.sep)
 		if(!file.exists(outdir0)) dir.create(outdir0,showWarnings=FALSE,recursive=TRUE)
 		outdir1<-file.path(outdir,'Daily_TAMSAT_Extracted',fsep = .Platform$file.sep)
@@ -364,8 +365,7 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 					xdat[is.na(xdat)] <- -99
 					dx <- dim.def.ncdf("Lon", "degreeE", xm)
 					dy <- dim.def.ncdf("Lat", "degreeN", ym)
-					rfeout <- var.def.ncdf('rfe', "mm",
-					list(dx,dy), -99,longname= "TAMSAT daily rainfall estimate", prec="single")
+					rfeout <- var.def.ncdf('rfe', "mm", list(dx,dy), -99,longname= "TAMSAT daily rainfall estimate", prec="single")
 					outfl<-file.path(outdir1,file0,fsep = .Platform$file.sep)
 					nc2 <- create.ncdf(outfl,rfeout)
 					put.var.ncdf(nc2,rfeout,xdat)

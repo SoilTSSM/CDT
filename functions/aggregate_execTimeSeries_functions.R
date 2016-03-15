@@ -28,6 +28,7 @@ ExeAggTimeSeries<-function(gal.params){
 		outdonne<-apply(donne,2,comp.fun,dates=dates,fun=fun,frac=minfrac)
 		outdates<-as(outdonne[[1]]$Date,'character')
 		outdonne<-sapply(outdonne,function(x) x$Values)
+		outdonne<-round(outdonne,1)
 		outdonne[is.na(outdonne)]<-miss.val
 		if(is.null(elv)){
 			headers<-t(cbind(donne.id,lon,lat))
@@ -105,4 +106,5 @@ ExeAggTimeSeries<-function(gal.params){
 
 		comp.fun(file.pars,informat,dates,fun,minfrac,varid.out,longname,outformat)
 	}
+	return(0)
 }

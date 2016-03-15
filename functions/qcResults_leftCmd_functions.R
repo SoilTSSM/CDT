@@ -526,6 +526,8 @@ QcCmdBut<-function(stateReplaceAll){
 
 	###################################################
 	##display table for setting
+	QcEditSetTab<-NULL
+
 	tkconfigure(btSetting.tab1,command=function(){
 		if(!is.null(ret.results)){
 			if(gal.params$AllOrOne=='one'){
@@ -535,71 +537,11 @@ QcCmdBut<-function(stateReplaceAll){
 				ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
 				IJstation<-ret.results$station[[ijstn]]
 			}
-			retdata<-DisplayQcHom(tknotes,QcOutFormat(),paste(IJstation,'_QC-Output Edit',sep=''))
-			ntab<-length(tab.type)
-			tab.type[[ntab+1]]<<-'arrqc'
-			tab.data[[ntab+1]]<<-retdata
-			table1<-tab.data[[ntab+1]][[2]][[1]]
-			if(ret.results$action=='qc.temp'){
-				if(as.character(gal.params$use.method$Values[1])=="0"){
-					if(as.character(gal.params$use.method$Values[2])=="1"){
-						.Tcl(paste(table1,'tag','celltag','ttestval',
-						paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),8,sep=',',collapse=' ')))
-						tcl(table1,"tag","configure","ttestval",bg="aquamarine")
-						.Tcl(paste(table1,'tag','celltag','ttnreplace',
-						paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),9,sep=',',collapse=' ')))
-						tcl(table1,"tag","configure","ttnreplace",bg="lightgoldenrod1")
-						.Tcl(paste(table1,'tag','celltag','ttchgval',
-						paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),10,sep=',',collapse=' ')))
-						tcl(table1,"tag","configure","ttchgval",bg="darkolivegreen1")
-					}else{
-						.Tcl(paste(table1,'tag','celltag','ttestval',
-						paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),7,sep=',',collapse=' ')))
-						tcl(table1,"tag","configure","ttestval",bg="aquamarine")
-						.Tcl(paste(table1,'tag','celltag','ttnreplace',
-						paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),8,sep=',',collapse=' ')))
-						tcl(table1,"tag","configure","ttnreplace",bg="lightgoldenrod1")
-						.Tcl(paste(table1,'tag','celltag','ttchgval',
-						paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),9,sep=',',collapse=' ')))
-						tcl(table1,"tag","configure","ttchgval",bg="darkolivegreen1")
-					}
-				}else{
-					if(as.character(gal.params$use.method$Values[2])=="1"){
-						.Tcl(paste(table1,'tag','celltag','ttnreplace',
-						paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),7,sep=',',collapse=' ')))
-						tcl(table1,"tag","configure","ttnreplace",bg="lightgoldenrod1")
-						.Tcl(paste(table1,'tag','celltag','ttchgval',
-						paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),8,sep=',',collapse=' ')))
-						tcl(table1,"tag","configure","ttchgval",bg="darkolivegreen1")
-					}else{
-						.Tcl(paste(table1,'tag','celltag','ttnreplace',
-						paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),6,sep=',',collapse=' ')))
-						tcl(table1,"tag","configure","ttnreplace",bg="lightgoldenrod1")
-						.Tcl(paste(table1,'tag','celltag','ttchgval',
-						paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),7,sep=',',collapse=' ')))
-						tcl(table1,"tag","configure","ttchgval",bg="darkolivegreen1")
-					}
-				}
-			}
-			if(ret.results$action=='qc.rain'){
-				if(as.character(gal.params$use.method$Values[1])=="0"){
-					.Tcl(paste(table1,'tag','celltag','ttnreplace',
-					paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),8,sep=',',collapse=' ')))
-					tcl(table1,"tag","configure","ttnreplace",bg="lightgoldenrod1")
-					.Tcl(paste(table1,'tag','celltag','ttchgval',
-					paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),9,sep=',',collapse=' ')))
-					tcl(table1,"tag","configure","ttchgval",bg="darkolivegreen1")
-				}else{
-					.Tcl(paste(table1,'tag','celltag','ttnreplace',
-					paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),7,sep=',',collapse=' ')))
-					tcl(table1,"tag","configure","ttnreplace",bg="lightgoldenrod1")
-					.Tcl(paste(table1,'tag','celltag','ttchgval',
-					paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),8,sep=',',collapse=' ')))
-					tcl(table1,"tag","configure","ttchgval",bg="darkolivegreen1")
-				}
-			}
-			tkselect(tknotes,ntab)
-			popupAddRemoveRow(tknotes)
+			
+			retNBTab<-tableQcEditNotebookTab_unik(tknotes,paste(IJstation,'_QC-Output Edit',sep=''),QcEditSetTab,tab.type,tab.data)
+			QcEditSetTab<<-retNBTab$notebookTab
+			tab.type<<-retNBTab$tab.type
+			tab.data<<-retNBTab$tab.data
 		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 

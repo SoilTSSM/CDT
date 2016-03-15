@@ -628,18 +628,13 @@ tkconfigure(preview.tab4,command=function(){
 tkconfigure(viewplot.tab4,command=function() RHtestsDisplayPdfPlot(ret.results))
 
 ##########
+RHtestEditTab<-NULL
 tkconfigure(change.tab4,command=function(){
 	if(!is.null(ret.results)){
-		retdata<-DisplayQcHom(tknotes,RHtests_mCsFormat(ret.results),paste(ret.results$stn,'mCs.txt',sep='_'))
-		ntab<-length(tab.type)
-		tab.type[[ntab+1]]<<-'arrRHtest'
-		tab.data[[ntab+1]]<<-retdata
-		table1<-tab.data[[ntab+1]][[2]][[1]]
-		.Tcl(paste(table1,'tag','celltag','KolCol3',paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),3,sep=',',collapse=' ')))
-		tcl(table1,"tag","configure","KolCol3",bg="lightgoldenrod1")
-		tkselect(tknotes,ntab)
-		popupAddRemoveRow(tknotes)
-
+		retNBTab<-tableRHtestNotebookTab_unik(tknotes,paste(ret.results$stn,'mCs.txt',sep='_'),RHtestEditTab,tab.type,tab.data)
+		RHtestEditTab<<-retNBTab$notebookTab
+		tab.type<<-retNBTab$tab.type
+		tab.data<<-retNBTab$tab.data
 	}else insert.txt(main.txt.out,'There is no RHtests output',format=TRUE)
 })
 
