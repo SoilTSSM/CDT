@@ -114,7 +114,6 @@ execute.fun<-function(get.stn){
 	}
 
 	####################################################################
-	##Merge Rainfall
 
 	##Output message
 	merging_end_msg<-function(outret,outtxt,msgOK,msgFail){
@@ -135,8 +134,9 @@ execute.fun<-function(get.stn){
 		}
 	}
 	
-
 	############################### 
+	##Merge Rainfall
+
 	##compute mean Gauge-RFE bias
 	if(gal.params$action=='coefbias.rain'){
 		origdir<-file.path(as.character(gal.params$file.io$Values[5]), paste('MeanBiasGGRFE',getf.no.ext(as.character(gal.params$file.io$Values[1])),sep='_'),fsep = .Platform$file.sep)

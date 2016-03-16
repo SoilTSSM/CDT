@@ -242,18 +242,21 @@ calcBiasTemp<-function(i,ix1,stn.data,model_stn){
 }
 
 ###############
-Variogrm_modeling<-function(bias.df,stn.lon,stn.lat){
+Variogrm_modeling<-function(bias.df){
 	bias.df<-bias.df[!is.na(bias.df$bias),]
 	coordinates(bias.df)<-~lat + lon
 	vgm1 <- variogram(bias~1, bias.df, width=0.10)
-	vgm1$gamma[1] <- 0
-	vgm1$dist[1] <- ifelse(vgm1$dist[1]==0,1E-6,vgm1$dist[1]) #remove zerodist
-	lvgm <- length(vgm1$gamma)
-	vgm1$gamma[lvgm] <- vgm1$gamma[lvgm-1] # To remove values computed from small np
-	psl0 <- max(vgm1$gamma)
+	
+	# vgm1$gamma[1] <- 0
+	# vgm1$dist[1] <- ifelse(vgm1$dist[1]==0,1E-6,vgm1$dist[1]) #remove zerodist
+	# lvgm <- length(vgm1$gamma)
+	# vgm1$gamma[lvgm] <- vgm1$gamma[lvgm-1] # To remove values computed from small np
+
+	psl0 <- mean(c(max(vgm1$gamma), median(vgm1$gamma)))
 	#nug=0
-	rng <- sqrt(max(dist(cbind(stn.lat, stn.lon))))/4
-	null.vgm <- vgm(1,"Exp", rng) # initial parameters
+	#rng <- as.numeric(dist(t(bbox(bias.df)))/4)
+	rng <- (spDists(t(bbox(bias.df)),longlat=FALSE)[1,2])/4
+	null.vgm <- vgm(psl0,"Exp", rng) # initial parameters
 	vgm_model <- fit.variogram(vgm1, model=null.vgm)
 	#plot(vgm1,model=vgm_model)
 	return(vgm_model)
@@ -284,11 +287,25 @@ ComputeMeanBias<-function(paramsBias){
 	stn.data<-stnDatas$data
 	nstn<-length(stn.lon)
 
+	########
+	if(freqData=='daily'){
+		ntimes<-365
+		n2<-15
+	}
+	if(freqData=='dekadal'){
+		ntimes<-36
+		n2<-3
+	}
+	if(freqData=='monthly'){
+		ntimes<-12
+		n2<-1
+	}
+
 	#####
 	if(freqData=='daily'){
 		bias.dates<-format(seq(as.Date(paste(coef.dates[1],'0101',sep=''),format='%Y%m%d'), as.Date(paste(coef.dates[2],'1231',sep=''),format='%Y%m%d'),'day'),'%Y%m%d')
 		endmon<-c(31,28,31,30,31,30,31,31,30,31,30,31)
-		bias <- array(data=NA, c(365,nstn))
+		bias <- array(data=NA, c(ntimes,nstn))
 		vtimes<-cbind(unlist(sapply(endmon,function(j) 1:j)),rep(1:12,endmon))
 
 		ibsdt<-bias.dates%in%stn.dates
@@ -296,11 +313,10 @@ ComputeMeanBias<-function(paramsBias){
 		model_stn<-model_stn[ibsdt,,drop=F]
 		istdt<-stn.dates%in%bias.dates
 		stn.data<-stn.data[istdt,,drop=F]
-
 		# Compute bias
 		if(length(bsdates)>0){
 			for (i in 1:nstn){
-				for (nt in 1:365){
+				for (nt in 1:ntimes){
 					ix1<-which(as.numeric(substr(bsdates,7,8))==vtimes[nt,1] & as.numeric(substr(bsdates,5,6))==vtimes[nt,2])
 					bias[nt,i] <- calcBiasTemp(i,ix1,stn.data,model_stn)
 				}
@@ -311,7 +327,7 @@ ComputeMeanBias<-function(paramsBias){
 	if(freqData=='dekadal'){
 		bias.dates<-seq(as.Date(paste(coef.dates[1],'011',sep=''),format='%Y%m%d'), as.Date(paste(coef.dates[2],'123',sep=''),format='%Y%m%d'),'day')
 		bias.dates<-paste(format(bias.dates[which(as.numeric(format(bias.dates,'%d'))<=3)],'%Y%m'), as.numeric(format(bias.dates[which(as.numeric(format(bias.dates,'%d'))<=3)],'%d')),sep='')
-		bias <- array(data=NA, c(36,nstn))
+		bias <- array(data=NA, c(ntimes,nstn))
 		vtimes<-expand.grid(1:3,1:12)
 
 		ibsdt<-bias.dates%in%stn.dates
@@ -319,11 +335,10 @@ ComputeMeanBias<-function(paramsBias){
 		model_stn<-model_stn[ibsdt,,drop=F]
 		istdt<-stn.dates%in%bias.dates
 		stn.data<-stn.data[istdt,,drop=F]
-
 		# Compute bias
 		if(length(bsdates)>0){
 			for (i in 1:nstn){
-				for (nt in 1:36){
+				for (nt in 1:ntimes){
 					ix1<-which(as.numeric(substr(bsdates,7,7))==vtimes[nt,1] & as.numeric(substr(bsdates,5,6))==vtimes[nt,2])
 					bias[nt,i] <- calcBiasTemp(i,ix1,stn.data,model_stn)
 				}
@@ -333,7 +348,7 @@ ComputeMeanBias<-function(paramsBias){
 	#####
 	if(freqData=='monthly'){
 		bias.dates<-format(seq(as.Date(paste(coef.dates[1],'011',sep=''),format='%Y%m%d'), as.Date(paste(coef.dates[2],'1231',sep=''),format='%Y%m%d'),'month'),'%Y%m')
-		bias <- array(data=NA, c(12,nstn))
+		bias <- array(data=NA, c(ntimes,nstn))
 		vtimes<-c(1:12)
 
 		ibsdt<-bias.dates%in%stn.dates
@@ -341,11 +356,10 @@ ComputeMeanBias<-function(paramsBias){
 		model_stn<-model_stn[ibsdt,,drop=F]
 		istdt<-stn.dates%in%bias.dates
 		stn.data<-stn.data[istdt,,drop=F]
-
 		# Compute bias
 		if(length(bsdates)>0){
 			for (i in 1:nstn){
-				for (nt in 1:12){
+				for (nt in 1:ntimes){
 					ix1<-which(as.numeric(substr(bsdates,5,6))==vtimes[nt])
 					bias[nt,i] <- calcBiasTemp(i,ix1,stn.data,model_stn)
 				}
@@ -365,19 +379,23 @@ ComputeMeanBias<-function(paramsBias){
 	#Defines netcdf output
 	grd.bs <- var.def.ncdf("grid", "",xy.dim, NA, longname= "Gridded Station/Reanalysis Bias", prec="single")
 
-	################################################
-	if(freqData=='daily') ntimes<-365
-	if(freqData=='dekadal') ntimes<-36
-	if(freqData=='monthly') ntimes<-12
-
 	tcl("update","idletasks")
 	for(ij in 1:ntimes){
 		bias.stn <- data.frame(bias=bias[ij,],lon=stn.lon,lat=stn.lat)
 		ix <- which(!is.na(bias.stn$bias))
 		if(length(ix)>8){
+			winl<-(ij-n2):(ij+n2)
+			rwin<-winl%%ntimes
+			rwin<-ifelse(rwin==0,ntimes,rwin)
+			bias.vgm <- as.vector(t(bias[rwin,]))
+			bias.df <- data.frame(lon=rep(stn.lon,2*n2+1), lat=rep(stn.lat,2*n2+1), bias=bias.vgm)
+			vgm1<-try(autofitVariogram(bias~1,input_data=bias.df,model=c("Sph", "Exp", "Gau"), width=0.10),silent=TRUE)
+			if(!inherits(vgm1, "try-error")) vgm_model<-vgm1$var_model
+			else vgm_model<-NULL
+			# else vgm_model <-Variogrm_modeling(bias.df)
 			bias.stn <- bias.stn[ix,]
 			coordinates(bias.stn) =~lon + lat
-			gbias<-krige(bias~1,locations=bias.stn,newdata=newlocation.merging,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=max.dst,debug.level=0)
+			gbias<-krige(bias~1,locations=bias.stn,newdata=newlocation.merging,model=vgm_model,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=max.dst,debug.level=0)
 			grd.bias <- gbias$var1.pred
 			grd.bias[is.na(grd.bias)]<-1
 			#smoothing
