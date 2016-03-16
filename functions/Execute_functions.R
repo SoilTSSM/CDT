@@ -139,8 +139,7 @@ execute.fun<-function(get.stn){
 	############################### 
 	##compute mean Gauge-RFE bias
 	if(gal.params$action=='coefbias.rain'){
-		origdir<-file.path(as.character(gal.params$file.io$Values[5]),
-		paste('MeanBiasGGRFE',getf.no.ext(as.character(gal.params$file.io$Values[1])),sep='_'),fsep = .Platform$file.sep)
+		origdir<-file.path(as.character(gal.params$file.io$Values[5]), paste('MeanBiasGGRFE',getf.no.ext(as.character(gal.params$file.io$Values[1])),sep='_'),fsep = .Platform$file.sep)
 		mrg2run<-try(execBiasRain(origdir), silent=TRUE)
 		merging_end_msg(mrg2run,main.txt.out,"Computing mean Gauge-RFE bias finished successfully","Computing mean Gauge-RFE bias failed")
 	}
@@ -156,9 +155,7 @@ execute.fun<-function(get.stn){
 			xdeb<-paste(daty[3],format(ISOdate(2014,daty[2],1),"%b"),daty[1],sep='')
 			xfin<-paste(daty[6],format(ISOdate(2014,daty[5],1),"%b"),daty[4],sep='')
 		}
-		origdir<-file.path(as.character(gal.params$file.io$Values[4]),
-		paste('Adjusted_RFE_Data',xdeb,xfin,sep='_'),fsep = .Platform$file.sep)
-
+		origdir<-file.path(as.character(gal.params$file.io$Values[4]), paste('Adjusted_RFE_Data',xdeb,xfin,sep='_'),fsep = .Platform$file.sep)
 		mrg2run<-try(execAdjBiasRain(origdir), silent=TRUE)
 		merging_end_msg(mrg2run,main.txt.out,"Adjusting mean Gauge-RFE bias finished successfully","Adjusting mean Gauge-RFE bias failed")
 	}
@@ -174,9 +171,7 @@ execute.fun<-function(get.stn){
 			xdeb<-paste(daty[3],format(ISOdate(2014,daty[2],1),"%b"),daty[1],sep='')
 			xfin<-paste(daty[6],format(ISOdate(2014,daty[5],1),"%b"),daty[4],sep='')
 		}
-		origdir<-file.path(as.character(gal.params$file.io$Values[5]),
-		paste('Merged_RR_Data',xdeb,xfin,sep='_'),fsep = .Platform$file.sep)
-
+		origdir<-file.path(as.character(gal.params$file.io$Values[5]), paste('Merged_RR_Data',xdeb,xfin,sep='_'),fsep = .Platform$file.sep)
 		mrg2run<-try(execMergeRain(origdir), silent=TRUE)
 		merging_end_msg(mrg2run,main.txt.out,"Rainfall merging finished successfully","Rainfall merging failed")
 	}
@@ -192,17 +187,10 @@ execute.fun<-function(get.stn){
 	#Merge  temperature using reanalysis
 
 	##compute regression coef
-
 	if(gal.params$action=='coefdown.temp'){
-		origdir<-file.path(as.character(gal.params$file.io$Values[3]),
-		paste('CoefDownTemp',getf.no.ext(as.character(gal.params$file.io$Values[1])),sep='_'),fsep = .Platform$file.sep)
+		origdir<-file.path(as.character(gal.params$file.io$Values[3]), paste('CoefDownTemp',getf.no.ext(as.character(gal.params$file.io$Values[1])),sep='_'),fsep = .Platform$file.sep)
 		mrg2run<-try(execCoefDownTemp(origdir), silent=TRUE)
-		if(!inherits(mrg2run, "try-error")){
-			insert.txt(main.txt.out,"Computing regression parameters finished successfully")
-		}else{
-			insert.txt(main.txt.out,"Computing regression parameters failed",format=TRUE)
-			insert.txt(main.txt.out,gsub('[\r\n]','',mrg2run[1]),format=TRUE)
-		}
+		merging_end_msg(mrg2run,main.txt.out,"Computing regression parameters finished successfully","Computing regression parameters failed")
 	}
 
 	##############################
@@ -216,30 +204,18 @@ execute.fun<-function(get.stn){
 			xdeb<-paste(daty[3],format(ISOdate(2014,daty[2],1),"%b"),daty[1],sep='')
 			xfin<-paste(daty[6],format(ISOdate(2014,daty[5],1),"%b"),daty[4],sep='')
 		}
-
 		origdir<-file.path(as.character(gal.params$file.io$Values[5]), paste('Downscaled_Reanalysis_Data',xdeb,xfin,sep='_'),fsep = .Platform$file.sep)
-
 		mrg2run<-try(execDownscalingTemp(origdir), silent=TRUE)
-		if(!inherits(mrg2run, "try-error")){
-			insert.txt(main.txt.out,"Downscaling finished successfully")
-		}else{
-			insert.txt(main.txt.out,"Downscaling failed",format=TRUE)
-			insert.txt(main.txt.out,gsub('[\r\n]','',mrg2run[1]),format=TRUE)
-		}
+		merging_end_msg(mrg2run,main.txt.out,"Downscaling finished successfully","Downscaling failed")
 	}
+
 	##############################
 	##compute mean bias coef
 	if(gal.params$action=='coefbias.temp'){
-		origdir<-file.path(as.character(gal.params$file.io$Values[4]),
-		paste('CoefBiasAdjTemp',as.character(gal.params$bias.method),
+		origdir<-file.path(as.character(gal.params$file.io$Values[4]), paste('CoefBiasAdjTemp',as.character(gal.params$bias.method),
 		getf.no.ext(as.character(gal.params$file.io$Values[1])),sep='_'),fsep = .Platform$file.sep)
 		mrg2run<-try(execCoefBiasCompute(origdir), silent=TRUE)
-		if(!inherits(mrg2run, "try-error")){
-			insert.txt(main.txt.out,"Computing bias coefficients finished successfully")
-		}else{
-			insert.txt(main.txt.out,"Computing bias coefficients failed",format=TRUE)
-			insert.txt(main.txt.out,gsub('[\r\n]','',mrg2run[1]),format=TRUE)
-		}
+		merging_end_msg(mrg2run,main.txt.out,"Computing bias coefficients finished successfully","Computing bias coefficients failed")
 	}
 
 	##############################
@@ -253,16 +229,9 @@ execute.fun<-function(get.stn){
 			xdeb<-paste(daty[3],format(ISOdate(2014,daty[2],1),"%b"),daty[1],sep='')
 			xfin<-paste(daty[6],format(ISOdate(2014,daty[5],1),"%b"),daty[4],sep='')
 		}
-		origdir<-file.path(as.character(gal.params$file.io$Values[5]),
-		paste('Adjusted_Temp_Data',xdeb,xfin,sep='_'),fsep = .Platform$file.sep)
-
+		origdir<-file.path(as.character(gal.params$file.io$Values[5]), paste('Adjusted_Temp_Data',xdeb,xfin,sep='_'),fsep = .Platform$file.sep)
 		mrg2run<-try(execAjdBiasDownTemp(origdir), silent=TRUE)
-		if(!inherits(mrg2run, "try-error")){
-			insert.txt(main.txt.out,"Adjustment of downscaled data finished successfully")
-		}else{
-			insert.txt(main.txt.out,"Adjustment of downscaled data failed",format=TRUE)
-			insert.txt(main.txt.out,gsub('[\r\n]','',mrg2run[1]),format=TRUE)
-		}
+		merging_end_msg(mrg2run,main.txt.out,"Adjustment of downscaled data finished successfully","Adjustment of downscaled data failed")
 	}
 
 	##############################
@@ -276,16 +245,9 @@ execute.fun<-function(get.stn){
 			xdeb<-paste(daty[3],format(ISOdate(2014,daty[2],1),"%b"),daty[1],sep='')
 			xfin<-paste(daty[6],format(ISOdate(2014,daty[5],1),"%b"),daty[4],sep='')
 		}
-		origdir<-file.path(as.character(gal.params$file.io$Values[5]),
-		paste('Merged_Temp_Data',xdeb,xfin,sep='_'),fsep = .Platform$file.sep)
-
+		origdir<-file.path(as.character(gal.params$file.io$Values[5]), paste('Merged_Temp_Data',xdeb,xfin,sep='_'),fsep = .Platform$file.sep)
 		mrg2run<-try(execMergeTemp(origdir), silent=TRUE)
-		if(!inherits(mrg2run, "try-error")){
-			insert.txt(main.txt.out,"Temperature merging finished successfully")
-		}else{
-			insert.txt(main.txt.out,"Temperature merging failed",format=TRUE)
-			insert.txt(main.txt.out,gsub('[\r\n]','',mrg2run[1]),format=TRUE)
-		}
+		merging_end_msg(mrg2run,main.txt.out,"Temperature merging finished successfully","Temperature merging failed")
 	}
 
 	################################################################################

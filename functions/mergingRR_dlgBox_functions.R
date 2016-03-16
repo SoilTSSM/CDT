@@ -25,7 +25,6 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	for(i in 0:3) tkgrid(get(paste('fr.A',i,sep='')))
 	for(i in 0:3) tkgrid.configure(get(paste('fr.A',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
-
 	###################
 	fr.A00<-tkframe(fr.A0)
 	#fr.A01<-tkframe(fr.A0)
@@ -80,7 +79,6 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	})
 
 	###
-
 	frA12.txt<-tklabel(fr.A12,text='Directory of RFE files')
 	tkgrid(frA12.txt)
 
@@ -252,9 +250,7 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 		}
 	})
 
-
 	########################
-
 	for(i in 0:3) assign(paste('fr.C1',i,sep=''),tkframe(fr.C1))
 	for(i in 0:3) tkgrid(get(paste('fr.C1',i,sep='')))
 	for(i in 0:3) tkgrid.configure(get(paste('fr.C1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=0,ipadx=1,ipady=0)
@@ -328,11 +324,11 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 
 	###################
 	min.nbrs.l<-tklabel.h(fr.C3,'MinStn',txt.stbr1,
-	'Minimum number of neighbours used to interpolate the bias',
-	'Minimum number of neighbours used to interpolate the bias')
+	'Minimum number of neighbours to be used to interpolate the bias',
+	'Minimum number of neighbours to be used to interpolate the bias')
 	max.nbrs.l<-tklabel.h(fr.C3,'MaxStn',txt.stbr1,
-	'Maximum number of neighbours used to interpolate the bias',
-	'Maximum number of neighbours used to interpolate the bias')
+	'Maximum number of neighbours to be used to interpolate the bias',
+	'Maximum number of neighbours to be used to interpolate the bias')
 	max.dst.l<-tklabel.h(fr.C3,'MaxDist',txt.stbr1,
 	'Maximum distance (in  decimal degree) to be used to interpolate the bias',
 	'Maximum distance (in  decimal degree) to be used to interpolate the bias')
@@ -431,7 +427,6 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	return(gal.params)
 }
 
-
 ##############################################################################################
 
 rmvBiasGetInfoRain<-function(parent.win,gal.params){
@@ -460,7 +455,6 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 	for(i in 0:3) assign(paste('fr.A',i,sep=''),tkframe(fr.A,relief=pr.relief.set[i+1],borderwidth=2))
 	for(i in 0:3) tkgrid(get(paste('fr.A',i,sep='')))
 	for(i in 0:3) tkgrid.configure(get(paste('fr.A',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
-
 
 	###################
 	fr.A00<-tkframe(fr.A0)
@@ -539,7 +533,6 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 	tkgrid(fr.A20,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 	tkgrid(fr.A21,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 
-
 	#####
 	frA20.txt<-tklabel(fr.A20,text="Directory of mean bias files")
 	tkgrid(frA20.txt)
@@ -586,7 +579,6 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 	})
 
 	#################
-
 	pr.relief.set2<-c('sunken','sunken','sunken','sunken','flat')
 	for(i in 0:1) assign(paste('fr.C',i,sep=''),tkframe(fr.C,relief=pr.relief.set2[i+1],borderwidth=2))
 	for(i in 0:1) tkgrid(get(paste('fr.C',i,sep='')))
@@ -638,7 +630,6 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 	else day.txtVar<-tclVar('Day')
 	day.txt<-tklabel(fr.C1,text=tclvalue(day.txtVar),textvariable=day.txtVar)
 
-
 	istart.yrs<-tclVar(as.character(gal.params$dates.adj$Values[1]))
 	istart.mon<-tclVar(as.character(gal.params$dates.adj$Values[2]))
 	istart.day<-tclVar(as.character(gal.params$dates.adj$Values[3]))
@@ -664,7 +655,6 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 	tkgrid(yrs2.v,row=2,column=1,sticky='ew',padx=1,pady=1)
 	tkgrid(mon2.v,row=2,column=2,sticky='ew',padx=1,pady=1)
 	tkgrid(day2.v,row=2,column=3,sticky='ew',padx=1,pady=1)
-
 
 	tkbind(cb.period,"<<ComboboxSelected>>",function(){
 		if(tclvalue(file.period)=='Daily data'){
@@ -704,7 +694,6 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 	tkgrid(bt.prm.CA,row=0,column=1,sticky='e',padx=5,pady=1,ipadx=1,ipady=1)
 
 	tkconfigure(bt.prm.OK,command=function(){
-
 		if(tclvalue(dir.rfe)=="" | tclvalue(dir.rfe)=="NA"){
 			tkmessageBox(message="Choose or enter the  directory containing the RFE files",icon="warning",type="ok")
 			tkwait.window(tt)
@@ -718,13 +707,10 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 			tkmessageBox(message="Choose or enter the path to directory to save results",icon="warning",type="ok")
 			tkwait.window(tt)
 		}else{
-			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily',
-			ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
-			gal.params$file.io$Values<<-c(tclvalue(file.grdrfe),tclvalue(dir.rfe),
-			tclvalue(dir.bias),tclvalue(file.save1))
+			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily', ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
+			gal.params$file.io$Values<<-c(tclvalue(file.grdrfe),tclvalue(dir.rfe), tclvalue(dir.bias),tclvalue(file.save1))
 			gal.params$prefix$Values<<-c(tclvalue(inrfeff),tclvalue(outmrgff),tclvalue(adjPrefix))
-			gal.params$dates.adj$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon),
-			tclvalue(istart.day),tclvalue(iend.yrs),tclvalue(iend.mon),tclvalue(iend.day))
+			gal.params$dates.adj$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon), tclvalue(istart.day),tclvalue(iend.yrs),tclvalue(iend.mon),tclvalue(iend.day))
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
@@ -769,7 +755,6 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	if (Sys.info()["sysname"] == "Windows") largeur1<-23
 	else largeur1<-21
 
-
 	tt<-tktoplevel()
 	tkgrab.set(tt)
 	tkfocus(tt)
@@ -787,7 +772,6 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	for(i in 0:3) assign(paste('fr.A',i,sep=''),tkframe(fr.A,relief=pr.relief.set[i+1],borderwidth=2))
 	for(i in 0:3) tkgrid(get(paste('fr.A',i,sep='')))
 	for(i in 0:3) tkgrid.configure(get(paste('fr.A',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
-
 
 	###################
 	fr.A00<-tkframe(fr.A0)
@@ -843,7 +827,6 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	})
 
 	###
-
 	adjORnot<-tclVar('Directory of adjusted RFE files')
 	frA12.txt<-tklabel(fr.A12,text=tclvalue(adjORnot),textvariable=adjORnot)
 	tkgrid(frA12.txt)
@@ -889,7 +872,6 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	})
 
 	#############################################
-
 	fr.A30<-tkframe(fr.A3)
 	fr.A31<-tkframe(fr.A3)
 	fr.A32<-tkframe(fr.A3)
@@ -948,7 +930,6 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 
 	if(as.character(gal.params$blankGrd)=='3') stateshp<-'normal'
 	else stateshp<-'disabled'
-	#stateshp<-'disabled'
 
 	##
 	cb.blkshp<-ttkcombobox(fr.A33, values=unlist(file.list), textvariable=file.blkshp,state=stateshp)
@@ -977,9 +958,7 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 		}
 	})
 
-
 	###############################################
-
 	pr.relief.set2<-c('sunken','sunken','sunken','sunken','sunken')
 	for(i in 0:4) assign(paste('fr.C',i,sep=''),tkframe(fr.C,relief=pr.relief.set2[i+1],borderwidth=2))
 	for(i in 0:4) tkgrid(get(paste('fr.C',i,sep='')))
@@ -1000,12 +979,10 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	tkgrid(cb.newGrd,row=1,column=0,columnspan=1,sticky='w',padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(bt.newGrd,row=1,column=1,columnspan=1,sticky='e',padx=1,pady=1,ipadx=1,ipady=1)
 
-
 	###############################
 	for(i in 0:3) assign(paste('fr.C1',i,sep=''),tkframe(fr.C1))
 	for(i in 0:3) tkgrid(get(paste('fr.C1',i,sep='')))
 	for(i in 0:3) tkgrid.configure(get(paste('fr.C1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=0,ipadx=1,ipady=0)
-
 
 	adjORnot1<-tclVar('Adjusted data filename prefix')
 	frC10.txt<-tklabel(fr.C10,text=tclvalue(adjORnot1),textvariable=adjORnot1)
@@ -1075,7 +1052,6 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	fr.C31<-tkframe(fr.C3)
 	tkgrid(fr.C30,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 	tkgrid(fr.C31,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
-
 
 	frC30.txt<-tklabel(fr.C30,text='Blank grid')
 	tkgrid(frC30.txt)
@@ -1238,18 +1214,14 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 			tkmessageBox(message="Choose or enter the path to directory to save results",icon="warning",type="ok")
 			tkwait.window(tt)
 		}else{
-			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily',
-			ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
+			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily', ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
 			gal.params$prefix$Values<<-c(tclvalue(adjPrefix),tclvalue(mrgPrefix),tclvalue(mrgSuffix))
 			valfl<-as.character(gal.params$file.io$Values)
-			valfl[c(1,4,5,6,7)]<-c(tclvalue(file.stnfl),tclvalue(dir.rfe),tclvalue(file.save1),
-			tclvalue(file.blkshp),tclvalue(file.grddem))
+			valfl[c(1,4,5,6,7)]<-c(tclvalue(file.stnfl),tclvalue(dir.rfe),tclvalue(file.save1), tclvalue(file.blkshp),tclvalue(file.grddem))
 			gal.params$file.io$Values<<-valfl
-			gal.params$dates.mrg$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon),
-			tclvalue(istart.day),tclvalue(iend.yrs),tclvalue(iend.mon),tclvalue(iend.day))
+			gal.params$dates.mrg$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon), tclvalue(istart.day),tclvalue(iend.yrs),tclvalue(iend.mon),tclvalue(iend.day))
 			gal.params$NewGrd<<-tclvalue(newGrd)
-			gal.params$blankGrd<<-ifelse(tclvalue(blankGrd)=='None','1',
-			ifelse(tclvalue(blankGrd)=='Use DEM','2','3'))
+			gal.params$blankGrd<<-ifelse(tclvalue(blankGrd)=='None','1', ifelse(tclvalue(blankGrd)=='Use DEM','2','3'))
 
 			tkgrab.release(tt)
 			tkdestroy(tt)
@@ -1283,9 +1255,7 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	return(gal.params)
 }
 
-
 ##############################################################################################
-
 
 getParamMering<-function(tt,gal.params){
 	tt1<-tktoplevel()
@@ -1322,7 +1292,6 @@ getParamMering<-function(tt,gal.params){
 	max.nbrs.l<-tklabel.h(fr.C,'MaxStn',txt.stbr1,
 	'Maximum number of neighbours to be used to interpolate data',
 	'Maximum number of neighbours to be used to interpolate data')
-
 
 	nmin.v<-tkentry.h(fr.C,txt.stbr1,
 	'Minimum number of gauges with data to be used to do the merging',
@@ -1397,7 +1366,6 @@ getParamMering<-function(tt,gal.params){
 	tkgrid(txt.RainNoRain,row=2,column=0,sticky='ew',padx=1,pady=1)
 	tkgrid(cb.RainNoRain,row=3,column=0,sticky='ew',padx=1,pady=1)
 
-
 	################################
 	bt.prm.OK<-tkbutton(frMRG1, text=" OK ")
 	bt.prm.CA<-tkbutton(frMRG1, text="Cancel")
@@ -1437,7 +1405,6 @@ getParamMering<-function(tt,gal.params){
 	tkwait.window(tt1)
 	return(gal.params)
 }
-
 
 ##############################################################################################
 
@@ -1646,9 +1613,7 @@ createNewGrid2Merge<-function(parent.win,gal.params){
 	return(gal.params)
 }
 
-
 ##############################################################################################
-
 
 getParamNewGrid<-function(tt,gal.params){
 	tt1<-tktoplevel()

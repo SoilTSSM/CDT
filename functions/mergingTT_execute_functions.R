@@ -1,5 +1,5 @@
-TreatCoefDownTemp<-function(origdir,freqData){
-
+TreatCoefDownTemp<-function(origdir){
+	freqData<-gal.params$period
 	file.pars<-as.character(gal.params$file.io$Values)
 	dir.create(origdir,showWarnings=FALSE)
 
@@ -17,10 +17,8 @@ TreatCoefDownTemp<-function(origdir,freqData){
 	elv<-donne$elv
 	dates<-donne$dates
 	donne<-donne$data
-
-	#if(nrow(donne$stnDuplCoords)>0)  #diplay table
+	#if(nrow(donne$stnDuplCoords)>0)  #display table
 	#if(nrow(dat$stnMissCoords)>0)
-
 	stnlist<-list(id=stn.id,lon=stn.lon,lat=stn.lat,elv=elv,dates=dates,data=donne)
 
 	###get elevation data
@@ -44,20 +42,13 @@ TreatCoefDownTemp<-function(origdir,freqData){
 ####################################################################
 
 execCoefDownTemp<-function(origdir){
-	freqData<-gal.params$period
-	year1<-as.numeric(as.character(gal.params$dates.coef$Values[1]))
-	year2<-as.numeric(as.character(gal.params$dates.coef$Values[2]))
-
-	coefdownTempdat<-TreatCoefDownTemp(origdir,freqData)
+	coefdownTempdat<-TreatCoefDownTemp(origdir)
 	##DEM data
 	dem<-coefdownTempdat$demData$demGrd@data$dem
 	grid.loc<-SpatialPixels(points =coefdownTempdat$demData$demGrd)
 	##Gauge data
 	stn.lon<-coefdownTempdat$stnData$lon
 	stn.lat<-coefdownTempdat$stnData$lat
-	stn.dates<-coefdownTempdat$stnData$dates
-	stn.data<-coefdownTempdat$stnData$data
-	nstn<-length(stn.lon)
 
 	#DEM over stations
 	stn.loc <- data.frame(lon=stn.lon, lat=stn.lat)
@@ -66,26 +57,21 @@ execCoefDownTemp<-function(origdir){
 	dem.stn <- dem[ijGrd]
 
 	#Compute regression parameters between station temperature and elevation
-	GlmCoefDownscaling(stn.data,stn.dates,dem.stn,year1,year2,origdir)
-	#return(0)
+	paramsGlmCoef<-list(coefdownTempdat=coefdownTempdat,dem.stn=dem.stn,origdir=origdir)
+	ret<-GlmCoefDownscaling(paramsGlmCoef)
+	if(!is.null(ret)){
+		if(ret==0) return(0)
+		else return(ret)
+	} else return(NULL)
 }
 
 #######################################################################################
 
-TreatDownscalingTemp<-function(origdir,freqData){
-
+TreatDownscalingTemp<-function(origdir){
 	file.pars<-as.character(gal.params$file.io$Values)
 	dir.create(origdir,showWarnings=FALSE)
 
 	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
-
-	##############
-	##if DEM data from the DEM Used to compute coef
-	#coefDir<-file.path(dirname(file.pars[1]),'DataUsed2Compute_Coef.RData',fsep = .Platform$file.sep)
-	#load(coefDir)
-	#demData<-coefdownTempdat$demData
-	#dem<-matrix(demData$demGrd@data[,1],nrow=length(demData$lon),ncol=length(demData$lat))
-	#demlist<-list(lon=demData$lon,lat=demData$lat,demMat=dem,demGrd=demData$demGrd)
 
 	###get elevation data
 	jncdf<-which(all.open.file==file.pars[2])
@@ -106,7 +92,6 @@ TreatDownscalingTemp<-function(origdir,freqData){
 	rfelist<-list(lon=ncrfe$x,lat=ncrfe$y,rfeGrd=rfe.coord,rfeVarid=ncrfe$varid,rfeILon=ncrfe$ilon,rfeILat=ncrfe$ilat,irevlat=ncrfe$irevlat)
 
 	downTempdat<-list(demData=demlist,rfeData=rfelist)
-	#save(downTempdat,file=fldekdata)
 	return(downTempdat)
 }
 
@@ -115,14 +100,9 @@ TreatDownscalingTemp<-function(origdir,freqData){
 
 execDownscalingTemp<-function(origdir){
 	freqData<-gal.params$period
-	downTempdat<-TreatDownscalingTemp(origdir,freqData)
-	coef<-read.table(as.character(gal.params$file.io$Values[1]))
+	downTempdat<-TreatDownscalingTemp(origdir)
 
-	dirJRA<-as.character(gal.params$file.io$Values[4])
-	rfe.file.format<-as.character(gal.params$IO.file.format$Values[1])
-	downPrefix<-as.character(gal.params$IO.file.format$Values[2])
 	create.grd<-as.character(gal.params$CreateGrd)
-
 	datesSE<-as.numeric(as.character(gal.params$dates.down$Values))
 
 	istart<-as.Date(paste(datesSE[1],datesSE[2],datesSE[3],sep='-'))
@@ -134,7 +114,6 @@ execDownscalingTemp<-function(origdir){
 		istart<-format(istart,'%Y%m%d')
 		iend<-format(iend,'%Y%m%d')
 	}
-
 
 	############################################
 	##Create grid for interpolation
@@ -189,15 +168,18 @@ execDownscalingTemp<-function(origdir){
 	dy <- dim.def.ncdf("Lat", "degreeN", grd.lat)
 	xy.dim<-list(dx,dy)
 
-	ReanalysisDownscaling(freqData,coef,istart,iend,dem.reanal,dem,downTempdat$rfeData,
-	newlocation.merging,xy.dim,nlon0,nlat0,origdir,dirJRA,rfe.file.format,downPrefix)
-	#return(0)
+	paramsDownscl<-list(istart=istart,iend=iend,dem.reanal=dem.reanal,dem=dem,reanalInfo=downTempdat$rfeData,newlocation.merging=newlocation.merging,xy.dim=xy.dim,nlon0=nlon0,nlat0=nlat0,origdir=origdir)
+	ret<-ReanalysisDownscaling(paramsDownscl)
+	if(!is.null(ret)){
+		if(ret==0) return(0)
+		else return(ret)
+	}else return(NULL)	
 }
 
 #####################################################
 ###Compute Mean Bias Coef
-TreatBiasCoefTemp<-function(origdir,freqData){
-
+TreatBiasCoefTemp<-function(origdir){
+	freqData<-gal.params$period
 	file.pars<-as.character(gal.params$file.io$Values)
 	dir.create(origdir,showWarnings=FALSE)
 
@@ -215,10 +197,8 @@ TreatBiasCoefTemp<-function(origdir,freqData){
 	elv<-donne$elv
 	dates<-donne$dates
 	donne<-donne$data
-
-	#if(nrow(donne$stnDuplCoords)>0)  #diplay table
+	#if(nrow(donne$stnDuplCoords)>0)  #display table
 	#if(nrow(dat$stnMissCoords)>0)
-
 	stnlist<-list(id=stn.id,lon=stn.lon,lat=stn.lat,elv=elv,dates=dates,data=donne)
 
 	###get elevation data
@@ -233,8 +213,6 @@ TreatBiasCoefTemp<-function(origdir,freqData){
 	demlist<-list(lon=fdem$x,lat=fdem$y,demGrd=demdf)
 
 	coefBiasTempdat<-list(stnData=stnlist,demData=demlist)
-	outfile<-file.path(origdir,'DataUsed2Compute_Coef.RData',fsep = .Platform$file.sep)
-	save(coefBiasTempdat,file=outfile)
 	return(coefBiasTempdat)
 }
 
@@ -242,8 +220,7 @@ TreatBiasCoefTemp<-function(origdir,freqData){
 #################################
 
 execCoefBiasCompute<-function(origdir){
-	freqData<-gal.params$period
-	coefBiasTempdat<-TreatBiasCoefTemp(origdir,freqData)
+	coefBiasTempdat<-TreatBiasCoefTemp(origdir)
 
 	downscaledDir<-as.character(gal.params$file.io$Values[3])
 	biasRemoval<- as.character(gal.params$bias.method)
@@ -253,7 +230,6 @@ execCoefBiasCompute<-function(origdir){
 	coef.dates<-c(year1,year2)
 
 	downPrefix<-as.character(gal.params$prefix$Values[1])
-	meanBiasPrefix<-as.character(gal.params$prefix$Values[2])
 	#########
 	downFile<-list.files(downscaledDir,downPrefix)[1]
 	if(is.na(downFile)){
@@ -269,12 +245,9 @@ execCoefBiasCompute<-function(origdir){
 	nlat0<-length(grd.lat)
 	newlocation.merging <- expand.grid(lon=grd.lon, lat=grd.lat)
 	coordinates(newlocation.merging)<- ~lon+lat
-	grid.loc<-newlocation.merging
-	grid.loc<-SpatialPixels(points =grid.loc, tolerance =sqrt(sqrt(.Machine$double.eps)),proj4string = CRS(as.character(NA)))
+	newlocation.merging<-SpatialPixels(points =newlocation.merging, tolerance =sqrt(sqrt(.Machine$double.eps)),proj4string = CRS(as.character(NA)))
 
 	##DEM data
-	#dem.grd<-krige(formula = dem ~ 1,locations=coefBiasTempdat$demData$demGrd,newdata=newlocation.merging,nmax=4,nmin =2,debug.level=0)
-	#dem<-ifelse(dem.grd@data$var1.pred<0,0,dem.grd@data$var1.pred)
 	dem<-coefBiasTempdat$demData$demGrd@data[,1]
 
 	##Gauge data
@@ -287,7 +260,7 @@ execCoefBiasCompute<-function(origdir){
 	#Index of new grid over stations
 	stn.loc <- data.frame(lon=stn.lon, lat=stn.lat)
 	stn.loc <- SpatialPoints(stn.loc)
-	ijGrd <- over(stn.loc, grid.loc)
+	ijGrd <- over(stn.loc, geometry(newlocation.merging))
 	dem.stn <- dem[ijGrd]
 
 	#Defines netcdf output dims
@@ -296,40 +269,32 @@ execCoefBiasCompute<-function(origdir){
 	xy.dim<-list(dx,dy)
 
 	#############
-	# coefBiasTempdat$demData$dem<-dem
-	# #coefBiasTempdat$newgrid<-newlocation.merging
-	# dimInfos<-list(nlon0=nlon0,nlat0=nlat0,xy.dim=xy.dim,ijGrd=ijGrd,dem.stn=dem.stn)
-	# coefBiasTempdat$dimInfos<-dimInfos
-
-	# outfile<-file.path(origdir,'DataUsed2Compute_Coef.RData',fsep = .Platform$file.sep)
-	# save(coefBiasTempdat,file=outfile)
-	###########
-
 	# Extract model values at all station locations
-	model_stn<-ExtractReanal2Stn(freqData,ijGrd,nstn,coef.dates,downscaledDir,downPrefix)
+	model_stn<-ExtractReanal2Stn(ijGrd,nstn,coef.dates)
+	if(is.null(model_stn)) return(NULL)
 
 	#method 1
 	if(biasRemoval=='Bias-kriging'){
-		dirouts1<-file.path(origdir,'Mean_bias',fsep = .Platform$file.sep)
-		if(!file.exists(dirouts1)) dir.create(dirouts1,showWarnings=FALSE)
-		ComputeMeanBias(freqData,coefBiasTempdat$stnData,model_stn,coef.dates,xy.dim,
-		nlon0,nlat0,newlocation.merging,dirouts1,meanBiasPrefix)
+		paramsBias<-list(stnDatas=coefBiasTempdat$stnData,model_stn=model_stn,coef.dates=coef.dates,xy.dim=xy.dim,nlon0=nlon0,nlat0=nlat0,newlocation.merging=newlocation.merging,dirBias=origdir)
+		ret<-ComputeMeanBias(paramsBias)
 	}
 
 	#method 2
 	if(biasRemoval=='Regression-QM'){
-		ComputeRegCoeff(stn.data,stn.dates,coef.dates,dem.stn,model_stn,origdir)
+		paramsRegQM<-list(stn.data=stn.data,stn.dates=stn.dates,coef.dates=coef.dates,dem.stn=dem.stn,model_stn=model_stn,origdir=origdir)
+		ret<-ComputeRegCoeff(paramsRegQM)
 	}
-	#return(0)
+	if(!is.null(ret)){
+		if(ret==0) return(0)
+		else return(ret)
+	}else return(NULL)	
 }
 #################################################
 
 ##Adjust downscaled data
-TreatAjdBiasDownTemp<-function(origdir,freqData){
-
+TreatAjdBiasDownTemp<-function(){
+	freqData<-gal.params$period
 	file.pars<-as.character(gal.params$file.io$Values)
-	dir.create(origdir,showWarnings=FALSE)
-
 	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
 
 	jfile<-which(all.open.file==file.pars[1])
@@ -344,10 +309,8 @@ TreatAjdBiasDownTemp<-function(origdir,freqData){
 	elv<-donne$elv
 	dates<-donne$dates
 	donne<-donne$data
-
-	#if(nrow(donne$stnDuplCoords)>0)  #diplay table
+	#if(nrow(donne$stnDuplCoords)>0)  #display table
 	#if(nrow(dat$stnMissCoords)>0)
-
 	stnlist<-list(id=stn.id,lon=stn.lon,lat=stn.lat,elv=elv,dates=dates,data=donne)
 
 	###get elevation data
@@ -362,27 +325,19 @@ TreatAjdBiasDownTemp<-function(origdir,freqData){
 	demlist<-list(lon=fdem$x,lat=fdem$y,demGrd=demdf)
 
 	adjdownTempdat<-list(stnData=stnlist,demData=demlist)
-	outfile<-file.path(origdir,'DataUsed2Adjust.RData',fsep = .Platform$file.sep)
-	save(adjdownTempdat,file=outfile)
-
 	return(adjdownTempdat)
 }
 
 
 #############
 
-
 execAjdBiasDownTemp<-function(origdir){
 	freqData<-gal.params$period
-	adjdownTempdat<-TreatAjdBiasDownTemp(origdir,freqData)
+	adjdownTempdat<-TreatAjdBiasDownTemp()
 
 	downscaledDir<-as.character(gal.params$file.io$Values[3])
 	biasDirORFile<-as.character(gal.params$file.io$Values[4])
-	adjDir<-file.path(origdir,'Adjusted_data',fsep = .Platform$file.sep)
-	dir.create(adjDir,showWarnings=FALSE)
-
 	biasRemoval<- as.character(gal.params$bias.method)
-
 	datesSE<-as.numeric(as.character(gal.params$dates.adj$Values))
 
 	istart<-as.Date(paste(datesSE[1],datesSE[2],datesSE[3],sep='-'))
@@ -430,16 +385,12 @@ execAjdBiasDownTemp<-function(origdir){
 	close.ncdf(nc)
 	nlon0<-length(grd.lon)
 	nlat0<-length(grd.lat)
-	newlocation.merging <- expand.grid(lon=grd.lon, lat=grd.lat)
-	coordinates(newlocation.merging)<- ~lon+lat
-	grid.loc<-newlocation.merging
+	grid.loc <- expand.grid(lon=grd.lon, lat=grd.lat)
+	coordinates(grid.loc)<- ~lon+lat
 	grid.loc<-SpatialPixels(points =grid.loc, tolerance =sqrt(sqrt(.Machine$double.eps)),proj4string = CRS(as.character(NA)))
 
 	##DEM data
-	#dem.grd<-krige(formula = dem ~ 1,locations=adjdownTempdat$demData$demGrd,newdata=newlocation.merging,nmax=4,nmin =2,debug.level=0)
-	#dem<-ifelse(dem.grd@data$var1.pred<0,0,dem.grd@data$var1.pred)
 	dem<-adjdownTempdat$demData$demGrd@data[,1]
-
 
 	#Defines netcdf output dims
 	dx <- dim.def.ncdf("Lon", "degreeE", grd.lon)
@@ -447,19 +398,13 @@ execAjdBiasDownTemp<-function(origdir){
 	xy.dim<-list(dx,dy)
 
 	#############
-	# coefBiasTempdat$demData$dem<-dem
-	# #coefBiasTempdat$newgrid<-newlocation.merging
-	# dimInfos<-list(nlon0=nlon0,nlat0=nlat0,xy.dim=xy.dim,ijGrd=ijGrd,dem.stn=dem.stn)
-	# coefBiasTempdat$dimInfos<-dimInfos
-
-	# outfile<-file.path(origdir,'DataUsed2Compute_Coef.RData',fsep = .Platform$file.sep)
-	# save(coefBiasTempdat,file=outfile)
-	###########
-
 	#method 1
 	if(biasRemoval=='Bias-kriging'){
-		AjdReanalMeanBias(freqData,istart,iend,dem,xy.dim,nlon0,nlat0,
-		downscaledDir,biasDirORFile,adjDir,downPrefix,meanBiasPrefix,adjPrefix)
+		adjDir<-paste(origdir,'_BiasKR',sep='')
+		dir.create(adjDir,showWarnings=FALSE,recursive=TRUE)
+		paramsAdjBs<-list(istart=istart,iend=iend,dem=dem,xy.dim=xy.dim,nlon0=nlon0,nlat0=nlat0,
+		downscaledDir=downscaledDir,biasDirORFile=biasDirORFile,adjDir=adjDir,downPrefix=downPrefix,meanBiasPrefix=meanBiasPrefix,adjPrefix=adjPrefix)
+		ret<-AjdReanalMeanBias(paramsAdjBs)
 	}
 
 	#method 2
@@ -470,18 +415,21 @@ execAjdBiasDownTemp<-function(origdir){
 		#Index of new grid over stations
 		stn.loc <- data.frame(lon=stn.lon, lat=stn.lat)
 		stn.loc <- SpatialPoints(stn.loc)
-		ijGrd <- over(stn.loc, grid.loc)
-		#dem.stn <- dem[ijGrd]
-
-		AjdReanalpmm(freqData,istart,iend,adjdownTempdat$stnData,ijGrd,dem,xy.dim,nlon0,nlat0,
-		coefReg,downscaledDir,adjDir,downPrefix,adjPrefix)
-
+		ijGrd <- over(stn.loc, geometry(grid.loc))
+		adjDir<-paste(origdir,'_RegQM',sep='')
+		dir.create(adjDir,showWarnings=FALSE,recursive=TRUE)
+		paramsAdjBs<-list(istart=istart,iend=iend,stnDatas=adjdownTempdat$stnData,ijGrd=ijGrd,dem=dem,xy.dim=xy.dim,nlon0=nlon0,nlat0=nlat0,
+		coefReg=coefReg,downscaledDir=downscaledDir,adjDir=adjDir,downPrefix=downPrefix,adjPrefix=adjPrefix)
+		ret<-AjdReanalpmm(paramsAdjBs)
 	}
-	#return(0)
+	if(!is.null(ret)){
+		if(ret==0) return(0)
+		else return(ret)
+	}else return(NULL)
 }
 #######################################################################################
-TreatmergeTemp<-function(origdir,freqData){
-
+TreatmergeTemp<-function(origdir){
+	freqData<-gal.params$period
 	file.pars<-as.character(gal.params$file.io$Values)
 	dir.create(origdir,showWarnings=FALSE)
 
@@ -499,10 +447,8 @@ TreatmergeTemp<-function(origdir,freqData){
 	elv<-donne$elv
 	dates<-donne$dates
 	donne<-donne$data
-
-	#if(nrow(donne$stnDuplCoords)>0)  #diplay table
+	#if(nrow(donne$stnDuplCoords)>0)  #display table
 	#if(nrow(dat$stnMissCoords)>0)
-
 	stnlist<-list(id=stn.id,lon=stn.lon,lat=stn.lat,elv=elv,dates=dates,data=donne)
 
 	###get elevation data
@@ -524,9 +470,6 @@ TreatmergeTemp<-function(origdir,freqData){
 	}else shpd<-NULL
 
 	mrgTempdat<-list(stnData=stnlist,demData=demlist,shpData=shpd)
-	#outfile<-file.path(origdir,'DataUsed2Merge.RData',fsep = .Platform$file.sep)
-	#save(mrgTempdat,file=outfile)
-
 	return(mrgTempdat)
 }
 
@@ -534,7 +477,7 @@ TreatmergeTemp<-function(origdir,freqData){
 
 execMergeTemp<-function(origdir){
 	freqData<-gal.params$period
-	mrgTempdat<-TreatmergeTemp(origdir,freqData)
+	mrgTempdat<-TreatmergeTemp(origdir)
 
 	datesSE<-as.numeric(as.character(gal.params$dates.mrg$Values))
 	istart<-as.Date(paste(datesSE[1],datesSE[2],datesSE[3],sep='-'))
@@ -575,8 +518,6 @@ execMergeTemp<-function(origdir){
 	if(usemask=="2"){
 		dem.grd<-krige(formula = dem ~ 1,locations=mrgTempdat$demData$demGrd,newdata=newlocation.merging,nmax=5,nmin =3,debug.level=0)
 		dem<-ifelse(dem.grd@data$var1.pred<0,0,dem.grd@data$var1.pred)
-		#or
-		#dem<-adjdownTempdat$demData$demGrd@data[,1]
 		outMask<-matrix(dem,nrow=nlon0,ncol=nlat0)
 		outMask[outMask==0]<-NA
 	}
@@ -593,7 +534,6 @@ execMergeTemp<-function(origdir){
 	stn.lat<-mrgTempdat$stnData$lat
 	stn.dates<-mrgTempdat$stnData$dates
 	stn.data<-mrgTempdat$stnData$data
-	#nstn<-length(stn.lon)
 
 	#Index of new grid over stations
 	stn.loc <- data.frame(lon=stn.lon, lat=stn.lat)
@@ -606,16 +546,14 @@ execMergeTemp<-function(origdir){
 	xy.dim<-list(dx,dy)
 
 	VarioModel<-c("Sph", "Exp", "Gau")
-
 	mrgParam<-list(dates=c(freqData,istart,iend),prefix=c(adjPrefix,mrgPrefix,mrgSuffix),dirs=c(adjDir,origdir),
 	mrgInfo=list(nlon0=nlon0,nlat0=nlat0,ijGrd=ijGrd,xy.dim=xy.dim,VarioModel=VarioModel),
 	mrgData=list(stnData=mrgTempdat$stnData,outMask=outMask,newlocation.merging=newlocation.merging))
-	MergeTemp(mrgParam)
-	#return(0)
+	ret<-MergeTemp(mrgParam)
+	if(!is.null(ret)){
+		if(ret==0) return(0)
+		else return(ret)
+	}else return(NULL)
 }
-
-
-#######################################################################################
-##eto
 
 

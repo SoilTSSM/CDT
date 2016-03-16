@@ -5,7 +5,6 @@ coefDownGetInfoTemp<-function(parent.win,gal.params){
 	if (Sys.info()["sysname"] == "Windows") largeur<-23
 	else largeur<-21
 
-
 	tt<-tktoplevel()
 	tkgrab.set(tt)
 	tkfocus(tt)
@@ -39,8 +38,7 @@ coefDownGetInfoTemp<-function(parent.win,gal.params){
 	status.bar.display(cb.period,txt.stbr1,'Choose the time step of the data')
 	tkgrid(cb.period)
 
-	##########################################3
-
+	##########################################
 	fr.A10<-tkframe(fr.A1)
 	fr.A11<-tkframe(fr.A1)
 	tkgrid(fr.A10,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
@@ -77,7 +75,6 @@ coefDownGetInfoTemp<-function(parent.win,gal.params){
 		}
 	})
 
-
 	#######
 
 	fr.A21<-tkframe(fr.A2)
@@ -110,7 +107,6 @@ coefDownGetInfoTemp<-function(parent.win,gal.params){
 	for(i in 0:1) assign(paste('fr.B',i,sep=''),tkframe(fr.B,relief=pr.relief.set[i+1],borderwidth=2))
 	for(i in 0:1) tkgrid(get(paste('fr.B',i,sep='')))
 	for(i in 0:1) tkgrid.configure(get(paste('fr.B',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
-
 
 	################################################3
 	fr.B01<-tkframe(fr.B0)
@@ -151,7 +147,6 @@ coefDownGetInfoTemp<-function(parent.win,gal.params){
 		}
 	})
 
-
 	###
 	years1.l<-tklabel.h(fr.B1,'StartYear',txt.stbr1,
 	'Start year to be used to compute regression parameters between station temperature and elevation',
@@ -181,9 +176,7 @@ coefDownGetInfoTemp<-function(parent.win,gal.params){
 	tkconfigure(years1.v,width=6,textvariable=year1,justify='right')
 	tkconfigure(years2.v,width=6,textvariable=year2,justify='right')
 
-
 	##############
-
 	bt.opt.OK<-tkbutton(frMRG1, text="OK")
 	bt.opt.CA<-tkbutton(frMRG1, text="Cancel")
 	tkgrid(bt.opt.OK,row=0,column=0,sticky='w',padx=5,pady=1,ipadx=10,ipady=1)
@@ -218,7 +211,6 @@ coefDownGetInfoTemp<-function(parent.win,gal.params){
 		tkfocus(parent.win)
 	})
 
-
 	tkgrid(frMRG0,row=0,column=0,sticky='nswe',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(frMRG1,row=1,column=1,sticky='se',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
 
@@ -251,7 +243,6 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	if (Sys.info()["sysname"] == "Windows") largeur1<-28
 	else largeur1<-26
 
-
 	tt<-tktoplevel()
 	tkgrab.set(tt)
 	tkfocus(tt)
@@ -277,20 +268,17 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	#tkgrid(fr.A01,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(gal.params$period)=='daily',
-	'Daily data',ifelse(as.character(gal.params$period)=='dekadal','Dekadal data','Monthly data'))
+	tclvalue(file.period) <- ifelse(as.character(gal.params$period)=='daily', 'Daily data',ifelse(as.character(gal.params$period)=='dekadal','Dekadal data','Monthly data'))
 
 	cb.period<-ttkcombobox(fr.A00, values=c('Daily data','Dekadal data','Monthly data'), textvariable=file.period)
 	infobulle(cb.period,'Choose the time step of the data')
 	status.bar.display(cb.period,txt.stbr1,'Choose the time step of the data')
 	tkgrid(cb.period)
 
-
 	#######
 	for(i in 0:5) assign(paste('fr.A1',i,sep=''),tkframe(fr.A1))
 	for(i in 0:5) tkgrid(get(paste('fr.A1',i,sep='')))
 	for(i in 0:5) tkgrid.configure(get(paste('fr.A1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
-
 
 	####
 	file.coef <- tclVar()
@@ -301,16 +289,13 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	tkgrid(frA10.txt)
 
 	en.file.coef<-tkentry(fr.A11,textvariable=file.coef,width=largeur)
-	infobulle(en.file.coef,
-	'Enter the full path of the file containing the regression coef for downscaling')
-	status.bar.display(en.file.coef,txt.stbr1,
-	'Enter the full path of the file containing the regression coef for downscaling')
+	infobulle(en.file.coef,'Enter the full path of the file containing the regression coef for downscaling')
+	status.bar.display(en.file.coef,txt.stbr1, 'Enter the full path of the file containing the regression coef for downscaling')
 	bt.file.coef<-tkbutton.h(fr.A11, text="...",txt.stbr1,'or browse here','or browse here')
 	tkgrid(en.file.coef,row=0,column=0,sticky='w')
 	tkgrid(bt.file.coef,row=0,column=1,sticky='e')
 	tkconfigure(bt.file.coef,command=function(){
-		file2coef <- tkgetOpenFile(initialdir=getwd(),initialfile = "",
-		filetypes = "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}")
+		file2coef <- tkgetOpenFile(initialdir=getwd(),initialfile = "", filetypes = "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}")
 		if(is.na(file2coef)) tclvalue(file.coef)<-""
 		else{
 			tclvalue(file.coef)<-file2coef
@@ -352,8 +337,7 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	tkgrid.configure(cb.grdrfe,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.grdrfe,row=0,column=1,sticky='e')
 	tkconfigure(bt.grdrfe,command=function(){
-		fileopen<-tclvalue(tkgetOpenFile(initialdir=tclvalue(dir.rfe),initialfile = "",
-		filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
+		fileopen<-tclvalue(tkgetOpenFile(initialdir=tclvalue(dir.rfe),initialfile = "", filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
 		if(fileopen=="" | is.na(fileopen)) return(NULL)
 		nc.opfiles1<-preview.data.nc(tt,fileopen,"")
 		nc.opfiles<-list(basename(fileopen),nc.opfiles1,fileopen)
@@ -439,12 +423,10 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	})
 
 	#################################
-
-	pr.relief.set2<-c('sunken','sunken','sunken','flat')
+	pr.relief.set2<-c('sunken','sunken','sunken','sunken')
 	for(i in 0:3) assign(paste('fr.C',i,sep=''),tkframe(fr.C,relief=pr.relief.set2[i+1],borderwidth=2))
 	for(i in 0:3) tkgrid(get(paste('fr.C',i,sep='')))
-	for(i in 0:3) tkgrid.configure(get(paste('fr.C',i,sep='')),
-	row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
+	for(i in 0:3) tkgrid.configure(get(paste('fr.C',i,sep='')), row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
 	#######################
 
@@ -458,7 +440,6 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	if(as.character(gal.params$period)=='dekadal') day.txtVar<-tclVar('Dek')
 	else day.txtVar<-tclVar('Day')
 	day.txt<-tklabel(fr.C0,text=tclvalue(day.txtVar),textvariable=day.txtVar)
-
 
 	istart.yrs<-tclVar(as.character(gal.params$dates.down$Values[1]))
 	istart.mon<-tclVar(as.character(gal.params$dates.down$Values[2]))
@@ -489,7 +470,7 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	###############
 	for(i in 0:3) assign(paste('fr.C1',i,sep=''),tkframe(fr.C1))
 	for(i in 0:3) tkgrid(get(paste('fr.C1',i,sep='')))
-	for(i in 0:3) tkgrid.configure(get(paste('fr.C1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=4,ipadx=1,ipady=0)
+	for(i in 0:3) tkgrid.configure(get(paste('fr.C1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=2,ipadx=1,ipady=0)
 
 	frC10.txt<-tklabel(fr.C10,text='Input Reanalysis file format')
 	tkgrid(frC10.txt)
@@ -499,7 +480,6 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	infobulle(en.inrfeff,'Enter the format of the Reanalysis files names in NetCDF,\nexample: tmax_1961011.nc')
 	status.bar.display(en.inrfeff,txt.stbr1,'Enter the format of the Reanalysis files names in NetCDF, example: tmax_1961011.nc')
 	tkgrid(en.inrfeff,row=0,column=0,sticky='w')
-
 
 	tkbind(cb.period,"<<ComboboxSelected>>",function(){
 		if(tclvalue(file.period)=='Daily data'){
@@ -536,8 +516,7 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	tkgrid(frC12.txt)
 
 	downPrefix<-tclVar(as.character(gal.params$IO.file.format$Values[2]))
-	downPrefix.v<-tkentry.h(fr.C13,txt.stbr1,'Prefix for the file name of the downscaled data',
-	'Prefix for the file name of the downscaled data')
+	downPrefix.v<-tkentry.h(fr.C13,txt.stbr1,'Prefix for the file name of the downscaled data', 'Prefix for the file name of the downscaled data')
 	tkconfigure(downPrefix.v,width=largeur1,textvariable=downPrefix,justify='left')
 	tkgrid(downPrefix.v,row=0,column=0,sticky='w')
 
@@ -546,8 +525,8 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	for(i in 0:2) tkgrid(get(paste('fr.C2',i,sep='')))
 	for(i in 0:2) tkgrid.configure(get(paste('fr.C2',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=0,ipadx=1,ipady=0)
 
-	infobulle(fr.C2,'Create the grid to interpolate the merged data')
-	status.bar.display(fr.C2,txt.stbr1,'Create the grid to interpolate the merged data')
+	infobulle(fr.C2,'Create the grid to interpolate the downscaled data')
+	status.bar.display(fr.C2,txt.stbr1,'Create the grid to interpolate the downscaled data')
 
 	frC20.txt<-tklabel(fr.C20,text='Create grid for interpolation')
 	tkgrid(frC20.txt)
@@ -567,18 +546,51 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 	tkgrid(grdNEW.rbt,row=0,column=0)
 	tkgrid(bt.getNewgrid,row=0,column=1,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
+	###################
+	min.nbrs.l<-tklabel.h(fr.C3,'MinStn',txt.stbr1,
+	'Minimum number of neighbours grids to be used to interpolate the downscaled data',
+	'Minimum number of neighbours  grids to be used to interpolate the downscaled data')
+	max.nbrs.l<-tklabel.h(fr.C3,'MaxStn',txt.stbr1,
+	'Maximum number of neighbours grids to be  used to interpolate the downscaled data',
+	'Maximum number of neighbours grids to be  used to interpolate the downscaled data')
+	max.dst.l<-tklabel.h(fr.C3,'MaxDist',txt.stbr1,
+	'Maximum distance (in  decimal degree) to be used to interpolate the downscaled data',
+	'Maximum distance (in  decimal degree) to be used to interpolate the downscaled data')
+
+	min.nbrs.v<-tkentry.h(fr.C3,txt.stbr1,
+	'Minimum number of neighbours grids to be used to interpolate the downscaled data',
+	'Minimum number of neighbours grids to be used to interpolate the downscaled data')
+	max.nbrs.v<-tkentry.h(fr.C3,txt.stbr1,
+	'Maximum number of neighbours grids to be used to interpolate the downscaled data',
+	'Maximum number of neighbours grids to be used to interpolate the downscaled data')
+	max.dst.v<-tkentry.h(fr.C3,txt.stbr1,
+	'Maximum distance (in  decimal degree) to be used to interpolate the downscaled data',
+	'Maximum distance (in  decimal degree) to be used to interpolate the downscaled data')
+
+	tkgrid(min.nbrs.l,row=0,column=0,sticky='ew',padx=1,pady=1)
+	tkgrid(min.nbrs.v,row=0,column=1,sticky='ew',padx=1,pady=1)
+	tkgrid(max.nbrs.l,row=0,column=2,sticky='ew',padx=1,pady=1)
+	tkgrid(max.nbrs.v,row=0,column=3,sticky='ew',padx=1,pady=1)
+	tkgrid(max.dst.l,row=1,column=0,sticky='ew',padx=1,pady=1)
+	tkgrid(max.dst.v,row=1,column=1,sticky='ew',padx=1,pady=1)
+
+	tkconfigure(min.nbrs.l,anchor='e',justify='right')
+	tkconfigure(max.nbrs.l,anchor='e',justify='right')
+	tkconfigure(max.dst.l,anchor='e',justify='right')
+
+	min.nbrs <- tclVar(as.character(gal.params$params.int$Values[1]))
+	max.nbrs <- tclVar(as.character(gal.params$params.int$Values[2]))
+	max.dst <- tclVar(as.character(gal.params$params.int$Values[3]))
+
+	tkconfigure(min.nbrs.v,width=4,textvariable=min.nbrs,justify='right')
+	tkconfigure(max.nbrs.v,width=4,textvariable=max.nbrs,justify='right')
+	tkconfigure(max.dst.v,width=4,textvariable=max.dst,justify='right')
 
 	##############
-	#bt.opt.OK<-tkbutton(fr.C3, text="OK")
-	#bt.opt.CA<-tkbutton(fr.C3, text="Cancel")
-	#tkgrid(bt.opt.OK,row=0,column=0,sticky='w',padx=5,pady=1,ipadx=10,ipady=1)
-	#tkgrid(bt.opt.CA,row=0,column=1,sticky='e',padx=5,pady=1,ipadx=1,ipady=1)
-
 	bt.opt.OK<-tkbutton(frMRG1, text="OK")
 	bt.opt.CA<-tkbutton(frMRG1, text="Cancel")
 	tkgrid(bt.opt.OK,row=0,column=0,sticky='w',padx=5,pady=1,ipadx=10,ipady=1)
 	tkgrid(bt.opt.CA,row=0,column=1,sticky='e',padx=5,pady=1,ipadx=1,ipady=1)
-
 
 	tkconfigure(bt.opt.OK,command=function(){
 		if(tclvalue(file.coef)==""){
@@ -597,8 +609,6 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 			tkmessageBox(message="Choose or enter the path to directory to save results",icon="warning",type="ok")
 			tkwait.window(tt)
 		}else{
-
-
 			if(tclvalue(file.period)=='Daily data'){
 				sampledate<-format(as.Date(paste(as.numeric(as.character(gal.params$dates.down$Values[1])),
 				as.numeric(as.character(gal.params$dates.down$Values[2])),
@@ -618,25 +628,17 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 				rfefl <- file.path(tclvalue(dir.rfe),sprintf(tclvalue(inrfeff),substr(sampledate,1,4),substr(sampledate,5,6)),
 				fsep = .Platform$file.sep)
 			}
-
 			if(!file.exists(rfefl)){
 				tkmessageBox(message="The Reanalysis file format or the Reanalysis directory are wrong",icon="warning",type="ok")
 				tkwait.window(tt)
 			}
 
-			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily',
-			ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
-			gal.params$file.io$Values<<-c(tclvalue(file.coef),tclvalue(file.grddem),
-			tclvalue(file.grdrfe),tclvalue(dir.rfe),tclvalue(file.save1))
+			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily', ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
+			gal.params$file.io$Values<<-c(tclvalue(file.coef),tclvalue(file.grddem), tclvalue(file.grdrfe),tclvalue(dir.rfe),tclvalue(file.save1))
 			gal.params$CreateGrd<<-tclvalue(varCreateGrd)
 			gal.params$IO.file.format$Values<<-c(tclvalue(inrfeff),tclvalue(downPrefix))
-			gal.params$dates.down$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon),
-			tclvalue(istart.day),tclvalue(iend.yrs),tclvalue(iend.mon),tclvalue(iend.day))
-			#stn.file<-getf.no.ext(as.character(gal.params$file.io$Values[1]))
-			#file.param.path<-file.path(apps.dir,'parameters',
-			#paste(stn.file,'_mrg_temperature.RData',sep=''),fsep = .Platform$file.sep)
-			#save(gal.params,file=file.param.path)
-			#gal.params$retpar<<-gal.params$retpar+1
+			gal.params$dates.down$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon), tclvalue(istart.day),tclvalue(iend.yrs),tclvalue(iend.mon),tclvalue(iend.day))
+			gal.params$params.int$Values<<-c(tclvalue(min.nbrs),tclvalue(max.nbrs),tclvalue(max.dst))
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
@@ -649,7 +651,6 @@ downGetInfoDekTempReanal<-function(parent.win,gal.params){
 		tkdestroy(tt)
 		tkfocus(parent.win)
 	})
-
 
 	tkgrid(frMRG0,row=0,column=0,sticky='nswe',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(frMRG1,row=1,column=1,sticky='se',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
@@ -700,7 +701,6 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 	for(i in 0:4) tkgrid.configure(get(paste('fr.A',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
 	#####################################################################
-
 	fr.A00<-tkframe(fr.A0)
 	tkgrid(fr.A00,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
@@ -713,13 +713,11 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 	status.bar.display(cb.period,txt.stbr1,'Choose the frequency of data')
 	tkgrid(cb.period)
 
-
 	#########################################3
 	fr.A10<-tkframe(fr.A1)
 	fr.A11<-tkframe(fr.A1)
 	tkgrid(fr.A10,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(fr.A11,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
-
 
 	file.stnfl <- tclVar()
 	tclvalue(file.stnfl) <- as.character(gal.params$file.io$Values[1])
@@ -752,7 +750,6 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 	})
 
 	#####################################
-
 	fr.A20<-tkframe(fr.A2)
 	fr.A21<-tkframe(fr.A2)
 	tkgrid(fr.A20,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
@@ -815,7 +812,6 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 		else tclvalue(dir.down)<-dir4down
 	})
 
-
 	#######
 	fr.A40<-tkframe(fr.A4)
 	fr.A41<-tkframe(fr.A4)
@@ -842,7 +838,6 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 			}
 	})
 
-
 	#################################
 	pr.relief.set2<-c('sunken','sunken','sunken','sunken')
 	for(i in 0:3) assign(paste('fr.B',i,sep=''),tkframe(fr.B,relief=pr.relief.set2[i+1],borderwidth=2))
@@ -854,7 +849,6 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 	fr.B01<-tkframe(fr.B0)
 	tkgrid(fr.B00,row=0,column=0,sticky='we',padx=1,pady=2,ipadx=1,ipady=0)
 	tkgrid(fr.B01,row=1,column=0,sticky='we',padx=1,pady=2,ipadx=1,ipady=0)
-
 
 	frB00.txt<-tklabel(fr.B00,text='Bias adjustment method')
 	tkgrid(frB00.txt)
@@ -871,7 +865,6 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 	for(i in 0:3) assign(paste('fr.B1',i,sep=''),tkframe(fr.B1))
 	for(i in 0:3) tkgrid(get(paste('fr.B1',i,sep='')))
 	for(i in 0:3) tkgrid.configure(get(paste('fr.B1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
-
 
 	frB10.txt<-tklabel(fr.B10,text='Downscaled data filename prefix')
 	tkgrid(frB10.txt,pady=1)
@@ -899,7 +892,6 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 		if(tclvalue(biasMethod)=='Bias-kriging') tkconfigure(meanBiasPrefix.v,state='normal')
 		if(tclvalue(biasMethod)=='Regression-QM') tkconfigure(meanBiasPrefix.v,state='disabled')
 	})
-
 
 	######################
 	years1.l<-tklabel.h(fr.B2,'StartYear',txt.stbr1,'Start year to be used to correct downscaled data',
@@ -987,8 +979,7 @@ biasGetInfoTempDown<-function(parent.win,gal.params){
 			tkwait.window(tt)
 		}else{
 
-			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily',
-			ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
+			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily', ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
 			gal.params$file.io$Values<<-c(tclvalue(file.stnfl),tclvalue(file.grddem),tclvalue(dir.down),tclvalue(file.save1))
 			gal.params$bias.method<<-tclvalue(biasMethod)
 			gal.params$prefix$Values<<-c(tclvalue(downPrefix),tclvalue(meanBiasPrefix))
@@ -1035,14 +1026,12 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	if (Sys.info()["sysname"] == "Windows") largeur<-23
 	else largeur<-21
 
-
 	tt<-tktoplevel()
 	tkgrab.set(tt)
 	tkfocus(tt)
 
 	frMRG0<-tkframe(tt,relief='raised',borderwidth=2)
 	frMRG1<-tkframe(tt)
-
 
 	fr.A<-tkframe(frMRG0,relief="groove",borderwidth=2)
 	fr.B<-tkframe(frMRG0,relief="groove",borderwidth=2)
@@ -1069,13 +1058,11 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	status.bar.display(cb.period,txt.stbr1,'Choose the frequency of data')
 	tkgrid(cb.period)
 
-
 	#########################################3
 	fr.A10<-tkframe(fr.A1)
 	fr.A11<-tkframe(fr.A1)
 	tkgrid(fr.A10,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(fr.A11,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
-
 
 	file.stnfl <- tclVar()
 	tclvalue(file.stnfl) <- as.character(gal.params$file.io$Values[1])
@@ -1108,7 +1095,6 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	})
 
 	#####################################
-
 	fr.A20<-tkframe(fr.A2)
 	fr.A21<-tkframe(fr.A2)
 	tkgrid(fr.A20,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
@@ -1171,13 +1157,11 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 		else tclvalue(dir.down)<-dir4down
 	})
 
-
 	###############################3
 	fr.A32<-tkframe(fr.A3)
 	fr.A33<-tkframe(fr.A3)
 	tkgrid(fr.A32,row=2,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 	tkgrid(fr.A33,row=3,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
-
 
 	MeanBiasLab<-tclVar('Directory of mean bias files')
 	frA32.txt<-tklabel(fr.A32,text=tclvalue(MeanBiasLab),textvariable=MeanBiasLab)
@@ -1196,7 +1180,6 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 		if(is.na(dir4bias)) tclvalue(dir.bias)<-""
 		else tclvalue(dir.bias)<-dir4bias
 	})
-
 
 	#######
 	fr.A40<-tkframe(fr.A4)
@@ -1224,7 +1207,6 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 			}
 	})
 
-
 	#################################
 	pr.relief.set2<-c('sunken','sunken','sunken','sunken')
 	for(i in 0:2) assign(paste('fr.B',i,sep=''),tkframe(fr.B,relief=pr.relief.set2[i+1],borderwidth=2))
@@ -1236,7 +1218,6 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	fr.B01<-tkframe(fr.B0)
 	tkgrid(fr.B00,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 	tkgrid(fr.B01,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
-
 
 	frB00.txt<-tklabel(fr.B00,text='Bias adjustment method')
 	tkgrid(frB00.txt)
@@ -1253,7 +1234,6 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	for(i in 0:5) assign(paste('fr.B1',i,sep=''),tkframe(fr.B1))
 	for(i in 0:5) tkgrid(get(paste('fr.B1',i,sep='')))
 	for(i in 0:5) tkgrid.configure(get(paste('fr.B1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
-
 
 	frB10.txt<-tklabel(fr.B10,text='Downscaled data filename prefix')
 	tkgrid(frB10.txt,pady=1)
@@ -1283,7 +1263,6 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	adjPrefix.v<-tkentry.h(fr.B15,txt.stbr1,'Prefix for the file name of the adjusted reanalysis data','Prefix for the file name of the adjusted reanalysis data')
 	tkconfigure(adjPrefix.v,width=largeur,textvariable=adjPrefix,justify='left')
 	tkgrid(adjPrefix.v,sticky='w',pady=1)
-
 
 	############
 	tkbind(cb.biasMethod,"<<ComboboxSelected>>",function(){
@@ -1326,7 +1305,6 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	else day.txtVar<-tclVar('Day')
 	day.txt<-tklabel(fr.B2,text=tclvalue(day.txtVar),textvariable=day.txtVar)
 
-
 	istart.yrs<-tclVar(as.character(gal.params$dates.adj$Values[1]))
 	istart.mon<-tclVar(as.character(gal.params$dates.adj$Values[2]))
 	istart.day<-tclVar(as.character(gal.params$dates.adj$Values[3]))
@@ -1352,7 +1330,6 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 	tkgrid(yrs2.v,row=2,column=1,sticky='ew',padx=1,pady=1)
 	tkgrid(mon2.v,row=2,column=2,sticky='ew',padx=1,pady=1)
 	tkgrid(day2.v,row=2,column=3,sticky='ew',padx=1,pady=1)
-
 
 	tkbind(cb.period,"<<ComboboxSelected>>",function(){
 		if(tclvalue(file.period)=='Daily data'){
@@ -1401,8 +1378,7 @@ adjGetInfoTempDownReanal<-function(parent.win,gal.params){
 			tkwait.window(tt)
 		}else{
 
-			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily',
-			ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
+			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily', ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
 			gal.params$file.io$Values<<-c(tclvalue(file.stnfl),tclvalue(file.grddem),tclvalue(dir.down),tclvalue(dir.bias),tclvalue(file.save1))
 			gal.params$bias.method<<-tclvalue(biasMethod)
 			gal.params$prefix$Values<<-c(tclvalue(downPrefix),tclvalue(meanBiasPrefix),tclvalue(adjPrefix))
@@ -1449,14 +1425,12 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	if (Sys.info()["sysname"] == "Windows") largeur<-23
 	else largeur<-21
 
-
 	tt<-tktoplevel()
 	tkgrab.set(tt)
 	tkfocus(tt)
 
 	frMRG0<-tkframe(tt,relief='raised',borderwidth=2)
 	frMRG1<-tkframe(tt)
-
 
 	fr.A<-tkframe(frMRG0,relief="groove",borderwidth=2)
 	fr.B<-tkframe(frMRG0,relief="groove",borderwidth=2)
@@ -1482,7 +1456,6 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	infobulle(cb.period,'Choose the frequency of data')
 	status.bar.display(cb.period,txt.stbr1,'Choose the frequency of data')
 	tkgrid(cb.period)
-
 
 	#########################################3
 	fr.A10<-tkframe(fr.A1)
@@ -1527,7 +1500,6 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	})
 
 	##############
-
 	frA12.txt<-tklabel(fr.A12,text='Directory of ajdusted data')
 	tkgrid(frA12.txt)
 
@@ -1546,7 +1518,6 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	})
 
 	#####################################
-
 	fr.A20<-tkframe(fr.A2)
 	fr.A21<-tkframe(fr.A2)
 	fr.A22<-tkframe(fr.A2)
@@ -1567,7 +1538,6 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 
 	if(as.character(gal.params$blankGrd)=='2') statedem<-'normal'
 	else statedem<-'disabled'
-	#statedem<-'disabled'
 
 	###
 	cb.grddem<-ttkcombobox(fr.A21, values=unlist(file.list), textvariable=file.grddem,state=statedem)
@@ -1605,7 +1575,6 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 
 	if(as.character(gal.params$blankGrd)=='3') stateshp<-'normal'
 	else stateshp<-'disabled'
-	#stateshp<-'disabled'
 
 	##
 	cb.blkshp<-ttkcombobox(fr.A23, values=unlist(file.list), textvariable=file.blkshp,state=stateshp)
@@ -1634,10 +1603,7 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 		}
 	})
 
-
-	#########################################3
-
-
+	#########################################
 	fr.A30<-tkframe(fr.A3)
 	fr.A31<-tkframe(fr.A3)
 	tkgrid(fr.A30,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
@@ -1663,7 +1629,6 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 			}
 	})
 
-
 	#################################
 	pr.relief.set2<-c('sunken','sunken','sunken','sunken')
 	for(i in 0:3) assign(paste('fr.B',i,sep=''),tkframe(fr.B,relief=pr.relief.set2[i+1],borderwidth=2))
@@ -1675,7 +1640,6 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	fr.B01<-tkframe(fr.B0)
 	tkgrid(fr.B00,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 	tkgrid(fr.B01,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
-
 
 	frB00.txt<-tklabel(fr.B00,text='Blank grid')
 	tkgrid(frB00.txt)
@@ -1694,7 +1658,6 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	for(i in 0:3) assign(paste('fr.B1',i,sep=''),tkframe(fr.B1))
 	for(i in 0:3) tkgrid(get(paste('fr.B1',i,sep='')))
 	for(i in 0:3) tkgrid.configure(get(paste('fr.B1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
-
 
 	frB10.txt<-tklabel(fr.B10,text='Adjusted data filename prefix')
 	tkgrid(frB10.txt,pady=1)
@@ -1741,7 +1704,6 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 		}
 	})
 
-
 	#######################
 	infobulle(fr.B2,'Start and end date for merging data')
 	status.bar.display(fr.B2,txt.stbr1,'Start and end date for merging data')
@@ -1753,7 +1715,6 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	if(as.character(gal.params$period)=='dekadal') day.txtVar<-tclVar('Dek')
 	else day.txtVar<-tclVar('Day')
 	day.txt<-tklabel(fr.B2,text=tclvalue(day.txtVar),textvariable=day.txtVar)
-
 
 	istart.yrs<-tclVar(as.character(gal.params$dates.mrg$Values[1]))
 	istart.mon<-tclVar(as.character(gal.params$dates.mrg$Values[2]))
@@ -1780,7 +1741,6 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 	tkgrid(yrs2.v,row=2,column=1,sticky='ew',padx=1,pady=1)
 	tkgrid(mon2.v,row=2,column=2,sticky='ew',padx=1,pady=1)
 	tkgrid(day2.v,row=2,column=3,sticky='ew',padx=1,pady=1)
-
 
 	tkbind(cb.period,"<<ComboboxSelected>>",function(){
 		if(tclvalue(file.period)=='Daily data'){
@@ -1810,7 +1770,6 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 		gal.params<<-getParamMeringTemp(tt,gal.params)
 	})
 
-
 	##############################
 
 	bt.prm.OK<-tkbutton(frMRG1, text=" OK ")
@@ -1837,14 +1796,11 @@ mrgGetInfoTemp<-function(parent.win,gal.params){
 			tkwait.window(tt)
 		}else{
 
-			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily',
-			ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
+			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily', ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
 			gal.params$file.io$Values<<-c(tclvalue(file.stnfl),tclvalue(file.grddem),tclvalue(file.blkshp),tclvalue(dir.down),tclvalue(file.save1))
-			gal.params$blankGrd<<-ifelse(tclvalue(blankGrd)=='None','1',
-			ifelse(tclvalue(blankGrd)=='Use DEM','2','3'))
+			gal.params$blankGrd<<-ifelse(tclvalue(blankGrd)=='None','1', ifelse(tclvalue(blankGrd)=='Use DEM','2','3'))
 			gal.params$prefix$Values<<-c(tclvalue(adjPrefix),tclvalue(mrgPrefix),tclvalue(mrgSuffix))
-			gal.params$dates.mrg$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon),
-			tclvalue(istart.day),tclvalue(iend.yrs),tclvalue(iend.mon),tclvalue(iend.day))
+			gal.params$dates.mrg$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon), tclvalue(istart.day),tclvalue(iend.yrs),tclvalue(iend.mon),tclvalue(iend.day))
 
 			tkgrab.release(tt)
 			tkdestroy(tt)
@@ -1914,7 +1870,6 @@ getParamMeringTemp<-function(tt,gal.params){
 	'Maximum distance (in  decimal degree) to be used to interpolate data',
 	'Maximum distance (in  decimal degree) to be used to interpolate data')
 
-
 	tkgrid(nmin.l,row=0,column=0,sticky='ew',padx=1,pady=1)
 	tkgrid(nmin.v,row=0,column=1,sticky='ew',padx=1,pady=1)
 	tkgrid(min.nbrs.l,row=0,column=2,sticky='ew',padx=1,pady=1)
@@ -1951,7 +1906,6 @@ getParamMeringTemp<-function(tt,gal.params){
 
 	tkgrid(txt.interpMethod,row=0,column=0,columnspan=1,sticky='ew',padx=1,pady=1)
 	tkgrid(cb.interpMethod,row=1,column=0,columnspan=1,sticky='ew',padx=1,pady=1)
-
 
 	################################
 	bt.prm.OK<-tkbutton(frMRG1a, text=" OK ")

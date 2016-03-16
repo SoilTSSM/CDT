@@ -11,24 +11,17 @@ ExtractRFE2Stn<-function(ijGrd,gal.params,mrgRaindat){
 	nstn<-length(mrgRaindat$stnData$lon)
 
 	if(freqData=='daily'){
-		bias.dates<-format(seq(as.Date(paste(year1,'0101',sep=''),format='%Y%m%d'),
-		as.Date(paste(year2,'1231',sep=''),format='%Y%m%d'),'day'),'%Y%m%d')
-		testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(bias.dates,1,4),substr(bias.dates,5,6),
-		substr(bias.dates,7,8)),fsep = .Platform$file.sep)
+		bias.dates<-format(seq(as.Date(paste(year1,'0101',sep=''),format='%Y%m%d'), as.Date(paste(year2,'1231',sep=''),format='%Y%m%d'),'day'),'%Y%m%d')
+		testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(bias.dates,1,4),substr(bias.dates,5,6), substr(bias.dates,7,8)),fsep = .Platform$file.sep)
 	}
 	if(freqData=='dekadal'){
-		bias.dates<-seq(as.Date(paste(year1,'011',sep=''),format='%Y%m%d'),
-		as.Date(paste(year2,'123',sep=''),format='%Y%m%d'),'day')
-		bias.dates<-paste(format(bias.dates[which(as.numeric(format(bias.dates,'%d'))<=3)],'%Y%m'),
-		as.numeric(format(bias.dates[which(as.numeric(format(bias.dates,'%d'))<=3)],'%d')),sep='')
-		testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(bias.dates,1,4),substr(bias.dates,5,6),
-		substr(bias.dates,7,7)),fsep = .Platform$file.sep)
+		bias.dates<-seq(as.Date(paste(year1,'011',sep=''),format='%Y%m%d'), as.Date(paste(year2,'123',sep=''),format='%Y%m%d'),'day')
+		bias.dates<-paste(format(bias.dates[which(as.numeric(format(bias.dates,'%d'))<=3)],'%Y%m'), as.numeric(format(bias.dates[which(as.numeric(format(bias.dates,'%d'))<=3)],'%d')),sep='')
+		testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(bias.dates,1,4),substr(bias.dates,5,6), substr(bias.dates,7,7)),fsep = .Platform$file.sep)
 	}
 	if(freqData=='monthly'){
-		bias.dates<-format(seq(as.Date(paste(year1,'011',sep=''),format='%Y%m%d'),
-		as.Date(paste(year2,'1231',sep=''),format='%Y%m%d'),'month'),'%Y%m')
-		testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(bias.dates,1,4),substr(bias.dates,5,6)),
-		fsep = .Platform$file.sep)
+		bias.dates<-format(seq(as.Date(paste(year1,'011',sep=''),format='%Y%m%d'),as.Date(paste(year2,'1231',sep=''),format='%Y%m%d'),'month'),'%Y%m')
+		testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(bias.dates,1,4),substr(bias.dates,5,6)), fsep = .Platform$file.sep)
 	}
 
 	rfe_stn<-matrix(NA,nrow=length(bias.dates),ncol=nstn)
@@ -194,6 +187,7 @@ ComputeMeanBiasRain<-function(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir){
 	if(freqData=='daily') ntimes<-365
 	if(freqData=='dekadal') ntimes<-36
 	if(freqData=='monthly') ntimes<-12
+	
 	tcl("update","idletasks")
 	for(ij in 1:ntimes){
 		bias.stn <- data.frame(bias=bias[ij,],lon=stn.lon,lat=stn.lat)
