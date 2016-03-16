@@ -243,10 +243,7 @@ calcBiasTemp<-function(i,ix1,stn.data,model_stn){
 
 ###############
 Variogrm_modeling<-function(bias.df){
-	bias.df<-bias.df[!is.na(bias.df$bias),]
-	coordinates(bias.df)<-~lat + lon
 	vgm1 <- variogram(bias~1, bias.df, width=0.10)
-	
 	# vgm1$gamma[1] <- 0
 	# vgm1$dist[1] <- ifelse(vgm1$dist[1]==0,1E-6,vgm1$dist[1]) #remove zerodist
 	# lvgm <- length(vgm1$gamma)
@@ -389,7 +386,9 @@ ComputeMeanBias<-function(paramsBias){
 			rwin<-ifelse(rwin==0,ntimes,rwin)
 			bias.vgm <- as.vector(t(bias[rwin,]))
 			bias.df <- data.frame(lon=rep(stn.lon,2*n2+1), lat=rep(stn.lat,2*n2+1), bias=bias.vgm)
-			vgm1<-try(autofitVariogram(bias~1,input_data=bias.df,model=c("Sph", "Exp", "Gau"), width=0.10),silent=TRUE)
+			bias.df<-bias.df[!is.na(bias.df$bias),]
+			coordinates(bias.df)<- ~lat + lon
+			vgm1<-try(autofitVariogram(bias~1,input_data=bias.df,model=c("Sph", "Exp", "Gau")),silent=TRUE)
 			if(!inherits(vgm1, "try-error")) vgm_model<-vgm1$var_model
 			else vgm_model<-NULL
 			# else vgm_model <-Variogrm_modeling(bias.df)
