@@ -538,7 +538,7 @@ execMergeTemp<-function(origdir){
 	#Index of new grid over stations
 	stn.loc <- data.frame(lon=stn.lon, lat=stn.lat)
 	stn.loc <- SpatialPoints(stn.loc)
-	ijGrd <- over(stn.loc, grid.loc)
+	ijGrd <- over(stn.loc, geometry(grid.loc))
 
 	#Defines netcdf output dims
 	dx <- dim.def.ncdf("Lon", "degreeE", grd.lon)

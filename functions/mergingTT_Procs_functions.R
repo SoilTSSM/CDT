@@ -761,15 +761,13 @@ MergeTemp<-function(mrgParam){
 
 			#remove NA
 			tt.stn <- tt.stn[!is.na(tt.stn$mod) & !is.na(tt.stn$tt),]
-
 			tt.stn$diff<-tt.stn$tt-tt.stn$mod
 			if(interpMethod=="IDW"){
 				grd.res <- krige(diff~1,locations=tt.stn,newdata=newlocation.merging, nmax=max.nbrs,nmin=min.nbrs,maxdist=max.dst,debug.level=0)
 				tt.mrg<-grd.res$var1.pred+tt.mrg
 			}else if(interpMethod=="Kriging"){
-				KRtest<-try(grd.res <- autoKrige(diff~1,input_data=tt.stn,new_data=newlocation.merging, model =VarioModel,nmin=min.nbrs,nmax=max.nbrs,maxdist=max.dst, debug.level=0), silent=TRUE)
-				is.okKR <- !inherits(KRtest, "try-error")
-				if(is.okKR){
+				grd.res <- try(autoKrige(diff~1,input_data=tt.stn,new_data=newlocation.merging, model =VarioModel,nmin=min.nbrs,nmax=max.nbrs,maxdist=max.dst, debug.level=0), silent=TRUE)
+				if(!inherits(grd.res, "try-error")){
 					tt.mrg<-grd.res$krige_output$var1.pred+tt.mrg
 				}else{
 					grd.res <- krige(diff~1,locations=tt.stn,newdata=newlocation.merging, nmax=max.nbrs,nmin=min.nbrs,maxdist=max.dst,debug.level=0)
@@ -777,6 +775,9 @@ MergeTemp<-function(mrgParam){
 				}
 			}
 			tt.mrg <- round(tt.mrg,2)
+			# Take adjusted Renalysis for areas where interpolation/merging was not possible
+			ix <- which(is.na(tt.mrg))
+			tt.mrg[ix] <- mod.vec[ix]
 		}
 
 		out.tt <- as.numeric(tt.mrg)
