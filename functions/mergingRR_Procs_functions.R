@@ -63,16 +63,19 @@ calcBiasRain<-function(i,ix1,stn.data,rfe_stn){
 	stn.val <- as.numeric(stn.data[ix1,i])
 	stn.rfe<-as.numeric(rfe_stn[ix1,i])
 	ix0 <- !is.na(stn.val) & !is.na(stn.rfe)
-	ix1 <- stn.val>0  & stn.rfe>0
-	ix<- which(ix0 & ix1)
+	# ix1 <- stn.val>0  & stn.rfe>0
+	# ix<- which(ix0 & ix1)
 	bs <- NA
-	if(length(ix)>0){
-		bs <- sum(stn.val[ix])/sum(stn.rfe[ix])
+	 if(length(ix0)>0){
+	 	sum_stn<-sum(stn.val[ix])
+	 	sum_rfe<-sum(stn.rfe[ix])
+	 	if(sum_rfe>0) bs<- sum_stn/sum_rfe
+		# bs <- sum(stn.val[ix])/sum(stn.rfe[ix])
 		if(bs>5) bs<-5
 		# if(is.nan(bs)) bs <- 1    # 0/0
 		# if(is.infinite(bs)) bs <- 1.5  # n/0
 		# if(bs == 0) bs <- 0.5  # 0/n
-	}
+	 }
 	return(bs)
 }
 
@@ -103,74 +106,114 @@ ComputeMeanBiasRain<-function(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir){
 	# dirBias<-file.path(origdir,'Mean_Bias',fsep = .Platform$file.sep)
 	# dir.create(dirBias,showWarnings=FALSE)
 
-	#####
 	if(freqData=='daily'){
 		bias.dates<-format(seq(as.Date(paste(year1,'0101',sep=''),format='%Y%m%d'),as.Date(paste(year2,'1231',sep=''),format='%Y%m%d'),'day'),'%Y%m%d')
 		endmon<-c(31,28,31,30,31,30,31,31,30,31,30,31)
 		bias <- array(data=NA, c(365,nstn))
 		vtimes<-cbind(unlist(sapply(endmon,function(j) 1:j)),rep(1:12,endmon))
-
-		ibsdt<-bias.dates%in%stn.dates
-		bsdates<-bias.dates[ibsdt]
-		rfe_stn<-rfe_stn[ibsdt,,drop=F]
-		istdt<-stn.dates%in%bias.dates
-		stn.data<-stn.data[istdt,,drop=F]
-
-		# Compute bias
-		if(length(bsdates)>0){
-			for (i in 1:nstn){
-				for (nt in 1:365){
-					ix1<-which(as.numeric(substr(bsdates,7,8))==vtimes[nt,1] & as.numeric(substr(bsdates,5,6))==vtimes[nt,2])
-					bias[nt,i] <- calcBiasRain(i,ix1,stn.data,rfe_stn)
-				}
-			}
-		}
 	}
-	#####
 	if(freqData=='dekadal'){
 		bias.dates<-seq(as.Date(paste(year1,'011',sep=''),format='%Y%m%d'),as.Date(paste(year2,'123',sep=''),format='%Y%m%d'),'day')
 		bias.dates<-paste(format(bias.dates[which(as.numeric(format(bias.dates,'%d'))<=3)],'%Y%m'),as.numeric(format(bias.dates[which(as.numeric(format(bias.dates,'%d'))<=3)],'%d')),sep='')
 		bias <- array(data=NA, c(36,nstn))
 		vtimes<-expand.grid(1:3,1:12)
-
-		ibsdt<-bias.dates%in%stn.dates
-		bsdates<-bias.dates[ibsdt]
-		rfe_stn<-rfe_stn[ibsdt,,drop=F]
-		istdt<-stn.dates%in%bias.dates
-		stn.data<-stn.data[istdt,,drop=F]
-
-		# Compute bias
-		if(length(bsdates)>0){
-			for (i in 1:nstn){
-				for (nt in 1:36){
-					ix1<-which(as.numeric(substr(bsdates,7,7))==vtimes[nt,1] & as.numeric(substr(bsdates,5,6))==vtimes[nt,2])
-					bias[nt,i] <- calcBiasRain(i,ix1,stn.data,rfe_stn)
-				}
-			}
-		}
 	}
-	#####
 	if(freqData=='monthly'){
 		bias.dates<-format(seq(as.Date(paste(year1,'011',sep=''),format='%Y%m%d'),as.Date(paste(year2,'1231',sep=''),format='%Y%m%d'),'month'),'%Y%m')
 		bias <- array(data=NA, c(12,nstn))
 		vtimes<-c(1:12)
-
-		ibsdt<-bias.dates%in%stn.dates
-		bsdates<-bias.dates[ibsdt]
-		rfe_stn<-rfe_stn[ibsdt,,drop=F]
-		istdt<-stn.dates%in%bias.dates
-		stn.data<-stn.data[istdt,,drop=F]
-
-		# Compute bias
-		if(length(bsdates)>0){
-			for (i in 1:nstn){
-				for (nt in 1:12){
-					ix1<-which(as.numeric(substr(bsdates,5,6))==vtimes[nt])
-					bias[nt,i] <- calcBiasRain(i,ix1,stn.data,rfe_stn)
+	}	
+	ibsdt<-bias.dates%in%stn.dates
+	bsdates<-bias.dates[ibsdt]
+	rfe_stn<-rfe_stn[ibsdt,,drop=F]
+	istdt<-stn.dates%in%bias.dates
+	stn.data<-stn.data[istdt,,drop=F]
+	if(length(bsdates)>0){
+		for (i in 1:nstn){
+			for (nt in 1:36){
+				if(freqData=='daily'){
+					ix1<-which(as.numeric(substr(bsdates,7,8))==vtimes[nt,1] & as.numeric(substr(bsdates,5,6))==vtimes[nt,2])
+					ix1<-c(sapply(ix1,function(x) x+(-5:5)))
+					ix1<-ix1[ix1>0 & ix1<=length(bsdates)]
 				}
+				if(freqData=='dekadal'){	
+					ix1<-which(as.numeric(substr(bsdates,7,7))==vtimes[nt,1] & as.numeric(substr(bsdates,5,6))==vtimes[nt,2])
+				}
+				if(freqData=='monthly'){
+					ix1<-which(as.numeric(substr(bsdates,5,6))==vtimes[nt])
+				}
+				bias[nt,i] <- calcBiasRain(i,ix1,stn.data,rfe_stn)
 			}
 		}
 	}
+	#####
+	# if(freqData=='daily'){
+	# 	bias.dates<-format(seq(as.Date(paste(year1,'0101',sep=''),format='%Y%m%d'),as.Date(paste(year2,'1231',sep=''),format='%Y%m%d'),'day'),'%Y%m%d')
+	# 	endmon<-c(31,28,31,30,31,30,31,31,30,31,30,31)
+	# 	bias <- array(data=NA, c(365,nstn))
+	# 	vtimes<-cbind(unlist(sapply(endmon,function(j) 1:j)),rep(1:12,endmon))
+
+	# 	ibsdt<-bias.dates%in%stn.dates
+	# 	bsdates<-bias.dates[ibsdt]
+	# 	rfe_stn<-rfe_stn[ibsdt,,drop=F]
+	# 	istdt<-stn.dates%in%bias.dates
+	# 	stn.data<-stn.data[istdt,,drop=F]
+
+	# 	# Compute bias
+	# 	if(length(bsdates)>0){
+	# 		for (i in 1:nstn){
+	# 			for (nt in 1:365){
+	# 				ix1<-which(as.numeric(substr(bsdates,7,8))==vtimes[nt,1] & as.numeric(substr(bsdates,5,6))==vtimes[nt,2])
+	# 				bias[nt,i] <- calcBiasRain(i,ix1,stn.data,rfe_stn)
+	# 			}
+	# 		}
+	# 	}
+	# }
+	# #####
+	# if(freqData=='dekadal'){
+	# 	bias.dates<-seq(as.Date(paste(year1,'011',sep=''),format='%Y%m%d'),as.Date(paste(year2,'123',sep=''),format='%Y%m%d'),'day')
+	# 	bias.dates<-paste(format(bias.dates[which(as.numeric(format(bias.dates,'%d'))<=3)],'%Y%m'),as.numeric(format(bias.dates[which(as.numeric(format(bias.dates,'%d'))<=3)],'%d')),sep='')
+	# 	bias <- array(data=NA, c(36,nstn))
+	# 	vtimes<-expand.grid(1:3,1:12)
+
+	# 	ibsdt<-bias.dates%in%stn.dates
+	# 	bsdates<-bias.dates[ibsdt]
+	# 	rfe_stn<-rfe_stn[ibsdt,,drop=F]
+	# 	istdt<-stn.dates%in%bias.dates
+	# 	stn.data<-stn.data[istdt,,drop=F]
+
+	# 	# Compute bias
+	# 	if(length(bsdates)>0){
+	# 		for (i in 1:nstn){
+	# 			for (nt in 1:36){
+	# 				ix1<-which(as.numeric(substr(bsdates,7,7))==vtimes[nt,1] & as.numeric(substr(bsdates,5,6))==vtimes[nt,2])
+	# 				bias[nt,i] <- calcBiasRain(i,ix1,stn.data,rfe_stn)
+	# 			}
+	# 		}
+	# 	}
+	# }
+	# #####
+	# if(freqData=='monthly'){
+	# 	bias.dates<-format(seq(as.Date(paste(year1,'011',sep=''),format='%Y%m%d'),as.Date(paste(year2,'1231',sep=''),format='%Y%m%d'),'month'),'%Y%m')
+	# 	bias <- array(data=NA, c(12,nstn))
+	# 	vtimes<-c(1:12)
+
+	# 	ibsdt<-bias.dates%in%stn.dates
+	# 	bsdates<-bias.dates[ibsdt]
+	# 	rfe_stn<-rfe_stn[ibsdt,,drop=F]
+	# 	istdt<-stn.dates%in%bias.dates
+	# 	stn.data<-stn.data[istdt,,drop=F]
+
+	# 	# Compute bias
+	# 	if(length(bsdates)>0){
+	# 		for (i in 1:nstn){
+	# 			for (nt in 1:12){
+	# 				ix1<-which(as.numeric(substr(bsdates,5,6))==vtimes[nt])
+	# 				bias[nt,i] <- calcBiasRain(i,ix1,stn.data,rfe_stn)
+	# 			}
+	# 		}
+	# 	}
+	# }
 
 	############
 	# Grid Bias
@@ -353,7 +396,7 @@ MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
 	dBY <- seq(-sDY, sDY, length.out=4)
 	bGrd <- expand.grid(x=dBX, y=dBY)
 
-	grd.out<-var.def.ncdf("precip", "mm",xy.dim,-99,longname=" Merged Station-Satellite Rainfall", prec="single")
+	grd.out<-var.def.ncdf("precip", "mm",xy.dim,-99,longname="Merged Station-Satellite Rainfall", prec="single")
 
 	stn.ID<-mrgRaindat$stnData$id
 	stn.lon<-mrgRaindat$stnData$lon

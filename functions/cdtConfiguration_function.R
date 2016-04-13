@@ -104,10 +104,8 @@ configCDT<-function(){
 	yscrollcommand=function(...)tkset(yscr.conf,...), wrap="word",height=5,width=37)
 		 
 	tkgrid(txta.conf,yscr.conf)
-	#tkgrid(xscr.conf)
 	tkgrid.configure(txta.conf,sticky="nsew")
 	tkgrid.configure(yscr.conf,sticky="ns")
-	#tkgrid.configure(xscr.conf,sticky="ew")
 	tktag.configure(txta.conf, "font0f.conf", font=font0.conf)
 	infofl.conf<-file.path(apps.dir,'text','pref_info.txt',fsep = .Platform$file.sep)
 	rdL.conf<-readLines(infofl.conf,warn=FALSE)

@@ -29,7 +29,7 @@ TreatCoefDownTemp<-function(origdir){
 	dem.coord<-data.frame(expand.grid(lon=fdem$x,lat=fdem$y))
 	coordinates(dem.coord) = ~lon+lat
 	demdf<-data.frame(dem=c(dem))
-	demdf <-  SpatialPointsDataFrame(coords=dem.coord,data=demdf, proj4string = CRS(as.character(NA)))
+	demdf <-  SpatialPointsDataFrame(coords=dem.coord,data=demdf,proj4string = CRS(as.character(NA)))
 	demlist<-list(lon=fdem$x,lat=fdem$y,demGrd=demdf)
 
 	coefdownTempdat<-list(stnData=stnlist,demData=demlist)

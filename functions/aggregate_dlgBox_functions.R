@@ -269,10 +269,8 @@ AggregateInputStationData<-function(parent.win,gal.params){
 		}else{
 			gal.params$file.io$Values<<-c(tclvalue(file.choix1),tclvalue(file.choix2),tclvalue(dir.stn),tclvalue(file.save1))
 			gal.params$file.date.format$Values<<-c(tclvalue(rbffrmt),tclvalue(rbdtfrmt))
-			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily',
-			ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
-			gal.params$StartEnd.date$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon),tclvalue(istart.day),
-			tclvalue(iend.yrs),tclvalue(iend.mon),tclvalue(iend.day))
+			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily', ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
+			gal.params$StartEnd.date$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon),tclvalue(istart.day), tclvalue(iend.yrs),tclvalue(iend.mon),tclvalue(iend.day))
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
