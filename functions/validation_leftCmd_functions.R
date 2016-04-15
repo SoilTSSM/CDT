@@ -263,12 +263,6 @@ ValidationPanelCmd<-function(){
 			validStatTab<<-retNBTab$notebookTab
 			tab.type<<-retNBTab$tab.type
 			tab.data<<-retNBTab$tab.data
-
-			# retdata<-DisplayHomInfo(tknotes,dat2disp,titleTab)
-			# ntab<-length(tab.type)
-			# tab.type[[ntab+1]]<<-'arrValid'
-			# tab.data[[ntab+1]]<<-retdata
-			# tkselect(tknotes,ntab)
 		}
 	})
 
