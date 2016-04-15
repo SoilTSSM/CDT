@@ -129,7 +129,6 @@ ValidationPanelCmd<-function(){
 	tkgrid(bdirCDF.tab1,row=1,column=5,sticky='e',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(cap1.tab1,row=2,column=0,sticky='e',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(netCDFff.tab1,row=2,column=2,sticky='w',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
-
 	tkgrid(labRFE.tab1,row=3,column=0,sticky='we',rowspan=1,columnspan=6,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(combgrdCDF.tab1,row=4,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(btgrdCDF.tab1,row=4,column=5,sticky='e',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
@@ -201,7 +200,6 @@ ValidationPanelCmd<-function(){
 	#############################
 	tkgrid(frameSeason,row=0,column=1,sticky='we',rowspan=1,columnspan=5,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(sep1.tab2,row=1,column=0,sticky='we',rowspan=1,columnspan=6,pady=3)
-
 	tkgrid(tklabel(subfr2,text=' ',width=6),row=2,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(validate.tab2,row=2,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(tklabel(subfr2,text=' ',width=6),row=2,column=5,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
