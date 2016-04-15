@@ -60,8 +60,9 @@ ValidationDataFun<-function(retValidParams){
 	stat<-validationStats(stn.data[inNA],stn.ncdata[inNA],retValidParams$donne$freq)
 	write.table(stat,file.path(outValidation,'Validation_Statistics.txt',fsep = .Platform$file.sep),col.names=T,row.names=F)
 
+	grphlim<-c(0,max(stn.data[inNA],stn.ncdata[inNA]))
 	jpeg(file.path(outValidation,'Scatter_Gauge-RFE.jpg',fsep = .Platform$file.sep),width=960,height=960,quality=95)
-	plot(stn.data[inNA],stn.ncdata[inNA],xlab="Gauge",ylab="RFE")
+	plot(stn.data[inNA],stn.ncdata[inNA],xlab="Gauge",ylab="RFE",xlim=grphlim,ylim=grphlim)
 	abline(a=0, b=1, lwd=2,col='red')
 	dev.off()
 
@@ -82,8 +83,9 @@ ValidationDataFun<-function(retValidParams){
 	area_stat<-validationStats(gg_tms,rfe_tms,retValidParams$donne$freq)
 	write.table(area_stat,file.path(outValidation,'Spatial_Average_Validation_Statistics.txt',fsep = .Platform$file.sep),col.names=T,row.names=F)
 
+	grphlim0<-c(0,max(gg_tms,rfe_tms))
 	jpeg(file.path(outValidation,'Spatial_Average_Scatter_Gauge-RFE.jpg',fsep = .Platform$file.sep),width=960,height=960,quality=95)
-	plot(gg_tms,rfe_tms,xlab="Gauge",ylab="RFE")
+	plot(gg_tms,rfe_tms,xlab="Gauge",ylab="RFE",xlim=grphlim0,ylim=grphlim0)
 	abline(a=0, b=1, lwd=2,col='red')
 	dev.off()
 
@@ -141,7 +143,6 @@ validationStats<-function(x,y,ferqData){
 	stat<-data.frame(Stat=name_stat,Value=stat,Description=descrip)
 	return(stat)
 }	
-
 
 ########################
 

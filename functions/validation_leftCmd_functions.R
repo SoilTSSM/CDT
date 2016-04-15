@@ -17,7 +17,6 @@ ValidationPanelCmd<-function(){
 		hscrlwin<-h.scale(38.5)
 	}
 
-
 	###################
 
 	cmd.frame<-tkframe(panel.left)
@@ -28,7 +27,6 @@ ValidationPanelCmd<-function(){
 	cmd.tab1 <- bwAddTab(tknote.cmd,text="General")
 	cmd.tab2 <- bwAddTab(tknote.cmd,text="Validation")
 	bwRaiseTab(tknote.cmd,cmd.tab1)
-
 
 	#######################################################################################################
 
@@ -89,7 +87,6 @@ ValidationPanelCmd<-function(){
 		else tclvalue(dirNetCDF)<-dir4cdf
 	})
 
-
 	netCDFff<-tclVar("rfe%s_%s-dk%s.nc")
 	cap1.tab1<-tklabel(frameNcdf,text="NetCDF file format",anchor='e',justify='right')
 	netCDFff.tab1<-tkentry(frameNcdf,textvariable=netCDFff,width=wncdf_ff)
@@ -121,7 +118,6 @@ ValidationPanelCmd<-function(){
 	status.bar.display(combgrdCDF.tab1,txt.stbr1,'File containing a sample of NetCDF data')
 	infobulle(btgrdCDF.tab1,'Browse file if not listed')
 	status.bar.display(btgrdCDF.tab1,txt.stbr1,'Browse file if not listed')
-
 
 	#############################
 	tkgrid(labNcdir.tab1,row=0,column=0,sticky='we',rowspan=1,columnspan=6,padx=1,pady=1,ipadx=1,ipady=1)
@@ -215,7 +211,6 @@ ValidationPanelCmd<-function(){
 	#############################
 
 	outValiddata<-NULL
-
 	tkconfigure(validate.tab2,command=function(){
 		Inputs<-c(tclvalue(file.period),tclvalue(file.stnfl),tclvalue(dirNetCDF),tclvalue(netCDFff))
 		if(is.null(EnvRainValidation$Inputs)){

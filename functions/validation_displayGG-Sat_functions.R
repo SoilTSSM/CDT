@@ -6,10 +6,10 @@ plotGGvsSatellite<-function(outValiddata,dataType){
 		x<-outValiddata$xs
 		y<-outValiddata$ys
 	}
-	plot(x,y,xlab="Gauge",ylab="RFE")
+	grphlim<-c(0,max(x,y))
+	plot(x,y,xlab="Gauge",ylab="RFE",xlim=grphlim,ylim=grphlim)
 	abline(a=0, b=1, lwd=2,col='red')
 }
-
 
 ###############################
 displayGGvsSatFun<-function(parent,notebookTab,outValiddata,dataType){
@@ -38,7 +38,6 @@ displayGGvsSatFun<-function(parent,notebookTab,outValiddata,dataType){
 	return(list(onglet,img))
 }
 
-
 ######################################################
 cdfGGvsSatellite<-function(outValiddata,dataType){
 	if(tclvalue(dataType)=='All Data'){
@@ -52,7 +51,6 @@ cdfGGvsSatellite<-function(outValiddata,dataType){
 	plot(ecdf(y),add=T, col="red",lwd=2,cex=0.4)
 	legend('bottomright',c('Gauge','RFE'),col=c('blue','red'),lwd=3,bg='lightgray')
 }
-
 
 ###############################
 displayCDFGGvsSatFun<-function(parent,notebookTab,outValiddata,dataType){
