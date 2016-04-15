@@ -41,7 +41,7 @@ ValidationPanelCmd<-function(){
 	subfr1<-bwScrollableFrame(scrw1,width=wscrlwin,height=hscrlwin)
 
 	##############
-	frameStn<-ttklabelframe(subfr1,text="Gauge data file",relief='groove')
+	frameStn<-ttklabelframe(subfr1,text="Gauge validation data file",relief='groove')
 
 	#######################
 	file.period <- tclVar()
@@ -167,38 +167,75 @@ ValidationPanelCmd<-function(){
 	tkgrid(scrw2)
 	subfr2<-bwScrollableFrame(scrw2,width=wscrlwin,height=hscrlwin)
 
+	#####
+	frameSeason<-ttklabelframe(subfr2,text="Season",relief='groove')
+	mon1Lab.tab2<-tklabel(frameSeason,text='Start month',anchor='w',justify='left')
+	mon2Lab.tab2<-tklabel(frameSeason,text='End month',anchor='w',justify='left')
+
+	MonthsName<-format(ISOdate(2014,1:12,1),"%B")
+	start_mois<-tclVar(MonthsName[1])
+	end_mois<-tclVar(MonthsName[12])
+	cbChoixM1.tab2<-ttkcombobox(frameSeason, values=MonthsName, textvariable=start_mois,width=10) #
+	cbChoixM2.tab2<-ttkcombobox(frameSeason, values=MonthsName, textvariable=end_mois,width=10) #
+
+	tkgrid(mon1Lab.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=2,padx=2,pady=1,ipadx=1,ipady=1)
+	tkgrid(mon2Lab.tab2,row=0,column=2,sticky='we',rowspan=1,columnspan=2,padx=2,pady=1,ipadx=1,ipady=1)
+	tkgrid(cbChoixM1.tab2,row=1,column=0,sticky='we',rowspan=1,columnspan=2,padx=2,pady=1,ipadx=1,ipady=1)
+	tkgrid(cbChoixM2.tab2,row=1,column=2,sticky='we',rowspan=1,columnspan=2,padx=2,pady=1,ipadx=1,ipady=1)
+
+	#####
 	validate.tab2<-tkbutton(subfr2, text="EXECUTE")
+	dataType<-tclVar('All Data')
+	dataType.tab2<-ttkcombobox(subfr2, values=c('All Data','Spatial Average'), textvariable=dataType)
+
 	stats.tab2<-tkbutton(subfr2, text="Statistics")
-	scatt.tab2<-tkbutton(subfr2, text="Gauge-Satellite Plot")
+	scatt.tab2<-tkbutton(subfr2, text="Gauge-RFE Plot")
 	ecdf.tab2<-tkbutton(subfr2, text="CDF Plot")
 
 	sep1.tab2<-ttkseparator(subfr2)
 	sep2.tab2<-ttkseparator(subfr2)
 	sep3.tab2<-ttkseparator(subfr2)
+	sep4.tab2<-ttkseparator(subfr2)
+	sep5.tab2<-ttkseparator(subfr2)
 
 	#############################
-	tkgrid(tklabel(subfr2,text=' ',width=6),row=0,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(validate.tab2,row=0,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(tklabel(subfr2,text=' ',width=6),row=0,column=5,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(frameSeason,row=0,column=1,sticky='we',rowspan=1,columnspan=5,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(sep1.tab2,row=1,column=0,sticky='we',rowspan=1,columnspan=6,pady=3)
-	tkgrid(stats.tab2,row=2,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+
+	tkgrid(tklabel(subfr2,text=' ',width=6),row=2,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(validate.tab2,row=2,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(tklabel(subfr2,text=' ',width=6),row=2,column=5,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(sep2.tab2,row=3,column=0,sticky='we',rowspan=1,columnspan=6,pady=3)
-	tkgrid(scatt.tab2,row=4,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(dataType.tab2,row=4,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(sep3.tab2,row=5,column=0,sticky='we',rowspan=1,columnspan=6,pady=3)
-	tkgrid(ecdf.tab2,row=6,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(stats.tab2,row=6,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(sep4.tab2,row=7,column=0,sticky='we',rowspan=1,columnspan=6,pady=3)
+	tkgrid(scatt.tab2,row=8,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(sep5.tab2,row=9,column=0,sticky='we',rowspan=1,columnspan=6,pady=3)
+	tkgrid(ecdf.tab2,row=10,column=2,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 
 	#############################
 
 	outValiddata<-NULL
 
 	tkconfigure(validate.tab2,command=function(){
+		Inputs<-c(tclvalue(file.period),tclvalue(file.stnfl),tclvalue(dirNetCDF),tclvalue(netCDFff))
+		if(is.null(EnvRainValidation$Inputs)){
+			assign('Inputs',Inputs,envir=EnvRainValidation)	
+			do_extr<- 1
+		}else{
+			if(all(EnvRainValidation$Inputs==Inputs)) do_extr<- 0
+			else{
+				assign('Inputs',Inputs,envir=EnvRainValidation)
+				do_extr<- 1
+			}
+		} 
 
 		donne<-getCDTdata(file.stnfl,file.period)
 		rfedata<-getNcdfOpenData(file.grdCDF)
-		retValidParams<-list(donne=donne,rfedata=rfedata,ncdir=tclvalue(dirNetCDF),ncformat=tclvalue(netCDFff),dir2sav=tclvalue(file.save1),filestn=tclvalue(file.stnfl))
-
-#assign('retValidParams',retValidParams,envir=.GlobalEnv)
-
+		retValidParams<-list(donne=donne,rfedata=rfedata,ncdir=tclvalue(dirNetCDF),ncformat=tclvalue(netCDFff),dir2sav=tclvalue(file.save1),filestn=tclvalue(file.stnfl),
+		start_mois=tclvalue(start_mois),end_mois=tclvalue(end_mois),do_extr=do_extr)
+		
 		tkconfigure(main.win,cursor='watch')
 		insert.txt(main.txt.out,"Validation.................")
 		tcl('update')
@@ -212,15 +249,26 @@ ValidationPanelCmd<-function(){
 	})
 
 	####
-
+	validStatTab<-NULL
 	tkconfigure(stats.tab2,command=function(){
 		if(!is.null(outValiddata)){
-			dat2disp<-outValiddata$stat
-			retdata<-DisplayHomInfo(tknotes,dat2disp,'Statistics')
-			ntab<-length(tab.type)
-			tab.type[[ntab+1]]<<-'arrValid'
-			tab.data[[ntab+1]]<<-retdata
-			tkselect(tknotes,ntab)
+			if(tclvalue(dataType)=='All Data'){
+				dat2disp<-outValiddata$stat
+				titleTab<-'All-Data Statistics'
+			}else{
+				dat2disp<-outValiddata$sp.stat
+				titleTab<-'Spatial-Average Statistics'
+			}
+			retNBTab<-tableValidationNotebookTab_unik(tknotes,dat2disp,titleTab,validStatTab,tab.type,tab.data)
+			validStatTab<<-retNBTab$notebookTab
+			tab.type<<-retNBTab$tab.type
+			tab.data<<-retNBTab$tab.data
+
+			# retdata<-DisplayHomInfo(tknotes,dat2disp,titleTab)
+			# ntab<-length(tab.type)
+			# tab.type[[ntab+1]]<<-'arrValid'
+			# tab.data[[ntab+1]]<<-retdata
+			# tkselect(tknotes,ntab)
 		}
 	})
 
@@ -228,7 +276,7 @@ ValidationPanelCmd<-function(){
 	notebookTab1<-NULL
 	tkconfigure(scatt.tab2,command=function(){
 		if(!is.null(outValiddata)){
-			imgContainer<-displayGGvsSatFun(tknotes,notebookTab1,outValiddata)
+			imgContainer<-displayGGvsSatFun(tknotes,notebookTab1,outValiddata,dataType)
 			if(!is.null(imgContainer)){
 				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab1,tab.type,tab.data)
 				notebookTab1<<-retNBTab$notebookTab
@@ -242,7 +290,7 @@ ValidationPanelCmd<-function(){
 	notebookTab2<-NULL
 	tkconfigure(ecdf.tab2,command=function(){
 		if(!is.null(outValiddata)){
-			imgContainer<-displayCDFGGvsSatFun(tknotes,notebookTab2,outValiddata)
+			imgContainer<-displayCDFGGvsSatFun(tknotes,notebookTab2,outValiddata,dataType)
 			if(!is.null(imgContainer)){
 				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab2,tab.type,tab.data)
 				notebookTab2<<-retNBTab$notebookTab

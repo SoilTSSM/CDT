@@ -645,7 +645,7 @@ tkadd(menu.dataproc, "command", label="Interpolation",command=function(){
 tkadd(menu.dataproc, "separator")
 
 ##########
-tkadd(menu.dataproc, "command", label="Validation",command=function(){
+tkadd(menu.dataproc, "command", label="Precipitation Validation",command=function(){
 	source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 	tkconfigure(spinH,state='normal')

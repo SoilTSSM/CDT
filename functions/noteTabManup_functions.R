@@ -456,3 +456,53 @@ tableInterpNotebookTab_unik<-function(parent,donne,notebookTab,tabType,tabData){
 }
 
 
+######################################
+##Display statistiques de validation
+
+tableValidationNotebookTab_unik<-function(parent,toDispl,titleTab,notebookTab,tabType,tabData){
+	ntab<-length(tabType)
+
+	if(is.null(notebookTab)){
+		tableDisp<-DisplayHomInfo(parent,toDispl,titleTab)
+		tabType[[ntab+1]]<-'arrValid'
+		tabData[[ntab+1]]<-tableDisp
+		notebookTab<-tabData[[ntab+1]][[1]][[1]]$ID
+		tkselect(parent,ntab)
+		#popupAddRemoveRow0(parent,tabData,ntab+1)
+	}else{
+		if(ntab>0){
+			AllNoteTab<-sapply(1:ntab,function(j){
+				if(!is.null(attributes(tabData[[j]][[1]][[1]]))) tabData[[j]][[1]][[1]]$ID
+				else tabData[[j]][[1]][[1]]
+			})
+			idTabs<-which(AllNoteTab==notebookTab)
+			if(length(idTabs)>0){
+				.Tcl(paste('destroy',tclvalue(tkwinfo("children",tabData[[idTabs]][[1]][[2]]))))
+
+				dtab<-tclArrayVar(toDispl)
+				tabData[[idTabs]][[2]]<-displayTable(tabData[[idTabs]][[1]][[2]],tclArray=dtab,colwidth=25)
+				#table1<-displayTable(tabData[[idTabs]][[1]][[2]],tclArray=dtab,colwidth=10)
+				tcl(parent,'tab',tabData[[idTabs]][[1]][[1]],'-text',titleTab)
+				notebookTab<-tabData[[idTabs]][[1]][[1]]$ID
+				tkselect(parent,idTabs-1)
+				#popupAddRemoveRow0(parent,tabData,idTabs)
+			}else{
+				tableDisp<-DisplayHomInfo(parent,toDispl,titleTab)
+				tabType[[ntab+1]]<-'arrValid'
+				tabData[[ntab+1]]<-tableDisp
+				notebookTab<-tabData[[ntab+1]][[1]][[1]]$ID
+				tkselect(parent,ntab)
+				#popupAddRemoveRow0(parent,tabData,ntab+1)
+			}
+		}else{
+			tableDisp<-DisplayHomInfo(parent,toDispl,titleTab)
+			tabType[[ntab+1]]<-'arrValid'
+			tabData[[ntab+1]]<-tableDisp
+			notebookTab<-tabData[[ntab+1]][[1]][[1]]$ID
+			tkselect(parent,ntab)
+			#popupAddRemoveRow0(parent,tabData,ntab+1)
+		}
+	}
+	retTab<-list(notebookTab=notebookTab,tab.type=tabType,tab.data=tabData)
+	return(retTab)
+}

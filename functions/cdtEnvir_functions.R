@@ -14,3 +14,7 @@ EnvQcOutlierData<-new.env()
 
 #Homogenization
 EnvHomogzData<-new.env()
+
+#Rainfall Validation
+EnvRainValidation<-new.env()
+

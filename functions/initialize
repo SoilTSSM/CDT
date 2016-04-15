@@ -6,6 +6,7 @@ rm(list=ls(envir=EnvQcZeroChkData),envir=EnvQcZeroChkData)
 rm(list=ls(envir=EnvInterpolation),envir=EnvInterpolation)
 rm(list=ls(envir=EnvMultiPP),envir=EnvMultiPP)
 rm(list=ls(envir=EnvHomogzData),envir=EnvHomogzData)
+rm(list=ls(envir=EnvRainValidation),envir=EnvRainValidation)
 
 ##Left panel command refresh
 tkdestroy(lcmd.frame)

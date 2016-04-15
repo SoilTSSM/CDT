@@ -51,10 +51,13 @@ library(grid)
 library(reshape2)
 library(compiler)
 library(parallel)
+# library(foreach)
+# library(doParallel)
 
 #compilePKGS(enable=TRUE)
 #enableJIT(3)
 nb_cores<-detectCores()-1
+# `%parLoop%`<- if(nb_cores<2) `%do%` else `%dopar%`
 
 #######################
 

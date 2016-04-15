@@ -1,17 +1,24 @@
-plotGGvsSatellite<-function(outValiddata){
-	plot(outValiddata$x,outValiddata$y,xlab="Gauge",ylab="Satellite")
-	abline(a=0, b=1, lwd=2)
+plotGGvsSatellite<-function(outValiddata,dataType){
+	if(tclvalue(dataType)=='All Data'){
+		x<-outValiddata$x
+		y<-outValiddata$y
+	}else{
+		x<-outValiddata$xs
+		y<-outValiddata$ys
+	}
+	plot(x,y,xlab="Gauge",ylab="RFE")
+	abline(a=0, b=1, lwd=2,col='red')
 }
 
 
 ###############################
-displayGGvsSatFun<-function(parent,notebookTab,outValiddata){
+displayGGvsSatFun<-function(parent,notebookTab,outValiddata,dataType){
 
 	plotIt <- function(){
-		plotGGvsSatellite(outValiddata)
+		plotGGvsSatellite(outValiddata,dataType)
 	}
 
-	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle='Gauge-Satellite',tab.type,tab.data)
+	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle='Gauge-RFE',tab.type,tab.data)
 
 	hscale<-as.numeric(tclvalue(tkget(spinH)))
 	vscale<-as.numeric(tclvalue(tkget(spinV)))
@@ -33,21 +40,28 @@ displayGGvsSatFun<-function(parent,notebookTab,outValiddata){
 
 
 ######################################################
-cdfGGvsSatellite<-function(outValiddata){
-	plot(ecdf(outValiddata$x),xlab="Rainfall [mm]",main='CDF',col='blue',lwd=3)
-	plot(ecdf(outValiddata$y),add=T, col="red",lwd=1,cex=0.4)
-	legend('bottomright',c('Gauge','Satellite'),col=c('blue','red'),lwd=3,bg='lightgray')
+cdfGGvsSatellite<-function(outValiddata,dataType){
+	if(tclvalue(dataType)=='All Data'){
+		x<-outValiddata$x
+		y<-outValiddata$y
+	}else{
+		x<-outValiddata$xs
+		y<-outValiddata$ys
+	}
+	plot(ecdf(x),xlab="Rainfall [mm]",main='CDF',col='blue',lwd=2,cex=0.4,ylim=c(0,1))
+	plot(ecdf(y),add=T, col="red",lwd=2,cex=0.4)
+	legend('bottomright',c('Gauge','RFE'),col=c('blue','red'),lwd=3,bg='lightgray')
 }
 
 
 ###############################
-displayCDFGGvsSatFun<-function(parent,notebookTab,outValiddata){
+displayCDFGGvsSatFun<-function(parent,notebookTab,outValiddata,dataType){
 
 	plotIt <- function(){
-		cdfGGvsSatellite(outValiddata)
+		cdfGGvsSatellite(outValiddata,dataType)
 	}
 
-	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle='CDF Gauge-Satellite',tab.type,tab.data)
+	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle='CDF Gauge-RFE',tab.type,tab.data)
 
 	hscale<-as.numeric(tclvalue(tkget(spinH)))
 	vscale<-as.numeric(tclvalue(tkget(spinV)))
