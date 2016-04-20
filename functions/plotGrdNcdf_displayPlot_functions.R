@@ -132,7 +132,7 @@ displayNetCDFdata<-function(parent,notebookTab,donne,atLev,listCol,shpf,units){
 	tkgrid.columnconfigure(scrollwin,0,weight=1)
 	containerFrame<-bwScrollableFrame(scrollwin,width=wscrFrame,height=hscrFrame)
 	
-	img<-tkrplot(containerFrame,fun=plotIt,hscale=hscale, vscale=vscale)
+	img<-tkrplot1(containerFrame,fun=plotIt,hscale=hscale, vscale=vscale)
 	tkgrid(img)
 	
 	return(list(onglet,img))
