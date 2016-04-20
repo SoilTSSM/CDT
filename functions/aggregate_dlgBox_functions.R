@@ -18,7 +18,7 @@ AggregateInputStationData<-function(parent.win,gal.params){
 	for(i in 0:4) tkgrid(get(paste('fr.A',i,sep='')))
 	for(i in 0:4) tkgrid.configure(get(paste('fr.A',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
-################################
+	################################
 	fr.A01<-tkframe(fr.A0)
 	fr.A02<-tkframe(fr.A0)
 	tkgrid(fr.A01,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
@@ -34,7 +34,7 @@ AggregateInputStationData<-function(parent.win,gal.params){
 	tkgrid(cb.period)
 
 
-###########################
+	###########################
 	file.choix1 <- tclVar()
 	tclvalue(file.choix1) <- as.character(gal.params$file.io$Values[1])
 	file.choix2 <- tclVar()
@@ -72,7 +72,7 @@ AggregateInputStationData<-function(parent.win,gal.params){
 		}
 	})
 
-################################
+	################################
 	fr.A21<-tkframe(fr.A2)
 	fr.A22<-tkframe(fr.A2)
 	tkgrid(fr.A21,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
@@ -104,7 +104,7 @@ AggregateInputStationData<-function(parent.win,gal.params){
 			return(NULL)
 		}
 	})
-#############################
+	#############################
 	fr.A31<-tkframe(fr.A3)
 	fr.A32<-tkframe(fr.A3)
 	tkgrid(fr.A31,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
@@ -127,7 +127,7 @@ AggregateInputStationData<-function(parent.win,gal.params){
 		else tclvalue(dir.stn)<-dir4stn
 	})
 
-################################
+	################################
 	fr.A41<-tkframe(fr.A4)
 	fr.A42<-tkframe(fr.A4)
 	tkgrid(fr.A41,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
@@ -152,11 +152,11 @@ AggregateInputStationData<-function(parent.win,gal.params){
 		}
 	})
 
-###############################################
-	pr.relief.set1<-c('sunken','sunken','sunken','flat')
-	for(i in 0:3) assign(paste('fr.B',i,sep=''),tkframe(fr.B,relief=pr.relief.set1[i+1],borderwidth=2))
-	for(i in 0:3) tkgrid(get(paste('fr.B',i,sep='')))
-	for(i in 0:3) tkgrid.configure(get(paste('fr.B',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
+	###############################################
+	pr.relief.set1<-c('sunken','sunken','sunken','sunken','flat')
+	for(i in 0:4) assign(paste('fr.B',i,sep=''),tkframe(fr.B,relief=pr.relief.set1[i+1],borderwidth=2))
+	for(i in 0:4) tkgrid(get(paste('fr.B',i,sep='')))
+	for(i in 0:4) tkgrid.configure(get(paste('fr.B',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
 	fr.B01<-ttklabelframe(fr.B0,text="File Format",labelanchor="nw",relief="flat",borderwidth=2)
 	tkgrid(fr.B01)
@@ -188,10 +188,10 @@ AggregateInputStationData<-function(parent.win,gal.params){
 	tkconfigure(dtfrmt1,variable=rbdtfrmt,value="1")
 	tkconfigure(dtfrmt2,variable=rbdtfrmt,value="0")
 
-#####################
+	#####################
 
-	infobulle(fr.B2,'Start and end date for the merging')
-	status.bar.display(fr.B2,txt.stbr1,'Start and end date for the merging')
+	infobulle(fr.B2,'Start and end date for the aggregation')
+	status.bar.display(fr.B2,txt.stbr1,'Start and end date for the aggregation')
 
 	deb.txt<-tklabel(fr.B2,text='Start date',anchor='e',justify='right')
 	fin.txt<-tklabel(fr.B2,text='End date',anchor='e',justify='right')
@@ -250,10 +250,19 @@ AggregateInputStationData<-function(parent.win,gal.params){
 			tclvalue(iend.day)<-as.character(gal.params$StartEnd.date$Values[6])
 		}
 	})
+	#################################
+	infobulle(fr.B3,'Minimum % of non-missing of the stations series to be accepted to the aggregated data')
+	status.bar.display(fr.B3,txt.stbr1,'Minimum % of non-missing of the stations series to be accepted to the aggregated data')
 
-#################################
-	bt.opt.OK<-tkbutton(fr.B3, text="OK")
-	tkgrid(bt.opt.OK,row=0,column=0,sticky='w',padx=15,pady=15,ipadx=1,ipady=1)
+	minperc.lab<-tklabel(fr.B3,text='Min percentage (%)',anchor='e',justify='right')
+	minperc<-tclVar(as.character(gal.params$min.perc))
+	minperc.ent<-tkentry(fr.B3, width=4,textvariable=minperc,justify = "right")
+	tkgrid(minperc.lab,row=0,column=0,sticky='ew',padx=1,pady=1)
+	tkgrid(minperc.ent,row=0,column=2,sticky='ew',padx=1,pady=1)
+
+	#################################
+	bt.opt.OK<-tkbutton(fr.B4, text="OK")
+	tkgrid(bt.opt.OK,row=0,column=0,sticky='w',padx=15,pady=5,ipadx=1,ipady=1)
 	tkconfigure(bt.opt.OK,command=function(){
 		if(tclvalue(file.choix1)==""){
 			tkmessageBox(message="You have to provide a station sample file",icon="warning",type="ok")
@@ -277,8 +286,8 @@ AggregateInputStationData<-function(parent.win,gal.params){
 		}
 	})
 
-	bt.opt.CA<-tkbutton(fr.B3, text="Cancel")
-	tkgrid(bt.opt.CA,row=0,column=2,sticky='e',padx=15,pady=15,ipadx=1,ipady=1)
+	bt.opt.CA<-tkbutton(fr.B4, text="Cancel")
+	tkgrid(bt.opt.CA,row=0,column=2,sticky='e',padx=15,pady=5,ipadx=1,ipady=1)
 	tkconfigure(bt.opt.CA,command=function(){
 		tkgrab.release(tt)
 		tkdestroy(tt)

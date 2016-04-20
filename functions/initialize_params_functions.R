@@ -299,7 +299,8 @@ init.params<-function(action,period){
 		StartEnd.date<-data.frame(c('istart.yrs','istart.mon','istart.dek','iend.yrs','iend.mon','iend.dek'),
 		c('1961','1','1','2014','12','31'))
 		names(StartEnd.date)<-c('Parameters','Values')
-		ret.params<-list(action=action,period=period,file.io=file.io,file.date.format=file.date.format,StartEnd.date=StartEnd.date)
+		min.perc<-'1'
+		ret.params<-list(action=action,period=period,file.io=file.io,file.date.format=file.date.format,StartEnd.date=StartEnd.date,min.perc=min.perc)
 	}
 ################
 	if(action=='agg.ts'){

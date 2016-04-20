@@ -234,6 +234,7 @@ AggregateDataCDT<-function(gal.params){
 	iend.yrs<-as.numeric(as.character(gal.params$StartEnd.date$Values[4]))
 	iend.mon<-as.numeric(as.character(gal.params$StartEnd.date$Values[5]))
 	iend.day<-as.numeric(as.character(gal.params$StartEnd.date$Values[6]))
+	min.perc<-1/100
 
 	period<-as.character(gal.params$period)
 	filefrmt<-as.character(gal.params$file.date.format$Values[1])
@@ -262,7 +263,7 @@ AggregateDataCDT<-function(gal.params){
 	}else{
 		infohead<-t(gginfo)
 	}
-	infohead1<-t(infohead)
+	infoheadI<-t(infohead)
 
 	if(period=='daily'){
 		istart<-as.Date(paste(istart.yrs,istart.mon,istart.day,sep='-'))
@@ -281,11 +282,15 @@ AggregateDataCDT<-function(gal.params){
 		odates<-data.frame(dates=format(seq(istart,iend,'month'),'%Y%m'))
 	}
 
-	retval<-odates
+	nldata<-nrow(odates)
 	if(filefrmt=="0"){
-		retval1<-odates
-		retval2<-odates
+		retval<-retval1<-retval2<-odates
+		exlude<-exlude1<-exlude2<-NULL
+	}else{
+		exlude<-NULL
+		retval<-odates
 	}
+	
 	miss<-NULL
 	for(j in 1:length(ggid)){
 		fileopen<-file.path(file.pars[3],paste(ggid[j],'.',extf,sep=''),fsep = .Platform$file.sep)
@@ -298,56 +303,135 @@ AggregateDataCDT<-function(gal.params){
 			}else{
 				retvar<-splitTsData(donne,period,filefrmt,datefrmt)
 				if(is.null(retvar)) return(NULL)
-				if(retvar$nbvar==1) val<-data.frame(dates=retvar$dates,val=retvar$var$var)
-				else{
+				if(retvar$nbvar==1){
+					val<-data.frame(dates=retvar$dates,val=retvar$var$var)
+					if((sum(!is.na(retvar$var$var))/nldata)>min.perc) val<-data.frame(dates=retvar$dates,val=retvar$var$var)
+					else{
+						exlude<-c(exlude,j)
+						val<-NULL
+					} 
+				}else{
 					val<-data.frame(dates=retvar$dates,val=retvar$var$rr)
+					if((sum(!is.na(retvar$var$rr))/nldata)>min.perc) val<-data.frame(dates=retvar$dates,val=retvar$var$rr)
+					else{
+						exlude<-c(exlude,j)
+						val<-NULL
+					} 
 					val1<-data.frame(dates=retvar$dates,val=retvar$var$tx)
+					if((sum(!is.na(retvar$var$tx))/nldata)>min.perc) val1<-data.frame(dates=retvar$dates,val=retvar$var$tx)
+					else{
+						exlude1<-c(exlude1,j)
+						val1<-NULL
+					}
 					val2<-data.frame(dates=retvar$dates,val=retvar$var$tn)
+					if((sum(!is.na(retvar$var$tn))/nldata)>min.perc) val2<-data.frame(dates=retvar$dates,val=retvar$var$tn)
+					else{
+						exlude2<-c(exlude2,j)
+						val2<-NULL
+					}
 				}
 				###############################
-				rtmp<-merge(odates,val,by='dates',all.x=TRUE)
-				ideb<-which(as.character(rtmp[,1])==as.character(odates[1,1]))
-				ifin<-which(as.character(rtmp[,1])==as.character(odates[nrow(odates),1]))
-				retval<-cbind(retval,rtmp[ideb:ifin,2])
 				if(filefrmt=="0"){
-					rtmp1<-merge(odates,val1,by='dates',all.x=TRUE)
-					retval1<-cbind(retval1,rtmp1[ideb:ifin,2])
-					rtmp2<-merge(odates,val2,by='dates',all.x=TRUE)
-					retval2<-cbind(retval2,rtmp2[ideb:ifin,2])
+					if(!is.null(val)){
+						rtmp<-merge(odates,val,by='dates',all.x=TRUE)
+						ideb<-which(as.character(rtmp[,1])==as.character(odates[1,1]))
+						ifin<-which(as.character(rtmp[,1])==as.character(odates[nrow(odates),1]))
+						retval<-cbind(retval,rtmp[ideb:ifin,2])
+					}
+					if(!is.null(val1)){
+						rtmp1<-merge(odates,val1,by='dates',all.x=TRUE)
+						ideb<-which(as.character(rtmp1[,1])==as.character(odates[1,1]))
+						ifin<-which(as.character(rtmp1[,1])==as.character(odates[nrow(odates),1]))
+						retval1<-cbind(retval1,rtmp1[ideb:ifin,2])
+					}
+					if(!is.null(val2)){
+						rtmp2<-merge(odates,val2,by='dates',all.x=TRUE)
+						ideb<-which(as.character(rtmp2[,1])==as.character(odates[1,1]))
+						ifin<-which(as.character(rtmp2[,1])==as.character(odates[nrow(odates),1]))
+						retval2<-cbind(retval2,rtmp2[ideb:ifin,2])
+					}
+				}else{
+					if(!is.null(val)){
+						rtmp<-merge(odates,val,by='dates',all.x=TRUE)
+						ideb<-which(as.character(rtmp[,1])==as.character(odates[1,1]))
+						ifin<-which(as.character(rtmp[,1])==as.character(odates[nrow(odates),1]))
+						retval<-cbind(retval,rtmp[ideb:ifin,2])
+					}
 				}
-
 			}
 		}else{
 			miss<-c(miss,j)
 		}
 	}
-	if(!is.null(miss)) infohead<-infohead[,- miss]
+
 	if(nrow(infohead)==3) capition<-c('Stations','LON',paste(toupper(period),'LAT',sep='/'))
 	if(nrow(infohead)==4) capition<-c('Stations','LON','LAT',paste(toupper(period),'ELV',sep='/'))
-	infohead<-data.frame(capition,infohead)
 
-	donne<-t(cbind(t(infohead),t(retval)))
-	fileout<-file.pars[4]
+	if(!is.null(miss)) infohead<-infohead[,- miss]
+
 	if(filefrmt=="0"){
-		donne1<-t(cbind(t(infohead),t(retval1)))
-		donne2<-t(cbind(t(infohead),t(retval2)))
+		infohead0<-if(!is.null(exlude)) infohead[,- exlude] else infohead
+		infohead0<-data.frame(capition,infohead0)
+		donne<-t(cbind(t(infohead0),t(retval)))
 		fileout<-file.path(dirname(file.pars[4]),paste('PRECIP_',basename(file.pars[4]),sep=''),fsep = .Platform$file.sep)
+		donne[is.na(donne)]<- -99
+		write.table(donne,fileout,col.names=F,row.names=F,quote=F)
+
+		infohead1<-if(!is.null(exlude1)) infohead[,- exlude1] else infohead
+		infohead1<-data.frame(capition,infohead1)
+		donne1<-t(cbind(t(infohead1),t(retval1)))
 		fileout1<-file.path(dirname(file.pars[4]),paste('TMAX_',basename(file.pars[4]),sep=''),fsep = .Platform$file.sep)
+		donne1[is.na(donne1)]<- -99
+		write.table(donne1,fileout1,col.names=F,row.names=F,quote=F)
+
+		infohead2<-if(!is.null(exlude2)) infohead[,- exlude2] else infohead
+		infohead2<-data.frame(capition,infohead2)
+		donne2<-t(cbind(t(infohead2),t(retval2)))
 		fileout2<-file.path(dirname(file.pars[4]),paste('TMIN_',basename(file.pars[4]),sep=''),fsep = .Platform$file.sep)
+		donne2[is.na(donne2)]<- -99
+		write.table(donne2,fileout2,col.names=F,row.names=F,quote=F)
+	}else{
+		infohead<-if(!is.null(exlude)) infohead[,- exlude] else infohead
+		infohead<-data.frame(capition,infohead)
+		donne<-t(cbind(t(infohead),t(retval)))
+		fileout<-file.pars[4]
+		donne[is.na(donne)]<- -99
+		write.table(donne,fileout,col.names=F,row.names=F,quote=F)
 	}
 
-	donne[is.na(donne)]<- -99
-	write.table(donne,fileout,col.names=F,row.names=F,quote=F)
+	outlist<-list()
+	if(!is.null(miss)){
+		tmp<-as.data.frame(infoheadI[miss,,drop=F])
+		names(tmp)<-c('Stations_ID','Longitude','Latitude')
+		outlist<-c(outlist,list('Stations not aggregated',tmp))
+	} 
 
 	if(filefrmt=="0"){
-		donne1[is.na(donne1)]<- -99
-		donne2[is.na(donne2)]<- -99
-		write.table(donne1,fileout1,col.names=F,row.names=F,quote=F)
-		write.table(donne2,fileout2,col.names=F,row.names=F,quote=F)
+		if(!is.null(exlude)){
+			tmp<-as.data.frame(infoheadI[exlude,,drop=F])
+			names(tmp)<-c('Stations_ID','Longitude','Latitude')
+			outlist<-c(outlist,list('Precip: Stations excluded not enough values',tmp))
+		}
+		if(!is.null(exlude1)){
+			tmp1<-as.data.frame(infoheadI[exlude1,,drop=F])
+			names(tmp1)<-c('Stations_ID','Longitude','Latitude')
+			outlist<-c(outlist,list('Tmax: Stations excluded not enough values',tmp1))
+		}
+		if(!is.null(exlude2)){
+			tmp2<-as.data.frame(infoheadI[exlude2,,drop=F])
+			names(tmp2)<-c('Stations_ID','Longitude','Latitude')
+			outlist<-c(outlist,list('Tmin: Stations excluded not enough values',tmp2))
+		}
+	}else{
+		if(!is.null(exlude)){
+			tmp<-as.data.frame(infoheadI[exlude,,drop=F])
+			names(tmp)<-c('Stations_ID','Longitude','Latitude')
+			outlist<-c(outlist,list('Stations excluded not enough values',tmp))
+		}
 	}
-	if(!is.null(miss)){
-		faileds<-list('Stations not aggregated',infohead1[miss,])
-		containertab<-displayConsOutputTabs(tknotes,faileds,title='Failed Stations')
+
+	if(length(outlist)>0){
+		containertab<-displayConsOutputTabs(tknotes,outlist,title='Failed Stations')
 		ntab<-length(tab.type)
 		tab.type[[ntab+1]]<<-'ctxt'
 		tab.data[[ntab+1]]<<-containertab
