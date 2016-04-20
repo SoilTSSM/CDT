@@ -166,10 +166,8 @@ getDEM<-function(minlon,maxlon,minlat,maxlat,outdir){
 	link1<-paste(url1,area1,'data.nc',sep='/')
 	ret1<-try(download.file(link1,destfile1,method="auto",quiet=TRUE,mode="wb",cacheOK=TRUE),silent=TRUE)
 
-	xm<-read.table(file.path(apps.dir,'country','Longitude.txt',fsep = .Platform$file.sep))
-	ym<-read.table(file.path(apps.dir,'country','Latitude.txt',fsep = .Platform$file.sep))
-	xm<-round(xm[,1],4)
-	ym<-round(ym[,1],4)
+	xm<-seq(-19.0125,51.975,0.0375)
+	ym<-seq(-35.9625,38.025,0.0375)
 
 	aggregateDEM2Merge<-function(ret,destfile,res1,varid,longname,msg){
 		if(ret==0){

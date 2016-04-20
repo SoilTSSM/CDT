@@ -296,140 +296,23 @@ AggregateDataCDT<-function(gal.params){
 				insert.txt(main.txt.out,paste("Unable to read file ",fileopen),format=TRUE)
 				miss<-c(miss,j)
 			}else{
-				if(period=='daily'){
-					if(filefrmt=="1"){ #1var
-						if(datefrmt=="1"){ #1date
-							dates<-as.Date(as.character(donne[,1]),format='%Y%m%d')
-							var<-as.numeric(donne[,2])
-						}else{ #3date
-							dates<-as.Date(paste(as.character(donne[,1]),as.character(donne[,2]),as.character(donne[,3]),sep='-'))
-							var<-as.numeric(donne[,4])
-						}
-					}else{#3var
-						if(datefrmt=="1"){ #1date
-							dates<-as.Date(as.character(donne[,1]),format='%Y%m%d')
-							var<-as.numeric(donne[,2])   #rr=2, tx=3, tn=4
-							var1<-as.numeric(donne[,3])
-							var2<-as.numeric(donne[,4])
-						}else{#3date
-							dates<-as.Date(paste(as.character(donne[,1]),as.character(donne[,2]),as.character(donne[,3]),sep='-'))
-							var<-as.numeric(donne[,4]) #rr=4, tx=5, tn=6
-							var1<-as.numeric(donne[,5])
-							var2<-as.numeric(donne[,6])
-						}
-					}
-					var<-var[!is.na(dates)]
-					dates<-dates[!is.na(dates)]
-					var<-var[order(dates)]
-					if(filefrmt=="0"){
-						var1<-var1[order(dates)]
-						var2<-var2[order(dates)]
-					}
-					dates<-dates[order(dates)]
-					dates<-format(dates,'%Y%m%d')
-				}else if(period=='dekadal'){
-					if(filefrmt=="1"){ #1var
-						if(datefrmt=="1"){ #1date
-							xan<-substr(as.character(donne[,1]),1,4)
-							xmo<-substr(as.character(donne[,1]),5,6)
-							xdk<-substr(as.character(donne[,1]),7,7)
-							notdek<-which(as.numeric(xdk)>3)
-							dates<-as.Date(paste(xan,xmo,xdk,sep='-'))
-							dates[notdek]<-NA
-							var<-as.numeric(donne[,2])
-						}else{ #3date
-							dates<-as.Date(paste(as.character(donne[,1]),as.character(donne[,2]),as.character(donne[,3]),sep='-'))
-							notdek<-which(as.numeric(as.character(donne[,3]))>3)
-							dates[notdek]<-NA
-							var<-as.numeric(donne[,4])
-						}
-					}else{#3var
-						if(datefrmt=="1"){ #1date
-							xan<-substr(as.character(donne[,1]),1,4)
-							xmo<-substr(as.character(donne[,1]),5,6)
-							xdk<-substr(as.character(donne[,1]),7,7)
-							notdek<-which(as.numeric(xdk)>3)
-							dates<-as.Date(paste(xan,xmo,xdk,sep='-'))
-							dates[notdek]<-NA
-							var<-as.numeric(donne[,2])   #rr=2, tx=3, tn=4
-							var1<-as.numeric(donne[,3])
-							var2<-as.numeric(donne[,4])
-						}else{#3date
-							dates<-as.Date(paste(as.character(donne[,1]),as.character(donne[,2]),as.character(donne[,3]),sep='-'))
-							notdek<-which(as.numeric(as.character(donne[,3]))>3)
-							dates[notdek]<-NA
-							var<-as.numeric(donne[,4]) #rr=4, tx=5, tn=6
-							var1<-as.numeric(donne[,5])
-							var2<-as.numeric(donne[,6])
-						}
-					}
-					var<-var[!is.na(dates)]
-					dates<-dates[!is.na(dates)]
-					var<-var[order(dates)]
-					if(filefrmt=="0"){
-						var1<-var1[order(dates)]
-						var2<-var2[order(dates)]
-					}
-					dates<-dates[order(dates)]
-					dates<-paste(format(dates,'%Y%m'),as.numeric(format(dates,'%d')),sep='')
-				}else if(period=='monthly'){
-					if(filefrmt=="1"){ #1var
-						if(datefrmt=="1"){ #1date
-							xan<-substr(as.character(donne[,1]),1,4)
-							xmo<-substr(as.character(donne[,1]),5,6)
-							dates<-as.Date(paste(xan,xmo,'1',sep='-'))
-							var<-as.numeric(donne[,2])
-						}else{ #3date
-							dates<-as.Date(paste(as.character(donne[,1]),as.character(donne[,2]),'1',sep='-'))
-							if(ncol(donne)==3) var<-as.numeric(donne[,3])
-							if(ncol(donne)==4) var<-as.numeric(donne[,4])
-						}
-					}else{#3var
-						if(datefrmt=="1"){ #1date
-							xan<-substr(as.character(donne[,1]),1,4)
-							xmo<-substr(as.character(donne[,1]),5,6)
-							dates<-as.Date(paste(xan,xmo,'1',sep='-'))
-							var<-as.numeric(donne[,2])   #rr=2, tx=3, tn=4
-							var1<-as.numeric(donne[,3])
-							var2<-as.numeric(donne[,4])
-						}else{#3date
-							dates<-as.Date(paste(as.character(donne[,1]),as.character(donne[,2]),'1',sep='-'))
-							if(ncol(donne)==5){
-								var<-as.numeric(donne[,3]) #rr=3, tx=4, tn=5
-								var1<-as.numeric(donne[,4])
-								var2<-as.numeric(donne[,5])
-							}
-							if(ncol(donne)==6){
-								var<-as.numeric(donne[,4]) #rr=4, tx=5, tn=6
-								var1<-as.numeric(donne[,5])
-								var2<-as.numeric(donne[,6])
-							}
-						}
-					}
-					var<-var[!is.na(dates)]
-					dates<-dates[!is.na(dates)]
-					var<-var[order(dates)]
-					if(filefrmt=="0"){
-						var1<-var1[order(dates)]
-						var2<-var2[order(dates)]
-					}
-					dates<-dates[order(dates)]
-					dates<-format(dates,'%Y%m')
-				}
-				val<-data.frame(dates=dates,val=var)
-				if(filefrmt=="0"){
-					val1<-data.frame(dates=dates,val=var1)
-					val2<-data.frame(dates=dates,val=var2)
+				retvar<-splitTsData(donne,period,filefrmt,datefrmt)
+				if(is.null(retvar)) return(NULL)
+				if(retvar$nbvar==1) val<-data.frame(dates=retvar$dates,val=retvar$var$var)
+				else{
+					val<-data.frame(dates=retvar$dates,val=retvar$var$rr)
+					val1<-data.frame(dates=retvar$dates,val=retvar$var$tx)
+					val2<-data.frame(dates=retvar$dates,val=retvar$var$tn)
 				}
 				###############################
-				rtmp<-merge(odates,val,by.x='dates',by.y='dates',all=T)
+				rtmp<-merge(odates,val,by='dates',all.x=TRUE)
 				ideb<-which(as.character(rtmp[,1])==as.character(odates[1,1]))
 				ifin<-which(as.character(rtmp[,1])==as.character(odates[nrow(odates),1]))
 				retval<-cbind(retval,rtmp[ideb:ifin,2])
 				if(filefrmt=="0"){
-					rtmp1<-merge(odates,val1,by.x='dates',by.y='dates',all=T)
+					rtmp1<-merge(odates,val1,by='dates',all.x=TRUE)
 					retval1<-cbind(retval1,rtmp1[ideb:ifin,2])
-					rtmp2<-merge(odates,val2,by.x='dates',by.y='dates',all=T)
+					rtmp2<-merge(odates,val2,by='dates',all.x=TRUE)
 					retval2<-cbind(retval2,rtmp2[ideb:ifin,2])
 				}
 
@@ -457,6 +340,8 @@ AggregateDataCDT<-function(gal.params){
 	write.table(donne,fileout,col.names=F,row.names=F,quote=F)
 
 	if(filefrmt=="0"){
+		donne1[is.na(donne1)]<- -99
+		donne2[is.na(donne2)]<- -99
 		write.table(donne1,fileout1,col.names=F,row.names=F,quote=F)
 		write.table(donne2,fileout2,col.names=F,row.names=F,quote=F)
 	}
