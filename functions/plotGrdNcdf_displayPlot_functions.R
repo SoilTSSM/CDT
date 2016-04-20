@@ -95,7 +95,7 @@ plotNetCDFdata<-function(donne,atLev,listCol,ocrds,units){
 
 ####################################################################################
 
-displayNetCDFdata<-function(parent,notebookTab,donne,atLev,listCol,shpf,units){
+displayNetCDFdata<-function(parent,notebookTab,donne,atLev,listCol,shpf,units,blank){
 	if(is.null(donne)){
 		insert.txt(main.txt.out,'No NetCDF data found',format=TRUE)
 		return(NULL)
@@ -109,7 +109,16 @@ displayNetCDFdata<-function(parent,notebookTab,donne,atLev,listCol,shpf,units){
 	
 	ocrds<-getBoundaries(shpf)
 	donne2<-donne[[2]]
-	
+	if(blank=='1'){
+		plotgrd<-expand.grid(x=donne2$x,y=donne2$y)
+		coordinates(plotgrd)<- ~x+y
+		plotgrd<-SpatialPixels(points =plotgrd, tolerance =sqrt(sqrt(.Machine$double.eps)),proj4string = CRS(as.character(NA)))
+		shpf[['vtmp']]<-1
+		shpMask<-over(plotgrd,shpf)[,'vtmp']
+		outMask<-matrix(shpMask,nrow=length(donne2$x),ncol=length(donne2$y))
+		donne2$value[is.na(outMask)]<- NA
+	}
+
 	plotIt <- function(){
 		plotNetCDFdata(donne2,atLev,listCol,ocrds,units)
 	}

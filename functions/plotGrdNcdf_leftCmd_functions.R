@@ -95,6 +95,13 @@ PlotGriddedNcdfCmd<-function(){
 			tkconfigure(combShp.tab1,values=unlist(file.list), textvariable=file.plotShp)
 		}
 	})
+
+	##############
+
+	blankVal <- tclVar('0')
+	cbBlank.tab1 <- tkcheckbutton(subfr1,variable=blankVal,text='Blank grid',anchor='w',justify='left')
+	infobulle(cbBlank.tab1,'Blank grid outside the country boundaries or over ocean')
+	status.bar.display(cbBlank.tab1,txt.stbr1,'Blank grid outside the country boundaries  or over ocean given by the shapefile')
 	
 	###########
 	tkgrid(combShp.tab1,row=0,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=2,ipadx=1,ipady=1)
@@ -103,7 +110,8 @@ PlotGriddedNcdfCmd<-function(){
 	#############################
 	tkgrid(frameNcdf,row=0,column=0,sticky='we',pady=2)
 	tkgrid(frameShp,row=1,column=0,sticky='we',pady=2)
-	
+	tkgrid(cbBlank.tab1,row=3,column=0,sticky='we',ipady=2)
+
 	#######################################################################################################
 
 	#Tab2	
@@ -250,13 +258,16 @@ PlotGriddedNcdfCmd<-function(){
 			if(!is.null(donne)) atLev<-pretty(donne[[2]]$value)
 		}
 		shpf<-getShpOpenData(file.plotShp)[[2]]
-		
-		imgContainer<-displayNetCDFdata(tknotes,notebookTab,donne,atLev,listCol,shpf,tclvalue(unit_sym))
-		if(!is.null(imgContainer)){
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,tab.type,tab.data)
-			notebookTab<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
+		if(tclvalue(blankVal)=='1' & is.null(shpf)){
+			insert.txt(main.txt.out,'Need ESRI shapefile for blanking',format=TRUE)
+		}else{
+			imgContainer<-displayNetCDFdata(tknotes,notebookTab,donne,atLev,listCol,shpf,tclvalue(unit_sym),tclvalue(blankVal))
+			if(!is.null(imgContainer)){
+				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,tab.type,tab.data)
+				notebookTab<<-retNBTab$notebookTab
+				tab.type<<-retNBTab$tab.type
+				tab.data<<-retNBTab$tab.data
+			}
 		}
 	})	
 	
