@@ -66,12 +66,15 @@ calcBiasRain<-function(i,ix1,stn.data,rfe_stn){
 	# ix1 <- stn.val>0  & stn.rfe>0
 	# ix<- which(ix0 & ix1)
 	bs <- NA
-	 if(length(ix0)>0){
-	 	sum_stn<-sum(stn.val[ix])
-	 	sum_rfe<-sum(stn.rfe[ix])
-	 	if(sum_rfe>0) bs<- sum_stn/sum_rfe
+	 if(length(ix0)>5){
+	 	sum_stn<-sum(stn.val[ix0])
+	 	sum_rfe<-sum(stn.rfe[ix0])
+	 	if(sum_rfe>0){
+	 		bs<- sum_stn/sum_rfe
+	 		if(bs>5) bs<-5
+	 	} 
 		# bs <- sum(stn.val[ix])/sum(stn.rfe[ix])
-		if(bs>5) bs<-5
+		# if(bs>5) bs<-5
 		# if(is.nan(bs)) bs <- 1    # 0/0
 		# if(is.infinite(bs)) bs <- 1.5  # n/0
 		# if(bs == 0) bs <- 0.5  # 0/n

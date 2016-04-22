@@ -181,7 +181,7 @@ init.params<-function(action,period){
 		prefix<-data.frame(c('rfeFileFormat','meanBiasPrefix'),	c("rfe%s_%s-dk%s.nc","Gauge-rfe_mean.bias"))
 		names(prefix)<-c('Parameters','Values')
 		blankGrd<-'1'
-		dates.mrg<-data.frame(c('istart.yrs','istart.mon','istart.dek'),c('2015','8','3'))
+		dates.mrg<-data.frame(c('istart.yrs','istart.mon','istart.dek'),c('2016','4','1'))
 		names(dates.mrg)<-c('Parameters','Values')
 		params.int<-data.frame(c('nmin.stn','min.non0','max.RnR.dist','max.dist','min.nbrs','max.nbrs'),c('10','7','0.75','1.0','3','5'))
 		names(params.int)<-c('Parameters','Values')
