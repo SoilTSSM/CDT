@@ -225,6 +225,11 @@ mergeOneDekadRain<-function(){
 
 		cells<-as(newlocation.merging,'SpatialPixels')@grid
 
+		##smoothing???
+		img.mrg<-as.image(out.mrg, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
+		smooth.mrg<-image.smooth(img.mrg, theta= 0.09)
+		out.mrg <-round(c(smooth.mrg$z),1)
+
 		#Rain-non-Rain Mask
 		if(RainNoRain!='None') {
 			rr.stn$rnr <- ifelse(rr.stn$gg >=1,1,0)

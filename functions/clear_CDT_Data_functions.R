@@ -1,6 +1,7 @@
 
 #################
 splitCDTData<-function(donne,period){
+	
 	if(period=='daily'){
 		if(nchar(as.character(donne[5,1]))!=8){
 			insert.txt(main.txt.out,'Station data: not a daily data',format=TRUE)

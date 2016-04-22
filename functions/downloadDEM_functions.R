@@ -136,7 +136,7 @@ aggregateDEM<-function(destfile,xm,ym,outdir,varid,longname,res1=FALSE){
 	ynew<-ym[ym>=min(yd) & ym<=max(yd)]
 	if(res1){
 		xnew<-xnew[-1]
-		ynew<-ynew[-c(1,length(ynew))]
+		ynew<-ynew[-length(ynew)]
 	}
 	grdnew<-list(x=xnew, y=ynew)
 	newobj<-interp.surface.grid(demobj,grdnew)
@@ -154,7 +154,7 @@ aggregateDEM<-function(destfile,xm,ym,outdir,varid,longname,res1=FALSE){
 getDEM<-function(minlon,maxlon,minlat,maxlat,outdir){
 	##DEM NOAA NGDC ETOPO2v2: ETOPO2v2c Global Gridded 2-minute elevation and bathymetric data.
 	url<-'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NGDC/.ETOPO2v2/.z'
-	area<-paste('X',minlon-0.0375,maxlon,'RANGEEDGES','Y',minlat-0.0375,maxlat+0.0375,'RANGEEDGES',sep='/')
+	area<-paste('X',minlon-0.0375,maxlon+0.0375,'RANGEEDGES','Y',minlat-0.0375,maxlat+0.0375,'RANGEEDGES',sep='/')
 	destfile<-file.path(outdir,'DEM_2_Arc-Minute.nc',fsep = .Platform$file.sep)
 	link<-paste(url,area,'data.nc',sep='/')
 	ret<-try(download.file(link,destfile,method="auto",quiet=TRUE,mode="wb",cacheOK=TRUE),silent=TRUE)
