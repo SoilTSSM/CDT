@@ -110,18 +110,21 @@ ComputeMeanBiasRain<-function(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir){
 	# dir.create(dirBias,showWarnings=FALSE)
 
 	if(freqData=='daily'){
+		ntimes<-365
 		bias.dates<-format(seq(as.Date(paste(year1,'0101',sep=''),format='%Y%m%d'),as.Date(paste(year2,'1231',sep=''),format='%Y%m%d'),'day'),'%Y%m%d')
 		endmon<-c(31,28,31,30,31,30,31,31,30,31,30,31)
 		bias <- array(data=NA, c(365,nstn))
 		vtimes<-cbind(unlist(sapply(endmon,function(j) 1:j)),rep(1:12,endmon))
 	}
 	if(freqData=='dekadal'){
+		ntimes<-36
 		bias.dates<-seq(as.Date(paste(year1,'011',sep=''),format='%Y%m%d'),as.Date(paste(year2,'123',sep=''),format='%Y%m%d'),'day')
 		bias.dates<-paste(format(bias.dates[which(as.numeric(format(bias.dates,'%d'))<=3)],'%Y%m'),as.numeric(format(bias.dates[which(as.numeric(format(bias.dates,'%d'))<=3)],'%d')),sep='')
 		bias <- array(data=NA, c(36,nstn))
 		vtimes<-expand.grid(1:3,1:12)
 	}
 	if(freqData=='monthly'){
+		ntimes<-12
 		bias.dates<-format(seq(as.Date(paste(year1,'011',sep=''),format='%Y%m%d'),as.Date(paste(year2,'1231',sep=''),format='%Y%m%d'),'month'),'%Y%m')
 		bias <- array(data=NA, c(12,nstn))
 		vtimes<-c(1:12)
@@ -149,74 +152,6 @@ ComputeMeanBiasRain<-function(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir){
 			}
 		}
 	}
-	#####
-	# if(freqData=='daily'){
-	# 	bias.dates<-format(seq(as.Date(paste(year1,'0101',sep=''),format='%Y%m%d'),as.Date(paste(year2,'1231',sep=''),format='%Y%m%d'),'day'),'%Y%m%d')
-	# 	endmon<-c(31,28,31,30,31,30,31,31,30,31,30,31)
-	# 	bias <- array(data=NA, c(365,nstn))
-	# 	vtimes<-cbind(unlist(sapply(endmon,function(j) 1:j)),rep(1:12,endmon))
-
-	# 	ibsdt<-bias.dates%in%stn.dates
-	# 	bsdates<-bias.dates[ibsdt]
-	# 	rfe_stn<-rfe_stn[ibsdt,,drop=F]
-	# 	istdt<-stn.dates%in%bias.dates
-	# 	stn.data<-stn.data[istdt,,drop=F]
-
-	# 	# Compute bias
-	# 	if(length(bsdates)>0){
-	# 		for (i in 1:nstn){
-	# 			for (nt in 1:365){
-	# 				ix1<-which(as.numeric(substr(bsdates,7,8))==vtimes[nt,1] & as.numeric(substr(bsdates,5,6))==vtimes[nt,2])
-	# 				bias[nt,i] <- calcBiasRain(i,ix1,stn.data,rfe_stn)
-	# 			}
-	# 		}
-	# 	}
-	# }
-	# #####
-	# if(freqData=='dekadal'){
-	# 	bias.dates<-seq(as.Date(paste(year1,'011',sep=''),format='%Y%m%d'),as.Date(paste(year2,'123',sep=''),format='%Y%m%d'),'day')
-	# 	bias.dates<-paste(format(bias.dates[which(as.numeric(format(bias.dates,'%d'))<=3)],'%Y%m'),as.numeric(format(bias.dates[which(as.numeric(format(bias.dates,'%d'))<=3)],'%d')),sep='')
-	# 	bias <- array(data=NA, c(36,nstn))
-	# 	vtimes<-expand.grid(1:3,1:12)
-
-	# 	ibsdt<-bias.dates%in%stn.dates
-	# 	bsdates<-bias.dates[ibsdt]
-	# 	rfe_stn<-rfe_stn[ibsdt,,drop=F]
-	# 	istdt<-stn.dates%in%bias.dates
-	# 	stn.data<-stn.data[istdt,,drop=F]
-
-	# 	# Compute bias
-	# 	if(length(bsdates)>0){
-	# 		for (i in 1:nstn){
-	# 			for (nt in 1:36){
-	# 				ix1<-which(as.numeric(substr(bsdates,7,7))==vtimes[nt,1] & as.numeric(substr(bsdates,5,6))==vtimes[nt,2])
-	# 				bias[nt,i] <- calcBiasRain(i,ix1,stn.data,rfe_stn)
-	# 			}
-	# 		}
-	# 	}
-	# }
-	# #####
-	# if(freqData=='monthly'){
-	# 	bias.dates<-format(seq(as.Date(paste(year1,'011',sep=''),format='%Y%m%d'),as.Date(paste(year2,'1231',sep=''),format='%Y%m%d'),'month'),'%Y%m')
-	# 	bias <- array(data=NA, c(12,nstn))
-	# 	vtimes<-c(1:12)
-
-	# 	ibsdt<-bias.dates%in%stn.dates
-	# 	bsdates<-bias.dates[ibsdt]
-	# 	rfe_stn<-rfe_stn[ibsdt,,drop=F]
-	# 	istdt<-stn.dates%in%bias.dates
-	# 	stn.data<-stn.data[istdt,,drop=F]
-
-	# 	# Compute bias
-	# 	if(length(bsdates)>0){
-	# 		for (i in 1:nstn){
-	# 			for (nt in 1:12){
-	# 				ix1<-which(as.numeric(substr(bsdates,5,6))==vtimes[nt])
-	# 				bias[nt,i] <- calcBiasRain(i,ix1,stn.data,rfe_stn)
-	# 			}
-	# 		}
-	# 	}
-	# }
 
 	############
 	# Grid Bias
@@ -229,10 +164,6 @@ ComputeMeanBiasRain<-function(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir){
 
 	#Defines netcdf output
 	grd.bs <- var.def.ncdf("grid", "",xy.dim, NA, longname= " Gridded GG/RFE Bias", prec="single")
-
-	if(freqData=='daily') ntimes<-365
-	if(freqData=='dekadal') ntimes<-36
-	if(freqData=='monthly') ntimes<-12
 	
 	tcl("update","idletasks")
 	for(ij in 1:ntimes){
@@ -581,6 +512,11 @@ mergingProcs<-function(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,
 		out.mrg[ix] <- rfe.vec[ix]
 
 		cells<-newlocation.merging@grid
+
+		##smoothing???
+		img.mrg<-as.image(out.mrg, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
+		smooth.mrg<-image.smooth(img.mrg, theta= 0.09)
+		out.mrg <-round(c(smooth.mrg$z),1)
 
 		#Rain-non-Rain Mask
 		if(RainNoRain!='None') {
