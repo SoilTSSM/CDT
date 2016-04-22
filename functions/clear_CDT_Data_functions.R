@@ -1,19 +1,20 @@
 
 #################
 splitCDTData<-function(donne,period){
-	
+	# ideb<-grep('[[:digit:]]',donne[1:5,1])[1]
+	ideb<-nrow(donne)
 	if(period=='daily'){
-		if(nchar(as.character(donne[5,1]))!=8){
+		if(nchar(as.character(donne[ideb,1]))!=8){
 			insert.txt(main.txt.out,'Station data: not a daily data',format=TRUE)
 			return(NULL)
 		}
 	}else if(period=='dekadal'){
-		if(nchar(as.character(donne[5,1]))!=7){
+		if(nchar(as.character(donne[ideb,1]))!=7){
 			insert.txt(main.txt.out,'Station data: not a dekadal data',format=TRUE)
 			return(NULL)
 		}
 	}else if(period=='monthly'){
-		if(nchar(as.character(donne[5,1]))!=6){
+		if(nchar(as.character(donne[ideb,1]))!=6){
 			insert.txt(main.txt.out,'Station data: not a monthly data',format=TRUE)
 			return(NULL)
 		}
@@ -60,10 +61,12 @@ splitCDTData<-function(donne,period){
 		donne<-as.matrix(donne[-c(1:3),-1])
 	}
 	dimnames(donne)<-NULL
+	dimdonne<-dim(donne)
 	donne<-apply(donne,2,as.numeric)
-	donne<-donne[!is.na(dates),]
+	dim(donne)<-dimdonne
+	donne<-donne[!is.na(dates),,drop=F]
 	dates<-dates[!is.na(dates)]
-	donne<-donne[order(dates),]
+	donne<-donne[order(dates),,drop=F]
 	dates<-dates[order(dates)]
 
 	##fill missing dates
@@ -85,7 +88,7 @@ splitCDTData<-function(donne,period){
 	}
 	tmp.data<-data.frame(dates=dates,donne)
 	tmp.data<-merge(odates,tmp.data,by.x='dates',by.y='dates',all=T)
-	donne<-as.matrix(tmp.data[,-1])
+	donne<-as.matrix(tmp.data[,-1,drop=F])
 	dimnames(donne)<-NULL
 	dates<-as.character(tmp.data[,1])
 	rm(odates,tmp.data)
@@ -94,7 +97,7 @@ splitCDTData<-function(donne,period){
 	#idates<-duplicated(dates) | duplicated(dates, fromLast=TRUE)
 	idates<-duplicated(dates)
 	dup.dates<-dates[idates]
-	donne<-donne[!idates,]
+	donne<-donne[!idates,,drop=F]
 	dates<-dates[!idates]
 
 	##missing coordinates
@@ -104,7 +107,7 @@ splitCDTData<-function(donne,period){
 	stn.lat<-stn.lat[!imiss]
 	stn.id<-stn.id[!imiss]
 	stn.elv<-stn.elv[!imiss]
-	donne<-donne[,!imiss]
+	donne<-donne[,!imiss,drop=F]
 
 	##ducpicates coordinates
 	idup<-duplicated(cbind(stn.lon,stn.lat))
@@ -115,7 +118,7 @@ splitCDTData<-function(donne,period){
 	stn.lat<-stn.lat[!idup]
 	stn.id<-stn.id[!idup]
 	stn.elv<-stn.elv[!idup]
-	donne<-donne[,!idup]
+	donne<-donne[,!idup,drop=F]
 	stnlist<-list(id=stn.id,lon=stn.lon,lat=stn.lat,elv=stn.elv,dates=dates,data=donne,
 	stnDuplCoords=stn.dup,stnMissCoords=stn.miss,datesDupl=dup.dates)
 	return(stnlist)

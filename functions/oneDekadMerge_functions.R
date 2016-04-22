@@ -8,12 +8,15 @@ Treat1DekRain<-function(){
 	donne<-file.opfiles[[jfile]][[2]]
 
 	#######get data
-	donne<-splitCDTData(donne,'dekadal')
-	if(is.null(donne)) return(NULL)
-	stn.lon<-donne$lon
-	stn.lat<-donne$lat
-	dates<-donne$dates
-	donne<-donne$data
+	stn.lon<-as.numeric(donne[2,-1])
+	stn.lat<-as.numeric(donne[3,-1])
+	dates<-as.character(donne[nrow(donne),1])
+	if(nchar(as.character(dates))!=7){
+		insert.txt(main.txt.out,'Station data: not a dekadal data',format=TRUE)
+		return(NULL)
+	}
+
+	donne<-donne[nrow(donne),-1,drop=F]
 
 	daty<-as.character(gal.params$dates.mrg$Values)
 	yrs<-as.numeric(daty[1])
@@ -227,7 +230,7 @@ mergeOneDekadRain<-function(){
 
 		##smoothing???
 		img.mrg<-as.image(out.mrg, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
-		smooth.mrg<-image.smooth(img.mrg, theta= 0.09)
+		smooth.mrg<-image.smooth(img.mrg, theta= 0.075)
 		out.mrg <-round(c(smooth.mrg$z),1)
 
 		#Rain-non-Rain Mask
@@ -251,7 +254,7 @@ mergeOneDekadRain<-function(){
 				RnoR[is.na(RnoR)]<-1
 				##smoothing???
 				img.RnoR<-as.image(RnoR, x=coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
-				smooth.RnoR<-image.smooth(img.RnoR, theta= 0.08)
+				smooth.RnoR<-image.smooth(img.RnoR, theta= 0.075)
 				RnoR <-round(c(smooth.RnoR$z))
 			}
 			out.mrg <- out.mrg * RnoR

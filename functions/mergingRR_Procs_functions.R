@@ -515,7 +515,7 @@ mergingProcs<-function(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,
 
 		##smoothing???
 		img.mrg<-as.image(out.mrg, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
-		smooth.mrg<-image.smooth(img.mrg, theta= 0.09)
+		smooth.mrg<-image.smooth(img.mrg, theta= 0.075)
 		out.mrg <-round(c(smooth.mrg$z),1)
 
 		#Rain-non-Rain Mask
@@ -539,7 +539,7 @@ mergingProcs<-function(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,
 
 				##smoothing???
 				img.RnoR<-as.image(RnoR, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
-				smooth.RnoR<-image.smooth(img.RnoR, theta= 0.08)
+				smooth.RnoR<-image.smooth(img.RnoR, theta= 0.075)
 				RnoR <-round(c(smooth.RnoR$z))
 			}
 			out.mrg <- out.mrg * RnoR
