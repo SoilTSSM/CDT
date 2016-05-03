@@ -2,7 +2,8 @@
 ######################################
 #redifine tkrreplot
 refreshPlot<-function(W,img,hscale,vscale){
-	tkrreplot(img,hscale=hscale, vscale=vscale)
+	# tkrreplot(img,hscale=hscale, vscale=vscale)
+	tkrreplot1(img,hscale=hscale, vscale=vscale)
 	img_w<-as.double(tcl('image','width',img$image))
 	img_h<-as.double(tcl('image','height',img$image))
 	tkconfigure(W,width=img_w,height=img_h)

@@ -99,8 +99,8 @@ execBiasRain<-function(origdir){
 	ijGrd <- over(stn.loc, geometry(newlocation.grid))
 
 	#Defines netcdf output dims
-	dx <- dim.def.ncdf("Lon", "degreeE", grd.lon)
-	dy <- dim.def.ncdf("Lat", "degreeN", grd.lat)
+	dx <- ncdim_def("Lon", "degreeE", grd.lon)
+	dy <- ncdim_def("Lat", "degreeN", grd.lat)
 	xy.dim<-list(dx,dy)
 
 	paramGrd<-list(nlon0=nlon0,nlat0=nlat0,xy.dim=xy.dim,newlocation.grid=newlocation.grid)
@@ -319,10 +319,10 @@ execMergeRain<-function(origdir){
 			insert.txt(main.txt.out,"Adjusted RFE data not found",format=TRUE)
 			return(NULL)
 		}
-		nc<-open.ncdf(adjFile)
+		nc<-nc_open(adjFile)
 		grd.lon<-nc$dim[[1]]$vals
 		grd.lat<-nc$dim[[2]]$vals
-		close.ncdf(nc)
+		nc_close(nc)
 		nlon0<-length(grd.lon)
 		nlat0<-length(grd.lat)
 	}
@@ -359,8 +359,8 @@ execMergeRain<-function(origdir){
 
 	#########
 	#Defines netcdf output dims
-	dx <- dim.def.ncdf("Lon", "degreeE", grd.lon)
-	dy <- dim.def.ncdf("Lat", "degreeN", grd.lat)
+	dx <- ncdim_def("Lon", "degreeE", grd.lon)
+	dy <- ncdim_def("Lat", "degreeN", grd.lat)
 	xy.dim<-list(dx,dy)
 
 	VarioModel<-c("Sph", "Exp", "Gau")

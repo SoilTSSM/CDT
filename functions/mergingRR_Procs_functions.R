@@ -24,7 +24,7 @@ ExtractRFE2Stn<-function(ijGrd,gal.params,mrgRaindat){
 		testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(bias.dates,1,4),substr(bias.dates,5,6)), fsep = .Platform$file.sep)
 	}
 
-	rfe_stn<-matrix(NA,nrow=length(bias.dates),ncol=nstn)
+	# rfe_stn<-matrix(NA,nrow=length(bias.dates),ncol=nstn)
 
 	existFl<-unlist(lapply(testfile,file.exists))
 	if(length(which(existFl))==0){
@@ -34,12 +34,23 @@ ExtractRFE2Stn<-function(ijGrd,gal.params,mrgRaindat){
 	rfeDataFl<-testfile[existFl]
 	bias.dates1<-bias.dates[existFl]
 
-	for (jfl in seq_along(rfeDataFl)){
-		nc <- open.ncdf(rfeDataFl[jfl])
+	if(doparallel & length(rfeDataFl)>=180){
+		klust<-makeCluster(nb_cores)
+		registerDoParallel(klust)
+		`%parLoop%`<-`%dopar%`
+		closeklust<-TRUE
+	}else{
+		`%parLoop%`<-`%do%`
+		closeklust<-FALSE
+	}
+
+	# for (jfl in seq_along(rfeDataFl))
+	ret<-foreach(jfl=seq_along(rfeDataFl),.combine='rbind',.export=c('rfeDataFl','bias.dates1','mrgRaindat','ijGrd'),.packages=c('ncdf4')) %parLoop% {
+		nc <- nc_open(rfeDataFl[jfl])
 		rfe.lon <- nc$dim[[mrgRaindat$rfeData$rfeILon]]$vals
 		rfe.lat <- nc$dim[[mrgRaindat$rfeData$rfeILat]]$vals
-		rfe.val <- get.var.ncdf(nc,varid=mrgRaindat$rfeData$rfeVarid)
-		close.ncdf(nc)
+		rfe.val <- ncvar_get(nc,varid=mrgRaindat$rfeData$rfeVarid)
+		nc_close(nc)
 
 		xo<-order(rfe.lon)
 		rfe.lon<-rfe.lon[xo]
@@ -50,9 +61,13 @@ ExtractRFE2Stn<-function(ijGrd,gal.params,mrgRaindat){
 		if(mrgRaindat$rfeData$rfeILat==1){
 			rfe.val<-matrix(c(rfe.val),nrow=length(rfe.lon),ncol=length(rfe.lat),byrow=T)
 		}
-
-		rfe_stn[which(bias.dates==bias.dates1[jfl]),]<-rfe.val[ijGrd]
+		c(as.numeric(bias.dates1[jfl]),rfe.val[ijGrd])
+		# rfe_stn[which(bias.dates==bias.dates1[jfl]),]<-rfe.val[ijGrd]
 	}
+	if(closeklust) stopCluster(klust)
+
+	rfe_stn<-matrix(NA,nrow=length(bias.dates),ncol=nstn)
+	rfe_stn[match(as.character(ret[,1]),bias.dates),]<-ret[,-1]
 	insert.txt(main.txt.out,'Done! ')
 	return(rfe_stn)
 }
@@ -86,6 +101,18 @@ calcBiasRain<-function(i,ix1,stn.data,rfe_stn){
 ########################################################################################################
 
 ComputeMeanBiasRain<-function(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir){
+	# freqData<-gal.params$period
+	# if(doparallel & freqData!='monthly'){
+	# 	klust<-makeCluster(nb_cores)
+	# 	registerDoParallel(klust)
+	# 	`%parLoop%`<-`%dopar%`
+	# 	closeklust<-TRUE
+	# }else{
+	# 	`%parLoop%`<-`%do%`
+	# 	closeklust<-FALSE
+	# }
+	`%parLoop%`<-`%do%`
+
 	freqData<-gal.params$period
 	stn.lon<-mrgRaindat$stnData$lon
 	stn.lat<-mrgRaindat$stnData$lat
@@ -163,17 +190,16 @@ ComputeMeanBiasRain<-function(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir){
 	bGrd <- expand.grid(x=dBX, y=dBY)
 
 	#Defines netcdf output
-	grd.bs <- var.def.ncdf("grid", "",xy.dim, NA, longname= " Gridded GG/RFE Bias", prec="single")
+	grd.bs <- ncvar_def("grid", "",xy.dim, NA, longname= " Gridded GG/RFE Bias", prec="float")
 	
 	tcl("update","idletasks")
-	for(ij in 1:ntimes){
+	# for(ij in 1:ntimes)
+	ret<-foreach(ij=1:ntimes,.combine='c',.export=c('insert.txt','main.txt.out'),.packages=c('sp','gstat','ncdf4','fields','tcltk')) %parLoop% {	
 		bias.stn <- data.frame(bias=bias[ij,],lon=stn.lon,lat=stn.lat)
 		ix <- which(!is.na(bias.stn$bias))
 		if(length(ix)>10){
 			bias.stn <- bias.stn[ix,]
 			coordinates(bias.stn) =~lon + lat
-			#bs<- idw(bias~1,locations=bias.stn,newdata=newlocation.grid,nmin=min.nbrs,nmax=max.nbrs,maxdist=max.dst, debug.level=0)
-			#grd.bias <- bs$var1.pred
 			gbias<-krige(bias~1,locations=bias.stn,newdata=newlocation.grid,block=bGrd,nmin=min.nbrs,nmax=max.nbrs,maxdist=max.dst,debug.level=0)
 			grd.bias <- gbias$var1.pred
 			grd.bias[is.na(grd.bias)]<-1
@@ -185,17 +211,16 @@ ComputeMeanBiasRain<-function(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir){
 			grd.bias <-rep(1,nlon0*nlat0)
 			dim(grd.bias) <- c(nlon0, nlat0)
 		}
-		#dim(grd.bias) <- c(nlon0, nlat0)
-		#grd.bias[is.na(grd.bias)] <- 1
 
 		#outfl <- file.path(dirBias,paste(meanBiasPrefix,'_',ij,'.nc',sep=''),fsep = .Platform$file.sep)
 		outfl <- file.path(origdir,paste(meanBiasPrefix,'_',ij,'.nc',sep=''),fsep = .Platform$file.sep)
-		nc2 <- create.ncdf(outfl,grd.bs)
-		put.var.ncdf(nc2,grd.bs,grd.bias)
-		close.ncdf(nc2)
+		nc2 <- nc_create(outfl,grd.bs)
+		ncvar_put(nc2,grd.bs,grd.bias)
+		nc_close(nc2)
 		insert.txt(main.txt.out,paste("Computing mean bias finished:",paste(meanBiasPrefix,'_',ij,'.nc',sep='')))
 		tcl("update")
 	}
+	# if(closeklust) stopCluster(klust)
 	return(0)
 }
 
@@ -221,7 +246,7 @@ AjdMeanBiasRain<-function(freqData,istart,iend,rfeData,paramGrd,gal.params,origd
 	}
 
 	xy.dim<-paramGrd$xy.dim
-	grd.bsadj <- var.def.ncdf("precip", "mm",xy.dim, -99, longname= " Mean Bias Adjusted RFE", prec="single")
+	grd.bsadj <- ncvar_def("precip", "mm",xy.dim, -99, longname= " Mean Bias Adjusted RFE", prec="short")
 
 	if(freqData=='daily'){
 		adj.dates<-format(seq(as.Date(istart,format='%Y%m%d'),as.Date(iend,format='%Y%m%d'),'day'),'%Y%m%d')
@@ -268,11 +293,11 @@ AjdMeanBiasRain<-function(freqData,istart,iend,rfeData,paramGrd,gal.params,origd
 		#outfl<-file.path(adjDir,paste(adjPrefix,'_',adj.dates[jfl],'.nc',sep=''),fsep = .Platform$file.sep)
 		outfl<-file.path(origdir,paste(adjPrefix,'_',adj.dates[jfl],'.nc',sep=''),fsep = .Platform$file.sep)
 
-		nc <- open.ncdf(rfefl)
+		nc <- nc_open(rfefl)
 		rfe.lon <- nc$dim[[rfeData$rfeILon]]$vals
 		rfe.lat <- nc$dim[[rfeData$rfeILat]]$vals
-		rfe <- get.var.ncdf(nc,varid = rfeData$rfeVarid)
-		close.ncdf(nc)
+		rfe <- ncvar_get(nc,varid = rfeData$rfeVarid)
+		nc_close(nc)
 		xo<-order(rfe.lon)
 		yo<-order(rfe.lat)
 		rfe.lon <-rfe.lon[xo]
@@ -282,11 +307,11 @@ AjdMeanBiasRain<-function(freqData,istart,iend,rfeData,paramGrd,gal.params,origd
 			rfe<-matrix(c(rfe),nrow=length(rfe.lon),ncol=length(rfe.lat),byrow=T)
 		}
 
-		nc <- open.ncdf(bsfl)
+		nc <- nc_open(bsfl)
 		bisa.lon<-nc$dim[[1]]$vals
 		bisa.lat<-nc$dim[[2]]$vals
-		bias <- get.var.ncdf(nc,varid = nc$var[[1]]$name)
-		close.ncdf(nc)
+		bias <- ncvar_get(nc,varid = nc$var[[1]]$name)
+		nc_close(nc)
 
 		##
 		rfeObj<-list(x=rfe.lon,y=rfe.lat,z=rfe)
@@ -299,9 +324,9 @@ AjdMeanBiasRain<-function(freqData,istart,iend,rfeData,paramGrd,gal.params,origd
 		rfe.adj[is.na(rfe.adj)] <- -99
 
 		#Save adjusted data
-		nc2 <- create.ncdf(outfl,grd.bsadj)
-		put.var.ncdf(nc2,grd.bsadj,rfe.adj)
-		close.ncdf(nc2)
+		nc2 <- nc_create(outfl,grd.bsadj)
+		ncvar_put(nc2,grd.bsadj,rfe.adj)
+		nc_close(nc2)
 
 		insert.txt(main.txt.out,paste("RFE data adjusted successfully:",basename(rfefl)))
 		tcl("update")
@@ -316,33 +341,9 @@ MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
 	freqData<-gal.params$period
 	istart<-paramsMRG$istart
 	iend<-paramsMRG$iend
-	ijGrd<-paramsMRG$ijGrd
-	nlon0<-paramsMRG$nlon0
-	nlat0<-paramsMRG$nlat0
-	xy.dim<-paramsMRG$xy.dim
-	outMask<-paramsMRG$outMask
-	newlocation.merging<-paramsMRG$newlocation.merging
-
-	##block grid
-	sDX <- newlocation.merging@grid@cellsize[1]/2
-	dBX <- seq(-sDX, sDX, length.out=4)
-	sDY <- newlocation.merging@grid@cellsize[2]/2
-	dBY <- seq(-sDY, sDY, length.out=4)
-	bGrd <- expand.grid(x=dBX, y=dBY)
-
-	grd.out<-var.def.ncdf("precip", "mm",xy.dim,-99,longname="Merged Station-Satellite Rainfall", prec="single")
-
-	stn.ID<-mrgRaindat$stnData$id
-	stn.lon<-mrgRaindat$stnData$lon
-	stn.lat<-mrgRaindat$stnData$lat
-	stn.dates<-mrgRaindat$stnData$dates
-	stn.data<-mrgRaindat$stnData$data
-	nstn<-length(stn.lon)
 
 	rfeDir<-as.character(gal.params$file.io$Values[4])
 	rfeFileFormat<-as.character(gal.params$prefix$Values[1])
-	mrgPrefix<-as.character(gal.params$prefix$Values[2])
-	mrgSuffix<-as.character(gal.params$prefix$Values[3])
 
 	# outmrgdir<-file.path(origdir,'Merged_RR',fsep = .Platform$file.sep)
 	# dir.create(outmrgdir,showWarnings=FALSE)
@@ -381,15 +382,54 @@ MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
 	rfeDataFl<-testfile[existFl]
 	mrg.dates1<-mrg.dates[existFl]
 
-	####
+	# if(doparallel & length(rfeDataFl)>=20){
+	# 	klust<-makeCluster(nb_cores)
+	# 	registerDoParallel(klust)
+	# 	`%parLoop%`<-`%dopar%`
+	# 	closeklust<-TRUE
+	# }else{
+	# 	`%parLoop%`<-`%do%`
+	# 	closeklust<-FALSE
+	# }
+	`%parLoop%`<-`%do%`
 
-	for (jfl in seq_along(rfeDataFl)){
+	####
+	ijGrd<-paramsMRG$ijGrd
+	nlon0<-paramsMRG$nlon0
+	nlat0<-paramsMRG$nlat0
+	xy.dim<-paramsMRG$xy.dim
+	outMask<-paramsMRG$outMask
+	newlocation.merging<-paramsMRG$newlocation.merging
+
+	##block grid
+	sDX <- newlocation.merging@grid@cellsize[1]/2
+	dBX <- seq(-sDX, sDX, length.out=4)
+	sDY <- newlocation.merging@grid@cellsize[2]/2
+	dBY <- seq(-sDY, sDY, length.out=4)
+	bGrd <- expand.grid(x=dBX, y=dBY)
+
+	grd.out<-ncvar_def("precip", "mm",xy.dim,-99,longname="Merged Station-Satellite Rainfall", prec="short")
+
+	stn.ID<-mrgRaindat$stnData$id
+	stn.lon<-mrgRaindat$stnData$lon
+	stn.lat<-mrgRaindat$stnData$lat
+	stn.dates<-mrgRaindat$stnData$dates
+	stn.data<-mrgRaindat$stnData$data
+	nstn<-length(stn.lon)
+
+	mrgPrefix<-as.character(gal.params$prefix$Values[2])
+	mrgSuffix<-as.character(gal.params$prefix$Values[3])
+
+	####
+	# for (jfl in seq_along(rfeDataFl))
+	ret<-foreach(jfl=seq_along(rfeDataFl),.combine='c',.export=c('rfeDataFl','mrg.dates1','mergingProcs','gal.params','mrgRaindat','origdir','outMask','insert.txt','main.txt.out'),
+		.packages=c('sp','gstat','automap','ncdf4','fields')) %parLoop% {
 		if(gal.params$NewGrd=='1'){
-			nc <- open.ncdf(rfeDataFl[jfl])
+			nc <- nc_open(rfeDataFl[jfl])
 			rfe.lon <- nc$dim[[mrgRaindat$rfeData$rfeILon]]$vals
 			rfe.lat <- nc$dim[[mrgRaindat$rfeData$rfeILat]]$vals
-			rfe.val <- get.var.ncdf(nc,varid=mrgRaindat$rfeData$rfeVarid)
-			close.ncdf(nc)
+			rfe.val <- ncvar_get(nc,varid=mrgRaindat$rfeData$rfeVarid)
+			nc_close(nc)
 
 			xo<-order(rfe.lon)
 			rfe.lon<-rfe.lon[xo]
@@ -401,11 +441,11 @@ MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
 				rfe.val<-matrix(c(rfe.val),nrow=length(rfe.lon),ncol=length(rfe.lat),byrow=T)
 			}
 		}else{
-			nc <- open.ncdf(rfeDataFl[jfl])
+			nc <- nc_open(rfeDataFl[jfl])
 			rfe.lon <- nc$dim[[1]]$vals
 			rfe.lat <- nc$dim[[2]]$vals
-			rfe.val <- get.var.ncdf(nc,varid='precip')
-			close.ncdf(nc)
+			rfe.val <- ncvar_get(nc,varid='precip')
+			nc_close(nc)
 		}
 
 		###Convert to vector
@@ -423,7 +463,6 @@ MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
 		}
 
 		mrg.dates2<-mrg.dates1[jfl]
-
 		#####Merging
 		out.mrg<-mergingProcs(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,mrg.dates2, newlocation.merging,bGrd)
 		dim(out.mrg) <- c(nlon0,nlat0)
@@ -433,14 +472,16 @@ MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
 		if(!is.null(outMask)) out.mrg[is.na(outMask)] <- -99
 		outfl<-file.path(origdir,paste(mrgPrefix,'_',mrg.dates1[jfl],'_',mrgSuffix,'.nc',sep=''),fsep = .Platform$file.sep)
 		#outfl<-file.path(outmrgdir,paste(mrgPrefix,'_',mrg.dates1[jfl],'_',mrgSuffix,'.nc',sep=''),fsep = .Platform$file.sep)
-		nc2 <- create.ncdf(outfl,grd.out)
-		put.var.ncdf(nc2,grd.out,out.mrg)
-		close.ncdf(nc2)
+		nc2 <- nc_create(outfl,grd.out)
+		ncvar_put(nc2,grd.out,out.mrg)
+		nc_close(nc2)
 
 		#####
 		insert.txt(main.txt.out,paste("Rainfall merging finished successfully:", paste(mrgPrefix,'_',mrg.dates1[jfl],'_',mrgSuffix,'.nc',sep='')))
 		tcl("update")
 	}
+	# if(closeklust) stopCluster(klust)
+
 	return(0)
 }
 
@@ -512,11 +553,10 @@ mergingProcs<-function(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,
 		out.mrg[ix] <- rfe.vec[ix]
 
 		cells<-newlocation.merging@grid
-
 		##smoothing???
-		img.mrg<-as.image(out.mrg, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
-		smooth.mrg<-image.smooth(img.mrg, theta= 0.075)
-		out.mrg <-round(c(smooth.mrg$z),1)
+		# img.mrg<-as.image(out.mrg, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
+		# smooth.mrg<-image.smooth(img.mrg, theta= 0.05)
+		# out.mrg <-round(c(smooth.mrg$z),1)
 
 		#Rain-non-Rain Mask
 		if(RainNoRain!='None') {
