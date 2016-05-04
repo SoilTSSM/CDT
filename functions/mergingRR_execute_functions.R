@@ -5,7 +5,6 @@ TreatbiasRain<-function(origdir){
 	dir.create(origdir,showWarnings=FALSE)
 
 	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
-
 	jfile<-which(all.open.file==file.pars[1])
 	donne<-file.opfiles[[jfile]][[2]]
 

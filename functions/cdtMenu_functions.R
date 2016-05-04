@@ -611,6 +611,25 @@ tkadd(menu.mrg, "command", label="Updating dekadal Rainfall",command=function(){
 	gal.params<<-mergeDekadInfoRain(main.win,initpars)
 })
 
+##########
+tkadd(menu.mrg, "separator")
+
+##########
+tkadd(menu.mrg, "command", label="Mali - Mise à jour décadaire",command=function(){
+	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
+
+	if(!is.null(gal.params)){
+		if(gal.params$action=='mali.dekrain') initpars<-gal.params
+		else{
+			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
+			initpars<-init.params('mali.dekrain','dekadal')
+		}
+	}else{
+		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
+		initpars<-init.params('mali.dekrain','dekadal')
+	}
+	gal.params<<-update1DekInfo_Mali(main.win,initpars)
+})
 
 ##########
 #tkadd(menu.mrg, "separator")

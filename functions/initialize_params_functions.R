@@ -191,8 +191,6 @@ init.params<-function(action,period){
 		blankGrd=blankGrd,params.int=params.int,params.mrg=params.mrg)
 	}
 
-
-
 #################################################################
 ##compute regression parameters for downscaling
 	if(action=='coefdown.temp'){
@@ -332,6 +330,20 @@ init.params<-function(action,period){
 		names(dates.ts)<-c('Parameters','Values')
 
 		ret.params<-list(action=action,period=period,file.io=file.io,prefix=prefix,dates.ts=dates.ts)
+	}
+
+###########################################
+
+###Mali one dekad
+	if(action=='mali.dekrain'){
+		file.io<-data.frame(c('stn.file','RFE.file','dir2save'), c('','',getwd()))
+		names(file.io)<-c('Parameters','Values')
+		dates.mrg<-data.frame(c('istart.yrs','istart.mon','istart.dek'),c('2016','5','1'))
+		names(dates.mrg)<-c('Parameters','Values')
+		rfeDownSep<-'0'
+		stnDataDispo<-'1'
+		ret.params<-list(action=action,period=period,file.io=file.io,dates.mrg=dates.mrg,
+		rfeDownSep=rfeDownSep,stnDataDispo=stnDataDispo)
 	}
 
 #############

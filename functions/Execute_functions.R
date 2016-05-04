@@ -183,6 +183,16 @@ execute.fun<-function(get.stn){
 		merging_end_msg(mrg2run,main.txt.out,"Rainfall merging finished successfully","Rainfall merging failed")
 	}
 
+	###############################
+	####Merging Mali 1 dekad
+	if(gal.params$action=='mali.dekrain'){
+		daty<-str_trim(as.character(gal.params$dates.mrg$Values))
+		daty<-paste(daty[3],format(ISOdate(2014,daty[2],1),"%b"),daty[1],sep='')
+		origdir<-file.path(as.character(gal.params$file.io$Values[3]), paste('MALI_DEK',daty,sep='_'),fsep = .Platform$file.sep)
+		mrg2run<-try(update1DekProc_Mali(origdir), silent=TRUE)
+		merging_end_msg(mrg2run,main.txt.out,"Rainfall merging finished successfully","Rainfall merging failed")
+	}
+
 	#########################################################################
 	#Merge  temperature using reanalysis
 
