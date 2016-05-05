@@ -45,7 +45,9 @@ update1DekProc_Mali<-function(origdir){
 			insert.txt(main.txt.out,paste(file0,": n'est pas encore disponible ou la connexion internet est perdue"),format=TRUE)
 			return(NULL)
 		}
+
 		insert.txt(main.txt.out,"Téléchargement.................")
+		tcl("update")
 		ret<-try(download.file(link,destfile0,mode="wb",quiet=TRUE),silent=TRUE)
 		if(ret!=0){
 			insert.txt(main.txt.out,paste('Échec du téléchargement pour:',file0),format=TRUE)
@@ -71,7 +73,8 @@ update1DekProc_Mali<-function(origdir){
 		nc_close(nc)
 		insert.txt(main.txt.out,paste('Extraction  terminée pour:',basename(rfeAfrica)))
 	}
-
+	tcl("update")
+	
 	xo<-order(xm)
 	xm<-xm[xo]
 	yo<-order(ym)
@@ -126,26 +129,41 @@ update1DekProc_Mali<-function(origdir){
 		stn.loc <- data.frame(lon=stn.lon, lat=stn.lat)
 		stn.loc <- SpatialPoints(stn.loc)
 		ijGrd <- unname(over(stn.loc, geometry(grid.loc)))
-		stnObj<-quilt.plot(stn.lon,stn.lat,stn.data,grid=list(x=xm,y=ym),plot=FALSE)
-		ixstnObj <- which(is.na(stnObj$z))
-
+		
 		xdat[xdat==-99]<-NA
 		grd.out<-ncvar_def("precip", "mm",list(dx,dy),-99,longname=" Merged Station-Satellite Rainfall", prec="short")
+		cells<-as(newlocation.merging,'SpatialPixels')@grid
+
+		##block grid
+		sDX <- cells@cellsize[1]/2
+		dBX <- seq(-sDX, sDX, length.out=4)
+		sDY <- cells@cellsize[2]/2
+		dBY <- seq(-sDY, sDY, length.out=4)
+		bGrd <- expand.grid(x=dBX, y=dBY)
 
 		#rfe over stn location
 		rfe_gg <- xdat[ijGrd]
 		dff <- stn.data - rfe_gg
-		
+
+		stnData<-data.frame(lon=stn.lon,lat=stn.lat,gg=stn.data)
+		stnData<-stnData[!is.na(stnData$gg),]
+		coordinates(stnData) = ~lon+lat
+		grdStnData<- krige(gg~1, locations=stnData,newdata=newlocation.merging,block=bGrd,nmin=1,nmax=5,maxdist=0.1, debug.level=0) #0.5
+		out.stn<- grdStnData$var1.pred
+		out.stn<-ifelse(out.stn<0,0,out.stn)
+		dim(out.stn) <- c(nlon0,nlat0)
+
 		# Remove extremes differences between gauge and satellite
-		q1 <- quantile(dff,0.0001,na.rm=T)
-		q2 <- quantile(dff,0.9999, na.rm=T)
-		dff[dff < q1] <- NA
-		dff[dff > q2] <- NA
+		# q1 <- quantile(dff,0.0001,na.rm=T)
+		# q2 <- quantile(dff,0.9999, na.rm=T)
+		# dff[dff < q1] <- NA
+		# dff[dff > q2] <- NA
 		ix<-which(!is.na(dff))
 		rfe.vec<-c(xdat)
 		out.mrg<-rfe.vec  ##Initial rfe
+
 		if(sum(stn.data,na.rm=TRUE)>0 & length(ix)>=10){
-			rr.stn <-data.frame(cbind(stn.lon,jitter(stn.lat),stn.data,rfe_gg,dff))
+			rr.stn <-data.frame(cbind(stn.lon,stn.lat,stn.data,rfe_gg,dff))
 			rr.stn<-rr.stn[ix,]
 			names(rr.stn) <- c("lon", "lat", "gg","rfe","dff")
 			coordinates(rr.stn) = ~lon+lat
@@ -156,17 +174,17 @@ update1DekProc_Mali<-function(origdir){
 				rr.stn$res <- residuals(rr.glm)
 				pred.rr <- predict(rr.glm, newdata=grd.newloc, se.fit=T)
 
-				grd.rr<-try(autoKrige(res~1,input_data=rr.stn,new_data=newlocation.merging,model=VarioModel,nmin=3,nmax=5,maxdist=0.5, debug.level=0), silent=TRUE) #0.5
+				grd.rr<-try(autoKrige(res~1,input_data=rr.stn,new_data=newlocation.merging,block=bGrd,model=VarioModel,nmin=2,nmax=5,maxdist=0.5, debug.level=0), silent=TRUE) #0.5
 				if(!inherits(grd.rr, "try-error")){
 					res.pred<-grd.rr$krige_output$var1.pred
 				}else{
-					grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,nmin=3,nmax=5,maxdist=0.5, debug.level=0) #0.5
+					grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=2,nmax=5,maxdist=0.5, debug.level=0) #0.5
 					res.pred<-grd.rr$var1.pred
 				}
 				out.mrg<- as.numeric(res.pred+pred.rr$fit)
 				out.mrg<-ifelse(out.mrg<0,0,out.mrg)
 			}else{
-				grd.rr <- idw(dff~1,locations=rr.stn,newdata=newlocation.merging,nmin=3,nmax=5,maxdist=0.5,debug.level=0) #0.5
+				grd.rr <- krige(dff~1,locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=2,nmax=5,maxdist=0.5,debug.level=0) #0.5
 				out.mrg<- grd.rr$var1.pred + rfe.vec
 				out.mrg<-ifelse(out.mrg<0,0,out.mrg)
 			}
@@ -174,17 +192,10 @@ update1DekProc_Mali<-function(origdir){
 			ix <- which(is.na(out.mrg))
 			out.mrg[ix] <- rfe.vec[ix]
 
-			cells<-as(newlocation.merging,'SpatialPixels')@grid
-
-			##smoothing???
-			# img.mrg<-as.image(out.mrg, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
-			# smooth.mrg<-image.smooth(img.mrg, theta= 0.05)
-			# out.mrg <-round(c(smooth.mrg$z),1)
-
 			#Rain-non-Rain Mask
 			rr.stn$rnr <- ifelse(rr.stn$gg >=1,1,0)
 			rfe.rnr <- ifelse(rfe.vec >=1, 1, 0)
-			rnr.grd<-krige(rnr~1, locations=rr.stn, newdata=newlocation.merging,nmin=3,nmax=5,maxdist=0.3, debug.level=0)
+			rnr.grd<-krige(rnr~1, locations=rr.stn, newdata=newlocation.merging,block=bGrd,nmin=2,nmax=5,maxdist=0.3, debug.level=0)
 			RnoR <-rnr.grd$var1.pred
 			RnoR<-round(RnoR)
 			ix <- which(is.na(RnoR))
@@ -196,22 +207,12 @@ update1DekProc_Mali<-function(origdir){
 			RnoR <-round(c(smooth.RnoR$z))
 			out.mrg <- out.mrg * RnoR
 		}
-
-		dim(out.mrg) <- c(nlon0,nlat0)
-		stnObj$z[ixstnObj] <- out.mrg[ixstnObj]
-		##smoothing???
-		out.tmp<-data.frame(expand.grid(lon=xm,lat=ym),rfe=c(stnObj$z))
-		out.tmp<-out.tmp[!is.na(out.tmp$rfe),]
-		coordinates(out.tmp) = ~lon+lat
-
-		out.tmp1<-krige(rfe~1, locations=out.tmp, newdata=newlocation.merging,nmin=4,maxdist=0.5, debug.level=0)
-		out.mrg<-out.tmp1$var1.pred
-		out.mrg<-ifelse(out.mrg<0,0,out.mrg)
 		dim(out.mrg) <- c(nlon0,nlat0)
 
-		# img.mrg<-as.image(stnObj$z, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
-		# smooth.mrg<-image.smooth(img.mrg, theta= 0.08)
-		# out.mrg <-round(smooth.mrg$z,1)
+		out.mrg[!is.na(out.stn)]<-out.stn[!is.na(out.stn)]
+		img.mrg<-as.image(out.mrg, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
+		smooth.mrg<-image.smooth(img.mrg, theta= 0.03)
+		out.mrg <-round(smooth.mrg$z,1)
 		out.mrg[is.na(out.mrg)] <- -99
 
 		#Apply mask for area of interest
@@ -224,7 +225,6 @@ update1DekProc_Mali<-function(origdir){
 		nc <- nc_create(rr_mrg_mon,nc_out_var)
 		ncvar_put(nc,nc_out_var,xdat)
 		nc_close(nc)
-		#file.copy(nc_out_file, rr_mrg_mon, overwrite=TRUE,recursive=TRUE)
 	}
 
 	return(0)
