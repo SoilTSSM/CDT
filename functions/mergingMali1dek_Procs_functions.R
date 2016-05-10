@@ -145,13 +145,13 @@ update1DekProc_Mali<-function(origdir){
 		rfe_gg <- xdat[ijGrd]
 		dff <- stn.data - rfe_gg
 
-		stnData<-data.frame(lon=stn.lon,lat=stn.lat,gg=stn.data)
-		stnData<-stnData[!is.na(stnData$gg),]
-		coordinates(stnData) = ~lon+lat
-		grdStnData<- krige(gg~1, locations=stnData,newdata=newlocation.merging,block=bGrd,nmin=1,nmax=5,maxdist=0.1, debug.level=0) #0.5
-		out.stn<- grdStnData$var1.pred
-		out.stn<-ifelse(out.stn<0,0,out.stn)
-		dim(out.stn) <- c(nlon0,nlat0)
+		# stnData<-data.frame(lon=stn.lon,lat=stn.lat,gg=stn.data)
+		# stnData<-stnData[!is.na(stnData$gg),]
+		# coordinates(stnData) = ~lon+lat
+		# grdStnData<- krige(gg~1, locations=stnData,newdata=newlocation.merging,block=bGrd,nmin=1,nmax=5,maxdist=0.1, debug.level=0) #0.5
+		# out.stn<- grdStnData$var1.pred
+		# out.stn<-ifelse(out.stn<0,0,out.stn)
+		# dim(out.stn) <- c(nlon0,nlat0)
 
 		# Remove extremes differences between gauge and satellite
 		# q1 <- quantile(dff,0.0001,na.rm=T)
@@ -209,10 +209,10 @@ update1DekProc_Mali<-function(origdir){
 		}
 		dim(out.mrg) <- c(nlon0,nlat0)
 
-		out.mrg[!is.na(out.stn)]<-out.stn[!is.na(out.stn)]
-		img.mrg<-as.image(out.mrg, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
-		smooth.mrg<-image.smooth(img.mrg, theta= 0.03)
-		out.mrg <-round(smooth.mrg$z,1)
+		# out.mrg[!is.na(out.stn)]<-out.stn[!is.na(out.stn)]
+		# img.mrg<-as.image(out.mrg, x= coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
+		# smooth.mrg<-image.smooth(img.mrg, theta= 0.03)
+		# out.mrg <-round(smooth.mrg$z,1)
 		out.mrg[is.na(out.mrg)] <- -99
 
 		#Apply mask for area of interest
