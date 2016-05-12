@@ -8,6 +8,13 @@ update1DekProc_Mali<-function(origdir){
 	rfeAfrica<-as.character(gal.params$file.io$Values[2])
 	file.stn<-as.character(gal.params$file.io$Values[1])
 
+	nmin<- 1
+	nmax<- 5
+	maxdist<- 1.0
+	maxdistRnR<- 0.3
+	minStnNoNA<- 10
+	minStnNoZero<- 7
+
 	VarioModel<-c("Sph", "Exp", "Gau")
 
 	deb<-try(as.Date(paste(year,mon,dek,sep='-')),silent=TRUE)
@@ -129,8 +136,26 @@ update1DekProc_Mali<-function(origdir){
 		stn.loc <- data.frame(lon=stn.lon, lat=stn.lat)
 		stn.loc <- SpatialPoints(stn.loc)
 		ijGrd <- unname(over(stn.loc, geometry(grid.loc)))
-		
+	
+		##Mean bias adjustment
+		annual.dek<-expand.grid(dek=1:3,mon=1:12)
+		ijt<-which(annual.dek$dek==as.numeric(dek) & annual.dek$mon==as.numeric(mon))
+		biasfile<-file.path(apps.dir,'country','Mali','Climatological_MeanBias_RainDek',paste('RFE_GG_MeanBias_',ijt,'.nc',sep=''),fsep = .Platform$file.sep)
+		nc <- nc_open(biasfile)
+		bias <- ncvar_get(nc,varid = nc$var[[1]]$name)
+		nc_close(nc)
+
 		xdat[xdat==-99]<-NA
+		xdat.adj <- round(xdat * bias,1)
+		xdat <- xdat.adj
+		xdat.adj[is.na(xdat.adj)] <- -99
+		grd.adj<-ncvar_def("precip", "mm",list(dx,dy),-99,longname=" Mean-Bias Adjusted satellite Rainfall", prec="short")
+		nc_adj_file<-file.path(outdir1,paste('rr_adj_',year,mon,dek,'.nc',sep=''),fsep=.Platform$file.sep)
+		nc <- nc_create(nc_adj_file,grd.adj)
+		ncvar_put(nc,grd.adj,xdat.adj)
+		nc_close(nc)
+		rm(xdat.adj)
+
 		grd.out<-ncvar_def("precip", "mm",list(dx,dy),-99,longname=" Merged Station-Satellite Rainfall", prec="short")
 		cells<-as(newlocation.merging,'SpatialPixels')@grid
 
@@ -148,7 +173,7 @@ update1DekProc_Mali<-function(origdir){
 		# stnData<-data.frame(lon=stn.lon,lat=stn.lat,gg=stn.data)
 		# stnData<-stnData[!is.na(stnData$gg),]
 		# coordinates(stnData) = ~lon+lat
-		# grdStnData<- krige(gg~1, locations=stnData,newdata=newlocation.merging,block=bGrd,nmin=1,nmax=5,maxdist=0.1, debug.level=0) #0.5
+		# grdStnData<- krige(gg~1, locations=stnData,newdata=newlocation.merging,block=bGrd,nmin=1,nmax=5,maxdist=0.1, debug.level=0)
 		# out.stn<- grdStnData$var1.pred
 		# out.stn<-ifelse(out.stn<0,0,out.stn)
 		# dim(out.stn) <- c(nlon0,nlat0)
@@ -162,32 +187,62 @@ update1DekProc_Mali<-function(origdir){
 		rfe.vec<-c(xdat)
 		out.mrg<-rfe.vec  ##Initial rfe
 
-		if(sum(stn.data,na.rm=TRUE)>0 & length(ix)>=10){
+		if(sum(stn.data,na.rm=TRUE)>0 & length(ix)>=minStnNoNA){
 			rr.stn <-data.frame(cbind(stn.lon,stn.lat,stn.data,rfe_gg,dff))
 			rr.stn<-rr.stn[ix,]
 			names(rr.stn) <- c("lon", "lat", "gg","rfe","dff")
 			coordinates(rr.stn) = ~lon+lat
 			ijx1 <- which(rr.stn$gg >0)
-			if(length(ijx1)>=7){
+			if(length(ijx1)>=minStnNoZero){
 				grd.newloc<-SpatialPointsDataFrame(coords=newlocation.merging,data=data.frame(rfe=rfe.vec))
+
+				## RK GLM
 				rr.glm <- glm(gg~rfe, rr.stn, family=gaussian)
 				rr.stn$res <- residuals(rr.glm)
-				pred.rr <- predict(rr.glm, newdata=grd.newloc, se.fit=T)
-
-				grd.rr<-try(autoKrige(res~1,input_data=rr.stn,new_data=newlocation.merging,block=bGrd,model=VarioModel,nmin=2,nmax=5,maxdist=0.5, debug.level=0), silent=TRUE) #0.5
-				if(!inherits(grd.rr, "try-error")){
-					res.pred<-grd.rr$krige_output$var1.pred
-				}else{
-					grd.rr<- krige(res~1, locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=2,nmax=5,maxdist=0.5, debug.level=0) #0.5
-					res.pred<-grd.rr$var1.pred
-				}
-				out.mrg<- as.numeric(res.pred+pred.rr$fit)
+				vgm.glm<-try(autofitVariogram(res~1,input_data=rr.stn,model=VarioModel), silent=TRUE)
+				if(!inherits(vgm.glm, "try-error")) vgm.glm<-vgm.glm$var_model
+				else vgm.glm<-NULL
+				pred.rr.glm <- predict(rr.glm, newdata=grd.newloc, se.fit=T)
+				grd.res <- krige(res~1,locations=rr.stn,newdata=newlocation.merging,model=vgm.glm,block=bGrd,nmin=nmin,nmax=nmax,maxdist=maxdist, debug.level=0)
+				out.mrg<- as.numeric(grd.res$var1.pred+pred.rr.glm$fit)
 				out.mrg<-ifelse(out.mrg<0,0,out.mrg)
+				
+				## RK GLS
+				# rr.ols<-lm(gg~rfe,rr.stn)
+				# rr.stn$res <- residuals(rr.ols)
+				# vgm.ols<-try(autofitVariogram(res~1,input_data=rr.stn,model=VarioModel), silent=TRUE)
+				# if(!inherits(vgm.ols, "try-error")){
+				# 	vgm.ols<-vgm.ols$var_model
+				# 	vgm.olsFun<-as.character(vgm.ols$model[2])
+				# 	if(vgm.olsFun=="Sph") corFun<-match.fun('corSpher')
+				# 	if(vgm.olsFun=="Exp") corFun<-match.fun('corExp')
+				# 	if(vgm.olsFun=="Gau") corFun<-match.fun('corGaus')
+				# 	rr.gls1<-gls(gg~rfe,data=rr.stn,correlation=corFun(c(vgm.ols$range[2],vgm.ols$psill[1]/vgm.ols$psill[2]),form=~lon+lat,nugget=TRUE,fixed=TRUE))
+				# 	rr.stn$res<-residuals(rr.gls1)
+				# 	vgm.gls<-try(autofitVariogram(res~1,input_data=rr.stn,model=vgm.olsFun), silent=TRUE)
+				# 	if(!inherits(vgm.gls, "try-error")){
+				# 		vgm.gls<-vgm.gls$var_model
+				# 		rr.gls2<-gls(gg~rfe,data=rr.stn,correlation=corFun(c(vgm.gls$range[2],vgm.gls$psill[1]/vgm.gls$psill[2]),form=~lon+lat,nugget=TRUE,fixed=TRUE))
+				# 		rr.stn$res<-residuals(rr.gls2)
+				# 		pred.rr <- as.numeric(predict(rr.gls2, newdata=grd.newloc,na.action=na.pass))
+				# 	}else{
+				# 		vgm.gls<-vgm.ols
+				# 		pred.rr <- as.numeric(predict(rr.gls1, newdata=grd.newloc,na.action=na.pass))
+				# 	}
+				# }else{
+				# 	vgm.gls<-NULL
+				# 	pred.rr.ols <- predict(rr.ols, newdata=grd.newloc, se.fit=T)
+				# 	pred.rr <- as.numeric(pred.rr.ols$fit)
+				# }
+				# grd.res <- krige(res~1,locations=rr.stn,newdata=newlocation.merging,model=vgm.gls,block=bGrd,nmin=nmin,nmax=nmax,maxdist=maxdist, debug.level=0)
+				# out.mrg<-as.numeric(grd.res$var1.pred+pred.rr)
+				# out.mrg<-ifelse(out.mrg<0,0,out.mrg)
 			}else{
-				grd.rr <- krige(dff~1,locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=2,nmax=5,maxdist=0.5,debug.level=0) #0.5
+				grd.rr <- krige(dff~1,locations=rr.stn,newdata=newlocation.merging,block=bGrd,nmin=nmin,nmax=nmax,maxdist=maxdist,debug.level=0)
 				out.mrg<- grd.rr$var1.pred + rfe.vec
 				out.mrg<-ifelse(out.mrg<0,0,out.mrg)
 			}
+
 			# Take RFE for areas where interpolation/merging was not possible
 			ix <- which(is.na(out.mrg))
 			out.mrg[ix] <- rfe.vec[ix]
@@ -195,16 +250,16 @@ update1DekProc_Mali<-function(origdir){
 			#Rain-non-Rain Mask
 			rr.stn$rnr <- ifelse(rr.stn$gg >=1,1,0)
 			rfe.rnr <- ifelse(rfe.vec >=1, 1, 0)
-			rnr.grd<-krige(rnr~1, locations=rr.stn, newdata=newlocation.merging,block=bGrd,nmin=2,nmax=5,maxdist=0.3, debug.level=0)
+			rnr.grd<-krige(rnr~1, locations=rr.stn, newdata=newlocation.merging,block=bGrd,nmin=nmin,nmax=nmax,maxdist=maxdistRnR, debug.level=0)
 			RnoR <-rnr.grd$var1.pred
 			RnoR<-round(RnoR)
 			ix <- which(is.na(RnoR))
 			RnoR[ix] <- rfe.rnr[ix]
 			RnoR[is.na(RnoR)]<-1
 			##smoothing???
-			img.RnoR<-as.image(RnoR, x=coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
-			smooth.RnoR<-image.smooth(img.RnoR, theta= 0.075)
-			RnoR <-round(c(smooth.RnoR$z))
+			# img.RnoR<-as.image(RnoR, x=coordinates(newlocation.merging), nx=cells@cells.dim[1], ny=cells@cells.dim[2])
+			# smooth.RnoR<-image.smooth(img.RnoR, theta= 0.075)
+			# RnoR <-round(c(smooth.RnoR$z))
 			out.mrg <- out.mrg * RnoR
 		}
 		dim(out.mrg) <- c(nlon0,nlat0)

@@ -308,14 +308,14 @@ AjdMeanBiasRain<-function(freqData,istart,iend,rfeData,paramGrd,gal.params,origd
 		}
 
 		nc <- nc_open(bsfl)
-		bisa.lon<-nc$dim[[1]]$vals
-		bisa.lat<-nc$dim[[2]]$vals
+		bias.lon<-nc$dim[[1]]$vals
+		bias.lat<-nc$dim[[2]]$vals
 		bias <- ncvar_get(nc,varid = nc$var[[1]]$name)
 		nc_close(nc)
 
 		##
 		rfeObj<-list(x=rfe.lon,y=rfe.lat,z=rfe)
-		grdnew<-list(x=bisa.lon,y=bisa.lat)
+		grdnew<-list(x=bias.lon,y=bias.lat)
 		newObj<-interp.surface.grid(rfeObj,grdnew)
 		rfe<-newObj$z
 
