@@ -78,7 +78,14 @@ confpath<-file.path(apps.dir,'configure','configure0',fsep = .Platform$file.sep)
 
 if(file.exists(confpath)){
 	conffile<-as.character(read.table(confpath,colClasses='character')[,1])
-	setwd(conffile[1])
+	workdir<-conffile[1]
+	if(file.exists(workdir)) setwd(workdir)
+	else{
+		workdir<-path.expand('~')
+		setwd(workdir)
+		conffile[1]<-workdir
+		write.table(conffile,file.path(apps.dir,'configure','configure0',fsep=.Platform$file.sep),col.names=F,row.names=F)
+	}
 	addTclPath(path=conffile[2])
 	addTclPath(path=conffile[3])		
 	tclRequire("Tktable")
