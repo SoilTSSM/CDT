@@ -656,7 +656,7 @@ ExtractDataPanelCmd<-function(){
 		tclvalue(ChoixOutType),EnvMultiPP$multiptspoly)
 
 #
-assign('retExtractParams',retExtractParams,envir=.GlobalEnv)
+# assign('retExtractParams',retExtractParams,envir=.GlobalEnv)
 
 		tkconfigure(main.win,cursor='watch');tcl('update')
 		insert.txt(main.txt.out,"Extraction.................")
@@ -665,7 +665,7 @@ assign('retExtractParams',retExtractParams,envir=.GlobalEnv)
 		error=function(e) errorFun(e),finally={
 			tkconfigure(main.win,cursor='')
 		})
-assign('rett',ret,envir=.GlobalEnv)
+# assign('rett',ret,envir=.GlobalEnv)
 		if(!is.null(ret)){
 			if(ret==0) insert.txt(main.txt.out,"Extraction finished successfully")
 			else insert.txt(main.txt.out,"Extraction failed",format=TRUE)
