@@ -100,11 +100,11 @@ mergeOneDekadRain<-function(){
 	bsfl<-file.path(biasDir,paste(meanBiasPrefix,'_',ijt,'.nc',sep=''),fsep = .Platform$file.sep)
 	outfl<-file.path(origdir,paste('rr_adj','_',daty1,'.nc',sep=''),fsep = .Platform$file.sep)
 
-	nc <- open.ncdf(rfefl)
+	nc <- nc_open(rfefl)
 	rfe.lon <- nc$dim[[1]]$vals
 	rfe.lat <- nc$dim[[2]]$vals
-	rfe <- get.var.ncdf(nc,varid =nc$var[[1]]$name)
-	close.ncdf(nc)
+	rfe <- ncvar_get(nc,varid =nc$var[[1]]$name)
+	nc_close(nc)
 	xo<-order(rfe.lon)
 	yo<-order(rfe.lat)
 	rfe.lon <-rfe.lon[xo]
@@ -112,30 +112,30 @@ mergeOneDekadRain<-function(){
 	rfe<-rfe[xo,yo]
 	rfeObj<-list(x=rfe.lon,y=rfe.lat,z=rfe)
 
-	nc <- open.ncdf(bsfl)
+	nc <- nc_open(bsfl)
 	bisa.lon<-nc$dim[[1]]$vals
 	bisa.lat<-nc$dim[[2]]$vals
-	bias <- get.var.ncdf(nc,varid = nc$var[[1]]$name)
-	close.ncdf(nc)
+	bias <- ncvar_get(nc,varid = nc$var[[1]]$name)
+	nc_close(nc)
 	grdnew<-list(x=bisa.lon,y=bisa.lat)
 	newObj<-interp.surface.grid(rfeObj,grdnew)
 	rfe<-newObj$z
 	rfe.adj <- round(rfe * bias,2)
 
 	###################################################
-	dx <- dim.def.ncdf("Lon", "degreeE", bisa.lon)
-	dy <- dim.def.ncdf("Lat", "degreeN", bisa.lat)
+	dx <- ncdim_def("Lon", "degreeE", bisa.lon)
+	dy <- ncdim_def("Lat", "degreeN", bisa.lat)
 	xy.dim<-list(dx,dy)
-	grd.bsadj <- var.def.ncdf("precip", "mm",xy.dim, -99, longname= " Mean Bias Adjusted RFE", prec="single")
-	grd.out<-var.def.ncdf("precip", "mm",xy.dim,-99,longname=" Merged Station-Satellite Rainfall", prec="single")
+	grd.bsadj <- ncvar_def("precip", "mm",xy.dim, -99, longname= " Mean Bias Adjusted RFE", prec="short")
+	grd.out<-ncvar_def("precip", "mm",xy.dim,-99,longname=" Merged Station-Satellite Rainfall", prec="short")
 
 	######################Save adjusted data
 	rfe.adj1 <-rfe.adj
 	rfe.adj1[is.na(rfe.adj1)] <- -99
 
-	nc2 <- create.ncdf(outfl,grd.bsadj)
-	put.var.ncdf(nc2,grd.bsadj,rfe.adj1)
-	close.ncdf(nc2)
+	nc2 <- nc_create(outfl,grd.bsadj)
+	ncvar_put(nc2,grd.bsadj,rfe.adj1)
+	nc_close(nc2)
 
 	###################################################
 	nlon0<-length(bisa.lon)
@@ -267,9 +267,9 @@ mergeOneDekadRain<-function(){
 	if(!is.null(outMask)) out.mrg[is.na(outMask)] <- -99
 
 	outfl<-file.path(origdir,paste('rr_mrg','_',daty1,'_MON.nc',sep=''),fsep = .Platform$file.sep)
-	nc2 <- create.ncdf(outfl,grd.out)
-	put.var.ncdf(nc2,grd.out,out.mrg)
-	close.ncdf(nc2)
+	nc2 <- nc_create(outfl,grd.out)
+	ncvar_put(nc2,grd.out,out.mrg)
+	nc_close(nc2)
 	return(0)
 }
 

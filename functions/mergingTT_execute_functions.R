@@ -164,8 +164,8 @@ execDownscalingTemp<-function(origdir){
 	dem.reanal <- dem[ijreanal]
 
 	#Defines netcdf output dims
-	dx <- dim.def.ncdf("Lon", "degreeE", grd.lon)
-	dy <- dim.def.ncdf("Lat", "degreeN", grd.lat)
+	dx <- ncdim_def("Lon", "degreeE", grd.lon)
+	dy <- ncdim_def("Lat", "degreeN", grd.lat)
 	xy.dim<-list(dx,dy)
 
 	paramsDownscl<-list(istart=istart,iend=iend,dem.reanal=dem.reanal,dem=dem,reanalInfo=downTempdat$rfeData,newlocation.merging=newlocation.merging,xy.dim=xy.dim,nlon0=nlon0,nlat0=nlat0,origdir=origdir)
@@ -237,10 +237,10 @@ execCoefBiasCompute<-function(origdir){
 		return(NULL)
 	}
 	downfl<-file.path(downscaledDir,downFile,fsep = .Platform$file.sep)
-	nc<-open.ncdf(downfl)
+	nc<-nc_open(downfl)
 	grd.lon<-nc$dim[[1]]$vals
 	grd.lat<-nc$dim[[2]]$vals
-	close.ncdf(nc)
+	nc_close(nc)
 	nlon0<-length(grd.lon)
 	nlat0<-length(grd.lat)
 	newlocation.merging <- expand.grid(lon=grd.lon, lat=grd.lat)
@@ -264,8 +264,8 @@ execCoefBiasCompute<-function(origdir){
 	dem.stn <- dem[ijGrd]
 
 	#Defines netcdf output dims
-	dx <- dim.def.ncdf("Lon", "degreeE", grd.lon)
-	dy <- dim.def.ncdf("Lat", "degreeN", grd.lat)
+	dx <- ncdim_def("Lon", "degreeE", grd.lon)
+	dy <- ncdim_def("Lat", "degreeN", grd.lat)
 	xy.dim<-list(dx,dy)
 
 	#############
@@ -379,10 +379,10 @@ execAjdBiasDownTemp<-function(origdir){
 		}
 	}
 
-	nc<-open.ncdf(downFile)
+	nc<-nc_open(downFile)
 	grd.lon<-nc$dim[[1]]$vals
 	grd.lat<-nc$dim[[2]]$vals
-	close.ncdf(nc)
+	nc_close(nc)
 	nlon0<-length(grd.lon)
 	nlat0<-length(grd.lat)
 	grid.loc <- expand.grid(lon=grd.lon, lat=grd.lat)
@@ -393,8 +393,8 @@ execAjdBiasDownTemp<-function(origdir){
 	dem<-adjdownTempdat$demData$demGrd@data[,1]
 
 	#Defines netcdf output dims
-	dx <- dim.def.ncdf("Lon", "degreeE", grd.lon)
-	dy <- dim.def.ncdf("Lat", "degreeN", grd.lat)
+	dx <- ncdim_def("Lon", "degreeE", grd.lon)
+	dy <- ncdim_def("Lat", "degreeN", grd.lat)
 	xy.dim<-list(dx,dy)
 
 	#############
@@ -503,10 +503,10 @@ execMergeTemp<-function(origdir){
 		return(NULL)
 	}
 
-	nc<-open.ncdf(downFile)
+	nc<-nc_open(downFile)
 	grd.lon<-nc$dim[[1]]$vals
 	grd.lat<-nc$dim[[2]]$vals
-	close.ncdf(nc)
+	nc_close(nc)
 	nlon0<-length(grd.lon)
 	nlat0<-length(grd.lat)
 	newlocation.merging <- expand.grid(lon=grd.lon, lat=grd.lat)
@@ -541,8 +541,8 @@ execMergeTemp<-function(origdir){
 	ijGrd <- over(stn.loc, geometry(grid.loc))
 
 	#Defines netcdf output dims
-	dx <- dim.def.ncdf("Lon", "degreeE", grd.lon)
-	dy <- dim.def.ncdf("Lat", "degreeN", grd.lat)
+	dx <- ncdim_def("Lon", "degreeE", grd.lon)
+	dy <- ncdim_def("Lat", "degreeN", grd.lat)
 	xy.dim<-list(dx,dy)
 
 	VarioModel<-c("Sph", "Exp", "Gau")

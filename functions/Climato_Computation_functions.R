@@ -846,14 +846,15 @@ daily2dekadal_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longna
 	filein0<-file.path(file.pars[1],sprintf(informat,an,mois,day),fsep = .Platform$file.sep)
 	filein0<-filein0[file.exists(filein0)][1]
 
-	nc<-open.ncdf(filein0)
-	close.ncdf(nc)
+	nc<-nc_open(filein0)
 	missval<-nc$var[[1]]$missval
 	units<-nc$var[[1]]$units
 	dims<-nc$var[[1]]$dim
+	nc_close(nc)
 	nx<-dims[[1]]$len
 	ny<-dims[[2]]$len
-	grd <- var.def.ncdf(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="single")
+
+	grd <- ncvar_def(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="short")
 
 	for(j in seq_along(nna[,1])){
 		#don<-matrix(missval,nrow=nx,ncol=ny)
@@ -872,9 +873,9 @@ daily2dekadal_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longna
 			}else{
 				ncfiles<-ncfiles[isFexist]
 				vartmp<-lapply(seq_along(ncfiles),function(ik){
-					nc<-open.ncdf(ncfiles[ik])
-					vars<- get.var.ncdf(nc,varid = nc$var[[1]]$name)
-					close.ncdf(nc)
+					nc<-nc_open(ncfiles[ik])
+					vars<- ncvar_get(nc,varid = nc$var[[1]]$name)
+					nc_close(nc)
 					vars
 				})
 
@@ -889,9 +890,9 @@ daily2dekadal_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longna
 		}
 		fileout<-sprintf(outformat,substr(xdates,1,4),substr(xdates,5,6),substr(xdates,7,7))
 		ncfiles2<-file.path(file.pars[2],fileout,fsep = .Platform$file.sep)
-		nc2 <- create.ncdf(ncfiles2,grd)
-		put.var.ncdf(nc2,grd,don)
-		close.ncdf(nc2)
+		nc2 <- nc_create(ncfiles2,grd)
+		ncvar_put(nc2,grd,don)
+		nc_close(nc2)
 	}
 }
 
@@ -914,14 +915,14 @@ daily2monthly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longna
 	filein0<-file.path(file.pars[1],sprintf(informat,an,mois,day),fsep = .Platform$file.sep)
 	filein0<-filein0[file.exists(filein0)][1]
 
-	nc<-open.ncdf(filein0)
-	close.ncdf(nc)
+	nc<-nc_open(filein0)
 	missval<-nc$var[[1]]$missval
 	units<-nc$var[[1]]$units
 	dims<-nc$var[[1]]$dim
+	nc_close(nc)
 	nx<-dims[[1]]$len
 	ny<-dims[[2]]$len
-	grd <- var.def.ncdf(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="single")
+	grd <- ncvar_def(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="short")
 
 	for(j in seq_along(nna[,1])){
 		#don<-matrix(missval,nrow=nx,ncol=ny)
@@ -940,9 +941,9 @@ daily2monthly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longna
 			}else{
 				ncfiles<-ncfiles[isFexist]
 				vartmp<-lapply(seq_along(ncfiles),function(ik){
-					nc<-open.ncdf(ncfiles[ik])
-					vars<- get.var.ncdf(nc,varid = nc$var[[1]]$name)
-					close.ncdf(nc)
+					nc<-nc_open(ncfiles[ik])
+					vars<- ncvar_get(nc,varid = nc$var[[1]]$name)
+					nc_close(nc)
 					vars
 				})
 
@@ -957,9 +958,9 @@ daily2monthly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longna
 		}
 		fileout<-sprintf(outformat,substr(xdates,1,4),substr(xdates,5,6))
 		ncfiles2<-file.path(file.pars[2],fileout,fsep = .Platform$file.sep)
-		nc2 <- create.ncdf(ncfiles2,grd)
-		put.var.ncdf(nc2,grd,don)
-		close.ncdf(nc2)
+		nc2 <- nc_create(ncfiles2,grd)
+		ncvar_put(nc2,grd,don)
+		nc_close(nc2)
 	}
 }
 
@@ -983,14 +984,14 @@ daily2yearly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longnam
 	filein0<-file.path(file.pars[1],sprintf(informat,an,mois,day),fsep = .Platform$file.sep)
 	filein0<-filein0[file.exists(filein0)][1]
 
-	nc<-open.ncdf(filein0)
-	close.ncdf(nc)
+	nc<-nc_open(filein0)
 	missval<-nc$var[[1]]$missval
 	units<-nc$var[[1]]$units
 	dims<-nc$var[[1]]$dim
+	nc_close(nc)
 	nx<-dims[[1]]$len
 	ny<-dims[[2]]$len
-	grd <- var.def.ncdf(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="single")
+	grd <- ncvar_def(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="short")
 
 	for(j in seq_along(nna[,1])){
 		#don<-matrix(missval,nrow=nx,ncol=ny)
@@ -1009,9 +1010,9 @@ daily2yearly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longnam
 			}else{
 				ncfiles<-ncfiles[isFexist]
 				vartmp<-lapply(seq_along(ncfiles),function(ik){
-					nc<-open.ncdf(ncfiles[ik])
-					vars<- get.var.ncdf(nc,varid = nc$var[[1]]$name)
-					close.ncdf(nc)
+					nc<-nc_open(ncfiles[ik])
+					vars<- ncvar_get(nc,varid = nc$var[[1]]$name)
+					nc_close(nc)
 					vars
 				})
 
@@ -1026,9 +1027,9 @@ daily2yearly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longnam
 		}
 		fileout<-sprintf(outformat,xdates)
 		ncfiles2<-file.path(file.pars[2],fileout,fsep = .Platform$file.sep)
-		nc2 <- create.ncdf(ncfiles2,grd)
-		put.var.ncdf(nc2,grd,don)
-		close.ncdf(nc2)
+		nc2 <- nc_create(ncfiles2,grd)
+		ncvar_put(nc2,grd,don)
+		nc_close(nc2)
 	}
 }
 
@@ -1044,14 +1045,14 @@ dekadal2monthly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,long
 	filein0<-file.path(file.pars[1],sprintf(informat,an,mois,dek),fsep = .Platform$file.sep)
 	filein0<-filein0[file.exists(filein0)][1]
 
-	nc<-open.ncdf(filein0)
-	close.ncdf(nc)
+	nc<-nc_open(filein0)
 	missval<-nc$var[[1]]$missval
 	units<-nc$var[[1]]$units
 	dims<-nc$var[[1]]$dim
+	nc_close(nc)
 	nx<-dims[[1]]$len
 	ny<-dims[[2]]$len
-	grd <- var.def.ncdf(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="single")
+	grd <- ncvar_def(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="short")
 
 	for(j in seq_along(nna[,1])){
 		#don<-matrix(missval,nrow=nx,ncol=ny)
@@ -1070,9 +1071,9 @@ dekadal2monthly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,long
 			}else{
 				ncfiles<-ncfiles[isFexist]
 				vartmp<-lapply(seq_along(ncfiles),function(ik){
-					nc<-open.ncdf(ncfiles[ik])
-					vars<- get.var.ncdf(nc,varid = nc$var[[1]]$name)
-					close.ncdf(nc)
+					nc<-nc_open(ncfiles[ik])
+					vars<- ncvar_get(nc,varid = nc$var[[1]]$name)
+					nc_close(nc)
 					vars
 				})
 
@@ -1087,9 +1088,9 @@ dekadal2monthly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,long
 		}
 		fileout<-sprintf(outformat,substr(xdates,1,4),substr(xdates,5,6))
 		ncfiles2<-file.path(file.pars[2],fileout,fsep = .Platform$file.sep)
-		nc2 <- create.ncdf(ncfiles2,grd)
-		put.var.ncdf(nc2,grd,don)
-		close.ncdf(nc2)
+		nc2 <- nc_create(ncfiles2,grd)
+		ncvar_put(nc2,grd,don)
+		nc_close(nc2)
 	}
 }
 
@@ -1105,14 +1106,14 @@ dekadal2yearly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longn
 	filein0<-file.path(file.pars[1],sprintf(informat,an,mois,dek),fsep = .Platform$file.sep)
 	filein0<-filein0[file.exists(filein0)][1]
 
-	nc<-open.ncdf(filein0)
-	close.ncdf(nc)
+	nc<-nc_open(filein0)
 	missval<-nc$var[[1]]$missval
 	units<-nc$var[[1]]$units
 	dims<-nc$var[[1]]$dim
+	nc_close(nc)
 	nx<-dims[[1]]$len
 	ny<-dims[[2]]$len
-	grd <- var.def.ncdf(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="single")
+	grd <- ncvar_def(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="short")
 
 	for(j in seq_along(nna[,1])){
 		#don<-matrix(missval,nrow=nx,ncol=ny)
@@ -1131,9 +1132,9 @@ dekadal2yearly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longn
 			}else{
 				ncfiles<-ncfiles[isFexist]
 				vartmp<-lapply(seq_along(ncfiles),function(ik){
-					nc<-open.ncdf(ncfiles[ik])
-					vars<- get.var.ncdf(nc,varid = nc$var[[1]]$name)
-					close.ncdf(nc)
+					nc<-nc_open(ncfiles[ik])
+					vars<- ncvar_get(nc,varid = nc$var[[1]]$name)
+					nc_close(nc)
 					vars
 				})
 
@@ -1148,9 +1149,9 @@ dekadal2yearly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longn
 		}
 		fileout<-sprintf(outformat,xdates)
 		ncfiles2<-file.path(file.pars[2],fileout,fsep = .Platform$file.sep)
-		nc2 <- create.ncdf(ncfiles2,grd)
-		put.var.ncdf(nc2,grd,don)
-		close.ncdf(nc2)
+		nc2 <- nc_create(ncfiles2,grd)
+		ncvar_put(nc2,grd,don)
+		nc_close(nc2)
 	}
 }
 
@@ -1165,14 +1166,14 @@ monthly2yearly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longn
 	filein0<-file.path(file.pars[1],sprintf(informat,an,mois),fsep = .Platform$file.sep)
 	filein0<-filein0[file.exists(filein0)][1]
 
-	nc<-open.ncdf(filein0)
-	close.ncdf(nc)
+	nc<-nc_open(filein0)
 	missval<-nc$var[[1]]$missval
 	units<-nc$var[[1]]$units
 	dims<-nc$var[[1]]$dim
+	nc_close(nc)
 	nx<-dims[[1]]$len
 	ny<-dims[[2]]$len
-	grd <- var.def.ncdf(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="single")
+	grd <- ncvar_def(name=varid.out,units=units,dim=dims,missval=missval,longname=longname, prec="short")
 
 	for(j in seq_along(nna[,1])){
 		#don<-matrix(missval,nrow=nx,ncol=ny)
@@ -1191,9 +1192,9 @@ monthly2yearly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longn
 			}else{
 				ncfiles<-ncfiles[isFexist]
 				vartmp<-lapply(seq_along(ncfiles),function(ik){
-					nc<-open.ncdf(ncfiles[ik])
-					vars<- get.var.ncdf(nc,varid = nc$var[[1]]$name)
-					close.ncdf(nc)
+					nc<-nc_open(ncfiles[ik])
+					vars<- ncvar_get(nc,varid = nc$var[[1]]$name)
+					nc_close(nc)
 					vars
 				})
 
@@ -1208,9 +1209,9 @@ monthly2yearly_nc<-function(file.pars,informat,dates,fun,minfrac,varid.out,longn
 		}
 		fileout<-sprintf(outformat,xdates)
 		ncfiles2<-file.path(file.pars[2],fileout,fsep = .Platform$file.sep)
-		nc2 <- create.ncdf(ncfiles2,grd)
-		put.var.ncdf(nc2,grd,don)
-		close.ncdf(nc2)
+		nc2 <- nc_create(ncfiles2,grd)
+		ncvar_put(nc2,grd,don)
+		nc_close(nc2)
 	}
 }
 

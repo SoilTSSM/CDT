@@ -11,7 +11,8 @@ preview.data.nc<-function(parent.win,openncf,title.pop){
 	tkfocus(tt)
 
 	####################################
-	is.rdble <- !inherits(try(nc <- open.ncdf(openncf), silent=TRUE), "try-error")
+	# is.rdble <- !inherits(try(nc <- open.ncdf(openncf), silent=TRUE), "try-error")
+	is.rdble <- !inherits(try(nc <- nc_open(openncf), silent=TRUE), "try-error")
 	if(!is.rdble){
 		insert.txt(main.txt.out,paste("Unable to open file ",openncf),format=TRUE)
 		tkgrab.release(tt)
@@ -30,8 +31,8 @@ preview.data.nc<-function(parent.win,openncf,title.pop){
 	for(i in 1:ncvar){
 		vardim<-nc$var[[i]]$dim
 		ndim<-length(vardim)
-		dim.info<-data.frame(matrix(NA,ncol=3,nrow=4))
-		dim.val<-vector(mode='list',length=4)
+		dim.info<-data.frame(matrix(NA,ncol=3,nrow=ncdim)) #4
+		dim.val<-vector(mode='list',length=ncdim) #4
 		for(j in 1:ndim){
 			dim.info[j,1]<-vardim[[j]]$name
 			dim.info[j,2]<-vardim[[j]]$len
@@ -159,41 +160,56 @@ preview.data.nc<-function(parent.win,openncf,title.pop){
 			lon<-var.dim.val[[ivar]][[idx]]
 			lat<-var.dim.val[[ivar]][[idy]]
 			d.units<-d.units[c(idx,idy)]
-			dat<-get.var.ncdf(nc,varid=as.character(var.info[ivar,1]))
+			# dat<-get.var.ncdf(nc,varid=as.character(var.info[ivar,1]))
+			dat<-ncvar_get(nc,varid=as.character(var.info[ivar,1]))
 
 			#test if lat is increasing (bottomleft corner) or decreasing (topleft corner)
 			#all(diff(lat) > 0) #increasing
 			#all(lat == cummin(lat))	#decreasing
-			irevlat<-all(lat==cummax(lat))  #test increasing
+			irevlat<-all(lat==cummax(lat))  #test increasing ##omit
+			
+			xo<-order(lon)
+			lon<-lon[xo]
+			yo<-order(lat)
+			lat<-lat[yo]
+			dat<-dat[xo,yo]
+		
 			if(idx==1){
-				if(irevlat){
-					dat<-dat
-					#dat<-matrix(c(dat),nrow=v.size[idx],ncol=v.size[idy])
-				}else{
-					lat<-rev(lat)
-					dat<-dat[,rev(1:length(lat))]
-				}
+				dat<-dat[xo,yo]
+				# if(irevlat){
+				# 	dat<-dat
+				# 	#dat<-matrix(c(dat),nrow=v.size[idx],ncol=v.size[idy])
+				# }else{
+				# 	lat<-rev(lat)
+				# 	dat<-dat[,rev(1:length(lat))]
+				# }
 			}else{
-				if(irevlat){
-					dat<-matrix(c(dat),nrow=v.size[idx],ncol=v.size[idy],byrow=T)
-				}else{
-					lat<-rev(lat)
-					dat<-dat[rev(1:length(lat)),]
-					dat<-matrix(c(dat),nrow=v.size[idx],ncol=v.size[idy],byrow=T)
-				}
+				# dat<-c(dat)
+				# dim(dat)<-c(v.size[idx],v.size[idy])
+				dat<-matrix(c(dat),nrow=v.size[idx],ncol=v.size[idy],byrow=T)
+				dat<-dat[xo,yo]
+				# if(irevlat){
+				# 	dat<-matrix(c(dat),nrow=v.size[idx],ncol=v.size[idy],byrow=T)
+				# }else{
+				# 	lat<-rev(lat)
+				# 	dat<-dat[rev(1:length(lat)),]
+				# 	dat<-matrix(c(dat),nrow=v.size[idx],ncol=v.size[idy],byrow=T)
+				# }
 			}
 			retval<<-list(x=lon,y=lat,value=dat,var.unit=v.unit,dim.units=d.units,varid=as.character(var.info[ivar,1]),
 			ilon=idx,ilat=idy,irevlat=irevlat)
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
-			close.ncdf(nc)
+			# close.ncdf(nc)
+			nc_close(nc)
 		}else{
 			retval<<-NULL
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
-			close.ncdf(nc)
+			# close.ncdf(nc)
+			nc_close(nc)
 		}
 	})
 
@@ -202,7 +218,8 @@ preview.data.nc<-function(parent.win,openncf,title.pop){
 		tkgrab.release(tt)
 		tkdestroy(tt)
 		tkfocus(parent.win)
-		close.ncdf(nc)
+		# close.ncdf(nc)
+		nc_close(nc)
 	})
 
 	tkwm.withdraw(tt)
@@ -215,8 +232,6 @@ preview.data.nc<-function(parent.win,openncf,title.pop){
 	tkwm.transient(tt)
 	tkwm.title(tt, paste("Data Import Options - ",title.pop))
 	tkwm.deiconify(tt)
-
-
 
 	tkfocus(tt)
 	tkbind(tt, "<Destroy>", function() {tkgrab.release(tt); tkfocus(parent.win)})

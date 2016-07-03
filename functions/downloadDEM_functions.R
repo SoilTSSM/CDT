@@ -126,11 +126,11 @@ ExecDownload_DEM<-function(minlon,maxlon,minlat,maxlat,outdir){
 #######################
 
 aggregateDEM<-function(destfile,xm,ym,outdir,varid,longname,res1=FALSE){
-	nc<-open.ncdf(destfile)
+	nc<-nc_open(destfile)
 	xd<-nc$dim[[1]]$vals
 	yd<-nc$dim[[2]]$vals
-	xz<-get.var.ncdf(nc,varid=varid)
-	close.ncdf(nc)
+	xz<-ncvar_get(nc,varid=varid)
+	nc_close(nc)
 	demobj<-list(x=xd,y=yd,z=xz)
 	xnew<-xm[xm>=min(xd) & xm<=max(xd)]
 	ynew<-ym[ym>=min(yd) & ym<=max(yd)]
@@ -140,13 +140,13 @@ aggregateDEM<-function(destfile,xm,ym,outdir,varid,longname,res1=FALSE){
 	}
 	grdnew<-list(x=xnew, y=ynew)
 	newobj<-interp.surface.grid(demobj,grdnew)
-	dx <- dim.def.ncdf("Lon", "degreeE", newobj$x)
-	dy <- dim.def.ncdf("Lat", "degreeN", newobj$y)
-	demnc <- var.def.ncdf('dem', "m",list(dx,dy),NA,longname=longname, prec="single")
+	dx <- ncdim_def("Lon", "degreeE", newobj$x)
+	dy <- ncdim_def("Lat", "degreeN", newobj$y)
+	demnc <- ncvar_def('dem', "m",list(dx,dy),NA,longname=longname, prec="short")
 	outfl<-file.path(outdir,'DEM_for_Merging.nc',fsep = .Platform$file.sep)
-	nc2 <- create.ncdf(outfl,demnc)
-	put.var.ncdf(nc2,demnc,newobj$z)
-	close.ncdf(nc2)
+	nc2 <- nc_create(outfl,demnc)
+	ncvar_put(nc2,demnc,newobj$z)
+	nc_close(nc2)
 }
 
 #######################

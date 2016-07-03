@@ -263,11 +263,11 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 					next
 				}else{
 					insert.txt(main.txt.out,paste('Téléchargement pour:',file0,'terminé'))
-					nc<-open.ncdf(destfile0)
+					nc<-nc_open(destfile0)
 					xm<-nc$dim[[2]]$vals
 					ym<-nc$dim[[1]]$vals
-					xdat<-get.var.ncdf(nc,varid=nc$var[[1]]$name)
-					close.ncdf(nc)
+					xdat<-ncvar_get(nc,varid=nc$var[[1]]$name)
+					nc_close(nc)
 					xo<-order(xm)
 					xm<-xm[xo]
 					yo<-order(ym)
@@ -279,15 +279,14 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 					ym<-ym[idy]
 					xdat<-xdat[idx,idy]
 					xdat[is.na(xdat)] <- -99
-					dx <- dim.def.ncdf("Lon", "degreeE", xm)
-					dy <- dim.def.ncdf("Lat", "degreeN", ym)
-					rfeout <- var.def.ncdf('rfe', "mm", list(dx,dy), -99,longname= "TAMSAT 10-days rainfall estimate", prec="single")
+					dx <- ncdim_def("Lon", "degreeE", xm)
+					dy <- ncdim_def("Lat", "degreeN", ym)
+					rfeout <- ncvar_def('rfe', "mm", list(dx,dy), -99,longname= "TAMSAT 10-days rainfall estimate", prec="short")
 					outfl<-file.path(outdir1,file0,fsep = .Platform$file.sep)
-					nc2 <- create.ncdf(outfl,rfeout)
-					put.var.ncdf(nc2,rfeout,xdat)
-					close.ncdf(nc2)
-					insert.txt(main.txt.out,paste('Extraction de:',file0,'sur',
-					paste('bbox',minlon,minlat,maxlon,maxlat,sep=':'),'terminée'))
+					nc2 <- nc_create(outfl,rfeout)
+					ncvar_put(nc2,rfeout,xdat)
+					nc_close(nc2)
+					insert.txt(main.txt.out,paste('Extraction de:',file0,'sur', paste('bbox',minlon,minlat,maxlon,maxlat,sep=':'),'terminée'))
 				}
 			}
 			tcl("update")
@@ -347,11 +346,11 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 					next
 				}else{
 					insert.txt(main.txt.out,paste('Téléchargement pour:',file0,'terminé'))
-					nc<-open.ncdf(destfile0)
+					nc<-nc_open(destfile0)
 					xm<-nc$dim[[2]]$vals
 					ym<-nc$dim[[1]]$vals
-					xdat<-get.var.ncdf(nc,varid=nc$var[[1]]$name)
-					close.ncdf(nc)
+					xdat<-ncvar_get(nc,varid=nc$var[[1]]$name)
+					nc_close(nc)
 					xo<-order(xm)
 					xm<-xm[xo]
 					yo<-order(ym)
@@ -363,15 +362,14 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 					ym<-ym[idy]
 					xdat<-xdat[idx,idy]
 					xdat[is.na(xdat)] <- -99
-					dx <- dim.def.ncdf("Lon", "degreeE", xm)
-					dy <- dim.def.ncdf("Lat", "degreeN", ym)
-					rfeout <- var.def.ncdf('rfe', "mm", list(dx,dy), -99,longname= "TAMSAT daily rainfall estimate", prec="single")
+					dx <- ncdim_def("Lon", "degreeE", xm)
+					dy <- ncdim_def("Lat", "degreeN", ym)
+					rfeout <- ncvar_def('rfe', "mm", list(dx,dy), -99,longname= "TAMSAT daily rainfall estimate", prec="short")
 					outfl<-file.path(outdir1,file0,fsep = .Platform$file.sep)
-					nc2 <- create.ncdf(outfl,rfeout)
-					put.var.ncdf(nc2,rfeout,xdat)
-					close.ncdf(nc2)
-					insert.txt(main.txt.out,paste('Extraction de:',file0,'sur',
-					paste('bbox',minlon,minlat,maxlon,maxlat,sep=':'),'terminée'))
+					nc2 <- nc_create(outfl,rfeout)
+					ncvar_put(nc2,rfeout,xdat)
+					nc_close(nc2)
+					insert.txt(main.txt.out,paste('Extraction de:',file0,'sur', paste('bbox',minlon,minlat,maxlon,maxlat,sep=':'),'terminée'))
 				}
 			}
 			tcl("update")

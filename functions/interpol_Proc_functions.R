@@ -188,10 +188,10 @@ interpolationProc<-function(donne,demdata,interpolParams){
 
 	if(!inherits(intrpdata, "try-error")){
 		#Defines netcdf output dims
-		dx <- dim.def.ncdf("Lon", "degreeE", xlon)
-		dy <- dim.def.ncdf("Lat", "degreeN", xlat)
+		dx <- ncdim_def("Lon", "degreeE", xlon)
+		dy <- ncdim_def("Lat", "degreeN", xlat)
 		xy.dim<-list(dx,dy)
-		grd.out<-var.def.ncdf("var", "units",list(dx,dy),-99,longname="Interpolated data", prec="single")
+		grd.out<-ncvar_def("var", "units",list(dx,dy),-99,longname="Interpolated data", prec="short")
 
 		out.interp<-intrpdata@data$var1.pred
 		dim(out.interp) <- c(length(xlon),length(xlat))
@@ -203,9 +203,9 @@ interpolationProc<-function(donne,demdata,interpolParams){
 
 		filename<-paste(getf.no.ext(basename(file2save))	,'_',donne$date,'.nc',sep='')
 		outfl<-file.path(dirname(file2save),filename,fsep = .Platform$file.sep)
-		nc2 <- create.ncdf(outfl,grd.out)
-		put.var.ncdf(nc2,grd.out,out.interp)
-		close.ncdf(nc2)
+		nc2 <- nc_create(outfl,grd.out)
+		ncvar_put(nc2,grd.out,out.interp)
+		nc_close(nc2)
 		return(list(filename,list(x=xlon,y=xlat,value=out.interp0),outfl))
 	}else{
 		insert.txt(main.txt.out,"Interpolation failed",format=TRUE)

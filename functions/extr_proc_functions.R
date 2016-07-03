@@ -141,11 +141,11 @@ getExtractDataFun<-function(retExtractParams){
 		}
 
 		#######
-		nc<-open.ncdf(ncpath[fl])
+		nc<-nc_open(ncpath[fl])
 		xlon<-nc$dim[[1]]$vals
 		xlat<-nc$dim[[2]]$vals
-		xval<-get.var.ncdf(nc,varid=nc$var[[1]]$name)
-		close.ncdf(nc)
+		xval<-ncvar_get(nc,varid=nc$var[[1]]$name)
+		nc_close(nc)
 
 #Multiple Points & Polygons still slow
 		#######

@@ -88,7 +88,7 @@ ReanalysisDownscaling<-function(paramsDownscl){
 	max.dst<-as.numeric(as.character(gal.params$params.int$Values[3]))
 
 	#Defines netcdf output
-	out.tt <- var.def.ncdf("temp", "DegC",xy.dim, -99, longname= "Dwonscaled temperature from reanalysis data", prec="single")
+	out.tt <- ncvar_def("temp", "DegC",xy.dim, -99, longname= "Dwonscaled temperature from reanalysis data", prec="float")
 
 	##Get all Reanalysis Files
 	if(freqData=='daily'){
@@ -126,11 +126,11 @@ ReanalysisDownscaling<-function(paramsDownscl){
 	ret<-lapply(seq_along(ReanalDataFl),function(jfl){
 		outfl<-file.path(origdir,paste(downPrefix,'_',down.dates[jfl],'.nc',sep=''),fsep = .Platform$file.sep)
 		rfefl <-ReanalDataFl[jfl]
-		nc <- open.ncdf(rfefl)
+		nc <- nc_open(rfefl)
 		tt.lon <- nc$dim[[reanalInfo$rfeILon]]$vals
 		tt.lat <- nc$dim[[reanalInfo$rfeILat]]$vals
-		tt.val <- get.var.ncdf(nc, varid=reanalInfo$rfeVarid)
-		close.ncdf(nc)
+		tt.val <- ncvar_get(nc, varid=reanalInfo$rfeVarid)
+		nc_close(nc)
 		xo<-order(tt.lon)
 		tt.lon<-tt.lon[xo]
 		yo<-order(tt.lat)
@@ -173,9 +173,9 @@ ReanalysisDownscaling<-function(paramsDownscl){
 		p[is.na(p)]<- -99
 		dim(p) <- c(nlon0,nlat0)
 
-		nc2 <- create.ncdf(outfl,out.tt)
-		put.var.ncdf(nc2,out.tt,p)
-		close.ncdf(nc2)
+		nc2 <- nc_create(outfl,out.tt)
+		ncvar_put(nc2,out.tt,p)
+		nc_close(nc2)
 		insert.txt(main.txt.out,paste("Downscaling  Reanalysis finished:",basename(rfefl)))
 		tcl("update")
 		return(0)
@@ -215,9 +215,9 @@ ExtractReanal2Stn<-function(ijGrd,nstn,coef.dates){
 	bias.dates1<-bias.dates[existFl]
 
 	for (jfl in seq_along(downDataFl)){
-		nc <- open.ncdf(downDataFl[jfl])
-		model <- get.var.ncdf(nc,varid = nc$var[[1]]$name)
-		close.ncdf(nc)
+		nc <- nc_open(downDataFl[jfl])
+		model <- ncvar_get(nc,varid = nc$var[[1]]$name)
+		nc_close(nc)
 		model_stn[which(bias.dates==bias.dates1[jfl]),]<-model[ijGrd]
 	}
 	insert.txt(main.txt.out,'Done! ')
@@ -374,7 +374,7 @@ ComputeMeanBias<-function(paramsBias){
 	bGrd <- expand.grid(x=dBX, y=dBY)
 
 	#Defines netcdf output
-	grd.bs <- var.def.ncdf("grid", "",xy.dim, NA, longname= "Gridded Station/Reanalysis Bias", prec="single")
+	grd.bs <- ncvar_def("grid", "",xy.dim, NA, longname= "Gridded Station/Reanalysis Bias", prec="float")
 
 	tcl("update","idletasks")
 	for(ij in 1:ntimes){
@@ -407,9 +407,9 @@ ComputeMeanBias<-function(paramsBias){
 		}
 
 		outfl <- file.path(dirBias,paste(meanBiasPrefix,'_',ij,'.nc',sep=''),fsep = .Platform$file.sep)
-		nc2 <- create.ncdf(outfl,grd.bs)
-		put.var.ncdf(nc2,grd.bs,grd.bias)
-		close.ncdf(nc2)
+		nc2 <- nc_create(outfl,grd.bs)
+		ncvar_put(nc2,grd.bs,grd.bias)
+		nc_close(nc2)
 		insert.txt(main.txt.out,paste("Computing mean bias finished:",paste(meanBiasPrefix,'_',ij,'.nc',sep='')))
 		tcl("update")
 	}
@@ -495,7 +495,7 @@ AjdReanalMeanBias<-function(paramsAdjBs){
 	adjPrefix<-paramsAdjBs$adjPrefix
 
 	freqData<-gal.params$period
-	grd.bsadj <- var.def.ncdf("temp", "DegC",xy.dim, -99, longname= "Mean Bias Adjusted Reanalysis", prec="single")
+	grd.bsadj <- ncvar_def("temp", "DegC",xy.dim, -99, longname= "Mean Bias Adjusted Reanalysis", prec="float")
 
 	##Get all downscaled Files
 
@@ -543,13 +543,13 @@ AjdReanalMeanBias<-function(paramsAdjBs){
 		bsfl<-file.path(biasDirORFile,paste(meanBiasPrefix,'_',ijt,'.nc',sep=''),fsep = .Platform$file.sep)
 		outfl<-file.path(adjDir,paste(adjPrefix,'_',adj.dates[jfl],'.nc',sep=''),fsep = .Platform$file.sep)
 
-		nc <- open.ncdf(downfl)
-		temp <- get.var.ncdf(nc,varid = nc$var[[1]]$name)
-		close.ncdf(nc)
+		nc <- nc_open(downfl)
+		temp <- ncvar_get(nc,varid = nc$var[[1]]$name)
+		nc_close(nc)
 
-		nc <- open.ncdf(bsfl)
-		bias <- get.var.ncdf(nc,varid = nc$var[[1]]$name)
-		close.ncdf(nc)
+		nc <- nc_open(bsfl)
+		bias <- ncvar_get(nc,varid = nc$var[[1]]$name)
+		nc_close(nc)
 
 		temp.adj <- round(temp * bias,2)
 
@@ -560,9 +560,9 @@ AjdReanalMeanBias<-function(paramsAdjBs){
 		temp.adj[is.na(temp.adj)] <- -99
 
 		#Save adjusted Reanalysis
-		nc2 <- create.ncdf(outfl,grd.bsadj)
-		put.var.ncdf(nc2,grd.bsadj,temp.adj)
-		close.ncdf(nc2)
+		nc2 <- nc_create(outfl,grd.bsadj)
+		ncvar_put(nc2,grd.bsadj,temp.adj)
+		nc_close(nc2)
 
 		insert.txt(main.txt.out,paste("Downscaled data adjusted successfully:",paste(downPrefix,'_',adj.dates[jfl],'.nc',sep='')))
 		tcl("update")
@@ -594,7 +594,7 @@ AjdReanalpmm<-function(paramsAdjBs){
 	years<- as.numeric(substr(stn.dates,1,4))
 	months <- as.numeric(substr(stn.dates,5,6))
 
-	grd.bsadj <- var.def.ncdf("temp", "DegC",xy.dim, -99, longname= "Regression-QM Adjusted Reanalysis", prec="single")
+	grd.bsadj <- ncvar_def("temp", "DegC",xy.dim, -99, longname= "Regression-QM Adjusted Reanalysis", prec="float")
 
 	##Get all downscaled Files
 	if(freqData=='daily'){
@@ -657,9 +657,9 @@ AjdReanalpmm<-function(paramsAdjBs){
 		downfl<-downDataFl[jfl]
 		outfl<-file.path(adjDir,paste(adjPrefix,'_',adj.dates[jfl],'.nc',sep=''),fsep = .Platform$file.sep)
 		
-		nc <- open.ncdf(downfl)
-		temp <- get.var.ncdf(nc,varid = nc$var[[1]]$name)
-		close.ncdf(nc)
+		nc <- nc_open(downfl)
+		temp <- ncvar_get(nc,varid = nc$var[[1]]$name)
+		nc_close(nc)
 
 		mn <- mean(temp, na.rm=T)
 		sd <- sd(temp, na.rm=T)
@@ -683,9 +683,9 @@ AjdReanalpmm<-function(paramsAdjBs){
 		temp.adj2[is.na(temp.adj2)] <- -99
 
 		#Save adjusted Reanalysis
-		nc2 <- create.ncdf(outfl,grd.bsadj)
-		put.var.ncdf(nc2,grd.bsadj,temp.adj)
-		close.ncdf(nc2)
+		nc2 <- nc_create(outfl,grd.bsadj)
+		ncvar_put(nc2,grd.bsadj,temp.adj)
+		nc_close(nc2)
 
 		insert.txt(main.txt.out,paste("Downscaled data adjusted successfully:",paste(downPrefix,'_',adj.dates[jfl],'.nc',sep='')))
 		tcl("update")
@@ -728,7 +728,7 @@ MergeTemp<-function(mrgParam){
 	max.dst<- as.numeric(params.mrg[4])
 	interpMethod<-params.mrg[5]
 
-	mrgd.tt <- var.def.ncdf('temp', "DegC",xy.dim, -99, longname='Reanalysis merged with station', prec="single")
+	mrgd.tt <- ncvar_def('temp', "DegC",xy.dim, -99, longname='Reanalysis merged with station', prec="float")
 
 	if(freqData=='daily'){
 		mrg.dates<-format(seq(as.Date(istart,format='%Y%m%d'),as.Date(iend,format='%Y%m%d'),'day'),'%Y%m%d')
@@ -757,9 +757,9 @@ MergeTemp<-function(mrgParam){
 		adjfl <- adjDataFl[jfl]
 		outfl<-file.path(mrgDir,paste(mrgPrefix,'_',mrg.dates[jfl],'_',mrgSuffix,'.nc',sep=''),fsep = .Platform$file.sep)
 
-		nc <- open.ncdf(adjfl)
-		tt.mod <- get.var.ncdf(nc,varid = nc$var[[1]]$name)
-		close.ncdf(nc)
+		nc <- nc_open(adjfl)
+		tt.mod <- ncvar_get(nc,varid = nc$var[[1]]$name)
+		nc_close(nc)
 
 		mod.vec <- as.vector(tt.mod)
 		newlocation.merging<-SpatialPointsDataFrame(coords=newlocation.merging, data=data.frame(mod=mod.vec), proj4string = CRS(as.character(NA)))
@@ -802,9 +802,9 @@ MergeTemp<-function(mrgParam){
 		dim(out.tt) <- c(nlon0,nlat0)
 		#Apply mask for area of interest
 		if(!is.null(outMask)) out.tt[is.na(outMask)]<- -99
-		nc2 <- create.ncdf(outfl,mrgd.tt)
-		put.var.ncdf(nc2,mrgd.tt,out.tt)
-		close.ncdf(nc2)
+		nc2 <- nc_create(outfl,mrgd.tt)
+		ncvar_put(nc2,mrgd.tt,out.tt)
+		nc_close(nc2)
 
 		insert.txt(main.txt.out,paste("Merging finished successfully:",paste(mrgPrefix,'_',mrg.dates[jfl],'_',mrgSuffix,'.nc',sep='')))
 		tcl("update")
