@@ -187,7 +187,7 @@ PlotMergingOutputCmd<-function(){
 		#######################
 		tkgrid(dir_ncdfLab.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=6,padx=1,pady=1,ipadx=1,ipady=1)
 		tkgrid(dir_ncdfEd.tab2,row=1,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=1,ipadx=1,ipady=1)
-		tkgrid(dir_ncdfBt.tab2,row=1,column=5,sticky='e',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+		tkgrid(dir_ncdfBt.tab2,row=1,column=5,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
 		tkgrid(ff_ncdfLab.tab2,row=2,column=0,sticky='we',rowspan=1,columnspan=6,padx=1,pady=1,ipadx=1,ipady=1)
 		tkgrid(ff_ncdfEd.tab2,row=3,column=1,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
 		tkgrid(ttl_ncdfLab.tab2,row=4,column=0,sticky='we',rowspan=1,columnspan=6,padx=1,pady=1,ipadx=1,ipady=1)

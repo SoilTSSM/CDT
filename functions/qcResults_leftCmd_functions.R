@@ -4,7 +4,7 @@ QcCmdBut<-function(stateReplaceAll){
 
 	file.list<-openFile_ttkcomboList()
 
-	wttkcombo<-as.integer(as.numeric(w.scale(18)*0.95)/9)
+	wttkcombo<-as.integer(as.numeric(w.scale(19)*0.95)/9)
 
 	#scrollable frame width
 	if(Sys.info()["sysname"] == "Windows"){
@@ -21,9 +21,10 @@ QcCmdBut<-function(stateReplaceAll){
 	tknote.cmd<-bwNoteBook(cmd.frame)
 	tkgrid(tknote.cmd ,sticky='nwes')
 
-	cmd.tab1 <- bwAddTab(tknote.cmd,text="Qc Outputs")
-	cmd.tab2 <- bwAddTab(tknote.cmd,text="Plot QC Results")
+	cmd.tab1 <- bwAddTab(tknote.cmd,text="QC Outputs")
+	cmd.tab2 <- bwAddTab(tknote.cmd,text="Plot Outputs")
 	cmd.tab3 <- bwAddTab(tknote.cmd,text="Zoom")
+	cmd.tab4 <- bwAddTab(tknote.cmd,text="Add Maps")
 	bwRaiseTab(tknote.cmd,cmd.tab1)
 
 	#######################################################################################################
@@ -36,9 +37,7 @@ QcCmdBut<-function(stateReplaceAll){
 	tkgrid(scrw1)
 	subfr1<-bwScrollableFrame(scrw1,width=wscrlwin,height=hscrlwin)
 
-
 	stats<-tclVar('0.0')
-	# cbValstat <- tclVar("0")
 
 	btPreview.tab1<-tkbutton(subfr1, text="Output Preview")
 	sep1.tab1<-ttkseparator(subfr1)
@@ -47,7 +46,6 @@ QcCmdBut<-function(stateReplaceAll){
 	sep2.tab1<-ttkseparator(subfr1)
 	labThresReplace.tab1<-tklabel(subfr1,text='Statistic threshold',anchor='e',justify='right')
 	enThresReplace.tab1<-tkentry(subfr1,textvariable=stats,width=4)
-	# cbtThresReplace.tab1<-tkcheckbutton(subfr1,variable=cbValstat)
 	btThresReplace.tab1<-tkbutton(subfr1, text="Replace")
 	sep3.tab1<-ttkseparator(subfr1)
 	btAllReplace.tab1<-tkbutton(subfr1, text="Replace all outliers with NA",state=stateReplaceAll)
@@ -70,7 +68,6 @@ QcCmdBut<-function(stateReplaceAll){
 	tkgrid(sep2.tab1,row=3,column=0,sticky='we',rowspan=1,columnspan=8,pady=5)
 	tkgrid(labThresReplace.tab1,row=4,column=0,sticky='we',rowspan=1,columnspan=3,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(enThresReplace.tab1,row=4,column=3,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
-	# tkgrid(cbtThresReplace.tab1,row=4,column=7,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(btThresReplace.tab1,row=4,column=5,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(sep3.tab1,row=5,column=0,sticky='we',rowspan=1,columnspan=8,pady=5)
 	tkgrid(btAllReplace.tab1,row=6,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
@@ -78,7 +75,7 @@ QcCmdBut<-function(stateReplaceAll){
 	#######################################################################################################
 
 	#Tab2
-	frTab2<-tkframe(cmd.tab2) #,relief='sunken',bd=2
+	frTab2<-tkframe(cmd.tab2)
 	tkgrid(frTab2,padx=1,pady=1,ipadx=1,ipady=1)
 
 	scrw2<-bwScrolledWindow(frTab2)
@@ -92,49 +89,80 @@ QcCmdBut<-function(stateReplaceAll){
 	btOutlPrev.tab2<-tkbutton(subfr2, text="<<")
 	combOutlmonth.tab2<-ttkcombobox(subfr2, values=format(ISOdate(2014,1:12,1),"%B"), textvariable=choix.mois,width=17)
 	btOutlNext.tab2<-tkbutton(subfr2, text=">>")
+	
 	sep1.tab2<-ttkseparator(subfr2)
 	labplotSpChk.tab2<-tklabel(subfr2,text='Plot Spatial Check',anchor='w',justify='right')
 	btSpChkPrev.tab2<-tkbutton(subfr2, text="<<")
 	combSpChkDate.tab2<-ttkcombobox(subfr2, values='', textvariable=spchkQcDateVal,width=17)
 	btSpChkNext.tab2<-tkbutton(subfr2, text=">>")
+
 	sep2.tab2<-ttkseparator(subfr2)
-	labShpDem.tab2<-tklabel(subfr2,text="Add DEM & Boundary",anchor='center',justify='center',bg='green')
-	sep3.tab2<-ttkseparator(subfr2)
-	##
-	file.plotShp <- tclVar()
-	file.plotDem<-tclVar()
+	vShowVal <- tclVar("1")
+	cbValshp <- tclVar("0")
+	cbValdem <- tclVar("0")
+	cbValrfe <- tclVar("0")
+	cbShowVal.tab2<-tkcheckbutton(subfr2,text="Show station values",variable=vShowVal,anchor='w',justify='left')
+	cbSHP.tab2 <- tkcheckbutton(subfr2,text="Add administrative boundaries to map",variable=cbValshp,anchor='w',justify='left')
+	cbDEM.tab2 <- tkcheckbutton(subfr2,text="Add DEM to map",variable=cbValdem,anchor='w',justify='left')
+	cbRFE.tab2 <- tkcheckbutton(subfr2,text="Add satellite data to map",variable=cbValrfe,anchor='w',justify='left')
 
-	labSHP.tab2<-tklabel(subfr2,text="Shapefiles for boundary",anchor='w',justify='right')
-	combShp.tab2<-ttkcombobox(subfr2, values=unlist(file.list), textvariable=file.plotShp,width=wttkcombo)
-	btShp.tab2<-tkbutton(subfr2, text="...")
-	tkconfigure(btShp.tab2,command=function(){
-		shp.opfiles<-getOpenShp(main.win,all.opfiles)
-		if(!is.null(shp.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'shp'
-			file.opfiles[[nopf+1]]<<-shp.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.plotShp)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combDem.tab2,values=unlist(file.list), textvariable=file.plotDem)
-			tkconfigure(combShp.tab2,values=unlist(file.list), textvariable=file.plotShp)
-		}
-	})
+	################################
+	# frameShpDEM<-ttklabelframe(subfr2,text="Add Boundary-DEM-RFE",relief='groove')
 
-	labDEM.tab2<-tklabel(subfr2,text="Elevation Data (NetCDF)",anchor='w',justify='right')
-	combDem.tab2<-ttkcombobox(subfr2, values=unlist(file.list), textvariable=file.plotDem,width=wttkcombo)
-	btDem.tab2<-tkbutton(subfr2, text="...")
-	tkconfigure(btDem.tab2,command=function(){
-		nc.opfiles<-getOpenNetcdf(main.win,all.opfiles)
-		if(!is.null(nc.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'netcdf'
-			file.opfiles[[nopf+1]]<<-nc.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.plotDem)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combDem.tab2,values=unlist(file.list), textvariable=file.plotDem)
-			tkconfigure(combShp.tab2,values=unlist(file.list), textvariable=file.plotShp)
-		}
-	})
+	# file.plotShp <- tclVar()
+	# file.plotDem<-tclVar()
+
+	# labSHP.tab2<-tklabel(frameShpDEM,text="Shapefiles for boundary",anchor='w',justify='right')
+	# combShp.tab2<-ttkcombobox(frameShpDEM, values=unlist(file.list), textvariable=file.plotShp,width=wttkcombo)
+	# btShp.tab2<-tkbutton(frameShpDEM, text="...")
+	# tkconfigure(btShp.tab2,command=function(){
+	# 	shp.opfiles<-getOpenShp(main.win,all.opfiles)
+	# 	if(!is.null(shp.opfiles)){
+	# 		nopf<-length(type.opfiles)
+	# 		type.opfiles[[nopf+1]]<<-'shp'
+	# 		file.opfiles[[nopf+1]]<<-shp.opfiles
+	# 		file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
+	# 		tclvalue(file.plotShp)<-file.opfiles[[nopf+1]][[1]]
+	# 		tkconfigure(combDem.tab2,values=unlist(file.list), textvariable=file.plotDem)
+	# 		tkconfigure(combShp.tab2,values=unlist(file.list), textvariable=file.plotShp)
+	# 	}
+	# })
+
+	# labDEM.tab2<-tklabel(frameShpDEM,text="Elevation Data (NetCDF)",anchor='w',justify='right')
+	# combDem.tab2<-ttkcombobox(frameShpDEM, values=unlist(file.list), textvariable=file.plotDem,width=wttkcombo)
+	# btDem.tab2<-tkbutton(frameShpDEM, text="...")
+	# tkconfigure(btDem.tab2,command=function(){
+	# 	nc.opfiles<-getOpenNetcdf(main.win,all.opfiles)
+	# 	if(!is.null(nc.opfiles)){
+	# 		nopf<-length(type.opfiles)
+	# 		type.opfiles[[nopf+1]]<<-'netcdf'
+	# 		file.opfiles[[nopf+1]]<<-nc.opfiles
+	# 		file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
+	# 		tclvalue(file.plotDem)<-file.opfiles[[nopf+1]][[1]]
+	# 		tkconfigure(combDem.tab2,values=unlist(file.list), textvariable=file.plotDem)
+	# 		tkconfigure(combShp.tab2,values=unlist(file.list), textvariable=file.plotShp)
+	# 	}
+	# })
+
+	# dir_ncdf <-tclVar()
+	# dir_ncdfLab.tab2<-tklabel(frameShpDEM,text='Directory of RFE files',anchor='w',justify='left')
+	# dir_ncdfEd.tab2<-tkentry(frameShpDEM,textvariable=dir_ncdf,width=wttkcombo)
+	# dir_ncdfBt.tab2<-tkbutton(frameShpDEM, text="...") 
+	# tkconfigure(dir_ncdfBt.tab2,command=function(){
+	# 	dir4ncdf<-tk_choose.dir(getwd(), "")
+	# 	if(is.na(dir4ncdf)) tclvalue(dir_ncdf)<-""
+	# 	else tclvalue(dir_ncdf)<-dir4ncdf
+	# })
+	# infobulle(dir_ncdfEd.tab2,'Enter the full path to\ndirectory containing the RFE files')
+	# status.bar.display(dir_ncdfEd.tab2,txt.stbr1,'Enter the full path to directory containing the RFE files')
+	# infobulle(dir_ncdfBt.tab2,'Select directory here')
+	# status.bar.display(dir_ncdfBt.tab2,txt.stbr1,'Select directory here')
+
+	# ff_ncdf <-tclVar("rfe%s_%s_%s.nc")
+	# ff_ncdfLab.tab2<-tklabel(frameShpDEM,text='RFE filename format',anchor='w',justify='left')
+	# ff_ncdfEd.tab2<-tkentry(frameShpDEM,width=14,textvariable=ff_ncdf,justify = "left")
+	# infobulle(ff_ncdfEd.tab2,'Enter the format of the RFE files names,\nexample: rfe1983_01_01.nc')
+	# status.bar.display(ff_ncdfEd.tab2,txt.stbr1,'Enter the format of the RFE files names, example: rfe1983_01_01.nc')
 
 	########
 	tkgrid(labplotOutl.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
@@ -149,17 +177,27 @@ QcCmdBut<-function(stateReplaceAll){
 	tkgrid(btSpChkNext.tab2,row=4,column=7,sticky='e',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
 
 	tkgrid(sep2.tab2,row=5,column=0,sticky='we',rowspan=1,columnspan=8,pady=5)
-	tkgrid(labShpDem.tab2,row=6,column=1,sticky='we',rowspan=1,columnspan=6,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(sep3.tab2,row=7,column=1,sticky='we',rowspan=1,columnspan=6,pady=2)
+	tkgrid(cbShowVal.tab2,row=6,column=0,sticky='we',rowspan=1,columnspan=8,pady=2)
+	tkgrid(cbSHP.tab2,row=7,column=0,sticky='we',rowspan=1,columnspan=8,pady=2)
+	tkgrid(cbDEM.tab2,row=8,column=0,sticky='we',rowspan=1,columnspan=8,pady=2)
+	tkgrid(cbRFE.tab2,row=9,column=0,sticky='we',rowspan=1,columnspan=8,pady=2)
 
-	tkgrid(labSHP.tab2,row=8,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(combShp.tab2,row=9,column=0,sticky='we',rowspan=1,columnspan=7,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(btShp.tab2,row=9,column=7,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+	################################
+	# tkgrid(frameShpDEM,row=5,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
 
-	tkgrid(labDEM.tab2,row=10,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(combDem.tab2,row=11,column=0,sticky='we',rowspan=1,columnspan=7,padx=1,pady=1,ipadx=1,ipady=1)
-	tkgrid(btDem.tab2,row=11,column=7,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+	# tkgrid(labSHP.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
+	# tkgrid(combShp.tab2,row=1,column=0,sticky='we',rowspan=1,columnspan=7,padx=1,pady=1,ipadx=1,ipady=1)
+	# tkgrid(btShp.tab2,row=1,column=7,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
 
+	# tkgrid(labDEM.tab2,row=2,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
+	# tkgrid(combDem.tab2,row=3,column=0,sticky='we',rowspan=1,columnspan=7,padx=1,pady=1,ipadx=1,ipady=1)
+	# tkgrid(btDem.tab2,row=3,column=7,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+
+	# tkgrid(dir_ncdfLab.tab2,row=4,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
+	# tkgrid(dir_ncdfEd.tab2,row=5,column=0,sticky='we',rowspan=1,columnspan=7,padx=1,pady=1,ipadx=1,ipady=1)
+	# tkgrid(dir_ncdfBt.tab2,row=5,column=7,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+	# tkgrid(ff_ncdfLab.tab2,row=6,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
+	# tkgrid(ff_ncdfEd.tab2,row=7,column=1,sticky='we',rowspan=1,columnspan=7,padx=1,pady=1,ipadx=1,ipady=1)
 
 	#######################################################################################################
 
@@ -221,19 +259,6 @@ QcCmdBut<-function(stateReplaceAll){
 	infobulle(btReset.tab3,' Zoom Reset')
 	status.bar.display(btReset.tab3,txt.stbr1,' Zoom Reset')
 
-##
-	sep1.tab3<-ttkseparator(subfr3)
-
-	##initialize variable show value
-	#valuesShow<<-tclVar('1')
-
-	vShowVal <- tclVar("1")
-	cbValshp <- tclVar("0")
-	cbValdem <- tclVar("0")
-
-	cbShowVal.tab3<-tkcheckbutton(subfr3,text="Show station values",variable=vShowVal,anchor='w',justify='left')
-	cbSHP.tab3 <- tkcheckbutton(subfr3,text="Add administrative boundaries to map",variable=cbValshp,anchor='w',justify='left')
-	cbDEM.tab3 <- tkcheckbutton(subfr3,text="Add DEM to map",variable=cbValdem,anchor='w',justify='left')
 	##
 	tkgrid(xentr1.tab3,row=1,column=0,sticky='we',rowspan=1,columnspan=1)
 	tkgrid(xentr2.tab3,row=1,column=2,sticky='we',rowspan=1,columnspan=1)
@@ -249,17 +274,98 @@ QcCmdBut<-function(stateReplaceAll){
 	tkgrid(btZoomM.tab3,row=1,column=4,sticky='nswe',rowspan=1,columnspan=1)
 	tkgrid(btZoomRect.tab3,row=2,column=4,sticky='nswe',rowspan=1,columnspan=1)
 
-	tkgrid(sep1.tab3,row=3,column=0,sticky='we',rowspan=1,columnspan=5,pady=5)
-	tkgrid(cbShowVal.tab3,row=4,column=0,sticky='we',rowspan=1,columnspan=5,pady=5)
-	tkgrid(cbSHP.tab3,row=5,column=0,sticky='we',rowspan=1,columnspan=5,pady=5)
-	tkgrid(cbDEM.tab3,row=6,column=0,sticky='we',rowspan=1,columnspan=5,pady=5)
+	#######################################################################################################
 
-	##########################
+	#Tab4
+	frTab4<-tkframe(cmd.tab4)
+	tkgrid(frTab4,padx=1,pady=1,ipadx=1,ipady=1)
+
+	scrw4<-bwScrolledWindow(frTab4)
+	tkgrid(scrw4)
+	subfr4<-bwScrollableFrame(scrw4,width=wscrlwin,height=hscrlwin)
+
+	frameShp<-ttklabelframe(subfr4,text="Boundaries Shapefiles",relief='groove')
+	file.plotShp <- tclVar()
+	combShp.tab4<-ttkcombobox(frameShp, values=unlist(file.list), textvariable=file.plotShp,width=wttkcombo)
+	btShp.tab4<-tkbutton(frameShp, text="...")
+	tkconfigure(btShp.tab4,command=function(){
+		shp.opfiles<-getOpenShp(main.win,all.opfiles)
+		if(!is.null(shp.opfiles)){
+			nopf<-length(type.opfiles)
+			type.opfiles[[nopf+1]]<<-'shp'
+			file.opfiles[[nopf+1]]<<-shp.opfiles
+			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
+			tclvalue(file.plotShp)<-file.opfiles[[nopf+1]][[1]]
+			tkconfigure(combDem.tab4,values=unlist(file.list), textvariable=file.plotDem)
+			tkconfigure(combShp.tab4,values=unlist(file.list), textvariable=file.plotShp)
+		}
+	})
+
+	frameDEM<-ttklabelframe(subfr4,text="Elevation Data (NetCDF)",relief='groove')
+	file.plotDem<-tclVar()
+	combDem.tab4<-ttkcombobox(frameDEM, values=unlist(file.list), textvariable=file.plotDem,width=wttkcombo)
+	btDem.tab4<-tkbutton(frameDEM, text="...")
+	tkconfigure(btDem.tab4,command=function(){
+		nc.opfiles<-getOpenNetcdf(main.win,all.opfiles)
+		if(!is.null(nc.opfiles)){
+			nopf<-length(type.opfiles)
+			type.opfiles[[nopf+1]]<<-'netcdf'
+			file.opfiles[[nopf+1]]<<-nc.opfiles
+			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
+			tclvalue(file.plotDem)<-file.opfiles[[nopf+1]][[1]]
+			tkconfigure(combDem.tab4,values=unlist(file.list), textvariable=file.plotDem)
+			tkconfigure(combShp.tab4,values=unlist(file.list), textvariable=file.plotShp)
+		}
+	})
+
+	frameRFE<-ttklabelframe(subfr4,text="Satellite Data (NetCDF)",relief='groove')
+	dir_ncdf <-tclVar()
+	dir_ncdfLab.tab4<-tklabel(frameRFE,text='Directory of satellite files',anchor='w',justify='left')
+	dir_ncdfEd.tab4<-tkentry(frameRFE,textvariable=dir_ncdf,width=wttkcombo+2)
+	dir_ncdfBt.tab4<-tkbutton(frameRFE, text="...") 
+	tkconfigure(dir_ncdfBt.tab4,command=function(){
+		dir4ncdf<-tk_choose.dir(getwd(), "")
+		if(is.na(dir4ncdf)) tclvalue(dir_ncdf)<-""
+		else tclvalue(dir_ncdf)<-dir4ncdf
+	})
+	infobulle(dir_ncdfEd.tab4,'Enter the full path to\ndirectory containing the satellite files')
+	status.bar.display(dir_ncdfEd.tab4,txt.stbr1,'Enter the full path to directory containing the satellite files')
+	infobulle(dir_ncdfBt.tab4,'Select directory here')
+	status.bar.display(dir_ncdfBt.tab4,txt.stbr1,'Select directory here')
+
+	ff_ncdf <-tclVar("rfe%s_%s_%s.nc")
+	ff_ncdfLab.tab4<-tklabel(frameRFE,text='RFE filename format',anchor='w',justify='left')
+	ff_ncdfEd.tab4<-tkentry(frameRFE,width=14,textvariable=ff_ncdf,justify = "left")
+	infobulle(ff_ncdfEd.tab4,'Enter the format of the satellite files names,\nexample: rfe1983_01_01.nc')
+	status.bar.display(ff_ncdfEd.tab4,txt.stbr1,'Enter the format of the satellite files names, example: rfe1983_01_01.nc')
+
+	################################
+
+	tkgrid(combShp.tab4,row=0,column=0,sticky='we',rowspan=1,columnspan=7,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(btShp.tab4,row=0,column=7,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+
+	tkgrid(combDem.tab4,row=0,column=0,sticky='we',rowspan=1,columnspan=7,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(btDem.tab4,row=0,column=7,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+
+	tkgrid(dir_ncdfLab.tab4,row=0,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(dir_ncdfEd.tab4,row=1,column=0,sticky='we',rowspan=1,columnspan=7,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(dir_ncdfBt.tab4,row=1,column=7,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(ff_ncdfLab.tab4,row=2,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(ff_ncdfEd.tab4,row=3,column=1,sticky='we',rowspan=1,columnspan=6,padx=1,pady=1,ipadx=1,ipady=1)
+
+	################################
+	tkgrid(frameShp,row=0,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(frameDEM,row=1,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+	tkgrid(frameRFE,row=2,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+
+	#######################################################################################################
+
 	tkconfigure(btRedraw.tab3,command=function(){
 		ZoomXYval<<-as.numeric(c(tclvalue(xx1),tclvalue(xx2),tclvalue(yy1),tclvalue(yy2)))
 		shpf <- if(tclvalue(cbValshp)=='1') getShpOpenData(file.plotShp)[[2]] else NULL
 		dem <- if(tclvalue(cbValdem)=='1') getDemOpenData(file.plotDem) else NULL
 		showval<- if(tclvalue(vShowVal)=="1") TRUE else FALSE
+		rfedat<-if(tclvalue(cbValrfe)=='1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
 		tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
 		if(length(tab.type)>0){
 			if(tab.type[[tabid]]=="img"){
@@ -267,13 +373,13 @@ QcCmdBut<-function(stateReplaceAll){
 				assign("showval", showval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 				assign("shpf", shpf, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 				assign("dem", dem, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
+				assign("rfedat", rfedat, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 				refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
 				hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 				tkconfigure(btRedraw.tab3,relief='raised',bg='lightblue')
 			}
 		}
 	})
-
 
 	##########################
 	tkconfigure(btReset.tab3,command=function(){
@@ -285,6 +391,7 @@ QcCmdBut<-function(stateReplaceAll){
 		showval<- if(tclvalue(vShowVal)=="1") TRUE else FALSE
 		shpf <- if(tclvalue(cbValshp)=='1') getShpOpenData(file.plotShp)[[2]] else NULL
 		dem <- if(tclvalue(cbValdem)=='1') getDemOpenData(file.plotDem) else NULL
+		rfedat<-if(tclvalue(cbValrfe)=='1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
 		tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
 		if(length(tab.type)>0){
 			if(tab.type[[tabid]]=="img"){
@@ -292,6 +399,7 @@ QcCmdBut<-function(stateReplaceAll){
 				assign("showval", showval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 				assign("shpf", shpf, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 				assign("dem", dem, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
+				assign("rfedat", rfedat, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 				refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
 				hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 
@@ -303,13 +411,13 @@ QcCmdBut<-function(stateReplaceAll){
 
 	#################################
 	##display station values
-	tkbind(cbShowVal.tab3,"<Button-1>",function(){
+	tkbind(cbShowVal.tab2,"<Button-1>",function(){
 		ZoomXYval<-as.numeric(c(tclvalue(xx1),tclvalue(xx2),tclvalue(yy1),tclvalue(yy2)))
 
 		showval <- if(tclvalue(vShowVal)=="0") TRUE else FALSE
 		shpf <- if(tclvalue(cbValshp)=='1') getShpOpenData(file.plotShp)[[2]] else NULL
 		dem <- if(tclvalue(cbValdem)=='1') getDemOpenData(file.plotDem) else NULL
-
+		rfedat<-if(tclvalue(cbValrfe)=='1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
 		tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
 		if(length(tab.type)>0){
 			if(tab.type[[tabid]]=="img"){
@@ -317,6 +425,7 @@ QcCmdBut<-function(stateReplaceAll){
 				assign("showval", showval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 				assign("shpf", shpf, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 				assign("dem", dem, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
+				assign("rfedat", rfedat, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 				refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
 				hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 				tkconfigure(btRedraw.tab3,relief='raised',bg='lightblue')
@@ -326,7 +435,7 @@ QcCmdBut<-function(stateReplaceAll){
 
 
 	#Adding administrative boundaries
-	tkbind(cbSHP.tab3,"<Button-1>",function(){
+	tkbind(cbSHP.tab2,"<Button-1>",function(){
 		if(!is.null(noteQcSpatCheck)){
 			if(tclvalue(cbValshp)=='0'){
 				shpf<-getShpOpenData(file.plotShp)[[2]]
@@ -336,6 +445,7 @@ QcCmdBut<-function(stateReplaceAll){
 			#shpf<-if(tclvalue(cbValshp)=='0') getShpOpenData(file.plotShp)[[2]] else NULL
 			showval <- if(tclvalue(vShowVal)=="1") TRUE else FALSE
 			dem <- if(tclvalue(cbValdem)=='1') getDemOpenData(file.plotDem) else NULL
+			rfedat<-if(tclvalue(cbValrfe)=='1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
 			ZoomXYval<-as.numeric(c(tclvalue(xx1),tclvalue(xx2),tclvalue(yy1),tclvalue(yy2)))
 			tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
 			if(length(tab.type)>0){
@@ -344,6 +454,7 @@ QcCmdBut<-function(stateReplaceAll){
 					assign("showval", showval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 					assign("shpf", shpf, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 					assign("dem", dem, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
+					assign("rfedat", rfedat, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 					refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
 					hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 					tkconfigure(btRedraw.tab3,relief='raised',bg='lightblue')
@@ -352,9 +463,8 @@ QcCmdBut<-function(stateReplaceAll){
 		}
 	})
 
-
 	##Adding DEM
-	tkbind(cbDEM.tab3,"<Button-1>",function(){
+	tkbind(cbDEM.tab2,"<Button-1>",function(){
 		if(!is.null(noteQcSpatCheck)){
 			if(tclvalue(cbValdem)=='0'){
 				dem<-getDemOpenData(file.plotDem)
@@ -364,6 +474,7 @@ QcCmdBut<-function(stateReplaceAll){
 			#dem <- if(tclvalue(cbValdem)=='0') getDemOpenData(file.plotDem) else NULL
 			showval<- if(tclvalue(vShowVal)=="1") TRUE else FALSE
 			shpf<- if(tclvalue(cbValshp)=='1') getShpOpenData(file.plotShp)[[2]] else NULL
+			rfedat<-if(tclvalue(cbValrfe)=='1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
 			ZoomXYval<-as.numeric(c(tclvalue(xx1),tclvalue(xx2),tclvalue(yy1),tclvalue(yy2)))
 			tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
 			if(length(tab.type)>0){
@@ -372,6 +483,36 @@ QcCmdBut<-function(stateReplaceAll){
 					assign("showval", showval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 					assign("shpf", shpf, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 					assign("dem", dem, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
+					assign("rfedat", rfedat, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
+					refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
+					hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
+					tkconfigure(btRedraw.tab3,relief='raised',bg='lightblue')
+				}
+			}
+		}
+	})
+
+	##Adding RFE
+	tkbind(cbRFE.tab2,"<Button-1>",function(){
+		if(!is.null(noteQcSpatCheck)){
+			if(tclvalue(cbValrfe)=='0'){
+				rfedat<-getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal)
+				if(is.null(rfedat)) insert.txt(main.txt.out,'No satellite data provided',format=TRUE)
+			}else  rfedat<-NULL
+
+			#rfedat <- if(tclvalue(cbValrfe)=='0') getSatelliteData(file.plotDem) else NULL
+			showval<- if(tclvalue(vShowVal)=="1") TRUE else FALSE
+			shpf<- if(tclvalue(cbValshp)=='1') getShpOpenData(file.plotShp)[[2]] else NULL
+			dem <- if(tclvalue(cbValdem)=='1') getDemOpenData(file.plotDem) else NULL
+			ZoomXYval<-as.numeric(c(tclvalue(xx1),tclvalue(xx2),tclvalue(yy1),tclvalue(yy2)))
+			tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
+			if(length(tab.type)>0){
+				if(tab.type[[tabid]]=="img"){
+					assign("ZoomXYval", ZoomXYval, envir=environment(tab.data[[tabid]][[2]]$fun))
+					assign("showval", showval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
+					assign("shpf", shpf, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
+					assign("dem", dem, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
+					assign("rfedat", rfedat, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
 					refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
 					hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 					tkconfigure(btRedraw.tab3,relief='raised',bg='lightblue')
@@ -683,6 +824,7 @@ QcCmdBut<-function(stateReplaceAll){
 
 				shpf<-if(tclvalue(cbValshp)=='1') getShpOpenData(file.plotShp)[[2]] else NULL
 				dem<-if(tclvalue(cbValdem)=='1') getDemOpenData(file.plotDem) else NULL
+				rfedat<-if(tclvalue(cbValrfe)=='1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
 				showval<-if(tclvalue(vShowVal)=="1") TRUE else FALSE
 				ZoomXYval<-as.numeric(c(tclvalue(xx1),tclvalue(xx2),tclvalue(yy1),tclvalue(yy2)))
 
@@ -692,7 +834,7 @@ QcCmdBut<-function(stateReplaceAll){
 		 		if(ijsp>length(qcoutDate)) ijsp<-1
 				tclvalue(spchkQcDateVal)<-qcoutDate[ijsp]
 
-		 		imgContainer<-DisplaySpatialCheck(tknotes,ijsp,ZoomXYval,dem,shpf,showval,noteQcSpatCheck)
+		 		imgContainer<-DisplaySpatialCheck(tknotes,ijsp,ZoomXYval,dem,rfedat,shpf,showval,noteQcSpatCheck)
 				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcSpatCheck,tab.type,tab.data)
 				noteQcSpatCheck<<-retNBTab$notebookTab
 				tab.type<<-retNBTab$tab.type
@@ -720,6 +862,7 @@ QcCmdBut<-function(stateReplaceAll){
 
 				shpf<-if(tclvalue(cbValshp)=='1') getShpOpenData(file.plotShp)[[2]] else NULL
 				dem<-if(tclvalue(cbValdem)=='1') getDemOpenData(file.plotDem) else NULL
+				rfedat<-if(tclvalue(cbValrfe)=='1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
 				showval<-if(tclvalue(vShowVal)=="1") TRUE else FALSE
 				ZoomXYval<-as.numeric(c(tclvalue(xx1),tclvalue(xx2),tclvalue(yy1),tclvalue(yy2)))
 
@@ -728,7 +871,7 @@ QcCmdBut<-function(stateReplaceAll){
 		   		ijsp<-ijsp-1
 		 		if(ijsp<1) ijsp<-length(qcoutDate)
 				tclvalue(spchkQcDateVal)<-qcoutDate[ijsp]
-		 		imgContainer<-DisplaySpatialCheck(tknotes,ijsp,ZoomXYval,dem,shpf,showval,noteQcSpatCheck)
+		 		imgContainer<-DisplaySpatialCheck(tknotes,ijsp,ZoomXYval,dem,rfedat,shpf,showval,noteQcSpatCheck)
 
 				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcSpatCheck,tab.type,tab.data)
 				noteQcSpatCheck<<-retNBTab$notebookTab
@@ -750,11 +893,12 @@ QcCmdBut<-function(stateReplaceAll){
 			if(nrow(spchkoutdates)!=0){
 				shpf<-if(tclvalue(cbValshp)=='1') getShpOpenData(file.plotShp)[[2]] else NULL
 				dem<-if(tclvalue(cbValdem)=='1') getDemOpenData(file.plotDem) else NULL
+				rfedat<-if(tclvalue(cbValrfe)=='1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
 				showval<-if(tclvalue(vShowVal)=="1") TRUE else FALSE
 				ZoomXYval<-as.numeric(c(tclvalue(xx1),tclvalue(xx2),tclvalue(yy1),tclvalue(yy2)))
 
 				ijsp<-as.numeric(tclvalue(tcl(combSpChkDate.tab2,"current")))+1
-		 		imgContainer<-DisplaySpatialCheck(tknotes,ijsp,ZoomXYval,dem,shpf,showval,noteQcSpatCheck)
+		 		imgContainer<-DisplaySpatialCheck(tknotes,ijsp,ZoomXYval,dem,rfedat,shpf,showval,noteQcSpatCheck)
 
 				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcSpatCheck,tab.type,tab.data)
 				noteQcSpatCheck<<-retNBTab$notebookTab

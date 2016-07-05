@@ -500,6 +500,31 @@ getNcdfData2Plot<-function(dataNCDF,freqData,yrs,mon,day,ncOrder=c(1,2)){
 }
 
 #################################################################################
+## get RFE data plot qc spatial check result
+
+getSatelliteData<-function(dir_ncdf,ff_ncdf,spchkQcDateVal){
+	if(!is.null(ret.results)){
+		spchkoutdates<-isSpatialCheckOk()
+		if(nrow(spchkoutdates)!=0){
+			dataNCDF<-list(dir_ncdf,ff_ncdf)
+			freqData<-ifelse(ret.results$period=='daily','Daily data',ifelse(ret.results$period=='dekadal','Dekadal data','Monthly data'))
+			spdaty<-tclvalue(spchkQcDateVal)
+			year<-as.numeric(substr(spdaty,1,4))
+			mon<-as.numeric(substr(spdaty,5,6))
+			day<-as.numeric(substr(spdaty,7,8))
+			rfedat<-getNcdfData2Plot(dataNCDF,freqData,year,mon,day)
+			return(rfedat)
+		}else{
+			insert.txt(main.txt.out,'No spatial check performed',format=TRUE)
+			return(NULL)
+		}	
+	}else{
+		insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+		return(NULL)
+	}
+}
+
+#################################################################################
 ##get DEM at stations locations (interpolation leftCmd)
 getDEMatStationsLoc<-function(donne,dem){
 	crdStn<-data.frame(lon=donne$lon,lat=donne$lat)
@@ -528,105 +553,6 @@ getDEMatNewGrid<-function(newgrid,dem){
 	inNA<-which(!is.na(ijGrd))
 	sdem[inNA]<-dem$value[ijGrd[inNA]]
 	return(sdem)
-}
-
-##################################################################################
-##tkrplot for Windows
-
-CountImgIndex <-local({
-	k <- 0
-	function() {
-		k <<- k + 1
-		return(k)
-	}
-})
-
-tkrplot.win <- function(parent, fun, hscale=1, vscale=1) {
-	image <- paste("RImage", CountImgIndex(), sep="")
-	tmpfl<-paste(tempfile(),'.jpg',sep='')
-	jpeg(tmpfl,width=385*hscale,height=385*vscale,quality=100,restoreConsole=FALSE)
-	try(fun())
-	dev.off()
-	tcl('image','create','photo',image,file =tmpfl)
-	unlink(tmpfl)
-	lab<-tklabel(parent,image=image)
-	tkbind(lab,"<Destroy>", function() tcl('image','delete', image))
-	lab$image <- image
-	lab$fun <- fun
-	lab$hscale <- hscale
-	lab$vscale <- vscale
-	lab
-}
-
-tkrreplot.win <- function(lab, fun = lab$fun,hscale=lab$hscale, vscale=lab$vscale) {
-	tmpfl<-paste(tempfile(),'.jpg',sep='')
-	jpeg(tmpfl,width=385*hscale,height=385*vscale,quality=100,restoreConsole=FALSE)
-	try(fun())
-	dev.off()
-	tcl('image','create','photo',lab$image,file =tmpfl)
-	unlink(tmpfl)
-}
-
-#########
-tkrplot1<-function(...){
-	if (Sys.info()["sysname"] == "Windows") lab<-tkrplot.win(...)
-	else lab<-tkrplot(...)
-}
-
-tkrreplot1<-function(...){
-	if (Sys.info()["sysname"] == "Windows") tkrreplot.win(...)
-	else tkrreplot(...)
-}
-
-
-##################################################################################
-#Gradient Color
-
-reScaleC<-function(x,newrange){
-	xrange<-range(x)
-	if(xrange[1] == xrange[2]) return(x)
-	mfac<-(newrange[2]-newrange[1])/(xrange[2]-xrange[1])
-	retScaled<-newrange[1]+(x-xrange[1])*mfac
-	return(retScaled)
-}
-
-getGradientColor<-function(listCol,cW){
-	ncolors<-length(cW)
-	xrange<-range(cW)
-	rgbC<-col2rgb(listCol)
-	rouge<-rgbC[1,]
-	verte<-rgbC[2,]
-	bleue<-rgbC[3,]
-	nCl<-length(rouge)
-	if(nCl>1){
-		rEd<-rep(rouge[nCl],ncolors)
-		gEd<-rep(verte[nCl],ncolors)
-		bEd<-rep(bleue[nCl],ncolors)
-		xstart<-xrange[1]
-		xinc<-diff(xrange)/(nCl-1)
-		for(seg in 1:(nCl-1)){
-		   segindex<-which((cW >= xstart) & (cW <= (xstart+xinc)))
-		   rEd[segindex]<-reScaleC(cW[segindex],rouge[c(seg,seg+1)])
-		   gEd[segindex]<-reScaleC(cW[segindex],verte[c(seg,seg+1)])
-		   bEd[segindex]<-reScaleC(cW[segindex],bleue[c(seg,seg+1)])
-		   xstart<-xstart+xinc
-		}
-		rEd<-ifelse(rEd<0,0,rEd)
-		rEd<-ifelse(rEd>255,255,rEd)
-		rEd<-as.integer(rEd)
-		gEd<-ifelse(gEd<0,0,gEd)
-		gEd<-ifelse(gEd>255,255,gEd)
-		gEd<-as.integer(gEd)
-		bEd<-ifelse(bEd<0,0,bEd)
-		bEd<-ifelse(bEd>255,255,bEd)
-		bEd<-as.integer(bEd)
-	}else{
-		rEd<-rep(rouge,ncolors)
-		gEd<-rep(verte,ncolors)
-		bEd<-rep(bleue,ncolors)
-	}
-	gradientColor<-paste('#',sprintf("%2.2x",rEd),sprintf("%2.2x",gEd),sprintf("%2.2x",bEd),sep='')
-	return(gradientColor)
 }
 
 ##################################################################################

@@ -1,14 +1,63 @@
 
+##tkrplot for Windows
+
+CountImgIndex <-local({
+	k <- 0
+	function() {
+		k <<- k + 1
+		return(k)
+	}
+})
+
+tkrplot.win <- function(parent, fun, hscale=1, vscale=1) {
+	image <- paste("RImage", CountImgIndex(), sep="")
+	tmpfl<-paste(tempfile(),'.jpg',sep='')
+	jpeg(tmpfl,width=385*hscale,height=385*vscale,quality=100,restoreConsole=FALSE)
+	try(fun())
+	dev.off()
+	tcl('image','create','photo',image,file =tmpfl)
+	unlink(tmpfl)
+	lab<-tklabel(parent,image=image)
+	tkbind(lab,"<Destroy>", function() tcl('image','delete', image))
+	lab$image <- image
+	lab$fun <- fun
+	lab$hscale <- hscale
+	lab$vscale <- vscale
+	lab
+}
+
+tkrreplot.win <- function(lab, fun = lab$fun,hscale=lab$hscale, vscale=lab$vscale) {
+	tmpfl<-paste(tempfile(),'.jpg',sep='')
+	jpeg(tmpfl,width=385*hscale,height=385*vscale,quality=100,restoreConsole=FALSE)
+	try(fun())
+	dev.off()
+	tcl('image','create','photo',lab$image,file =tmpfl)
+	unlink(tmpfl)
+}
+
+#########
+tkrplot1<-function(...){
+	if (Sys.info()["sysname"] == "Windows") lab<-tkrplot.win(...)
+	else lab<-tkrplot(...)
+}
+
+tkrreplot1<-function(...){
+	if (Sys.info()["sysname"] == "Windows") tkrreplot.win(...)
+	else tkrreplot(...)
+}
+
+
 ######################################
 #redifine tkrreplot
+## Linux & mac only
 refreshPlot<-function(W,img,hscale,vscale){
-	# tkrreplot(img,hscale=hscale, vscale=vscale)
-	tkrreplot1(img,hscale=hscale, vscale=vscale)
+	tkrreplot(img,hscale=hscale, vscale=vscale)
 	img_w<-as.double(tcl('image','width',img$image))
 	img_h<-as.double(tcl('image','height',img$image))
 	tkconfigure(W,width=img_w,height=img_h)
 }
 
+## All
 refreshPlot1<-function(W,img,hscale,vscale){
 	tkrreplot1(img,hscale=hscale, vscale=vscale)
 	img_w<-as.double(tcl('image','width',img$image))
@@ -16,7 +65,7 @@ refreshPlot1<-function(W,img,hscale,vscale){
 	tkconfigure(W,width=img_w,height=img_h)
 }
 
-######################################
+##################################################################################
 #Draw rectangle above image
 ## 'rect' the tagged rectangle
 
@@ -59,7 +108,7 @@ pReleaseRect<-function(W,rectCrds){
 }
 
 
-######################################
+##################################################################################
 #mouvement de souris
 #Mouse.Mouvment <=old
 
@@ -104,7 +153,7 @@ mouseMouvment<- function(W,x,y,parPltCrd) {
 	return(list(x=xcoord,y=ycoord,inout=outsideArea))
 }
 
-######################################
+##################################################################################
 #get coordinates
 #get.xyCoords <=old
 
@@ -113,7 +162,7 @@ getXYCoords <- function(W,x,y,parPltCrd) {
 	return(list(xc=xyMouse$x,yc=xyMouse$y,oin=xyMouse$inout))
 }
 
-######################################
+##################################################################################
 ##Display coordinates on status bar
 ##display.cursor.type <=old
 
@@ -142,7 +191,7 @@ displayCursorPosition3Var<-function(W,x,y,parPltCrd,xpcrd,ypcrd,zpcrd,FUN,...){
 ##displayCursorPosition3Var(W,x,y,parPltCrd,xpcoord,ypcoord,zpcoord,getAdminLabel,shp=shpf,idField=adminVar.tab1)
 
 
-######################################
+##################################################################################
 #get name of polygon @x,y position
 
 getAdminLabel<-function(xx,yy,shp,idField){
@@ -158,7 +207,7 @@ getAdminLabel<-function(xx,yy,shp,idField){
 	return(labAdmin_name)
 }
 
-######################################
+##################################################################################
 #get the name of sations id (spatial check)
 
 getStnIDLabel<-function(xx,yy,pltusr,inout){
@@ -182,4 +231,54 @@ getStnIDLabel<-function(xx,yy,pltusr,inout){
 	return(labstn)
 }
 
+
+##################################################################################
+#Gradient Color
+
+reScaleC<-function(x,newrange){
+	xrange<-range(x)
+	if(xrange[1] == xrange[2]) return(x)
+	mfac<-(newrange[2]-newrange[1])/(xrange[2]-xrange[1])
+	retScaled<-newrange[1]+(x-xrange[1])*mfac
+	return(retScaled)
+}
+
+getGradientColor<-function(listCol,cW){
+	ncolors<-length(cW)
+	xrange<-range(cW)
+	rgbC<-col2rgb(listCol)
+	rouge<-rgbC[1,]
+	verte<-rgbC[2,]
+	bleue<-rgbC[3,]
+	nCl<-length(rouge)
+	if(nCl>1){
+		rEd<-rep(rouge[nCl],ncolors)
+		gEd<-rep(verte[nCl],ncolors)
+		bEd<-rep(bleue[nCl],ncolors)
+		xstart<-xrange[1]
+		xinc<-diff(xrange)/(nCl-1)
+		for(seg in 1:(nCl-1)){
+		   segindex<-which((cW >= xstart) & (cW <= (xstart+xinc)))
+		   rEd[segindex]<-reScaleC(cW[segindex],rouge[c(seg,seg+1)])
+		   gEd[segindex]<-reScaleC(cW[segindex],verte[c(seg,seg+1)])
+		   bEd[segindex]<-reScaleC(cW[segindex],bleue[c(seg,seg+1)])
+		   xstart<-xstart+xinc
+		}
+		rEd<-ifelse(rEd<0,0,rEd)
+		rEd<-ifelse(rEd>255,255,rEd)
+		rEd<-as.integer(rEd)
+		gEd<-ifelse(gEd<0,0,gEd)
+		gEd<-ifelse(gEd>255,255,gEd)
+		gEd<-as.integer(gEd)
+		bEd<-ifelse(bEd<0,0,bEd)
+		bEd<-ifelse(bEd>255,255,bEd)
+		bEd<-as.integer(bEd)
+	}else{
+		rEd<-rep(rouge,ncolors)
+		gEd<-rep(verte,ncolors)
+		bEd<-rep(bleue,ncolors)
+	}
+	gradientColor<-paste('#',sprintf("%2.2x",rEd),sprintf("%2.2x",gEd),sprintf("%2.2x",bEd),sep='')
+	return(gradientColor)
+}
 

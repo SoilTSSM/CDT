@@ -100,7 +100,7 @@ tkconfigure(plotRedraw,relief='raised',command=function(){
 				#W<-tkwinfo('children',tab.data[[tabid]][[1]][[2]])
 				W<-tab.data[[tabid]][[2]]
 				img<-tab.data[[tabid]][[2]]
-				refreshPlot(W=W,img=img,hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
+				refreshPlot1(W=W,img=img,hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 			}
 			if(class(tab.data[[tabid]][[2]])=="list"){
 				W<-tab.data[[tabid]][[2]][[1]]

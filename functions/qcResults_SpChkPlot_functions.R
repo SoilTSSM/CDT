@@ -1,4 +1,4 @@
-plotSpatialCheck<-function(ijsp,dem,shpf,ZoomXYval,showval){
+plotSpatialCheck<-function(ijsp,dem,rfedat,shpf,ZoomXYval,showval){
 	if(gal.params$AllOrOne=='one'){
 		IJoutputdir<-ret.results$outputdir
 		IJstation<-ret.results$station
@@ -54,6 +54,11 @@ plotSpatialCheck<-function(ijsp,dem,shpf,ZoomXYval,showval){
 		dem.lon<-dem$lon
 		dem.lat<-dem$lat
 		dem.val<-dem$dem
+		
+		rfe.lon<-rfedat$x
+		rfe.lat<-rfedat$y
+		rfe.val<-rfedat$value
+
 		xlon1<-ZoomXYval[1]
 		xlon2<-ZoomXYval[2]
 		xlat1<-ZoomXYval[3]
@@ -91,6 +96,7 @@ plotSpatialCheck<-function(ijsp,dem,shpf,ZoomXYval,showval){
 		plot(1,xlim=c(xmin,xmax),ylim=c(ymin,ymax),xlab="",ylab="",type="n",xaxt = 'n',yaxt = 'n')
 
 		if(!is.null(dem)) image.plot(dem.lon,dem.lat,dem.val,col=gray(seq(0.9,0.1,length=64)),add=TRUE,legend.mar=5)
+		if(!is.null(rfedat)) image.plot(rfe.lon,rfe.lat,rfe.val,col=colorRampPalette(colors()[c(1:4,8:11)])(100),add=TRUE,legend.mar=5)
 		if(!is.null(shpf)) lines(ocrds)
 
 		points(lon[-ijStn],lat[-ijStn],pch=19,col='darkred',cex=0.5)
@@ -127,7 +133,7 @@ plotSpatialCheck<-function(ijsp,dem,shpf,ZoomXYval,showval){
 
 #################################################################################################
 
-DisplaySpatialCheck<-function(parent,ijsp,ZoomXYval,dem,shpf,showval,noteQcSpatCheck){
+DisplaySpatialCheck<-function(parent,ijsp,ZoomXYval,dem,rfedat,shpf,showval,noteQcSpatCheck){
 
 	############
 	if(gal.params$AllOrOne=='one'){
@@ -150,7 +156,7 @@ DisplaySpatialCheck<-function(parent,ijsp,ZoomXYval,dem,shpf,showval,noteQcSpatC
 	usrCoords4<-tclVar()
 	plotIt <- function(){
 		op<-par(bg='white')
-		pltusr <<-plotSpatialCheck(ijsp,dem,shpf,ZoomXYval,showval)
+		pltusr <<-plotSpatialCheck(ijsp,dem,rfedat,shpf,ZoomXYval,showval)
 		tclvalue(parPlotSize1)<<-pltusr$plt[1]
 		tclvalue(parPlotSize2)<<-pltusr$plt[2]
 		tclvalue(parPlotSize3)<<-pltusr$plt[3]
