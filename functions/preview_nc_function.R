@@ -28,11 +28,12 @@ preview.data.nc<-function(parent.win,openncf,title.pop){
 	var.dimids<-vector(mode='list',length=ncvar)
 	var.dim.info<-vector(mode='list',length=ncvar)
 	var.dim.val<-vector(mode='list',length=ncvar)
+
 	for(i in 1:ncvar){
 		vardim<-nc$var[[i]]$dim
 		ndim<-length(vardim)
-		dim.info<-data.frame(matrix(NA,ncol=3,nrow=ncdim)) #4
-		dim.val<-vector(mode='list',length=ncdim) #4
+		dim.info<-data.frame(matrix(NA,ncol=3,nrow=ncdim))
+		dim.val<-vector(mode='list',length=ncdim)
 		for(j in 1:ndim){
 			dim.info[j,1]<-vardim[[j]]$name
 			dim.info[j,2]<-vardim[[j]]$len
@@ -159,8 +160,8 @@ preview.data.nc<-function(parent.win,openncf,title.pop){
 			idy<-which(d.dim==as.character(tclvalue(Y.dim)))
 			lon<-var.dim.val[[ivar]][[idx]]
 			lat<-var.dim.val[[ivar]][[idy]]
+
 			d.units<-d.units[c(idx,idy)]
-			# dat<-get.var.ncdf(nc,varid=as.character(var.info[ivar,1]))
 			dat<-ncvar_get(nc,varid=as.character(var.info[ivar,1]))
 
 			#test if lat is increasing (bottomleft corner) or decreasing (topleft corner)
@@ -172,7 +173,6 @@ preview.data.nc<-function(parent.win,openncf,title.pop){
 			lon<-lon[xo]
 			yo<-order(lat)
 			lat<-lat[yo]
-			dat<-dat[xo,yo]
 		
 			if(idx==1){
 				dat<-dat[xo,yo]
@@ -201,14 +201,12 @@ preview.data.nc<-function(parent.win,openncf,title.pop){
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
-			# close.ncdf(nc)
 			nc_close(nc)
 		}else{
 			retval<<-NULL
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
-			# close.ncdf(nc)
 			nc_close(nc)
 		}
 	})
@@ -218,7 +216,6 @@ preview.data.nc<-function(parent.win,openncf,title.pop){
 		tkgrab.release(tt)
 		tkdestroy(tt)
 		tkfocus(parent.win)
-		# close.ncdf(nc)
 		nc_close(nc)
 	})
 

@@ -24,8 +24,8 @@ PlotMergingOutputCmd<-function(){
 
 	tknote.cmd<-bwNoteBook(cmd.frame)
 	plotBut.cmd<-tkframe(cmd.frame)
-	tkgrid(tknote.cmd,row=0,column=0,sticky='nswe',rowspan=1,columnspan=2)
-	tkgrid(plotBut.cmd,row=1,column=1,sticky='se',rowspan=1,columnspan=1)
+	tkgrid(tknote.cmd,row=0,column=0,sticky='nswe',rowspan=1,columnspan=3)
+	tkgrid(plotBut.cmd,row=1,column=1,sticky='we',rowspan=1,columnspan=3)
 
 	cmd.tab1 <- bwAddTab(tknote.cmd,text="General")
 	cmd.tab2 <- bwAddTab(tknote.cmd,text="NetCDF data")
@@ -156,43 +156,46 @@ PlotMergingOutputCmd<-function(){
 	#######################################################################################################
 
 	addNcdfFun<-function(nfr,contFrame){
-		frameNcdf<-ttklabelframe(contFrame,text=paste("NetCDF data file",nfr),relief='groove')
-
-		file.netcdf <- tclVar()
-		combNetcdf.tab2<-ttkcombobox(frameNcdf,values=unlist(file.list),textvariable=file.netcdf,width=largeur)
-		btNetcdf.tab2<-tkbutton(frameNcdf, text="...") 
-		tkconfigure(btNetcdf.tab2,command=function(){
-			nc.opfiles<-getOpenNetcdf(main.win,all.opfiles)
-			if(!is.null(nc.opfiles)){
-				nopf<-length(type.opfiles)
-				type.opfiles[[nopf+1]]<<-'netcdf'
-				file.opfiles[[nopf+1]]<<-nc.opfiles
-				file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]] 
-				tclvalue(file.netcdf)<-file.opfiles[[nopf+1]][[1]]
-				tkconfigure(combNetcdf.tab2,values=unlist(file.list), textvariable=file.netcdf)
-			}else return(NULL)
+		frameNcdf<-ttklabelframe(contFrame,text=paste("NetCDF data",nfr),relief='groove')
+		
+		dir_ncdf <-tclVar()
+		dir_ncdfLab.tab2<-tklabel(frameNcdf,text='Directory of NetCDF files',anchor='w',justify='left')
+		dir_ncdfEd.tab2<-tkentry(frameNcdf,textvariable=dir_ncdf,width=largeur)
+		dir_ncdfBt.tab2<-tkbutton(frameNcdf, text="...") 
+		tkconfigure(dir_ncdfBt.tab2,command=function(){
+			dir4ncdf<-tk_choose.dir(getwd(), "")
+			if(is.na(dir4ncdf)) tclvalue(dir_ncdf)<-""
+			else tclvalue(dir_ncdf)<-dir4ncdf
 		})
-		infobulle(combNetcdf.tab2,'Choose a NetCDF data in the list')
-		status.bar.display(combNetcdf.tab2,txt.stbr1,'Choose the file containing the NetCDF data')
-		infobulle(btNetcdf.tab2,'Browse file if not listed')
-		status.bar.display(btNetcdf.tab2,txt.stbr1,'Browse file if not listed')
+		infobulle(dir_ncdfEd.tab2,'Enter the full path to\ndirectory containing the NetCDF files')
+		status.bar.display(dir_ncdfEd.tab2,txt.stbr1,'Enter the full path to directory containing the NetCDF files')
+		infobulle(dir_ncdfBt.tab2,'Select directory here')
+		status.bar.display(dir_ncdfBt.tab2,txt.stbr1,'Select directory here')
+
+		ff_ncdf <-tclVar("rfe%s_%s_%s.nc")
+		ff_ncdfLab.tab2<-tklabel(frameNcdf,text='NetCDF filename format',anchor='w',justify='left')
+		ff_ncdfEd.tab2<-tkentry(frameNcdf,width=14,textvariable=ff_ncdf,justify = "left")
+		infobulle(ff_ncdfEd.tab2,'Enter the format of the NetCDF files names,\nexample: rfe1983_01_01.nc')
+		status.bar.display(ff_ncdfEd.tab2,txt.stbr1,'Enter the format of the NetCDF files names, example: rfe1983_01_01.nc')
+
+		title_ncdf<-tclVar(paste('NetCDF',nfr))	
+		ttl_ncdfLab.tab2<-tklabel(frameNcdf,text='Plot Title',anchor='w',justify='left')
+		ttl_ncdfEd.tab2<-tkentry(frameNcdf, width=14,textvariable=title_ncdf,justify = "left")
+		infobulle(ttl_ncdfEd.tab2,'Title of the plot')
+		status.bar.display(ttl_ncdfEd.tab2,txt.stbr1,'Title of the plot')
 
 		#######################
-		ncdf_name<-tclVar(paste('NetCDF',nfr))	
-		ncdfLab.tab2<-tklabel(frameNcdf,text='Title',anchor='e',justify='right')
-		ncdfEd.tab2<-tkentry(frameNcdf, width=14,textvariable=ncdf_name,justify = "left")
-		infobulle(ncdfEd.tab2,'Title of the panel')
-		status.bar.display(ncdfEd.tab2,txt.stbr1,'Title of the panel')
-
-		#######################
-		tkgrid(combNetcdf.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=2,ipadx=1,ipady=1)
-		tkgrid(btNetcdf.tab2,row=0,column=5,sticky='e',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
-		tkgrid(ncdfLab.tab2,row=1,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
-		tkgrid(ncdfEd.tab2,row=1,column=1,sticky='we',rowspan=1,columnspan=4,padx=1,pady=2,ipadx=1,ipady=1)
+		tkgrid(dir_ncdfLab.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=6,padx=1,pady=1,ipadx=1,ipady=1)
+		tkgrid(dir_ncdfEd.tab2,row=1,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=1,ipadx=1,ipady=1)
+		tkgrid(dir_ncdfBt.tab2,row=1,column=5,sticky='e',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+		tkgrid(ff_ncdfLab.tab2,row=2,column=0,sticky='we',rowspan=1,columnspan=6,padx=1,pady=1,ipadx=1,ipady=1)
+		tkgrid(ff_ncdfEd.tab2,row=3,column=1,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
+		tkgrid(ttl_ncdfLab.tab2,row=4,column=0,sticky='we',rowspan=1,columnspan=6,padx=1,pady=1,ipadx=1,ipady=1)
+		tkgrid(ttl_ncdfEd.tab2,row=5,column=1,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
 
 		######
 		tkgrid(frameNcdf,row=nfr,column=0,sticky='we')
-		return(list(list(frameNcdf,combNetcdf.tab2),file.netcdf,ncdf_name))
+		return(list(dir_ncdf,ff_ncdf,title_ncdf))
 	}
 	
 	#######################################################################################################
@@ -211,7 +214,6 @@ PlotMergingOutputCmd<-function(){
 	jCDF<-2
 	tkconfigure(addNcdfData.tab2,command=function(){
 		dataNCDF[[jCDF]]<<-addNcdfFun(jCDF,subfr2)
-		for(jj in jCDF:1) tkconfigure(dataNCDF[[jj]][[1]][[2]],values=unlist(file.list))
 		jCDF<<-jCDF+1
 	})
 	
@@ -337,7 +339,7 @@ PlotMergingOutputCmd<-function(){
 			donne<-getCDTdata1Date(donne,tclvalue(idate_yrs),tclvalue(idate_mon),tclvalue(idate_day))
 			donne<-donne$z
 			for(j in 1:(jCDF-1)){
-				ncdat<-getNcdfOpenData(dataNCDF[[j]][[2]])[[2]]
+				ncdat<-getNcdfData2Plot(dataNCDF[[j]],tclvalue(file.period),tclvalue(idate_yrs),tclvalue(idate_mon),tclvalue(idate_day))
 				donne<-c(donne,ncdat$value)
 			}
 			
@@ -350,12 +352,19 @@ PlotMergingOutputCmd<-function(){
 	
 	#######################################################################################################
 
+
+	plot_prev<-tkbutton(plotBut.cmd, text="<<-Prev")
+	plotDataBut<-tkbutton(plotBut.cmd, text="Plot Data")
+	plot_next<-tkbutton(plotBut.cmd, text="Next->>")
+
+	tkgrid(plot_prev,row=0,column=0,sticky='w',padx=5,pady=5)
+	tkgrid(plotDataBut,row=0,column=1,sticky='we',padx=5,pady=5)
+	tkgrid(plot_next,row=0,column=2,sticky='e',padx=5,pady=5)
+
+	#################	
 	notebookTab<-NULL
 	#######
 
-	plotDataBut<-tkbutton(plotBut.cmd, text="Plot Data")
-	tkgrid(plotDataBut,row=0,column=0,sticky='e',padx=5,pady=5)
-	
 	tkconfigure(plotDataBut,command=function(){
 		if(tclvalue(custom.color)=='0' | length(listCol)==0){
 			n<-as.numeric(tclvalue(nb.color))
@@ -372,7 +381,7 @@ PlotMergingOutputCmd<-function(){
 		allDATA[[1]]<-list(list(x=donne$lon,y=donne$lat,value=donne$z),tclvalue(obs_name),tclvalue(file.stnfl),donne$date,donne$id)
 
 		for(j in 1:(jCDF-1)){
-			ncdat<-getNcdfOpenData(dataNCDF[[j]][[2]])[[2]]
+			ncdat<-getNcdfData2Plot(dataNCDF[[j]],tclvalue(file.period),tclvalue(idate_yrs),tclvalue(idate_mon),tclvalue(idate_day))
 			allDATA[[j+1]]<-list(ncdat,tclvalue(dataNCDF[[j]][[3]]))
 		}
 
@@ -390,6 +399,126 @@ PlotMergingOutputCmd<-function(){
 			tab.data<<-retNBTab$tab.data
 		}
 	})	
+
+	######
+	tkconfigure(plot_prev,command=function(){
+		if(tclvalue(file.period)=='Daily data') todaty<-paste(as.numeric(tclvalue(idate_yrs)),as.numeric(tclvalue(idate_mon)),as.numeric(tclvalue(idate_day)),sep='-')
+		if(tclvalue(file.period)=='Monthly data') todaty<-paste(as.numeric(tclvalue(idate_yrs)),as.numeric(tclvalue(idate_mon)),15,sep='-')
+		if(tclvalue(file.period)=='Dekadal data'){
+			dek<-as.numeric(tclvalue(idate_day))
+			if(is.na(dek) | dek<1 | dek>3){
+				insert.txt(main.txt.out,"Dekad must be 1, 2 or 3",format=TRUE)
+				return(NULL)
+			}
+			todaty<-paste(as.numeric(tclvalue(idate_yrs)),as.numeric(tclvalue(idate_mon)),dek,sep='-')
+		}
+		daty<-try(as.Date(todaty),silent=TRUE)
+		if(inherits(daty, "try-error") | is.na(daty)){
+			insert.txt(main.txt.out,paste("Date invalid",todaty),format=TRUE)
+			return(NULL)
+		}
+		if(tclvalue(file.period)=='Daily data') daty <- daty-1
+		if(tclvalue(file.period)=='Dekadal data') daty<-addDekads(daty,-1)
+		if(tclvalue(file.period)=='Monthly data') daty<-addMonths(daty,-1)
+		daty<-format(daty,'%Y%m%d')
+		tclvalue(idate_yrs) <- as.numeric(substr(daty,1,4))
+		tclvalue(idate_mon) <- as.numeric(substr(daty,5,6))
+		tclvalue(idate_day) <- as.numeric(substr(daty,7,8))
+
+		#####
+		if(tclvalue(custom.color)=='0' | length(listCol)==0){
+			n<-as.numeric(tclvalue(nb.color))
+			if(is.na(n)) n<-10
+			colFun<-match.fun(tclvalue(preset.color))
+			listCol<-colFun(n)
+			if(tclvalue(reverse.color)=='1') listCol<-rev(listCol)
+		}
+		
+		allDATA<-list()
+
+		donne<-getCDTdata(file.stnfl,file.period)
+		donne<-getCDTdata1Date(donne,tclvalue(idate_yrs),tclvalue(idate_mon),tclvalue(idate_day))
+		allDATA[[1]]<-list(list(x=donne$lon,y=donne$lat,value=donne$z),tclvalue(obs_name),tclvalue(file.stnfl),donne$date,donne$id)
+
+		for(j in 1:(jCDF-1)){
+			ncdat<-getNcdfData2Plot(dataNCDF[[j]],tclvalue(file.period),tclvalue(idate_yrs),tclvalue(idate_mon),tclvalue(idate_day))
+			allDATA[[j+1]]<-list(ncdat,tclvalue(dataNCDF[[j]][[3]]))
+		}
+
+		if(tclvalue(custom.level)=='0' | length(atLev)==0){
+			datt<-unlist(lapply(allDATA,function(x) x[[1]]$value))
+			if(!is.null(datt)) atLev<-pretty(datt)
+		}
+		shpf<-getShpOpenData(file.plotShp)[[2]]
+		
+		imgContainer<-displayPlotMerging(tknotes,notebookTab,allDATA,atLev,listCol,shpf,tclvalue(unit_sym))
+		if(!is.null(imgContainer)){
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,tab.type,tab.data)
+			notebookTab<<-retNBTab$notebookTab
+			tab.type<<-retNBTab$tab.type
+			tab.data<<-retNBTab$tab.data
+		}
+	})
+
+	######
+	tkconfigure(plot_next,command=function(){
+		if(tclvalue(file.period)=='Daily data') todaty<-paste(as.numeric(tclvalue(idate_yrs)),as.numeric(tclvalue(idate_mon)),as.numeric(tclvalue(idate_day)),sep='-')
+		if(tclvalue(file.period)=='Monthly data') todaty<-paste(as.numeric(tclvalue(idate_yrs)),as.numeric(tclvalue(idate_mon)),15,sep='-')
+		if(tclvalue(file.period)=='Dekadal data'){
+			dek<-as.numeric(tclvalue(idate_day))
+			if(is.na(dek) | dek<1 | dek>3){
+				insert.txt(main.txt.out,"Dekad must be 1, 2 or 3",format=TRUE)
+				return(NULL)
+			}
+			todaty<-paste(as.numeric(tclvalue(idate_yrs)),as.numeric(tclvalue(idate_mon)),dek,sep='-')
+		}
+		daty<-try(as.Date(todaty),silent=TRUE)
+		if(inherits(daty, "try-error") | is.na(daty)){
+			insert.txt(main.txt.out,paste("Date invalid",todaty),format=TRUE)
+			return(NULL)
+		}
+		if(tclvalue(file.period)=='Daily data') daty <- daty+1
+		if(tclvalue(file.period)=='Dekadal data') daty<-addDekads(daty,1)
+		if(tclvalue(file.period)=='Monthly data') daty<-addMonths(daty,1)
+		daty<-format(daty,'%Y%m%d')
+		tclvalue(idate_yrs) <- as.numeric(substr(daty,1,4))
+		tclvalue(idate_mon) <- as.numeric(substr(daty,5,6))
+		tclvalue(idate_day) <- as.numeric(substr(daty,7,8))
+
+		#####
+		if(tclvalue(custom.color)=='0' | length(listCol)==0){
+			n<-as.numeric(tclvalue(nb.color))
+			if(is.na(n)) n<-10
+			colFun<-match.fun(tclvalue(preset.color))
+			listCol<-colFun(n)
+			if(tclvalue(reverse.color)=='1') listCol<-rev(listCol)
+		}
+		
+		allDATA<-list()
+
+		donne<-getCDTdata(file.stnfl,file.period)
+		donne<-getCDTdata1Date(donne,tclvalue(idate_yrs),tclvalue(idate_mon),tclvalue(idate_day))
+		allDATA[[1]]<-list(list(x=donne$lon,y=donne$lat,value=donne$z),tclvalue(obs_name),tclvalue(file.stnfl),donne$date,donne$id)
+
+		for(j in 1:(jCDF-1)){
+			ncdat<-getNcdfData2Plot(dataNCDF[[j]],tclvalue(file.period),tclvalue(idate_yrs),tclvalue(idate_mon),tclvalue(idate_day))
+			allDATA[[j+1]]<-list(ncdat,tclvalue(dataNCDF[[j]][[3]]))
+		}
+
+		if(tclvalue(custom.level)=='0' | length(atLev)==0){
+			datt<-unlist(lapply(allDATA,function(x) x[[1]]$value))
+			if(!is.null(datt)) atLev<-pretty(datt)
+		}
+		shpf<-getShpOpenData(file.plotShp)[[2]]
+		
+		imgContainer<-displayPlotMerging(tknotes,notebookTab,allDATA,atLev,listCol,shpf,tclvalue(unit_sym))
+		if(!is.null(imgContainer)){
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,tab.type,tab.data)
+			notebookTab<<-retNBTab$notebookTab
+			tab.type<<-retNBTab$tab.type
+			tab.data<<-retNBTab$tab.data
+		}
+	})
 
 	#######################################################################################################
 

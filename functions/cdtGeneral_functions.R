@@ -290,6 +290,27 @@ cycleMonth<-function(start,n){
 	return(mois[im])
 }
 
+###############################################################################
+## Add or substract months
+
+addMonths<-function(daty,n=1){
+	date0<-seq(daty, by=paste(n, "months"), length=2)[2]
+	date1<-seq(as.Date(paste(format(daty,'%Y-%m'),'01',sep='-')), by=paste(n+1, "months"), length=2)[2]-1
+	daty<-if(date0>date1) date1 else date0
+	return(daty)
+}
+
+###############################################################################
+## Add or substract dekads
+
+addDekads<-function(daty,n=1){
+	idek<-as.numeric(substr(format(daty,'%Y%m%d'),8,8))+n
+	dek<-idek%%3
+	if(dek==0) dek<-3
+	daty<-format(addMonths(daty,floor((idek-1)/3)),'%Y-%m')
+	daty<-as.Date(paste(daty,dek,sep='-'))
+	return(daty)
+}
 
 ###############################################################################
 #File or directory to save result
@@ -367,7 +388,7 @@ getCDTdata<-function(file.stnfl,file.period){
 	if(is.null(donne)) return(NULL)
 	if(tclvalue(file.period)=='Daily data') freqData<-'daily'
 	if(tclvalue(file.period)=='Dekadal data') freqData<-'dekadal'
-	if(tclvalue(file.period)=='Monthly data')	freqData<-'monthly'
+	if(tclvalue(file.period)=='Monthly data') freqData<-'monthly'
 	donne<-splitCDTData(donne,freqData)
 	if(is.null(donne)) return(NULL)
 	lon<-donne$lon
@@ -441,6 +462,42 @@ getNcdfOpenData<-function(file.netcdf){
 	return(nc)
 }
 
+#################################################################################
+## get NetCDF data plot merging outputs menu
+
+getNcdfData2Plot<-function(dataNCDF,freqData,yrs,mon,day,ncOrder=c(1,2)){
+	ilon<-ncOrder[1]
+	ilat<-ncOrder[2]
+	if(freqData=='Monthly data') daty<-try(format(as.Date(paste(as.numeric(yrs),as.numeric(mon),15,sep='-')),'%Y%m%d'),silent=TRUE)
+	else daty<-try(format(as.Date(paste(as.numeric(yrs),as.numeric(mon),as.numeric(day),sep='-')),'%Y%m%d'),silent=TRUE)
+	if(inherits(daty, "try-error") | is.na(daty)){
+		insert.txt(main.txt.out,paste("Date format invalid",tclvalue(dataNCDF[[2]])),format=TRUE)
+		return(NULL)
+	}
+
+	if(freqData=='Daily data') filelpath<-file.path(tclvalue(dataNCDF[[1]]),sprintf(tclvalue(dataNCDF[[2]]),substr(daty,1,4),substr(daty,5,6),substr(daty,7,8)))
+	if(freqData=='Dekadal data') filelpath<-file.path(tclvalue(dataNCDF[[1]]),sprintf(tclvalue(dataNCDF[[2]]),substr(daty,1,4),substr(daty,5,6),substr(daty,8,8)))
+	if(freqData=='Monthly data') filelpath<-file.path(tclvalue(dataNCDF[[1]]),sprintf(tclvalue(dataNCDF[[2]]),substr(daty,1,4),substr(daty,5,6)))
+	if(!file.exists(filelpath)){
+		insert.txt(main.txt.out,paste(filelpath,"doesn't exist"),format=TRUE)
+		return(NULL)
+	}
+
+	nc <- nc_open(filelpath)
+	lon <- nc$dim[[ilon]]$vals
+	lat <- nc$dim[[ilat]]$vals
+	val <- ncvar_get(nc,varid=nc$var[[1]]$name)
+	nc_close(nc)
+	# xo<-order(lon)
+	# lon<-rfe.lon[xo]
+	# yo<-order(lat)
+	# lat<-lat[yo]
+	# val<-val[xo,yo]
+	# if(ilat==1){
+	# 	val<-matrix(c(val),nrow=length(lon),ncol=length(lat),byrow=T)
+	# }
+	return(list(x=lon,y=lat,value=val))
+}
 
 #################################################################################
 ##get DEM at stations locations (interpolation leftCmd)
