@@ -65,10 +65,6 @@ plotSpatialCheck<-function(ijsp,dem,rfedat,shpf,ZoomXYval,showval){
 		xlat2<-ZoomXYval[4]
 
 		outex<-0.1
-#		xmin<-if(!is.na(xlon1) | is.null(xlon1) | is.infinite(xlon1)) xlon1 else min(lon)-outex
-#		xmax<-if(!is.na(xlon2) | is.null(xlon2) | is.infinite(xlon2)) xlon2 else max(lon)+outex
-#		ymin<-if(!is.na(xlat1) | is.null(xlat1) | is.infinite(xlat1)) xlat1 else min(lat)-outex
-#		ymax<-if(!is.na(xlat2) | is.null(xlat2) | is.infinite(xlat2)) xlat2 else max(lat)+outex
 
 		if(!is.na(xlon1) | is.null(xlon1) | is.infinite(xlon1)) xmin<-xlon1
 		else{
@@ -104,7 +100,6 @@ plotSpatialCheck<-function(ijsp,dem,rfedat,shpf,ZoomXYval,showval){
 		points(lon[ijStn],lat[ijStn],pch=20,col='red',cex=0.5)
 		abline(h = axTicks(2), v =axTicks(1) , col = "lightgray",lty=3)
 		if(showval){
-#if(length(valm[ijStn])==0)
 			if(gal.params$action=='qc.temp'){
 				text(lon[ijStn],lat[ijStn],labels=valm[ijStn],pos=1,cex=0.6,col='red')
 				text(lon[ijStn],lat[ijStn],labels=outlv1[ijsp],pos=3,cex=0.6,col='green2')

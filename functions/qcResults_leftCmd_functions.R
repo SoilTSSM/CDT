@@ -107,64 +107,7 @@ QcCmdBut<-function(stateReplaceAll){
 	cbRFE.tab2 <- tkcheckbutton(subfr2,text="Add satellite data to map",variable=cbValrfe,anchor='w',justify='left')
 
 	################################
-	# frameShpDEM<-ttklabelframe(subfr2,text="Add Boundary-DEM-RFE",relief='groove')
 
-	# file.plotShp <- tclVar()
-	# file.plotDem<-tclVar()
-
-	# labSHP.tab2<-tklabel(frameShpDEM,text="Shapefiles for boundary",anchor='w',justify='right')
-	# combShp.tab2<-ttkcombobox(frameShpDEM, values=unlist(file.list), textvariable=file.plotShp,width=wttkcombo)
-	# btShp.tab2<-tkbutton(frameShpDEM, text="...")
-	# tkconfigure(btShp.tab2,command=function(){
-	# 	shp.opfiles<-getOpenShp(main.win,all.opfiles)
-	# 	if(!is.null(shp.opfiles)){
-	# 		nopf<-length(type.opfiles)
-	# 		type.opfiles[[nopf+1]]<<-'shp'
-	# 		file.opfiles[[nopf+1]]<<-shp.opfiles
-	# 		file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-	# 		tclvalue(file.plotShp)<-file.opfiles[[nopf+1]][[1]]
-	# 		tkconfigure(combDem.tab2,values=unlist(file.list), textvariable=file.plotDem)
-	# 		tkconfigure(combShp.tab2,values=unlist(file.list), textvariable=file.plotShp)
-	# 	}
-	# })
-
-	# labDEM.tab2<-tklabel(frameShpDEM,text="Elevation Data (NetCDF)",anchor='w',justify='right')
-	# combDem.tab2<-ttkcombobox(frameShpDEM, values=unlist(file.list), textvariable=file.plotDem,width=wttkcombo)
-	# btDem.tab2<-tkbutton(frameShpDEM, text="...")
-	# tkconfigure(btDem.tab2,command=function(){
-	# 	nc.opfiles<-getOpenNetcdf(main.win,all.opfiles)
-	# 	if(!is.null(nc.opfiles)){
-	# 		nopf<-length(type.opfiles)
-	# 		type.opfiles[[nopf+1]]<<-'netcdf'
-	# 		file.opfiles[[nopf+1]]<<-nc.opfiles
-	# 		file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-	# 		tclvalue(file.plotDem)<-file.opfiles[[nopf+1]][[1]]
-	# 		tkconfigure(combDem.tab2,values=unlist(file.list), textvariable=file.plotDem)
-	# 		tkconfigure(combShp.tab2,values=unlist(file.list), textvariable=file.plotShp)
-	# 	}
-	# })
-
-	# dir_ncdf <-tclVar()
-	# dir_ncdfLab.tab2<-tklabel(frameShpDEM,text='Directory of RFE files',anchor='w',justify='left')
-	# dir_ncdfEd.tab2<-tkentry(frameShpDEM,textvariable=dir_ncdf,width=wttkcombo)
-	# dir_ncdfBt.tab2<-tkbutton(frameShpDEM, text="...") 
-	# tkconfigure(dir_ncdfBt.tab2,command=function(){
-	# 	dir4ncdf<-tk_choose.dir(getwd(), "")
-	# 	if(is.na(dir4ncdf)) tclvalue(dir_ncdf)<-""
-	# 	else tclvalue(dir_ncdf)<-dir4ncdf
-	# })
-	# infobulle(dir_ncdfEd.tab2,'Enter the full path to\ndirectory containing the RFE files')
-	# status.bar.display(dir_ncdfEd.tab2,txt.stbr1,'Enter the full path to directory containing the RFE files')
-	# infobulle(dir_ncdfBt.tab2,'Select directory here')
-	# status.bar.display(dir_ncdfBt.tab2,txt.stbr1,'Select directory here')
-
-	# ff_ncdf <-tclVar("rfe%s_%s_%s.nc")
-	# ff_ncdfLab.tab2<-tklabel(frameShpDEM,text='RFE filename format',anchor='w',justify='left')
-	# ff_ncdfEd.tab2<-tkentry(frameShpDEM,width=14,textvariable=ff_ncdf,justify = "left")
-	# infobulle(ff_ncdfEd.tab2,'Enter the format of the RFE files names,\nexample: rfe1983_01_01.nc')
-	# status.bar.display(ff_ncdfEd.tab2,txt.stbr1,'Enter the format of the RFE files names, example: rfe1983_01_01.nc')
-
-	########
 	tkgrid(labplotOutl.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(btOutlPrev.tab2,row=1,column=0,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(combOutlmonth.tab2,row=1,column=1,sticky='we',rowspan=1,columnspan=6,padx=1,pady=1,ipadx=1,ipady=1)
@@ -181,23 +124,6 @@ QcCmdBut<-function(stateReplaceAll){
 	tkgrid(cbSHP.tab2,row=7,column=0,sticky='we',rowspan=1,columnspan=8,pady=2)
 	tkgrid(cbDEM.tab2,row=8,column=0,sticky='we',rowspan=1,columnspan=8,pady=2)
 	tkgrid(cbRFE.tab2,row=9,column=0,sticky='we',rowspan=1,columnspan=8,pady=2)
-
-	################################
-	# tkgrid(frameShpDEM,row=5,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
-
-	# tkgrid(labSHP.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
-	# tkgrid(combShp.tab2,row=1,column=0,sticky='we',rowspan=1,columnspan=7,padx=1,pady=1,ipadx=1,ipady=1)
-	# tkgrid(btShp.tab2,row=1,column=7,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
-
-	# tkgrid(labDEM.tab2,row=2,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
-	# tkgrid(combDem.tab2,row=3,column=0,sticky='we',rowspan=1,columnspan=7,padx=1,pady=1,ipadx=1,ipady=1)
-	# tkgrid(btDem.tab2,row=3,column=7,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
-
-	# tkgrid(dir_ncdfLab.tab2,row=4,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
-	# tkgrid(dir_ncdfEd.tab2,row=5,column=0,sticky='we',rowspan=1,columnspan=7,padx=1,pady=1,ipadx=1,ipady=1)
-	# tkgrid(dir_ncdfBt.tab2,row=5,column=7,sticky='w',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
-	# tkgrid(ff_ncdfLab.tab2,row=6,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
-	# tkgrid(ff_ncdfEd.tab2,row=7,column=1,sticky='we',rowspan=1,columnspan=7,padx=1,pady=1,ipadx=1,ipady=1)
 
 	#######################################################################################################
 
