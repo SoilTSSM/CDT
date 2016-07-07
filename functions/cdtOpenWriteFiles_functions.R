@@ -40,7 +40,7 @@ openFiles<-function(parent.win,parent,fileopen){
 			is.rdble <- !inherits(try(dat.file <- readFun(fileopen,header=delimter$header,sep=delimter$sepr,skip=delimter$skip-1,
 			na.strings=delimter$miss.val,quote="\"'",strip.white=TRUE,stringsAsFactors=FALSE,colClasses = "character",comment.char = ""), silent=TRUE), "try-error")
 			if(!is.rdble){
-				insert.txt(main.txt.out,paste("Unable to read file ",fileopen),format=TRUE)
+				InsertMessagesTxt(main.txt.out,paste("Unable to read file ",fileopen),format=TRUE)
 				return(NULL)
 			}else{
 				tkinsert(parent,"end",title.tab)
@@ -57,8 +57,8 @@ openFiles<-function(parent.win,parent,fileopen){
 getOpenFiles<-function(parent.win,parent){
 	fileopen<-tclvalue(tkgetOpenFile(initialdir=getwd(),initialfile = "",filetypes="{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}"))
 	if(fileopen=="") return(NULL)
-	if(length(file.opfiles)!=0){
-		existff<-unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]]))
+	if(length(AllOpenFilesData)!=0){
+		existff<-unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]]))
 		if(basename(fileopen)%in%existff){
 			tkmessageBox(message="File already exists",icon="warning",type="ok")
 			return(NULL)
@@ -80,8 +80,8 @@ getOpenFiles<-function(parent.win,parent){
 getOpenNetcdf<-function(parent.win,parent){
 	fileopen<-tclvalue(tkgetOpenFile(initialdir=getwd(),initialfile = "",filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
 	if(fileopen=="" | is.na(fileopen)) return(NULL)
-	if(length(file.opfiles)!=0){
-		existff<-unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]]))
+	if(length(AllOpenFilesData)!=0){
+		existff<-unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]]))
 		if(basename(fileopen)%in%existff){
 			tkmessageBox(message="File already exists",icon="warning",type="ok")
 			return(NULL)
@@ -112,8 +112,8 @@ getOpenShp<-function(parent.win,parent){
 	#parent.win don't use yet
 	fileopen<-tclvalue(tkgetOpenFile(initialdir=getwd(),initialfile = "",filetypes="{{ESRI Shapefile} {.shp}} {{All files} *}"))
 	if(fileopen=="") return(NULL)
-	if(length(file.opfiles)!=0){
-		existff<-unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]]))
+	if(length(AllOpenFilesData)!=0){
+		existff<-unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]]))
 		if(basename(fileopen)%in%existff){
 			tkmessageBox(message="File already exists",icon="warning",type="ok")
 			return(NULL)
@@ -121,7 +121,7 @@ getOpenShp<-function(parent.win,parent){
 			title.tab<-basename(fileopen)
 			is.rdble <- !inherits(try(shp.opfiles<-readShapePoly(fileopen), silent=TRUE), "try-error")
 			if(!is.rdble){
-				insert.txt(main.txt.out,paste("Unable to read file ",fileopen),format=TRUE)
+				InsertMessagesTxt(main.txt.out,paste("Unable to read file ",fileopen),format=TRUE)
 				return(NULL)
 			}else{
 				tkinsert(parent,"end",title.tab)
@@ -132,7 +132,7 @@ getOpenShp<-function(parent.win,parent){
 		title.tab<-basename(fileopen)
 		is.rdble <- !inherits(try(shp.opfiles<-readShapePoly(fileopen), silent=TRUE), "try-error")
 		if(!is.rdble){
-			insert.txt(main.txt.out,paste("Unable to read file ",fileopen),format=TRUE)
+			InsertMessagesTxt(main.txt.out,paste("Unable to read file ",fileopen),format=TRUE)
 			return(NULL)
 		}else{
 			tkinsert(parent,"end",title.tab)

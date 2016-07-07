@@ -12,7 +12,7 @@ Station<-paste('BaseSeries_',station,sep='')
   if(Ny4a>0&Ny4a<=5) Ny4a<-5
   Ncat.min<-20
   if(!p.lev%in%c(0.75,0.8,0.9,0.95,0.99,0.9999)){
-		insert.txt(main.txt.out,paste("FindU.dlyPrcp: input p.lev",p.lev,"error"),format=TRUE)
+		InsertMessagesTxt(main.txt.out,paste("FindU.dlyPrcp: input p.lev",p.lev,"error"),format=TRUE)
 #      ErrorMSG<<-paste("FindU.dlyPrcp: input p.lev",p.lev,"error\n",
 #                 get("ErrorMSG",env=.GlobalEnv),"\n")
 #      if(!GUI) cat(ErrorMSG)
@@ -23,7 +23,7 @@ Station<-paste('BaseSeries_',station,sep='')
   assign("Nmin",Nmin,envir=.GlobalEnv)
   itmp<-ReadDLY(InSeries,MissingValueCode,pthr)
   if(itmp==(-1)){
-	insert.txt(main.txt.out,paste("FindUD.dlyprcp: Error in read data from",station),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("FindUD.dlyprcp: Error in read data from",station),format=TRUE)
 #    ErrorMSG<<-paste("FindUD.dlyprcp: Error in read data from",Station,"\n",
 #               get("ErrorMSG",env=.GlobalEnv),"\n")
 #    if(!GUI) cat(ErrorMSG)   #
@@ -55,7 +55,7 @@ Station<-paste('BaseSeries_',station,sep='')
     if(sum(is.na(Ips.ini))>0|!identical(Ips.ini,sort(Ips.ini))){
 #      ErrorMSG<<-paste("FindUD.dlyprcp: Ips read in from ",basename(InCs),"error:")
       for(i in 1:Ns.ini)
-		insert.txt(main.txt.out,paste("FindUD.dlyprcp: Ips read in from ",basename(InCs),"error:",Ips[i]),format=TRUE)
+		InsertMessagesTxt(main.txt.out,paste("FindUD.dlyprcp: Ips read in from ",basename(InCs),"error:",Ips[i]),format=TRUE)
 #        ErrorMSG<<-paste(get("ErrorMSG",env=.GlobalEnv),Ips[i])
 #      ErrorMSG<<-paste(get("ErrorMSG",env=.GlobalEnv),"\n\n")
       if(!GUI) cat(ErrorMSG)   #
@@ -675,7 +675,7 @@ Station<-paste('BaseSeries_',station,sep='')
   if(Ns==0) {
     cat(paste(Ns,"changepoints in Series", Station,"\n"),file=ofileIout)
     #cat("PMF finds no Type-1 changepoints in the series!\n")
-    insert.txt(main.txt.out,paste("PMF finds no Type-1 changepoints in the series",station))
+    InsertMessagesTxt(main.txt.out,paste("PMF finds no Type-1 changepoints in the series",station))
   }
   else{
     cat(paste(Ns,"changepoints in Series", Station,"\n"),
@@ -770,7 +770,7 @@ Station<-paste('BaseSeries_',station,sep='')
   else{
     file.copy(from=ofileIout,to=ofileMout,overwrite=TRUE)
     #cat("FindUD.dlyprcp finished successfully...\n")
-    insert.txt(main.txt.out,paste("FindUD.dlyprcp finished successfully for",station))
+    InsertMessagesTxt(main.txt.out,paste("FindUD.dlyprcp finished successfully for",station))
     return(0)
   }
 }

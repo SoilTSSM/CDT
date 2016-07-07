@@ -1,25 +1,8 @@
 
-##########List exchange (dialog qc,hom,merging)
-
-listExchange<-function(list1,list2,list3){
-	#retList<-list2[sapply(1:length(list2), function(x) !identical(list2[[x]], list1[[x]]))]  	#index list
-	retList<-list2[sapply(names(list2), function(x) !identical(list2[[x]], list1[[x]]))]        #named list
-	if(length(retList)>0){
-		#id<-which(!list2%in%list1) #index list
-		id<-names(retList)    #named list
-		for(i in id){
-			diffElement<-list2[[i]]!=list1[[i]]
-			list3[[i]][diffElement]<-list2[[i]][diffElement]
-		}
-	}
-	return(list3)
-}
-
 ###############################
 #initialize parameters
 
 init.params<-function(action,period){
-
 	#homogenization CDT
 	if(action=='homog'){
 		hom.opts<-data.frame(c("crop.bounds","h","conf.lev","Kmax","min.int"),c("0","0.025","95.0","10","24"))
@@ -66,7 +49,8 @@ init.params<-function(action,period){
 		ref.series.choix=ref.series.choix,use.ref.series=use.ref.series,
 		ref.series.user=ref.series.user,stn.user.choice=stn.user.choice,getdata=FALSE)
 	}
-##########
+	
+	##########
 	#qc.txtn
 	if(action=='qc.temp'){
 		test.tx<-'1'
@@ -86,7 +70,7 @@ init.params<-function(action,period){
 		file.date.format=file.date.format,parameter=parameter,AllOrOne=AllOrOne,retpar=0)
 	}
 
-############
+	############
 	#qc.rainfall
 	##Zeros check
 	if(action=='zero.check'){
@@ -118,9 +102,8 @@ init.params<-function(action,period){
 		file.date.format=file.date.format,parameter=parameter,AllOrOne=AllOrOne,retpar=0)
 	}
 
-
-#########################################################################
-###Mean bias rainfall
+	#########################################################################
+	###Mean bias rainfall
 	if(action=='coefbias.rain'){
 		file.io<-data.frame(c('stn.file','DEM.file','RFE.file','RFE.dir','dir2save'),c('','','','',getwd()))
 		names(file.io)<-c('Parameters','Values')
@@ -137,8 +120,7 @@ init.params<-function(action,period){
 		CreateGrd=CreateGrd,params.int=params.int,new.grid=new.grid)
 	}
 
-###Remove bias
-
+	###Remove bias
 	if(action=='rmbias.rain'){
 		file.io<-data.frame(c('RFE.file','RFE.dir','Bias.dir','dir2save'),
 		c('','','',getwd()))
@@ -153,7 +135,7 @@ init.params<-function(action,period){
 		ret.params<-list(action=action,period=period,file.io=file.io,prefix=prefix,dates.adj=dates.adj)
 	}
 
-###Merging rainfall
+	###Merging rainfall
 	if(action=='merge.rain'){
 		file.io<-data.frame(c('stn.file','DEM.file','RFE.file','RFE.dir','dir2save','shp.file','DEM.file'), c('','','','',getwd(),'',''))
 		names(file.io)<-c('Parameters','Values')
@@ -173,7 +155,7 @@ init.params<-function(action,period){
 		ret.params<-list(action=action,period=period,file.io=file.io,prefix=prefix,dates.mrg=dates.mrg,
 		NewGrd=NewGrd,CreateGrd=CreateGrd,blankGrd=blankGrd,params.int=params.int, new.grid=new.grid,params.mrg=params.mrg)
 	}
-####dekadal update
+	####dekadal update
 
 	if(action=='merge.dekrain'){
 		file.io<-data.frame(c('stn.file','RFE.dir','Bias.dir','dir2save','DEM.file','shp.file'), c('','','',getwd(),'',''))
@@ -191,8 +173,8 @@ init.params<-function(action,period){
 		blankGrd=blankGrd,params.int=params.int,params.mrg=params.mrg)
 	}
 
-#################################################################
-##compute regression parameters for downscaling
+	#################################################################
+	##compute regression parameters for downscaling
 	if(action=='coefdown.temp'){
 		file.io<-data.frame(c('stn.file','DEM.file','dir2save'), c('','',getwd()))
 		names(file.io)<-c('Parameters','Values')
@@ -201,7 +183,7 @@ init.params<-function(action,period){
 		ret.params<-list(action=action,period=period,file.io=file.io,dates.coef=dates.coef)
 	}
 
-######downscaling
+	######downscaling
 	if(action=='down.temp'){
 		file.io<-data.frame(c('stn.file','DEM.file','sampleReanalysis.file','dirReanalysis','dir2save'), c('','','','',getwd()))
 		names(file.io)<-c('Parameters','Values')
@@ -218,8 +200,7 @@ init.params<-function(action,period){
 		CreateGrd=CreateGrd,new.grid=new.grid,dates.down=dates.down,params.int=params.int)
 	}
 
-##Bias coeff
-
+	##Bias coeff
 	if(action=='coefbias.temp'){
 		file.io<-data.frame(c('stn.file','DEM.file','dirDown','dir2save'), c('','','',getwd()))
 		names(file.io)<-c('Parameters','Values')
@@ -234,8 +215,7 @@ init.params<-function(action,period){
 		dates.coef=dates.coef,bias.method=bias.method,prefix=prefix)
 	}
 
-##Adjustment
-
+	##Adjustment
 	if(action=='adjust.temp'){
 		file.io<-data.frame(c('stn.file','DEM.file','Down.dir','Bias.dir','dir2save'), c('','','','',getwd()))
 		names(file.io)<-c('Parameters','Values')
@@ -248,9 +228,7 @@ init.params<-function(action,period){
 		prefix=prefix,dates.adj=dates.adj)
 	}
 
-
-##Merging
-
+	##Merging
 	if(action=='merge.temp'){
 		file.io<-data.frame(c('stn.file','DEM.file','shp.file','Adj.dir','dir2save'), c('','','','',getwd()))
 		names(file.io)<-c('Parameters','Values')
@@ -265,16 +243,16 @@ init.params<-function(action,period){
 		prefix=prefix,dates.mrg=dates.mrg,params.mrg=params.mrg)
 	}
 
-#############################################################################################3
+	#############################################################################################3
 
-#######################
+	#######################
 	if(action=='chk.coords'){
 		file.io<-data.frame(c('stn.file','shp.file','dir2save'),c('','',getwd()))
 		names(file.io)<-c('Parameters','Values')
 		buffer<-'10.0'
 		ret.params<-list(action=action,period='daily',file.io=file.io,buffer=buffer)
 	}
-######################
+	######################
 	if(action=='agg.qc'){
 		file.io<-getwd()
 		ret.params<-list(action=action,period='daily',file.io=file.io)
@@ -287,7 +265,7 @@ init.params<-function(action,period){
 		file.io<-getwd()
 		ret.params<-list(action=action,period='daily',file.io=file.io)
 	}
-################
+	################
 	if(action=='agg.stn'){
 		period<-'daily'
 		file.io<-data.frame(c('Stn.sample','Stn.Info','Stn.dir','File.save'),c('','','',''))
@@ -300,7 +278,7 @@ init.params<-function(action,period){
 		min.perc<-'1'
 		ret.params<-list(action=action,period=period,file.io=file.io,file.date.format=file.date.format,StartEnd.date=StartEnd.date,min.perc=min.perc)
 	}
-################
+	################
 	if(action=='agg.ts'){
 		period1<-'dekadal'
 		data.type<-'cdt'
@@ -319,7 +297,7 @@ init.params<-function(action,period){
 		ret.params<-list(action=action,period=period,period1=period1,file.io=file.io,compute.var=compute.var,
 		data.type=data.type,file.date.format=file.date.format,datesSE=datesSE,IO.file.format=IO.file.format,netcdf.var=netcdf.var)
 	}
-###########################################
+	###########################################
 
 	if(action=='extrct.ts'){
 		file.io<-data.frame(c('NetCDF.dir','Shp.file','file2save'), c('','',getwd()))
@@ -332,9 +310,9 @@ init.params<-function(action,period){
 		ret.params<-list(action=action,period=period,file.io=file.io,prefix=prefix,dates.ts=dates.ts)
 	}
 
-###########################################
+	###########################################
 
-###Mali one dekad
+	###Mali one dekad
 	if(action=='mali.dekrain'){
 		file.io<-data.frame(c('stn.file','RFE.file','dir2save'), c('','',getwd()))
 		names(file.io)<-c('Parameters','Values')
@@ -346,7 +324,7 @@ init.params<-function(action,period){
 		rfeDownSep=rfeDownSep,stnDataDispo=stnDataDispo)
 	}
 
-#############
+	#############
 	return(ret.params)
 }
 

@@ -1,22 +1,22 @@
 
 #######Golbal variables
 ##Onglet and table display
-tab.type<<-vector(mode='list',length = 0)
-tab.data<<-vector(mode='list',length = 0)
+AllOpenTabType<<-vector(mode='list',length = 0)
+AllOpenTabData<<-vector(mode='list',length = 0)
 
 ##Open data
-file.opfiles<<-vector(mode='list',length = 0)
-type.opfiles<<-vector(mode='list',length = 0)
+AllOpenFilesData<<-vector(mode='list',length = 0)
+AllOpenFilesType<<-vector(mode='list',length = 0)
 
 ##Initialization status bars 1
-txt.stbr1<<-tclVar("")
+TextOutputVar<<-tclVar("")
 
 ###coordinates from cdt data on qc (use to initialize bbox of plot spatial check)
 XYCoordinates<-tclVar()
 
 ###GENERAL params
-gal.params<-NULL
-ret.results<-NULL
+GeneralParameters<-NULL
+ReturnExecResults<-NULL
 #retExtractParams<-NULL   #if use with toolbar button uncomment
 
 ####QC initialization

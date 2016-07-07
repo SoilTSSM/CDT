@@ -70,7 +70,7 @@ commonTxTn<-function(Tsdata){
 RainTempLimBounds<-function(x,xup,xlow){
 	upp<-which(x>xup)
 	lop<-which(x<xlow)
-	y<-if(gal.params$action=="qc.rain") x[x!=0] else x
+	y<-if(GeneralParameters$action=="qc.rain") x[x!=0] else x
 	Q<-quantile(y,prob=c(0.0027,0.25,0.75,0.9973),names=F,na.rm=T)
 	slop<-abs(x[lop]-Q[1])/(3*(Q[3]-Q[2]))
 	supp<-(x[upp]-Q[4])/(3*(Q[3]-Q[2]))

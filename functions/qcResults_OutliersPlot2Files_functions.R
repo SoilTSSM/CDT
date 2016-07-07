@@ -1,8 +1,8 @@
 plotOutliers0<-function(jmo,outqcf,xdates,xdat){
 	opar<-par(mar = c(3,4,3,1))
 	outdates<-as.character(outqcf$dates)
-	if(gal.params$action=='qc.rain') outlq<-as.character(outqcf$upper.outlier)
-	if(gal.params$action=='qc.temp') outlq<-as.character(outqcf$outlier.check)
+	if(GeneralParameters$action=='qc.rain') outlq<-as.character(outqcf$upper.outlier)
+	if(GeneralParameters$action=='qc.temp') outlq<-as.character(outqcf$outlier.check)
 	outdates1<-outdates[!is.na(outlq)]
 	moqc<-substr(outdates1,5,6)
 	moval<-substr(xdates,5,6)
@@ -11,39 +11,39 @@ plotOutliers0<-function(jmo,outqcf,xdates,xdat){
 	idm<-which(moval==jmo)
 	datym<-xdates[idm]
 	valm<-xdat[idm]
-	if(gal.params$period=='daily'){
+	if(GeneralParameters$period=='daily'){
 		datym1st<-which(substr(datym,7,8)=='01')
 		datymid<-which(substr(datym,7,8)=='15')
-		if(gal.params$action=='qc.rain'){
+		if(GeneralParameters$action=='qc.rain'){
 			ylab<-'Daily rainfall [mm]'
 		}
-		if(gal.params$action=='qc.temp'){
-			if(Sys.info()["sysname"] == "Windows") ylab<-expression(paste("Daily", ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,"temperature[ " * degree,'C]'))
-			else ylab<-paste('Daily',ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,'temperature [°C]')
+		if(GeneralParameters$action=='qc.temp'){
+			if(Sys.info()["sysname"] == "Windows") ylab<-expression(paste("Daily", ifelse(as.character(GeneralParameters$test.tx)=='1','maximum','minimum') ,"temperature[ " * degree,'C]'))
+			else ylab<-paste('Daily',ifelse(as.character(GeneralParameters$test.tx)=='1','maximum','minimum') ,'temperature [°C]')
 		}
 		xlabels<-format(as.Date(datym[datymid],format='%Y%m%d'), '%Y')
 	}
-	if(gal.params$period=='dekadal'){
+	if(GeneralParameters$period=='dekadal'){
 		datym1st<-which(substr(datym,7,7)=='1')
 		datymid<-which(substr(datym,7,7)=='2')
-		if(gal.params$action=='qc.rain'){
+		if(GeneralParameters$action=='qc.rain'){
 			ylab<-'Dekadal rainfall [mm]'
 		}
-		if(gal.params$action=='qc.temp'){
-			if(Sys.info()["sysname"] == "Windows") ylab<-expression(paste("Dekadal", ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,"temperature[ " * degree,'C]'))
-			else ylab<-paste('Dekadal',ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,'temperature [°C]')
+		if(GeneralParameters$action=='qc.temp'){
+			if(Sys.info()["sysname"] == "Windows") ylab<-expression(paste("Dekadal", ifelse(as.character(GeneralParameters$test.tx)=='1','maximum','minimum') ,"temperature[ " * degree,'C]'))
+			else ylab<-paste('Dekadal',ifelse(as.character(GeneralParameters$test.tx)=='1','maximum','minimum') ,'temperature [°C]')
 		}
 		xlabels<-format(as.Date(datym[datymid],format='%Y%m%d'), '%Y')
 	}
-	if(gal.params$period=='monthly'){
+	if(GeneralParameters$period=='monthly'){
 		datym1st<-1:length(datym)
 		datymid<-1:length(datym)
-		if(gal.params$action=='qc.rain'){
+		if(GeneralParameters$action=='qc.rain'){
 			ylab<-'Monthly rainfall [mm]'
 		}
-		if(gal.params$action=='qc.temp'){
-			if(Sys.info()["sysname"] == "Windows") ylab<-expression(paste("Monthly", ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,"temperature[ " * degree,'C]'))
-			else ylab<-paste('Monthly',ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,'temperature [°C]')
+		if(GeneralParameters$action=='qc.temp'){
+			if(Sys.info()["sysname"] == "Windows") ylab<-expression(paste("Monthly", ifelse(as.character(GeneralParameters$test.tx)=='1','maximum','minimum') ,"temperature[ " * degree,'C]'))
+			else ylab<-paste('Monthly',ifelse(as.character(GeneralParameters$test.tx)=='1','maximum','minimum') ,'temperature [°C]')
 		}
 		xlabels<-format(as.Date(paste(datym,'15',sep=''),format='%Y%m%d'), '%Y')
 	}

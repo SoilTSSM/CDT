@@ -5,8 +5,8 @@ GlmCoefDownscaling<-function(paramsGlmCoef){
 	dem.stn<-paramsGlmCoef$dem.stn
 	origdir<-paramsGlmCoef$origdir
 
-	year1<-as.numeric(as.character(gal.params$dates.coef$Values[1]))
-	year2<-as.numeric(as.character(gal.params$dates.coef$Values[2]))
+	year1<-as.numeric(as.character(GeneralParameters$dates.coef$Values[1]))
+	year2<-as.numeric(as.character(GeneralParameters$dates.coef$Values[2]))
 	stn.dates<-coefdownTempdat$stnData$dates
 	stn.data<-coefdownTempdat$stnData$data
 
@@ -76,16 +76,16 @@ ReanalysisDownscaling<-function(paramsDownscl){
 	nlat0<-paramsDownscl$nlat0
 	origdir<-paramsDownscl$origdir
 
-	freqData<-gal.params$period
-	coef<-read.table(as.character(gal.params$file.io$Values[1]))
+	freqData<-GeneralParameters$period
+	coef<-read.table(as.character(GeneralParameters$file.io$Values[1]))
 
-	dirJRA<-as.character(gal.params$file.io$Values[4])
-	rfe.file.format<-as.character(gal.params$IO.file.format$Values[1])
-	downPrefix<-as.character(gal.params$IO.file.format$Values[2])
+	dirJRA<-as.character(GeneralParameters$file.io$Values[4])
+	rfe.file.format<-as.character(GeneralParameters$IO.file.format$Values[1])
+	downPrefix<-as.character(GeneralParameters$IO.file.format$Values[2])
 
-	min.nbrs<-as.numeric(as.character(gal.params$params.int$Values[1]))
-	max.nbrs<-as.numeric(as.character(gal.params$params.int$Values[2]))
-	max.dst<-as.numeric(as.character(gal.params$params.int$Values[3]))
+	min.nbrs<-as.numeric(as.character(GeneralParameters$params.int$Values[1]))
+	max.nbrs<-as.numeric(as.character(GeneralParameters$params.int$Values[2]))
+	max.dst<-as.numeric(as.character(GeneralParameters$params.int$Values[3]))
 
 	#Defines netcdf output
 	out.tt <- ncvar_def("temp", "DegC",xy.dim, -99, longname= "Dwonscaled temperature from reanalysis data", prec="float")
@@ -114,7 +114,7 @@ ReanalysisDownscaling<-function(paramsDownscl){
 	}
 	existFl<-unlist(lapply(testfile,file.exists))
 	if(length(which(existFl))==0){
-		insert.txt(main.txt.out,"Reanalysis data not found",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Reanalysis data not found",format=TRUE)
 		return(NULL)
 	}	
 	ReanalDataFl<-testfile[existFl]
@@ -176,7 +176,7 @@ ReanalysisDownscaling<-function(paramsDownscl){
 		nc2 <- nc_create(outfl,out.tt)
 		ncvar_put(nc2,out.tt,p)
 		nc_close(nc2)
-		insert.txt(main.txt.out,paste("Downscaling  Reanalysis finished:",basename(rfefl)))
+		InsertMessagesTxt(main.txt.out,paste("Downscaling  Reanalysis finished:",basename(rfefl)))
 		tcl("update")
 		return(0)
 	})
@@ -187,11 +187,11 @@ ReanalysisDownscaling<-function(paramsDownscl){
 # Extract model values at all station locations
 
 ExtractReanal2Stn<-function(ijGrd,nstn,coef.dates){
-	insert.txt(main.txt.out,'Extract dwonscaled data at guage locations ')
+	InsertMessagesTxt(main.txt.out,'Extract dwonscaled data at guage locations ')
 	tcl("update")
-	freqData<-gal.params$period
-	downscaledDir<-as.character(gal.params$file.io$Values[3])
-	downPrefix<-as.character(gal.params$prefix$Values[1])
+	freqData<-GeneralParameters$period
+	downscaledDir<-as.character(GeneralParameters$file.io$Values[3])
+	downPrefix<-as.character(GeneralParameters$prefix$Values[1])
 
 	if(freqData=='daily'){
 		bias.dates<-format(seq(as.Date(paste(coef.dates[1],'0101',sep=''),format='%Y%m%d'), as.Date(paste(coef.dates[2],'1231',sep=''),format='%Y%m%d'),'day'),'%Y%m%d')
@@ -208,7 +208,7 @@ ExtractReanal2Stn<-function(ijGrd,nstn,coef.dates){
 
 	existFl<-unlist(lapply(testfile,file.exists))
 	if(length(which(existFl))==0){
-		insert.txt(main.txt.out,"Dwonscaled data data not found",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Dwonscaled data data not found",format=TRUE)
 		return(NULL)
 	}
 	downDataFl<-testfile[existFl]
@@ -220,7 +220,7 @@ ExtractReanal2Stn<-function(ijGrd,nstn,coef.dates){
 		nc_close(nc)
 		model_stn[which(bias.dates==bias.dates1[jfl]),]<-model[ijGrd]
 	}
-	insert.txt(main.txt.out,'Done! ')
+	InsertMessagesTxt(main.txt.out,'Done! ')
 	return(model_stn)
 }
 
@@ -271,12 +271,12 @@ ComputeMeanBias<-function(paramsBias){
 	newlocation.merging<-paramsBias$newlocation.merging
 	dirBias<-paramsBias$dirBias
 
-	min.nbrs<-as.numeric(as.character(gal.params$params.int$Values[1]))
-	max.nbrs<-as.numeric(as.character(gal.params$params.int$Values[2]))
-	max.dst<-as.numeric(as.character(gal.params$params.int$Values[3]))
+	min.nbrs<-as.numeric(as.character(GeneralParameters$params.int$Values[1]))
+	max.nbrs<-as.numeric(as.character(GeneralParameters$params.int$Values[2]))
+	max.dst<-as.numeric(as.character(GeneralParameters$params.int$Values[3]))
 
-	freqData<-gal.params$period
-	meanBiasPrefix<-as.character(gal.params$prefix$Values[2])
+	freqData<-GeneralParameters$period
+	meanBiasPrefix<-as.character(GeneralParameters$prefix$Values[2])
 
 	stn.lon<-stnDatas$lon
 	stn.lat<-stnDatas$lat
@@ -410,7 +410,7 @@ ComputeMeanBias<-function(paramsBias){
 		nc2 <- nc_create(outfl,grd.bs)
 		ncvar_put(nc2,grd.bs,grd.bias)
 		nc_close(nc2)
-		insert.txt(main.txt.out,paste("Computing mean bias finished:",paste(meanBiasPrefix,'_',ij,'.nc',sep='')))
+		InsertMessagesTxt(main.txt.out,paste("Computing mean bias finished:",paste(meanBiasPrefix,'_',ij,'.nc',sep='')))
 		tcl("update")
 	}
 	return(0)
@@ -450,8 +450,8 @@ ComputeRegCoeff<-function(paramsRegQM){
 		coef[m,1] <- mean(tt)
 		coef[m,2] <- sd(tt)
 		if(!is.na(coef[m,1]) & is.na(coef[m,2])){
-			insert.txt(main.txt.out,"Computing regression coefficients are stopped",format=TRUE)
-			insert.txt(main.txt.out,paste('Mean and standard deviation of',format(ISOdate(2014,m,1),"%B"), 'are NA'),format=TRUE)
+			InsertMessagesTxt(main.txt.out,"Computing regression coefficients are stopped",format=TRUE)
+			InsertMessagesTxt(main.txt.out,paste('Mean and standard deviation of',format(ISOdate(2014,m,1),"%B"), 'are NA'),format=TRUE)
 			return(NULL)
 		}
 
@@ -473,7 +473,7 @@ ComputeRegCoeff<-function(paramsRegQM){
 	names(coef)<- c("mean", "sd","const", "model", "dem")
 	outfile<-file.path(origdir,'STN_MODEL_DEM_REGRESSION_COEF.txt',fsep = .Platform$file.sep)
 	write.table(coef, file = outfile, col.names = TRUE, row.names=FALSE)
-	insert.txt(main.txt.out,"Computing regression coefficients finished")
+	InsertMessagesTxt(main.txt.out,"Computing regression coefficients finished")
 	return(0)
 }
 
@@ -494,7 +494,7 @@ AjdReanalMeanBias<-function(paramsAdjBs){
 	meanBiasPrefix<-paramsAdjBs$meanBiasPrefix
 	adjPrefix<-paramsAdjBs$adjPrefix
 
-	freqData<-gal.params$period
+	freqData<-GeneralParameters$period
 	grd.bsadj <- ncvar_def("temp", "DegC",xy.dim, -99, longname= "Mean Bias Adjusted Reanalysis", prec="float")
 
 	##Get all downscaled Files
@@ -515,7 +515,7 @@ AjdReanalMeanBias<-function(paramsAdjBs){
 
 	existFl<-unlist(lapply(testfile,file.exists))
 	if(length(which(existFl))==0){
-		insert.txt(main.txt.out,"Downscaled data not found",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Downscaled data not found",format=TRUE)
 		return(NULL)
 	}	
 	downDataFl<-testfile[existFl]
@@ -564,7 +564,7 @@ AjdReanalMeanBias<-function(paramsAdjBs){
 		ncvar_put(nc2,grd.bsadj,temp.adj)
 		nc_close(nc2)
 
-		insert.txt(main.txt.out,paste("Downscaled data adjusted successfully:",paste(downPrefix,'_',adj.dates[jfl],'.nc',sep='')))
+		InsertMessagesTxt(main.txt.out,paste("Downscaled data adjusted successfully:",paste(downPrefix,'_',adj.dates[jfl],'.nc',sep='')))
 		tcl("update")
 		return(0)
 	})
@@ -588,7 +588,7 @@ AjdReanalpmm<-function(paramsAdjBs){
 	downPrefix<-paramsAdjBs$downPrefix
 	adjPrefix<-paramsAdjBs$adjPrefix
 
-	freqData<-gal.params$period
+	freqData<-GeneralParameters$period
 	stn.data<-stnDatas$data
 	stn.dates<-stnDatas$dates
 	years<- as.numeric(substr(stn.dates,1,4))
@@ -614,7 +614,7 @@ AjdReanalpmm<-function(paramsAdjBs){
 
 	existFl<-unlist(lapply(testfile,file.exists))
 	if(length(which(existFl))==0){
-		insert.txt(main.txt.out,"Downscaled data not found",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Downscaled data not found",format=TRUE)
 		return(NULL)
 	}
 	downDataFl<-testfile[existFl]
@@ -687,7 +687,7 @@ AjdReanalpmm<-function(paramsAdjBs){
 		ncvar_put(nc2,grd.bsadj,temp.adj)
 		nc_close(nc2)
 
-		insert.txt(main.txt.out,paste("Downscaled data adjusted successfully:",paste(downPrefix,'_',adj.dates[jfl],'.nc',sep='')))
+		InsertMessagesTxt(main.txt.out,paste("Downscaled data adjusted successfully:",paste(downPrefix,'_',adj.dates[jfl],'.nc',sep='')))
 		tcl("update")
 		return(0)
 	})
@@ -721,7 +721,7 @@ MergeTemp<-function(mrgParam){
 	istart<-mrgParam$dates[2]
 	iend<-mrgParam$dates[3]
 
-	params.mrg<-as.character(gal.params$params.mrg$Values)
+	params.mrg<-as.character(GeneralParameters$params.mrg$Values)
 	nmin<-as.numeric(params.mrg[1])
 	min.nbrs<-as.numeric(params.mrg[2])
 	max.nbrs<-as.numeric(params.mrg[3])
@@ -746,7 +746,7 @@ MergeTemp<-function(mrgParam){
 
 	existFl<-unlist(lapply(testfile,file.exists))
 	if(length(which(existFl))==0){
-		insert.txt(main.txt.out,"Adjusted data not found",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Adjusted data not found",format=TRUE)
 		return(NULL)
 	}
 	adjDataFl<-testfile[existFl]
@@ -806,7 +806,7 @@ MergeTemp<-function(mrgParam){
 		ncvar_put(nc2,mrgd.tt,out.tt)
 		nc_close(nc2)
 
-		insert.txt(main.txt.out,paste("Merging finished successfully:",paste(mrgPrefix,'_',mrg.dates[jfl],'_',mrgSuffix,'.nc',sep='')))
+		InsertMessagesTxt(main.txt.out,paste("Merging finished successfully:",paste(mrgPrefix,'_',mrg.dates[jfl],'_',mrgSuffix,'.nc',sep='')))
 		tcl("update")
 		return(0)
 	})

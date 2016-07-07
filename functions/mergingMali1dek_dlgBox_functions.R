@@ -1,5 +1,5 @@
-update1DekInfo_Mali<-function(parent.win,gal.params){
-	file.list<-openFile_ttkcomboList()
+update1DekInfo_Mali<-function(parent.win,GeneralParameters){
+	listOpenFiles<-openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows") largeur<-33
 	else largeur<-31
 
@@ -23,15 +23,15 @@ update1DekInfo_Mali<-function(parent.win,gal.params){
 
 	####
 	infobulle(fr.A,'Cocher la case et fournir le fichier RFE si le fichier est téléchargé séparément')
-	status.bar.display(fr.A,txt.stbr1,'Cocher la case et fournir le fichier RFE si le fichier est téléchargé séparément')
+	status.bar.display(fr.A,TextOutputVar,'Cocher la case et fournir le fichier RFE si le fichier est téléchargé séparément')
 
-	cbAdownRFE <- tclVar(as.character(gal.params$rfeDownSep))
+	cbAdownRFE <- tclVar(as.character(GeneralParameters$rfeDownSep))
 	cbAdownRFE_f <- tkcheckbutton(fr.A,variable=cbAdownRFE,text='RFE déjà télécharger',anchor='w',justify='left')
 
-	if(as.character(gal.params$rfeDownSep)=='1') stateRFE<-'normal'
+	if(as.character(GeneralParameters$rfeDownSep)=='1') stateRFE<-'normal'
 	else stateRFE<-'disabled'
 
-	fileRFE <- tclVar(as.character(gal.params$file.io$Values[2]))
+	fileRFE <- tclVar(as.character(GeneralParameters$file.io$Values[2]))
 	enAdownRFE<-tkentry(fr.A,textvariable=fileRFE,width=largeur,state=stateRFE)
 	btAdownRFE<-tkbutton(fr.A, text="...",state=stateRFE)
 	tkconfigure(btAdownRFE,command=function(){
@@ -52,27 +52,27 @@ update1DekInfo_Mali<-function(parent.win,gal.params){
 
 	#####
 	infobulle(fr.B,'Cocher la case si les données des stations pour la décade sont disponiples')
-	status.bar.display(fr.B,txt.stbr1,'Cocher la case si les données des stations pour la décade sont disponiples')
+	status.bar.display(fr.B,TextOutputVar,'Cocher la case si les données des stations pour la décade sont disponiples')
 
-	cbStnDispo <- tclVar(as.character(gal.params$stnDataDispo))
+	cbStnDispo <- tclVar(as.character(GeneralParameters$stnDataDispo))
 	cbStnDispo_f <- tkcheckbutton(fr.B,variable=cbStnDispo,text='Données des stations disponibles',anchor='w',justify='left')
 
-	if(as.character(gal.params$stnDataDispo)=='1') stateSTN<-'normal'
+	if(as.character(GeneralParameters$stnDataDispo)=='1') stateSTN<-'normal'
 	else stateSTN<-'disabled'
 
-	file.stnfl <- tclVar(as.character(gal.params$file.io$Values[1]))
-	cb.stnfl<-ttkcombobox(fr.B, values=unlist(file.list), textvariable=file.stnfl,state=stateSTN,width=largeur-2)
+	file.stnfl <- tclVar(as.character(GeneralParameters$file.io$Values[1]))
+	cb.stnfl<-ttkcombobox(fr.B, values=unlist(listOpenFiles), textvariable=file.stnfl,state=stateSTN,width=largeur-2)
 	bt.stnfl<-tkbutton(fr.B, text="...",state=stateSTN)
 	tkconfigure(bt.stnfl,command=function(){
 		dat.opfiles<-getOpenFiles(tt,all.opfiles)
 		if(!is.null(dat.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'ascii'
-			file.opfiles[[nopf+1]]<<-dat.opfiles
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'ascii'
+			AllOpenFilesData[[nopf+1]]<<-dat.opfiles
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.stnfl)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cb.stnfl,values=unlist(file.list), textvariable=file.stnfl)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.stnfl)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.stnfl,values=unlist(listOpenFiles), textvariable=file.stnfl)
 		}else{
 			return(NULL)
 		}
@@ -84,11 +84,11 @@ update1DekInfo_Mali<-function(parent.win,gal.params){
 
 	###
 	infobulle(fr.C,'Préciser ici la date de la décade')
-	status.bar.display(fr.C,txt.stbr1,'Préciser ici la date de la décade')
+	status.bar.display(fr.C,TextOutputVar,'Préciser ici la date de la décade')
 
-	date.yrs<-tclVar(as.character(gal.params$dates.mrg$Values[1]))
-	date.mon<-tclVar(as.character(gal.params$dates.mrg$Values[2]))
-	date.dek<-tclVar(as.character(gal.params$dates.mrg$Values[3]))
+	date.yrs<-tclVar(as.character(GeneralParameters$dates.mrg$Values[1]))
+	date.mon<-tclVar(as.character(GeneralParameters$dates.mrg$Values[2]))
+	date.dek<-tclVar(as.character(GeneralParameters$dates.mrg$Values[3]))
 
 	date.txt<-tklabel(fr.C,text='Date',anchor='e',justify='right')
 	yrs.txt<-tklabel(fr.C,text='Année')
@@ -110,12 +110,12 @@ update1DekInfo_Mali<-function(parent.win,gal.params){
 	####
 	dirsave.txt<-tklabel(fr.D,text='Répertoire pour sauvegarder les résultats')
 
-	file.save1 <-tclVar(as.character(gal.params$file.io$Values[3]))
+	file.save1 <-tclVar(as.character(GeneralParameters$file.io$Values[3]))
 	en.file.save<-tkentry(fr.D,textvariable=file.save1,width=largeur)
 	bt.file.save<-tkbutton(fr.D, text="...")
 	tkconfigure(bt.file.save,command=function(){
-		file2save1<-tk_choose.dir(as.character(gal.params$file.io$Values[3]), "")
-			if(is.na(file2save1)) tclvalue(file.save1)<-as.character(gal.params$file.io$Values[3])
+		file2save1<-tk_choose.dir(as.character(GeneralParameters$file.io$Values[3]), "")
+			if(is.na(file2save1)) tclvalue(file.save1)<-as.character(GeneralParameters$file.io$Values[3])
 			else{
 				dir.create(file2save1,showWarnings=FALSE,recursive=TRUE)
 				tclvalue(file.save1)<-file2save1
@@ -166,10 +166,10 @@ update1DekInfo_Mali<-function(parent.win,gal.params){
 			tkmessageBox(message="Préciser le répertoire pour sauvegarder les résultats",icon="warning",type="ok")
 			tkwait.window(tt)
 		}else{
-			gal.params$file.io$Values<<-c(tclvalue(file.stnfl),tclvalue(fileRFE),tclvalue(file.save1))
-			gal.params$rfeDownSep<<-tclvalue(cbAdownRFE)
-			gal.params$stnDataDispo<<-tclvalue(cbStnDispo)
-			gal.params$dates.mrg$Values<<-c(tclvalue(date.yrs),tclvalue(date.mon), tclvalue(date.dek))
+			GeneralParameters$file.io$Values<<-c(tclvalue(file.stnfl),tclvalue(fileRFE),tclvalue(file.save1))
+			GeneralParameters$rfeDownSep<<-tclvalue(cbAdownRFE)
+			GeneralParameters$stnDataDispo<<-tclvalue(cbStnDispo)
+			GeneralParameters$dates.mrg$Values<<-c(tclvalue(date.yrs),tclvalue(date.mon), tclvalue(date.dek))
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
@@ -204,6 +204,6 @@ update1DekInfo_Mali<-function(parent.win,gal.params){
 		#return(NULL)
 	})
 	tkwait.window(tt)
-	return(gal.params)
+	return(GeneralParameters)
 }
 

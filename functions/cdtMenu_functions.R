@@ -10,9 +10,9 @@ tkadd(menu.file, "command", label="Open data.frame",command=function(){
 	dat.opfiles<-getOpenFiles(main.win,all.opfiles)
 	tkconfigure(main.win,cursor='')
 	if(!is.null(dat.opfiles)){
-		nopf<-length(type.opfiles)
-		type.opfiles[[nopf+1]]<<-'ascii'
-		file.opfiles[[nopf+1]]<<-dat.opfiles
+		nopf<-length(AllOpenFilesType)
+		AllOpenFilesType[[nopf+1]]<<-'ascii'
+		AllOpenFilesData[[nopf+1]]<<-dat.opfiles
 	}else{
 		return(NULL)
 	}
@@ -24,9 +24,9 @@ tkadd(menu.file, "command", label="Open Netcdf file",command=function(){
 	nc.opfiles<-getOpenNetcdf(main.win,all.opfiles)
 	tkconfigure(main.win,cursor='')
 	if(!is.null(nc.opfiles)){
-		nopf<-length(type.opfiles)
-		type.opfiles[[nopf+1]]<<-'netcdf'
-		file.opfiles[[nopf+1]]<<-nc.opfiles
+		nopf<-length(AllOpenFilesType)
+		AllOpenFilesType[[nopf+1]]<<-'netcdf'
+		AllOpenFilesData[[nopf+1]]<<-nc.opfiles
 	}else{
 		return(NULL)
 	}
@@ -38,9 +38,9 @@ tkadd(menu.file, "command", label="Open ESRI Shapefile",command=function(){
 	shp.opfiles<-getOpenShp(main.win,all.opfiles)
 	tkconfigure(main.win,cursor='')
 	if(!is.null(shp.opfiles)){
-		nopf<-length(type.opfiles)
-		type.opfiles[[nopf+1]]<<-'shp'
-		file.opfiles[[nopf+1]]<<-shp.opfiles
+		nopf<-length(AllOpenFilesType)
+		AllOpenFilesType[[nopf+1]]<<-'shp'
+		AllOpenFilesData[[nopf+1]]<<-shp.opfiles
 	}else{
 		return(NULL)
 	}
@@ -64,16 +64,16 @@ tkadd(menu.file, "separator")
 
 ##########
 tkadd(menu.file, "command", label="Save table",command=function(){
-	if(!is.null(ret.results)){
+	if(!is.null(ReturnExecResults)){
 		tkconfigure(main.win,cursor='watch');tcl('update')
 		tab2sav<-try(SaveNotebookTabArray(tknotes), silent=TRUE)
 		tkconfigure(main.win,cursor='')
 		is.ok<- !inherits(tab2sav, "try-error")
 		if(is.ok){
-			insert.txt(main.txt.out,"Table saved successfully")
+			InsertMessagesTxt(main.txt.out,"Table saved successfully")
 		}else{
-			insert.txt(main.txt.out,"The table could not be saved",format=TRUE)
-			insert.txt(main.txt.out,gsub('[\r\n]','',tab2sav[1]),format=TRUE)
+			InsertMessagesTxt(main.txt.out,"The table could not be saved",format=TRUE)
+			InsertMessagesTxt(main.txt.out,gsub('[\r\n]','',tab2sav[1]),format=TRUE)
 			return(NULL)
 		}
 	}else{
@@ -85,10 +85,10 @@ tkadd(menu.file, "command", label="Save table",command=function(){
 tkadd(menu.file, "command", label="Save table As...        ",command=function(){
 	tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
 	if(!is.na(tabid)){
-		if(tab.type[[tabid]]=="arr"){
+		if(AllOpenTabType[[tabid]]=="arr"){
 			file.to.save<-tclvalue(tkgetSaveFile(initialdir=getwd(),initialfile = "",
 			filetypes="{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}"))
-			Objarray<-tab.data[[tabid]][[2]]
+			Objarray<-AllOpenTabData[[tabid]][[2]]
 			tkconfigure(main.win,cursor='watch');tcl('update')
 			dat2sav<-tclArray2dataframe(Objarray)
 			extFl<-file_ext(basename(file.to.save))
@@ -130,11 +130,11 @@ tkadd(top.menu, "cascade", label="Data Preparation", menu=menu.dataprep, underli
 tkadd(menu.dataprep, "command", label="Format CDTs Input Data",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 	source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
-	if(!is.null(gal.params)){
-		if(gal.params$action=='agg.stn') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='agg.stn') initpars<-GeneralParameters
 		else initpars<-init.params('agg.stn','daily')
 	}else initpars<-init.params('agg.stn','daily')
-	gal.params<<-AggregateInputStationData(main.win,initpars)
+	GeneralParameters<<-AggregateInputStationData(main.win,initpars)
 })
 
 ##########
@@ -191,8 +191,8 @@ tkadd(top.menu, "cascade", label = "Quality Control", menu = menu.qchom , underl
 ##check coordninates
 tkadd(menu.qchom, "command", label="Check Stations Coordinates",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
-	if(!is.null(gal.params)){
-		if(gal.params$action=='chk.coords') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='chk.coords') initpars<-GeneralParameters
 		else{
 			initpars<-init.params('chk.coords','daily')
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
@@ -202,7 +202,7 @@ tkadd(menu.qchom, "command", label="Check Stations Coordinates",command=function
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 	}
 
-	gal.params<<-excludeOutStn(main.win,initpars)
+	GeneralParameters<<-excludeOutStn(main.win,initpars)
 })
 
 ##########
@@ -222,8 +222,8 @@ tkadd(menu.qc, "cascade", label = "Rainfall",menu=menu.qcRain)
 tkadd(menu.qcRain, "command", label = "Zeros check",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='zero.check') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='zero.check') initpars<-GeneralParameters
 		else{
 			initpars<-init.params('zero.check','daily')
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
@@ -233,17 +233,17 @@ tkadd(menu.qcRain, "command", label = "Zeros check",command=function(){
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 	}
 	initpars$AllOrOne<-'one'
-	gal.params<<-qcGetZeroCheckInfo(main.win,initpars)
+	GeneralParameters<<-qcGetZeroCheckInfo(main.win,initpars)
 })
 
 ##Outliers check
 tkadd(menu.qcRain, "command", label = "Outliers Check",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='qc.rain') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='qc.rain') initpars<-GeneralParameters
 		else{
-			initpars<-init.params('qc.rain',as.character(gal.params$period))
+			initpars<-init.params('qc.rain',as.character(GeneralParameters$period))
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		}
 	}else{
@@ -251,7 +251,7 @@ tkadd(menu.qcRain, "command", label = "Outliers Check",command=function(){
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 	}
 	initpars$AllOrOne<-'one'
-	gal.params<<-qc.get.info.rain(main.win,initpars)
+	GeneralParameters<<-qc.get.info.rain(main.win,initpars)
  })
 
 ##########
@@ -261,10 +261,10 @@ tkadd(menu.qc, "separator")
 tkadd(menu.qc, "command", label = "Temperatures",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='qc.temp') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='qc.temp') initpars<-GeneralParameters
 		else{
-			initpars<-init.params('qc.temp',as.character(gal.params$period))
+			initpars<-init.params('qc.temp',as.character(GeneralParameters$period))
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		}
 	}else{
@@ -272,7 +272,7 @@ tkadd(menu.qc, "command", label = "Temperatures",command=function(){
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 	}
 	initpars$AllOrOne<-'one'
-	gal.params<<-qc.get.info.txtn(main.win,initpars)
+	GeneralParameters<<-qc.get.info.txtn(main.win,initpars)
 })
 
 ##########
@@ -291,8 +291,8 @@ tkadd(menu.qc1, "cascade", label = "Rainfall",menu=menu.qcRain1)
 tkadd(menu.qcRain1, "command", label = "Zeros check",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='zero.check') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='zero.check') initpars<-GeneralParameters
 		else{
 			initpars<-init.params('zero.check','daily')
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
@@ -302,17 +302,17 @@ tkadd(menu.qcRain1, "command", label = "Zeros check",command=function(){
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 	}
 	initpars$AllOrOne<-'all'
-	gal.params<<-qcGetZeroCheckInfo(main.win,initpars)
+	GeneralParameters<<-qcGetZeroCheckInfo(main.win,initpars)
 })
 
 ##Outliers check
 tkadd(menu.qcRain1, "command", label = "Outliers Check",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='qc.rain') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='qc.rain') initpars<-GeneralParameters
 		else{
-			initpars<-init.params('qc.rain',as.character(gal.params$period))
+			initpars<-init.params('qc.rain',as.character(GeneralParameters$period))
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		}
 	}else{
@@ -320,7 +320,7 @@ tkadd(menu.qcRain1, "command", label = "Outliers Check",command=function(){
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 	}
 	initpars$AllOrOne<-'all'
-	gal.params<<-qc.get.info.rain(main.win,initpars)
+	GeneralParameters<<-qc.get.info.rain(main.win,initpars)
  })
 
 ##########
@@ -330,10 +330,10 @@ tkadd(menu.qc1, "separator")
 tkadd(menu.qc1, "command", label = "Temperatures",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='qc.temp') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='qc.temp') initpars<-GeneralParameters
 		else{
-			initpars<-init.params('qc.temp',as.character(gal.params$period))
+			initpars<-init.params('qc.temp',as.character(GeneralParameters$period))
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		}
 	}else{
@@ -341,7 +341,7 @@ tkadd(menu.qc1, "command", label = "Temperatures",command=function(){
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 	}
 	initpars$AllOrOne<-'all'
-	gal.params<<-qc.get.info.txtn(main.win,initpars)
+	GeneralParameters<<-qc.get.info.txtn(main.win,initpars)
 })
 
 ##########
@@ -352,7 +352,7 @@ tkadd(menu.qchom, "command", label="Aggregate zeros checked stations",command=fu
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 	source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 	initpars<-init.params('agg.zc','daily')
-	gal.params<<-AggregateOutputStationData(main.win,initpars)
+	GeneralParameters<<-AggregateOutputStationData(main.win,initpars)
 })
 
 
@@ -361,7 +361,7 @@ tkadd(menu.qchom, "command", label="Aggregate checked stations",command=function
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 	source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 	initpars<-init.params('agg.qc','daily')
-	gal.params<<-AggregateOutputStationData(main.win,initpars)
+	GeneralParameters<<-AggregateOutputStationData(main.win,initpars)
 })
 
 ##########
@@ -407,8 +407,8 @@ tkadd(menu.homog, "separator")
 tkadd(menu.homog, "command", label="CDT Homogenization Methods",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='homog') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='homog') initpars<-GeneralParameters
 		else{
 			initpars<-init.params('homog','dekadal')
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
@@ -417,7 +417,7 @@ tkadd(menu.homog, "command", label="CDT Homogenization Methods",command=function
 		initpars<-init.params('homog','dekadal')
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 	}
-	gal.params<<-homogen.get.info(main.win,initpars)
+	GeneralParameters<<-homogen.get.info(main.win,initpars)
 })
 
 ##########
@@ -425,7 +425,7 @@ tkadd(menu.qchom, "command", label="Aggregate homogenized stations",command=func
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 	source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 	initpars<-init.params('agg.hom','dekadal')
-	gal.params<<-AggregateOutputStationData(main.win,initpars)
+	GeneralParameters<<-AggregateOutputStationData(main.win,initpars)
 })
 
 
@@ -442,8 +442,8 @@ tkadd(menu.mrg, "cascade", label = "Merging Rainfall",menu=menu.mrg.rain)
 tkadd(menu.mrg.rain, "command", label = "Compute mean Gauge-RFE bias",background='lightblue',command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='coefbias.rain') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='coefbias.rain') initpars<-GeneralParameters
 		else{
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 			initpars<-init.params('coefbias.rain','dekadal')
@@ -452,7 +452,7 @@ tkadd(menu.mrg.rain, "command", label = "Compute mean Gauge-RFE bias",background
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		initpars<-init.params('coefbias.rain','dekadal')
 	}
-	gal.params<<-coefBiasGetInfoRain(main.win,initpars)
+	GeneralParameters<<-coefBiasGetInfoRain(main.win,initpars)
 })
 
 ##########
@@ -462,8 +462,8 @@ tkadd(menu.mrg.rain, "separator")
 tkadd(menu.mrg.rain, "command", label = "Apply bias correction",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='rmbias.rain') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='rmbias.rain') initpars<-GeneralParameters
 		else{
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 			initpars<-init.params('rmbias.rain','dekadal')
@@ -472,15 +472,15 @@ tkadd(menu.mrg.rain, "command", label = "Apply bias correction",command=function
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		initpars<-init.params('rmbias.rain','dekadal')
 	}
-	gal.params<<-rmvBiasGetInfoRain(main.win,initpars)
+	GeneralParameters<<-rmvBiasGetInfoRain(main.win,initpars)
 })
 
 ##########
 tkadd(menu.mrg.rain, "command", label = "Merging Data",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='merge.rain') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='merge.rain') initpars<-GeneralParameters
 		else{
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 			initpars<-init.params('merge.rain','dekadal')
@@ -489,7 +489,7 @@ tkadd(menu.mrg.rain, "command", label = "Merging Data",command=function(){
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		initpars<-init.params('merge.rain','dekadal')
 	}
-	gal.params<<-mergeGetInfoRain(main.win,initpars)
+	GeneralParameters<<-mergeGetInfoRain(main.win,initpars)
 })
 
 ##########temperature
@@ -501,8 +501,8 @@ tkadd(menu.mrg, "cascade", label = "Merging Temperature",menu=menu.mrg.temp)
 tkadd(menu.mrg.temp, "command", label = "Compute Downscaling Coefficients",background='lightblue',command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='coefdown.temp') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='coefdown.temp') initpars<-GeneralParameters
 		else{
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 			initpars<-init.params('coefdown.temp','dekadal')
@@ -511,7 +511,7 @@ tkadd(menu.mrg.temp, "command", label = "Compute Downscaling Coefficients",backg
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		initpars<-init.params('coefdown.temp','dekadal')
 	}
-	gal.params<<-coefDownGetInfoTemp(main.win,initpars)
+	GeneralParameters<<-coefDownGetInfoTemp(main.win,initpars)
 })
 
 ##########
@@ -521,8 +521,8 @@ tkadd(menu.mrg.temp, "separator")
 tkadd(menu.mrg.temp, "command", label = "Reanalysis Downscaling",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='down.temp') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='down.temp') initpars<-GeneralParameters
 		else{
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 			initpars<-init.params('down.temp','dekadal')
@@ -531,7 +531,7 @@ tkadd(menu.mrg.temp, "command", label = "Reanalysis Downscaling",command=functio
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		initpars<-init.params('down.temp','dekadal')
 	}
-	gal.params<<-downGetInfoDekTempReanal(main.win,initpars)
+	GeneralParameters<<-downGetInfoDekTempReanal(main.win,initpars)
 })
 
 ##########
@@ -541,8 +541,8 @@ tkadd(menu.mrg.temp, "separator")
 tkadd(menu.mrg.temp, "command", label = "Compute Bias Coefficients",background='lightblue',command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='coefbias.temp') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='coefbias.temp') initpars<-GeneralParameters
 		else{
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 			initpars<-init.params('coefbias.temp','dekadal')
@@ -551,7 +551,7 @@ tkadd(menu.mrg.temp, "command", label = "Compute Bias Coefficients",background='
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		initpars<-init.params('coefbias.temp','dekadal')
 	}
-	gal.params<<-biasGetInfoTempDown(main.win,initpars)
+	GeneralParameters<<-biasGetInfoTempDown(main.win,initpars)
 })
 
 ##########
@@ -561,8 +561,8 @@ tkadd(menu.mrg.temp, "separator")
 tkadd(menu.mrg.temp, "command", label = "Bias Adjustment",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='adjust.temp') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='adjust.temp') initpars<-GeneralParameters
 		else{
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 			initpars<-init.params('adjust.temp','dekadal')
@@ -571,15 +571,15 @@ tkadd(menu.mrg.temp, "command", label = "Bias Adjustment",command=function(){
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		initpars<-init.params('adjust.temp','dekadal')
 	}
-	gal.params<<-adjGetInfoTempDownReanal(main.win,initpars)
+	GeneralParameters<<-adjGetInfoTempDownReanal(main.win,initpars)
 })
 
 ##########
 tkadd(menu.mrg.temp, "command", label = "Merging Data",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='merge.temp') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='merge.temp') initpars<-GeneralParameters
 		else{
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 			initpars<-init.params('merge.temp','dekadal')
@@ -588,7 +588,7 @@ tkadd(menu.mrg.temp, "command", label = "Merging Data",command=function(){
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		initpars<-init.params('merge.temp','dekadal')
 	}
-	gal.params<<-mrgGetInfoTemp(main.win,initpars)
+	GeneralParameters<<-mrgGetInfoTemp(main.win,initpars)
 })
 
 ##########
@@ -598,8 +598,8 @@ tkadd(menu.mrg, "separator")
 tkadd(menu.mrg, "command", label="Updating dekadal Rainfall",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='merge.dekrain') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='merge.dekrain') initpars<-GeneralParameters
 		else{
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 			initpars<-init.params('merge.dekrain','dekadal')
@@ -608,7 +608,7 @@ tkadd(menu.mrg, "command", label="Updating dekadal Rainfall",command=function(){
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		initpars<-init.params('merge.dekrain','dekadal')
 	}
-	gal.params<<-mergeDekadInfoRain(main.win,initpars)
+	GeneralParameters<<-mergeDekadInfoRain(main.win,initpars)
 })
 
 ##########
@@ -618,8 +618,8 @@ tkadd(menu.mrg, "separator")
 tkadd(menu.mrg, "command", label="Mali - Mise à jour décadaire",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
 
-	if(!is.null(gal.params)){
-		if(gal.params$action=='mali.dekrain') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='mali.dekrain') initpars<-GeneralParameters
 		else{
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 			initpars<-init.params('mali.dekrain','dekadal')
@@ -628,7 +628,7 @@ tkadd(menu.mrg, "command", label="Mali - Mise à jour décadaire",command=functi
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		initpars<-init.params('mali.dekrain','dekadal')
 	}
-	gal.params<<-update1DekInfo_Mali(main.win,initpars)
+	GeneralParameters<<-update1DekInfo_Mali(main.win,initpars)
 })
 
 ##########
@@ -683,17 +683,17 @@ tkadd(menu.dataproc, "separator")
 ##########
 tkadd(menu.dataproc, "command", label="Aggregating Time Series",command=function(){
 	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
-	if(!is.null(gal.params)){
-		if(gal.params$action=='agg.ts') initpars<-gal.params
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action=='agg.ts') initpars<-GeneralParameters
 		else{
-			initpars<-init.params('agg.ts',as.character(gal.params$period))
+			initpars<-init.params('agg.ts',as.character(GeneralParameters$period))
 			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 		}
 	}else{
 		initpars<-init.params('agg.ts','daily')
 		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 	}
-	gal.params<<-mainDialogAggTs(main.win,initpars)
+	GeneralParameters<<-mainDialogAggTs(main.win,initpars)
 })
 
 ##########
@@ -714,17 +714,17 @@ tkadd(menu.dataproc, "command", label="Extract NetCDF gridded data",command=func
 ###########
 #tkadd(menu.dataproc, "command", label="Compute Climatology",state='disabled',command=function(){
 #	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
-#	if(!is.null(gal.params)){
-#		if(gal.params$action=='clim.ts') initpars<-gal.params
+#	if(!is.null(GeneralParameters)){
+#		if(GeneralParameters$action=='clim.ts') initpars<-GeneralParameters
 #		else{
-#			#initpars<-init.params('clim.ts',as.character(gal.params$period))
+#			#initpars<-init.params('clim.ts',as.character(GeneralParameters$period))
 #			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 #		}
 #	}else{
 #		#initpars<-init.params('clim.ts','dekadal')
 #		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 #	}
-#	#gal.params<<-mainDialogClimatogy(main.win,initpars)
+#	#GeneralParameters<<-mainDialogClimatogy(main.win,initpars)
 #})
 
 ###########
@@ -733,17 +733,17 @@ tkadd(menu.dataproc, "command", label="Extract NetCDF gridded data",command=func
 ###########
 #tkadd(menu.dataproc, "command", label="Calculate  Anomalies",state='disabled',command=function(){
 #	source(file.path(apps.dir,'functions','initialize',fsep = .Platform$file.sep))
-#	if(!is.null(gal.params)){
-#		if(gal.params$action=='anom.ts') initpars<-gal.params
+#	if(!is.null(GeneralParameters)){
+#		if(GeneralParameters$action=='anom.ts') initpars<-GeneralParameters
 #		else{
-#			#initpars<-init.params('anom.ts',as.character(gal.params$period))
+#			#initpars<-init.params('anom.ts',as.character(GeneralParameters$period))
 #			source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 #		}
 #	}else{
 #		#initpars<-init.params('anom.ts','dekadal')
 #		source(file.path(apps.dir,'functions','initialize_stn_button',fsep = .Platform$file.sep))
 #	}
-#	#gal.params<<-mainDialogAnomalies(main.win,initpars)
+#	#GeneralParameters<<-mainDialogAnomalies(main.win,initpars)
 #})
 
 

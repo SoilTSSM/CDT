@@ -10,7 +10,7 @@ Station<-paste('BaseSeries_',station,sep='')
   Nmin<-10
   if(Ny4a>0&Ny4a<=5) Ny4a<-5
   if(!p.lev%in%c(0.75,0.8,0.9,0.95,0.99,0.9999)){
-	insert.txt(main.txt.out,paste("FindU: input p.lev",p.lev,"error"),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("FindU: input p.lev",p.lev,"error"),format=TRUE)
 	#cat(paste("FindU: input p.lev",p.lev,"error"),'\n')
 #      ErrorMSG<<-paste("FindU: input p.lev",p.lev,"error\n",
 #                 get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -22,7 +22,7 @@ Station<-paste('BaseSeries_',station,sep='')
   assign("Nmin",Nmin,envir=.GlobalEnv)
   itmp<-Read(InSeries,MissingValueCode)
   if(itmp==(-1)){
-	insert.txt(main.txt.out,paste("FindU: Error in read data from",Station),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("FindU: Error in read data from",Station),format=TRUE)
 	#cat(paste("FindU: Error in read data from",Station),'\n')
 #    ErrorMSG<<-paste("FindU: Error in read data from",Station,"\n",
 #               get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -58,7 +58,7 @@ Station<-paste('BaseSeries_',station,sep='')
   EB<-oout$EB
   assign("EB",EB,envir=.GlobalEnv)
   if(length(EB)!=length(Icy)) {
-	insert.txt(main.txt.out,paste("Annual cycle length (from non-missing data) differ from original dataset"),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("Annual cycle length (from non-missing data) differ from original dataset"),format=TRUE)
 	#cat(paste("Annual cycle length (from non-missing data) differ from original dataset"),'\n')
 #    ErrorMSG<<-paste("Annual cycle length (from non-missing data) differ from original dataset",
 #                     "\n",get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -186,7 +186,7 @@ Station<-paste('BaseSeries_',station,sep='')
               paste("sample:(",sprintf("%1.0f",1)," ",sprintf("%-4.4s","YifD"),
 	       sprintf("%10.0f",19000101),")",sep=""),"\n"),file=ofileIout)
 
-	insert.txt(main.txt.out,paste("PMF finds no Type-1 changepoints in the series",station))
+	InsertMessagesTxt(main.txt.out,paste("PMF finds no Type-1 changepoints in the series",station))
     #cat("PMF finds no Type-1 changepoints in the series!\n")
   }
 
@@ -554,7 +554,7 @@ Station<-paste('BaseSeries_',station,sep='')
     cat(paste(Ns,"changepoints in Series", Station,
               paste("sample:(",sprintf("%1.0f",1)," ",sprintf("%-4.4s","YifD"),
 	       sprintf("%10.0f",19000101),")",sep=""),"\n"),file=ofileIout)
-	insert.txt(main.txt.out,paste("PMF finds no Type-1 changepoints in the series",station))
+	InsertMessagesTxt(main.txt.out,paste("PMF finds no Type-1 changepoints in the series",station))
     #cat("PMF finds no Type-1 changepoints in the series!\n")
   }
   else{
@@ -648,7 +648,7 @@ Station<-paste('BaseSeries_',station,sep='')
   else{
     file.copy(from=ofileIout,to=ofileMout,overwrite=TRUE)
     #cat("FindU finished successfully...\n")
-	insert.txt(main.txt.out,paste("FindU finished successfully for",station))
+	InsertMessagesTxt(main.txt.out,paste("FindU finished successfully for",station))
     return(0)
   }
 }

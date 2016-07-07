@@ -1,6 +1,6 @@
 
-qcGetZeroCheckInfo<-function(parent.win,gal.params){
-	file.list<-openFile_ttkcomboList()
+qcGetZeroCheckInfo<-function(parent.win,GeneralParameters){
+	listOpenFiles<-openFile_ttkcomboList()
 	##tkentry width, directory path
 	if (Sys.info()["sysname"] == "Windows") largeur<-30
 	else largeur<-28
@@ -31,29 +31,29 @@ qcGetZeroCheckInfo<-function(parent.win,gal.params){
 
 	##########
 	file.stnfl <- tclVar()
-	tclvalue(file.stnfl) <- as.character(gal.params$file.io$Values[1])
+	tclvalue(file.stnfl) <- as.character(GeneralParameters$file.io$Values[1])
 
 	frA00.txt<-tklabel(fr.A00,text='Input data file')
 	tkgrid(frA00.txt)
 
-	cb.stnfl<-ttkcombobox(fr.A01, values=unlist(file.list), textvariable=file.stnfl,width=largeur-1)
+	cb.stnfl<-ttkcombobox(fr.A01, values=unlist(listOpenFiles), textvariable=file.stnfl,width=largeur-1)
 	infobulle(cb.stnfl,'Choose the file in the list')
-	status.bar.display(cb.stnfl,txt.stbr1,'Choose the file containing the daily data')
+	status.bar.display(cb.stnfl,TextOutputVar,'Choose the file containing the daily data')
 
-	bt.stnfl<-tkbutton.h(fr.A01, text="...",txt.stbr1,'Browse file if not listed','Browse file if not listed')
+	bt.stnfl<-tkbutton.h(fr.A01, text="...",TextOutputVar,'Browse file if not listed','Browse file if not listed')
 	tkgrid(cb.stnfl,bt.stnfl)
 	tkgrid.configure(cb.stnfl,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.stnfl,row=0,column=1,sticky='e')
 	tkconfigure(bt.stnfl,command=function(){
 		dat.opfiles<-getOpenFiles(tt,all.opfiles)
 		if(!is.null(dat.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'ascii'
-			file.opfiles[[nopf+1]]<<-dat.opfiles
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'ascii'
+			AllOpenFilesData[[nopf+1]]<<-dat.opfiles
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.stnfl)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cb.stnfl,values=unlist(file.list), textvariable=file.stnfl)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.stnfl)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.stnfl,values=unlist(listOpenFiles), textvariable=file.stnfl)
 		}else{
 			return(NULL)
 		}
@@ -69,17 +69,17 @@ qcGetZeroCheckInfo<-function(parent.win,gal.params){
 	frA11.txt<-tklabel(fr.A11,text='Directory to save result')
 	tkgrid(frA11.txt)
 
-	file.save1 <-tclVar(as.character(gal.params$file.io$Values[2]))
+	file.save1 <-tclVar(as.character(GeneralParameters$file.io$Values[2]))
 	en.file.save<-tkentry(fr.A12,textvariable=file.save1,width=largeur)
 	infobulle(en.file.save,'Enter the full path to\ndirectory to save result')
-	status.bar.display(en.file.save,txt.stbr1,'Enter the full path to directory to save result')
-	bt.file.save<-tkbutton.h(fr.A12, text="...",txt.stbr1,'or browse here','')
+	status.bar.display(en.file.save,TextOutputVar,'Enter the full path to directory to save result')
+	bt.file.save<-tkbutton.h(fr.A12, text="...",TextOutputVar,'or browse here','')
 	tkgrid(en.file.save,bt.file.save)
 	tkgrid.configure(en.file.save,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.file.save,row=0,column=1,sticky='e')
 	tkconfigure(bt.file.save,command=function(){
-		file2save1<-tk_choose.dir(as.character(gal.params$file.io$Values[3]), "")
-			if(is.na(file2save1)) tclvalue(file.save1)<-as.character(gal.params$file.io$Values[3])
+		file2save1<-tk_choose.dir(as.character(GeneralParameters$file.io$Values[3]), "")
+			if(is.na(file2save1)) tclvalue(file.save1)<-as.character(GeneralParameters$file.io$Values[3])
 			else{
 				dir.create(file2save1,showWarnings=FALSE,recursive=TRUE)
 				tclvalue(file.save1)<-file2save1
@@ -92,35 +92,35 @@ qcGetZeroCheckInfo<-function(parent.win,gal.params){
 	tkgrid(fr.A20,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
 	###
-	min.nbrsLab<-tklabel.h(fr.A20,'Min.ngbrs',txt.stbr1,
+	min.nbrsLab<-tklabel.h(fr.A20,'Min.ngbrs',TextOutputVar,
 	'Minimum number of neighbors stations to use',
 	'Minimum number of neighbors stations to use')
-	max.nbrsLab<-tklabel.h(fr.A20,'Max.ngbrs',txt.stbr1,
+	max.nbrsLab<-tklabel.h(fr.A20,'Max.ngbrs',TextOutputVar,
 	'Maximum number of neighbors stations to use',
 	'Maximum number of neighbors stations to use')
-	min.daysLab<-tklabel.h(fr.A20,'Min.days',txt.stbr1,
+	min.daysLab<-tklabel.h(fr.A20,'Min.days',TextOutputVar,
 	'Minimum number of days in a month with observation',
 	'Minimum number of days in a month with observation')
-	max.dstLab<-tklabel.h(fr.A20,'Max.dist',txt.stbr1,
+	max.dstLab<-tklabel.h(fr.A20,'Max.dist',TextOutputVar,
 	'Maximum search  distance [in km] for neighbors stations',
 	'Maximum search  distance [in km] for neighbors stations')
-	pct.trshLab<-tklabel.h(fr.A20,'Pct.trsh',txt.stbr1,
+	pct.trshLab<-tklabel.h(fr.A20,'Pct.trsh',TextOutputVar,
 	"Minimum threshold (% zero.station/%zero.neighbors)\nto flag that month's observation as problematic",
 	"Minimum threshold (% zero.station/%zero.neighbors) to flag that month's observation as problematic")
 
-	min.nbrsEn<-tkentry.h(fr.A20,txt.stbr1,
+	min.nbrsEn<-tkentry.h(fr.A20,TextOutputVar,
 	'Minimum number of neighbors stations to use',
 	'Minimum number of neighbors stations to use')
-	max.nbrsEn<-tkentry.h(fr.A20,txt.stbr1,
+	max.nbrsEn<-tkentry.h(fr.A20,TextOutputVar,
 	'Maximum number of neighbors stations to use',
 	'Maximum number of neighbors stations to use')
-	min.daysEn<-tkentry.h(fr.A20,txt.stbr1,
+	min.daysEn<-tkentry.h(fr.A20,TextOutputVar,
 	'Minimum number of days in a month with observation',
 	'Minimum number of days in a month with observation')
-	max.dstEn<-tkentry.h(fr.A20,txt.stbr1,
+	max.dstEn<-tkentry.h(fr.A20,TextOutputVar,
 	'Maximum search  distance [in km] for neighbors stations',
 	'Maximum search  distance [in km] for neighbors stations')
-	pct.trshEn<-tkentry.h(fr.A20,txt.stbr1,
+	pct.trshEn<-tkentry.h(fr.A20,TextOutputVar,
 	"Minimum threshold (% zero.station/%zero.neighbors)\nto flag that month's observation as problematic",
 	"Minimum threshold (% zero.station/%zero.neighbors) to flag that month's observation as problematic")
 
@@ -141,11 +141,11 @@ qcGetZeroCheckInfo<-function(parent.win,gal.params){
 	tkconfigure(max.dstLab,anchor='e',justify='right')
 	tkconfigure(pct.trshLab,anchor='e',justify='right')
 
-	min.nbrs<-tclVar(as.character(gal.params$param.zero$Values[1]))
-	max.nbrs<-tclVar(as.character(gal.params$param.zero$Values[2]))
-	min.days<-tclVar(as.character(gal.params$param.zero$Values[3]))
-	max.dst<-tclVar(as.character(gal.params$param.zero$Values[4]))
-	pct.trsh<-tclVar(as.character(gal.params$param.zero$Values[5]))
+	min.nbrs<-tclVar(as.character(GeneralParameters$param.zero$Values[1]))
+	max.nbrs<-tclVar(as.character(GeneralParameters$param.zero$Values[2]))
+	min.days<-tclVar(as.character(GeneralParameters$param.zero$Values[3]))
+	max.dst<-tclVar(as.character(GeneralParameters$param.zero$Values[4]))
+	pct.trsh<-tclVar(as.character(GeneralParameters$param.zero$Values[5]))
 
 	tkconfigure(min.nbrsEn,width=6,textvariable=min.nbrs,justify='left')
 	tkconfigure(max.nbrsEn,width=6,textvariable=max.nbrs,justify='left')
@@ -169,7 +169,7 @@ qcGetZeroCheckInfo<-function(parent.win,gal.params){
 			tkwait.window(tt)
 		}else{
 
-			all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+			all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 			jfile<-which(all.open.file==tclvalue(file.stnfl))
 			if(length(jfile)==0){
 				tkmessageBox(message="Station data not found or in the wrong format",icon="warning",type="ok")
@@ -181,16 +181,16 @@ qcGetZeroCheckInfo<-function(parent.win,gal.params){
 			fileparams<-file.path(dirparams, 'Parameters.RData',fsep = .Platform$file.sep)
 
 			##
-			gal.params$file.io$Values<<-c(tclvalue(file.stnfl),tclvalue(file.save1))
-			gal.params$param.zero$Values<<-c(tclvalue(min.nbrs),tclvalue(max.nbrs),tclvalue(min.days),tclvalue(max.dst),tclvalue(pct.trsh))
+			GeneralParameters$file.io$Values<<-c(tclvalue(file.stnfl),tclvalue(file.save1))
+			GeneralParameters$param.zero$Values<<-c(tclvalue(min.nbrs),tclvalue(max.nbrs),tclvalue(min.days),tclvalue(max.dst),tclvalue(pct.trsh))
 
 			######
-			getInitDataParams<-function(gal.params){
-				donstn<-splitCDTData(file.opfiles[[jfile]][[2]],'daily')
+			getInitDataParams<-function(GeneralParameters){
+				donstn<-splitCDTData(AllOpenFilesData[[jfile]][[2]],'daily')
 				if(!is.null(donstn)){
 					stn.choix<-as.character(donstn$id)
 				}else tkwait.window(tt)
-				paramsGAL<-list(inputPars=gal.params,dataPars=file.opfiles[[jfile]][3:4],data=donstn)
+				paramsGAL<-list(inputPars=GeneralParameters,dataPars=AllOpenFilesData[[jfile]][3:4],data=donstn)
 				save(paramsGAL,file=fileparams)
 				return(list(paramsGAL,stn.choix))
 			}
@@ -198,18 +198,18 @@ qcGetZeroCheckInfo<-function(parent.win,gal.params){
 			###
 			if(file.exists(fileparams)){
 				load(fileparams)
-				if(all(file.opfiles[[jfile]][3:4]%in%paramsGAL$dataPars)){
+				if(all(AllOpenFilesData[[jfile]][3:4]%in%paramsGAL$dataPars)){
 					donstn<-paramsGAL$data
 					stn.choix<<-as.character(donstn$id)
 					rm(paramsGAL)
 				}else{
-					retDonPar<-getInitDataParams(gal.params)
+					retDonPar<-getInitDataParams(GeneralParameters)
 					donstn<-retDonPar[[1]]$data
 					stn.choix<<-retDonPar[[2]]
 					rm(retDonPar)
 				}
 			}else{
-				retDonPar<-getInitDataParams(gal.params)
+				retDonPar<-getInitDataParams(GeneralParameters)
 				donstn<-retDonPar[[1]]$data
 				stn.choix<<-retDonPar[[2]]
 				rm(retDonPar)
@@ -219,7 +219,7 @@ qcGetZeroCheckInfo<-function(parent.win,gal.params){
 			assign('baseDir',dirZeroChk,envir=EnvQcZeroChkData)
 
 			####set choix stn
-			if(gal.params$retpar==0){
+			if(GeneralParameters$retpar==0){
 				if(stn.choix[1]!='') tclvalue(stn.choix.val)<-stn.choix[1]
 				else tclvalue(stn.choix.val)<-stn.choix[2]
 			}else{
@@ -230,11 +230,11 @@ qcGetZeroCheckInfo<-function(parent.win,gal.params){
 			}
 
 			tkconfigure(stn.choix.cb,values=stn.choix, textvariable=stn.choix.val)
-			if(gal.params$AllOrOne=='one'){
+			if(GeneralParameters$AllOrOne=='one'){
 				tkconfigure(setting.button,state='normal')
 				stateReplaceAll<-'disabled'
 			}
-			if(gal.params$AllOrOne=='all'){
+			if(GeneralParameters$AllOrOne=='all'){
 				tkconfigure(setting.button,state='disabled')
 				stateReplaceAll<-'normal'
 			}
@@ -246,7 +246,7 @@ qcGetZeroCheckInfo<-function(parent.win,gal.params){
 				lcmd.frame<<-QcZeroCheckCmd(stateReplaceAll)
 				lcmd.frame_qc0Chck<<-1
 			}
-			gal.params$retpar<<-gal.params$retpar+1
+			GeneralParameters$retpar<<-GeneralParameters$retpar+1
 			########
 			tkgrab.release(tt)
 			tkdestroy(tt)
@@ -280,7 +280,7 @@ qcGetZeroCheckInfo<-function(parent.win,gal.params){
 	tkfocus(tt)
 	tkbind(tt, "<Destroy>", function() {tkgrab.release(tt); tkfocus(parent.win)})
 	tkwait.window(tt)
-	return(gal.params)
+	return(GeneralParameters)
 }
 
 

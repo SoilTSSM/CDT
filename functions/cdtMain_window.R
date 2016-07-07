@@ -3,13 +3,13 @@
 warningFun<-function(w){
 	txt<-as.character(w)
 	retW<-gsub('[\r\n]','',txt)
-	insert.txt(main.txt.out,retW,format=TRUE)
+	InsertMessagesTxt(main.txt.out,retW,format=TRUE)
 }
 
 errorFun<-function(e){
 	txt<-as.character(e)
 	retE<-gsub('[\r\n]','',txt)
-	insert.txt(main.txt.out,retE,format=TRUE)
+	InsertMessagesTxt(main.txt.out,retE,format=TRUE)
 }
 
 #####**************************** Initialize variables ************************######

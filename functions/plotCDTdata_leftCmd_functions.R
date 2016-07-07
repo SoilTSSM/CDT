@@ -1,5 +1,5 @@
 PlotCDTDataFormatCmd<-function(){
-	file.list<-openFile_ttkcomboList()
+	listOpenFiles<-openFile_ttkcomboList()
 
 	##tkcombo& tkentry width
 	#largeur<-27  
@@ -50,24 +50,24 @@ PlotCDTDataFormatCmd<-function(){
 
 	#######################
 	file.stnfl <- tclVar()
-	combStnfl.tab1<-ttkcombobox(frameStn,values=unlist(file.list),textvariable=file.stnfl,width=largeur)
+	combStnfl.tab1<-ttkcombobox(frameStn,values=unlist(listOpenFiles),textvariable=file.stnfl,width=largeur)
 	btStnfl.tab1<-tkbutton(frameStn, text="...") 
 	tkconfigure(btStnfl.tab1,command=function(){
 		dat.opfiles<-getOpenFiles(main.win,all.opfiles)
 		if(!is.null(dat.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'ascii'
-			file.opfiles[[nopf+1]]<<-dat.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]] 
-			tclvalue(file.stnfl)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combStnfl.tab1,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(combShp.tab1,values=unlist(file.list), textvariable=file.plotShp)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'ascii'
+			AllOpenFilesData[[nopf+1]]<<-dat.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]] 
+			tclvalue(file.stnfl)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(combStnfl.tab1,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(combShp.tab1,values=unlist(listOpenFiles), textvariable=file.plotShp)
 		}else return(NULL)
 	})
 	infobulle(combStnfl.tab1,'Choose the station data in the list')
-	status.bar.display(combStnfl.tab1,txt.stbr1,'Choose the file containing the station data')
+	status.bar.display(combStnfl.tab1,TextOutputVar,'Choose the file containing the station data')
 	infobulle(btStnfl.tab1,'Browse file if not listed')
-	status.bar.display(btStnfl.tab1,txt.stbr1,'Browse file if not listed')
+	status.bar.display(btStnfl.tab1,TextOutputVar,'Browse file if not listed')
 
 	#######################
 	labDate.tab1<-tklabel(frameStn,text="Date",anchor='e',justify='right')
@@ -88,7 +88,7 @@ PlotCDTDataFormatCmd<-function(){
 	unitLab.tab1<-tklabel(frameStn,text='Units',anchor='e',justify='right')
 	unitEd.tab1<-tkentry(frameStn, width=8,textvariable=unit_sym,justify = "left")
 	infobulle(unitEd.tab1,'Display unit on colorscale')
-	status.bar.display(unitEd.tab1,txt.stbr1,'Display unit on colorscale')
+	status.bar.display(unitEd.tab1,TextOutputVar,'Display unit on colorscale')
 
 	###############
 	tkgrid(combPrd.tab1,row=0,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=2,ipadx=1,ipady=1)
@@ -108,18 +108,18 @@ PlotCDTDataFormatCmd<-function(){
 	frameShp<-ttklabelframe(subfr1,text="Shapefiles for boundary",relief='groove')
 
 	file.plotShp <- tclVar()
-	combShp.tab1<-ttkcombobox(frameShp, values=unlist(file.list), textvariable=file.plotShp,width=largeur) 
+	combShp.tab1<-ttkcombobox(frameShp, values=unlist(listOpenFiles), textvariable=file.plotShp,width=largeur) 
 	btShp.tab1<-tkbutton(frameShp, text="...") 
 	tkconfigure(btShp.tab1,command=function(){
 		shp.opfiles<-getOpenShp(main.win,all.opfiles)
 		if(!is.null(shp.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'shp'
-			file.opfiles[[nopf+1]]<<-shp.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]		
-			tclvalue(file.plotShp)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combStnfl.tab1,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(combShp.tab1,values=unlist(file.list), textvariable=file.plotShp)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'shp'
+			AllOpenFilesData[[nopf+1]]<<-shp.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]		
+			tclvalue(file.plotShp)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(combStnfl.tab1,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(combShp.tab1,values=unlist(listOpenFiles), textvariable=file.plotShp)
 		}
 	})
 
@@ -183,11 +183,11 @@ PlotCDTDataFormatCmd<-function(){
 	butCustoLev.tab2<-tkbutton(subfr2, text="Custom",state='disabled')
 
 	infobulle(combPresetCol.tab2,'Predefined color palettes')
-	status.bar.display(combPresetCol.tab2,txt.stbr1,'Predefined color palettes')
+	status.bar.display(combPresetCol.tab2,TextOutputVar,'Predefined color palettes')
 	infobulle(nbPresetCol.tab2,'Number of color levels to be in the palette')
-	status.bar.display(nbPresetCol.tab2,txt.stbr1,'Number of color levels to be in the palette')
+	status.bar.display(nbPresetCol.tab2,TextOutputVar,'Number of color levels to be in the palette')
 	infobulle(chkRevCol.tab2,'Reverse the color palettes')
-	status.bar.display(chkRevCol.tab2,txt.stbr1,'Reverse the color palettes')
+	status.bar.display(chkRevCol.tab2,TextOutputVar,'Reverse the color palettes')
 
 	#####
 	tkgrid(labPresetCol.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
@@ -300,10 +300,10 @@ PlotCDTDataFormatCmd<-function(){
 		
 		imgContainer<-displayCDTdata(tknotes,notebookTab,donne,atLev,listCol,shpf,tclvalue(unit_sym))
 		if(!is.null(imgContainer)){
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,tab.type,tab.data)
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,AllOpenTabType,AllOpenTabData)
 			notebookTab<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
 		}
 	})	
 

@@ -133,19 +133,19 @@ plotMergingOutData<-function(allDATA,atLev,listCol,ocrds,units){
 displayPlotMerging<-function(parent,notebookTab,allDATA,atLev,listCol,shpf,units){
 
 	if(is.null(allDATA[[1]][[1]]$x)){
-		insert.txt(main.txt.out,'No Station data found',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'No Station data found',format=TRUE)
 		return(NULL)
 	}
 
 	if(sum(sapply(allDATA[-1],function(x) !is.null(x[[1]])))==0){
-		insert.txt(main.txt.out,'Need at least one NetCDF data',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Need at least one NetCDF data',format=TRUE)
 		return(NULL)
 	}
 
 	atLev<-as.numeric(atLev)
 	atLev<-atLev[!is.na(atLev)]
 	if(length(atLev)<2){
-		insert.txt(main.txt.out,'Levels must be at least 2',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Levels must be at least 2',format=TRUE)
 		return(NULL)
 	}
 	
@@ -157,7 +157,7 @@ displayPlotMerging<-function(parent,notebookTab,allDATA,atLev,listCol,shpf,units
 	
 	###################################################################	
 
-	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=getf.no.ext(allDATA[[1]][[3]]),tab.type,tab.data)
+	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=getf.no.ext(allDATA[[1]][[3]]),AllOpenTabType,AllOpenTabData)
 
 	hscale<-as.numeric(tclvalue(tkget(spinH)))
 	vscale<-as.numeric(tclvalue(tkget(spinV)))
@@ -193,7 +193,7 @@ displayPlotMerging<-function(parent,notebookTab,allDATA,atLev,listCol,shpf,units
 	
 	# ###################################################################	
 
-	# onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=' Map ',tab.type,tab.data)
+	# onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=' Map ',AllOpenTabType,AllOpenTabData)
 
 	# # hscrCan<-as.integer(tclvalue(tkwinfo("height", onglet[[1]])))
 	# # wscrCan<-as.integer(tclvalue(tkwinfo("width", onglet[[1]])))

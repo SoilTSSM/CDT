@@ -2,7 +2,7 @@
 ################
 QcCmdBut<-function(stateReplaceAll){
 
-	file.list<-openFile_ttkcomboList()
+	listOpenFiles<-openFile_ttkcomboList()
 
 	wttkcombo<-as.integer(as.numeric(w.scale(19)*0.95)/9)
 
@@ -51,15 +51,15 @@ QcCmdBut<-function(stateReplaceAll){
 	btAllReplace.tab1<-tkbutton(subfr1, text="Replace all outliers with NA",state=stateReplaceAll)
 
 	infobulle(btSetting.tab1,'Edit results')
-	status.bar.display(btSetting.tab1,txt.stbr1,'Edit results')
+	status.bar.display(btSetting.tab1,TextOutputVar,'Edit results')
 	infobulle(btReplace.tab1,'Replaces outliers with missing values after editing')
-	status.bar.display(btReplace.tab1,txt.stbr1,'Replaces outliers with missing values after editing')
+	status.bar.display(btReplace.tab1,TextOutputVar,'Replaces outliers with missing values after editing')
 	infobulle(enThresReplace.tab1,'Replace outliers with missing if the statistic\nis greater than or equal to this threshold\nand the box in the right is checked')
-	status.bar.display(enThresReplace.tab1,txt.stbr1,'Replace outliers with missing  if the statistic is greater than  or equal to this threshold and the box in the right is checked')
+	status.bar.display(enThresReplace.tab1,TextOutputVar,'Replace outliers with missing  if the statistic is greater than  or equal to this threshold and the box in the right is checked')
 	infobulle(btThresReplace.tab1,'Replace outliers with missing if the statistic\nis greater than or equal to this threshold\nand the box in the right is checked')
-	status.bar.display(btThresReplace.tab1,txt.stbr1,'Replace outliers with missing  if the statistic is greater than  or equal to this threshold and the box in the right is checked')
+	status.bar.display(btThresReplace.tab1,TextOutputVar,'Replace outliers with missing  if the statistic is greater than  or equal to this threshold and the box in the right is checked')
 	infobulle(btAllReplace.tab1,'Replaces all outliers with missing values at one time,\ntaking into account the statistic threshold')
-	status.bar.display(btAllReplace.tab1,txt.stbr1,'Replaces all outliers with missing values at one time, taking into account the statistic threshold')
+	status.bar.display(btAllReplace.tab1,TextOutputVar,'Replaces all outliers with missing values at one time, taking into account the statistic threshold')
 
 	tkgrid(btPreview.tab1,row=0,column=0,sticky='we',rowspan=1,columnspan=8,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(sep1.tab1,row=1,column=0,sticky='we',rowspan=1,columnspan=8,pady=5)
@@ -173,17 +173,17 @@ QcCmdBut<-function(stateReplaceAll){
 	btReset.tab3<-tkbutton(subfr3,image=pikReset,relief='raised')
 
 	infobulle(btZoomP.tab3,'Zoom In')
-	status.bar.display(btZoomP.tab3,txt.stbr1,'Zoom In')
+	status.bar.display(btZoomP.tab3,TextOutputVar,'Zoom In')
 	infobulle(btZoomM.tab3,'Zoom Out')
-	status.bar.display(btZoomM.tab3,txt.stbr1,'Zoom Out')
+	status.bar.display(btZoomM.tab3,TextOutputVar,'Zoom Out')
 	infobulle(btZoomRect.tab3,'Zoom Area')
-	status.bar.display(btZoomRect.tab3,txt.stbr1,'Zoom Area')
+	status.bar.display(btZoomRect.tab3,TextOutputVar,'Zoom Area')
 	infobulle(btPanImg.tab3,'Pan Tool')
-	status.bar.display(btPanImg.tab3,txt.stbr1,'Pan Tool')
+	status.bar.display(btPanImg.tab3,TextOutputVar,'Pan Tool')
 	infobulle(btRedraw.tab3,'Redraw Map')
-	status.bar.display(btRedraw.tab3,txt.stbr1,'Redraw Map')
+	status.bar.display(btRedraw.tab3,TextOutputVar,'Redraw Map')
 	infobulle(btReset.tab3,' Zoom Reset')
-	status.bar.display(btReset.tab3,txt.stbr1,' Zoom Reset')
+	status.bar.display(btReset.tab3,TextOutputVar,' Zoom Reset')
 
 	##
 	tkgrid(xentr1.tab3,row=1,column=0,sticky='we',rowspan=1,columnspan=1)
@@ -212,35 +212,35 @@ QcCmdBut<-function(stateReplaceAll){
 
 	frameShp<-ttklabelframe(subfr4,text="Boundaries Shapefiles",relief='groove')
 	file.plotShp <- tclVar()
-	combShp.tab4<-ttkcombobox(frameShp, values=unlist(file.list), textvariable=file.plotShp,width=wttkcombo)
+	combShp.tab4<-ttkcombobox(frameShp, values=unlist(listOpenFiles), textvariable=file.plotShp,width=wttkcombo)
 	btShp.tab4<-tkbutton(frameShp, text="...")
 	tkconfigure(btShp.tab4,command=function(){
 		shp.opfiles<-getOpenShp(main.win,all.opfiles)
 		if(!is.null(shp.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'shp'
-			file.opfiles[[nopf+1]]<<-shp.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.plotShp)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combDem.tab4,values=unlist(file.list), textvariable=file.plotDem)
-			tkconfigure(combShp.tab4,values=unlist(file.list), textvariable=file.plotShp)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'shp'
+			AllOpenFilesData[[nopf+1]]<<-shp.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.plotShp)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(combDem.tab4,values=unlist(listOpenFiles), textvariable=file.plotDem)
+			tkconfigure(combShp.tab4,values=unlist(listOpenFiles), textvariable=file.plotShp)
 		}
 	})
 
 	frameDEM<-ttklabelframe(subfr4,text="Elevation Data (NetCDF)",relief='groove')
 	file.plotDem<-tclVar()
-	combDem.tab4<-ttkcombobox(frameDEM, values=unlist(file.list), textvariable=file.plotDem,width=wttkcombo)
+	combDem.tab4<-ttkcombobox(frameDEM, values=unlist(listOpenFiles), textvariable=file.plotDem,width=wttkcombo)
 	btDem.tab4<-tkbutton(frameDEM, text="...")
 	tkconfigure(btDem.tab4,command=function(){
 		nc.opfiles<-getOpenNetcdf(main.win,all.opfiles)
 		if(!is.null(nc.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'netcdf'
-			file.opfiles[[nopf+1]]<<-nc.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.plotDem)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combDem.tab4,values=unlist(file.list), textvariable=file.plotDem)
-			tkconfigure(combShp.tab4,values=unlist(file.list), textvariable=file.plotShp)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'netcdf'
+			AllOpenFilesData[[nopf+1]]<<-nc.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.plotDem)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(combDem.tab4,values=unlist(listOpenFiles), textvariable=file.plotDem)
+			tkconfigure(combShp.tab4,values=unlist(listOpenFiles), textvariable=file.plotShp)
 		}
 	})
 
@@ -255,15 +255,15 @@ QcCmdBut<-function(stateReplaceAll){
 		else tclvalue(dir_ncdf)<-dir4ncdf
 	})
 	infobulle(dir_ncdfEd.tab4,'Enter the full path to\ndirectory containing the satellite files')
-	status.bar.display(dir_ncdfEd.tab4,txt.stbr1,'Enter the full path to directory containing the satellite files')
+	status.bar.display(dir_ncdfEd.tab4,TextOutputVar,'Enter the full path to directory containing the satellite files')
 	infobulle(dir_ncdfBt.tab4,'Select directory here')
-	status.bar.display(dir_ncdfBt.tab4,txt.stbr1,'Select directory here')
+	status.bar.display(dir_ncdfBt.tab4,TextOutputVar,'Select directory here')
 
 	ff_ncdf <-tclVar("rfe%s_%s_%s.nc")
 	ff_ncdfLab.tab4<-tklabel(frameRFE,text='RFE filename format',anchor='w',justify='left')
 	ff_ncdfEd.tab4<-tkentry(frameRFE,width=14,textvariable=ff_ncdf,justify = "left")
 	infobulle(ff_ncdfEd.tab4,'Enter the format of the satellite files names,\nexample: rfe1983_01_01.nc')
-	status.bar.display(ff_ncdfEd.tab4,txt.stbr1,'Enter the format of the satellite files names, example: rfe1983_01_01.nc')
+	status.bar.display(ff_ncdfEd.tab4,TextOutputVar,'Enter the format of the satellite files names, example: rfe1983_01_01.nc')
 
 	################################
 
@@ -293,14 +293,14 @@ QcCmdBut<-function(stateReplaceAll){
 		showval<- if(tclvalue(vShowVal)=="1") TRUE else FALSE
 		rfedat<-if(tclvalue(cbValrfe)=='1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
 		tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
-		if(length(tab.type)>0){
-			if(tab.type[[tabid]]=="img"){
-				assign("ZoomXYval", ZoomXYval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				assign("showval", showval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				assign("shpf", shpf, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				assign("dem", dem, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				assign("rfedat", rfedat, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
+		if(length(AllOpenTabType)>0){
+			if(AllOpenTabType[[tabid]]=="img"){
+				assign("ZoomXYval", ZoomXYval, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				assign("showval", showval, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				assign("shpf", shpf, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				assign("dem", dem, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				assign("rfedat", rfedat, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				refreshPlot1(W=AllOpenTabData[[tabid]][[2]][[1]],img=AllOpenTabData[[tabid]][[2]][[2]],
 				hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 				tkconfigure(btRedraw.tab3,relief='raised',bg='lightblue')
 			}
@@ -319,14 +319,14 @@ QcCmdBut<-function(stateReplaceAll){
 		dem <- if(tclvalue(cbValdem)=='1') getDemOpenData(file.plotDem) else NULL
 		rfedat<-if(tclvalue(cbValrfe)=='1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
 		tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
-		if(length(tab.type)>0){
-			if(tab.type[[tabid]]=="img"){
-				assign("ZoomXYval", ZoomXYval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				assign("showval", showval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				assign("shpf", shpf, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				assign("dem", dem, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				assign("rfedat", rfedat, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
+		if(length(AllOpenTabType)>0){
+			if(AllOpenTabType[[tabid]]=="img"){
+				assign("ZoomXYval", ZoomXYval, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				assign("showval", showval, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				assign("shpf", shpf, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				assign("dem", dem, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				assign("rfedat", rfedat, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				refreshPlot1(W=AllOpenTabData[[tabid]][[2]][[1]],img=AllOpenTabData[[tabid]][[2]][[2]],
 				hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 
 				tkconfigure(btRedraw.tab3,relief='raised',bg='lightblue')
@@ -345,14 +345,14 @@ QcCmdBut<-function(stateReplaceAll){
 		dem <- if(tclvalue(cbValdem)=='1') getDemOpenData(file.plotDem) else NULL
 		rfedat<-if(tclvalue(cbValrfe)=='1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
 		tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
-		if(length(tab.type)>0){
-			if(tab.type[[tabid]]=="img"){
-				assign("ZoomXYval", ZoomXYval, envir=environment(tab.data[[tabid]][[2]]$fun))
-				assign("showval", showval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				assign("shpf", shpf, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				assign("dem", dem, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				assign("rfedat", rfedat, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
+		if(length(AllOpenTabType)>0){
+			if(AllOpenTabType[[tabid]]=="img"){
+				assign("ZoomXYval", ZoomXYval, envir=environment(AllOpenTabData[[tabid]][[2]]$fun))
+				assign("showval", showval, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				assign("shpf", shpf, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				assign("dem", dem, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				assign("rfedat", rfedat, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				refreshPlot1(W=AllOpenTabData[[tabid]][[2]][[1]],img=AllOpenTabData[[tabid]][[2]][[2]],
 				hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 				tkconfigure(btRedraw.tab3,relief='raised',bg='lightblue')
 			}
@@ -365,7 +365,7 @@ QcCmdBut<-function(stateReplaceAll){
 		if(!is.null(noteQcSpatCheck)){
 			if(tclvalue(cbValshp)=='0'){
 				shpf<-getShpOpenData(file.plotShp)[[2]]
-				if(is.null(shpf)) insert.txt(main.txt.out,'No administrative boundaries provided',format=TRUE)
+				if(is.null(shpf)) InsertMessagesTxt(main.txt.out,'No administrative boundaries provided',format=TRUE)
 			}else  shpf<-NULL
 
 			#shpf<-if(tclvalue(cbValshp)=='0') getShpOpenData(file.plotShp)[[2]] else NULL
@@ -374,14 +374,14 @@ QcCmdBut<-function(stateReplaceAll){
 			rfedat<-if(tclvalue(cbValrfe)=='1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
 			ZoomXYval<-as.numeric(c(tclvalue(xx1),tclvalue(xx2),tclvalue(yy1),tclvalue(yy2)))
 			tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
-			if(length(tab.type)>0){
-				if(tab.type[[tabid]]=="img"){
-					assign("ZoomXYval", ZoomXYval, envir=environment(tab.data[[tabid]][[2]]$fun))
-					assign("showval", showval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-					assign("shpf", shpf, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-					assign("dem", dem, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-					assign("rfedat", rfedat, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-					refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
+			if(length(AllOpenTabType)>0){
+				if(AllOpenTabType[[tabid]]=="img"){
+					assign("ZoomXYval", ZoomXYval, envir=environment(AllOpenTabData[[tabid]][[2]]$fun))
+					assign("showval", showval, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+					assign("shpf", shpf, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+					assign("dem", dem, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+					assign("rfedat", rfedat, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+					refreshPlot1(W=AllOpenTabData[[tabid]][[2]][[1]],img=AllOpenTabData[[tabid]][[2]][[2]],
 					hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 					tkconfigure(btRedraw.tab3,relief='raised',bg='lightblue')
 				}
@@ -394,7 +394,7 @@ QcCmdBut<-function(stateReplaceAll){
 		if(!is.null(noteQcSpatCheck)){
 			if(tclvalue(cbValdem)=='0'){
 				dem<-getDemOpenData(file.plotDem)
-				if(is.null(dem)) insert.txt(main.txt.out,'No elevation data provided',format=TRUE)
+				if(is.null(dem)) InsertMessagesTxt(main.txt.out,'No elevation data provided',format=TRUE)
 			}else  dem<-NULL
 
 			#dem <- if(tclvalue(cbValdem)=='0') getDemOpenData(file.plotDem) else NULL
@@ -403,14 +403,14 @@ QcCmdBut<-function(stateReplaceAll){
 			rfedat<-if(tclvalue(cbValrfe)=='1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
 			ZoomXYval<-as.numeric(c(tclvalue(xx1),tclvalue(xx2),tclvalue(yy1),tclvalue(yy2)))
 			tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
-			if(length(tab.type)>0){
-				if(tab.type[[tabid]]=="img"){
-					assign("ZoomXYval", ZoomXYval, envir=environment(tab.data[[tabid]][[2]]$fun))
-					assign("showval", showval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-					assign("shpf", shpf, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-					assign("dem", dem, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-					assign("rfedat", rfedat, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-					refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
+			if(length(AllOpenTabType)>0){
+				if(AllOpenTabType[[tabid]]=="img"){
+					assign("ZoomXYval", ZoomXYval, envir=environment(AllOpenTabData[[tabid]][[2]]$fun))
+					assign("showval", showval, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+					assign("shpf", shpf, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+					assign("dem", dem, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+					assign("rfedat", rfedat, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+					refreshPlot1(W=AllOpenTabData[[tabid]][[2]][[1]],img=AllOpenTabData[[tabid]][[2]][[2]],
 					hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 					tkconfigure(btRedraw.tab3,relief='raised',bg='lightblue')
 				}
@@ -423,7 +423,7 @@ QcCmdBut<-function(stateReplaceAll){
 		if(!is.null(noteQcSpatCheck)){
 			if(tclvalue(cbValrfe)=='0'){
 				rfedat<-getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal)
-				if(is.null(rfedat)) insert.txt(main.txt.out,'No satellite data provided',format=TRUE)
+				if(is.null(rfedat)) InsertMessagesTxt(main.txt.out,'No satellite data provided',format=TRUE)
 			}else  rfedat<-NULL
 
 			#rfedat <- if(tclvalue(cbValrfe)=='0') getSatelliteData(file.plotDem) else NULL
@@ -432,14 +432,14 @@ QcCmdBut<-function(stateReplaceAll){
 			dem <- if(tclvalue(cbValdem)=='1') getDemOpenData(file.plotDem) else NULL
 			ZoomXYval<-as.numeric(c(tclvalue(xx1),tclvalue(xx2),tclvalue(yy1),tclvalue(yy2)))
 			tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
-			if(length(tab.type)>0){
-				if(tab.type[[tabid]]=="img"){
-					assign("ZoomXYval", ZoomXYval, envir=environment(tab.data[[tabid]][[2]]$fun))
-					assign("showval", showval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-					assign("shpf", shpf, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-					assign("dem", dem, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-					assign("rfedat", rfedat, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-					refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
+			if(length(AllOpenTabType)>0){
+				if(AllOpenTabType[[tabid]]=="img"){
+					assign("ZoomXYval", ZoomXYval, envir=environment(AllOpenTabData[[tabid]][[2]]$fun))
+					assign("showval", showval, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+					assign("shpf", shpf, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+					assign("dem", dem, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+					assign("rfedat", rfedat, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+					refreshPlot1(W=AllOpenTabData[[tabid]][[2]][[1]],img=AllOpenTabData[[tabid]][[2]][[2]],
 					hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 					tkconfigure(btRedraw.tab3,relief='raised',bg='lightblue')
 				}
@@ -571,23 +571,23 @@ QcCmdBut<-function(stateReplaceAll){
 	PrevwQcIdTab<-NULL
 
 	tkconfigure(btPreview.tab1,command=function(){
-		if(!is.null(ret.results)){
-			if(gal.params$AllOrOne=='one'){
-				IJstation<-ret.results$station
-				todisplay<-ret.results
+		if(!is.null(ReturnExecResults)){
+			if(GeneralParameters$AllOrOne=='one'){
+				IJstation<-ReturnExecResults$station
+				todisplay<-ReturnExecResults
 			}
-			if(gal.params$AllOrOne=='all'){
-				ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
-				IJstation<-ret.results$station[[ijstn]]
-				todisplay<-list(action=ret.results$action,period=ret.results$period,station=ret.results$station[[ijstn]],
-				res=ret.results$res[[ijstn]],outputdir=ret.results$outputdir[[ijstn]],AllOrOne=ret.results$AllOrOne)
+			if(GeneralParameters$AllOrOne=='all'){
+				ijstn<-which(as.character(GeneralParameters$parameter[[2]][,1])==tclvalue(stn.choix.val))
+				IJstation<-ReturnExecResults$station[[ijstn]]
+				todisplay<-list(action=ReturnExecResults$action,period=ReturnExecResults$period,station=ReturnExecResults$station[[ijstn]],
+				res=ReturnExecResults$res[[ijstn]],outputdir=ReturnExecResults$outputdir[[ijstn]],AllOrOne=ReturnExecResults$AllOrOne)
 			}
 
-			retNBTab<-consolOutNotebookTab_unik(tknotes,todisplay,paste(IJstation,'_QC-Output Preview',sep=''),PrevwQcIdTab,tab.type,tab.data)
+			retNBTab<-consolOutNotebookTab_unik(tknotes,todisplay,paste(IJstation,'_QC-Output Preview',sep=''),PrevwQcIdTab,AllOpenTabType,AllOpenTabData)
 			PrevwQcIdTab<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
-		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
+		}else InsertMessagesTxt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
 
@@ -596,83 +596,83 @@ QcCmdBut<-function(stateReplaceAll){
 	QcEditSetTab<-NULL
 
 	tkconfigure(btSetting.tab1,command=function(){
-		if(!is.null(ret.results)){
-			if(gal.params$AllOrOne=='one'){
-				IJstation<-ret.results$station
+		if(!is.null(ReturnExecResults)){
+			if(GeneralParameters$AllOrOne=='one'){
+				IJstation<-ReturnExecResults$station
 			}
-			if(gal.params$AllOrOne=='all'){
-				ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
-				IJstation<-ret.results$station[[ijstn]]
+			if(GeneralParameters$AllOrOne=='all'){
+				ijstn<-which(as.character(GeneralParameters$parameter[[2]][,1])==tclvalue(stn.choix.val))
+				IJstation<-ReturnExecResults$station[[ijstn]]
 			}
 			
-			retNBTab<-tableQcEditNotebookTab_unik(tknotes,paste(IJstation,'_QC-Output Edit',sep=''),QcEditSetTab,tab.type,tab.data)
+			retNBTab<-tableQcEditNotebookTab_unik(tknotes,paste(IJstation,'_QC-Output Edit',sep=''),QcEditSetTab,AllOpenTabType,AllOpenTabData)
 			QcEditSetTab<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
-		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
+		}else InsertMessagesTxt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
 	###################################################
 	# replace outliers
 	tkconfigure(btReplace.tab1,command=function(){
-		if(!is.null(ret.results)){
-			if(gal.params$AllOrOne=='one'){
-				IJstation<-ret.results$station
+		if(!is.null(ReturnExecResults)){
+			if(GeneralParameters$AllOrOne=='one'){
+				IJstation<-ReturnExecResults$station
 			}
-			if(gal.params$AllOrOne=='all'){
-				ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
-				IJstation<-ret.results$station[[ijstn]]
+			if(GeneralParameters$AllOrOne=='all'){
+				ijstn<-which(as.character(GeneralParameters$parameter[[2]][,1])==tclvalue(stn.choix.val))
+				IJstation<-ReturnExecResults$station[[ijstn]]
 			}
 			isOK<-try(replaceOutlier(IJstation,tclvalue(stats),isReplace=FALSE),silent=TRUE)
 			if(!inherits(isOK, "try-error")){
-				insert.txt(main.txt.out,paste("Outliers replacement finished successfully for", IJstation))
+				InsertMessagesTxt(main.txt.out,paste("Outliers replacement finished successfully for", IJstation))
 			}else{
-				insert.txt(main.txt.out,paste("Outliers replacement failed for", IJstation),format=TRUE)
-				insert.txt(main.txt.out,gsub('[\r\n]','',isOK[1]),format=TRUE)
+				InsertMessagesTxt(main.txt.out,paste("Outliers replacement failed for", IJstation),format=TRUE)
+				InsertMessagesTxt(main.txt.out,gsub('[\r\n]','',isOK[1]),format=TRUE)
 			}
-		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+		}else InsertMessagesTxt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
 	#######################
 	# replace outliers with threshold
 	tkconfigure(btThresReplace.tab1,command=function(){
-		if(!is.null(ret.results)){
-			if(gal.params$AllOrOne=='one'){
-				IJstation<-ret.results$station
+		if(!is.null(ReturnExecResults)){
+			if(GeneralParameters$AllOrOne=='one'){
+				IJstation<-ReturnExecResults$station
 			}
-			if(gal.params$AllOrOne=='all'){
-				ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
-				IJstation<-ret.results$station[[ijstn]]
+			if(GeneralParameters$AllOrOne=='all'){
+				ijstn<-which(as.character(GeneralParameters$parameter[[2]][,1])==tclvalue(stn.choix.val))
+				IJstation<-ReturnExecResults$station[[ijstn]]
 			}
 			isOK<-try(replaceOutlier(IJstation,tclvalue(stats),isReplace=TRUE),silent=TRUE)
 			if(!inherits(isOK, "try-error")){
-				insert.txt(main.txt.out,paste("Outliers replacement finished successfully for", IJstation))
+				InsertMessagesTxt(main.txt.out,paste("Outliers replacement finished successfully for", IJstation))
 			}else{
-				insert.txt(main.txt.out,paste("Outliers replacement failed for", IJstation),format=TRUE)
-				insert.txt(main.txt.out,gsub('[\r\n]','',isOK[1]),format=TRUE)
+				InsertMessagesTxt(main.txt.out,paste("Outliers replacement failed for", IJstation),format=TRUE)
+				InsertMessagesTxt(main.txt.out,gsub('[\r\n]','',isOK[1]),format=TRUE)
 			}
-		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+		}else InsertMessagesTxt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
 	####################
 	##replace all outliers with threshold
 	tkconfigure(btAllReplace.tab1,command=function(){
-		if(!is.null(ret.results)){
-			stns<-unlist(ret.results$station)
+		if(!is.null(ReturnExecResults)){
+			stns<-unlist(ReturnExecResults$station)
 			tkconfigure(main.win,cursor='watch');tcl("update","idletasks")
 			lapply(stns,function(IJstation){
 				isOK<-try(replaceOutlier(IJstation,tclvalue(stats),isReplace=TRUE),silent=TRUE)
 				if(!inherits(isOK, "try-error")){
-					insert.txt(main.txt.out,paste("Outliers replacement finished successfully for", IJstation))
+					InsertMessagesTxt(main.txt.out,paste("Outliers replacement finished successfully for", IJstation))
 				}else{
-					insert.txt(main.txt.out,paste("Outliers replacement failed for", IJstation),format=TRUE)
-					insert.txt(main.txt.out,gsub('[\r\n]','',isOK[1]),format=TRUE)
+					InsertMessagesTxt(main.txt.out,paste("Outliers replacement failed for", IJstation),format=TRUE)
+					InsertMessagesTxt(main.txt.out,gsub('[\r\n]','',isOK[1]),format=TRUE)
 				}
 				tcl("update")
 			})
 			tkconfigure(main.win,cursor='')
-			insert.txt(main.txt.out,"Outliers replacement finished!")
-		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+			InsertMessagesTxt(main.txt.out,"Outliers replacement finished!")
+		}else InsertMessagesTxt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
 	###################################################
@@ -686,7 +686,7 @@ QcCmdBut<-function(stateReplaceAll){
 	#####
 
 	tkconfigure(btOutlNext.tab2,command=function(){
-		if(!is.null(ret.results) & !is.null(gal.params)){
+		if(!is.null(ReturnExecResults) & !is.null(GeneralParameters)){
 			imois<-as.numeric(tclvalue(tcl(combOutlmonth.tab2,"current")))+1
 			imois<-imois+1
 			if(imois>12) imois<-1
@@ -694,16 +694,16 @@ QcCmdBut<-function(stateReplaceAll){
 			jmo<-as.character(xnmois[imois,2])
 
 			imgContainer<-DisplayOutliers(tknotes,jmo,noteQcOutlierCheck)
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcOutlierCheck,tab.type,tab.data)
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcOutlierCheck,AllOpenTabType,AllOpenTabData)
 			noteQcOutlierCheck<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
-		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
+		}else InsertMessagesTxt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
 	#####
 	tkconfigure(btOutlPrev.tab2,command=function(){
-		if(!is.null(ret.results) & !is.null(gal.params)){
+		if(!is.null(ReturnExecResults) & !is.null(GeneralParameters)){
 			imois<-as.numeric(tclvalue(tcl(combOutlmonth.tab2,"current")))+1
 			imois<-imois-1
 			if(imois<1) imois<-12
@@ -711,24 +711,24 @@ QcCmdBut<-function(stateReplaceAll){
 			jmo<-as.character(xnmois[imois,2])
 
 			imgContainer<-DisplayOutliers(tknotes,jmo,noteQcOutlierCheck)
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcOutlierCheck,tab.type,tab.data)
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcOutlierCheck,AllOpenTabType,AllOpenTabData)
 			noteQcOutlierCheck<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
-		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
+		}else InsertMessagesTxt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
 	#####
 	tkbind(combOutlmonth.tab2,"<<ComboboxSelected>>",function(){
-		if(!is.null(ret.results) & !is.null(gal.params)){
+		if(!is.null(ReturnExecResults) & !is.null(GeneralParameters)){
 			jmo<-as.character(xnmois[which(xnmois[,1]==tclvalue(tkget(combOutlmonth.tab2))),2])
 
 			imgContainer<-DisplayOutliers(tknotes,jmo,noteQcOutlierCheck)
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcOutlierCheck,tab.type,tab.data)
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcOutlierCheck,AllOpenTabType,AllOpenTabData)
 			noteQcOutlierCheck<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
-		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
+		}else InsertMessagesTxt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
 	###################################################
@@ -738,7 +738,7 @@ QcCmdBut<-function(stateReplaceAll){
 	qcoutDate<<-NULL
 	##########
 	tkconfigure(btSpChkNext.tab2,command=function(){
-		if(!is.null(ret.results) & !is.null(gal.params)){
+		if(!is.null(ReturnExecResults) & !is.null(GeneralParameters)){
 			spchkoutdates<-isSpatialCheckOk()
 			if(nrow(spchkoutdates)!=0){
 				if(as.character(spchkoutdates[1,1])!=actualSTN){
@@ -761,22 +761,22 @@ QcCmdBut<-function(stateReplaceAll){
 				tclvalue(spchkQcDateVal)<-qcoutDate[ijsp]
 
 		 		imgContainer<-DisplaySpatialCheck(tknotes,ijsp,ZoomXYval,dem,rfedat,shpf,showval,noteQcSpatCheck)
-				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcSpatCheck,tab.type,tab.data)
+				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcSpatCheck,AllOpenTabType,AllOpenTabData)
 				noteQcSpatCheck<<-retNBTab$notebookTab
-				tab.type<<-retNBTab$tab.type
-				tab.data<<-retNBTab$tab.data
+				AllOpenTabType<<-retNBTab$AllOpenTabType
+				AllOpenTabData<<-retNBTab$AllOpenTabData
 			}else{
 				tkconfigure(combSpChkDate.tab2,values='')
 				tclvalue(spchkQcDateVal)<-''
 				actualSTN<<-'INITSTN'
-				insert.txt(main.txt.out,'No spatial check performed',format=TRUE)
+				InsertMessagesTxt(main.txt.out,'No spatial check performed',format=TRUE)
 			}
-		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+		}else InsertMessagesTxt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
 	##########
 	tkconfigure(btSpChkPrev.tab2,command=function(){
-		if(!is.null(ret.results) & !is.null(gal.params)){
+		if(!is.null(ReturnExecResults) & !is.null(GeneralParameters)){
 			spchkoutdates<-isSpatialCheckOk()
 			if(nrow(spchkoutdates)!=0){
 				if(as.character(spchkoutdates[1,1])!=actualSTN){
@@ -799,22 +799,22 @@ QcCmdBut<-function(stateReplaceAll){
 				tclvalue(spchkQcDateVal)<-qcoutDate[ijsp]
 		 		imgContainer<-DisplaySpatialCheck(tknotes,ijsp,ZoomXYval,dem,rfedat,shpf,showval,noteQcSpatCheck)
 
-				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcSpatCheck,tab.type,tab.data)
+				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcSpatCheck,AllOpenTabType,AllOpenTabData)
 				noteQcSpatCheck<<-retNBTab$notebookTab
-				tab.type<<-retNBTab$tab.type
-				tab.data<<-retNBTab$tab.data
+				AllOpenTabType<<-retNBTab$AllOpenTabType
+				AllOpenTabData<<-retNBTab$AllOpenTabData
 			}else{
 				tkconfigure(combSpChkDate.tab2,values='')
 				tclvalue(spchkQcDateVal)<-''
 				actualSTN<<-'INITSTN'
-				insert.txt(main.txt.out,'No spatial check performed',format=TRUE)
+				InsertMessagesTxt(main.txt.out,'No spatial check performed',format=TRUE)
 			}
-		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+		}else InsertMessagesTxt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
 	##########
 	tkbind(combSpChkDate.tab2,"<<ComboboxSelected>>",function(){
-		if(!is.null(ret.results) & !is.null(gal.params)){
+		if(!is.null(ReturnExecResults) & !is.null(GeneralParameters)){
 			spchkoutdates<-isSpatialCheckOk()
 			if(nrow(spchkoutdates)!=0){
 				shpf<-if(tclvalue(cbValshp)=='1') getShpOpenData(file.plotShp)[[2]] else NULL
@@ -826,17 +826,17 @@ QcCmdBut<-function(stateReplaceAll){
 				ijsp<-as.numeric(tclvalue(tcl(combSpChkDate.tab2,"current")))+1
 		 		imgContainer<-DisplaySpatialCheck(tknotes,ijsp,ZoomXYval,dem,rfedat,shpf,showval,noteQcSpatCheck)
 
-				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcSpatCheck,tab.type,tab.data)
+				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteQcSpatCheck,AllOpenTabType,AllOpenTabData)
 				noteQcSpatCheck<<-retNBTab$notebookTab
-				tab.type<<-retNBTab$tab.type
-				tab.data<<-retNBTab$tab.data
+				AllOpenTabType<<-retNBTab$AllOpenTabType
+				AllOpenTabData<<-retNBTab$AllOpenTabData
 			}else{
 				tkconfigure(combSpChkDate.tab2,values='')
 				tclvalue(spchkQcDateVal)<-''
 				actualSTN<<-'INITSTN'
-				insert.txt(main.txt.out,'No spatial check performed',format=TRUE)
+				InsertMessagesTxt(main.txt.out,'No spatial check performed',format=TRUE)
 			}
-		}else insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+		}else InsertMessagesTxt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 	})
 
 	######

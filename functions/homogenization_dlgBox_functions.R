@@ -1,6 +1,6 @@
-homogen.get.info<-function(parent.win,gal.params){
+homogen.get.info<-function(parent.win,GeneralParameters){
 
-	file.list<-openFile_ttkcomboList()
+	listOpenFiles<-openFile_ttkcomboList()
 
 	#tkentry width, file path
 	if (Sys.info()["sysname"] == "Windows") largeur<-28
@@ -8,7 +8,7 @@ homogen.get.info<-function(parent.win,gal.params){
 	##tkcombo width, homg method choice
 	if (Sys.info()["sysname"] == "Windows") largeur1<-23
 	else largeur1<-21
-	## tkcombo width, file.list
+	## tkcombo width, listOpenFiles
 	wtkcombo<-25
 	################
 	tt<-tktoplevel()
@@ -29,7 +29,7 @@ homogen.get.info<-function(parent.win,gal.params){
 	for(i in 0:1) tkgrid.configure(get(paste('fr.A',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 	##################################
 
-	if(as.character(gal.params$use.method$Values[2])=='1' & as.character(gal.params$use.method$Values[3])=='1'){
+	if(as.character(GeneralParameters$use.method$Values[2])=='1' & as.character(GeneralParameters$use.method$Values[3])=='1'){
 		homo.state<-'normal'
 	}else{
 		homo.state<-'disabled'
@@ -40,11 +40,11 @@ homogen.get.info<-function(parent.win,gal.params){
 	for(i in 0:4) tkgrid.configure(get(paste('fr.A0',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(gal.params$period)=='daily','Daily data',ifelse(as.character(gal.params$period)=='dekadal','Dekadal data','Monthly data'))
+	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period)=='daily','Daily data',ifelse(as.character(GeneralParameters$period)=='dekadal','Dekadal data','Monthly data'))
 
 	cb.period<-ttkcombobox(fr.A00, values=c('Daily data','Dekadal data','Monthly data'),textvariable=file.period,width=wtkcombo)
 	infobulle(cb.period,'Choose the time step of the data')
-	status.bar.display(cb.period,txt.stbr1,'Choose the time step of the data')
+	status.bar.display(cb.period,TextOutputVar,'Choose the time step of the data')
 	tkgrid(cb.period)
 
 	#########
@@ -52,15 +52,15 @@ homogen.get.info<-function(parent.win,gal.params){
 	tkgrid(homo.file.stn1)
 
 	file.choix1a <- tclVar()
-	tclvalue(file.choix1a) <-as.character(gal.params$file.io$Values[1])
+	tclvalue(file.choix1a) <-as.character(GeneralParameters$file.io$Values[1])
 	file.choix1b <- tclVar()
-	tclvalue(file.choix1b) <-as.character(gal.params$file.io$Values[2])
+	tclvalue(file.choix1b) <-as.character(GeneralParameters$file.io$Values[2])
 
-	cb.file.stn1<-ttkcombobox(fr.A02, values=unlist(file.list), textvariable=file.choix1a,width=wtkcombo)
+	cb.file.stn1<-ttkcombobox(fr.A02, values=unlist(listOpenFiles), textvariable=file.choix1a,width=wtkcombo)
 	infobulle(cb.file.stn1,'Choose the file in the list')
-	status.bar.display(cb.file.stn1,txt.stbr1,'Choose the file containing the candidate series')
+	status.bar.display(cb.file.stn1,TextOutputVar,'Choose the file containing the candidate series')
 
-	bt.file.stn1<-tkbutton.h(fr.A02, text="...",txt.stbr1,'Browse file if not listed','Browse file if not listed')
+	bt.file.stn1<-tkbutton.h(fr.A02, text="...",TextOutputVar,'Browse file if not listed','Browse file if not listed')
 	tkgrid(cb.file.stn1,bt.file.stn1)
 	tkgrid.configure(cb.file.stn1,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.file.stn1,row=0,column=1,sticky='e')
@@ -68,14 +68,14 @@ homogen.get.info<-function(parent.win,gal.params){
 	tkconfigure(bt.file.stn1,command=function(){
 		dat.opfiles<-getOpenFiles(parent.win,all.opfiles)
 		if(!is.null(dat.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'ascii'
-			file.opfiles[[nopf+1]]<<-dat.opfiles
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'ascii'
+			AllOpenFilesData[[nopf+1]]<<-dat.opfiles
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.choix1a)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cb.file.stn1,values=unlist(file.list), textvariable=file.choix1a)
-			tkconfigure(cb.file.stn2,values=unlist(file.list), textvariable=file.choix1b)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.choix1a)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.file.stn1,values=unlist(listOpenFiles), textvariable=file.choix1a)
+			tkconfigure(cb.file.stn2,values=unlist(listOpenFiles), textvariable=file.choix1b)
 		}else{
 			return(NULL)
 		}
@@ -84,11 +84,11 @@ homogen.get.info<-function(parent.win,gal.params){
 	homo.file.stn2<-tklabel(fr.A03,text='Reference series')
 	tkgrid(homo.file.stn2)
 
-	cb.file.stn2<-ttkcombobox(fr.A04, values=unlist(file.list), textvariable=file.choix1b,width=wtkcombo)
+	cb.file.stn2<-ttkcombobox(fr.A04, values=unlist(listOpenFiles), textvariable=file.choix1b,width=wtkcombo)
 	infobulle(cb.file.stn2,'Choose the reference series in the list')
-	status.bar.display(cb.file.stn2,txt.stbr1,'Choose the file containing the reference series')
+	status.bar.display(cb.file.stn2,TextOutputVar,'Choose the file containing the reference series')
 
-	bt.file.stn2<-tkbutton.h(fr.A04, text="...",txt.stbr1,'Browse file if not listed','Browse file if not listed')
+	bt.file.stn2<-tkbutton.h(fr.A04, text="...",TextOutputVar,'Browse file if not listed','Browse file if not listed')
 	tkgrid(cb.file.stn2,bt.file.stn2)
 
 	tkgrid.configure(cb.file.stn2,row=0,column=0,sticky='w')
@@ -99,14 +99,14 @@ homogen.get.info<-function(parent.win,gal.params){
 	tkconfigure(bt.file.stn2,command=function(){
 		dat.opfiles<-getOpenFiles(parent.win,all.opfiles)
 		if(!is.null(dat.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'ascii'
-			file.opfiles[[nopf+1]]<<-dat.opfiles
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'ascii'
+			AllOpenFilesData[[nopf+1]]<<-dat.opfiles
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.choix1b)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cb.file.stn1,values=unlist(file.list), textvariable=file.choix1a)
-			tkconfigure(cb.file.stn2,values=unlist(file.list), textvariable=file.choix1b)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.choix1b)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.file.stn1,values=unlist(listOpenFiles), textvariable=file.choix1a)
+			tkconfigure(cb.file.stn2,values=unlist(listOpenFiles), textvariable=file.choix1b)
 		}else{
 			return(NULL)
 		}
@@ -121,16 +121,16 @@ homogen.get.info<-function(parent.win,gal.params){
 	frA11.txt1<-tklabel(fr.A11,text='Directory to save result')
 	tkgrid(frA11.txt1)
 
-	file.save1 <-tclVar(as.character(gal.params$file.io$Values[4]))
+	file.save1 <-tclVar(as.character(GeneralParameters$file.io$Values[4]))
 	en.file.save<-tkentry(fr.A12,textvariable=file.save1,width=largeur)
 	infobulle(en.file.save,'Enter the full path of the\ndirectory to save result')
-	status.bar.display(en.file.save,txt.stbr1,'Enter the full path of the directory to save result')
-	bt.file.save<-tkbutton.h(fr.A12, text="...",txt.stbr1,'or browse here','')
+	status.bar.display(en.file.save,TextOutputVar,'Enter the full path of the directory to save result')
+	bt.file.save<-tkbutton.h(fr.A12, text="...",TextOutputVar,'or browse here','')
 	tkgrid(en.file.save,bt.file.save)
 	tkgrid.configure(en.file.save,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.file.save,row=0,column=1,sticky='e')
 	tkconfigure(bt.file.save,command=function(){
-		file2save1<-tk_choose.dir(as.character(gal.params$file.io$Values[4]), "")
+		file2save1<-tk_choose.dir(as.character(GeneralParameters$file.io$Values[4]), "")
 		if(!file.exists(file2save1)){
 			tkmessageBox(message = paste(file2save1,'does not exist.\n It will be created.',sep=' '),icon="warning",type="ok")
 			dir.create(file2save1,recursive=TRUE)
@@ -147,9 +147,9 @@ homogen.get.info<-function(parent.win,gal.params){
 	frB0.txt1<-tklabel(fr.B0,text='Detection statistic',anchor='w',justify='left')
 
 	homog.mthd <- c("Pettitt Test","SNHT(Alexandersson & Moberg,1997)","CUSUM-type (Gallagher et al.,2013)", "CUSUM-type with Trend(Gallagher et al.,2013)")
-	hmg.mthd<-tclVar(as.character(gal.params$use.method$Values[1]))
+	hmg.mthd<-tclVar(as.character(GeneralParameters$use.method$Values[1]))
 	cb.homog.mthd<-ttkcombobox(fr.B0, values=homog.mthd,textvariable=hmg.mthd,width=largeur1)
-	bt.homog.mthd<-tkbutton.h(fr.B0, text="Settings",txt.stbr1,'Set options for homogenization procedures', 'Set options for homogenization procedures')
+	bt.homog.mthd<-tkbutton.h(fr.B0, text="Settings",TextOutputVar,'Set options for homogenization procedures', 'Set options for homogenization procedures')
 
 
 	tkgrid(frB0.txt1,sticky='w')
@@ -162,34 +162,34 @@ homogen.get.info<-function(parent.win,gal.params){
 	}
 
 	tkconfigure(bt.homog.mthd,command=function(){
-		gal.params<<-homogenization.opts(tt,gal.params,Clev.fun(cb.homog.mthd))
+		GeneralParameters<<-homogenization.opts(tt,GeneralParameters,Clev.fun(cb.homog.mthd))
 	})
 	#######################################
-	if(as.character(gal.params$use.method$Values[2])=='0') state1ser<-'disabled'
-	if(as.character(gal.params$use.method$Values[2])=='1') state1ser<-'normal'
+	if(as.character(GeneralParameters$use.method$Values[2])=='0') state1ser<-'disabled'
+	if(as.character(GeneralParameters$use.method$Values[2])=='1') state1ser<-'normal'
 
-	cb.1series.val <- tclVar(as.character(gal.params$use.method$Values[2]))
+	cb.1series.val <- tclVar(as.character(GeneralParameters$use.method$Values[2]))
 	cb.1series <- tkcheckbutton(fr.B1,variable=cb.1series.val,text='Single Series',anchor='w',justify='left',width=largeur1-1)
 	infobulle(cb.1series,'Homogenization for one station series')
-	status.bar.display(cb.1series,txt.stbr1,'The data is a series of one station')
-	bt.1series<-tkbutton.h(fr.B1, text="Settings",txt.stbr1,'Set options for the file and date format', 'Set options for the file and date format')
+	status.bar.display(cb.1series,TextOutputVar,'The data is a series of one station')
+	bt.1series<-tkbutton.h(fr.B1, text="Settings",TextOutputVar,'Set options for the file and date format', 'Set options for the file and date format')
 	tkgrid(cb.1series,bt.1series)
 	tkconfigure(bt.1series,state=state1ser,command=function(){
-		gal.params<<-filedateformat(tt,gal.params,tclvalue(file.period))
+		GeneralParameters<<-filedateformat(tt,GeneralParameters,tclvalue(file.period))
 	})
 
 	#######################################
-	if(as.character(gal.params$use.method$Values[3])=='0') staterf<-'disabled'
-	if(as.character(gal.params$use.method$Values[3])=='1') staterf<-'normal'
+	if(as.character(GeneralParameters$use.method$Values[3])=='0') staterf<-'disabled'
+	if(as.character(GeneralParameters$use.method$Values[3])=='1') staterf<-'normal'
 
-	cb.rfseries.val <- tclVar(as.character(gal.params$use.method$Values[3]))
+	cb.rfseries.val <- tclVar(as.character(GeneralParameters$use.method$Values[3]))
 	cb.rfseries <- tkcheckbutton(fr.B2,variable=cb.rfseries.val,text='Use reference series',anchor='w',justify='left',width=largeur1-1)
 	infobulle(cb.rfseries,'Using a reference series to\nperform the homogenization test')
-	status.bar.display(cb.rfseries,txt.stbr1,'Using a reference series to perform the homogenization test')
-	bt.rfseries<-tkbutton.h(fr.B2, text="Settings",txt.stbr1,'Set options to create the reference series', 'Set options to create the reference series')
+	status.bar.display(cb.rfseries,TextOutputVar,'Using a reference series to perform the homogenization test')
+	bt.rfseries<-tkbutton.h(fr.B2, text="Settings",TextOutputVar,'Set options to create the reference series', 'Set options to create the reference series')
 	tkgrid(cb.rfseries,bt.rfseries)
 	tkconfigure(bt.rfseries,state=staterf,command=function(){
-		gal.params<<-referenceseries(tt,gal.params,tclvalue(file.choix1a))
+		GeneralParameters<<-referenceseries(tt,GeneralParameters,tclvalue(file.choix1a))
 	})
 
 	#######################################
@@ -237,27 +237,27 @@ homogen.get.info<-function(parent.win,gal.params){
 		}
 	})
 	#################################
-	bt.adjust<-tkbutton.h(fr.B3, text="Adjust-Settings",txt.stbr1,'Set options to adjust the series',
+	bt.adjust<-tkbutton.h(fr.B3, text="Adjust-Settings",TextOutputVar,'Set options to adjust the series',
 	'Set options to adjust the series')
 	tkgrid(bt.adjust,sticky='we',padx=25,pady=1,ipadx=1,ipady=1)
 	tkconfigure(bt.adjust,command=function(){
-		gal.params<<-getAdjustparams(tt,gal.params,tclvalue(file.period))
+		GeneralParameters<<-getAdjustparams(tt,GeneralParameters,tclvalue(file.period))
 	})
 	###################################
-	computefun.l<-tklabel.h(fr.B4,text='Aggregation',txt.stbr1,'Function to be used to compute\ndekadal and monthly series', 'Function to be used to compute dekadal and monthly series')
+	computefun.l<-tklabel.h(fr.B4,text='Aggregation',TextOutputVar,'Function to be used to compute\ndekadal and monthly series', 'Function to be used to compute dekadal and monthly series')
 	computefun <- c("mean","sum")
-	cmptfun<-tclVar(as.character(gal.params$compute.var$Values[1]))
+	cmptfun<-tclVar(as.character(GeneralParameters$compute.var$Values[1]))
 	cb.cmptfun<-ttkcombobox(fr.B4, values=computefun,textvariable=cmptfun,width=8)
 	infobulle(cb.cmptfun,'Function to be used to compute\ndekadal and monthly series')
-	status.bar.display(cb.cmptfun,txt.stbr1,'Function to be used to compute dekadal and monthly series')
+	status.bar.display(cb.cmptfun,TextOutputVar,'Function to be used to compute dekadal and monthly series')
 
-	missfrac.l<-tklabel.h(fr.B4,text='   Min.frac',txt.stbr1,
+	missfrac.l<-tklabel.h(fr.B4,text='   Min.frac',TextOutputVar,
 	'Minimum fraction of available data\nthat must be present for the time period\nto compute',
 	'Minimum fraction of available data that must be present for the time period to compute')
-	missfrac.v<-tkentry.h(fr.B4,txt.stbr1,
+	missfrac.v<-tkentry.h(fr.B4,TextOutputVar,
 	'Minimum fraction of available data\nthat must be present for the time period\nto compute',
 	'Minimum fraction of available data that must be present for the time period to compute')
-	miss.frac<-tclVar(as.character(gal.params$compute.var$Values[2]))
+	miss.frac<-tclVar(as.character(GeneralParameters$compute.var$Values[2]))
 	tkconfigure(missfrac.v,width=6,textvariable=miss.frac)
 
 	tkgrid(computefun.l,cb.cmptfun,missfrac.l,missfrac.v)
@@ -275,7 +275,7 @@ homogen.get.info<-function(parent.win,gal.params){
 			tkmessageBox(message="Provide the file containing\nthe reference series",icon="warning",type="ok")
 		}else{
 
-			all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+			all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 			jfile<-which(all.open.file==tclvalue(file.choix1a))
 			if(length(jfile)==0){
 				tkmessageBox(message="Station data not found or in the wrong format",icon="warning",type="ok")
@@ -297,46 +297,46 @@ homogen.get.info<-function(parent.win,gal.params){
 			fileparams<-file.path(dirparams, 'Parameters.RData',fsep = .Platform$file.sep)
 			assign('baseDir',dirHomog,envir=EnvHomogzData)
 
-			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily',ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
-			gal.params$file.io$Values<<-c(tclvalue(file.choix1a),tclvalue(file.choix1b),as.character(gal.params$file.io$Values[3]),tclvalue(file.save1))
-			gal.params$use.method$Values<<-c(tclvalue(hmg.mthd),tclvalue(cb.1series.val),tclvalue(cb.rfseries.val))
-			gal.params$compute.var$Values<<-c(tclvalue(cmptfun),tclvalue(miss.frac))
+			GeneralParameters$period<<-ifelse(tclvalue(file.period)=='Daily data','daily',ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
+			GeneralParameters$file.io$Values<<-c(tclvalue(file.choix1a),tclvalue(file.choix1b),as.character(GeneralParameters$file.io$Values[3]),tclvalue(file.save1))
+			GeneralParameters$use.method$Values<<-c(tclvalue(hmg.mthd),tclvalue(cb.1series.val),tclvalue(cb.rfseries.val))
+			GeneralParameters$compute.var$Values<<-c(tclvalue(cmptfun),tclvalue(miss.frac))
 
 			######
-			getInitDataParams<-function(gal.params){
+			getInitDataParams<-function(GeneralParameters){
 				if(tclvalue(cb.1series.val)=="0"){
-					donstn<-splitCDTData(file.opfiles[[jfile]][[2]],gal.params$period)
+					donstn<-splitCDTData(AllOpenFilesData[[jfile]][[2]],GeneralParameters$period)
 					donOut<-list(donstn)
-					parsFile<-list(file.opfiles[[jfile]][3:4])
+					parsFile<-list(AllOpenFilesData[[jfile]][3:4])
 					if(!is.null(donstn)) stn.choix<-as.character(donstn$id)
 					else tkwait.window(tt)
 				}else{
-					donstn<-splitTsData(file.opfiles[[jfile]][[2]],gal.params$period,as.character(gal.params$file.date.format$Values[1]),as.character(gal.params$file.date.format$Values[2]))
+					donstn<-splitTsData(AllOpenFilesData[[jfile]][[2]],GeneralParameters$period,as.character(GeneralParameters$file.date.format$Values[1]),as.character(GeneralParameters$file.date.format$Values[2]))
 					donOut<-list(donstn)
-					parsFile<-list(file.opfiles[[jfile]][3:4])
+					parsFile<-list(AllOpenFilesData[[jfile]][3:4])
 					if(tclvalue(cb.rfseries.val)=="1"){
-						donstn1<-splitTsData(file.opfiles[[jfile1]][[2]],gal.params$period,as.character(gal.params$file.date.format$Values[1]),as.character(gal.params$file.date.format$Values[2]))
+						donstn1<-splitTsData(AllOpenFilesData[[jfile1]][[2]],GeneralParameters$period,as.character(GeneralParameters$file.date.format$Values[1]),as.character(GeneralParameters$file.date.format$Values[2]))
 						donOut<-list(donstn,donstn1)
-						parsFile<-list(file.opfiles[[jfile]][3:4],file.opfiles[[jfile1]][3:4])
+						parsFile<-list(AllOpenFilesData[[jfile]][3:4],AllOpenFilesData[[jfile1]][3:4])
 					}
 					if(!is.null(donstn)) stn.choix<-getf.no.ext(tclvalue(file.choix1a))
 					else tkwait.window(tt)
 				}
-				paramsGAL<-list(inputPars=gal.params,dataPars=parsFile,data=donOut)
+				paramsGAL<-list(inputPars=GeneralParameters,dataPars=parsFile,data=donOut)
 				save(paramsGAL,file=fileparams)
 				return(list(paramsGAL,stn.choix))
 			}
 
 			#####
 			getRefSrData<-function(){
-				donstn1<-splitTsData(file.opfiles[[jfile1]][[2]],gal.params$period,as.character(gal.params$file.date.format$Values[1]),as.character(gal.params$file.date.format$Values[2]))
+				donstn1<-splitTsData(AllOpenFilesData[[jfile1]][[2]],GeneralParameters$period,as.character(GeneralParameters$file.date.format$Values[1]),as.character(GeneralParameters$file.date.format$Values[2]))
 				if(is.null(donstn1)){
 					tkmessageBox(message="Data to be used for reference series not found or in the wrong format",icon="warning",type="ok")
 					tkwait.window(tt)
 				}
 				load(fileparams)
 				paramsGAL$data[[2]]<-donstn1
-				paramsGAL$dataPars[[2]]<-file.opfiles[[jfile1]][3:4]
+				paramsGAL$dataPars[[2]]<-AllOpenFilesData[[jfile1]][3:4]
 				save(paramsGAL,file=fileparams)
 				return(paramsGAL)
 			}
@@ -347,7 +347,7 @@ homogen.get.info<-function(parent.win,gal.params){
 			if(file.exists(fileparams)){
 				load(fileparams)
 
-				intest1<- paramsGAL$inputPars$period==gal.params$period & all(file.opfiles[[jfile]][3:4]%in%paramsGAL$dataPars[[1]])
+				intest1<- paramsGAL$inputPars$period==GeneralParameters$period & all(AllOpenFilesData[[jfile]][3:4]%in%paramsGAL$dataPars[[1]])
 				if(intest1){
 					assign('donnees1',paramsGAL$data[[1]],envir=EnvHomogzData)
 					assign('dly_data',paramsGAL$data1$dly_data,envir=EnvHomogzData)
@@ -359,44 +359,44 @@ homogen.get.info<-function(parent.win,gal.params){
 							paramsGAL<-getRefSrData()
 							assign('donnees2',paramsGAL$data[[2]],envir=EnvHomogzData)
 							##recalculate
-							computeHomogData(gal.params)
+							computeHomogData(GeneralParameters)
 						}else{
-							ctest1<- all(file.opfiles[[jfile1]][3:4]%in%paramsGAL$dataPars[[2]])
+							ctest1<- all(AllOpenFilesData[[jfile1]][3:4]%in%paramsGAL$dataPars[[2]])
 							if(!ctest1){
-								paramsGAL<-getRefSrData(gal.params)
+								paramsGAL<-getRefSrData(GeneralParameters)
 								assign('donnees2',paramsGAL$data[[2]],envir=EnvHomogzData)
 								##recalculate
-								computeHomogData(gal.params)
+								computeHomogData(GeneralParameters)
 							}
 						}
 					}
 					if(tclvalue(cb.1series.val)=="0") stn.choix<<-as.character(paramsGAL$data[[1]]$id)
 					else stn.choix<<-getf.no.ext(tclvalue(file.choix1a))
-					paramsGAL$inputPars<-gal.params
+					paramsGAL$inputPars<-GeneralParameters
 					save(paramsGAL,file=fileparams)
 					rm(paramsGAL)
 				}else{
-					retDonPar<-getInitDataParams(gal.params)
+					retDonPar<-getInitDataParams(GeneralParameters)
 
 					assign('donnees1',retDonPar[[1]]$data[[1]],envir=EnvHomogzData)
 					if(xtest) assign('donnees2',retDonPar[[1]]$data[[2]],envir=EnvHomogzData)
-					gal.params<<-retDonPar[[1]]$inputPars
+					GeneralParameters<<-retDonPar[[1]]$inputPars
 					stn.choix<<-retDonPar[[2]]
 					#calculate mon/dek
-					computeHomogData(gal.params)
+					computeHomogData(GeneralParameters)
 					paramsGAL<-retDonPar[[1]]
 					paramsGAL$data1<-list(dly_data=EnvHomogzData$dly_data,dek_data=EnvHomogzData$dek_data,mon_data=EnvHomogzData$mon_data)
 					save(paramsGAL,file=fileparams)
 					rm(retDonPar,paramsGAL)
 				}
 			}else{
-				retDonPar<-getInitDataParams(gal.params)
+				retDonPar<-getInitDataParams(GeneralParameters)
 				assign('donnees1',retDonPar[[1]]$data[[1]],envir=EnvHomogzData)
 				if(xtest) assign('donnees2',retDonPar[[1]]$data[[2]],envir=EnvHomogzData)
-				gal.params<<-retDonPar[[1]]$inputPars
+				GeneralParameters<<-retDonPar[[1]]$inputPars
 				stn.choix<<-retDonPar[[2]]
 				#calculate mon/dek
-				computeHomogData(gal.params)
+				computeHomogData(GeneralParameters)
 				paramsGAL<-retDonPar[[1]]
 				paramsGAL$data1<-list(dly_data=EnvHomogzData$dly_data,dek_data=EnvHomogzData$dek_data,mon_data=EnvHomogzData$mon_data)
 				save(paramsGAL,file=fileparams)
@@ -406,7 +406,7 @@ homogen.get.info<-function(parent.win,gal.params){
 			##################
 			##set choix stn
 
-			if(gal.params$retpar==0){
+			if(GeneralParameters$retpar==0){
 				if(stn.choix[1]!='') tclvalue(stn.choix.val)<-stn.choix[1]
 				else tclvalue(stn.choix.val)<-stn.choix[2]
 			}else{
@@ -427,12 +427,12 @@ homogen.get.info<-function(parent.win,gal.params){
 
 			####button command
 			if(is.null(lcmd.frame_homo)){
-				retcmdpars<-HomogCmdBut(gal.params)
+				retcmdpars<-HomogCmdBut(GeneralParameters)
 				lcmd.frame<<-retcmdpars[[1]]
 				lcmd.frame_homo<<-1
-				gal.params<<-retcmdpars[[2]]
+				GeneralParameters<<-retcmdpars[[2]]
 			}
-			gal.params$retpar<<-gal.params$retpar+1
+			GeneralParameters$retpar<<-GeneralParameters$retpar+1
 
 			########
 			tkgrab.release(tt)
@@ -465,12 +465,12 @@ homogen.get.info<-function(parent.win,gal.params){
 	tkfocus(tt)
 	tkbind(tt, "<Destroy>", function() {tkgrab.release(tt); tkfocus(parent.win)})
 	tkwait.window(tt)
-	return(gal.params)
+	return(GeneralParameters)
 }
 
 ############################################################################################
 
-filedateformat<-function(top.win,gal.params,speriod){
+filedateformat<-function(top.win,GeneralParameters,speriod){
 	tt1<-tktoplevel()
 	tkgrab.set(tt1)
 	tkfocus(tt1)
@@ -487,20 +487,20 @@ filedateformat<-function(top.win,gal.params,speriod){
 
 	ffrmt1 <- tkradiobutton(fr.fileformat1,text="One variable",anchor='w',justify='left')
 	infobulle(ffrmt1,'In case of single serie:\nThe file contains 1 variable')
-	status.bar.display(ffrmt1,txt.stbr1,'In case of single serie: The file contains 1 variable')
+	status.bar.display(ffrmt1,TextOutputVar,'In case of single serie: The file contains 1 variable')
 	ffrmt2 <- tkradiobutton(fr.fileformat1,text="Rain Tmax Tmin",anchor='w',justify='left')
 	infobulle(ffrmt2,'In case of single serie:\nThe file contains Rain, Tmax\nand Tmin in this order')
-	status.bar.display(ffrmt2,txt.stbr1,'In case of single serie:The file contains Rain, Tmax and Tmin in this order')
+	status.bar.display(ffrmt2,TextOutputVar,'In case of single serie:The file contains Rain, Tmax and Tmin in this order')
 	tkgrid(ffrmt1,row=0,column=0,sticky="we")
 	tkgrid(ffrmt2,row=1,column=0,sticky="we")
-	rbffrmt <- tclVar(as.character(gal.params$file.date.format$Values[1]))
+	rbffrmt <- tclVar(as.character(GeneralParameters$file.date.format$Values[1]))
 	tkconfigure(ffrmt1,variable=rbffrmt,value="1")
 	tkconfigure(ffrmt2,variable=rbffrmt,value="0")
 
 	varframe<-tkframe(fr.fileformat1)
 	tkgrid(varframe,row=3,column=0,sticky="e")
 	infobulle(varframe,'Choose the variable to test')
-	status.bar.display(varframe,txt.stbr1,'Choose the variable to test')
+	status.bar.display(varframe,TextOutputVar,'Choose the variable to test')
 
 	var2test1 <- tkradiobutton(varframe)
 	var2test2 <- tkradiobutton(varframe)
@@ -509,7 +509,7 @@ filedateformat<-function(top.win,gal.params,speriod){
 	tkgrid(var2test1,row=0,column=0,padx=2)
 	tkgrid(var2test2,row=0,column=1,padx=2)
 	tkgrid(var2test3,row=0,column=2,padx=2)
-	varcat <- tclVar(as.character(gal.params$file.date.format$Values[3]))
+	varcat <- tclVar(as.character(GeneralParameters$file.date.format$Values[3]))
 	tkconfigure(var2test1,variable=varcat,value="1")
 	tkconfigure(var2test2,variable=varcat,value="2")
 	tkconfigure(var2test3,variable=varcat,value="3")
@@ -520,20 +520,20 @@ filedateformat<-function(top.win,gal.params,speriod){
 
 	dtfrmt1 <- tkradiobutton(fr.fileformat2,text=txtdtfrmt1,anchor='w',justify='left')
 	infobulle(dtfrmt1,'In case of single serie:\n dates are merged')
-	status.bar.display(dtfrmt1,txt.stbr1,'In case of single serie: dates are merged')
+	status.bar.display(dtfrmt1,TextOutputVar,'In case of single serie: dates are merged')
 	dtfrmt2 <- tkradiobutton(fr.fileformat2,text=txtdtfrmt2,anchor='w',justify='left')
 	infobulle(dtfrmt2,'In case of single serie:\ndates are separated by space,\ntabulation or CSV format')
-	status.bar.display(dtfrmt2,txt.stbr1,'In case of single serie: dates are separated by space, tabulation or CSV format')
+	status.bar.display(dtfrmt2,TextOutputVar,'In case of single serie: dates are separated by space, tabulation or CSV format')
 	tkgrid(dtfrmt1,row=0,column=0,sticky="we")
 	tkgrid(dtfrmt2,row=1,column=0,sticky="we")
 	tkgrid(tklabel(fr.fileformat2,text=''),row=3,column=0,sticky="we")
 
-	rbdtfrmt <- tclVar(as.character(gal.params$file.date.format$Values[2]))
+	rbdtfrmt <- tclVar(as.character(GeneralParameters$file.date.format$Values[2]))
 	tkconfigure(dtfrmt1,variable=rbdtfrmt,value="1")
 	tkconfigure(dtfrmt2,variable=rbdtfrmt,value="0")
 
 	tkconfigure(bt.fileformat,command=function(){
-		gal.params$file.date.format$Values<<-c(tclvalue(rbffrmt),tclvalue(rbdtfrmt),tclvalue(varcat))
+		GeneralParameters$file.date.format$Values<<-c(tclvalue(rbffrmt),tclvalue(rbdtfrmt),tclvalue(varcat))
 		tkgrab.release(tt1)
 		tkdestroy(tt1)
 		tkfocus(top.win)
@@ -553,13 +553,13 @@ filedateformat<-function(top.win,gal.params,speriod){
 	tkfocus(tt1)
 	tkbind(tt1, "<Destroy>", function() {tkgrab.release(tt1); tkfocus(top.win)})
 	tkwait.window(tt1)
-	return(gal.params)
+	return(GeneralParameters)
 }
 
 ############################################################################################
 
-referenceseries<-function(top.win,gal.params,file2test){
-	file.list<-openFile_ttkcomboList()
+referenceseries<-function(top.win,GeneralParameters,file2test){
+	listOpenFiles<-openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows") largeur2<-26
 	else largeur2<-24
 
@@ -595,35 +595,35 @@ referenceseries<-function(top.win,gal.params,file2test){
 
 	dif.rat1<- tkradiobutton(frE11a,text="Difference",anchor='w',justify='left')
 	infobulle(dif.rat1,'Constitution of relative comparison series:\nCandidate-Reference')
-	status.bar.display(dif.rat1,txt.stbr1,'Constitution of relative comparison series: Candidate-Reference')
+	status.bar.display(dif.rat1,TextOutputVar,'Constitution of relative comparison series: Candidate-Reference')
 	dif.rat2<- tkradiobutton(frE11a,text="Ratio",anchor='w',justify='left')
 	infobulle(dif.rat2,'Constitution of relative comparison series:\nCandidate/Reference')
-	status.bar.display(dif.rat2,txt.stbr1,'Constitution of relative comparison series: Candidate/Reference')
+	status.bar.display(dif.rat2,TextOutputVar,'Constitution of relative comparison series: Candidate/Reference')
 	dif.rat3<- tkradiobutton(frE11a,text="LogRatio",anchor='w',justify='left')
 	infobulle(dif.rat3,'Constitution of relative comparison series:\nlog(Candidate/Reference)')
-	status.bar.display(dif.rat3,txt.stbr1,'Constitution of relative comparison series: log(Candidate/Reference)')
+	status.bar.display(dif.rat3,TextOutputVar,'Constitution of relative comparison series: log(Candidate/Reference)')
 	tkgrid(dif.rat1,row=0,column=0,sticky='ew',padx=1,pady=1)
 	tkgrid(dif.rat2,row=1,column=0,sticky='ew',padx=1,pady=1)
 	tkgrid(dif.rat3,row=2,column=0,sticky='ew',padx=1,pady=1)
-	diff.ratio <- tclVar(as.character(gal.params$ref.series.choix$Values[1]))
+	diff.ratio <- tclVar(as.character(GeneralParameters$ref.series.choix$Values[1]))
 	tkconfigure(dif.rat1,variable=diff.ratio,value="1")
 	tkconfigure(dif.rat2,variable=diff.ratio,value="2")
 	tkconfigure(dif.rat3,variable=diff.ratio,value="3")
 
 	wmean1<- tkradiobutton(frE11b,text="Correlation",anchor='w',justify='left')
 	infobulle(wmean1,'Use the square of the correlation coef\nas the weight factor')
-	status.bar.display(wmean1,txt.stbr1,'Use the square of the correlation coef as the weight factor')
+	status.bar.display(wmean1,TextOutputVar,'Use the square of the correlation coef as the weight factor')
 	wmean2<- tkradiobutton(frE11b,text="Distance",anchor='w',justify='left')
 	infobulle(wmean2,'Use the square of the inverse of distance\nas the weight factor')
-	status.bar.display(wmean2,txt.stbr1,'Use the square of the inverse of distance as the weight factor')
+	status.bar.display(wmean2,TextOutputVar,'Use the square of the inverse of distance as the weight factor')
 	wmean3<- tkradiobutton(frE11b,text="Optimal",anchor='w',justify='left')
 	infobulle(wmean3,'Optimal weighting using covariance matrix\n(ordinary kriging method)')
-	status.bar.display(wmean3,txt.stbr1,'Optimal weighting using covariance matrix (ordinary kriging method)')
+	status.bar.display(wmean3,TextOutputVar,'Optimal weighting using covariance matrix (ordinary kriging method)')
 
 	tkgrid(wmean1,row=0,column=0,sticky='ew',padx=1,pady=1)
 	tkgrid(wmean2,row=1,column=0,sticky='ew',padx=1,pady=1)
 	tkgrid(wmean3,row=2,column=0,sticky='ew',padx=1,pady=1)
-	weight.fac<- tclVar(as.character(gal.params$ref.series.choix$Values[2]))
+	weight.fac<- tclVar(as.character(GeneralParameters$ref.series.choix$Values[2]))
 	tkconfigure(wmean1,variable=weight.fac,value="1")
 	tkconfigure(wmean2,variable=weight.fac,value="2")
 	tkconfigure(wmean3,variable=weight.fac,value="3")
@@ -631,24 +631,24 @@ referenceseries<-function(top.win,gal.params,file2test){
 	frE12a<-ttklabelframe(frE12,text="Options",labelanchor="nw",relief="groove",borderwidth=2)
 	tkgrid(frE12a,sticky='ew')
 
-	min.stn.l<-tklabel.h(frE12a,text='Min.stn',txt.stbr1,'Minimum number of\nneighbor stations to use',
+	min.stn.l<-tklabel.h(frE12a,text='Min.stn',TextOutputVar,'Minimum number of\nneighbor stations to use',
 	'Minimum number of neighbor stations to use')
-	max.stn.l<-tklabel.h(frE12a,text='Max.stn',txt.stbr1,'Maximum number of\nneighbor stations to use',
+	max.stn.l<-tklabel.h(frE12a,text='Max.stn',TextOutputVar,'Maximum number of\nneighbor stations to use',
 	'Maximum number of neighbor stations to use')
-	max.dist.l<-tklabel.h(frE12a,text='Max.dist(km)',txt.stbr1,'Maximum distance of \nneighbor stations to use (km)',
+	max.dist.l<-tklabel.h(frE12a,text='Max.dist(km)',TextOutputVar,'Maximum distance of \nneighbor stations to use (km)',
 	'Maximum distance of neighbor stations to use (km)')
-	elv.diff.l<-tklabel.h(frE12a,text='Elv.diff(m)',txt.stbr1,'Maximum altitude difference of \n neighbor stations to use (m)',
+	elv.diff.l<-tklabel.h(frE12a,text='Elv.diff(m)',TextOutputVar,'Maximum altitude difference of \n neighbor stations to use (m)',
 	'Maximum altitude difference of neighbor stations to use (m)')
-	min.rho.l<-tklabel.h(frE12a,text='Min.rho',txt.stbr1,'Minimum correlation coef between candidate\nand neighbor series',
+	min.rho.l<-tklabel.h(frE12a,text='Min.rho',TextOutputVar,'Minimum correlation coef between candidate\nand neighbor series',
 	'Minimum correlation coef between candidate and neighbor series')
 
-	min.stn.v<-tkentry.h(frE12a,txt.stbr1,'Minimum number of \nneighbor stations to use','Minimum number of neighbor stations to use')
-	max.stn.v<-tkentry.h(frE12a,txt.stbr1,'Maximum number of\nneighbor stations to use','Maximum number of neighbor stations to use')
-	max.dist.v<-tkentry.h(frE12a,txt.stbr1,'Maximum distance of\nneighbor stations to use (km)',
+	min.stn.v<-tkentry.h(frE12a,TextOutputVar,'Minimum number of \nneighbor stations to use','Minimum number of neighbor stations to use')
+	max.stn.v<-tkentry.h(frE12a,TextOutputVar,'Maximum number of\nneighbor stations to use','Maximum number of neighbor stations to use')
+	max.dist.v<-tkentry.h(frE12a,TextOutputVar,'Maximum distance of\nneighbor stations to use (km)',
 	'Maximum distance of neighbor stations to use (km)')
-	elv.diff.v<-tkentry.h(frE12a,txt.stbr1,'Maximum altitude difference of \nneighbor stations to use (m)',
+	elv.diff.v<-tkentry.h(frE12a,TextOutputVar,'Maximum altitude difference of \nneighbor stations to use (m)',
 	'Maximum altitude difference of neighbor stations to use (m)')
-	min.rho.v<-tkentry.h(frE12a,txt.stbr1,'Minimum correlation coef between candidate\nand neighbor series',
+	min.rho.v<-tkentry.h(frE12a,TextOutputVar,'Minimum correlation coef between candidate\nand neighbor series',
 	'Minimum correlation coef between candidate and neighbor series')
 
 	tkgrid(min.stn.l,row=0,column=0,sticky='ew',padx=1,pady=1)
@@ -668,11 +668,11 @@ referenceseries<-function(top.win,gal.params,file2test){
 	tkconfigure(elv.diff.l,anchor='e',justify='right')
 	tkconfigure(min.rho.l,anchor='e',justify='right')
 
-	min.stn<-tclVar(as.character(gal.params$ref.series.choix$Values[5]))
-	max.stn<-tclVar(as.character(gal.params$ref.series.choix$Values[6]))
-	max.dist<-tclVar(as.character(gal.params$ref.series.choix$Values[7]))
-	elv.diff<-tclVar(as.character(gal.params$ref.series.choix$Values[8]))
-	min.rho<-tclVar(as.character(gal.params$ref.series.choix$Values[9]))
+	min.stn<-tclVar(as.character(GeneralParameters$ref.series.choix$Values[5]))
+	max.stn<-tclVar(as.character(GeneralParameters$ref.series.choix$Values[6]))
+	max.dist<-tclVar(as.character(GeneralParameters$ref.series.choix$Values[7]))
+	elv.diff<-tclVar(as.character(GeneralParameters$ref.series.choix$Values[8]))
+	min.rho<-tclVar(as.character(GeneralParameters$ref.series.choix$Values[9]))
 
 	tkconfigure(min.stn.v,width=4,textvariable=min.stn)
 	tkconfigure(max.stn.v,width=4,textvariable=max.stn)
@@ -681,28 +681,28 @@ referenceseries<-function(top.win,gal.params,file2test){
 	tkconfigure(min.rho.v,width=4,textvariable=min.rho)
 	########################################
 
-	if(as.character(gal.params$ref.series.user)=='0') state0<-'disabled'
-	if(as.character(gal.params$ref.series.user)=='1') state0<-'normal'
+	if(as.character(GeneralParameters$ref.series.user)=='0') state0<-'disabled'
+	if(as.character(GeneralParameters$ref.series.user)=='1') state0<-'normal'
 
-	usr.rfseries.val <- tclVar(as.character(gal.params$ref.series.user))
+	usr.rfseries.val <- tclVar(as.character(GeneralParameters$ref.series.user))
 	usr.rfseries <- tkcheckbutton(frE20,variable=usr.rfseries.val,text="Stations'Choice by User",anchor='w',justify='left',width=19)
 	infobulle(usr.rfseries,'The reference series will be created\nfrom stations chosen by user')
-	status.bar.display(usr.rfseries,txt.stbr1,"The reference series will be created from stations chosen by user")
-	usrbt.rfseries<-tkbutton.h(frE20, text="Select",txt.stbr1,'Select the stations to create the reference series',
+	status.bar.display(usr.rfseries,TextOutputVar,"The reference series will be created from stations chosen by user")
+	usrbt.rfseries<-tkbutton.h(frE20, text="Select",TextOutputVar,'Select the stations to create the reference series',
 	'Select the stations to create the reference series')
 	tkgrid(usr.rfseries,usrbt.rfseries)
 
 	tkconfigure(usrbt.rfseries,state=state0,command=function(){
 		if(file2test!=""){
-			idsstn<-which(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]]))==file2test)
+			idsstn<-which(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]]))==file2test)
 			if(length(idsstn)==0){
 				tkmessageBox(message="File not found or in the wrong format",icon="warning",type="ok")
 				#tkwait.window(tt1)
 				return(NULL)
 			}else{
-				donstn<-file.opfiles[[idsstn]][[2]]
+				donstn<-AllOpenFilesData[[idsstn]][[2]]
 				stnId<-as.character(donstn[1,-1])
-				gal.params<<-refSeriesUsersChoice(tt1,stnId,gal.params)
+				GeneralParameters<<-refSeriesUsersChoice(tt1,stnId,GeneralParameters)
 			}
 		}else{
 			tkmessageBox(message="Provide the file to test",icon="warning",type="ok")
@@ -723,8 +723,8 @@ referenceseries<-function(top.win,gal.params,file2test){
 	})
 
 	###############
-	if(as.character(gal.params$ref.series.choix$Values[3])=='1'){
-		if(as.character(gal.params$ref.series.choix$Values[4])=='0'){
+	if(as.character(GeneralParameters$ref.series.choix$Values[3])=='1'){
+		if(as.character(GeneralParameters$ref.series.choix$Values[4])=='0'){
 			state<-c('normal','normal','normal')
 		}else{
 			state<-c('normal','normal','disabled')
@@ -733,17 +733,17 @@ referenceseries<-function(top.win,gal.params,file2test){
 		state<-c('disabled','disabled','disabled')
 	}
 	###
-	uselv.val <- tclVar(as.character(gal.params$ref.series.choix$Values[3]))
+	uselv.val <- tclVar(as.character(GeneralParameters$ref.series.choix$Values[3]))
 	cb.uselv <- tkcheckbutton(frE21,variable=uselv.val,text='Use Elevation',anchor='w',justify='left')
 	infobulle(cb.uselv,'Check to use elevation data\n to choose neighbors stations')
-	status.bar.display(cb.uselv,txt.stbr1,'Check for using elevation data to choose neighbor stations')
+	status.bar.display(cb.uselv,TextOutputVar,'Check for using elevation data to choose neighbor stations')
 	uselv.dem<- tkradiobutton(frE21,text="Elevation from DEM",anchor='w',justify='left',state=state[1])
 	infobulle(uselv.dem,'Choose to extract\nelevation data from DEM')
-	status.bar.display(uselv.dem,txt.stbr1,'If no elevation data are provided for each station, must be choosen')
+	status.bar.display(uselv.dem,TextOutputVar,'If no elevation data are provided for each station, must be choosen')
 	uselv.dat<- tkradiobutton(frE21,text="Elevation from STN data",anchor='w',justify='left',state=state[2])
 	infobulle(uselv.dat,'Choose to use elevation data\nfrom the data to be homogenized')
-	status.bar.display(uselv.dat,txt.stbr1,'Check to use elevation data from the data to be homogenized')
-	uselv.ch <- tclVar(as.character(gal.params$ref.series.choix$Values[4]))
+	status.bar.display(uselv.dat,TextOutputVar,'Check to use elevation data from the data to be homogenized')
+	uselv.ch <- tclVar(as.character(GeneralParameters$ref.series.choix$Values[4]))
 	tkconfigure(uselv.dem,variable=uselv.ch,value="0")
 	tkconfigure(uselv.dat,variable=uselv.ch,value="1")
 	tkgrid(cb.uselv,row=0,column=0,sticky='ew',padx=1,pady=1)
@@ -758,25 +758,25 @@ referenceseries<-function(top.win,gal.params,file2test){
 	tkgrid(frE22a.txt,row=0,column=0,sticky='w')
 
 	file.choix2 <- tclVar()
-	tclvalue(file.choix2) <-as.character(gal.params$file.io$Values[3])
-	cb.file.elv<-ttkcombobox(frE22b, values=unlist(file.list), textvariable=file.choix2,state=state[3],width=largeur2)
+	tclvalue(file.choix2) <-as.character(GeneralParameters$file.io$Values[3])
+	cb.file.elv<-ttkcombobox(frE22b, values=unlist(listOpenFiles), textvariable=file.choix2,state=state[3],width=largeur2)
 	infobulle(cb.file.elv,'Choose the file in the list')
-	status.bar.display(cb.file.elv,txt.stbr1,'Choose the file containing the elevation data')
-	bt.file.elv<-tkbutton.h(frE22b, text="...",txt.stbr1,'Browse file if not listed','Browse file if not listed')
+	status.bar.display(cb.file.elv,TextOutputVar,'Choose the file containing the elevation data')
+	bt.file.elv<-tkbutton.h(frE22b, text="...",TextOutputVar,'Browse file if not listed','Browse file if not listed')
 	tkgrid(cb.file.elv,bt.file.elv)
 	tkgrid.configure(cb.file.elv,row=0,column=1,sticky='we')
 	tkgrid.configure(bt.file.elv,row=0,column=2,sticky='e')
 	tkconfigure(bt.file.elv,state=state[3],command=function(){
 		nc.opfiles<-getOpenNetcdf(top.win,all.opfiles)
 		if(!is.null(nc.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'netcdf'
-			file.opfiles[[nopf+1]]<<-nc.opfiles
-			tclvalue(file.choix2)<-file.opfiles[[nopf+1]][[1]]
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'netcdf'
+			AllOpenFilesData[[nopf+1]]<<-nc.opfiles
+			tclvalue(file.choix2)<-AllOpenFilesData[[nopf+1]][[1]]
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.choix2)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cb.file.elv,values=unlist(file.list), textvariable=file.choix2)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.choix2)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.file.elv,values=unlist(listOpenFiles), textvariable=file.choix2)
 		}else{
 			return(NULL)
 		}
@@ -834,11 +834,11 @@ referenceseries<-function(top.win,gal.params,file2test){
 		if(tclvalue(uselv.val)=="1" & tclvalue(uselv.ch)=="0" & tclvalue(file.choix2)==""){
 			tkmessageBox(message="Provide the NetCDF file containing\nthe elevation data",icon="warning",type="ok")
 		}else{
-			gal.params$ref.series.choix$Values<<-c(tclvalue(diff.ratio),tclvalue(weight.fac),tclvalue(uselv.val),tclvalue(uselv.ch),
+			GeneralParameters$ref.series.choix$Values<<-c(tclvalue(diff.ratio),tclvalue(weight.fac),tclvalue(uselv.val),tclvalue(uselv.ch),
 			tclvalue(min.stn),tclvalue(max.stn),tclvalue(max.dist),tclvalue(elv.diff),tclvalue(min.rho))
-			gal.params$file.io$Values<<-c(as.character(gal.params$file.io$Values[1]),as.character(gal.params$file.io$Values[2]),
-			tclvalue(file.choix2),as.character(gal.params$file.io$Values[4]))
-			gal.params$ref.series.user<<-tclvalue(usr.rfseries.val)
+			GeneralParameters$file.io$Values<<-c(as.character(GeneralParameters$file.io$Values[1]),as.character(GeneralParameters$file.io$Values[2]),
+			tclvalue(file.choix2),as.character(GeneralParameters$file.io$Values[4]))
+			GeneralParameters$ref.series.user<<-tclvalue(usr.rfseries.val)
 			tkgrab.release(tt1)
 			tkdestroy(tt1)
 			tkfocus(top.win)
@@ -869,13 +869,13 @@ referenceseries<-function(top.win,gal.params,file2test){
 	tkfocus(tt1)
 	tkbind(tt1, "<Destroy>", function() {tkgrab.release(tt1); tkfocus(top.win)})
 	tkwait.window(tt1)
-	return(gal.params)
+	return(GeneralParameters)
 }
 
 
 ############################################################################################
 
-homogenization.opts<-function(top.win,gal.params,Clev.list){
+homogenization.opts<-function(top.win,GeneralParameters,Clev.list){
 	tt1<-tktoplevel()
 	tkgrab.set(tt1)
 	tkfocus(tt1)
@@ -887,35 +887,35 @@ homogenization.opts<-function(top.win,gal.params,Clev.list){
 	tkgrid(frE2,sticky='we',padx=5,pady=5)
 	tkgrid(frE3,padx=5,pady=5)
 
-	cb.bounds.val <- tclVar(as.character(gal.params$hom.opts$Values[1]))
+	cb.bounds.val <- tclVar(as.character(GeneralParameters$hom.opts$Values[1]))
 	cb.bounds <- tkcheckbutton(frE1,variable=cb.bounds.val,text='Crop bounds',anchor='w',justify='left')
 	tkgrid(cb.bounds,pady=2)
 	infobulle(cb.bounds,'Cropping the first and last\n[h x 100%] percent of the series')
-	status.bar.display(cb.bounds,txt.stbr1,'Cropping the first and last [h x 100%] percent of the series')
+	status.bar.display(cb.bounds,TextOutputVar,'Cropping the first and last [h x 100%] percent of the series')
 
 
 	crop.bounds.list <- c('0.010', '0.025', '0.050', '0.100')
-	crop.bounds.val<-tclVar(as.character(gal.params$hom.opts$Values[2]))
-	Clev.val<-tclVar(as.character(gal.params$hom.opts$Values[3]))
+	crop.bounds.val<-tclVar(as.character(GeneralParameters$hom.opts$Values[2]))
+	Clev.val<-tclVar(as.character(GeneralParameters$hom.opts$Values[3]))
 
-	h.l<-tklabel.h(frE2,text='h',txt.stbr1,'Cropping the first and last\n[h x 100%] percent of the series','Cropping the first and last [h x 100%] percent of the series')
-	conf.lev.l<-tklabel.h(frE2,text='Conf.lev(%)',txt.stbr1,'Confidence level (%)','Confidence level  (%)')
+	h.l<-tklabel.h(frE2,text='h',TextOutputVar,'Cropping the first and last\n[h x 100%] percent of the series','Cropping the first and last [h x 100%] percent of the series')
+	conf.lev.l<-tklabel.h(frE2,text='Conf.lev(%)',TextOutputVar,'Confidence level (%)','Confidence level  (%)')
 	h.v<-ttkcombobox(frE2, values=crop.bounds.list,textvariable=crop.bounds.val)
 	infobulle(h.v,'Cropping the first and last\n[h x 100%] percent of the series')
-	status.bar.display(h.v,txt.stbr1,'Cropping the first and last [h x 100%] percent of the series')
+	status.bar.display(h.v,TextOutputVar,'Cropping the first and last [h x 100%] percent of the series')
 	conf.lev.v<-ttkcombobox(frE2, values=Clev.list,textvariable=Clev.val)
 	infobulle(conf.lev.v,'Confidence level (%)')
-	status.bar.display(conf.lev.v,txt.stbr1,'Confidence level (%)')
+	status.bar.display(conf.lev.v,TextOutputVar,'Confidence level (%)')
 
-	Kmax<-tclVar(as.character(gal.params$hom.opts$Values[4]))
-	min.int<-tclVar(as.character(gal.params$hom.opts$Values[5]))
+	Kmax<-tclVar(as.character(GeneralParameters$hom.opts$Values[4]))
+	min.int<-tclVar(as.character(GeneralParameters$hom.opts$Values[5]))
 
-	Kmax.l<-tklabel.h(frE2,text='Kmax',txt.stbr1,'Maximum number of change-points to be detected',
+	Kmax.l<-tklabel.h(frE2,text='Kmax',TextOutputVar,'Maximum number of change-points to be detected',
 	'Maximum number of change-points to be detected')
-	min.int.l<-tklabel.h(frE2,text='Min.len(months)',txt.stbr1,'Minimum segment length to carry out the test',
+	min.int.l<-tklabel.h(frE2,text='Min.len(months)',TextOutputVar,'Minimum segment length to carry out the test',
 	'Minimum segment length  to carry out the test')
-	Kmax.v<-tkentry.h(frE2,txt.stbr1,'Maximum number of change-points to be detected','Maximum number of change-points to be detected')
-	min.int.v<-tkentry.h(frE2,txt.stbr1,'Minimum segment length','Minimum segment length')
+	Kmax.v<-tkentry.h(frE2,TextOutputVar,'Maximum number of change-points to be detected','Maximum number of change-points to be detected')
+	min.int.v<-tkentry.h(frE2,TextOutputVar,'Minimum segment length','Minimum segment length')
 
 	tkgrid(h.l,row=0,column=0,sticky='we',padx=1,pady=2)
 	tkgrid(h.v,row=0,column=1,sticky='we',padx=1,pady=2)
@@ -935,7 +935,7 @@ homogenization.opts<-function(top.win,gal.params,Clev.list){
 	tkgrid(bt.prm.OK,ipadx=5)
 
 	tkconfigure(bt.prm.OK,command=function(){
-		gal.params$hom.opts$Values<<-c(tclvalue(cb.bounds.val),tclvalue(crop.bounds.val),tclvalue(Clev.val),tclvalue(Kmax),tclvalue(min.int))
+		GeneralParameters$hom.opts$Values<<-c(tclvalue(cb.bounds.val),tclvalue(crop.bounds.val),tclvalue(Clev.val),tclvalue(Kmax),tclvalue(min.int))
 		tkgrab.release(tt1)
 		tkdestroy(tt1)
 		tkfocus(top.win)
@@ -955,12 +955,12 @@ homogenization.opts<-function(top.win,gal.params,Clev.list){
 	tkfocus(tt1)
 	tkbind(tt1, "<Destroy>", function() {tkgrab.release(tt1); tkfocus(top.win)})
 	tkwait.window(tt1)
-	return(gal.params)
+	return(GeneralParameters)
 }
 
 ############################################################################################
 
-getAdjustparams<-function(top.win,gal.params,speriod){
+getAdjustparams<-function(top.win,GeneralParameters,speriod){
 	tt1<-tktoplevel()
 	tkgrab.set(tt1)
 	tkfocus(tt1)
@@ -975,18 +975,18 @@ getAdjustparams<-function(top.win,gal.params,speriod){
 	btgetadj<-tkbutton(fdf2,text=" OK ")
 	tkgrid(btgetadj,ipadx=5)
 
-	minadj.l<-tklabel.h(fr2,text='Min.Adj (in month)',txt.stbr1,'Minimum number of non-missing values \nto be used to adjust the series (in month)','Minimum number of non-missing values to be used to adjust the series (in month)')
-	segadj.l<-tklabel.h(fr2,text='Segment to Adjust',txt.stbr1,'The segment to which the series is to be adjusted\n (0:last segment)','The segment to which the series is to be adjusted (0:last segment)')
-	monadj.l<-tklabel.h(fr2,text='Month',txt.stbr1,'Monthly series','Monthly series')
-	dekadj.l<-tklabel.h(fr2,text='Dekad',txt.stbr1,'Dekadal series','Dekadal series')
-	dlyadj.l<-tklabel.h(fr2,text='Day',txt.stbr1,'Daily series','Daily series')
+	minadj.l<-tklabel.h(fr2,text='Min.Adj (in month)',TextOutputVar,'Minimum number of non-missing values \nto be used to adjust the series (in month)','Minimum number of non-missing values to be used to adjust the series (in month)')
+	segadj.l<-tklabel.h(fr2,text='Segment to Adjust',TextOutputVar,'The segment to which the series is to be adjusted\n (0:last segment)','The segment to which the series is to be adjusted (0:last segment)')
+	monadj.l<-tklabel.h(fr2,text='Month',TextOutputVar,'Monthly series','Monthly series')
+	dekadj.l<-tklabel.h(fr2,text='Dekad',TextOutputVar,'Dekadal series','Dekadal series')
+	dlyadj.l<-tklabel.h(fr2,text='Day',TextOutputVar,'Daily series','Daily series')
 
-	minadjdy.v<-tkentry.h(fr2,txt.stbr1,'Minimum number of non-missing values \nto be used to adjust the series (in month)','Minimum number of non-missing values to be used to adjust the series (in month)')
-	segadjdy.v<-tkentry.h(fr2,txt.stbr1,'The segment to which the series is to be adjusted\n (0:last segment)','The segment to which the series is to be adjusted (0:last segment)')
-	minadjdk.v<-tkentry.h(fr2,txt.stbr1,'Minimum number of non-missing values \nto be used to adjust the series (in month)','Minimum number of non-missing values to be used to adjust the series (in month)')
-	segadjdk.v<-tkentry.h(fr2,txt.stbr1,'The segment to which the series is to be adjusted\n (0:last segment)','The segment to which the series is to be adjusted (0:last segment)')
-	minadjmo.v<-tkentry.h(fr2,txt.stbr1,'Minimum number of non-missing values \nto be used to adjust the series (in month)','Minimum number of non-missing values to be used to adjust the series (in month)')
-	segadjmo.v<-tkentry.h(fr2,txt.stbr1,'The segment to which the series is to be adjusted\n (0:last segment)','The segment to which the series is to be adjusted (0:last segment)')
+	minadjdy.v<-tkentry.h(fr2,TextOutputVar,'Minimum number of non-missing values \nto be used to adjust the series (in month)','Minimum number of non-missing values to be used to adjust the series (in month)')
+	segadjdy.v<-tkentry.h(fr2,TextOutputVar,'The segment to which the series is to be adjusted\n (0:last segment)','The segment to which the series is to be adjusted (0:last segment)')
+	minadjdk.v<-tkentry.h(fr2,TextOutputVar,'Minimum number of non-missing values \nto be used to adjust the series (in month)','Minimum number of non-missing values to be used to adjust the series (in month)')
+	segadjdk.v<-tkentry.h(fr2,TextOutputVar,'The segment to which the series is to be adjusted\n (0:last segment)','The segment to which the series is to be adjusted (0:last segment)')
+	minadjmo.v<-tkentry.h(fr2,TextOutputVar,'Minimum number of non-missing values \nto be used to adjust the series (in month)','Minimum number of non-missing values to be used to adjust the series (in month)')
+	segadjmo.v<-tkentry.h(fr2,TextOutputVar,'The segment to which the series is to be adjusted\n (0:last segment)','The segment to which the series is to be adjusted (0:last segment)')
 
 	tkgrid(monadj.l,row=0,column=1,sticky='ew',padx=1,pady=1)
 	tkgrid(dekadj.l,row=0,column=2,sticky='ew',padx=1,pady=1)
@@ -1004,13 +1004,13 @@ getAdjustparams<-function(top.win,gal.params,speriod){
 	tkconfigure(minadj.l,anchor='e',justify='right')
 	tkconfigure(segadj.l,anchor='e',justify='right')
 
-	minadjmo<-tclVar(as.character(gal.params$Adjust.method$Values[1]))
-	minadjdk<-tclVar(as.character(gal.params$Adjust.method$Values[2]))
-	minadjdy<-tclVar(as.character(gal.params$Adjust.method$Values[3]))
+	minadjmo<-tclVar(as.character(GeneralParameters$Adjust.method$Values[1]))
+	minadjdk<-tclVar(as.character(GeneralParameters$Adjust.method$Values[2]))
+	minadjdy<-tclVar(as.character(GeneralParameters$Adjust.method$Values[3]))
 
-	segadjmo<-tclVar(as.character(gal.params$Adjust.method$Values[4]))
-	segadjdk<-tclVar(as.character(gal.params$Adjust.method$Values[5]))
-	segadjdy<-tclVar(as.character(gal.params$Adjust.method$Values[6]))
+	segadjmo<-tclVar(as.character(GeneralParameters$Adjust.method$Values[4]))
+	segadjdk<-tclVar(as.character(GeneralParameters$Adjust.method$Values[5]))
+	segadjdy<-tclVar(as.character(GeneralParameters$Adjust.method$Values[6]))
 
 	if(speriod=='Daily data') state=c('normal','normal','normal')
 	if(speriod=='Dekadal data') state=c('normal','normal','disabled')
@@ -1024,7 +1024,7 @@ getAdjustparams<-function(top.win,gal.params,speriod){
 	tkconfigure(segadjdy.v,width=3,textvariable=segadjdy,state=state[3])
 
 	tkconfigure(btgetadj,command=function(){
-		gal.params$Adjust.method$Values<<-c(tclvalue(minadjmo),tclvalue(minadjdk),
+		GeneralParameters$Adjust.method$Values<<-c(tclvalue(minadjmo),tclvalue(minadjdk),
 		tclvalue(minadjdy),tclvalue(segadjmo),tclvalue(segadjdk),tclvalue(segadjdy))
 		tkgrab.release(tt1)
 		tkdestroy(tt1)
@@ -1045,19 +1045,19 @@ getAdjustparams<-function(top.win,gal.params,speriod){
 	tkfocus(tt1)
 	tkbind(tt1, "<Destroy>", function() {tkgrab.release(tt1); tkfocus(top.win)})
 	tkwait.window(tt1)
-	return(gal.params)
+	return(GeneralParameters)
 }
 
 ############################################################################################
 
-refSeriesUsersChoice<-function(parent,stnId,gal.params){
+refSeriesUsersChoice<-function(parent,stnId,GeneralParameters){
 	#scroll frame width, height
 	w.scr.frm<-190
 	h.scr.frm<-160
 
 	nl<-length(stnId)
 	tocheck<-rep("0",nl)
-	id2check<-as.numeric(gal.params$stn.user.choice)
+	id2check<-as.numeric(GeneralParameters$stn.user.choice)
 	if(length(id2check)>0){
 		tocheck[id2check]<-"1"
 		xstation <- stnId[id2check]
@@ -1138,7 +1138,7 @@ refSeriesUsersChoice<-function(parent,stnId,gal.params){
 	tkconfigure(okbut,command=function(){
 		stnSelected<-as.character(tkget(choose.stn,"0","end"))
 		idStnSel<-which(stnId%in%stnSelected)
-		gal.params$stn.user.choice<<-idStnSel
+		GeneralParameters$stn.user.choice<<-idStnSel
 		tkgrab.release(tt2)
 		tkdestroy(tt2)
 		tkfocus(parent)
@@ -1169,6 +1169,6 @@ refSeriesUsersChoice<-function(parent,stnId,gal.params){
 	tkfocus(tt2)
 	tkbind(tt2, "<Destroy>", function() {tkgrab.release(tt2); tkfocus(parent)})
 	tkwait.window(tt2)
-	return(gal.params)
+	return(GeneralParameters)
 }
 

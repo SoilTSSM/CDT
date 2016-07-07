@@ -11,7 +11,7 @@ Station<-paste('BaseSeries_',station,sep='')
   if(Ny4a>0&Ny4a<=5) Ny4a<-5
 #  assign("ErrorMSG",ErrorMSG,envir=.GlobalEnv)
   if(!p.lev%in%c(0.75,0.8,0.9,0.95,0.99,0.9999)){
-	insert.txt(main.txt.out,paste("StepSize.dlyprcp: input p.lev",p.lev,"error"),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("StepSize.dlyprcp: input p.lev",p.lev,"error"),format=TRUE)
 	#cat(paste("StepSize.dlyprcp: input p.lev",p.lev,"error"),'\n')
 #      ErrorMSG<<-paste("StepSize.dlyprcp: input p.lev",p.lev,"error\n",
 #                 get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -25,7 +25,7 @@ Station<-paste('BaseSeries_',station,sep='')
   Nall<-dim(ori.itable)[1]; Pfreq<-N/Nall; Nadj<-Ny4a*366*Pfreq
   readPFtable(N,pkth)
   if(itmp==(-1)){
-	insert.txt(main.txt.out,paste("StepSize.dlyprcp: Error in read data from",station),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("StepSize.dlyprcp: Error in read data from",station),format=TRUE)
 	#cat(paste("StepSize.dlyprcp: Error in read data from",Station),'\n')
 #    ErrorMSG<<-paste("StepSize.dlyprcp: Error in read data from",Station,"\n",
 #               get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -51,7 +51,7 @@ Station<-paste('BaseSeries_',station,sep='')
     if(sum(is.na(Ips))>0|!identical(Ips,sort(Ips))){
 #      ErrorMSG<<-paste("StepSize.dlyprcp: Ips read in from ",basename(InCs),"error:")
       for(i in 1:Ns)
-		insert.txt(main.txt.out,paste("StepSize.dlyprcp: Ips read in from ",basename(InCs),"error:",Ips[i]),format=TRUE)
+		InsertMessagesTxt(main.txt.out,paste("StepSize.dlyprcp: Ips read in from ",basename(InCs),"error:",Ips[i]),format=TRUE)
 		#cat(paste("StepSize.dlyprcp: Ips read in from ",basename(InCs),"error:",Ips[i]),'\n')
 #        ErrorMSG<<-paste(get("ErrorMSG",env=.GlobalEnv),Ips[i])
 #      ErrorMSG<<-paste(get("ErrorMSG",env=.GlobalEnv),"\n\n")
@@ -103,7 +103,7 @@ Station<-paste('BaseSeries_',station,sep='')
       ind<-round((lambda+1)*100+1)
       if(abs(lambdas[ind]-lambda)>1e-8) {
         print(c(lambdas[ind],lambda,lambdas[ind]-lambda))
-        insert.txt(main.txt.out,paste("ind=",ind,"lambda=",lambda,"error"),format=TRUE)
+        InsertMessagesTxt(main.txt.out,paste("ind=",ind,"lambda=",lambda,"error"),format=TRUE)
         return(-1)
         #stop(paste("ind=",ind,"lambda=",lambda,"error"))
       }
@@ -461,7 +461,7 @@ Station<-paste('BaseSeries_',station,sep='')
   if(Ns==0) {
     cat(paste(Ns,"changepoints in Series", Station,"\n"),file=ofileIout)
     #cat("PMF finds no Type-1 changepoints in the series!\n")
-    insert.txt(main.txt.out,paste("PMF finds no Type-1 changepoints in the series",station))
+    InsertMessagesTxt(main.txt.out,paste("PMF finds no Type-1 changepoints in the series",station))
   }
   else{
     cat(paste(Ns,"changepoints in Series", Station,"\n"),
@@ -555,7 +555,7 @@ Station<-paste('BaseSeries_',station,sep='')
   else{
 	file.copy(from=ofileIout,to=ofileMout,overwrite=TRUE)
   #cat("StepSize.dlyprcp finished successfully...\n")
-  	insert.txt(main.txt.out,paste("StepSize.dlyprcp finished successfully for",station))
+  	InsertMessagesTxt(main.txt.out,paste("StepSize.dlyprcp finished successfully for",station))
     return(0)
   }
 }

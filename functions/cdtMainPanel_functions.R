@@ -62,11 +62,11 @@ setting.button<-tkbutton(setting.frame, text="Options",state='disabled')
 tkgrid(setting.button,row=0,column=0)
 
 tkconfigure(setting.button,command=function(){
-	if(gal.params$action=='zero.check') gal.params<<-qcGetZeroCheckInfo(main.win,gal.params)
-	if(gal.params$action=='qc.rain') gal.params<<-qc.get.info.rain(main.win,gal.params)
-	if(gal.params$action=='qc.temp') gal.params<<-qc.get.info.txtn(main.win,gal.params)
-	if(gal.params$action=='homog') gal.params<<-homogen.get.info(main.win,gal.params)
-#	if(gal.params$action=='rhtests') gal.params<<-rhtests_inputData(main.win,gal.params)
+	if(GeneralParameters$action=='zero.check') GeneralParameters<<-qcGetZeroCheckInfo(main.win,GeneralParameters)
+	if(GeneralParameters$action=='qc.rain') GeneralParameters<<-qc.get.info.rain(main.win,GeneralParameters)
+	if(GeneralParameters$action=='qc.temp') GeneralParameters<<-qc.get.info.txtn(main.win,GeneralParameters)
+	if(GeneralParameters$action=='homog') GeneralParameters<<-homogen.get.info(main.win,GeneralParameters)
+#	if(GeneralParameters$action=='rhtests') GeneralParameters<<-rhtests_inputData(main.win,GeneralParameters)
 })
 
 

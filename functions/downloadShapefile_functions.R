@@ -24,7 +24,7 @@ getCountryShapefile<-function(parent.win){
 	country <- tclVar('Madagascar')
 	cb.country<-ttkcombobox(frA1, values=cbvalues, textvariable=country,width=34)  #
 	infobulle(cb.country,'Choose country')
-	status.bar.display(cb.country,txt.stbr1,'Choose country')
+	status.bar.display(cb.country,TextOutputVar,'Choose country')
 
 	###
 	separator1<-ttkseparator(frA1)
@@ -33,7 +33,7 @@ getCountryShapefile<-function(parent.win){
 	level_sub <- tclVar(0)
 	cb.level_sub<-ttkcombobox(frA1, values=0:4, textvariable=level_sub,width=34)  #
 	infobulle(cb.level_sub,'Choose level subdivisions such as\ncountry, provinces, districts,...\n0 is country level')
-	status.bar.display(cb.level_sub,txt.stbr1,'Choose level subdivisions such as country, provinces, districts,...(0 is country level)')
+	status.bar.display(cb.level_sub,TextOutputVar,'Choose level subdivisions such as country, provinces, districts,...(0 is country level)')
 
 	###
 	tkgrid(lab1,row=0,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
@@ -56,11 +56,11 @@ getCountryShapefile<-function(parent.win){
 
 	dir2save <-tclVar('')
 	enfile.save<-tkentry(frA2,textvariable=dir2save,width=largeur)  #
-	btfile.save<-tkbutton.h(frA2, text="...",txt.stbr1,'or browse here','')
+	btfile.save<-tkbutton.h(frA2, text="...",TextOutputVar,'or browse here','')
 	tkconfigure(btfile.save,command=function() fileORdir2Save(dir2save,isFile=FALSE))
 
 	infobulle(frA2,'Enter the full path to directory to save downloaded files')
-	status.bar.display(frA2,txt.stbr1,'Enter the full path to directory to save downloaded files')
+	status.bar.display(frA2,TextOutputVar,'Enter the full path to directory to save downloaded files')
 
 	tkgrid(lab3,row=0,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(enfile.save,row=1,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
@@ -84,10 +84,10 @@ getCountryShapefile<-function(parent.win){
 			tkdestroy(tt)
 			tkfocus(parent.win)
 			if(testConnection()){
-				insert.txt(main.txt.out,"Downloading.................")
+				InsertMessagesTxt(main.txt.out,"Downloading.................")
 				return(ExecDownload_GADM(cntr_iso3,level,outdir))
 			}else{
-				insert.txt(main.txt.out,'No internet connection',format=TRUE)
+				InsertMessagesTxt(main.txt.out,'No internet connection',format=TRUE)
 				return(NULL)
 			}
 		}
@@ -122,7 +122,7 @@ ExecDownload_GADM<-function(countryISO3,level,dirshp){
 	tkconfigure(main.win,cursor='watch');tcl('update')
 	getGADM(countryISO3,level,dirshp)
 	tkconfigure(main.win,cursor='')
-	insert.txt(main.txt.out,"Download Done!")
+	InsertMessagesTxt(main.txt.out,"Download Done!")
 }
 
 #####################################
@@ -135,10 +135,10 @@ getGADM<-function(countryISO3,level,dirshp){
 	ret<-try(download.file(urlfl,destfl,method="auto",quiet=TRUE,mode="wb",cacheOK=TRUE),silent=TRUE)
 
 	if(ret!=0){
-		insert.txt(main.txt.out,'Download failed',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Download failed',format=TRUE)
 		return(NULL)
 	}else{
-		insert.txt(main.txt.out,'File downloaded sucessfully')
+		InsertMessagesTxt(main.txt.out,'File downloaded sucessfully')
 	}
 	shp<-readRDS(destfl)
 	level<-as.character(level)

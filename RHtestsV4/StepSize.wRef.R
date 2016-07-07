@@ -8,7 +8,7 @@ Station_Ref<-paste('RefSeries_',station_ref,sep='')
 
   if(Ny4a>0&Ny4a<=5) Ny4a<-5
   if(!p.lev%in%c(0.75,0.8,0.9,0.95,0.99,0.9999)){
-	insert.txt(main.txt.out,paste("FindU: input p.lev",p.lev,"error"),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("FindU: input p.lev",p.lev,"error"),format=TRUE)
 	#cat(paste("FindU: input p.lev",p.lev,"error"),'\n')
 #      ErrorMSG<<-paste("FindU: input p.lev",p.lev,"error\n",
 #                 get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -43,7 +43,7 @@ Station_Ref<-paste('RefSeries_',station_ref,sep='')
       Ids[i]<-as.numeric(substr(itmp[i+1],1,1))
     }
     if(sum(is.na(Ips))>0|!identical(Ips,sort(Ips))){
-	insert.txt(main.txt.out,paste("StepSize.wRef: Ips read in from ",basename(InCs),"error!"),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("StepSize.wRef: Ips read in from ",basename(InCs),"error!"),format=TRUE)
 	#cat(paste("StepSize.wRef: Ips read in from ",basename(InCs),"error!"),'\n')
 #      ErrorMSG<<-paste("StepSize.wRef: Ips read in from ",basename(InCs),"error!\n",
 #                 get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -611,7 +611,7 @@ Station_Ref<-paste('RefSeries_',station_ref,sep='')
   else {
     file.copy(from=ofileIout,to=ofileMout,overwrite=TRUE)
     #cat("StepSize.wRef finished successfully...\n")
-   insert.txt(main.txt.out,paste("StepSize.wRef finished successfully for",station))
+   InsertMessagesTxt(main.txt.out,paste("StepSize.wRef finished successfully for",station))
     return(0)
   }
 }

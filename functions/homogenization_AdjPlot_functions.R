@@ -18,7 +18,7 @@ plotAdjustedSeries<-function(adjDon,iselect){
 	vgrid <-seq(as.Date(paste(format(modates[1],'%Y'),1,1,sep='-')),as.Date(paste(format(modates[length(mox1)],'%Y'),12,31,sep='-'))+1,'year')
 	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.125,1), respect = FALSE)
 
-	if(ret.results$period!='monthly'){
+	if(ReturnExecResults$period!='monthly'){
 		dkdates<-adjDon$DatesAdjDek
 		dkx1<-adjDon$DataDek
 		dkx2<-adjDon$DataAdjDek
@@ -28,7 +28,7 @@ plotAdjustedSeries<-function(adjDon,iselect){
 		vgrid <-seq(as.Date(paste(format(dkdates[1],'%Y'),1,1,sep='-')),as.Date(paste(format(dkdates[length(dkx1)],'%Y'),12,31,sep='-'))+1,'year')
 		layout(matrix(1:3, ncol = 1), widths = 1, heights = c(0.125,1,1), respect = FALSE)
 
-		if(ret.results$period=='daily'){
+		if(ReturnExecResults$period=='daily'){
 			dydates<-adjDon$DatesAdjDly
 			dyx1<-adjDon$DataDly
 			dyx2<-adjDon$DataAdjDly
@@ -45,7 +45,7 @@ plotAdjustedSeries<-function(adjDon,iselect){
 	legend("center","groups",xtxt,lty=xlty,col=xcol,horiz=TRUE)
 	par(op)
 
-	if(ret.results$period=='daily'){
+	if(ReturnExecResults$period=='daily'){
 		op<-par(mar=c(0,4,0,2))
 		plot(modates,mox1, type = 'n', xaxt = 'n',ylab='Monthly',xlim=xlim)
 		abline(h=axTicks(2),col = "lightgray", lty = "dotted")
@@ -68,7 +68,7 @@ plotAdjustedSeries<-function(adjDon,iselect){
 		par(op)
 	}
 
-	if(ret.results$period=='dekadal'){
+	if(ReturnExecResults$period=='dekadal'){
 		op<-par(mar=c(0,4,0,2))
 		plot(modates,mox1, type = 'n', xaxt = 'n',ylab='Monthly',xlim=xlim)
 		abline(h=axTicks(2),col = "lightgray", lty = "dotted")
@@ -84,7 +84,7 @@ plotAdjustedSeries<-function(adjDon,iselect){
 		par(op)
 	}
 
-	if(ret.results$period=='monthly'){
+	if(ReturnExecResults$period=='monthly'){
 		op<-par(mar=c(3,4,0,2))
 		plot(modates,mox1, type = 'n',ylab='Monthly',xlim=xlim)
 		abline(h=axTicks(2),col = "lightgray", lty = "dotted")
@@ -98,19 +98,19 @@ plotAdjustedSeries<-function(adjDon,iselect){
 
 plotadjusted<-function(parent,iselect,noteHomAdjPlot){
 
-	if(ret.results$action=='homog'){
+	if(ReturnExecResults$action=='homog'){
 		plotIt <- function(){
 			op1<-par(bg='white')
 			plotAdjustedSeries(adjDon,iselect)
 			par(op1)
 		}
 	}else{
-		insert.txt(main.txt.out,'There is no adjusted data yet',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'There is no adjusted data yet',format=TRUE)
 		return(NULL)
 	}
 
 	###################################################################
-	onglet<-imageNotebookTab_open(parent,noteHomAdjPlot,tabTitle=paste(ret.results$station,'Adjusted Series',sep='-'),tab.type,tab.data)
+	onglet<-imageNotebookTab_open(parent,noteHomAdjPlot,tabTitle=paste(ReturnExecResults$station,'Adjusted Series',sep='-'),AllOpenTabType,AllOpenTabData)
 
 	##########
 	hscale<-as.numeric(tclvalue(tkget(spinH)))

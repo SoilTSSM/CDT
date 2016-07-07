@@ -97,13 +97,13 @@ plotNetCDFdata<-function(donne,atLev,listCol,ocrds,units){
 
 displayNetCDFdata<-function(parent,notebookTab,donne,atLev,listCol,shpf,units,blank){
 	if(is.null(donne)){
-		insert.txt(main.txt.out,'No NetCDF data found',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'No NetCDF data found',format=TRUE)
 		return(NULL)
 	}
 	atLev<-as.numeric(atLev)
 	atLev<-atLev[!is.na(atLev)]
 	if(length(atLev)<2){
-		insert.txt(main.txt.out,'Levels must be at least 2',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Levels must be at least 2',format=TRUE)
 		return(NULL)
 	}
 	
@@ -125,7 +125,7 @@ displayNetCDFdata<-function(parent,notebookTab,donne,atLev,listCol,shpf,units,bl
 	
 	###################################################################	
 
-	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=paste('Map -',donne[[1]]),tab.type,tab.data)
+	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=paste('Map -',donne[[1]]),AllOpenTabType,AllOpenTabData)
 
 	hscale<-as.numeric(tclvalue(tkget(spinH)))
 	vscale<-as.numeric(tclvalue(tkget(spinV)))

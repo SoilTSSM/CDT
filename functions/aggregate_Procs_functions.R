@@ -1,6 +1,6 @@
 
 AggregateQcData<-function(){
-	outdirs<-as.character(gal.params$file.io)
+	outdirs<-as.character(GeneralParameters$file.io)
 	datfin<-file.path(outdirs,'AggregateData',fsep = .Platform$file.sep)
 	if(!file.exists(datfin)) dir.create(datfin,showWarnings=FALSE,recursive=TRUE)
 
@@ -25,7 +25,7 @@ AggregateQcData<-function(){
 	noQcChkStn<-infohead[noChck,]
 	infohead<-infohead[existStn,]
 	if(length(stnID)==0){
-		insert.txt(main.txt.out,'No checked stations found or Wrong directory',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'No checked stations found or Wrong directory',format=TRUE)
 		return(NULL)
 	}
 
@@ -36,9 +36,9 @@ AggregateQcData<-function(){
 		else faileds1<-NULL
 		faileds<-list(faileds0,faileds1)
 		containertab<-displayConsOutputTabs(tknotes,faileds,title='Failed Stations')
-		ntab<-length(tab.type)
-		tab.type[[ntab+1]]<<-'ctxt'
-		tab.data[[ntab+1]]<<-containertab
+		ntab<-length(AllOpenTabType)
+		AllOpenTabType[[ntab+1]]<<-'ctxt'
+		AllOpenTabData[[ntab+1]]<<-containertab
 		tkselect(tknotes,ntab)
 	}
 
@@ -71,7 +71,7 @@ AggregateQcData<-function(){
 ###################################################
 
 AggregateHomData0<-function(){
-	outdirs<-as.character(gal.params$file.io)
+	outdirs<-as.character(GeneralParameters$file.io)
 	datfin<-file.path(outdirs,'AggregateData',fsep = .Platform$file.sep)
 	if(!file.exists(datfin)) dir.create(datfin,showWarnings=FALSE,recursive=TRUE)
 
@@ -82,7 +82,7 @@ AggregateHomData0<-function(){
 	StnId<-as.character(paramsGAL$data[[1]]$id)
 	ggid<-list.files(chkdir)
 	if(length(ggid)==0){
-		insert.txt(main.txt.out,'No tested stations found or Wrong directory',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'No tested stations found or Wrong directory',format=TRUE)
 		return(NULL)
 	}
 
@@ -133,9 +133,9 @@ AggregateHomData0<-function(){
 	if(length(noTraiteStn)>0){
 		faileds<-list('Not Tested Stations',noTraiteStn)
 		containertab<-displayConsOutputTabs(tknotes,faileds,title='Not Tested Stations')
-		ntab<-length(tab.type)
-		tab.type[[ntab+1]]<<-'ctxt'
-		tab.data[[ntab+1]]<<-containertab
+		ntab<-length(AllOpenTabType)
+		AllOpenTabType[[ntab+1]]<<-'ctxt'
+		AllOpenTabData[[ntab+1]]<<-containertab
 		tkselect(tknotes,ntab)
 	}
 	return(0)
@@ -144,7 +144,7 @@ AggregateHomData0<-function(){
 ###################################################
 
 AggregateHomData<-function(){
-	outdirs<-as.character(gal.params$file.io)
+	outdirs<-as.character(GeneralParameters$file.io)
 	datfin<-file.path(outdirs,'AggregateData',fsep = .Platform$file.sep)
 	if(!file.exists(datfin)) dir.create(datfin,showWarnings=FALSE,recursive=TRUE)
 
@@ -205,9 +205,9 @@ AggregateHomData<-function(){
 			infohead1<-infohead[,- miss]	
 			faileds<-list('Not Tested Stations',infohead[1,miss])
 			containertab<-displayConsOutputTabs(tknotes,faileds,title='Not Tested Stations')
-			ntab<-length(tab.type)
-			tab.type[[ntab+1]]<<-'ctxt'
-			tab.data[[ntab+1]]<<-containertab
+			ntab<-length(AllOpenTabType)
+			AllOpenTabType[[ntab+1]]<<-'ctxt'
+			AllOpenTabData[[ntab+1]]<<-containertab
 			tkselect(tknotes,ntab)
 		} 
 		if(nrow(infohead)==3) capition<-c('Stations','LON',paste(period,'LAT',sep='/'))
@@ -227,29 +227,29 @@ AggregateHomData<-function(){
 }
 
 ###################################################################
-AggregateDataCDT<-function(gal.params){
-	istart.yrs<-as.numeric(as.character(gal.params$StartEnd.date$Values[1]))
-	istart.mon<-as.numeric(as.character(gal.params$StartEnd.date$Values[2]))
-	istart.day<-as.numeric(as.character(gal.params$StartEnd.date$Values[3]))
-	iend.yrs<-as.numeric(as.character(gal.params$StartEnd.date$Values[4]))
-	iend.mon<-as.numeric(as.character(gal.params$StartEnd.date$Values[5]))
-	iend.day<-as.numeric(as.character(gal.params$StartEnd.date$Values[6]))
+AggregateDataCDT<-function(GeneralParameters){
+	istart.yrs<-as.numeric(as.character(GeneralParameters$StartEnd.date$Values[1]))
+	istart.mon<-as.numeric(as.character(GeneralParameters$StartEnd.date$Values[2]))
+	istart.day<-as.numeric(as.character(GeneralParameters$StartEnd.date$Values[3]))
+	iend.yrs<-as.numeric(as.character(GeneralParameters$StartEnd.date$Values[4]))
+	iend.mon<-as.numeric(as.character(GeneralParameters$StartEnd.date$Values[5]))
+	iend.day<-as.numeric(as.character(GeneralParameters$StartEnd.date$Values[6]))
 	min.perc<-1/100
 
-	period<-as.character(gal.params$period)
-	filefrmt<-as.character(gal.params$file.date.format$Values[1])
-	datefrmt<-as.character(gal.params$file.date.format$Values[2])
+	period<-as.character(GeneralParameters$period)
+	filefrmt<-as.character(GeneralParameters$file.date.format$Values[1])
+	datefrmt<-as.character(GeneralParameters$file.date.format$Values[2])
 
-	file.pars<-as.character(gal.params$file.io$Values)
-	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+	file.pars<-as.character(GeneralParameters$file.io$Values)
+	all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 	jfile<-which(all.open.file==file.pars[1])
-	extf<-file_ext(file.opfiles[[jfile]][[3]])
-	delimter<-file.opfiles[[jfile]][[4]]
+	extf<-file_ext(AllOpenFilesData[[jfile]][[3]])
+	delimter<-AllOpenFilesData[[jfile]][[4]]
 	f.name<-if(delimter$sepr=="") 'read.table' else 'read.csv'
 	readFun<-match.fun(f.name)
 
 	jfile1<-which(all.open.file==file.pars[2])
-	gginfo<-file.opfiles[[jfile1]][[2]]
+	gginfo<-AllOpenFilesData[[jfile1]][[2]]
 	ncol<-ncol(gginfo)
 	ggid<-as.character(gginfo[,1])
 	if(ncol==4){
@@ -298,7 +298,7 @@ AggregateDataCDT<-function(gal.params){
 			is.rdble <- !inherits(try(donne<- readFun(fileopen,header=delimter$header,sep=delimter$sepr,skip=delimter$skip-1,
 			na.strings=delimter$miss.val,quote="\"'",strip.white=TRUE,colClasses = "character"), silent=TRUE), "try-error")
 			if(!is.rdble){
-				insert.txt(main.txt.out,paste("Unable to read file ",fileopen),format=TRUE)
+				InsertMessagesTxt(main.txt.out,paste("Unable to read file ",fileopen),format=TRUE)
 				miss<-c(miss,j)
 			}else{
 				retvar<-splitTsData(donne,period,filefrmt,datefrmt)
@@ -432,9 +432,9 @@ AggregateDataCDT<-function(gal.params){
 
 	if(length(outlist)>0){
 		containertab<-displayConsOutputTabs(tknotes,outlist,title='Failed Stations')
-		ntab<-length(tab.type)
-		tab.type[[ntab+1]]<<-'ctxt'
-		tab.data[[ntab+1]]<<-containertab
+		ntab<-length(AllOpenTabType)
+		AllOpenTabType[[ntab+1]]<<-'ctxt'
+		AllOpenTabData[[ntab+1]]<<-containertab
 		tkselect(tknotes,ntab)
 	}
 	return(0)
@@ -443,7 +443,7 @@ AggregateDataCDT<-function(gal.params){
 ###################################################################
 
 AggregateZeroChkData<-function(){
-	outdirs<-as.character(gal.params$file.io)
+	outdirs<-as.character(GeneralParameters$file.io)
 	datfin<-file.path(outdirs,'AggregateData',fsep = .Platform$file.sep)
 	if(!file.exists(datfin)) dir.create(datfin,showWarnings=FALSE,recursive=TRUE)
 
@@ -463,7 +463,7 @@ AggregateZeroChkData<-function(){
 	noZeroChkStn<-infohead[noChck,]
 	infohead<-infohead[existStn,]
 	if(length(stnID)==0){
-		insert.txt(main.txt.out,'No corrected stations found or Wrong directory',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'No corrected stations found or Wrong directory',format=TRUE)
 		return(NULL)
 	}
 
@@ -474,9 +474,9 @@ AggregateZeroChkData<-function(){
 		else faileds1<-NULL
 		faileds<-list(faileds0,faileds1)
 		containertab<-displayConsOutputTabs(tknotes,faileds,title='Failed Stations')
-		ntab<-length(tab.type)
-		tab.type[[ntab+1]]<<-'ctxt'
-		tab.data[[ntab+1]]<<-containertab
+		ntab<-length(AllOpenTabType)
+		AllOpenTabType[[ntab+1]]<<-'ctxt'
+		AllOpenTabData[[ntab+1]]<<-containertab
 		tkselect(tknotes,ntab)
 	}
 

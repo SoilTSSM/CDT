@@ -1,22 +1,22 @@
-ExeAggTimeSeries<-function(gal.params){
+ExeAggTimeSeries<-function(GeneralParameters){
 
-	period<-as.character(gal.params$period)
-	period1<-as.character(gal.params$period1)
+	period<-as.character(GeneralParameters$period)
+	period1<-as.character(GeneralParameters$period1)
 
-	datatype<-as.character(gal.params$data.type)
-	file.pars<-as.character(gal.params$file.io$Values)
+	datatype<-as.character(GeneralParameters$data.type)
+	file.pars<-as.character(GeneralParameters$file.io$Values)
 
-	fun<-as.character(gal.params$compute.var$Values[1])
-	minfrac<-as.numeric(gal.params$compute.var$Values[2])
+	fun<-as.character(GeneralParameters$compute.var$Values[1])
+	minfrac<-as.numeric(GeneralParameters$compute.var$Values[2])
 
 	if(datatype=='cdt'){
 		comp.fun<-paste(period,2,period1,sep='')
 		comp.fun<-match.fun(comp.fun)
-		all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+		all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 		jfile<-which(all.open.file==file.pars[1])
 		if(length(jfile)==0) return(NULL)
-		donne<-file.opfiles[[jfile]][[2]]
-		miss.val<-file.opfiles[[jfile]][[4]]$miss.val
+		donne<-AllOpenFilesData[[jfile]][[2]]
+		miss.val<-AllOpenFilesData[[jfile]][[4]]$miss.val
 		donne<-splitCDTData(donne,period)
 		lon<-donne$lon
 		lat<-donne$lat
@@ -46,13 +46,13 @@ ExeAggTimeSeries<-function(gal.params){
 	if(datatype=='series'){
 		comp.fun<-paste(period,2,period1,sep='')
 		comp.fun<-match.fun(comp.fun)
-		filefrmt<-as.character(gal.params$file.date.format$Values[1])
-		datefrmt<-as.character(gal.params$file.date.format$Values[2])
-		all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+		filefrmt<-as.character(GeneralParameters$file.date.format$Values[1])
+		datefrmt<-as.character(GeneralParameters$file.date.format$Values[2])
+		all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 		jfile<-which(all.open.file==file.pars[1])
 		if(length(jfile)==0) return(NULL)
-		donne<-file.opfiles[[jfile]][[2]]
-		miss.val<-file.opfiles[[jfile]][[4]]$miss.val
+		donne<-AllOpenFilesData[[jfile]][[2]]
+		miss.val<-AllOpenFilesData[[jfile]][[4]]$miss.val
 		donne<-splitTsData(donne,period,filefrmt,datefrmt)
 		dates<-donne$dates
 		if(donne$nbvar==3){
@@ -75,17 +75,17 @@ ExeAggTimeSeries<-function(gal.params){
 	if(datatype=='netcdf'){
 		comp.fun<-paste(period,2,period1,'_nc',sep='')
 		comp.fun<-match.fun(comp.fun)
-		istart.yrs<-as.numeric(as.character(gal.params$datesSE$Values[1]))
-		istart.mon<-as.numeric(as.character(gal.params$datesSE$Values[2]))
-		istart.day<-as.numeric(as.character(gal.params$datesSE$Values[3]))
-		iend.yrs<-as.numeric(as.character(gal.params$datesSE$Values[4]))
-		iend.mon<-as.numeric(as.character(gal.params$datesSE$Values[5]))
-		iend.day<-as.numeric(as.character(gal.params$datesSE$Values[6]))
+		istart.yrs<-as.numeric(as.character(GeneralParameters$datesSE$Values[1]))
+		istart.mon<-as.numeric(as.character(GeneralParameters$datesSE$Values[2]))
+		istart.day<-as.numeric(as.character(GeneralParameters$datesSE$Values[3]))
+		iend.yrs<-as.numeric(as.character(GeneralParameters$datesSE$Values[4]))
+		iend.mon<-as.numeric(as.character(GeneralParameters$datesSE$Values[5]))
+		iend.day<-as.numeric(as.character(GeneralParameters$datesSE$Values[6]))
 
-		informat<-as.character(gal.params$IO.file.format$Values[1])
-		outformat<-as.character(gal.params$IO.file.format$Values[2])
-		varid.out<-as.character(gal.params$netcdf.var$Values[1])
-		longname<-as.character(gal.params$netcdf.var$Values[2])
+		informat<-as.character(GeneralParameters$IO.file.format$Values[1])
+		outformat<-as.character(GeneralParameters$IO.file.format$Values[2])
+		varid.out<-as.character(GeneralParameters$netcdf.var$Values[1])
+		longname<-as.character(GeneralParameters$netcdf.var$Values[2])
 
 		istart<-paste(istart.yrs,istart.mon,istart.day,sep='-')
 		iend<-paste(iend.yrs,iend.mon,iend.day,sep='-')

@@ -164,21 +164,21 @@ DisplayStnNASum<-function(parent,jstn,donne,vdates,notebookTab){
 	if(vdates=='Daily data'){
 		period<-'daily'
 		if(nchar(as.character(donne[5,1]))!=8){
-			insert.txt(main.txt.out,'Station data: not a daily data',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Station data: not a daily data',format=TRUE)
 			return(NULL)
 		}
 	}
 	if(vdates=='Dekadal data'){
 		period<-'dekadal'
 		if(nchar(as.character(donne[5,1]))!=7){
-			insert.txt(main.txt.out,'Station data: not a dekadal data',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Station data: not a dekadal data',format=TRUE)
 			return(NULL)
 		}
 	}
 	if(vdates=='Monthly data'){
 		period<-'monthly'
 		if(nchar(as.character(donne[5,1]))!=6){
-			insert.txt(main.txt.out,'Station data: not a monthly data',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Station data: not a monthly data',format=TRUE)
 			return(NULL)
 		}
 	}
@@ -206,7 +206,7 @@ DisplayStnNASum<-function(parent,jstn,donne,vdates,notebookTab){
 	}
 
 	#########
-	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=paste(jstn,'Miss.Summary',sep='-'),tab.type,tab.data)
+	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=paste(jstn,'Miss.Summary',sep='-'),AllOpenTabType,AllOpenTabData)
 	hscale<-as.numeric(tclvalue(tkget(spinH)))
 	vscale<-as.numeric(tclvalue(tkget(spinV)))
 
@@ -276,21 +276,21 @@ DisplayAllStnNASum<-function(parent,donne,vdates){
 	if(vdates=='Daily data'){
 		period<-'daily'
 		if(nchar(as.character(donne[5,1]))!=8){
-			insert.txt(main.txt.out,'Station data: not a daily data',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Station data: not a daily data',format=TRUE)
 			return(NULL)
 		}
 	}
 	if(vdates=='Dekadal data'){
 		period<-'dekadal'
 		if(nchar(as.character(donne[5,1]))!=7){
-			insert.txt(main.txt.out,'Station data: not a dekadal data',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Station data: not a dekadal data',format=TRUE)
 			return(NULL)
 		}
 	}
 	if(vdates=='Monthly data'){
 		period<-'monthly'
 		if(nchar(as.character(donne[5,1]))!=6){
-			insert.txt(main.txt.out,'Station data: not a monthly data',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Station data: not a monthly data',format=TRUE)
 			return(NULL)
 		}
 	}

@@ -95,13 +95,13 @@ plotCDTdata<-function(donne,atLev,listCol,ocrds,units){
 
 displayCDTdata<-function(parent,notebookTab,donne,atLev,listCol,shpf,units){
 	if(is.null(donne)){
-		insert.txt(main.txt.out,'No station data found',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'No station data found',format=TRUE)
 		return(NULL)
 	}
 	atLev<-as.numeric(atLev)
 	atLev<-atLev[!is.na(atLev)]
 	if(length(atLev)<2){
-		insert.txt(main.txt.out,'Levels must be at least 2',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Levels must be at least 2',format=TRUE)
 		return(NULL)
 	}
 	
@@ -113,7 +113,7 @@ displayCDTdata<-function(parent,notebookTab,donne,atLev,listCol,shpf,units){
 	
 	###################################################################	
 
-	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=paste('Map -',donne$date),tab.type,tab.data)
+	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=paste('Map -',donne$date),AllOpenTabType,AllOpenTabData)
 
 	# area_plot_horiz<-as.numeric(tclvalue(tkget(spinH)))
 	# area_plot_verti<-as.numeric(tclvalue(tkget(spinV)))

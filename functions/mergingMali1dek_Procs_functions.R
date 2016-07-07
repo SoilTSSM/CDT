@@ -1,12 +1,12 @@
 update1DekProc_Mali<-function(origdir){
-	existRFE<-as.character(gal.params$rfeDownSep)
-	existSTN<-as.character(gal.params$stnDataDispo)
-	year<-str_trim((as.character(gal.params$dates.mrg$Values[1])))
-	mon<-str_trim(as.character(gal.params$dates.mrg$Values[2]))
+	existRFE<-as.character(GeneralParameters$rfeDownSep)
+	existSTN<-as.character(GeneralParameters$stnDataDispo)
+	year<-str_trim((as.character(GeneralParameters$dates.mrg$Values[1])))
+	mon<-str_trim(as.character(GeneralParameters$dates.mrg$Values[2]))
 	mon<-ifelse(as.numeric(mon)<10,paste('0',mon,sep=''),mon)
-	dek<-str_trim(as.character(gal.params$dates.mrg$Values[3]))
-	rfeAfrica<-as.character(gal.params$file.io$Values[2])
-	file.stn<-as.character(gal.params$file.io$Values[1])
+	dek<-str_trim(as.character(GeneralParameters$dates.mrg$Values[3]))
+	rfeAfrica<-as.character(GeneralParameters$file.io$Values[2])
+	file.stn<-as.character(GeneralParameters$file.io$Values[1])
 
 	nmin<- 1
 	nmax<- 5
@@ -19,7 +19,7 @@ update1DekProc_Mali<-function(origdir){
 
 	deb<-try(as.Date(paste(year,mon,dek,sep='-')),silent=TRUE)
 	if(inherits(deb, "try-error")| is.na(deb)){
-		insert.txt(main.txt.out,'Verifier la date',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Verifier la date',format=TRUE)
 		return(NULL)
 	}
 	deb<-strsplit(as.character(deb),'-')
@@ -27,7 +27,7 @@ update1DekProc_Mali<-function(origdir){
 	mon1<-deb[[1]][2]
 	dek1<-as.numeric(deb[[1]][3])
 	if(dek1>3){
-		insert.txt(main.txt.out,'La decade doit etre 1, 2 ou 3',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'La decade doit etre 1, 2 ou 3',format=TRUE)
 		return(NULL)
 	}
 
@@ -38,7 +38,7 @@ update1DekProc_Mali<-function(origdir){
 
 	if(existRFE=='0'){
 		if(!testConnection()){
-			insert.txt(main.txt.out,'No internet connection',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'No internet connection',format=TRUE)
 			return(NULL)
 		}
 		url<-'http://tamsat.org.uk/public_data'
@@ -49,15 +49,15 @@ update1DekProc_Mali<-function(origdir){
 		destfile0<-file.path(outdir0,file0,fsep = .Platform$file.sep)
 		test <- try(suppressWarnings(readLines(link, n = 1)), silent = TRUE)
 		if(inherits(test, "try-error")){
-			insert.txt(main.txt.out,paste(file0,": n'est pas encore disponible ou la connexion internet est perdue"),format=TRUE)
+			InsertMessagesTxt(main.txt.out,paste(file0,": n'est pas encore disponible ou la connexion internet est perdue"),format=TRUE)
 			return(NULL)
 		}
 
-		insert.txt(main.txt.out,"Téléchargement.................")
+		InsertMessagesTxt(main.txt.out,"Téléchargement.................")
 		tcl("update")
 		ret<-try(download.file(link,destfile0,mode="wb",quiet=TRUE),silent=TRUE)
 		if(ret!=0){
-			insert.txt(main.txt.out,paste('Échec du téléchargement pour:',file0),format=TRUE)
+			InsertMessagesTxt(main.txt.out,paste('Échec du téléchargement pour:',file0),format=TRUE)
 			return(NULL)
 		}else{
 			nc<-nc_open(destfile0)
@@ -65,12 +65,12 @@ update1DekProc_Mali<-function(origdir){
 			ym<-nc$dim[[1]]$vals
 			xdat<-ncvar_get(nc,varid=nc$var[[1]]$name)
 			nc_close(nc)
-			insert.txt(main.txt.out,paste('Téléchargement pour:',file0,'terminé'))
+			InsertMessagesTxt(main.txt.out,paste('Téléchargement pour:',file0,'terminé'))
 		}
 
 	}else{
 		if(!file.exists(rfeAfrica)){
-			insert.txt(main.txt.out,"Les donnees de TAMSAT pour Africa n'existe pas",format=TRUE)
+			InsertMessagesTxt(main.txt.out,"Les donnees de TAMSAT pour Africa n'existe pas",format=TRUE)
 			return(NULL)
 		}
 		nc<-nc_open(rfeAfrica)
@@ -78,7 +78,7 @@ update1DekProc_Mali<-function(origdir){
 		ym<-nc$dim[[1]]$vals
 		xdat<-ncvar_get(nc,varid=nc$var[[1]]$name)
 		nc_close(nc)
-		insert.txt(main.txt.out,paste('Extraction  terminée pour:',basename(rfeAfrica)))
+		InsertMessagesTxt(main.txt.out,paste('Extraction  terminée pour:',basename(rfeAfrica)))
 	}
 	tcl("update")
 	
@@ -121,14 +121,14 @@ update1DekProc_Mali<-function(origdir){
 	rr_mrg_mon<-file.path(outdir2,paste('rr_mrg_',year,mon,dek,'_MON.nc',sep=''),fsep=.Platform$file.sep)
 
 	if(existSTN=='1'){
-		all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+		all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 		jfile<-which(all.open.file==file.stn[1])
-		donne<-file.opfiles[[jfile]][[2]]
+		donne<-AllOpenFilesData[[jfile]][[2]]
 		stn.lon<-as.numeric(donne[2,-1])
 		stn.lat<-as.numeric(donne[3,-1])
 		dates<-as.character(donne[4,1])
 		if(paste(year,mon,dek,sep='')!=dates){
-			insert.txt(main.txt.out,"La date entrée ne correspond pas a la date des données de stations",format=TRUE)
+			InsertMessagesTxt(main.txt.out,"La date entrée ne correspond pas a la date des données de stations",format=TRUE)
 			return(NULL)
 		}
 		stn.data<-as.numeric(donne[4,-1])

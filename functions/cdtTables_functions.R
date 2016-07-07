@@ -12,7 +12,7 @@ openTable<-function(parent.win,parent,fileopen){
 			is.rdble <- !inherits(try(dat.file <- readFun(fileopen,header=delimter$header,sep=delimter$sepr,skip=delimter$skip,
 			na.strings=delimter$miss.val,quote="\"'",strip.white=TRUE,colClasses = "character"), silent=TRUE), "try-error")
 			if(!is.rdble){
-				insert.txt(main.txt.out,paste("Unable to read file ",fileopen),format=TRUE)
+				InsertMessagesTxt(main.txt.out,paste("Unable to read file ",fileopen),format=TRUE)
 				return(NULL)
 			}else{
 				onglet<-addNewTab(parent,tab.title=title.tab)
@@ -244,8 +244,8 @@ reshape.array.old<-function(dat){
 ###change in a table
 getTableInChange<-function(parent){
 	tabid<-as.numeric(tclvalue(tkindex(parent,'current')))+1
-	table1<-tab.data[[tabid]][[2]][[1]]
-	data_arr<-tab.data[[tabid]][[2]][[2]]
+	table1<-AllOpenTabData[[tabid]][[2]][[1]]
+	data_arr<-AllOpenTabData[[tabid]][[2]][[2]]
 
 	valEnter0<-NULL
 	valEnter<-NULL

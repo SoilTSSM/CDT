@@ -1,19 +1,19 @@
 plotSpatialCheck<-function(ijsp,dem,rfedat,shpf,ZoomXYval,showval){
-	if(gal.params$AllOrOne=='one'){
-		IJoutputdir<-ret.results$outputdir
-		IJstation<-ret.results$station
+	if(GeneralParameters$AllOrOne=='one'){
+		IJoutputdir<-ReturnExecResults$outputdir
+		IJstation<-ReturnExecResults$station
 	}
-	if(gal.params$AllOrOne=='all'){
-		ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
-		IJoutputdir<-ret.results$outputdir[[ijstn]]
-		IJstation<-ret.results$station[[ijstn]]
+	if(GeneralParameters$AllOrOne=='all'){
+		ijstn<-which(as.character(GeneralParameters$parameter[[2]][,1])==tclvalue(stn.choix.val))
+		IJoutputdir<-ReturnExecResults$outputdir[[ijstn]]
+		IJstation<-ReturnExecResults$station[[ijstn]]
 	}
 
 	outlparams<-getOutlier.params(IJstation,IJoutputdir)
 	outqcf<-outlparams$qcout
 	xdates<-outlparams$dates
 
-	if(ret.results$action=='qc.rain' & gal.params$action=='qc.rain'){
+	if(ReturnExecResults$action=='qc.rain' & GeneralParameters$action=='qc.rain'){
 		lon<-EnvQcOutlierData$donnees$lon
 		lat<-EnvQcOutlierData$donnees$lat
 		idStn<-as.character(EnvQcOutlierData$donnees$id)
@@ -23,7 +23,7 @@ plotSpatialCheck<-function(ijsp,dem,rfedat,shpf,ZoomXYval,showval){
 		outlq<-as.character(outqcf$spatial.check)
 		#outdates1<-outdates[!is.na(outlq) & as.numeric(outlq)>0]
 		outdates1<-outdates[!is.na(outlq)]
-	}else if(ret.results$action=='qc.temp' & gal.params$action=='qc.temp'){
+	}else if(ReturnExecResults$action=='qc.temp' & GeneralParameters$action=='qc.temp'){
 		lon<-EnvQcOutlierData$donnees1$lon
 		lat<-EnvQcOutlierData$donnees1$lat
 		idStn<-as.character(EnvQcOutlierData$donnees1$id)
@@ -100,11 +100,11 @@ plotSpatialCheck<-function(ijsp,dem,rfedat,shpf,ZoomXYval,showval){
 		points(lon[ijStn],lat[ijStn],pch=20,col='red',cex=0.5)
 		abline(h = axTicks(2), v =axTicks(1) , col = "lightgray",lty=3)
 		if(showval){
-			if(gal.params$action=='qc.temp'){
+			if(GeneralParameters$action=='qc.temp'){
 				text(lon[ijStn],lat[ijStn],labels=valm[ijStn],pos=1,cex=0.6,col='red')
 				text(lon[ijStn],lat[ijStn],labels=outlv1[ijsp],pos=3,cex=0.6,col='green2')
 				text(lon[-ijStn],lat[-ijStn],labels=valm[-ijStn],pos=1,cex=0.6,col='blue')
-			}else if(gal.params$action=='qc.rain'){
+			}else if(GeneralParameters$action=='qc.rain'){
 				text(lon[ijStn],lat[ijStn],labels=valm[ijStn],pos=1,cex=0.6,col='red')
 				text(lon[-ijStn],lat[-ijStn],labels=valm[-ijStn],pos=1,cex=0.6,col='blue')
 			}
@@ -131,12 +131,12 @@ plotSpatialCheck<-function(ijsp,dem,rfedat,shpf,ZoomXYval,showval){
 DisplaySpatialCheck<-function(parent,ijsp,ZoomXYval,dem,rfedat,shpf,showval,noteQcSpatCheck){
 
 	############
-	if(gal.params$AllOrOne=='one'){
-		IJstation<-ret.results$station
+	if(GeneralParameters$AllOrOne=='one'){
+		IJstation<-ReturnExecResults$station
 	}
-	if(gal.params$AllOrOne=='all'){
-		ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
-		IJstation<-ret.results$station[[ijstn]]
+	if(GeneralParameters$AllOrOne=='all'){
+		ijstn<-which(as.character(GeneralParameters$parameter[[2]][,1])==tclvalue(stn.choix.val))
+		IJstation<-ReturnExecResults$station[[ijstn]]
 	}
 
 	##########PLOT
@@ -168,7 +168,7 @@ DisplaySpatialCheck<-function(parent,ijsp,ZoomXYval,dem,rfedat,shpf,showval,note
 	usrCoords1=usrCoords1,usrCoords2=usrCoords2,usrCoords3=usrCoords3,usrCoords4=usrCoords4)
 
 	###################################################################
-	onglet<-imageNotebookTab_open(parent,noteQcSpatCheck,tabTitle=paste(IJstation,'Spatial Check',sep='-'),tab.type,tab.data)
+	onglet<-imageNotebookTab_open(parent,noteQcSpatCheck,tabTitle=paste(IJstation,'Spatial Check',sep='-'),AllOpenTabType,AllOpenTabData)
 	hscale<-as.numeric(tclvalue(tkget(spinH)))
 	vscale<-as.numeric(tclvalue(tkget(spinV)))
 

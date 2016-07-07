@@ -32,7 +32,7 @@ imageNotebookTab_unik<-function(parent,imgContainer,notebookTab,tabType,tabData)
 			tkselect(parent,0)
 		}
 	}
-	retTab<-list(notebookTab=list(imgContainer[[1]],ntbkIdTab),tab.type=tabType,tab.data=tabData)
+	retTab<-list(notebookTab=list(imgContainer[[1]],ntbkIdTab),AllOpenTabType=tabType,AllOpenTabData=tabData)
 	return(retTab)
 }
 
@@ -129,9 +129,9 @@ tableQcEditNotebookTab_unik<-function(parent,titleTab,notebookTab,tabType,tabDat
 		}
 	}
 
-	if(ret.results$action=='qc.temp'){
-		if(as.character(gal.params$use.method$Values[1])=="0"){
-			if(as.character(gal.params$use.method$Values[2])=="1"){
+	if(ReturnExecResults$action=='qc.temp'){
+		if(as.character(GeneralParameters$use.method$Values[1])=="0"){
+			if(as.character(GeneralParameters$use.method$Values[2])=="1"){
 				.Tcl(paste(table1,'tag','celltag','ttestval', paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),8,sep=',',collapse=' ')))
 				tcl(table1,"tag","configure","ttestval",bg="aquamarine")
 				.Tcl(paste(table1,'tag','celltag','ttnreplace', paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),9,sep=',',collapse=' ')))
@@ -147,7 +147,7 @@ tableQcEditNotebookTab_unik<-function(parent,titleTab,notebookTab,tabType,tabDat
 				tcl(table1,"tag","configure","ttchgval",bg="darkolivegreen1")
 			}
 		}else{
-			if(as.character(gal.params$use.method$Values[2])=="1"){
+			if(as.character(GeneralParameters$use.method$Values[2])=="1"){
 				.Tcl(paste(table1,'tag','celltag','ttnreplace', paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),7,sep=',',collapse=' ')))
 				tcl(table1,"tag","configure","ttnreplace",bg="lightgoldenrod1")
 				.Tcl(paste(table1,'tag','celltag','ttchgval', paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),8,sep=',',collapse=' ')))
@@ -160,8 +160,8 @@ tableQcEditNotebookTab_unik<-function(parent,titleTab,notebookTab,tabType,tabDat
 			}
 		}
 	}
-	if(ret.results$action=='qc.rain'){
-		if(as.character(gal.params$use.method$Values[1])=="0"){
+	if(ReturnExecResults$action=='qc.rain'){
+		if(as.character(GeneralParameters$use.method$Values[1])=="0"){
 			.Tcl(paste(table1,'tag','celltag','ttnreplace', paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),8,sep=',',collapse=' ')))
 			tcl(table1,"tag","configure","ttnreplace",bg="lightgoldenrod1")
 			.Tcl(paste(table1,'tag','celltag','ttchgval', paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),9,sep=',',collapse=' ')))
@@ -174,7 +174,7 @@ tableQcEditNotebookTab_unik<-function(parent,titleTab,notebookTab,tabType,tabDat
 		}
 	}
 
-	retTab<-list(notebookTab=notebookTab,tab.type=tabType,tab.data=tabData)
+	retTab<-list(notebookTab=notebookTab,AllOpenTabType=tabType,AllOpenTabData=tabData)
 	return(retTab)
 }
 
@@ -226,7 +226,66 @@ tableZeroCheckNotebookTab_unik<-function(parent,titleTab,notebookTab,tabType,tab
 			popupAddRemoveRow0(parent,tabData,ntab+1)
 		}
 	}
-	retTab<-list(notebookTab=notebookTab,tab.type=tabType,tab.data=tabData)
+	retTab<-list(notebookTab=notebookTab,AllOpenTabType=tabType,AllOpenTabData=tabData)
+	return(retTab)
+}
+
+######################################
+##Zeros check neighbors stations table
+
+tableZeroCheckNotebookTab_unik1<-function(parent,neibMonData,titleTab,notebookTab,tabType,tabData){
+	ntab<-length(tabType)
+
+	if(is.null(notebookTab)){
+		tableDisp<-DisplayQcHom(parent,neibMonData,titleTab)
+		tabType[[ntab+1]]<-'arrzc'
+		tabData[[ntab+1]]<-tableDisp
+		table1<-tabData[[ntab+1]][[2]][[1]]
+		notebookTab<-tabData[[ntab+1]][[1]][[1]]$ID
+		tkselect(parent,ntab)
+	}else{
+		if(ntab>0){
+			AllNoteTab<-sapply(1:ntab,function(j){
+				if(!is.null(attributes(tabData[[j]][[1]][[1]]))) tabData[[j]][[1]][[1]]$ID
+				else tabData[[j]][[1]][[1]]
+			})
+			idTabs<-which(AllNoteTab==notebookTab)
+			if(length(idTabs)>0){
+				.Tcl(paste('destroy',tclvalue(tkwinfo("children",tabData[[idTabs]][[1]][[2]]))))
+
+				dtab<-tclArrayVar(neibMonData[[1]])
+				tabData[[idTabs]][[3]][[1]]<-neibMonData[[2]]
+				tabData[[idTabs]][[2]]<-displayTable(tabData[[idTabs]][[1]][[2]],tclArray=dtab,colwidth=10)
+				tcl(parent,'tab',tabData[[idTabs]][[1]][[1]],'-text',titleTab)
+				table1<-tabData[[idTabs]][[2]][[1]]
+				notebookTab<-tabData[[idTabs]][[1]][[1]]$ID
+				tkselect(parent,idTabs-1)
+			}else{
+				tableDisp<-DisplayQcHom(parent,neibMonData,titleTab)
+				tabType[[ntab+1]]<-'arrzc'
+				tabData[[ntab+1]]<-tableDisp
+				table1<-tabData[[ntab+1]][[2]][[1]]
+				notebookTab<-tabData[[ntab+1]][[1]][[1]]$ID
+				tkselect(parent,ntab)
+			}
+		}else{
+			tableDisp<-DisplayQcHom(parent,neibMonData,titleTab)
+			tabType[[ntab+1]]<-'arrzc'
+			tabData[[ntab+1]]<-tableDisp
+			table1<-tabData[[ntab+1]][[2]][[1]]
+			notebookTab<-tabData[[ntab+1]][[1]][[1]]$ID
+			tkselect(parent,ntab)
+		}
+	}
+
+	.Tcl(paste(table1,'tag','celltag','ZchkStn', paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),2,sep=',',collapse=' ')))
+	tcl(table1,"tag","configure","ZchkStn",bg="lightgoldenrod1")
+	.Tcl(paste(table1,'tag','celltag','idZchkStn1',paste(1,1:as.numeric(tclvalue(tkindex(table1,'end','col'))),sep=',',collapse=' ')))
+	tcl(table1,"tag","configure","idZchkStn1",bg="lightcyan1")
+	.Tcl(paste(table1,'tag','celltag','idZchkStn2',paste(2,1:as.numeric(tclvalue(tkindex(table1,'end','col'))),sep=',',collapse=' ')))
+	tcl(table1,"tag","configure","idZchkStn2",bg="lightcyan1")
+
+	retTab<-list(notebookTab=notebookTab,AllOpenTabType=tabType,AllOpenTabData=tabData)
 	return(retTab)
 }
 
@@ -289,7 +348,7 @@ tableHomogNotebookTab_unik<-function(parent,titleTab,notebookTab,tabType,tabData
 	.Tcl(paste(table1,'tag','celltag','KolCol3',paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),3,sep=',',collapse=' ')))
 	tcl(table1,"tag","configure","KolCol3",bg="lightgoldenrod1")
 
-	retTab<-list(notebookTab=notebookTab,tab.type=tabType,tab.data=tabData)
+	retTab<-list(notebookTab=notebookTab,AllOpenTabType=tabType,AllOpenTabData=tabData)
 	return(retTab)
 }
 
@@ -298,7 +357,7 @@ tableHomogNotebookTab_unik<-function(parent,titleTab,notebookTab,tabType,tabData
 
 tableRHtestNotebookTab_unik<-function(parent,titleTab,notebookTab,tabType,tabData){
 	ntab<-length(tabType)
-	HomFormat<-RHtests_mCsFormat(ret.results)
+	HomFormat<-RHtests_mCsFormat(ReturnExecResults)
 
 	if(is.null(notebookTab)){
 		tableDisp<-DisplayQcHom(parent,HomFormat,titleTab)
@@ -349,7 +408,7 @@ tableRHtestNotebookTab_unik<-function(parent,titleTab,notebookTab,tabType,tabDat
 	.Tcl(paste(table1,'tag','celltag','KolCol3',paste(1:as.numeric(tclvalue(tkindex(table1,'end','row'))),3,sep=',',collapse=' ')))
 	tcl(table1,"tag","configure","KolCol3",bg="lightgoldenrod1")
 
-	retTab<-list(notebookTab=notebookTab,tab.type=tabType,tab.data=tabData)
+	retTab<-list(notebookTab=notebookTab,AllOpenTabType=tabType,AllOpenTabData=tabData)
 	return(retTab)
 }
 
@@ -394,7 +453,7 @@ consolOutNotebookTab_unik<-function(parent,Todisplay,titleTab,notebookTab,tabTyp
 			tkselect(parent,0)
 		}
 	}
-	retTab<-list(notebookTab=notebookTab,tab.type=tabType,tab.data=tabData)
+	retTab<-list(notebookTab=notebookTab,AllOpenTabType=tabType,AllOpenTabData=tabData)
 	return(retTab)
 }
 
@@ -451,7 +510,7 @@ tableInterpNotebookTab_unik<-function(parent,donne,notebookTab,tabType,tabData){
 			#popupAddRemoveRow(parent)
 		}
 	}
-	retTab<-list(notebookTab=notebookTab,tab.type=tabType,tab.data=tabData)
+	retTab<-list(notebookTab=notebookTab,AllOpenTabType=tabType,AllOpenTabData=tabData)
 	return(retTab)
 }
 
@@ -503,6 +562,6 @@ tableValidationNotebookTab_unik<-function(parent,toDispl,titleTab,notebookTab,ta
 			#popupAddRemoveRow0(parent,tabData,ntab+1)
 		}
 	}
-	retTab<-list(notebookTab=notebookTab,tab.type=tabType,tab.data=tabData)
+	retTab<-list(notebookTab=notebookTab,AllOpenTabType=tabType,AllOpenTabData=tabData)
 	return(retTab)
 }

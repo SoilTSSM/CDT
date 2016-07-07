@@ -1,20 +1,20 @@
 
 QcOutFormat<-function(){
-		if(gal.params$AllOrOne=='one'){
-			IJoutputdir<-ret.results$outputdir
-			IJstation<-ret.results$station
+		if(GeneralParameters$AllOrOne=='one'){
+			IJoutputdir<-ReturnExecResults$outputdir
+			IJstation<-ReturnExecResults$station
 		}
-		if(gal.params$AllOrOne=='all'){
-			ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
-			IJoutputdir<-ret.results$outputdir[[ijstn]]
-			IJstation<-ret.results$station[[ijstn]]
+		if(GeneralParameters$AllOrOne=='all'){
+			ijstn<-which(as.character(GeneralParameters$parameter[[2]][,1])==tclvalue(stn.choix.val))
+			IJoutputdir<-ReturnExecResults$outputdir[[ijstn]]
+			IJstation<-ReturnExecResults$station[[ijstn]]
 		}
 		fileout<-file.path(IJoutputdir,paste(IJstation,'.txt',sep=''),fsep = .Platform$file.sep)
 		if(file.exists(fileout)){
 			xdat<-read.table(fileout,header=TRUE,colClasses='character')
 			retdata<-list(xdat,fileout)
 		}else{
-			insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 			retdata<-NULL
 		}
 	return(retdata)
@@ -25,9 +25,9 @@ QcOutFormat<-function(){
 
 getOutlier.params<-function(IJstation,IJoutputdir){
 	flqcout<-file.path(IJoutputdir,paste(IJstation,'.txt',sep=''),fsep = .Platform$file.sep)
-	if(ret.results$action=='qc.rain'){
+	if(ReturnExecResults$action=='qc.rain'){
 		dates<-EnvQcOutlierData$donnees$dates
-		if(as.character(gal.params$use.method$Values[1])=="0"){
+		if(as.character(GeneralParameters$use.method$Values[1])=="0"){
 			pos<-which(as.character(EnvQcOutlierData$donnees$id)==IJstation)
 			xdat<-EnvQcOutlierData$donnees$data[,pos]
 		}else{
@@ -38,15 +38,15 @@ getOutlier.params<-function(IJstation,IJoutputdir){
 		if(file.exists(flqcout)) outqcf<-read.table(flqcout,header=TRUE,colClasses='character')
 		else outqcf<-NULL
 		retval<-list(dates=dates,value=xdat,qcout=outqcf)
-	}else if(ret.results$action=='qc.temp'){
-		if(as.character(gal.params$use.method$Values[1])=="0"){#not 1series
+	}else if(ReturnExecResults$action=='qc.temp'){
+		if(as.character(GeneralParameters$use.method$Values[1])=="0"){#not 1series
 			dates<-EnvQcOutlierData$donnees1$dates
 			pos<-which(as.character(EnvQcOutlierData$donnees1$id)==IJstation)
 			xdat<-EnvQcOutlierData$donnees1$data[,pos]
 		}else{
 			dates<-EnvQcOutlierData$donnees1$dates
 			if(EnvQcOutlierData$donnees1$nbvar==3){
-				if(as.character(gal.params$test.tx)=="1") xdat<-EnvQcOutlierData$donnees1$var$tx
+				if(as.character(GeneralParameters$test.tx)=="1") xdat<-EnvQcOutlierData$donnees1$var$tx
 				else xdat<-EnvQcOutlierData$donnees1$var$tn
 			} else xdat<-EnvQcOutlierData$donnees1$var$var
 		}
@@ -55,7 +55,7 @@ getOutlier.params<-function(IJstation,IJoutputdir){
 		else outqcf<-NULL
 		retval<-list(dates=dates,value=xdat,qcout=outqcf)
 	}else{
-		insert.txt(main.txt.out,'Reinitialize the operation. Parameters or Outputs are not a QC results',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Reinitialize the operation. Parameters or Outputs are not a QC results',format=TRUE)
 		retval<-NULL
 	}
 	return(retval)
@@ -64,10 +64,10 @@ getOutlier.params<-function(IJstation,IJoutputdir){
 ######################################
 replaceOutlier<-function(IJstation,thresStat,isReplace){
 
-	if(gal.params$AllOrOne=='one') IJoutputdir<-ret.results$outputdir
-	if(gal.params$AllOrOne=='all'){ 
-		ijstn<-which(as.character(gal.params$parameter[[2]][,1])==IJstation)
-		IJoutputdir<-ret.results$outputdir[[ijstn]]
+	if(GeneralParameters$AllOrOne=='one') IJoutputdir<-ReturnExecResults$outputdir
+	if(GeneralParameters$AllOrOne=='all'){ 
+		ijstn<-which(as.character(GeneralParameters$parameter[[2]][,1])==IJstation)
+		IJoutputdir<-ReturnExecResults$outputdir[[ijstn]]
 	}
 
 	outlparams<-getOutlier.params(IJstation,IJoutputdir)
@@ -94,7 +94,7 @@ replaceOutlier<-function(IJstation,thresStat,isReplace){
 			changeval<-as.numeric(as.character(outqcf$change.values))
 			xdat[match(outdates,dates)]<-NA
 			xdat[match(outdates[!is.na(noreplace) & noreplace=="1"],dates)]<-origvalues[!is.na(noreplace) & noreplace=="1"]
-			if(ret.results$action=='qc.temp'){
+			if(ReturnExecResults$action=='qc.temp'){
 				estvalue<-as.numeric(as.character(outqcf$estimated.values))
 				xdat[match(outdates[!is.na(noreplace) & noreplace=="2"],dates)]<-estvalue[!is.na(noreplace) & noreplace=="2"]
 			}
@@ -109,22 +109,22 @@ replaceOutlier<-function(IJstation,thresStat,isReplace){
 
 
 isSpatialCheckOk<-function(){
-	if(gal.params$AllOrOne=='one'){
-		IJoutputdir<-ret.results$outputdir
-		IJstation<-ret.results$station
+	if(GeneralParameters$AllOrOne=='one'){
+		IJoutputdir<-ReturnExecResults$outputdir
+		IJstation<-ReturnExecResults$station
 	}
-	if(gal.params$AllOrOne=='all'){
-		ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
-		IJoutputdir<-ret.results$outputdir[[ijstn]]
-		IJstation<-ret.results$station[[ijstn]]
+	if(GeneralParameters$AllOrOne=='all'){
+		ijstn<-which(as.character(GeneralParameters$parameter[[2]][,1])==tclvalue(stn.choix.val))
+		IJoutputdir<-ReturnExecResults$outputdir[[ijstn]]
+		IJstation<-ReturnExecResults$station[[ijstn]]
 	}
 
 	qcout<-getOutlier.params(IJstation,IJoutputdir)$qcout
-	if(ret.results$action=='qc.rain'){
+	if(ReturnExecResults$action=='qc.rain'){
 		xxout<-as.character(qcout$spatial.check)
 		outdts<-qcout[!is.na(xxout),c('stn','dates','spatial.check')]
 	}
-	if(ret.results$action=='qc.temp'){
+	if(ReturnExecResults$action=='qc.temp'){
 		xxout<-as.character(qcout$spatial.reg.check)
 		outdts<-qcout[!is.na(xxout),c('stn','dates','spatial.reg.check')]
 	}

@@ -97,7 +97,7 @@ ttkspinbox <- function(parent, ...) tkwidget(parent, "ttk::spinbox", ...)
 
 ####################################################################
 ### Insert text 
-insert.txt<-function(wdgt,texta,format=FALSE,fgcolor='red',bgcolor='yellow'){
+InsertMessagesTxt<-function(wdgt,texta,format=FALSE,fgcolor='red',bgcolor='yellow'){
 	#tktag.add(wdgt, "formated", "end -1 lines linestart","end -1 lines lineend")
 	font1<-tkfont.create(family="times",weight="bold",slant="roman",size=11)
 	font2<-tkfont.create(family="times",weight="normal",slant="italic",size=11)
@@ -337,14 +337,14 @@ fileORdir2Save<-function(filedirVar,isFile=TRUE){
 ##get all open files
 
 openFile_ttkcomboList<-function(){
-	nopfs<-length(type.opfiles)
+	nopfs<-length(AllOpenFilesType)
 	if(nopfs!=0){
-		file.list<-c('',lapply(1:nopfs,function(j) file.opfiles[[j]][[1]]))
+		listOpenFiles<-c('',lapply(1:nopfs,function(j) AllOpenFilesData[[j]][[1]]))
 	}else{
-		file.list<-list()
-		file.list[[1]]<-c('')
+		listOpenFiles<-list()
+		listOpenFiles[[1]]<-c('')
 	}
-	return(file.list)
+	return(listOpenFiles)
 }
 
 
@@ -354,10 +354,10 @@ openFile_ttkcomboList<-function(){
 
 getShpOpenData<-function(shp){
 	if(tclvalue(shp)!=""){
-		all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+		all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 		jfile<-which(all.open.file==tclvalue(shp))
-		if(type.opfiles[[jfile]]=="shp"){
-			shpf<-file.opfiles[[jfile]]
+		if(AllOpenFilesType[[jfile]]=="shp"){
+			shpf<-AllOpenFilesData[[jfile]]
 		}else shpf<-NULL
 	}else shpf<-NULL
 	return(shpf)
@@ -370,10 +370,10 @@ getShpOpenData<-function(shp){
 
 getStnOpenData<-function(file.stnfl){
 	if(tclvalue(file.stnfl)!=""){
-		all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+		all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 		jfile<-which(all.open.file==tclvalue(file.stnfl))
-		if(type.opfiles[[jfile]]=="ascii"){
-			donne<-file.opfiles[[jfile]][[2]]
+		if(AllOpenFilesType[[jfile]]=="ascii"){
+			donne<-AllOpenFilesData[[jfile]][[2]]
 		}else donne<-NULL
 	}else donne<-NULL
 	return(donne)
@@ -416,7 +416,7 @@ getCDTdata1Date<-function(donne,yrs,mon,day){
 
 	daty<-try(as.Date(paste(as.numeric(yrs),as.numeric(mon),as.numeric(day),sep='-')),silent=TRUE)
 	if(inherits(daty, "try-error")){
-		insert.txt(main.txt.out,"Date format invalid",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Date format invalid",format=TRUE)
 		return(NULL)
 	}
 	if(freqData=='daily') daty<-format(daty,'%Y%m%d')
@@ -434,10 +434,10 @@ getCDTdata1Date<-function(donne,yrs,mon,day){
 
 getDemOpenData<-function(file.grddem){
 	if(tclvalue(file.grddem)!=""){
-		all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+		all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 		jfile<-which(all.open.file==tclvalue(file.grddem))
-		if(type.opfiles[[jfile]]=="netcdf"){
-			fdem<-file.opfiles[[jfile]][[2]]
+		if(AllOpenFilesType[[jfile]]=="netcdf"){
+			fdem<-AllOpenFilesData[[jfile]][[2]]
 			demv<-fdem$value
 			demv[demv<0]<-NA
 			dem<-list(lon=fdem$x,lat=fdem$y,dem=demv)
@@ -453,10 +453,10 @@ getDemOpenData<-function(file.grddem){
 
 getNcdfOpenData<-function(file.netcdf){
 	if(tclvalue(file.netcdf)!=""){
-		all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+		all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 		jfile<-which(all.open.file==tclvalue(file.netcdf))
-		if(type.opfiles[[jfile]]=="netcdf"){
-			nc<-file.opfiles[[jfile]]
+		if(AllOpenFilesType[[jfile]]=="netcdf"){
+			nc<-AllOpenFilesData[[jfile]]
 		}else nc<-NULL
 	}else nc<-NULL
 	return(nc)
@@ -471,7 +471,7 @@ getNcdfData2Plot<-function(dataNCDF,freqData,yrs,mon,day,ncOrder=c(1,2)){
 	if(freqData=='Monthly data') daty<-try(format(as.Date(paste(as.numeric(yrs),as.numeric(mon),15,sep='-')),'%Y%m%d'),silent=TRUE)
 	else daty<-try(format(as.Date(paste(as.numeric(yrs),as.numeric(mon),as.numeric(day),sep='-')),'%Y%m%d'),silent=TRUE)
 	if(inherits(daty, "try-error") | is.na(daty)){
-		insert.txt(main.txt.out,paste("Date format invalid",tclvalue(dataNCDF[[2]])),format=TRUE)
+		InsertMessagesTxt(main.txt.out,paste("Date format invalid",tclvalue(dataNCDF[[2]])),format=TRUE)
 		return(NULL)
 	}
 
@@ -479,7 +479,7 @@ getNcdfData2Plot<-function(dataNCDF,freqData,yrs,mon,day,ncOrder=c(1,2)){
 	if(freqData=='Dekadal data') filelpath<-file.path(tclvalue(dataNCDF[[1]]),sprintf(tclvalue(dataNCDF[[2]]),substr(daty,1,4),substr(daty,5,6),substr(daty,8,8)))
 	if(freqData=='Monthly data') filelpath<-file.path(tclvalue(dataNCDF[[1]]),sprintf(tclvalue(dataNCDF[[2]]),substr(daty,1,4),substr(daty,5,6)))
 	if(!file.exists(filelpath)){
-		insert.txt(main.txt.out,paste(filelpath,"doesn't exist"),format=TRUE)
+		InsertMessagesTxt(main.txt.out,paste(filelpath,"doesn't exist"),format=TRUE)
 		return(NULL)
 	}
 
@@ -503,11 +503,11 @@ getNcdfData2Plot<-function(dataNCDF,freqData,yrs,mon,day,ncOrder=c(1,2)){
 ## get RFE data plot qc spatial check result
 
 getSatelliteData<-function(dir_ncdf,ff_ncdf,spchkQcDateVal){
-	if(!is.null(ret.results)){
+	if(!is.null(ReturnExecResults)){
 		spchkoutdates<-isSpatialCheckOk()
 		if(nrow(spchkoutdates)!=0){
 			dataNCDF<-list(dir_ncdf,ff_ncdf)
-			freqData<-ifelse(ret.results$period=='daily','Daily data',ifelse(ret.results$period=='dekadal','Dekadal data','Monthly data'))
+			freqData<-ifelse(ReturnExecResults$period=='daily','Daily data',ifelse(ReturnExecResults$period=='dekadal','Dekadal data','Monthly data'))
 			spdaty<-tclvalue(spchkQcDateVal)
 			year<-as.numeric(substr(spdaty,1,4))
 			mon<-as.numeric(substr(spdaty,5,6))
@@ -515,11 +515,11 @@ getSatelliteData<-function(dir_ncdf,ff_ncdf,spchkQcDateVal){
 			rfedat<-getNcdfData2Plot(dataNCDF,freqData,year,mon,day)
 			return(rfedat)
 		}else{
-			insert.txt(main.txt.out,'No spatial check performed',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'No spatial check performed',format=TRUE)
 			return(NULL)
 		}	
 	}else{
-		insert.txt(main.txt.out,'There is no qc-results outputs',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'There is no qc-results outputs',format=TRUE)
 		return(NULL)
 	}
 }
@@ -617,4 +617,21 @@ reshapeXYZ2Matrix<-function(df){
 # 	})
 # 	rm(tmp,xz,end,start)
 # 	return(list(x=x,y=y,z=z))
+# }
+
+##################################################################################
+###List exchange (dialog qc,hom,merging)
+
+# listExchange<-function(list1,list2,list3){
+# 	#retList<-list2[sapply(1:length(list2), function(x) !identical(list2[[x]], list1[[x]]))]  	#index list
+# 	retList<-list2[sapply(names(list2), function(x) !identical(list2[[x]], list1[[x]]))]        #named list
+# 	if(length(retList)>0){
+# 		#id<-which(!list2%in%list1) #index list
+# 		id<-names(retList)    #named list
+# 		for(i in id){
+# 			diffElement<-list2[[i]]!=list1[[i]]
+# 			list3[[i]][diffElement]<-list2[[i]][diffElement]
+# 		}
+# 	}
+# 	return(list3)
 # }

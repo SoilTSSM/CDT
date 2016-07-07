@@ -10,7 +10,7 @@ Station<-paste('BaseSeries_',station,sep='')
   Nmin<-10
   Ncat.min<-20
   if(!p.lev%in%c(0.75,0.8,0.9,0.95,0.99,0.9999)){
-	insert.txt(main.txt.out,paste("FindU.dlyPrcp: input p.lev",p.lev,"error"),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("FindU.dlyPrcp: input p.lev",p.lev,"error"),format=TRUE)
 	#cat(paste("FindU.dlyPrcp: input p.lev",p.lev,"error"),'\n')
 #      ErrorMSG<<-paste("FindU.dlyPrcp: input p.lev",p.lev,"error\n",
 #                 get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -22,7 +22,7 @@ Station<-paste('BaseSeries_',station,sep='')
   assign("Nmin",Nmin,envir=.GlobalEnv)
   itmp<-ReadDLY(InSeries,MissingValueCode,pthr)
   if(itmp==(-1)){
-	insert.txt(main.txt.out,paste("FindU.dlyPrcp: Error in read data from",station),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("FindU.dlyPrcp: Error in read data from",station),format=TRUE)
 	#cat(paste("FindU.dlyPrcp: Error in read data from",Station),'\n')
 #    ErrorMSG<<-paste("FindU.dlyPrcp: Error in read data from",Station,"\n",
 #               get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -72,7 +72,7 @@ Station<-paste('BaseSeries_',station,sep='')
     ind<-round((lambda+1)*100+1)
     if(abs(lambdas[ind]-lambda)>1e-8) {
       print(c(lambdas[ind],lambda,lambdas[ind]-lambda))
-	  insert.txt(main.txt.out,paste("ind=",ind,"lambda=",lambda,"error"),format=TRUE)
+	  InsertMessagesTxt(main.txt.out,paste("ind=",ind,"lambda=",lambda,"error"),format=TRUE)
 	  return(-1)
       #stop(paste("ind=",ind,"lambda=",lambda,"error"))
     }
@@ -620,7 +620,7 @@ Station<-paste('BaseSeries_',station,sep='')
 
   if(Ns==0) {
     cat(paste(Ns,"changepoints in Series", Station,"\n"),file=ofileIout)
-	insert.txt(main.txt.out,paste("PMF finds no Type-1 changepoints in the series",station))
+	InsertMessagesTxt(main.txt.out,paste("PMF finds no Type-1 changepoints in the series",station))
     #cat("PMF finds no Type-1 changepoints in the series!\n")
   }
   else{
@@ -710,7 +710,7 @@ Station<-paste('BaseSeries_',station,sep='')
   else{
     file.copy(from=ofileIout,to=ofileMout,overwrite=TRUE)
 #    cat("FindU.dlyPrcp finished successfully...\n")
-	insert.txt(main.txt.out,paste("FindU.dlyPrcp finished successfully for",station))
+	InsertMessagesTxt(main.txt.out,paste("FindU.dlyPrcp finished successfully for",station))
 	return(0)
   }
 }

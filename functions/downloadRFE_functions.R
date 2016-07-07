@@ -20,14 +20,14 @@ DownloadRFE<-function(parent.win){
 	fileSource <- tclVar('10-DAYS TAMSAT')
 	cb.period<-ttkcombobox(fr.A02, values=c('10-DAYS TAMSAT','10-DAYS CHIRP', '------------------','DAILY TAMSAT','DAILY CHIRPS'), textvariable=fileSource,width=24)
 	infobulle(cb.period,'Choose the data source')
-	status.bar.display(cb.period,txt.stbr1,'Choose the data source')
+	status.bar.display(cb.period,TextOutputVar,'Choose the data source')
 	tkgrid(cb.period)
 
 	#####################
 	fr.B2<-tkframe(frA,relief='sunken',borderwidth=2)
 	tkgrid(fr.B2,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 	infobulle(fr.B2,'Start and end date for the merging')
-	status.bar.display(fr.B2,txt.stbr1,'Start and end date for the merging')
+	status.bar.display(fr.B2,TextOutputVar,'Start and end date for the merging')
 
 	deb.txt<-tklabel(fr.B2,text='Start date',anchor='e',justify='right')
 	fin.txt<-tklabel(fr.B2,text='End date',anchor='e',justify='right')
@@ -96,10 +96,10 @@ DownloadRFE<-function(parent.win){
 			tkdestroy(tt)
 			tkfocus(parent.win)
 			if(testConnection()){
-				insert.txt(main.txt.out,"Downloading.................")
+				InsertMessagesTxt(main.txt.out,"Downloading.................")
 				return(ExecDownload_SatData(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir))
 			}else{
-				insert.txt(main.txt.out,'No internet connection',format=TRUE)
+				InsertMessagesTxt(main.txt.out,'No internet connection',format=TRUE)
 				return(NULL)
 			}
 		}
@@ -115,10 +115,10 @@ DownloadRFE<-function(parent.win){
 	grd_lb1<-tklabel(fr_grd, text="Minimum")
 	grd_lb2<-tklabel(fr_grd, text="Maximum")
 
-	grd_vlon1<-tkentry.h(fr_grd,txt.stbr1,'Minimum longitude in degree','Minimum longitude in degree')
-	grd_vlon2<-tkentry.h(fr_grd,txt.stbr1,'Maximum longitude in degree','Maximum longitude in degree')
-	grd_vlat1<-tkentry.h(fr_grd,txt.stbr1,'Minimum latitude in degree','Minimum latitude in degree')
-	grd_vlat2<-tkentry.h(fr_grd,txt.stbr1,'Maximum latitude in degree','Maximum latitude in degree')
+	grd_vlon1<-tkentry.h(fr_grd,TextOutputVar,'Minimum longitude in degree','Minimum longitude in degree')
+	grd_vlon2<-tkentry.h(fr_grd,TextOutputVar,'Maximum longitude in degree','Maximum longitude in degree')
+	grd_vlat1<-tkentry.h(fr_grd,TextOutputVar,'Minimum latitude in degree','Minimum latitude in degree')
+	grd_vlat2<-tkentry.h(fr_grd,TextOutputVar,'Maximum latitude in degree','Maximum latitude in degree')
 
 	minLon<-tclVar('42')
 	maxLon<-tclVar('52')
@@ -152,8 +152,8 @@ DownloadRFE<-function(parent.win){
 	file.save1 <-tclVar('')
 	en.file.save<-tkentry(fr.A12,textvariable=file.save1,width=largeur)
 	infobulle(en.file.save,'Enter the full path to\ndirectory to save downloaded files')
-	status.bar.display(en.file.save,txt.stbr1,'Enter the full path to directory to save downloaded files')
-	bt.file.save<-tkbutton.h(fr.A12, text="...",txt.stbr1,'or browse here','')
+	status.bar.display(en.file.save,TextOutputVar,'Enter the full path to directory to save downloaded files')
+	bt.file.save<-tkbutton.h(fr.A12, text="...",TextOutputVar,'or browse here','')
 	tkgrid(en.file.save,bt.file.save)
 	tkgrid.configure(en.file.save,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.file.save,row=0,column=1,sticky='e')
@@ -194,10 +194,10 @@ ExecDownload_SatData<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,o
 	ret<-downloadRFE_fun(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir)
 	tkconfigure(main.win,cursor='')
 	if(!is.null(ret)){
-		if(ret==0) insert.txt(main.txt.out,"Download Done!")
-		else if(ret==-1) insert.txt(main.txt.out,"Some files could not be downloaded",format=TRUE)
-		else insert.txt(main.txt.out,"Download Failed!",format=TRUE)
-	}else insert.txt(main.txt.out,"Download Failed!",format=TRUE)
+		if(ret==0) InsertMessagesTxt(main.txt.out,"Download Done!")
+		else if(ret==-1) InsertMessagesTxt(main.txt.out,"Some files could not be downloaded",format=TRUE)
+		else InsertMessagesTxt(main.txt.out,"Download Failed!",format=TRUE)
+	}else InsertMessagesTxt(main.txt.out,"Download Failed!",format=TRUE)
 }
 
 ##########
@@ -213,7 +213,7 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 
 		deb<-try(as.Date(istart),silent=TRUE)
 		if(inherits(deb, "try-error")| is.na(deb)){
-			insert.txt(main.txt.out,'Check the start date',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Check the start date',format=TRUE)
 			return(NULL)
 		}
 		deb<-strsplit(as.character(deb),'-')
@@ -221,12 +221,12 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 		mon1<-deb[[1]][2]
 		dek1<-as.numeric(deb[[1]][3])
 		if(dek1>3){
-			insert.txt(main.txt.out,'Dekad must be between 1 and 3',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Dekad must be between 1 and 3',format=TRUE)
 			return(NULL)
 		}
 		fin<-try(as.Date(iend),silent=TRUE)
 		if(inherits(fin, "try-error")| is.na(fin)){
-			insert.txt(main.txt.out,'Check the end date',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Check the end date',format=TRUE)
 			return(NULL)
 		}
 		fin<-strsplit(as.character(fin),'-')
@@ -234,7 +234,7 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 		mon2<-fin[[1]][2]
 		dek2<-as.numeric(fin[[1]][3])
 		if(dek2>3){
-			insert.txt(main.txt.out,'Dekad must be between 1 and 3',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Dekad must be between 1 and 3',format=TRUE)
 			return(NULL)
 		}
 
@@ -252,17 +252,17 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 			destfile0<-file.path(outdir0,file0,fsep = .Platform$file.sep)
 			test <- try(suppressWarnings(readLines(link, n = 1)), silent = TRUE)
 			if(inherits(test, "try-error")){
-				insert.txt(main.txt.out,paste('Cannot open the connection or file does not exist:',file0),format=TRUE)
+				InsertMessagesTxt(main.txt.out,paste('Cannot open the connection or file does not exist:',file0),format=TRUE)
 				outRet<- -1
 				next
 			}else{
 				ret<-try(download.file(link,destfile0,mode="wb",quiet=TRUE),silent=TRUE)
 				if(ret!=0){
-					insert.txt(main.txt.out,paste('Échec du téléchargement pour:',file0),format=TRUE)
+					InsertMessagesTxt(main.txt.out,paste('Échec du téléchargement pour:',file0),format=TRUE)
 					outRet<- -1
 					next
 				}else{
-					insert.txt(main.txt.out,paste('Téléchargement pour:',file0,'terminé'))
+					InsertMessagesTxt(main.txt.out,paste('Téléchargement pour:',file0,'terminé'))
 					nc<-nc_open(destfile0)
 					xm<-nc$dim[[2]]$vals
 					ym<-nc$dim[[1]]$vals
@@ -286,7 +286,7 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 					nc2 <- nc_create(outfl,rfeout)
 					ncvar_put(nc2,rfeout,xdat)
 					nc_close(nc2)
-					insert.txt(main.txt.out,paste('Extraction de:',file0,'sur', paste('bbox',minlon,minlat,maxlon,maxlat,sep=':'),'terminée'))
+					InsertMessagesTxt(main.txt.out,paste('Extraction de:',file0,'sur', paste('bbox',minlon,minlat,maxlon,maxlat,sep=':'),'terminée'))
 				}
 			}
 			tcl("update")
@@ -304,7 +304,7 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 
 		deb<-try(as.Date(istart),silent=TRUE)
 		if(inherits(deb, "try-error")| is.na(deb)){
-			insert.txt(main.txt.out,'Check the start date',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Check the start date',format=TRUE)
 			return(NULL)
 		}
 		deb<-strsplit(as.character(deb),'-')
@@ -314,7 +314,7 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 
 		fin<-try(as.Date(iend),silent=TRUE)
 		if(inherits(fin, "try-error")| is.na(fin)){
-			insert.txt(main.txt.out,'Check the end date',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Check the end date',format=TRUE)
 			return(NULL)
 		}
 		fin<-strsplit(as.character(fin),'-')
@@ -335,17 +335,17 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 			destfile0<-file.path(outdir0,file0,fsep = .Platform$file.sep)
 			test <- try(suppressWarnings(readLines(link, n = 1)), silent = TRUE)
 			if(inherits(test, "try-error")){
-				insert.txt(main.txt.out,paste('Cannot open the connection or file does not exist:',file0),format=TRUE)
+				InsertMessagesTxt(main.txt.out,paste('Cannot open the connection or file does not exist:',file0),format=TRUE)
 				outRet<- -1
 				next
 			}else{
 				ret<-try(download.file(link,destfile0,mode="wb",quiet=TRUE),silent=TRUE)
 				if(ret!=0){
-					insert.txt(main.txt.out,paste('Échec du téléchargement pour:',file0),format=TRUE)
+					InsertMessagesTxt(main.txt.out,paste('Échec du téléchargement pour:',file0),format=TRUE)
 					outRet<- -1
 					next
 				}else{
-					insert.txt(main.txt.out,paste('Téléchargement pour:',file0,'terminé'))
+					InsertMessagesTxt(main.txt.out,paste('Téléchargement pour:',file0,'terminé'))
 					nc<-nc_open(destfile0)
 					xm<-nc$dim[[2]]$vals
 					ym<-nc$dim[[1]]$vals
@@ -369,7 +369,7 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 					nc2 <- nc_create(outfl,rfeout)
 					ncvar_put(nc2,rfeout,xdat)
 					nc_close(nc2)
-					insert.txt(main.txt.out,paste('Extraction de:',file0,'sur', paste('bbox',minlon,minlat,maxlon,maxlat,sep=':'),'terminée'))
+					InsertMessagesTxt(main.txt.out,paste('Extraction de:',file0,'sur', paste('bbox',minlon,minlat,maxlon,maxlat,sep=':'),'terminée'))
 				}
 			}
 			tcl("update")
@@ -387,22 +387,22 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 
 		deb<-try(as.Date(istart),silent=TRUE)
 		if(inherits(deb, "try-error")| is.na(deb)){
-			insert.txt(main.txt.out,'Check the start date',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Check the start date',format=TRUE)
 			return(NULL)
 		}
 		dek1<-as.numeric(strsplit(as.character(deb),'-')[[1]][3])
 		if(dek1>3){
-			insert.txt(main.txt.out,'Dekad must be between 1 and 3',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Dekad must be between 1 and 3',format=TRUE)
 			return(NULL)
 		}
 		fin<-try(as.Date(iend),silent=TRUE)
 		if(inherits(fin, "try-error")| is.na(fin)){
-			insert.txt(main.txt.out,'Check the end date',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Check the end date',format=TRUE)
 			return(NULL)
 		}
 		dek2<-as.numeric(strsplit(as.character(fin),'-')[[1]][3])
 		if(dek2>3){
-			insert.txt(main.txt.out,'Dekad must be between 1 and 3',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Dekad must be between 1 and 3',format=TRUE)
 			return(NULL)
 		}
 
@@ -425,11 +425,11 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 			destfile<-file.path(outdir,fileout,fsep = .Platform$file.sep)
 			ret<-try(download.file(link,destfile,mode="wb",quiet=TRUE),silent=TRUE)
 			if(ret!=0){
-				insert.txt(main.txt.out,paste('Échec du téléchargement pour:',fileout),format=TRUE)
+				InsertMessagesTxt(main.txt.out,paste('Échec du téléchargement pour:',fileout),format=TRUE)
 				outRet<- -1
 				next
 			}else{
-				insert.txt(main.txt.out,paste('Extraction de:',fileout,'sur',paste('bbox',minlon,minlat,maxlon,maxlat,sep=':'),'terminée'))
+				InsertMessagesTxt(main.txt.out,paste('Extraction de:',fileout,'sur',paste('bbox',minlon,minlat,maxlon,maxlat,sep=':'),'terminée'))
 			}
 			tcl("update")
 		}
@@ -446,12 +446,12 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 
 		deb<-try(as.Date(istart),silent=TRUE)
 		if(inherits(deb, "try-error")| is.na(deb)){
-			insert.txt(main.txt.out,'Check the start date',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Check the start date',format=TRUE)
 			return(NULL)
 		}
 		fin<-try(as.Date(iend),silent=TRUE)
 		if(inherits(fin, "try-error")| is.na(fin)){
-			insert.txt(main.txt.out,'Check the end date',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Check the end date',format=TRUE)
 			return(NULL)
 		}
 
@@ -470,11 +470,11 @@ downloadRFE_fun<-function(datasrc,istart,iend,minlon,maxlon,minlat,maxlat,outdir
 			destfile<-file.path(outdir,fileout,fsep = .Platform$file.sep)
 			ret<-try(download.file(link,destfile,mode="wb",quiet=TRUE),silent=TRUE)
 			if(ret!=0){
-				insert.txt(main.txt.out,paste('Échec du téléchargement pour:',fileout),format=TRUE)
+				InsertMessagesTxt(main.txt.out,paste('Échec du téléchargement pour:',fileout),format=TRUE)
 				outRet<- -1
 				next
 			}else{
-				insert.txt(main.txt.out,paste('Extraction de:',fileout,'sur',
+				InsertMessagesTxt(main.txt.out,paste('Extraction de:',fileout,'sur',
 				paste('bbox',minlon,minlat,maxlon,maxlat,sep=':'),'terminée'))
 			}
 			tcl("update")

@@ -9,7 +9,7 @@ Station<-paste('BaseSeries_',station,sep='')
 #  assign("ErrorMSG",ErrorMSG,envir=.GlobalEnv)
   itmp<-ReadDLY.g(InSeries,MissingValueCode)
   if(itmp<0){
-    insert.txt(main.txt.out,paste("QMadj.Gaussian: Error in read data from",Station),format=TRUE)
+    InsertMessagesTxt(main.txt.out,paste("QMadj.Gaussian: Error in read data from",Station),format=TRUE)
     #cat(paste("QMadj.GaussianDLY: Error in read data from",Station),'\n')
 #    ErrorMSG<<-paste("QMadj.GaussianDLY: Error in read data from",Station,"\n",
 #               get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -33,7 +33,7 @@ Station<-paste('BaseSeries_',station,sep='')
     if(sum(is.na(Ips))>0|!identical(Ips,sort(Ips))){
 #      ErrorMSG<<-paste("QMadj.GaussianDLY: Ips read in from ",basename(InCs),"error:")
       for(i in 1:Ns)
-		insert.txt(main.txt.out,paste("QMadj.Gaussian: Ips read in from ",basename(InCs),"error:",Ips[i]),format=TRUE)
+		InsertMessagesTxt(main.txt.out,paste("QMadj.Gaussian: Ips read in from ",basename(InCs),"error:",Ips[i]),format=TRUE)
 		#cat(paste("QMadj.GaussianDLY: Ips read in from ",basename(InCs),"error:",Ips[i]),'\n')
 #        ErrorMSG<<-paste(get("ErrorMSG",env=.GlobalEnv),Ips[i])
 #      ErrorMSG<<-paste(get("ErrorMSG",env=.GlobalEnv),"\n\n")
@@ -73,7 +73,7 @@ Station<-paste('BaseSeries_',station,sep='')
   EB<-oout$EB
   assign("EB",EB,envir=.GlobalEnv)
   if(length(EB)!=length(Icy)) {
-	insert.txt(main.txt.out,"Annual cycle length (from non-missing data) differ from original dataset",format=TRUE)
+	InsertMessagesTxt(main.txt.out,"Annual cycle length (from non-missing data) differ from original dataset",format=TRUE)
 	#cat("Annual cycle length (from non-missing data) differ from original dataset",'\n')
 #    ErrorMSG<<-paste("Annual cycle length (from non-missing data) differ from original dataset",
 #                     "\n",get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -287,7 +287,7 @@ Station<-paste('BaseSeries_',station,sep='')
   par(op)
   dev.off()
 
-  insert.txt(main.txt.out,paste(paste("QMadj",fsuffix,sep=''),"finished successfully for",station))
+  InsertMessagesTxt(main.txt.out,paste(paste("QMadj",fsuffix,sep=''),"finished successfully for",station))
   return(0)
 }
 

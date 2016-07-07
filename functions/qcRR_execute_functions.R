@@ -1,9 +1,9 @@
 
 getElevationData<-function(){
-	single.series<-as.character(gal.params$use.method$Values[1])
-	uselv<-as.character(gal.params$use.method$Values[2])
-	interp.dem<-as.character(gal.params$use.method$Values[3])
-	file.pars<-as.character(gal.params$file.io$Values)
+	single.series<-as.character(GeneralParameters$use.method$Values[1])
+	uselv<-as.character(GeneralParameters$use.method$Values[2])
+	interp.dem<-as.character(GeneralParameters$use.method$Values[3])
+	file.pars<-as.character(GeneralParameters$file.io$Values)
 
 	if(!is.null(EnvQcOutlierData$donnees)){
 		###get elevation data
@@ -18,9 +18,9 @@ getElevationData<-function(){
 				if(interp.dem=="0"){
 					if(file.pars[2]=="") msg<-'There is no elevation data in format NetCDF'
 					else{
-						all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+						all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 						jncdf<-which(all.open.file==file.pars[2])
-						fdem<-file.opfiles[[jncdf]][[2]]
+						fdem<-AllOpenFilesData[[jncdf]][[2]]
 						dem<-fdem$value
 						dem[dem<0]<-NA
 						dem<-data.frame(expand.grid(x=fdem$x,y=fdem$y),z=c(dem))
@@ -42,15 +42,15 @@ getElevationData<-function(){
 execQcrainFun<-function(get.stn){
 	status<-0
 	msg<-NULL
-	spthres0<-as.character(gal.params$parameter[[1]]$Values)
+	spthres0<-as.character(GeneralParameters$parameter[[1]]$Values)
 	thres<-as.numeric(spthres0[2])
 	min.stn<-as.numeric(spthres0[1])
 	R<-as.numeric(spthres0[3])
 	elv.diff<-as.numeric(spthres0[4])
 	spthres<-c(min.stn,R,elv.diff)
 
-	bounds<-gal.params$parameter[[2]]
-	IsPars0<-gal.params$parameter[[3]]
+	bounds<-GeneralParameters$parameter[[2]]
+	IsPars0<-GeneralParameters$parameter[[3]]
 	IsPmax<-as.numeric(IsPars0$ispmax)
 	IsPobs<-as.numeric(IsPars0$ispobs)
 	IsDmin<-as.numeric(IsPars0$isdmin)
@@ -58,9 +58,9 @@ execQcrainFun<-function(get.stn){
 	IsDq1<-as.numeric(IsPars0$isdq1)
 	FtlDev<-as.numeric(IsPars0$ftldev)
 
-	single.series<-as.character(gal.params$use.method$Values[1])
-	uselv<-as.character(gal.params$use.method$Values[2])
-	interp.dem<-as.character(gal.params$use.method$Values[3])
+	single.series<-as.character(GeneralParameters$use.method$Values[1])
+	uselv<-as.character(GeneralParameters$use.method$Values[2])
+	interp.dem<-as.character(GeneralParameters$use.method$Values[3])
 
 	if(single.series=="0"){
 		stn.id<-as.character(bounds[,1])
@@ -84,7 +84,7 @@ execQcrainFun<-function(get.stn){
 				r_elv<-getElevationData()
 				assign('r_elv',r_elv,envir=EnvQcOutlierData)
 			}else{
-				if(interp.dem=="0" & (is.null(EnvQcOutlierData$r_elv[[2]]) | EnvQcOutlierData$r_elv[[4]]!=as.character(gal.params$file.io$Values[2]))){
+				if(interp.dem=="0" & (is.null(EnvQcOutlierData$r_elv[[2]]) | EnvQcOutlierData$r_elv[[4]]!=as.character(GeneralParameters$file.io$Values[2]))){
 					r_elv<-getElevationData()
 					EnvQcOutlierData$r_elv[2:4]<-r_elv[2:4]
 				}else if(interp.dem=="1" & is.null(EnvQcOutlierData$r_elv[[1]])){
@@ -111,18 +111,18 @@ execQcrainFun<-function(get.stn){
 
 		coords<-cbind(EnvQcOutlierData$donnees$lon,EnvQcOutlierData$donnees$lat)
 		dats<-list(EnvQcOutlierData$donnees$data,EnvQcOutlierData$donnees$dates)
-		sortie.qc<-rainQcSpatialCheck(jstn1,idstn,dats,coords=coords,elv=elv,thres=thres,spthres=spthres,spparam=spparam,limsup=limsup,period=gal.params$period)
+		sortie.qc<-rainQcSpatialCheck(jstn1,idstn,dats,coords=coords,elv=elv,thres=thres,spthres=spthres,spparam=spparam,limsup=limsup,period=GeneralParameters$period)
 	}else{
 		idstn<-as.character(bounds[1,1])
 		limsup<-bounds[1,2]
 		if(EnvQcOutlierData$donnees$nbvar==3) xdon<-EnvQcOutlierData$donnees$var$rr
 		else xdon<-EnvQcOutlierData$donnees$var$var
 		dats<-list(xdon,EnvQcOutlierData$donnees$dates)
-		sortie.qc<-rainQcSingleSeries(dats,idstn,thres,limsup,period=gal.params$period)
+		sortie.qc<-rainQcSingleSeries(dats,idstn,thres,limsup,period=GeneralParameters$period)
 	}
 	on.exit({
-		if(status=='ok') insert.txt(main.txt.out,msg)
-		if(status=='no') insert.txt(main.txt.out,msg,format=TRUE)
+		if(status=='ok') InsertMessagesTxt(main.txt.out,msg)
+		if(status=='no') InsertMessagesTxt(main.txt.out,msg,format=TRUE)
 	})
 	return(sortie.qc)
 }
@@ -134,7 +134,7 @@ ExecQcRain<-function(get.stn){
 		status<-0
 		msg<-NULL
 		dates<-EnvQcOutlierData$donnees$dates
-		if(as.character(gal.params$use.method$Values[1])=="0"){
+		if(as.character(GeneralParameters$use.method$Values[1])=="0"){
 			xpos<-which(as.character(EnvQcOutlierData$donnees$id)==jlstn)
 			xdat<-EnvQcOutlierData$donnees$data[,xpos]
 		}else{
@@ -158,14 +158,14 @@ ExecQcRain<-function(get.stn){
 				dirPlot<-file.path(outsdir,paste(jlstn,'OUTLIERS_PLOT',sep='_'),fsep = .Platform$file.sep)
 				if(!file.exists(dirPlot)) dir.create(dirPlot,showWarnings=FALSE,recursive=TRUE)
 				##
-				if(gal.params$AllOrOne=='all') ret.qcout<-qcout
-				ret.res<-list(action=gal.params$action,period=gal.params$period,station=jlstn,res=qcout,outputdir=outsdir,AllOrOne=gal.params$AllOrOne)
+				if(GeneralParameters$AllOrOne=='all') ret.qcout<-qcout
+				ret.res<-list(action=GeneralParameters$action,period=GeneralParameters$period,station=jlstn,res=qcout,outputdir=outsdir,AllOrOne=GeneralParameters$AllOrOne)
 				save(ret.res,file=fileoutRdata)
 
 				## Default: not replace outliers if less than limsup
 				lenNoRepl<-rep(NA,nrow(qcout))
 				resqc<-as.numeric(qcout$values)
-				limsup<-as.numeric(gal.params$parameter[[2]][as.character(gal.params$parameter[[2]][,1])==jlstn,2])
+				limsup<-as.numeric(GeneralParameters$parameter[[2]][as.character(GeneralParameters$parameter[[2]][,1])==jlstn,2])
 				lenNoRepl[resqc<limsup]<-1
 
 				qcout<-data.frame(qcout,not.replace=lenNoRepl,change.values=NA)
@@ -187,18 +187,18 @@ ExecQcRain<-function(get.stn){
 				msg<-paste("Quality control finished successfully for", jlstn)
 				status<-'ok'
 			}else{
-				if(gal.params$AllOrOne=='one') ret.res<-NULL
-				if(gal.params$AllOrOne=='all') ret.qcout<-NULL
+				if(GeneralParameters$AllOrOne=='one') ret.res<-NULL
+				if(GeneralParameters$AllOrOne=='all') ret.qcout<-NULL
 				msg<-paste("Quality control failed for", jlstn)
 				status<-'no'
 			}
 		}else{
-			if(gal.params$AllOrOne=='one') ret.res<-NULL
-			if(gal.params$AllOrOne=='all') ret.qcout<-NULL
+			if(GeneralParameters$AllOrOne=='one') ret.res<-NULL
+			if(GeneralParameters$AllOrOne=='all') ret.qcout<-NULL
 			msg<-paste(paste("Quality control failed for", jlstn),'\n',gsub('[\r\n]','',qcout[1]),sep='')
 			status<-'no'
 		}
-		if(gal.params$AllOrOne=='all'){
+		if(GeneralParameters$AllOrOne=='all'){
 			tcl("update")
 			ret.res<-list(ret.qcout,jlstn,outsdir)
 		}
@@ -207,15 +207,15 @@ ExecQcRain<-function(get.stn){
 		sdon<-data.frame(dates,xdat)
 		write.table(sdon,file_corrected,col.names=FALSE,row.names=FALSE)
 		on.exit({
-			if(status=='ok') insert.txt(main.txt.out,msg)
-			if(status=='no') insert.txt(main.txt.out,msg,format=TRUE)
+			if(status=='ok') InsertMessagesTxt(main.txt.out,msg)
+			if(status=='no') InsertMessagesTxt(main.txt.out,msg,format=TRUE)
 		})
 		return(ret.res)
 	}
 
 	#############
 	ExecRainALLStations<-function(){
-		allstn2loop<-as.character(gal.params$parameter[[2]][,1])
+		allstn2loop<-as.character(GeneralParameters$parameter[[2]][,1])
 
 		tcl("update","idletasks")
 		##Use parLapply
@@ -225,12 +225,12 @@ ExecQcRain<-function(get.stn){
 		ret.stnid<-lapply(retAllRun,function(x) x[[2]])
 		ret.outdir<-lapply(retAllRun,function(x) x[[3]])
 
-		ret.res<-list(action=gal.params$action,period=gal.params$period,station=ret.stnid,res=ret.qcout,outputdir=ret.outdir,AllOrOne=gal.params$AllOrOne)
+		ret.res<-list(action=GeneralParameters$action,period=GeneralParameters$period,station=ret.stnid,res=ret.qcout,outputdir=ret.outdir,AllOrOne=GeneralParameters$AllOrOne)
 		return(ret.res)
 	}
 
 	#############
-	if(gal.params$AllOrOne=='one') ret.res<-ExecRainOneStation(get.stn)
-	if(gal.params$AllOrOne=='all') ret.res<-ExecRainALLStations()
+	if(GeneralParameters$AllOrOne=='one') ret.res<-ExecRainOneStation(get.stn)
+	if(GeneralParameters$AllOrOne=='all') ret.res<-ExecRainALLStations()
 	return(ret.res)
 }

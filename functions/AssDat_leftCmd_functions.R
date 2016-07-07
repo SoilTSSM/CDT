@@ -1,6 +1,6 @@
 
 AssessDataPanelCmd<-function(){
-	file.list<-openFile_ttkcomboList()
+	listOpenFiles<-openFile_ttkcomboList()
 	largeur<-as.integer(as.numeric(w.scale(23)*0.95)/9)
 
 	###################
@@ -20,17 +20,17 @@ AssessDataPanelCmd<-function(){
 	labStn1<-tklabel(chkframe,text='Station data file',anchor='w',justify='left')
 
 	file.stnfl <- tclVar()
-	cb.stnfl<-ttkcombobox(chkframe,values=unlist(file.list),textvariable=file.stnfl,width=largeur)
+	cb.stnfl<-ttkcombobox(chkframe,values=unlist(listOpenFiles),textvariable=file.stnfl,width=largeur)
 	bt.stnfl<-tkbutton(chkframe, text="...")
 	tkconfigure(bt.stnfl,command=function(){
 		dat.opfiles<-getOpenFiles(main.win,all.opfiles)
 		if(!is.null(dat.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'ascii'
-			file.opfiles[[nopf+1]]<<-dat.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.stnfl)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cb.stnfl,values=unlist(file.list), textvariable=file.stnfl)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'ascii'
+			AllOpenFilesData[[nopf+1]]<<-dat.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.stnfl)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.stnfl,values=unlist(listOpenFiles), textvariable=file.stnfl)
 
 			stnSumNA<-as.character(dat.opfiles[[2]][1,-1])
 			tclvalue(stnSumNA.val) <-stnSumNA[1]
@@ -40,9 +40,9 @@ AssessDataPanelCmd<-function(){
 		}
 	})
 	infobulle(cb.stnfl,'Choose the station data in the list')
-	status.bar.display(cb.stnfl,txt.stbr1,'Choose the file containing the station data')
+	status.bar.display(cb.stnfl,TextOutputVar,'Choose the file containing the station data')
 	infobulle(bt.stnfl,'Browse file if not listed')
-	status.bar.display(bt.stnfl,txt.stbr1,'Browse file if not listed')
+	status.bar.display(bt.stnfl,TextOutputVar,'Browse file if not listed')
 
 	sep2<-ttkseparator(chkframe)
 
@@ -93,12 +93,12 @@ AssessDataPanelCmd<-function(){
 
 			imgContainer<-DisplayStnNASum(tknotes,jstn,donne,tclvalue(file.period),notebookTab)
 			if(!is.null(imgContainer)){
-				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,tab.type,tab.data)
+				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,AllOpenTabType,AllOpenTabData)
 				notebookTab<<-retNBTab$notebookTab
-				tab.type<<-retNBTab$tab.type
-				tab.data<<-retNBTab$tab.data
+				AllOpenTabType<<-retNBTab$AllOpenTabType
+				AllOpenTabData<<-retNBTab$AllOpenTabData
 			}
-		}else insert.txt(main.txt.out,'No station data found',format=TRUE)
+		}else InsertMessagesTxt(main.txt.out,'No station data found',format=TRUE)
 	})
 	#######################
 
@@ -114,12 +114,12 @@ AssessDataPanelCmd<-function(){
 
 			imgContainer<-DisplayStnNASum(tknotes,jstn,donne,tclvalue(file.period),notebookTab)
 			if(!is.null(imgContainer)){
-				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,tab.type,tab.data)
+				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,AllOpenTabType,AllOpenTabData)
 				notebookTab<<-retNBTab$notebookTab
-				tab.type<<-retNBTab$tab.type
-				tab.data<<-retNBTab$tab.data
+				AllOpenTabType<<-retNBTab$AllOpenTabType
+				AllOpenTabData<<-retNBTab$AllOpenTabData
 			}
-		}else insert.txt(main.txt.out,'No station data found',format=TRUE)
+		}else InsertMessagesTxt(main.txt.out,'No station data found',format=TRUE)
 	})
 	#######################
 
@@ -130,18 +130,18 @@ AssessDataPanelCmd<-function(){
 			imgContainer<-try(DisplayDistCorr(tknotes,donne), silent=TRUE)
 			if(!inherits(imgContainer, "try-error")){
 				if(!is.null(imgContainer)){
-					ntab<-length(tab.type)
-					tab.type[[ntab+1]]<<-'img'
-					tab.data[[ntab+1]]<<-imgContainer
+					ntab<-length(AllOpenTabType)
+					AllOpenTabType[[ntab+1]]<<-'img'
+					AllOpenTabData[[ntab+1]]<<-imgContainer
 					tkselect(tknotes,ntab)
 				}
 				tkconfigure(main.win,cursor='')
 			}else{
-				insert.txt(main.txt.out,'Distance-Correlation computation failed',format=TRUE)
-				insert.txt(main.txt.out,gsub('[\r\n]','',imgContainer[1]),format=TRUE)
+				InsertMessagesTxt(main.txt.out,'Distance-Correlation computation failed',format=TRUE)
+				InsertMessagesTxt(main.txt.out,gsub('[\r\n]','',imgContainer[1]),format=TRUE)
 				tkconfigure(main.win,cursor='')
 			}
-		}else insert.txt(main.txt.out,'No station data found',format=TRUE)
+		}else InsertMessagesTxt(main.txt.out,'No station data found',format=TRUE)
 	})
 	#######################
 	tkconfigure(cmd.AllNA,command=function(){
@@ -151,18 +151,18 @@ AssessDataPanelCmd<-function(){
 			imgContainer<-try(DisplayAllStnNASum(tknotes,donne,tclvalue(file.period)), silent=TRUE)
 			if(!inherits(imgContainer, "try-error")){
 				if(!is.null(imgContainer)){
-					ntab<-length(tab.type)
-					tab.type[[ntab+1]]<<-'img'
-					tab.data[[ntab+1]]<<-imgContainer
+					ntab<-length(AllOpenTabType)
+					AllOpenTabType[[ntab+1]]<<-'img'
+					AllOpenTabData[[ntab+1]]<<-imgContainer
 					tkselect(tknotes,ntab)
 				}
 				tkconfigure(main.win,cursor='')
 			}else{
-				insert.txt(main.txt.out,'Station missing data summaries failed',format=TRUE)
-				insert.txt(main.txt.out,gsub('[\r\n]','',imgContainer[1]),format=TRUE)
+				InsertMessagesTxt(main.txt.out,'Station missing data summaries failed',format=TRUE)
+				InsertMessagesTxt(main.txt.out,gsub('[\r\n]','',imgContainer[1]),format=TRUE)
 				tkconfigure(main.win,cursor='')
 			}
-		}else insert.txt(main.txt.out,'No station data found',format=TRUE)
+		}else InsertMessagesTxt(main.txt.out,'No station data found',format=TRUE)
 	})
 
 	###

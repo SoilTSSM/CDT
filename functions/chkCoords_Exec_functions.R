@@ -1,18 +1,18 @@
-excludeOutStnFun<-function(gal.params){
-	file.pars<-as.character(gal.params$file.io$Values)
+excludeOutStnFun<-function(GeneralParameters){
+	file.pars<-as.character(GeneralParameters$file.io$Values)
 	stnf<-file.pars[1]
 	shpf<-file.pars[2]
 	dir2save<-file.pars[3]
-	buff<-as.numeric(as.character(gal.params$buffer))/111
+	buff<-as.numeric(as.character(GeneralParameters$buffer))/111
 	outdir<-file.path(dir2save,paste('ChkCoord',getf.no.ext(stnf),sep='_'),fsep = .Platform$file.sep)
 	if(!file.exists(outdir)) dir.create(outdir)
 
-	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+	all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 
 	jshp<-which(all.open.file==shpf)
-	if(type.opfiles[[jshp]]=="shp") shpd<-file.opfiles[[jshp]][[2]]
+	if(AllOpenFilesType[[jshp]]=="shp") shpd<-AllOpenFilesData[[jshp]][[2]]
 	else{
-		insert.txt(main.txt.out,paste(shpf,'is not an ESRI shapefile'),format=TRUE)
+		InsertMessagesTxt(main.txt.out,paste(shpf,'is not an ESRI shapefile'),format=TRUE)
 		return(NULL)
 	}
 	# shpd<-gUnaryUnion(shpd)
@@ -30,11 +30,11 @@ excludeOutStnFun<-function(gal.params){
 
 	jfile<-which(all.open.file==stnf)
 	if(length(jfile)==0){
-		insert.txt(main.txt.out,paste(stnf,'cannot found') ,format=TRUE)
+		InsertMessagesTxt(main.txt.out,paste(stnf,'cannot found') ,format=TRUE)
 		return(NULL)
 	}
-	donne<-file.opfiles[[jfile]][[2]]
-	missval<-file.opfiles[[jfile]][[4]]$miss.val
+	donne<-AllOpenFilesData[[jfile]][[2]]
+	missval<-AllOpenFilesData[[jfile]][[4]]$miss.val
 
 	id<-as.character(donne[1,-1])
 	lon<-round(as.numeric(donne[2,-1]),6)
@@ -97,7 +97,7 @@ excludeOutStnFun<-function(gal.params){
 			dates<-as.Date(paste(xan,xmo,'1',sep='-'))
 			period<-'monthly'
 		}else{
-			insert.txt(main.txt.out,'Date has wrong format.',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Date has wrong format.',format=TRUE)
 			return(NULL)
 		}
 		donne<-donne[-c(1:4),-1]
@@ -120,7 +120,7 @@ excludeOutStnFun<-function(gal.params){
 			dates<-as.Date(paste(xan,xmo,'1',sep='-'))
 			period<-'monthly'
 		}else{
-			insert.txt(main.txt.out,'Date has wrong format.',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Date has wrong format.',format=TRUE)
 			return(NULL)
 		}
 		donne<-donne[-c(1:3),-1]
@@ -170,15 +170,15 @@ excludeOutStnFun<-function(gal.params){
 
 #########################
 
-checkCDTcoords<-function(ret.results,gal.params){
-	fexcl<-file.path(ret.results$outdir,paste(getf.no.ext(as.character(gal.params$file.io$Values[1])),
+checkCDTcoords<-function(ReturnExecResults,GeneralParameters){
+	fexcl<-file.path(ReturnExecResults$outdir,paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])),
 	'_2CORRECT_STATIONS.txt',sep=''),fsep = .Platform$file.sep)
-	fsave<-file.path(ret.results$outdir,paste(getf.no.ext(as.character(gal.params$file.io$Values[1])),
+	fsave<-file.path(ReturnExecResults$outdir,paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])),
 	'_CHECKED_STATIONS.txt',sep=''),fsep = .Platform$file.sep)
 
-	#IdStn<-as.character(ret.results$HeadInfo[1,-1])
+	#IdStn<-as.character(ReturnExecResults$HeadInfo[1,-1])
 
-	exclus<-ret.results$Stndoute
+	exclus<-ReturnExecResults$Stndoute
 	retenus<-read.table(fexcl,header=T)
 ######
 	idna<-!is.na(as.character(retenus$ID.Station)) & !is.na(as.character(retenus$ID.Col))
@@ -190,19 +190,19 @@ checkCDTcoords<-function(ret.results,gal.params){
 
 	if(length(ret.idcl)>0){
 		ret.col<-as.numeric(ret.idcl)
-		ret.results$HeadInfo[2,ret.col+1]<-as.character(retenus$Longitude)
-		ret.results$HeadInfo[3,ret.col+1]<-as.character(retenus$Latitude)
+		ReturnExecResults$HeadInfo[2,ret.col+1]<-as.character(retenus$Longitude)
+		ReturnExecResults$HeadInfo[3,ret.col+1]<-as.character(retenus$Latitude)
 	}
 
-	don<-cbind(ret.results$dates,ret.results$data)
-	names(don)<-names(ret.results$HeadInfo)
-	donne<-rbind(ret.results$HeadInfo,don)
-	donne[is.na(donne)]<-ret.results$missval
+	don<-cbind(ReturnExecResults$dates,ReturnExecResults$data)
+	names(don)<-names(ReturnExecResults$HeadInfo)
+	donne<-rbind(ReturnExecResults$HeadInfo,don)
+	donne[is.na(donne)]<-ReturnExecResults$missval
 
 	if(length(stn.omit)>0){
 		donne<-donne[,-(stn.omit+1)]
-		ret.results$HeadInfo<-ret.results$HeadInfo[,-(stn.omit+1)]
-		ret.results$data<-ret.results$data[,-stn.omit]
+		ReturnExecResults$HeadInfo<-ReturnExecResults$HeadInfo[,-(stn.omit+1)]
+		ReturnExecResults$data<-ReturnExecResults$data[,-stn.omit]
 	}
 
 
@@ -222,24 +222,24 @@ checkCDTcoords<-function(ret.results,gal.params){
 #	ijna<-ijna[!is.na(ijna)]
 #	ret.col<-which(!is.na(match(IdStn,ret.id)))
 #	if(length(ret.col)>0){
-#		ret.results$HeadInfo[2,ret.col+1]<-ret.lon[ijna]
-#		ret.results$HeadInfo[3,ret.col+1]<-ret.lat[ijna]
+#		ReturnExecResults$HeadInfo[2,ret.col+1]<-ret.lon[ijna]
+#		ReturnExecResults$HeadInfo[3,ret.col+1]<-ret.lat[ijna]
 #	}
 
-#	don<-cbind(ret.results$dates,ret.results$data)
-#	names(don)<-names(ret.results$HeadInfo)
-#	donne<-rbind(ret.results$HeadInfo,don)
-#	donne[is.na(donne)]<-ret.results$missval
+#	don<-cbind(ReturnExecResults$dates,ReturnExecResults$data)
+#	names(don)<-names(ReturnExecResults$HeadInfo)
+#	donne<-rbind(ReturnExecResults$HeadInfo,don)
+#	donne[is.na(donne)]<-ReturnExecResults$missval
 
 #	if(length(omit)>0){
 #		donne<-donne[,-(omit+1)]
-#		ret.results$HeadInfo<-ret.results$HeadInfo[,-(omit+1)]
-#		ret.results$data<-ret.results$data[,-omit]
+#		ReturnExecResults$HeadInfo<-ReturnExecResults$HeadInfo[,-(omit+1)]
+#		ReturnExecResults$data<-ReturnExecResults$data[,-omit]
 #	}
 #####
 
 	write.table(donne,fsave,row.names=FALSE,col.names=FALSE)
 	rm(don,donne)
-	return(ret.results)
+	return(ReturnExecResults)
 }
 

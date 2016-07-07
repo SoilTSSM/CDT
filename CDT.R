@@ -2,7 +2,7 @@
 rm(list=ls(all=TRUE))
 library(stringr)
 
-cdtVersion<<-'2.3'
+cdtVersion<<-'2.4'
 apps.dir <<- dirname(parent.frame(2)$ofile)
 imgdir<<-file.path(apps.dir,'images',fsep = .Platform$file.sep)
 

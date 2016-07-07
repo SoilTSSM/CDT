@@ -1,5 +1,5 @@
-coefBiasGetInfoRain<-function(parent.win,gal.params){
-	file.list<-openFile_ttkcomboList()
+coefBiasGetInfoRain<-function(parent.win,GeneralParameters){
+	listOpenFiles<-openFile_ttkcomboList()
 	##tkentry width, directory path
 	if (Sys.info()["sysname"] == "Windows") largeur<-23
 	else largeur<-21
@@ -32,12 +32,12 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	#tkgrid(fr.A01,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(gal.params$period)=='daily',
-	'Daily data',ifelse(as.character(gal.params$period)=='dekadal','Dekadal data','Monthly data'))
+	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period)=='daily',
+	'Daily data',ifelse(as.character(GeneralParameters$period)=='dekadal','Dekadal data','Monthly data'))
 
 	cb.period<-ttkcombobox(fr.A00, values=c('Daily data','Dekadal data','Monthly data'), textvariable=file.period)
 	infobulle(cb.period,'Choose the time step of the data')
-	status.bar.display(cb.period,txt.stbr1,'Choose the time step of the data')
+	status.bar.display(cb.period,TextOutputVar,'Choose the time step of the data')
 	tkgrid(cb.period)
 
 	###################
@@ -46,33 +46,33 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	for(i in 0:5) tkgrid.configure(get(paste('fr.A1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 
 	file.stnfl <- tclVar()
-	tclvalue(file.stnfl) <- as.character(gal.params$file.io$Values[1])
+	tclvalue(file.stnfl) <- as.character(GeneralParameters$file.io$Values[1])
 
 	###
 	frA10.txt<-tklabel(fr.A10,text='Station data file')
 	tkgrid(frA10.txt)
 
 	###
-	cb.stnfl<-ttkcombobox(fr.A11, values=unlist(file.list), textvariable=file.stnfl)
+	cb.stnfl<-ttkcombobox(fr.A11, values=unlist(listOpenFiles), textvariable=file.stnfl)
 	infobulle(cb.stnfl,'Choose the file in the list')
-	status.bar.display(cb.stnfl,txt.stbr1,'Choose the file containing the gauge data')
+	status.bar.display(cb.stnfl,TextOutputVar,'Choose the file containing the gauge data')
 
-	bt.stnfl<-tkbutton.h(fr.A11, text="...",txt.stbr1,'Browse file if not listed','Browse file if not listed')
+	bt.stnfl<-tkbutton.h(fr.A11, text="...",TextOutputVar,'Browse file if not listed','Browse file if not listed')
 	tkgrid(cb.stnfl,bt.stnfl)
 	tkgrid.configure(cb.stnfl,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.stnfl,row=0,column=1,sticky='e')
 	tkconfigure(bt.stnfl,command=function(){
 		dat.opfiles<-getOpenFiles(tt,all.opfiles)
 		if(!is.null(dat.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'ascii'
-			file.opfiles[[nopf+1]]<<-dat.opfiles
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'ascii'
+			AllOpenFilesData[[nopf+1]]<<-dat.opfiles
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.stnfl)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cb.stnfl,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(cb.grddem,values=unlist(file.list), textvariable=file.grddem)
-			tkconfigure(cb.grdrfe,values=unlist(file.list), textvariable=file.grdrfe)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.stnfl)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.stnfl,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(cb.grddem,values=unlist(listOpenFiles), textvariable=file.grddem)
+			tkconfigure(cb.grdrfe,values=unlist(listOpenFiles), textvariable=file.grdrfe)
 		}else{
 			return(NULL)
 		}
@@ -82,31 +82,31 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	frA12.txt<-tklabel(fr.A12,text='Directory of RFE files')
 	tkgrid(frA12.txt)
 
-	dir.rfe <-tclVar(as.character(gal.params$file.io$Values[4]))
+	dir.rfe <-tclVar(as.character(GeneralParameters$file.io$Values[4]))
 	en.dir.rfe<-tkentry(fr.A13,textvariable=dir.rfe,width=largeur)
 	infobulle(en.dir.rfe,'Enter the full path to\ndirectory containing the RFE files')
-	status.bar.display(en.dir.rfe,txt.stbr1,'Enter the full path to directory containing the RFE files')
-	bt.dir.rfe<-tkbutton.h(fr.A13, text="...",txt.stbr1,'or browse here','')
+	status.bar.display(en.dir.rfe,TextOutputVar,'Enter the full path to directory containing the RFE files')
+	bt.dir.rfe<-tkbutton.h(fr.A13, text="...",TextOutputVar,'or browse here','')
 	tkgrid(en.dir.rfe,bt.dir.rfe)
 	tkgrid.configure(en.dir.rfe,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.dir.rfe,row=0,column=1,sticky='e')
 	tkconfigure(bt.dir.rfe,command=function(){
-		dir4rfe<-tk_choose.dir(as.character(gal.params$file.io$Values[4]), "")
+		dir4rfe<-tk_choose.dir(as.character(GeneralParameters$file.io$Values[4]), "")
 		if(is.na(dir4rfe)) tclvalue(dir.rfe)<-""
 		else tclvalue(dir.rfe)<-dir4rfe
 	})
 	#####
 	file.grdrfe <- tclVar()
-	tclvalue(file.grdrfe) <- as.character(gal.params$file.io$Values[3])
+	tclvalue(file.grdrfe) <- as.character(GeneralParameters$file.io$Values[3])
 
 	frA14.txt<-tklabel(fr.A14,text="RFE's sample file")
 	tkgrid(frA14.txt)
 
 	###from RFE
-	cb.grdrfe<-ttkcombobox(fr.A15, values=unlist(file.list), textvariable=file.grdrfe)
+	cb.grdrfe<-ttkcombobox(fr.A15, values=unlist(listOpenFiles), textvariable=file.grdrfe)
 	infobulle(cb.grdrfe,'Choose the file in the list')
-	status.bar.display(cb.grdrfe,txt.stbr1,'File containing a sample of RFE data in netcdf')
-	bt.grdrfe<-tkbutton.h(fr.A15, text="...",txt.stbr1,'Browse file if not listed','Browse file if not listed')
+	status.bar.display(cb.grdrfe,TextOutputVar,'File containing a sample of RFE data in netcdf')
+	bt.grdrfe<-tkbutton.h(fr.A15, text="...",TextOutputVar,'Browse file if not listed','Browse file if not listed')
 	tkgrid(cb.grdrfe,bt.grdrfe)
 	tkgrid.configure(cb.grdrfe,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.grdrfe,row=0,column=1,sticky='e')
@@ -118,15 +118,15 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 		nc.opfiles<-list(basename(fileopen),nc.opfiles1,fileopen)
 		if(!is.null(nc.opfiles1)){
 			tkinsert(all.opfiles,"end",basename(fileopen))
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'netcdf'
-			file.opfiles[[nopf+1]]<<-nc.opfiles
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'netcdf'
+			AllOpenFilesData[[nopf+1]]<<-nc.opfiles
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.grdrfe)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cb.stnfl,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(cb.grdrfe,values=unlist(file.list), textvariable=file.grdrfe)
-			tkconfigure(cb.grddem,values=unlist(file.list), textvariable=file.grddem)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.grdrfe)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.stnfl,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(cb.grdrfe,values=unlist(listOpenFiles), textvariable=file.grdrfe)
+			tkconfigure(cb.grddem,values=unlist(listOpenFiles), textvariable=file.grddem)
 		}else{
 			return(NULL)
 		}
@@ -139,10 +139,10 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	tkgrid(fr.A21,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 
 	file.grddem <- tclVar()
-	tclvalue(file.grddem) <- as.character(gal.params$file.io$Values[2])
+	tclvalue(file.grddem) <- as.character(GeneralParameters$file.io$Values[2])
 
 	###################
-	if(as.character(gal.params$CreateGrd)=='2') statedem<-'normal'
+	if(as.character(GeneralParameters$CreateGrd)=='2') statedem<-'normal'
 	else statedem<-'disabled'
 
 	#####
@@ -150,25 +150,25 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	tkgrid(frA20.txt)
 
 	###from DEM
-	cb.grddem<-ttkcombobox(fr.A21, values=unlist(file.list), textvariable=file.grddem,state=statedem)
+	cb.grddem<-ttkcombobox(fr.A21, values=unlist(listOpenFiles), textvariable=file.grddem,state=statedem)
 	infobulle(cb.grddem,'Choose the file in the list')
-	status.bar.display(cb.grddem,txt.stbr1,'File containing the elevation data in netcdf')
-	bt.grddem<-tkbutton.h(fr.A21, text="...",txt.stbr1,'Browse file if not listed','Browse file if not listed')
+	status.bar.display(cb.grddem,TextOutputVar,'File containing the elevation data in netcdf')
+	bt.grddem<-tkbutton.h(fr.A21, text="...",TextOutputVar,'Browse file if not listed','Browse file if not listed')
 	tkgrid(cb.grddem,bt.grddem)
 	tkgrid.configure(cb.grddem,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.grddem,row=0,column=1,sticky='e')
 	tkconfigure(bt.grddem,state=statedem,command=function(){
 		nc.opfiles<-getOpenNetcdf(tt,all.opfiles)
 		if(!is.null(nc.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'netcdf'
-			file.opfiles[[nopf+1]]<<-nc.opfiles
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'netcdf'
+			AllOpenFilesData[[nopf+1]]<<-nc.opfiles
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.grddem)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cb.stnfl,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(cb.grddem,values=unlist(file.list), textvariable=file.grddem)
-			tkconfigure(cb.grdrfe,values=unlist(file.list), textvariable=file.grdrfe)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.grddem)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.stnfl,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(cb.grddem,values=unlist(listOpenFiles), textvariable=file.grddem)
+			tkconfigure(cb.grdrfe,values=unlist(listOpenFiles), textvariable=file.grdrfe)
 		}else{
 			return(NULL)
 		}
@@ -183,17 +183,17 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	frA30.txt<-tklabel(fr.A30,text='Directory to save result')
 	tkgrid(frA30.txt)
 
-	file.save1 <-tclVar(as.character(gal.params$file.io$Values[5]))
+	file.save1 <-tclVar(as.character(GeneralParameters$file.io$Values[5]))
 	en.file.save<-tkentry(fr.A31,textvariable=file.save1,width=largeur)
 	infobulle(en.file.save,'Enter the full path to\ndirectory to save result')
-	status.bar.display(en.file.save,txt.stbr1,'Enter the full path to directory to save result')
-	bt.file.save<-tkbutton.h(fr.A31, text="...",txt.stbr1,'or browse here','')
+	status.bar.display(en.file.save,TextOutputVar,'Enter the full path to directory to save result')
+	bt.file.save<-tkbutton.h(fr.A31, text="...",TextOutputVar,'or browse here','')
 	tkgrid(en.file.save,bt.file.save)
 	tkgrid.configure(en.file.save,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.file.save,row=0,column=1,sticky='e')
 	tkconfigure(bt.file.save,command=function(){
-		file2save1<-tk_choose.dir(as.character(gal.params$file.io$Values[5]), "")
-			if(is.na(file2save1)) tclvalue(file.save1)<-as.character(gal.params$file.io$Values[5])
+		file2save1<-tk_choose.dir(as.character(GeneralParameters$file.io$Values[5]), "")
+			if(is.na(file2save1)) tclvalue(file.save1)<-as.character(GeneralParameters$file.io$Values[5])
 			else{
 				dir.create(file2save1,showWarnings=FALSE,recursive=TRUE)
 				tclvalue(file.save1)<-file2save1
@@ -215,20 +215,20 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	frC00.txt<-tklabel(fr.C00,text='Input RFE file format')
 	tkgrid(frC00.txt)
 
-	inrfeff <-tclVar(as.character(gal.params$prefix$Values[1]))
+	inrfeff <-tclVar(as.character(GeneralParameters$prefix$Values[1]))
 	en.inrfeff<-tkentry(fr.C01,textvariable=inrfeff,width=largeur1)
 	infobulle(en.inrfeff,'Enter the format of the RFE files names in NetCDF,\nexample: rfe1983_01-dk2.nc')
-	status.bar.display(en.inrfeff,txt.stbr1,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01-dk2.nc')
+	status.bar.display(en.inrfeff,TextOutputVar,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01-dk2.nc')
 	tkgrid(en.inrfeff,row=0,column=0,sticky='w')
 
 	####
 	frC02.txt<-tklabel(fr.C02,text='Mean bias filename prefix')
 	tkgrid(frC02.txt)
 
-	outmrgff <-tclVar(as.character(gal.params$prefix$Values[2]))
+	outmrgff <-tclVar(as.character(GeneralParameters$prefix$Values[2]))
 	en.outmrgff<-tkentry(fr.C03,textvariable=outmrgff,width=largeur1)
 	infobulle(en.outmrgff,'Prefix for the file name of the mean bias coefficient')
-	status.bar.display(en.outmrgff,txt.stbr1,'Prefix for the file name of the mean bias coefficient')
+	status.bar.display(en.outmrgff,TextOutputVar,'Prefix for the file name of the mean bias coefficient')
 	tkgrid(en.outmrgff,row=0,column=0,sticky='w')
 
 	#####
@@ -236,17 +236,17 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 		if(tclvalue(file.period)=='Daily data'){
 			tclvalue(inrfeff)<-"rfe%s_%s_%s.nc"
 			infobulle(en.inrfeff,'Enter the format of the RFE files names in NetCDF,\nexample: rfe1983_01_01.nc')
-			status.bar.display(en.inrfeff,txt.stbr1,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01_01.nc')
+			status.bar.display(en.inrfeff,TextOutputVar,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01_01.nc')
 		}
 		if(tclvalue(file.period)=='Dekadal data'){
 			tclvalue(inrfeff)<-"rfe%s_%s-dk%s.nc"
 			infobulle(en.inrfeff,'Enter the format of the RFE files names in NetCDF,\nexample: rfe1983_01-dk2.nc')
-			status.bar.display(en.inrfeff,txt.stbr1,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01-dk2.nc')
+			status.bar.display(en.inrfeff,TextOutputVar,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01-dk2.nc')
 		}
 		if(tclvalue(file.period)=='Monthly data'){
 			tclvalue(inrfeff)<-"rfe%s_%s.nc"
 			infobulle(en.inrfeff,'Enter the format of the RFE files names in NetCDF,\nexample: rfe1983_01.nc')
-			status.bar.display(en.inrfeff,txt.stbr1,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01.nc')
+			status.bar.display(en.inrfeff,TextOutputVar,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01.nc')
 		}
 	})
 
@@ -256,12 +256,12 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	for(i in 0:3) tkgrid.configure(get(paste('fr.C1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=0,ipadx=1,ipady=0)
 
 	infobulle(fr.C1,'Create the grid to interpolate the merged data')
-	status.bar.display(fr.C1,txt.stbr1,'Create the grid to interpolate the merged data')
+	status.bar.display(fr.C1,TextOutputVar,'Create the grid to interpolate the merged data')
 
 	frC10.txt<-tklabel(fr.C10,text='Create grid for interpolation')
 	tkgrid(frC10.txt)
 
-	varCreateGrd <- tclVar(as.character(gal.params$CreateGrd))
+	varCreateGrd <- tclVar(as.character(GeneralParameters$CreateGrd))
 	grdRFE.rbt <- tkradiobutton(fr.C11,text="From RFE",anchor='w',justify='left')
 	tkgrid(grdRFE.rbt)
 	grdDEM.rbt <- tkradiobutton(fr.C12,text="From DEM",anchor='w',justify='left')
@@ -272,12 +272,12 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	tkconfigure(grdDEM.rbt,variable=varCreateGrd,value="2")
 	tkconfigure(grdNEW.rbt,variable=varCreateGrd,value="3")
 
-	if(as.character(gal.params$CreateGrd)=='3') stategrd<-'normal'
+	if(as.character(GeneralParameters$CreateGrd)=='3') stategrd<-'normal'
 	else stategrd<-'disabled'
 
-	bt.getNewgrid<-tkbutton.h(fr.C13, text="Create",txt.stbr1,'Set the new grid','Set the new grid')
+	bt.getNewgrid<-tkbutton.h(fr.C13, text="Create",TextOutputVar,'Set the new grid','Set the new grid')
 	tkconfigure(bt.getNewgrid,state=stategrd,command=function(){
-		gal.params<<-getParamNewGrid(tt,gal.params)
+		GeneralParameters<<-getParamNewGrid(tt,GeneralParameters)
 	})
 	tkgrid(grdNEW.rbt,row=0,column=0)
 	tkgrid(bt.getNewgrid,row=0,column=1,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
@@ -300,13 +300,13 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	})
 
 	###############################
-	years1.l<-tklabel.h(fr.C2,'StartYear',txt.stbr1,'Start year to be used to compute mean Gauge-RFE bias',
+	years1.l<-tklabel.h(fr.C2,'StartYear',TextOutputVar,'Start year to be used to compute mean Gauge-RFE bias',
 	'Start year to be used to compute mean Gauge-RFE bias')
-	years2.l<-tklabel.h(fr.C2,'EndYear',txt.stbr1,'End year to be used to compute mean Gauge-RFE bias',
+	years2.l<-tklabel.h(fr.C2,'EndYear',TextOutputVar,'End year to be used to compute mean Gauge-RFE bias',
 	'End year to be used to compute mean Gauge-RFE bias')
 
-	years1.v<-tkentry.h(fr.C2,txt.stbr1,'Start year to be used to compute mean Gauge-RFE bias','Start year to be used to compute mean Gauge-RFE bias')
-	years2.v<-tkentry.h(fr.C2,txt.stbr1,'End year to be used to compute mean Gauge-RFE bias','End year to be used to compute mean Gauge-RFE bias')
+	years1.v<-tkentry.h(fr.C2,TextOutputVar,'Start year to be used to compute mean Gauge-RFE bias','Start year to be used to compute mean Gauge-RFE bias')
+	years2.v<-tkentry.h(fr.C2,TextOutputVar,'End year to be used to compute mean Gauge-RFE bias','End year to be used to compute mean Gauge-RFE bias')
 
 	tkgrid(years1.l,row=0,column=0,padx=5,pady=4)
 	tkgrid(years1.v,row=0,column=1,padx=5,pady=4)
@@ -316,30 +316,30 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	tkconfigure(years1.l,anchor='e',justify='right')
 	tkconfigure(years2.l,anchor='e',justify='right')
 
-	year1<-tclVar(as.character(gal.params$dates.coef$Values[1]))
-	year2<-tclVar(as.character(gal.params$dates.coef$Values[2]))
+	year1<-tclVar(as.character(GeneralParameters$dates.coef$Values[1]))
+	year2<-tclVar(as.character(GeneralParameters$dates.coef$Values[2]))
 
 	tkconfigure(years1.v,width=8,textvariable=year1,justify='right')
 	tkconfigure(years2.v,width=8,textvariable=year2,justify='right')
 
 	###################
-	min.nbrs.l<-tklabel.h(fr.C3,'MinStn',txt.stbr1,
+	min.nbrs.l<-tklabel.h(fr.C3,'MinStn',TextOutputVar,
 	'Minimum number of neighbours to be used to interpolate the bias',
 	'Minimum number of neighbours to be used to interpolate the bias')
-	max.nbrs.l<-tklabel.h(fr.C3,'MaxStn',txt.stbr1,
+	max.nbrs.l<-tklabel.h(fr.C3,'MaxStn',TextOutputVar,
 	'Maximum number of neighbours to be used to interpolate the bias',
 	'Maximum number of neighbours to be used to interpolate the bias')
-	max.dst.l<-tklabel.h(fr.C3,'MaxDist',txt.stbr1,
+	max.dst.l<-tklabel.h(fr.C3,'MaxDist',TextOutputVar,
 	'Maximum distance (in  decimal degree) to be used to interpolate the bias',
 	'Maximum distance (in  decimal degree) to be used to interpolate the bias')
 
-	min.nbrs.v<-tkentry.h(fr.C3,txt.stbr1,
+	min.nbrs.v<-tkentry.h(fr.C3,TextOutputVar,
 	'Minimum number of neighbours to be used to interpolate the bias',
 	'Minimum number of neighbours to be used to interpolate the bias')
-	max.nbrs.v<-tkentry.h(fr.C3,txt.stbr1,
+	max.nbrs.v<-tkentry.h(fr.C3,TextOutputVar,
 	'Maximum number of neighbours to be used to interpolate the bias',
 	'Maximum number of neighbours to be used to interpolate the bias')
-	max.dst.v<-tkentry.h(fr.C3,txt.stbr1,
+	max.dst.v<-tkentry.h(fr.C3,TextOutputVar,
 	'Maximum distance (in  decimal degree) to be used to interpolate the bias',
 	'Maximum distance (in  decimal degree) to be used to interpolate the bias')
 
@@ -354,9 +354,9 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	tkconfigure(max.nbrs.l,anchor='e',justify='right')
 	tkconfigure(max.dst.l,anchor='e',justify='right')
 
-	min.nbrs <- tclVar(as.character(gal.params$params.int$Values[1]))
-	max.nbrs <- tclVar(as.character(gal.params$params.int$Values[2]))
-	max.dst <- tclVar(as.character(gal.params$params.int$Values[3]))
+	min.nbrs <- tclVar(as.character(GeneralParameters$params.int$Values[1]))
+	max.nbrs <- tclVar(as.character(GeneralParameters$params.int$Values[2]))
+	max.dst <- tclVar(as.character(GeneralParameters$params.int$Values[3]))
 
 	tkconfigure(min.nbrs.v,width=4,textvariable=min.nbrs,justify='right')
 	tkconfigure(max.nbrs.v,width=4,textvariable=max.nbrs,justify='right')
@@ -387,14 +387,14 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 			tkmessageBox(message="Choose or enter the path to directory to save results",icon="warning",type="ok")
 			tkwait.window(tt)
 		}else{
-			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily',
+			GeneralParameters$period<<-ifelse(tclvalue(file.period)=='Daily data','daily',
 			ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
-			gal.params$file.io$Values<<-c(tclvalue(file.stnfl),tclvalue(file.grddem),
+			GeneralParameters$file.io$Values<<-c(tclvalue(file.stnfl),tclvalue(file.grddem),
 			tclvalue(file.grdrfe),tclvalue(dir.rfe),tclvalue(file.save1))
-			gal.params$CreateGrd<<-tclvalue(varCreateGrd)
-			gal.params$prefix$Values<<-c(tclvalue(inrfeff),tclvalue(outmrgff))
-			gal.params$dates.coef$Values<<-c(tclvalue(year1),tclvalue(year2))
-			gal.params$params.int$Values<<-c(tclvalue(min.nbrs),tclvalue(max.nbrs),tclvalue(max.dst))
+			GeneralParameters$CreateGrd<<-tclvalue(varCreateGrd)
+			GeneralParameters$prefix$Values<<-c(tclvalue(inrfeff),tclvalue(outmrgff))
+			GeneralParameters$dates.coef$Values<<-c(tclvalue(year1),tclvalue(year2))
+			GeneralParameters$params.int$Values<<-c(tclvalue(min.nbrs),tclvalue(max.nbrs),tclvalue(max.dst))
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
@@ -424,13 +424,13 @@ coefBiasGetInfoRain<-function(parent.win,gal.params){
 	tkfocus(tt)
 	tkbind(tt, "<Destroy>", function() {tkgrab.release(tt); tkfocus(parent.win)})
 	tkwait.window(tt)
-	return(gal.params)
+	return(GeneralParameters)
 }
 
 ##############################################################################################
 
-rmvBiasGetInfoRain<-function(parent.win,gal.params){
-	file.list<-openFile_ttkcomboList()
+rmvBiasGetInfoRain<-function(parent.win,GeneralParameters){
+	listOpenFiles<-openFile_ttkcomboList()
 	#tkentry width, directory path
 	if (Sys.info()["sysname"] == "Windows") largeur<-23
 	else largeur<-21
@@ -463,12 +463,12 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 	#tkgrid(fr.A01,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(gal.params$period)=='daily',
-	'Daily data',ifelse(as.character(gal.params$period)=='dekadal','Dekadal data','Monthly data'))
+	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period)=='daily',
+	'Daily data',ifelse(as.character(GeneralParameters$period)=='dekadal','Dekadal data','Monthly data'))
 
 	cb.period<-ttkcombobox(fr.A00, values=c('Daily data','Dekadal data','Monthly data'), textvariable=file.period)
 	infobulle(cb.period,'Choose the time step of the data')
-	status.bar.display(cb.period,txt.stbr1,'Choose the time step of the data')
+	status.bar.display(cb.period,TextOutputVar,'Choose the time step of the data')
 	tkgrid(cb.period)
 
 	###################
@@ -479,31 +479,31 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 	frA10.txt<-tklabel(fr.A10,text='Directory of RFE files')
 	tkgrid(frA10.txt)
 
-	dir.rfe <-tclVar(as.character(gal.params$file.io$Values[2]))
+	dir.rfe <-tclVar(as.character(GeneralParameters$file.io$Values[2]))
 	en.dir.rfe<-tkentry(fr.A11,textvariable=dir.rfe,width=largeur)
 	infobulle(en.dir.rfe,'Enter the full path to\ndirectory containing the RFE files')
-	status.bar.display(en.dir.rfe,txt.stbr1,'Enter the full path to directory containing the RFE files')
-	bt.dir.rfe<-tkbutton.h(fr.A11, text="...",txt.stbr1,'or browse here','')
+	status.bar.display(en.dir.rfe,TextOutputVar,'Enter the full path to directory containing the RFE files')
+	bt.dir.rfe<-tkbutton.h(fr.A11, text="...",TextOutputVar,'or browse here','')
 	tkgrid(en.dir.rfe,bt.dir.rfe)
 	tkgrid.configure(en.dir.rfe,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.dir.rfe,row=0,column=1,sticky='e')
 	tkconfigure(bt.dir.rfe,command=function(){
-		dir4rfe<-tk_choose.dir(as.character(gal.params$file.io$Values[2]), "")
+		dir4rfe<-tk_choose.dir(as.character(GeneralParameters$file.io$Values[2]), "")
 		if(is.na(dir4rfe)) tclvalue(dir.rfe)<-""
 		else tclvalue(dir.rfe)<-dir4rfe
 	})
 	#####
 	file.grdrfe <- tclVar()
-	tclvalue(file.grdrfe) <- as.character(gal.params$file.io$Values[1])
+	tclvalue(file.grdrfe) <- as.character(GeneralParameters$file.io$Values[1])
 
 	frA12.txt<-tklabel(fr.A12,text="RFE's sample file")
 	tkgrid(frA12.txt)
 
 	###from RFE
-	cb.grdrfe<-ttkcombobox(fr.A13, values=unlist(file.list), textvariable=file.grdrfe)
+	cb.grdrfe<-ttkcombobox(fr.A13, values=unlist(listOpenFiles), textvariable=file.grdrfe)
 	infobulle(cb.grdrfe,'Choose the file in the list')
-	status.bar.display(cb.grdrfe,txt.stbr1,'File containing a sample of RFE data in netcdf')
-	bt.grdrfe<-tkbutton.h(fr.A13, text="...",txt.stbr1,'Browse file if not listed','Browse file if not listed')
+	status.bar.display(cb.grdrfe,TextOutputVar,'File containing a sample of RFE data in netcdf')
+	bt.grdrfe<-tkbutton.h(fr.A13, text="...",TextOutputVar,'Browse file if not listed','Browse file if not listed')
 	tkgrid(cb.grdrfe,bt.grdrfe)
 	tkgrid.configure(cb.grdrfe,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.grdrfe,row=0,column=1,sticky='e')
@@ -515,13 +515,13 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 		nc.opfiles<-list(basename(fileopen),nc.opfiles1,fileopen)
 		if(!is.null(nc.opfiles1)){
 			tkinsert(all.opfiles,"end",basename(fileopen))
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'netcdf'
-			file.opfiles[[nopf+1]]<<-nc.opfiles
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'netcdf'
+			AllOpenFilesData[[nopf+1]]<<-nc.opfiles
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.grdrfe)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cb.grdrfe,values=unlist(file.list), textvariable=file.grdrfe)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.grdrfe)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.grdrfe,values=unlist(listOpenFiles), textvariable=file.grdrfe)
 		}else{
 			return(NULL)
 		}
@@ -538,16 +538,16 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 	tkgrid(frA20.txt)
 
 	##
-	dir.bias <-tclVar(as.character(gal.params$file.io$Values[3]))
+	dir.bias <-tclVar(as.character(GeneralParameters$file.io$Values[3]))
 	en.dir.bias<-tkentry(fr.A21,textvariable=dir.bias,width=largeur)
 	infobulle(en.dir.bias,'Enter the full path to directory containing the mean bias files')
-	status.bar.display(en.dir.bias,txt.stbr1,'Enter the full path to directory containing the mean bias files')
-	bt.dir.bias<-tkbutton.h(fr.A21, text="...",txt.stbr1,'or browse here','')
+	status.bar.display(en.dir.bias,TextOutputVar,'Enter the full path to directory containing the mean bias files')
+	bt.dir.bias<-tkbutton.h(fr.A21, text="...",TextOutputVar,'or browse here','')
 	tkgrid(en.dir.bias,bt.dir.bias)
 	tkgrid.configure(en.dir.bias,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.dir.bias,row=0,column=1,sticky='e')
 	tkconfigure(bt.dir.bias,command=function(){
-		dir4bias<-tk_choose.dir(as.character(gal.params$file.io$Values[3]), "")
+		dir4bias<-tk_choose.dir(as.character(GeneralParameters$file.io$Values[3]), "")
 		if(is.na(dir4bias)) tclvalue(dir.bias)<-""
 		else tclvalue(dir.bias)<-dir4bias
 	})
@@ -561,17 +561,17 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 	frA30.txt<-tklabel(fr.A30,text='Directory to save result')
 	tkgrid(frA30.txt)
 
-	file.save1 <-tclVar(as.character(gal.params$file.io$Values[4]))
+	file.save1 <-tclVar(as.character(GeneralParameters$file.io$Values[4]))
 	en.file.save<-tkentry(fr.A31,textvariable=file.save1,width=largeur)
 	infobulle(en.file.save,'Enter the full path to\ndirectory to save result')
-	status.bar.display(en.file.save,txt.stbr1,'Enter the full path to directory to save result')
-	bt.file.save<-tkbutton.h(fr.A31, text="...",txt.stbr1,'or browse here','')
+	status.bar.display(en.file.save,TextOutputVar,'Enter the full path to directory to save result')
+	bt.file.save<-tkbutton.h(fr.A31, text="...",TextOutputVar,'or browse here','')
 	tkgrid(en.file.save,bt.file.save)
 	tkgrid.configure(en.file.save,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.file.save,row=0,column=1,sticky='e')
 	tkconfigure(bt.file.save,command=function(){
-		file2save1<-tk_choose.dir(as.character(gal.params$file.io$Values[4]), "")
-			if(is.na(file2save1)) tclvalue(file.save1)<-as.character(gal.params$file.io$Values[4])
+		file2save1<-tk_choose.dir(as.character(GeneralParameters$file.io$Values[4]), "")
+			if(is.na(file2save1)) tclvalue(file.save1)<-as.character(GeneralParameters$file.io$Values[4])
 			else{
 				dir.create(file2save1,showWarnings=FALSE,recursive=TRUE)
 				tclvalue(file.save1)<-file2save1
@@ -592,50 +592,50 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 	frC00.txt<-tklabel(fr.C00,text='Input RFE file format')
 	tkgrid(frC00.txt)
 
-	inrfeff <-tclVar(as.character(gal.params$prefix$Values[1]))
+	inrfeff <-tclVar(as.character(GeneralParameters$prefix$Values[1]))
 	en.inrfeff<-tkentry(fr.C01,textvariable=inrfeff,width=largeur1)
 	infobulle(en.inrfeff,'Enter the format of the RFE files names in NetCDF,\nexample: rfe1983_01-dk2.nc')
-	status.bar.display(en.inrfeff,txt.stbr1,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01-dk2.nc')
+	status.bar.display(en.inrfeff,TextOutputVar,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01-dk2.nc')
 	tkgrid(en.inrfeff,row=0,column=0,sticky='w')
 
 	####
 	frC02.txt<-tklabel(fr.C02,text='Mean bias filename prefix')
 	tkgrid(frC02.txt)
 
-	outmrgff <-tclVar(as.character(gal.params$prefix$Values[2]))
+	outmrgff <-tclVar(as.character(GeneralParameters$prefix$Values[2]))
 	en.outmrgff<-tkentry(fr.C03,textvariable=outmrgff,width=largeur1)
 	infobulle(en.outmrgff,'Prefix for the file name of the mean bias coefficient')
-	status.bar.display(en.outmrgff,txt.stbr1,'Prefix for the file name of the mean bias coefficient')
+	status.bar.display(en.outmrgff,TextOutputVar,'Prefix for the file name of the mean bias coefficient')
 	tkgrid(en.outmrgff,row=0,column=0,sticky='w')
 
 	####
 	frC04.txt<-tklabel(fr.C04,text='Adjusted data filename prefix')
 	tkgrid(frC04.txt)
 
-	adjPrefix <-tclVar(as.character(gal.params$prefix$Values[3]))
+	adjPrefix <-tclVar(as.character(GeneralParameters$prefix$Values[3]))
 	en.adjPrefix<-tkentry(fr.C05,textvariable=adjPrefix,width=largeur1)
 	infobulle(en.outmrgff,'Prefix for the file name of the adjusted RFE data')
-	status.bar.display(en.adjPrefix,txt.stbr1,'Prefix for the file name of the adjusted RFE data')
+	status.bar.display(en.adjPrefix,TextOutputVar,'Prefix for the file name of the adjusted RFE data')
 	tkgrid(en.adjPrefix,row=0,column=0,sticky='w')
 
 	########################
 	infobulle(fr.C1,'Start and end date for adjusting RFE data')
-	status.bar.display(fr.C1,txt.stbr1,'Start and end date for adjusting RFE data')
+	status.bar.display(fr.C1,TextOutputVar,'Start and end date for adjusting RFE data')
 
 	deb.txt<-tklabel(fr.C1,text='Start date',anchor='e',justify='right')
 	fin.txt<-tklabel(fr.C1,text='End date',anchor='e',justify='right')
 	yrs.txt<-tklabel(fr.C1,text='Year')
 	mon.txt<-tklabel(fr.C1,text='Month')
-	if(as.character(gal.params$period)=='dekadal') day.txtVar<-tclVar('Dek')
+	if(as.character(GeneralParameters$period)=='dekadal') day.txtVar<-tclVar('Dek')
 	else day.txtVar<-tclVar('Day')
 	day.txt<-tklabel(fr.C1,text=tclvalue(day.txtVar),textvariable=day.txtVar)
 
-	istart.yrs<-tclVar(as.character(gal.params$dates.adj$Values[1]))
-	istart.mon<-tclVar(as.character(gal.params$dates.adj$Values[2]))
-	istart.day<-tclVar(as.character(gal.params$dates.adj$Values[3]))
-	iend.yrs<-tclVar(as.character(gal.params$dates.adj$Values[4]))
-	iend.mon<-tclVar(as.character(gal.params$dates.adj$Values[5]))
-	iend.day<-tclVar(as.character(gal.params$dates.adj$Values[6]))
+	istart.yrs<-tclVar(as.character(GeneralParameters$dates.adj$Values[1]))
+	istart.mon<-tclVar(as.character(GeneralParameters$dates.adj$Values[2]))
+	istart.day<-tclVar(as.character(GeneralParameters$dates.adj$Values[3]))
+	iend.yrs<-tclVar(as.character(GeneralParameters$dates.adj$Values[4]))
+	iend.mon<-tclVar(as.character(GeneralParameters$dates.adj$Values[5]))
+	iend.day<-tclVar(as.character(GeneralParameters$dates.adj$Values[6]))
 
 	yrs1.v<-tkentry(fr.C1, width=4,textvariable=istart.yrs,justify = "right")
 	mon1.v<-tkentry(fr.C1, width=4,textvariable=istart.mon,justify = "right")
@@ -661,28 +661,28 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 			tclvalue(day.txtVar)<-"Day"
 			tkconfigure(day1.v,state='normal')
 			tkconfigure(day2.v,state='normal')
-			#tclvalue(day.val)<-as.character(gal.params$dates.adj$Values[6])
+			#tclvalue(day.val)<-as.character(GeneralParameters$dates.adj$Values[6])
 			tclvalue(inrfeff)<-"rfe%s_%s_%s.nc"
 			infobulle(en.inrfeff,'Enter the format of the RFE files names in NetCDF,\nexample: rfe1983_01_01.nc')
-			status.bar.display(en.inrfeff,txt.stbr1,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01_01.nc')
+			status.bar.display(en.inrfeff,TextOutputVar,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01_01.nc')
 		}
 		if(tclvalue(file.period)=='Dekadal data'){
 			tclvalue(day.txtVar)<-"Dek"
 			tkconfigure(day1.v,state='normal')
 			tkconfigure(day2.v,state='normal')
-			#tclvalue(day.val)<-as.character(gal.params$dates.adj$Values[6])
+			#tclvalue(day.val)<-as.character(GeneralParameters$dates.adj$Values[6])
 			tclvalue(inrfeff)<-"rfe%s_%s-dk%s.nc"
 			infobulle(en.inrfeff,'Enter the format of the RFE files names in NetCDF,\nexample: rfe1983_01-dk2.nc')
-			status.bar.display(en.inrfeff,txt.stbr1,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01-dk2.nc')
+			status.bar.display(en.inrfeff,TextOutputVar,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01-dk2.nc')
 		}
 		if(tclvalue(file.period)=='Monthly data'){
 			tclvalue(day.txtVar)<-"Day"
 			tkconfigure(day1.v,state='disabled')
 			tkconfigure(day2.v,state='disabled')
-			#tclvalue(day.val)<-as.character(gal.params$dates.adj$Values[6])
+			#tclvalue(day.val)<-as.character(GeneralParameters$dates.adj$Values[6])
 			tclvalue(inrfeff)<-"rfe%s_%s.nc"
 			infobulle(en.inrfeff,'Enter the format of the RFE files names in NetCDF,\nexample: rfe1983_01.nc')
-			status.bar.display(en.inrfeff,txt.stbr1,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01.nc')
+			status.bar.display(en.inrfeff,TextOutputVar,'Enter the format of the RFE files names in NetCDF, example: rfe1983_01.nc')
 		}
 	})
 
@@ -707,10 +707,10 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 			tkmessageBox(message="Choose or enter the path to directory to save results",icon="warning",type="ok")
 			tkwait.window(tt)
 		}else{
-			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily', ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
-			gal.params$file.io$Values<<-c(tclvalue(file.grdrfe),tclvalue(dir.rfe), tclvalue(dir.bias),tclvalue(file.save1))
-			gal.params$prefix$Values<<-c(tclvalue(inrfeff),tclvalue(outmrgff),tclvalue(adjPrefix))
-			gal.params$dates.adj$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon), tclvalue(istart.day),tclvalue(iend.yrs),tclvalue(iend.mon),tclvalue(iend.day))
+			GeneralParameters$period<<-ifelse(tclvalue(file.period)=='Daily data','daily', ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
+			GeneralParameters$file.io$Values<<-c(tclvalue(file.grdrfe),tclvalue(dir.rfe), tclvalue(dir.bias),tclvalue(file.save1))
+			GeneralParameters$prefix$Values<<-c(tclvalue(inrfeff),tclvalue(outmrgff),tclvalue(adjPrefix))
+			GeneralParameters$dates.adj$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon), tclvalue(istart.day),tclvalue(iend.yrs),tclvalue(iend.mon),tclvalue(iend.day))
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
@@ -740,14 +740,14 @@ rmvBiasGetInfoRain<-function(parent.win,gal.params){
 	tkfocus(tt)
 	tkbind(tt, "<Destroy>", function() {tkgrab.release(tt); tkfocus(parent.win)})
 	tkwait.window(tt)
-	return(gal.params)
+	return(GeneralParameters)
 }
 
 
 ##############################################################################################
 
-mergeGetInfoRain<-function(parent.win,gal.params){
-	file.list<-openFile_ttkcomboList()
+mergeGetInfoRain<-function(parent.win,GeneralParameters){
+	listOpenFiles<-openFile_ttkcomboList()
 	##tkentry width, directory path
 	if (Sys.info()["sysname"] == "Windows") largeur<-23
 	else largeur<-21
@@ -780,12 +780,12 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	#tkgrid(fr.A01,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(gal.params$period)=='daily',
-	'Daily data',ifelse(as.character(gal.params$period)=='dekadal','Dekadal data','Monthly data'))
+	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period)=='daily',
+	'Daily data',ifelse(as.character(GeneralParameters$period)=='dekadal','Dekadal data','Monthly data'))
 
 	cb.period<-ttkcombobox(fr.A00, values=c('Daily data','Dekadal data','Monthly data'), textvariable=file.period)
 	infobulle(cb.period,'Choose the time step of the data')
-	status.bar.display(cb.period,txt.stbr1,'Choose the time step of the data')
+	status.bar.display(cb.period,TextOutputVar,'Choose the time step of the data')
 	tkgrid(cb.period)
 
 	###################
@@ -794,33 +794,33 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	for(i in 0:3) tkgrid.configure(get(paste('fr.A1',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 
 	file.stnfl <- tclVar()
-	tclvalue(file.stnfl) <- as.character(gal.params$file.io$Values[1])
+	tclvalue(file.stnfl) <- as.character(GeneralParameters$file.io$Values[1])
 
 	###
 	frA10.txt<-tklabel(fr.A10,text='Station data file')
 	tkgrid(frA10.txt)
 
 	###
-	cb.stnfl<-ttkcombobox(fr.A11, values=unlist(file.list), textvariable=file.stnfl)
+	cb.stnfl<-ttkcombobox(fr.A11, values=unlist(listOpenFiles), textvariable=file.stnfl)
 	infobulle(cb.stnfl,'Choose the file in the list')
-	status.bar.display(cb.stnfl,txt.stbr1,'Choose the file containing the gauge data')
+	status.bar.display(cb.stnfl,TextOutputVar,'Choose the file containing the gauge data')
 
-	bt.stnfl<-tkbutton.h(fr.A11, text="...",txt.stbr1,'Browse file if not listed','Browse file if not listed')
+	bt.stnfl<-tkbutton.h(fr.A11, text="...",TextOutputVar,'Browse file if not listed','Browse file if not listed')
 	tkgrid(cb.stnfl,bt.stnfl)
 	tkgrid.configure(cb.stnfl,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.stnfl,row=0,column=1,sticky='e')
 	tkconfigure(bt.stnfl,command=function(){
 		dat.opfiles<-getOpenFiles(tt,all.opfiles)
 		if(!is.null(dat.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'ascii'
-			file.opfiles[[nopf+1]]<<-dat.opfiles
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'ascii'
+			AllOpenFilesData[[nopf+1]]<<-dat.opfiles
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.stnfl)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cb.stnfl,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(cb.grddem,values=unlist(file.list), textvariable=file.grddem)
-			tkconfigure(cb.blkshp,values=unlist(file.list), textvariable=file.blkshp)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.stnfl)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.stnfl,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(cb.grddem,values=unlist(listOpenFiles), textvariable=file.grddem)
+			tkconfigure(cb.blkshp,values=unlist(listOpenFiles), textvariable=file.blkshp)
 		}else{
 			return(NULL)
 		}
@@ -831,16 +831,16 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	frA12.txt<-tklabel(fr.A12,text=tclvalue(adjORnot),textvariable=adjORnot)
 	tkgrid(frA12.txt)
 
-	dir.rfe <-tclVar(as.character(gal.params$file.io$Values[4]))
+	dir.rfe <-tclVar(as.character(GeneralParameters$file.io$Values[4]))
 	en.dir.rfe<-tkentry(fr.A13,textvariable=dir.rfe,width=largeur)
 	infobulle(en.dir.rfe,'Enter the full path to\ndirectory containing the adjusted RFE files')
-	status.bar.display(en.dir.rfe,txt.stbr1,'Enter the full path to directory containing the adjusted RFE files')
-	bt.dir.rfe<-tkbutton.h(fr.A13, text="...",txt.stbr1,'or browse here','')
+	status.bar.display(en.dir.rfe,TextOutputVar,'Enter the full path to directory containing the adjusted RFE files')
+	bt.dir.rfe<-tkbutton.h(fr.A13, text="...",TextOutputVar,'or browse here','')
 	tkgrid(en.dir.rfe,bt.dir.rfe)
 	tkgrid.configure(en.dir.rfe,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.dir.rfe,row=0,column=1,sticky='e')
 	tkconfigure(bt.dir.rfe,command=function(){
-		dir4rfe<-tk_choose.dir(as.character(gal.params$file.io$Values[4]), "")
+		dir4rfe<-tk_choose.dir(as.character(GeneralParameters$file.io$Values[4]), "")
 		if(is.na(dir4rfe)) tclvalue(dir.rfe)<-""
 		else tclvalue(dir.rfe)<-dir4rfe
 	})
@@ -854,17 +854,17 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	frA20.txt<-tklabel(fr.A20,text='Directory to save result')
 	tkgrid(frA20.txt)
 
-	file.save1 <-tclVar(as.character(gal.params$file.io$Values[5]))
+	file.save1 <-tclVar(as.character(GeneralParameters$file.io$Values[5]))
 	en.file.save<-tkentry(fr.A21,textvariable=file.save1,width=largeur)
 	infobulle(en.file.save,'Enter the full path to\ndirectory to save result')
-	status.bar.display(en.file.save,txt.stbr1,'Enter the full path to directory to save result')
-	bt.file.save<-tkbutton.h(fr.A21, text="...",txt.stbr1,'or browse here','')
+	status.bar.display(en.file.save,TextOutputVar,'Enter the full path to directory to save result')
+	bt.file.save<-tkbutton.h(fr.A21, text="...",TextOutputVar,'or browse here','')
 	tkgrid(en.file.save,bt.file.save)
 	tkgrid.configure(en.file.save,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.file.save,row=0,column=1,sticky='e')
 	tkconfigure(bt.file.save,command=function(){
-		file2save1<-tk_choose.dir(as.character(gal.params$file.io$Values[5]), "")
-			if(is.na(file2save1)) tclvalue(file.save1)<-as.character(gal.params$file.io$Values[5])
+		file2save1<-tk_choose.dir(as.character(GeneralParameters$file.io$Values[5]), "")
+			if(is.na(file2save1)) tclvalue(file.save1)<-as.character(GeneralParameters$file.io$Values[5])
 			else{
 				dir.create(file2save1,showWarnings=FALSE,recursive=TRUE)
 				tclvalue(file.save1)<-file2save1
@@ -884,37 +884,37 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 
 	####Use DEM
 	file.grddem <- tclVar()
-	tclvalue(file.grddem) <- as.character(gal.params$file.io$Values[7])
+	tclvalue(file.grddem) <- as.character(GeneralParameters$file.io$Values[7])
 
 	#####
 	frA20.txt<-tklabel(fr.A30,text="Elevation data(NetCDF)")
 	tkgrid(frA20.txt)
 
-	if(as.character(gal.params$blankGrd)=='2') statedem<-'normal'
+	if(as.character(GeneralParameters$blankGrd)=='2') statedem<-'normal'
 	else statedem<-'disabled'
 	#statedem<-'disabled'
 
 	###
-	cb.grddem<-ttkcombobox(fr.A31, values=unlist(file.list), textvariable=file.grddem,state=statedem)
+	cb.grddem<-ttkcombobox(fr.A31, values=unlist(listOpenFiles), textvariable=file.grddem,state=statedem)
 	infobulle(cb.grddem,'Choose the file in the list')
-	status.bar.display(cb.grddem,txt.stbr1,'Choose the file containing the elevation data in netcdf')
-	bt.grddem<-tkbutton.h(fr.A31, text="...",txt.stbr1,'Browse file if not listed','Browse file if not listed')
+	status.bar.display(cb.grddem,TextOutputVar,'Choose the file containing the elevation data in netcdf')
+	bt.grddem<-tkbutton.h(fr.A31, text="...",TextOutputVar,'Browse file if not listed','Browse file if not listed')
 	tkgrid(cb.grddem,bt.grddem)
 	tkgrid.configure(cb.grddem,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.grddem,row=0,column=1,sticky='e')
 	tkconfigure(bt.grddem,state=statedem,command=function(){
 		nc.opfiles<-getOpenNetcdf(tt,all.opfiles)
 		if(!is.null(nc.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'netcdf'
-			file.opfiles[[nopf+1]]<<-nc.opfiles
-			tclvalue(file.grddem)<-file.opfiles[[nopf+1]][[1]]
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'netcdf'
+			AllOpenFilesData[[nopf+1]]<<-nc.opfiles
+			tclvalue(file.grddem)<-AllOpenFilesData[[nopf+1]][[1]]
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.grddem)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cb.stnfl,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(cb.grddem,values=unlist(file.list), textvariable=file.grddem)
-			tkconfigure(cb.blkshp,values=unlist(file.list), textvariable=file.blkshp)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.grddem)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.stnfl,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(cb.grddem,values=unlist(listOpenFiles), textvariable=file.grddem)
+			tkconfigure(cb.blkshp,values=unlist(listOpenFiles), textvariable=file.blkshp)
 		}else{
 			return(NULL)
 		}
@@ -922,20 +922,20 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 
 	####################################
 	file.blkshp <- tclVar()
-	tclvalue(file.blkshp) <- as.character(gal.params$file.io$Values[6])
+	tclvalue(file.blkshp) <- as.character(GeneralParameters$file.io$Values[6])
 
 	#####Use shp
 	frA32.txt<-tklabel(fr.A32,text="ESRI shapefiles for blanking")
 	tkgrid(frA32.txt)
 
-	if(as.character(gal.params$blankGrd)=='3') stateshp<-'normal'
+	if(as.character(GeneralParameters$blankGrd)=='3') stateshp<-'normal'
 	else stateshp<-'disabled'
 
 	##
-	cb.blkshp<-ttkcombobox(fr.A33, values=unlist(file.list), textvariable=file.blkshp,state=stateshp)
+	cb.blkshp<-ttkcombobox(fr.A33, values=unlist(listOpenFiles), textvariable=file.blkshp,state=stateshp)
 	infobulle(cb.blkshp,'Choose the file in the list')
-	status.bar.display(cb.blkshp,txt.stbr1,'Choose the file containing the ESRI shapefiles')
-	bt.blkshp<-tkbutton.h(fr.A33, text="...",txt.stbr1,'Browse file if not listed','Browse file if not listed')
+	status.bar.display(cb.blkshp,TextOutputVar,'Choose the file containing the ESRI shapefiles')
+	bt.blkshp<-tkbutton.h(fr.A33, text="...",TextOutputVar,'Browse file if not listed','Browse file if not listed')
 	tkgrid(cb.blkshp,bt.blkshp)
 	tkgrid.configure(cb.blkshp,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.blkshp,row=0,column=1,sticky='e')
@@ -943,16 +943,16 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 		shp.opfiles<-getOpenShp(tt,all.opfiles)
 
 		if(!is.null(shp.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'shp'
-			file.opfiles[[nopf+1]]<<-shp.opfiles
-			tclvalue(file.blkshp)<-file.opfiles[[nopf+1]][[1]]
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'shp'
+			AllOpenFilesData[[nopf+1]]<<-shp.opfiles
+			tclvalue(file.blkshp)<-AllOpenFilesData[[nopf+1]][[1]]
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.blkshp)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cb.stnfl,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(cb.grddem,values=unlist(file.list), textvariable=file.grddem)
-			tkconfigure(cb.blkshp,values=unlist(file.list), textvariable=file.blkshp)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.blkshp)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.stnfl,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(cb.grddem,values=unlist(listOpenFiles), textvariable=file.grddem)
+			tkconfigure(cb.blkshp,values=unlist(listOpenFiles), textvariable=file.blkshp)
 		}else{
 			return(NULL)
 		}
@@ -965,15 +965,15 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	for(i in 0:4) tkgrid.configure(get(paste('fr.C',i,sep='')),row=i,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 	#####
 	infobulle(fr.C0,'Set the new grid to merge data in case using no adjusted RFE data')
-	status.bar.display(fr.C0,txt.stbr1,'Set the new grid to merge data in case using no adjusted RFE data')
+	status.bar.display(fr.C0,TextOutputVar,'Set the new grid to merge data in case using no adjusted RFE data')
 
 	frC0.txt<-tklabel(fr.C0,text='Use Original RFE data')
 
-	newGrd <- tclVar(as.character(gal.params$NewGrd))
+	newGrd <- tclVar(as.character(GeneralParameters$NewGrd))
 	cb.newGrd <- tkcheckbutton(fr.C0,variable=newGrd,anchor='w',justify='left')
 	bt.newGrd<-tkbutton(fr.C0, text="Set New Grid")
 	tkconfigure(bt.newGrd,state='disabled',command=function(){
-		gal.params<<-createNewGrid2Merge(tt,gal.params)
+		GeneralParameters<<-createNewGrid2Merge(tt,GeneralParameters)
 	})
 	tkgrid(frC0.txt,row=0,column=0,columnspan=2,sticky='w',padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(cb.newGrd,row=1,column=0,columnspan=1,sticky='w',padx=1,pady=1,ipadx=1,ipady=1)
@@ -988,45 +988,45 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	frC10.txt<-tklabel(fr.C10,text=tclvalue(adjORnot1),textvariable=adjORnot1)
 	tkgrid(frC10.txt)
 
-	adjPrefix <-tclVar(as.character(gal.params$prefix$Values[1]))
+	adjPrefix <-tclVar(as.character(GeneralParameters$prefix$Values[1]))
 	en.adjPrefix<-tkentry(fr.C11,textvariable=adjPrefix,width=largeur1)
 	infobulle(en.adjPrefix,'Prefix for the file name of the adjusted RFE data')
-	status.bar.display(en.adjPrefix,txt.stbr1,'Prefix for the file name of the  adjusted RFE data')
+	status.bar.display(en.adjPrefix,TextOutputVar,'Prefix for the file name of the  adjusted RFE data')
 	tkgrid(en.adjPrefix,row=0,column=0,sticky='w')
 
 	####
 	frC12.txt<-tklabel(fr.C12,text='Merged data filename prefix/suffix')
 	tkgrid(frC12.txt)
 
-	mrgPrefix <-tclVar(as.character(gal.params$prefix$Values[2]))
+	mrgPrefix <-tclVar(as.character(GeneralParameters$prefix$Values[2]))
 	en.mrgPrefix<-tkentry(fr.C13,textvariable=mrgPrefix,width=largeur1-6)
-	mrgSuffix <- tclVar(as.character(gal.params$prefix$Values[3]))
+	mrgSuffix <- tclVar(as.character(GeneralParameters$prefix$Values[3]))
 	cb.mrgSuffix<-ttkcombobox(fr.C13, values=c("ALL", "CLM","MON"), textvariable=mrgSuffix,width=4)
 
 	tkgrid(en.mrgPrefix,row=0,column=0,sticky='w')
 	tkgrid(cb.mrgSuffix,row=0,column=1,sticky='w')
 
 	infobulle(fr.C13,'Prefix for the file name of the merged data')
-	status.bar.display(fr.C13,txt.stbr1,'Prefix for the file name of the merged data')
+	status.bar.display(fr.C13,TextOutputVar,'Prefix for the file name of the merged data')
 
 	###############################
 	infobulle(fr.C2,'Start and end date for merging RFE data')
-	status.bar.display(fr.C2,txt.stbr1,'Start and end date for merging RFE data')
+	status.bar.display(fr.C2,TextOutputVar,'Start and end date for merging RFE data')
 
 	deb.txt<-tklabel(fr.C2,text='Start date',anchor='e',justify='right')
 	fin.txt<-tklabel(fr.C2,text='End date',anchor='e',justify='right')
 	yrs.txt<-tklabel(fr.C2,text='Year')
 	mon.txt<-tklabel(fr.C2,text='Month')
-	if(as.character(gal.params$period)=='dekadal') day.txtVar<-tclVar('Dek')
+	if(as.character(GeneralParameters$period)=='dekadal') day.txtVar<-tclVar('Dek')
 	else day.txtVar<-tclVar('Day')
 	day.txt<-tklabel(fr.C2,text=tclvalue(day.txtVar),textvariable=day.txtVar)
 
-	istart.yrs<-tclVar(as.character(gal.params$dates.mrg$Values[1]))
-	istart.mon<-tclVar(as.character(gal.params$dates.mrg$Values[2]))
-	istart.day<-tclVar(as.character(gal.params$dates.mrg$Values[3]))
-	iend.yrs<-tclVar(as.character(gal.params$dates.mrg$Values[4]))
-	iend.mon<-tclVar(as.character(gal.params$dates.mrg$Values[5]))
-	iend.day<-tclVar(as.character(gal.params$dates.mrg$Values[6]))
+	istart.yrs<-tclVar(as.character(GeneralParameters$dates.mrg$Values[1]))
+	istart.mon<-tclVar(as.character(GeneralParameters$dates.mrg$Values[2]))
+	istart.day<-tclVar(as.character(GeneralParameters$dates.mrg$Values[3]))
+	iend.yrs<-tclVar(as.character(GeneralParameters$dates.mrg$Values[4]))
+	iend.mon<-tclVar(as.character(GeneralParameters$dates.mrg$Values[5]))
+	iend.day<-tclVar(as.character(GeneralParameters$dates.mrg$Values[6]))
 
 	yrs1.v<-tkentry(fr.C2, width=4,textvariable=istart.yrs,justify = "right")
 	mon1.v<-tkentry(fr.C2, width=4,textvariable=istart.mon,justify = "right")
@@ -1056,22 +1056,22 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	frC30.txt<-tklabel(fr.C30,text='Blank grid')
 	tkgrid(frC30.txt)
 
-	blankGrd <- tclVar(as.character(gal.params$blankGrd))
-	tclvalue(blankGrd) <- ifelse(as.character(gal.params$blankGrd)=='1',
-	'None',ifelse(as.character(gal.params$blankGrd)=='2','Use DEM','Use ESRI shapefile'))
+	blankGrd <- tclVar(as.character(GeneralParameters$blankGrd))
+	tclvalue(blankGrd) <- ifelse(as.character(GeneralParameters$blankGrd)=='1',
+	'None',ifelse(as.character(GeneralParameters$blankGrd)=='2','Use DEM','Use ESRI shapefile'))
 
 	cb.blankGrd<-ttkcombobox(fr.C31, values=c("None", "Use DEM","Use ESRI shapefile"), textvariable=blankGrd)
 	infobulle(cb.blankGrd,'Blank grid outside the country boundaries or over ocean')
-	status.bar.display(cb.blankGrd,txt.stbr1,
+	status.bar.display(cb.blankGrd,TextOutputVar,
 	'Blank grid outside the country boundaries  or over ocean given by the DEM mask or the shapefile')
 	tkgrid(cb.blankGrd)
 
 	###########################################
-	bt.opt.set<-tkbutton.h(fr.C4, text="Options - Settings",txt.stbr1,
+	bt.opt.set<-tkbutton.h(fr.C4, text="Options - Settings",TextOutputVar,
 	'Set general options for merging','Set general options for merging')
 	tkgrid(bt.opt.set,sticky='we',padx=25,pady=5,ipadx=1,ipady=1)
 	tkconfigure(bt.opt.set,command=function(){
-		gal.params<<-getParamMering(tt,gal.params)
+		GeneralParameters<<-getParamMering(tt,GeneralParameters)
 	})
 	############################################
 	tkbind(cb.newGrd,"<Button-1>",function(){
@@ -1081,26 +1081,26 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 				tclvalue(adjPrefix)<-"rfe%s_%s_%s.nc"
 				infobulle(en.adjPrefix,
 				'Enter the format of the RFE files names in NetCDF,\nexample: rfe1983_01_01.nc')
-				status.bar.display(en.adjPrefix,txt.stbr1,
+				status.bar.display(en.adjPrefix,TextOutputVar,
 				'Enter the format of the RFE files names in NetCDF, example: rfe1983_01_01.nc')
 			}
 			if(tclvalue(file.period)=='Dekadal data'){
 				tclvalue(adjPrefix)<-"rfe%s_%s-dk%s.nc"
 				infobulle(en.adjPrefix,
 				'Enter the format of the RFE files names in NetCDF,\nexample: rfe1983_01-dk2.nc')
-				status.bar.display(en.adjPrefix,txt.stbr1,
+				status.bar.display(en.adjPrefix,TextOutputVar,
 				'Enter the format of the RFE files names in NetCDF, example: rfe1983_01-dk2.nc')
 			}
 			if(tclvalue(file.period)=='Monthly data'){
 				tclvalue(adjPrefix)<-"rfe%s_%s.nc"
 				infobulle(en.adjPrefix,
 				'Enter the format of the RFE files names in NetCDF,\nexample: rfe1983_01.nc')
-				status.bar.display(en.adjPrefix,txt.stbr1,
+				status.bar.display(en.adjPrefix,TextOutputVar,
 				'Enter the format of the RFE files names in NetCDF, example: rfe1983_01.nc')
 			}
 			tclvalue(adjORnot)<-'Directory of RFE data files'
 			infobulle(en.dir.rfe,'Enter the full path to\ndirectory containing the RFE data files')
-			status.bar.display(en.dir.rfe,txt.stbr1,'Enter the full path to directory containing the RFE data files')
+			status.bar.display(en.dir.rfe,TextOutputVar,'Enter the full path to directory containing the RFE data files')
 			tclvalue(adjORnot1)<-'Input RFE file format'
 
 		}else{
@@ -1108,10 +1108,10 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 			tclvalue(adjPrefix)<-'rr_adj'
 			tclvalue(adjORnot)<-'Directory of adjusted RFE files'
 			infobulle(en.dir.rfe,'Enter the full path to\ndirectory containing the adjusted RFE files')
-			status.bar.display(en.dir.rfe,txt.stbr1,'Enter the full path to directory containing the adjusted RFE files')
+			status.bar.display(en.dir.rfe,TextOutputVar,'Enter the full path to directory containing the adjusted RFE files')
 			tclvalue(adjORnot1)<-'Adjusted data filename prefix'
 			infobulle(en.adjPrefix,'Prefix for the file name of the adjusted RFE data')
-			status.bar.display(en.adjPrefix,txt.stbr1,'Prefix for the file name of the  adjusted RFE data')
+			status.bar.display(en.adjPrefix,TextOutputVar,'Prefix for the file name of the  adjusted RFE data')
 		}
 	})
 
@@ -1121,12 +1121,12 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 			tclvalue(day.txtVar)<-"Day"
 			tkconfigure(day1.v,state='normal')
 			tkconfigure(day2.v,state='normal')
-			#tclvalue(day.val)<-as.character(gal.params$dates.mrg$Values[6])
+			#tclvalue(day.val)<-as.character(GeneralParameters$dates.mrg$Values[6])
 			if(tclvalue(newGrd)=='1'){
 				tclvalue(adjPrefix)<-"rfe%s_%s_%s.nc"
 				infobulle(en.adjPrefix,
 				'Enter the format of the RFE files names in NetCDF,\nexample: rfe1983_01_01.nc')
-				status.bar.display(en.adjPrefix,txt.stbr1,
+				status.bar.display(en.adjPrefix,TextOutputVar,
 				'Enter the format of the RFE files names in NetCDF, example: rfe1983_01_01.nc')
 			}else{
 				tclvalue(adjPrefix)<-'rr_adj'
@@ -1137,12 +1137,12 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 			tclvalue(day.txtVar)<-"Dek"
 			tkconfigure(day1.v,state='normal')
 			tkconfigure(day2.v,state='normal')
-			#tclvalue(day.val)<-as.character(gal.params$dates.mrg$Values[6])
+			#tclvalue(day.val)<-as.character(GeneralParameters$dates.mrg$Values[6])
 			if(tclvalue(newGrd)=='1'){
 				tclvalue(adjPrefix)<-"rfe%s_%s-dk%s.nc"
 				infobulle(en.adjPrefix,
 				'Enter the format of the RFE files names in NetCDF,\nexample: rfe1983_01-dk2.nc')
-				status.bar.display(en.adjPrefix,txt.stbr1,
+				status.bar.display(en.adjPrefix,TextOutputVar,
 				'Enter the format of the RFE files names in NetCDF, example: rfe1983_01-dk2.nc')
 			}else{
 				tclvalue(adjPrefix)<-'rr_adj'
@@ -1152,12 +1152,12 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 			tclvalue(day.txtVar)<-"Day"
 			tkconfigure(day1.v,state='disabled')
 			tkconfigure(day2.v,state='disabled')
-			#tclvalue(day.val)<-as.character(gal.params$dates.mrg$Values[6])
+			#tclvalue(day.val)<-as.character(GeneralParameters$dates.mrg$Values[6])
 			if(tclvalue(newGrd)=='1'){
 				tclvalue(adjPrefix)<-"rfe%s_%s.nc"
 				infobulle(en.adjPrefix,
 				'Enter the format of the RFE files names in NetCDF,\nexample: rfe1983_01.nc')
-				status.bar.display(en.adjPrefix,txt.stbr1,
+				status.bar.display(en.adjPrefix,TextOutputVar,
 				'Enter the format of the RFE files names in NetCDF, example: rfe1983_01.nc')
 			}else{
 				tclvalue(adjPrefix)<-'rr_adj'
@@ -1201,10 +1201,10 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 		}else if(tclvalue(dir.rfe)=="" | tclvalue(dir.rfe)=="NA"){
 			tkmessageBox(message="Choose or enter the  directory containing the RFE files",icon="warning",type="ok")
 			tkwait.window(tt)
-		}else if(tclvalue(newGrd)=='1' &  as.character(gal.params$file.io$Values[3])==""){
+		}else if(tclvalue(newGrd)=='1' &  as.character(GeneralParameters$file.io$Values[3])==""){
 			tkmessageBox(message="You have to provide a RFE's sample file",icon="warning",type="ok")
 			tkwait.window(tt)
-		}else if((tclvalue(newGrd)=='1' &  as.character(gal.params$CreateGrd)=='2' & as.character(gal.params$file.io$Values[2])=="") | (tclvalue(blankGrd)=="Use DEM" & tclvalue(file.grddem)=="")){
+		}else if((tclvalue(newGrd)=='1' &  as.character(GeneralParameters$CreateGrd)=='2' & as.character(GeneralParameters$file.io$Values[2])=="") | (tclvalue(blankGrd)=="Use DEM" & tclvalue(file.grddem)=="")){
 			tkmessageBox(message="You have to provide DEM data in NetCDF format",icon="warning",type="ok")
 			tkwait.window(tt)
 		}else if(tclvalue(blankGrd)=="Use ESRI shapefile" & tclvalue(file.blkshp)==""){
@@ -1214,14 +1214,14 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 			tkmessageBox(message="Choose or enter the path to directory to save results",icon="warning",type="ok")
 			tkwait.window(tt)
 		}else{
-			gal.params$period<<-ifelse(tclvalue(file.period)=='Daily data','daily', ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
-			gal.params$prefix$Values<<-c(tclvalue(adjPrefix),tclvalue(mrgPrefix),tclvalue(mrgSuffix))
-			valfl<-as.character(gal.params$file.io$Values)
+			GeneralParameters$period<<-ifelse(tclvalue(file.period)=='Daily data','daily', ifelse(tclvalue(file.period)=='Dekadal data','dekadal','monthly'))
+			GeneralParameters$prefix$Values<<-c(tclvalue(adjPrefix),tclvalue(mrgPrefix),tclvalue(mrgSuffix))
+			valfl<-as.character(GeneralParameters$file.io$Values)
 			valfl[c(1,4,5,6,7)]<-c(tclvalue(file.stnfl),tclvalue(dir.rfe),tclvalue(file.save1), tclvalue(file.blkshp),tclvalue(file.grddem))
-			gal.params$file.io$Values<<-valfl
-			gal.params$dates.mrg$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon), tclvalue(istart.day),tclvalue(iend.yrs),tclvalue(iend.mon),tclvalue(iend.day))
-			gal.params$NewGrd<<-tclvalue(newGrd)
-			gal.params$blankGrd<<-ifelse(tclvalue(blankGrd)=='None','1', ifelse(tclvalue(blankGrd)=='Use DEM','2','3'))
+			GeneralParameters$file.io$Values<<-valfl
+			GeneralParameters$dates.mrg$Values<<-c(tclvalue(istart.yrs),tclvalue(istart.mon), tclvalue(istart.day),tclvalue(iend.yrs),tclvalue(iend.mon),tclvalue(iend.day))
+			GeneralParameters$NewGrd<<-tclvalue(newGrd)
+			GeneralParameters$blankGrd<<-ifelse(tclvalue(blankGrd)=='None','1', ifelse(tclvalue(blankGrd)=='Use DEM','2','3'))
 
 			tkgrab.release(tt)
 			tkdestroy(tt)
@@ -1252,12 +1252,12 @@ mergeGetInfoRain<-function(parent.win,gal.params){
 	tkfocus(tt)
 	tkbind(tt, "<Destroy>", function() {tkgrab.release(tt); tkfocus(parent.win)})
 	tkwait.window(tt)
-	return(gal.params)
+	return(GeneralParameters)
 }
 
 ##############################################################################################
 
-getParamMering<-function(tt,gal.params){
+getParamMering<-function(tt,GeneralParameters){
 	tt1<-tktoplevel()
 	tkgrab.set(tt1)
 	tkfocus(tt1)
@@ -1274,41 +1274,41 @@ getParamMering<-function(tt,gal.params){
 	tkgrid(fr.D,row=1,column=0,sticky='ew',padx=1,pady=1)
 
 	###########
-	nmin.l<-tklabel.h(fr.C,'NminStn',txt.stbr1,
+	nmin.l<-tklabel.h(fr.C,'NminStn',TextOutputVar,
 	'Minimum number of gauges with data to be used to do the merging',
 	'Minimum number of gauges with data to be used to do the merging')
-	min.non.zero.l<-tklabel.h(fr.C,'NminNo0',txt.stbr1,
+	min.non.zero.l<-tklabel.h(fr.C,'NminNo0',TextOutputVar,
 	'Minimum number of non-zero gauge values to perform the merging',
 	'Minimum number of non-zero gauge values to perform the merging')
-	max.rnr.dst.l<-tklabel.h(fr.C,'MaxRnRDist',txt.stbr1,
+	max.rnr.dst.l<-tklabel.h(fr.C,'MaxRnRDist',TextOutputVar,
 	'Maximum distance (in decimal degrees) for interpolating Rain-noRain mask',
 	'Maximum distance (in decimal degrees) for interpolating Rain-noRain mask')
-	max.dst.l<-tklabel.h(fr.C,'MaxDist',txt.stbr1,
+	max.dst.l<-tklabel.h(fr.C,'MaxDist',TextOutputVar,
 	'Maximum distance (in  decimal degree) to be used to interpolate data',
 	'Maximum distance (in  decimal degree) to be used to interpolate data')
-	min.nbrs.l<-tklabel.h(fr.C,'MinStn',txt.stbr1,
+	min.nbrs.l<-tklabel.h(fr.C,'MinStn',TextOutputVar,
 	'Minimum number of neighbours to be used to interpolate data',
 	'Minimum number of neighbours to be used to interpolate data')
-	max.nbrs.l<-tklabel.h(fr.C,'MaxStn',txt.stbr1,
+	max.nbrs.l<-tklabel.h(fr.C,'MaxStn',TextOutputVar,
 	'Maximum number of neighbours to be used to interpolate data',
 	'Maximum number of neighbours to be used to interpolate data')
 
-	nmin.v<-tkentry.h(fr.C,txt.stbr1,
+	nmin.v<-tkentry.h(fr.C,TextOutputVar,
 	'Minimum number of gauges with data to be used to do the merging',
 	'Minimum number of gauges with data to be used to do the merging')
-	min.non.zero.v<-tkentry.h(fr.C,txt.stbr1,
+	min.non.zero.v<-tkentry.h(fr.C,TextOutputVar,
 	'Minimum number of non-zero gauge values to perform the merging',
 	'Minimum number of non-zero gauge values to perform the merging')
-	max.rnr.dst.v<-tkentry.h(fr.C,txt.stbr1,
+	max.rnr.dst.v<-tkentry.h(fr.C,TextOutputVar,
 	'Maximum distance (in decimal degrees) for interpolating Rain-no-Rain mask',
 	'Maximum distance (in decimal degrees) for interpolating Rain-no-Rain mask')
-	max.dst.v<-tkentry.h(fr.C,txt.stbr1,
+	max.dst.v<-tkentry.h(fr.C,TextOutputVar,
 	'Maximum distance (in  decimal degree) to be used to interpolate data',
 	'Maximum distance (in  decimal degree) to be used to interpolate data')
-	min.nbrs.v<-tkentry.h(fr.C,txt.stbr1,
+	min.nbrs.v<-tkentry.h(fr.C,TextOutputVar,
 	'Minimum number of neighbours to be used to interpolate data',
 	'Minimum number of neighbours to be used to interpolate data')
-	max.nbrs.v<-tkentry.h(fr.C,txt.stbr1,
+	max.nbrs.v<-tkentry.h(fr.C,TextOutputVar,
 	'Maximum number of neighbours to be used to interpolate data',
 	'Maximum number of neighbours to be used to interpolate data')
 
@@ -1332,12 +1332,12 @@ getParamMering<-function(tt,gal.params){
 	tkconfigure(min.nbrs.l,anchor='e',justify='right')
 	tkconfigure(max.nbrs.l,anchor='e',justify='right')
 
-	nmin <- tclVar(as.character(gal.params$params.int$Values[1]))
-	min.non.zero <- tclVar(as.character(gal.params$params.int$Values[2]))
-	max.rnr.dst <- tclVar(as.character(gal.params$params.int$Values[3]))
-	max.dst <- tclVar(as.character(gal.params$params.int$Values[4]))
-	min.nbrs <- tclVar(as.character(gal.params$params.int$Values[5]))
-	max.nbrs <- tclVar(as.character(gal.params$params.int$Values[6]))
+	nmin <- tclVar(as.character(GeneralParameters$params.int$Values[1]))
+	min.non.zero <- tclVar(as.character(GeneralParameters$params.int$Values[2]))
+	max.rnr.dst <- tclVar(as.character(GeneralParameters$params.int$Values[3]))
+	max.dst <- tclVar(as.character(GeneralParameters$params.int$Values[4]))
+	min.nbrs <- tclVar(as.character(GeneralParameters$params.int$Values[5]))
+	max.nbrs <- tclVar(as.character(GeneralParameters$params.int$Values[6]))
 
 	tkconfigure(nmin.v,width=4,textvariable=nmin,justify='right')
 	tkconfigure(min.non.zero.v,width=4,textvariable=min.non.zero,justify='right')
@@ -1347,19 +1347,19 @@ getParamMering<-function(tt,gal.params){
 	tkconfigure(max.nbrs.v,width=4,textvariable=max.nbrs,justify='right')
 
 	####################################
-	interpMethod <- tclVar(as.character(gal.params$params.mrg$Values[1]))
+	interpMethod <- tclVar(as.character(GeneralParameters$params.mrg$Values[1]))
 	txt.interpMethod<-tklabel(fr.D,text='Interpolation method')
 	cb.interpMethod<-ttkcombobox(fr.D, values=c('IDW', 'Kriging'), textvariable=interpMethod)
 	infobulle(cb.interpMethod,
 	'Interpolation techniques: Kriging or Inverse Distance Weighted')
-	status.bar.display(cb.interpMethod,txt.stbr1,
+	status.bar.display(cb.interpMethod,TextOutputVar,
 	'Interpolation techniques: Kriging or Inverse Distance Weighted')
 
-	RainNoRain <- tclVar(as.character(gal.params$params.mrg$Values[2]))
+	RainNoRain <- tclVar(as.character(GeneralParameters$params.mrg$Values[2]))
 	txt.RainNoRain<-tklabel(fr.D,text='Rain-no-Rain mask')
 	cb.RainNoRain<-ttkcombobox(fr.D, values=c('None', 'Gauge','Satellite','GaugeSatellite'), textvariable=RainNoRain)
 	infobulle(cb.RainNoRain,'Mask applied to handle no rain')
-	status.bar.display(cb.RainNoRain,txt.stbr1,'Mask applied to handle no rain')
+	status.bar.display(cb.RainNoRain,TextOutputVar,'Mask applied to handle no rain')
 
 	tkgrid(txt.interpMethod,row=0,column=0,sticky='ew',padx=1,pady=1)
 	tkgrid(cb.interpMethod,row=1,column=0,sticky='ew',padx=1,pady=1)
@@ -1373,8 +1373,8 @@ getParamMering<-function(tt,gal.params){
 	tkgrid(bt.prm.CA,row=0,column=1,sticky='e',padx=5,pady=1,ipadx=1,ipady=1)
 
 	tkconfigure(bt.prm.OK,command=function(){
-		gal.params$params.mrg$Values<<-c(tclvalue(interpMethod),tclvalue(RainNoRain))
-		gal.params$params.int$Values<<-c(tclvalue(nmin),tclvalue(min.non.zero), tclvalue(max.rnr.dst),tclvalue(max.dst),tclvalue(min.nbrs),tclvalue(max.nbrs))
+		GeneralParameters$params.mrg$Values<<-c(tclvalue(interpMethod),tclvalue(RainNoRain))
+		GeneralParameters$params.int$Values<<-c(tclvalue(nmin),tclvalue(min.non.zero), tclvalue(max.rnr.dst),tclvalue(max.dst),tclvalue(min.nbrs),tclvalue(max.nbrs))
 		tkgrab.release(tt1)
 		tkdestroy(tt1)
 		tkfocus(tt)
@@ -1403,13 +1403,13 @@ getParamMering<-function(tt,gal.params){
 	tkfocus(tt1)
 	tkbind(tt1, "<Destroy>", function() {tkgrab.release(tt1); tkfocus(tt)})
 	tkwait.window(tt1)
-	return(gal.params)
+	return(GeneralParameters)
 }
 
 ##############################################################################################
 
-createNewGrid2Merge<-function(parent.win,gal.params){
-	file.list<-openFile_ttkcomboList()
+createNewGrid2Merge<-function(parent.win,GeneralParameters){
+	listOpenFiles<-openFile_ttkcomboList()
 
 	tt<-tktoplevel()
 	tkgrab.set(tt)
@@ -1437,36 +1437,36 @@ createNewGrid2Merge<-function(parent.win,gal.params){
 	tkgrid(fr.A01,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 
 	file.grdrfe <- tclVar()
-	tclvalue(file.grdrfe) <- as.character(gal.params$file.io$Values[3])
+	tclvalue(file.grdrfe) <- as.character(GeneralParameters$file.io$Values[3])
 
 	frA00.txt<-tklabel(fr.A00,text="RFE's sample file")
 	tkgrid(frA00.txt)
 
 	###from RFE
-	cb.grdrfe<-ttkcombobox(fr.A01, values=unlist(file.list), textvariable=file.grdrfe)
+	cb.grdrfe<-ttkcombobox(fr.A01, values=unlist(listOpenFiles), textvariable=file.grdrfe)
 	infobulle(cb.grdrfe,'Choose the file in the list')
-	status.bar.display(cb.grdrfe,txt.stbr1,'File containing a sample of RFE data in netcdf')
-	bt.grdrfe<-tkbutton.h(fr.A01, text="...",txt.stbr1,'Browse file if not listed','Browse file if not listed')
+	status.bar.display(cb.grdrfe,TextOutputVar,'File containing a sample of RFE data in netcdf')
+	bt.grdrfe<-tkbutton.h(fr.A01, text="...",TextOutputVar,'Browse file if not listed','Browse file if not listed')
 	tkgrid(cb.grdrfe,bt.grdrfe)
 	tkgrid.configure(cb.grdrfe,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.grdrfe,row=0,column=1,sticky='e')
 	tkconfigure(bt.grdrfe,command=function(){
-		fileopen<-tclvalue(tkgetOpenFile(initialdir=as.character(gal.params$file.io$Values[4]),
+		fileopen<-tclvalue(tkgetOpenFile(initialdir=as.character(GeneralParameters$file.io$Values[4]),
 		initialfile = "",filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
 		if(fileopen=="" | is.na(fileopen)) return(NULL)
 		nc.opfiles1<-preview.data.nc(tt,fileopen,"")
 		nc.opfiles<-list(basename(fileopen),nc.opfiles1,fileopen)
 		if(!is.null(nc.opfiles1)){
 			tkinsert(all.opfiles,"end",basename(fileopen))
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'netcdf'
-			file.opfiles[[nopf+1]]<<-nc.opfiles
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'netcdf'
+			AllOpenFilesData[[nopf+1]]<<-nc.opfiles
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.grdrfe)<-file.opfiles[[nopf+1]][[1]]
-			#tkconfigure(cb.stnfl,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(cb.grdrfe,values=unlist(file.list), textvariable=file.grdrfe)
-			tkconfigure(cb.grddem,values=unlist(file.list), textvariable=file.grddem)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.grdrfe)<-AllOpenFilesData[[nopf+1]][[1]]
+			#tkconfigure(cb.stnfl,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(cb.grdrfe,values=unlist(listOpenFiles), textvariable=file.grdrfe)
+			tkconfigure(cb.grddem,values=unlist(listOpenFiles), textvariable=file.grddem)
 		}else{
 			return(NULL)
 		}
@@ -1479,10 +1479,10 @@ createNewGrid2Merge<-function(parent.win,gal.params){
 	tkgrid(fr.A11,row=1,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=0)
 
 	file.grddem <- tclVar()
-	tclvalue(file.grddem) <- as.character(gal.params$file.io$Values[2])
+	tclvalue(file.grddem) <- as.character(GeneralParameters$file.io$Values[2])
 
 	###################
-	if(as.character(gal.params$CreateGrd)=='2') statedem<-'normal'
+	if(as.character(GeneralParameters$CreateGrd)=='2') statedem<-'normal'
 	else statedem<-'disabled'
 
 	#####
@@ -1490,25 +1490,25 @@ createNewGrid2Merge<-function(parent.win,gal.params){
 	tkgrid(frA10.txt)
 
 	###from DEM
-	cb.grddem<-ttkcombobox(fr.A11, values=unlist(file.list), textvariable=file.grddem,state=statedem)
+	cb.grddem<-ttkcombobox(fr.A11, values=unlist(listOpenFiles), textvariable=file.grddem,state=statedem)
 	infobulle(cb.grddem,'Choose the file in the list')
-	status.bar.display(cb.grddem,txt.stbr1,'File containing the elevation data in netcdf')
-	bt.grddem<-tkbutton.h(fr.A11, text="...",txt.stbr1,'Browse file if not listed','Browse file if not listed')
+	status.bar.display(cb.grddem,TextOutputVar,'File containing the elevation data in netcdf')
+	bt.grddem<-tkbutton.h(fr.A11, text="...",TextOutputVar,'Browse file if not listed','Browse file if not listed')
 	tkgrid(cb.grddem,bt.grddem)
 	tkgrid.configure(cb.grddem,row=0,column=0,sticky='w')
 	tkgrid.configure(bt.grddem,row=0,column=1,sticky='e')
 	tkconfigure(bt.grddem,state=statedem,command=function(){
 		nc.opfiles<-getOpenNetcdf(tt,all.opfiles)
 		if(!is.null(nc.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'netcdf'
-			file.opfiles[[nopf+1]]<<-nc.opfiles
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'netcdf'
+			AllOpenFilesData[[nopf+1]]<<-nc.opfiles
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.grddem)<-file.opfiles[[nopf+1]][[1]]
-			#tkconfigure(cb.stnfl,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(cb.grddem,values=unlist(file.list), textvariable=file.grddem)
-			tkconfigure(cb.grdrfe,values=unlist(file.list), textvariable=file.grdrfe)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.grddem)<-AllOpenFilesData[[nopf+1]][[1]]
+			#tkconfigure(cb.stnfl,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(cb.grddem,values=unlist(listOpenFiles), textvariable=file.grddem)
+			tkconfigure(cb.grdrfe,values=unlist(listOpenFiles), textvariable=file.grdrfe)
 		}else{
 			return(NULL)
 		}
@@ -1519,7 +1519,7 @@ createNewGrid2Merge<-function(parent.win,gal.params){
 	tkgrid(fr.C0,row=0,column=0,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
 
 	infobulle(fr.C0,'Create the grid to interpolate the merged data')
-	status.bar.display(fr.C0,txt.stbr1,'Create the grid to interpolate the merged data')
+	status.bar.display(fr.C0,TextOutputVar,'Create the grid to interpolate the merged data')
 
 	fr.C00<-tkframe(fr.C0)
 	fr.C01<-tkframe(fr.C0)
@@ -1533,7 +1533,7 @@ createNewGrid2Merge<-function(parent.win,gal.params){
 	frC00.txt<-tklabel(fr.C00,text='Create grid for interpolation')
 	tkgrid(frC00.txt)
 
-	varCreateGrd <- tclVar(as.character(gal.params$CreateGrd))
+	varCreateGrd <- tclVar(as.character(GeneralParameters$CreateGrd))
 	grdRFE.rbt <- tkradiobutton(fr.C01,text="From RFE",anchor='w',justify='left')
 	tkgrid(grdRFE.rbt)
 	grdDEM.rbt <- tkradiobutton(fr.C02,text="From DEM",anchor='w',justify='left')
@@ -1544,12 +1544,12 @@ createNewGrid2Merge<-function(parent.win,gal.params){
 	tkconfigure(grdDEM.rbt,variable=varCreateGrd,value="2")
 	tkconfigure(grdNEW.rbt,variable=varCreateGrd,value="3")
 
-	if(as.character(gal.params$CreateGrd)=='3') stategrd<-'normal'
+	if(as.character(GeneralParameters$CreateGrd)=='3') stategrd<-'normal'
 	else stategrd<-'disabled'
 
-	bt.getNewgrid<-tkbutton.h(fr.C03, text="Create",txt.stbr1,'Set the new grid','Set the new grid')
+	bt.getNewgrid<-tkbutton.h(fr.C03, text="Create",TextOutputVar,'Set the new grid','Set the new grid')
 	tkconfigure(bt.getNewgrid,state=stategrd,command=function(){
-		gal.params<<-getParamNewGrid(tt,gal.params)
+		GeneralParameters<<-getParamNewGrid(tt,GeneralParameters)
 	})
 	tkgrid(grdNEW.rbt,row=0,column=0)
 	tkgrid(bt.getNewgrid,row=0,column=1,sticky='we',padx=1,pady=1,ipadx=1,ipady=1)
@@ -1578,10 +1578,10 @@ createNewGrid2Merge<-function(parent.win,gal.params){
 	tkgrid(bt.prm.CA,row=0,column=1,sticky='e',padx=5,pady=1,ipadx=1,ipady=1)
 
 	tkconfigure(bt.prm.OK,command=function(){
-			valfl<-as.character(gal.params$file.io$Values)
+			valfl<-as.character(GeneralParameters$file.io$Values)
 			valfl[c(2,3)]<-c(tclvalue(file.grddem),tclvalue(file.grdrfe))
-			gal.params$file.io$Values<<-valfl
-			gal.params$CreateGrd<<-tclvalue(varCreateGrd)
+			GeneralParameters$file.io$Values<<-valfl
+			GeneralParameters$CreateGrd<<-tclvalue(varCreateGrd)
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
@@ -1610,12 +1610,12 @@ createNewGrid2Merge<-function(parent.win,gal.params){
 	tkfocus(tt)
 	tkbind(tt, "<Destroy>", function() {tkgrab.release(tt); tkfocus(parent.win)})
 	tkwait.window(tt)
-	return(gal.params)
+	return(GeneralParameters)
 }
 
 ##############################################################################################
 
-getParamNewGrid<-function(tt,gal.params){
+getParamNewGrid<-function(tt,GeneralParameters){
 	tt1<-tktoplevel()
 	tkgrab.set(tt1)
 	tkfocus(tt1)
@@ -1631,19 +1631,19 @@ getParamNewGrid<-function(tt,gal.params){
 	grd_lb2<-tklabel(fr_grd, text="Max")
 	grd_lb3<-tklabel(fr_grd, text="Res")
 
-	grd_vlon1<-tkentry.h(fr_grd,txt.stbr1,'Minimum longitude in degree','Minimum longitude in degree')
-	grd_vlon2<-tkentry.h(fr_grd,txt.stbr1,'Maximum longitude in degree','Maximum longitude in degree')
-	grd_vlon3<-tkentry.h(fr_grd,txt.stbr1,'Resolution in degree','Resolution in degree')
-	grd_vlat1<-tkentry.h(fr_grd,txt.stbr1,'Minimum latitude in degree','Minimum latitude in degree')
-	grd_vlat2<-tkentry.h(fr_grd,txt.stbr1,'Maximum latitude in degree','Maximum latitude in degree')
-	grd_vlat3<-tkentry.h(fr_grd,txt.stbr1,'Resolution in degree','Resolution in degree')
+	grd_vlon1<-tkentry.h(fr_grd,TextOutputVar,'Minimum longitude in degree','Minimum longitude in degree')
+	grd_vlon2<-tkentry.h(fr_grd,TextOutputVar,'Maximum longitude in degree','Maximum longitude in degree')
+	grd_vlon3<-tkentry.h(fr_grd,TextOutputVar,'Resolution in degree','Resolution in degree')
+	grd_vlat1<-tkentry.h(fr_grd,TextOutputVar,'Minimum latitude in degree','Minimum latitude in degree')
+	grd_vlat2<-tkentry.h(fr_grd,TextOutputVar,'Maximum latitude in degree','Maximum latitude in degree')
+	grd_vlat3<-tkentry.h(fr_grd,TextOutputVar,'Resolution in degree','Resolution in degree')
 
-	minLon<-tclVar(as.character(gal.params$new.grid$Values[1]))
-	maxLon<-tclVar(as.character(gal.params$new.grid$Values[2]))
-	resLon<-tclVar(as.character(gal.params$new.grid$Values[3]))
-	minLat<-tclVar(as.character(gal.params$new.grid$Values[4]))
-	maxLat<-tclVar(as.character(gal.params$new.grid$Values[5]))
-	resLat<-tclVar(as.character(gal.params$new.grid$Values[6]))
+	minLon<-tclVar(as.character(GeneralParameters$new.grid$Values[1]))
+	maxLon<-tclVar(as.character(GeneralParameters$new.grid$Values[2]))
+	resLon<-tclVar(as.character(GeneralParameters$new.grid$Values[3]))
+	minLat<-tclVar(as.character(GeneralParameters$new.grid$Values[4]))
+	maxLat<-tclVar(as.character(GeneralParameters$new.grid$Values[5]))
+	resLat<-tclVar(as.character(GeneralParameters$new.grid$Values[6]))
 
 	tkconfigure(grd_vlon1, width=5,justify = "right",textvariable=minLon)
 	tkconfigure(grd_vlon2, width=5,justify = "right",textvariable=maxLon)
@@ -1672,7 +1672,7 @@ getParamNewGrid<-function(tt,gal.params){
 	tkgrid(bt.prm.CA,row=0,column=1,sticky='e',padx=5,pady=1,ipadx=1,ipady=1)
 
 	tkconfigure(bt.prm.OK,command=function(){
-		gal.params$new.grid$Values<<-c(as.character(tclvalue(minLon)),as.character(tclvalue(maxLon)),as.character(tclvalue(resLon)),
+		GeneralParameters$new.grid$Values<<-c(as.character(tclvalue(minLon)),as.character(tclvalue(maxLon)),as.character(tclvalue(resLon)),
 		as.character(tclvalue(minLat)),as.character(tclvalue(maxLat)),as.character(tclvalue(resLat)))
 		tkgrab.release(tt1)
 		tkdestroy(tt1)
@@ -1702,6 +1702,6 @@ getParamNewGrid<-function(tt,gal.params){
 	tkfocus(tt1)
 	tkbind(tt1, "<Destroy>", function() {tkgrab.release(tt1); tkfocus(tt)})
 	tkwait.window(tt1)
-	return(gal.params)
+	return(GeneralParameters)
 }
 

@@ -1,6 +1,6 @@
 
 InterpolationPanelCmd<-function(){
-	file.list<-openFile_ttkcomboList()
+	listOpenFiles<-openFile_ttkcomboList()
 
 	##tkcombo& tkentry width
 	#largeur<-27
@@ -53,24 +53,24 @@ InterpolationPanelCmd<-function(){
 
 	#######################
 	file.stnfl <- tclVar()
-	combStnfl.tab1<-ttkcombobox(frameStn,values=unlist(file.list),textvariable=file.stnfl,width=largeur)
+	combStnfl.tab1<-ttkcombobox(frameStn,values=unlist(listOpenFiles),textvariable=file.stnfl,width=largeur)
 	btStnfl.tab1<-tkbutton(frameStn, text="...")
 	tkconfigure(btStnfl.tab1,command=function(){
 		dat.opfiles<-getOpenFiles(main.win,all.opfiles)
 		if(!is.null(dat.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'ascii'
-			file.opfiles[[nopf+1]]<<-dat.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.stnfl)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combStnfl.tab1,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(combgrdCDF.tab1,values=unlist(file.list), textvariable=file.grdCDF)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'ascii'
+			AllOpenFilesData[[nopf+1]]<<-dat.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.stnfl)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(combStnfl.tab1,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(combgrdCDF.tab1,values=unlist(listOpenFiles), textvariable=file.grdCDF)
 		}else return(NULL)
 	})
 	infobulle(combStnfl.tab1,'Choose the station data in the list')
-	status.bar.display(combStnfl.tab1,txt.stbr1,'Choose the file containing the station data in CDT format')
+	status.bar.display(combStnfl.tab1,TextOutputVar,'Choose the file containing the station data in CDT format')
 	infobulle(btStnfl.tab1,'Browse file if not listed')
-	status.bar.display(btStnfl.tab1,txt.stbr1,'Browse file if not listed')
+	status.bar.display(btStnfl.tab1,TextOutputVar,'Browse file if not listed')
 
 	#######################
 	labDate.tab1<-tklabel(frameStn,text="Date",anchor='e',justify='right')
@@ -118,25 +118,25 @@ InterpolationPanelCmd<-function(){
 
 	###from CDF
 	file.grdCDF <- tclVar()
-	combgrdCDF.tab1<-ttkcombobox(frameGrid, values=unlist(file.list), textvariable=file.grdCDF,state='disabled',width=largeur)
+	combgrdCDF.tab1<-ttkcombobox(frameGrid, values=unlist(listOpenFiles), textvariable=file.grdCDF,state='disabled',width=largeur)
 	infobulle(combgrdCDF.tab1,'Choose the file in the list')
-	status.bar.display(combgrdCDF.tab1,txt.stbr1,'File containing a gridded data in netcdf')
+	status.bar.display(combgrdCDF.tab1,TextOutputVar,'File containing a gridded data in netcdf')
 	btgrdCDF.tab1<-tkbutton(frameGrid, text="...")
 	infobulle(btgrdCDF.tab1,'Browse file if not listed')
-	status.bar.display(btgrdCDF.tab1,txt.stbr1,'Browse file if not listed')
+	status.bar.display(btgrdCDF.tab1,TextOutputVar,'Browse file if not listed')
 	tkconfigure(btgrdCDF.tab1,state='disabled',command=function(){
 		nc.opfiles<-getOpenNetcdf(main.win,all.opfiles)
 		if(!is.null(nc.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'netcdf'
-			file.opfiles[[nopf+1]]<<-nc.opfiles
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'netcdf'
+			AllOpenFilesData[[nopf+1]]<<-nc.opfiles
 
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.grdCDF)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combStnfl.tab1,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(combgrdCDF.tab1,values=unlist(file.list), textvariable=file.grdCDF)
-			tkconfigure(combDem.tab2,values=unlist(file.list), textvariable=file.plotDem)
-			tkconfigure(combShp.tab1,values=unlist(file.list), textvariable=file.plotShp)
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.grdCDF)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(combStnfl.tab1,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(combgrdCDF.tab1,values=unlist(listOpenFiles), textvariable=file.grdCDF)
+			tkconfigure(combDem.tab2,values=unlist(listOpenFiles), textvariable=file.plotDem)
+			tkconfigure(combShp.tab3,values=unlist(listOpenFiles), textvariable=file.plotShp)
 		}else return(NULL)
 	})
 
@@ -148,7 +148,7 @@ InterpolationPanelCmd<-function(){
 
 	btNewgrid.tab1<-tkbutton(frameGrid, text="Create",state='normal')
 	infobulle(btNewgrid.tab1,'Set the new grid')
-	status.bar.display(btNewgrid.tab1,txt.stbr1,'Set the new grid')
+	status.bar.display(btNewgrid.tab1,TextOutputVar,'Set the new grid')
 
 	tkconfigure(btNewgrid.tab1,command=function(){
 		newgrdPars<<-getParamNewGrid(main.win,newgrdPars)
@@ -235,17 +235,17 @@ InterpolationPanelCmd<-function(){
 	omax.tab2<-tkentry(frameOpt1, width=6,textvariable=omax_vars,justify = "left")
 
 	infobulle(maxdist.tab2,'Radius of search (in km)')
-	status.bar.display(maxdist.tab2,txt.stbr1,'Only data within a distance of ‘maxdist’ from the prediction location are used')
+	status.bar.display(maxdist.tab2,TextOutputVar,'Only data within a distance of ‘maxdist’ from the prediction location are used')
 	infobulle(nmin.tab2,'Minimum number of data to use')
-	status.bar.display(nmin.tab2,txt.stbr1,'Minimum number of data to use')
+	status.bar.display(nmin.tab2,TextOutputVar,'Minimum number of data to use')
 	infobulle(nmax.tab2,'Maximum number of data to use')
-	status.bar.display(nmax.tab2,txt.stbr1,'Maximum number of data to use')
+	status.bar.display(nmax.tab2,TextOutputVar,'Maximum number of data to use')
 	infobulle(idp.tab2,'Inverse distance weighting power')
-	status.bar.display(idp.tab2,txt.stbr1,'Inverse distance weighting power')
+	status.bar.display(idp.tab2,TextOutputVar,'Inverse distance weighting power')
 	infobulle(elvdiff.tab2,'Maximum altitude difference of neighbor stations to use (m)')
-	status.bar.display(elvdiff.tab2,txt.stbr1,'Maximum altitude difference of neighbor stations to use (m)')
+	status.bar.display(elvdiff.tab2,TextOutputVar,'Maximum altitude difference of neighbor stations to use (m)')
 	infobulle(omax.tab2,'Maximum number of data to use from each quadrant')
-	status.bar.display(omax.tab2,txt.stbr1,'Maximum number of data to use from each quadrant, (0 means option not used)')
+	status.bar.display(omax.tab2,TextOutputVar,'Maximum number of data to use from each quadrant, (0 means option not used)')
 
 	#############################
 	tkgrid(maxdistL.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
@@ -280,14 +280,14 @@ InterpolationPanelCmd<-function(){
 	})
 
 	infobulle(fitvgm.tab2,'Fit a variogram by choosing a model')
-	status.bar.display(fitvgm.tab2,txt.stbr1,'Fit a variogram by choosing a model')
+	status.bar.display(fitvgm.tab2,TextOutputVar,'Fit a variogram by choosing a model')
 	infobulle(combfitVgm.tab2,'Fit a variogram by choosing a model')
-	status.bar.display(combfitVgm.tab2,txt.stbr1,'Fit a variogram by choosing a model')
+	status.bar.display(combfitVgm.tab2,TextOutputVar,'Fit a variogram by choosing a model')
 
 	infobulle(fitAvgm.tab2,'Automatically fit a variogram')
-	status.bar.display(fitAvgm.tab2,txt.stbr1,'Automatically fit a variogram')
+	status.bar.display(fitAvgm.tab2,TextOutputVar,'Automatically fit a variogram')
 	infobulle(btfitAVgm.tab2,'Edit the models to use')
-	status.bar.display(btfitAVgm.tab2,txt.stbr1,'Edit the models to use, see list provided by gstat packages')
+	status.bar.display(btfitAVgm.tab2,TextOutputVar,'Edit the models to use, see list provided by gstat packages')
 
 	##############
 	tkgrid(fitvgm.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=2,ipadx=1,ipady=1)
@@ -303,20 +303,20 @@ InterpolationPanelCmd<-function(){
 
 
 	file.plotDem<-tclVar()
-	combDem.tab2<-ttkcombobox(frameOpt3, values=unlist(file.list), textvariable=file.plotDem,width=largeur,state='disabled')
+	combDem.tab2<-ttkcombobox(frameOpt3, values=unlist(listOpenFiles), textvariable=file.plotDem,width=largeur,state='disabled')
 	btDem.tab2<-tkbutton(frameOpt3,state='disabled', text="...")
 	tkconfigure(btDem.tab2,command=function(){
 		nc.opfiles<-getOpenNetcdf(main.win,all.opfiles)
 		if(!is.null(nc.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'netcdf'
-			file.opfiles[[nopf+1]]<<-nc.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.plotDem)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combStnfl.tab1,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(combgrdCDF.tab1,values=unlist(file.list), textvariable=file.grdCDF)
-			tkconfigure(combDem.tab2,values=unlist(file.list), textvariable=file.plotDem)
-			tkconfigure(combShp.tab1,values=unlist(file.list), textvariable=file.plotShp)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'netcdf'
+			AllOpenFilesData[[nopf+1]]<<-nc.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.plotDem)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(combStnfl.tab1,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(combgrdCDF.tab1,values=unlist(listOpenFiles), textvariable=file.grdCDF)
+			tkconfigure(combDem.tab2,values=unlist(listOpenFiles), textvariable=file.plotDem)
+			tkconfigure(combShp.tab3,values=unlist(listOpenFiles), textvariable=file.plotShp)
 
 		}
 	})
@@ -444,22 +444,28 @@ InterpolationPanelCmd<-function(){
 	frameShp<-ttklabelframe(subfr3,text="Shapefiles for boundary",relief='groove')
 
 	file.plotShp <- tclVar()
-	combShp.tab3<-ttkcombobox(frameShp, values=unlist(file.list), textvariable=file.plotShp,width=largeur - 1) 
+	combShp.tab3<-ttkcombobox(frameShp, values=unlist(listOpenFiles), textvariable=file.plotShp,width=largeur - 1) 
 	btShp.tab3<-tkbutton(frameShp, text="...")
 	tkconfigure(btShp.tab3,command=function(){
 		shp.opfiles<-getOpenShp(main.win,all.opfiles)
 		if(!is.null(shp.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'shp'
-			file.opfiles[[nopf+1]]<<-shp.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.plotShp)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combStnfl.tab1,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(combgrdCDF.tab1,values=unlist(file.list), textvariable=file.grdCDF)
-			tkconfigure(combDem.tab2,values=unlist(file.list), textvariable=file.plotDem)
-			tkconfigure(combShp.tab3,values=unlist(file.list), textvariable=file.plotShp)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'shp'
+			AllOpenFilesData[[nopf+1]]<<-shp.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.plotShp)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(combStnfl.tab1,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(combgrdCDF.tab1,values=unlist(listOpenFiles), textvariable=file.grdCDF)
+			tkconfigure(combDem.tab2,values=unlist(listOpenFiles), textvariable=file.plotDem)
+			tkconfigure(combShp.tab3,values=unlist(listOpenFiles), textvariable=file.plotShp)
 		}
 	})
+
+	#############################
+	blankVal <- tclVar('0')
+	cbBlank.tab3 <- tkcheckbutton(subfr3,variable=blankVal,text='Blank grid',anchor='w',justify='left')
+	infobulle(cbBlank.tab3,'Blank grid outside the country boundaries or over ocean')
+	status.bar.display(cbBlank.tab3,TextOutputVar,'Blank grid outside the country boundaries  or over ocean given by the shapefile')
 
 	#############################
 	tkgrid(combShp.tab3,row=0,column=0,sticky='we',rowspan=1,columnspan=4,padx=1,pady=1,ipadx=1,ipady=1)
@@ -490,6 +496,7 @@ InterpolationPanelCmd<-function(){
 	tkgrid(frameSaveInt,row=10,column=0,sticky='we',rowspan=1,columnspan=6,pady=1)
 
 	tkgrid(frameShp,row=11,column=0,sticky='we',rowspan=1,columnspan=6,pady=1)
+	tkgrid(cbBlank.tab3,row=12,column=0,sticky='we',rowspan=1,columnspan=6,ipady=2)
 
 	#######################################################################################################
 
@@ -514,12 +521,12 @@ InterpolationPanelCmd<-function(){
 						assign('filechange',tclvalue(file.plotDem),envir=EnvInterpolation)
 					}else{
 						elv<-NULL
-						insert.txt(main.txt.out,'No DEM data found',format=TRUE)
+						InsertMessagesTxt(main.txt.out,'No DEM data found',format=TRUE)
 					}
 					 assign('elvDem',elv,envir=EnvInterpolation)
 				}else{
 					elv<-EnvInterpolation$elvDem
-					if(is.null(elv)) insert.txt(main.txt.out,'No DEM data found',format=TRUE)
+					if(is.null(elv)) InsertMessagesTxt(main.txt.out,'No DEM data found',format=TRUE)
 				}
 				donne$elv<-elv
 				assign("ELV",elv,envir=EnvInterpolation)
@@ -538,13 +545,13 @@ InterpolationPanelCmd<-function(){
 						assign('filechange',tclvalue(file.plotDem),envir=EnvInterpolation)
 					}else{
 						elv<-NULL
-						insert.txt(main.txt.out,'No DEM data found',format=TRUE)
+						InsertMessagesTxt(main.txt.out,'No DEM data found',format=TRUE)
 					}
 					assign('elvDem',elv,envir=EnvInterpolation)
 				}else{
 					elv<-EnvInterpolation$elvDem
 					#elv<-donne$elv
-					if(is.null(elv)) insert.txt(main.txt.out,'No DEM data found',format=TRUE)
+					if(is.null(elv)) InsertMessagesTxt(main.txt.out,'No DEM data found',format=TRUE)
 				}
 				donne$elv<-elv
 				assign("ELV",elv,envir=EnvInterpolation)
@@ -580,10 +587,10 @@ InterpolationPanelCmd<-function(){
 
 		imgContainer<-displayCDTdata(tknotes,notebookTab0,donne,atLev,listCol,shpf,units)
 		if(!is.null(imgContainer)){
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab0,tab.type,tab.data)
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab0,AllOpenTabType,AllOpenTabData)
 			notebookTab0<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
 		}
 	})
 
@@ -597,10 +604,10 @@ InterpolationPanelCmd<-function(){
 
 		imgContainer<-displayVariogramFun(tknotes,notebookTab1,donne,tclvalue(fitVgmChx),tclvalue(fitVgmMod),vgmModList,tclvalue(useELV))
 		if(!is.null(imgContainer)){
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab1,tab.type,tab.data)
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab1,AllOpenTabType,AllOpenTabData)
 			notebookTab1<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
 		}
 	})
 
@@ -625,7 +632,7 @@ InterpolationPanelCmd<-function(){
 			tkconfigure(main.win,cursor='')
 		})
 
-		if(!is.null(outNCdata)) insert.txt(main.txt.out,"Interpolation finished successfully")
+		if(!is.null(outNCdata)) InsertMessagesTxt(main.txt.out,"Interpolation finished successfully")
 	})
 
 	#############
@@ -647,12 +654,12 @@ InterpolationPanelCmd<-function(){
 		shpf<-getShpOpenData(file.plotShp)[[2]]
 		units<-NA
 
-		imgContainer<-displayNetCDFdata(tknotes,notebookTab2,outNCdata,atLev,listCol,shpf,units)
+		imgContainer<-displayNetCDFdata(tknotes,notebookTab2,outNCdata,atLev,listCol,shpf,units,tclvalue(blankVal))
 		if(!is.null(imgContainer)){
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab2,tab.type,tab.data)
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab2,AllOpenTabType,AllOpenTabData)
 			notebookTab2<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
 		}
 	})
 
@@ -663,10 +670,10 @@ InterpolationPanelCmd<-function(){
 		donne<-getDONNE()
 
 		if(!is.null(donne)){
-			# retNBTab<-tableInterpNotebookTab_unik(tknotes,donne,notebookTab3,tab.type,tab.data)
+			# retNBTab<-tableInterpNotebookTab_unik(tknotes,donne,notebookTab3,AllOpenTabType,AllOpenTabData)
 			# notebookTab3<<-retNBTab$notebookTab
-			# tab.type<<-retNBTab$tab.type
-			# tab.data<<-retNBTab$tab.data
+			# AllOpenTabType<<-retNBTab$AllOpenTabType
+			# AllOpenTabData<<-retNBTab$AllOpenTabData
 			# popupAddRemoveRow(tknotes)
 
 			if(is.null(donne$elv)) elv<-NA
@@ -676,14 +683,14 @@ InterpolationPanelCmd<-function(){
 			dat2disp<-list(donne$date,dat2disp,'/may/be/file/to/save/table')
 			retdata<-DisplayInterpData(tknotes,dat2disp,paste('Obs',donne$date,sep='_'))
 
-			ntab<-length(tab.type)
-			tab.type[[ntab+1]]<<-'arrInterp'
-			tab.data[[ntab+1]]<<-retdata
+			ntab<-length(AllOpenTabType)
+			AllOpenTabType[[ntab+1]]<<-'arrInterp'
+			AllOpenTabData[[ntab+1]]<<-retdata
 			tkselect(tknotes,ntab)
 			popupAddRemoveRow(tknotes)
 
-			ret.results<<-donne
-		}else insert.txt(main.txt.out,'No station data found',format=TRUE)
+			ReturnExecResults<<-donne
+		}else InsertMessagesTxt(main.txt.out,'No station data found',format=TRUE)
 	})
 
 
@@ -725,11 +732,11 @@ InterpolationPanelCmd<-function(){
 	butCustoLev.tab4<-tkbutton(subfr4, text="Custom",state='disabled')
 
 	infobulle(combPresetCol.tab4,'Predefined color palettes')
-	status.bar.display(combPresetCol.tab4,txt.stbr1,'Predefined color palettes')
+	status.bar.display(combPresetCol.tab4,TextOutputVar,'Predefined color palettes')
 	infobulle(nbPresetCol.tab4,'Number of color levels to be in the palette')
-	status.bar.display(nbPresetCol.tab4,txt.stbr1,'Number of color levels to be in the palette')
+	status.bar.display(nbPresetCol.tab4,TextOutputVar,'Number of color levels to be in the palette')
 	infobulle(chkRevCol.tab4,'Reverse the color palettes')
-	status.bar.display(chkRevCol.tab4,txt.stbr1,'Reverse the color palettes')
+	status.bar.display(chkRevCol.tab4,TextOutputVar,'Reverse the color palettes')
 
 	#####
 	tkgrid(labPresetCol.tab4,row=0,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)

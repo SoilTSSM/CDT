@@ -15,34 +15,34 @@ ChkCoordCmdBut<-function(){
 
 #############
 	tkconfigure(cmd.outTable,command=function(){
-		if(!is.null(ret.results)){
-		retdata<-DisplayHomInfo(tknotes,ret.results$Stndoute,
-		paste(getf.no.ext(as.character(gal.params$file.io$Values[1])),'_COORDS',sep=''))
-		ntab<-length(tab.type)
-		tab.type[[ntab+1]]<<-'StnInfo'
-		tab.data[[ntab+1]]<<-retdata
+		if(!is.null(ReturnExecResults)){
+		retdata<-DisplayHomInfo(tknotes,ReturnExecResults$Stndoute,
+		paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])),'_COORDS',sep=''))
+		ntab<-length(AllOpenTabType)
+		AllOpenTabType[[ntab+1]]<<-'StnInfo'
+		AllOpenTabData[[ntab+1]]<<-retdata
 		tkselect(tknotes,ntab)
 		popupAddRemoveRow(tknotes)
-		}else insert.txt(main.txt.out,'There is no coordinates check performed yet',format=TRUE)
+		}else InsertMessagesTxt(main.txt.out,'There is no coordinates check performed yet',format=TRUE)
 	})
 
 #############
 	tkconfigure(cmd.correctCoord,command=function(){
-		if(!is.null(ret.results)){
-			if(!is.na(ret.results$Stndoute[1,1])){
+		if(!is.null(ReturnExecResults)){
+			if(!is.na(ReturnExecResults$Stndoute[1,1])){
 				tkconfigure(main.win,cursor='watch');tcl('update')
-				chk2run<-try(ret.results<<-checkCDTcoords(ret.results,gal.params), silent=TRUE)
+				chk2run<-try(ReturnExecResults<<-checkCDTcoords(ReturnExecResults,GeneralParameters), silent=TRUE)
 				is.ok.chk <- !inherits(chk2run, "try-error")
 				if(is.ok.chk){
-					insert.txt(main.txt.out,"Coordinates were corrected successfully")
+					InsertMessagesTxt(main.txt.out,"Coordinates were corrected successfully")
 					tkconfigure(main.win,cursor='')
 				}else{
-					insert.txt(main.txt.out,'Coordinates correction failed',format=TRUE)
-					insert.txt(main.txt.out,gsub('[\r\n]','',chk2run[1]),format=TRUE)
+					InsertMessagesTxt(main.txt.out,'Coordinates correction failed',format=TRUE)
+					InsertMessagesTxt(main.txt.out,gsub('[\r\n]','',chk2run[1]),format=TRUE)
 					tkconfigure(main.win,cursor='')
 				}
 			}
-		}else insert.txt(main.txt.out,'There is no coordinates check performed yet',format=TRUE)
+		}else InsertMessagesTxt(main.txt.out,'There is no coordinates check performed yet',format=TRUE)
 	})
 #############
 

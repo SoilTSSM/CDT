@@ -1,13 +1,13 @@
 
 
-ExtractRFE2Stn<-function(ijGrd,gal.params,mrgRaindat){
-	insert.txt(main.txt.out,'Extract RFE at guage locations ')
+ExtractRFE2Stn<-function(ijGrd,GeneralParameters,mrgRaindat){
+	InsertMessagesTxt(main.txt.out,'Extract RFE at guage locations ')
 	tcl("update")
-	freqData<-gal.params$period
-	year1<-as.numeric(as.character(gal.params$dates.coef$Values[1]))
-	year2<-as.numeric(as.character(gal.params$dates.coef$Values[2]))
-	rfeDir<-as.character(gal.params$file.io$Values[4])
-	rfeFileFormat<-as.character(gal.params$prefix$Values[1])
+	freqData<-GeneralParameters$period
+	year1<-as.numeric(as.character(GeneralParameters$dates.coef$Values[1]))
+	year2<-as.numeric(as.character(GeneralParameters$dates.coef$Values[2]))
+	rfeDir<-as.character(GeneralParameters$file.io$Values[4])
+	rfeFileFormat<-as.character(GeneralParameters$prefix$Values[1])
 	nstn<-length(mrgRaindat$stnData$lon)
 
 	if(freqData=='daily'){
@@ -28,7 +28,7 @@ ExtractRFE2Stn<-function(ijGrd,gal.params,mrgRaindat){
 
 	existFl<-unlist(lapply(testfile,file.exists))
 	if(length(which(existFl))==0){
-		insert.txt(main.txt.out,"RFE data not found",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"RFE data not found",format=TRUE)
 		return(NULL)
 	}
 	rfeDataFl<-testfile[existFl]
@@ -68,7 +68,7 @@ ExtractRFE2Stn<-function(ijGrd,gal.params,mrgRaindat){
 
 	rfe_stn<-matrix(NA,nrow=length(bias.dates),ncol=nstn)
 	rfe_stn[match(as.character(ret[,1]),bias.dates),]<-ret[,-1]
-	insert.txt(main.txt.out,'Done! ')
+	InsertMessagesTxt(main.txt.out,'Done! ')
 	return(rfe_stn)
 }
 
@@ -100,8 +100,8 @@ calcBiasRain<-function(i,ix1,stn.data,rfe_stn){
 
 ########################################################################################################
 
-ComputeMeanBiasRain<-function(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir){
-	# freqData<-gal.params$period
+ComputeMeanBiasRain<-function(rfe_stn,GeneralParameters,mrgRaindat,paramGrd,origdir){
+	# freqData<-GeneralParameters$period
 	# if(doparallel & freqData!='monthly'){
 	# 	klust<-makeCluster(nb_cores)
 	# 	registerDoParallel(klust)
@@ -113,26 +113,26 @@ ComputeMeanBiasRain<-function(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir){
 	# }
 	`%parLoop%`<-`%do%`
 
-	freqData<-gal.params$period
+	freqData<-GeneralParameters$period
 	stn.lon<-mrgRaindat$stnData$lon
 	stn.lat<-mrgRaindat$stnData$lat
 	stn.dates<-mrgRaindat$stnData$dates
 	stn.data<-mrgRaindat$stnData$data
 	nstn<-length(stn.lon)
 
-	year1<-as.numeric(as.character(gal.params$dates.coef$Values[1]))
-	year2<-as.numeric(as.character(gal.params$dates.coef$Values[2]))
+	year1<-as.numeric(as.character(GeneralParameters$dates.coef$Values[1]))
+	year2<-as.numeric(as.character(GeneralParameters$dates.coef$Values[2]))
 
 	xy.dim<-paramGrd$xy.dim
 	newlocation.grid<-paramGrd$newlocation.grid
 	nlon0<-paramGrd$nlon0
 	nlat0<-paramGrd$nlat0
 
-	min.nbrs<-as.numeric(as.character(gal.params$params.int$Values[1]))
-	max.nbrs<-as.numeric(as.character(gal.params$params.int$Values[2]))
-	max.dst<-as.numeric(as.character(gal.params$params.int$Values[3]))
+	min.nbrs<-as.numeric(as.character(GeneralParameters$params.int$Values[1]))
+	max.nbrs<-as.numeric(as.character(GeneralParameters$params.int$Values[2]))
+	max.dst<-as.numeric(as.character(GeneralParameters$params.int$Values[3]))
 
-	meanBiasPrefix<-as.character(gal.params$prefix$Values[2])
+	meanBiasPrefix<-as.character(GeneralParameters$prefix$Values[2])
 	# dirBias<-file.path(origdir,'Mean_Bias',fsep = .Platform$file.sep)
 	# dir.create(dirBias,showWarnings=FALSE)
 
@@ -194,7 +194,7 @@ ComputeMeanBiasRain<-function(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir){
 	
 	tcl("update","idletasks")
 	# for(ij in 1:ntimes)
-	ret<-foreach(ij=1:ntimes,.combine='c',.export=c('insert.txt','main.txt.out'),.packages=c('sp','gstat','ncdf4','fields','tcltk')) %parLoop% {	
+	ret<-foreach(ij=1:ntimes,.combine='c',.export=c('InsertMessagesTxt','main.txt.out'),.packages=c('sp','gstat','ncdf4','fields','tcltk')) %parLoop% {	
 		bias.stn <- data.frame(bias=bias[ij,],lon=stn.lon,lat=stn.lat)
 		ix <- which(!is.na(bias.stn$bias))
 		if(length(ix)>10){
@@ -217,7 +217,7 @@ ComputeMeanBiasRain<-function(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir){
 		nc2 <- nc_create(outfl,grd.bs)
 		ncvar_put(nc2,grd.bs,grd.bias)
 		nc_close(nc2)
-		insert.txt(main.txt.out,paste("Computing mean bias finished:",paste(meanBiasPrefix,'_',ij,'.nc',sep='')))
+		InsertMessagesTxt(main.txt.out,paste("Computing mean bias finished:",paste(meanBiasPrefix,'_',ij,'.nc',sep='')))
 		tcl("update")
 	}
 	# if(closeklust) stopCluster(klust)
@@ -228,20 +228,20 @@ ComputeMeanBiasRain<-function(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir){
 
 ##Adjust downscaled data
 
-AjdMeanBiasRain<-function(freqData,istart,iend,rfeData,paramGrd,gal.params,origdir){
+AjdMeanBiasRain<-function(freqData,istart,iend,rfeData,paramGrd,GeneralParameters,origdir){
 
-	rfeDir<-as.character(gal.params$file.io$Values[2])
-	biasDir<-as.character(gal.params$file.io$Values[3])
+	rfeDir<-as.character(GeneralParameters$file.io$Values[2])
+	biasDir<-as.character(GeneralParameters$file.io$Values[3])
 	#adjDir<-file.path(origdir,'Adjusted_data',fsep = .Platform$file.sep)
 	#dir.create(adjDir,showWarnings=FALSE)
 
-	rfeFileFormat<-as.character(gal.params$prefix$Values[1])
-	meanBiasPrefix<-as.character(gal.params$prefix$Values[2])
-	adjPrefix<-as.character(gal.params$prefix$Values[3])
+	rfeFileFormat<-as.character(GeneralParameters$prefix$Values[1])
+	meanBiasPrefix<-as.character(GeneralParameters$prefix$Values[2])
+	adjPrefix<-as.character(GeneralParameters$prefix$Values[3])
 
 	biasFile<-file.path(biasDir,paste(meanBiasPrefix,'_1.nc',sep=''),fsep = .Platform$file.sep)
 	if(!file.exists(biasFile)){
-		insert.txt(main.txt.out,"Mean bias coefficients not found",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Mean bias coefficients not found",format=TRUE)
 		return(NULL)
 	}
 
@@ -264,7 +264,7 @@ AjdMeanBiasRain<-function(freqData,istart,iend,rfeData,paramGrd,gal.params,origd
 
 	existFl<-unlist(lapply(testfile,file.exists))
 	if(length(which(existFl))==0){
-		insert.txt(main.txt.out,"RFE data not found",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"RFE data not found",format=TRUE)
 		return(NULL)
 	}
 
@@ -328,7 +328,7 @@ AjdMeanBiasRain<-function(freqData,istart,iend,rfeData,paramGrd,gal.params,origd
 		ncvar_put(nc2,grd.bsadj,rfe.adj)
 		nc_close(nc2)
 
-		insert.txt(main.txt.out,paste("RFE data adjusted successfully:",basename(rfefl)))
+		InsertMessagesTxt(main.txt.out,paste("RFE data adjusted successfully:",basename(rfefl)))
 		tcl("update")
 	}
 	return(0)
@@ -338,19 +338,19 @@ AjdMeanBiasRain<-function(freqData,istart,iend,rfeData,paramGrd,gal.params,origd
 ###Merging
 
 MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
-	freqData<-gal.params$period
+	freqData<-GeneralParameters$period
 	istart<-paramsMRG$istart
 	iend<-paramsMRG$iend
 
-	rfeDir<-as.character(gal.params$file.io$Values[4])
-	rfeFileFormat<-as.character(gal.params$prefix$Values[1])
+	rfeDir<-as.character(GeneralParameters$file.io$Values[4])
+	rfeFileFormat<-as.character(GeneralParameters$prefix$Values[1])
 
 	# outmrgdir<-file.path(origdir,'Merged_RR',fsep = .Platform$file.sep)
 	# dir.create(outmrgdir,showWarnings=FALSE)
 
 	if(freqData=='daily'){
 		mrg.dates<-format(seq(as.Date(istart,format='%Y%m%d'),as.Date(iend,format='%Y%m%d'),'day'),'%Y%m%d')
-		if(gal.params$NewGrd=='1'){
+		if(GeneralParameters$NewGrd=='1'){
 			testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(mrg.dates,1,4),substr(mrg.dates,5,6), substr(mrg.dates,7,8)),fsep = .Platform$file.sep)
 		}else{
 			testfile<-file.path(rfeDir,paste(rfeFileFormat,'_',mrg.dates,'.nc',sep=''),fsep = .Platform$file.sep)
@@ -359,7 +359,7 @@ MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
 	if(freqData=='dekadal'){
 		mrg.dates<-seq(as.Date(istart,format='%Y%m%d'),as.Date(iend,format='%Y%m%d'),'day')
 		mrg.dates<-paste(format(mrg.dates[which(as.numeric(format(mrg.dates,'%d'))<=3)],'%Y%m'), as.numeric(format(mrg.dates[which(as.numeric(format(mrg.dates,'%d'))<=3)],'%d')),sep='')
-		if(gal.params$NewGrd=='1'){
+		if(GeneralParameters$NewGrd=='1'){
 			testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(mrg.dates,1,4),substr(mrg.dates,5,6), substr(mrg.dates,7,7)),fsep = .Platform$file.sep)
 		}else{
 			testfile<-file.path(rfeDir,paste(rfeFileFormat,'_',mrg.dates,'.nc',sep=''),fsep = .Platform$file.sep)
@@ -367,7 +367,7 @@ MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
 	}
 	if(freqData=='monthly'){
 		mrg.dates<-format(seq(as.Date(paste(istart,'1',sep=''),format='%Y%m%d'), as.Date(paste(iend,'1',sep=''),format='%Y%m%d'),'month'),'%Y%m')
-		if(gal.params$NewGrd=='1'){
+		if(GeneralParameters$NewGrd=='1'){
 			testfile<-file.path(rfeDir,sprintf(rfeFileFormat,substr(mrg.dates,1,4),substr(mrg.dates,5,6)), fsep = .Platform$file.sep)
 		}else{
 			testfile<-file.path(rfeDir,paste(rfeFileFormat,'_',mrg.dates,'.nc',sep=''),fsep = .Platform$file.sep)
@@ -376,7 +376,7 @@ MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
 
 	existFl<-unlist(lapply(testfile,file.exists))
 	if(length(which(existFl))==0){
-		insert.txt(main.txt.out,"RFE data not found",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"RFE data not found",format=TRUE)
 		return(NULL)
 	}
 	rfeDataFl<-testfile[existFl]
@@ -417,14 +417,14 @@ MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
 	stn.data<-mrgRaindat$stnData$data
 	nstn<-length(stn.lon)
 
-	mrgPrefix<-as.character(gal.params$prefix$Values[2])
-	mrgSuffix<-as.character(gal.params$prefix$Values[3])
+	mrgPrefix<-as.character(GeneralParameters$prefix$Values[2])
+	mrgSuffix<-as.character(GeneralParameters$prefix$Values[3])
 
 	####
 	# for (jfl in seq_along(rfeDataFl))
-	ret<-foreach(jfl=seq_along(rfeDataFl),.combine='c',.export=c('rfeDataFl','mrg.dates1','mergingProcs','gal.params','mrgRaindat','origdir','outMask','insert.txt','main.txt.out'),
+	ret<-foreach(jfl=seq_along(rfeDataFl),.combine='c',.export=c('rfeDataFl','mrg.dates1','mergingProcs','GeneralParameters','mrgRaindat','origdir','outMask','InsertMessagesTxt','main.txt.out'),
 		.packages=c('sp','gstat','automap','ncdf4','fields')) %parLoop% {
-		if(gal.params$NewGrd=='1'){
+		if(GeneralParameters$NewGrd=='1'){
 			nc <- nc_open(rfeDataFl[jfl])
 			rfe.lon <- nc$dim[[mrgRaindat$rfeData$rfeILon]]$vals
 			rfe.lat <- nc$dim[[mrgRaindat$rfeData$rfeILat]]$vals
@@ -452,7 +452,7 @@ MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
 		rfe.vec<-c(rfe.val)
 
 		##Extract RFE at newgrid (if create new one)
-		if(gal.params$NewGrd=='1' & gal.params$CreateGrd!='1'){
+		if(GeneralParameters$NewGrd=='1' & GeneralParameters$CreateGrd!='1'){
 			###IDW
 			grd.rfe <- data.frame(expand.grid(lon=rfe.lon,lat=rfe.lat),rfe=rfe.vec)
 			grd.rfe<-grd.rfe[!is.na(grd.rfe$rfe),]
@@ -477,7 +477,7 @@ MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
 		nc_close(nc2)
 
 		#####
-		insert.txt(main.txt.out,paste("Rainfall merging finished successfully:", paste(mrgPrefix,'_',mrg.dates1[jfl],'_',mrgSuffix,'.nc',sep='')))
+		InsertMessagesTxt(main.txt.out,paste("Rainfall merging finished successfully:", paste(mrgPrefix,'_',mrg.dates1[jfl],'_',mrgSuffix,'.nc',sep='')))
 		tcl("update")
 	}
 	# if(closeklust) stopCluster(klust)
@@ -488,14 +488,14 @@ MergingFunction<-function(mrgRaindat,VarioModel,paramsMRG,origdir){
 ########################################################################################################
 
 mergingProcs<-function(stn.lon,stn.lat,stn.data,stn.dates,ijGrd,rfe.val,rfe.vec,mrg.dates2,newlocation.merging,bGrd){
-	nmin<-as.numeric(as.character(gal.params$params.int$Values[1]))
-	nozero<-as.numeric(as.character(gal.params$params.int$Values[2]))
-	max.RnR.dist<-as.numeric(as.character(gal.params$params.int$Values[3]))
-	maxdist<-as.numeric(as.character(gal.params$params.int$Values[4]))
-	min.nbrs<-as.numeric(as.character(gal.params$params.int$Values[5]))
-	max.nbrs<-as.numeric(as.character(gal.params$params.int$Values[6]))
-	interpMethod<-as.character(gal.params$params.mrg$Values[1])
-	RainNoRain<-as.character(gal.params$params.mrg$Values[2])
+	nmin<-as.numeric(as.character(GeneralParameters$params.int$Values[1]))
+	nozero<-as.numeric(as.character(GeneralParameters$params.int$Values[2]))
+	max.RnR.dist<-as.numeric(as.character(GeneralParameters$params.int$Values[3]))
+	maxdist<-as.numeric(as.character(GeneralParameters$params.int$Values[4]))
+	min.nbrs<-as.numeric(as.character(GeneralParameters$params.int$Values[5]))
+	max.nbrs<-as.numeric(as.character(GeneralParameters$params.int$Values[6]))
+	interpMethod<-as.character(GeneralParameters$params.mrg$Values[1])
+	RainNoRain<-as.character(GeneralParameters$params.mrg$Values[2])
 
 	#rfe over stn location
 	rfe_gg <- rfe.val[ijGrd]

@@ -6,19 +6,19 @@ plotMap4Extraction<-function(ocrds,ZoomXYval,selectedPolygon){
 	ymax<-ZoomXYval[4]
 
 	if(is.na(xmin) | is.null(xmin) | is.infinite(xmin)){
-		insert.txt(main.txt.out,'Longitude min not valid',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Longitude min not valid',format=TRUE)
 		return(NULL)
 	}
 	if(is.na(xmax) | is.null(xmax) | is.infinite(xmax)){
-		insert.txt(main.txt.out,'Longitude max not valid',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Longitude max not valid',format=TRUE)
 		return(NULL)
 	}
 	if(is.na(ymin) | is.null(ymin) | is.infinite(ymin)){
-		insert.txt(main.txt.out,'Latitude min not valid',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Latitude min not valid',format=TRUE)
 		return(NULL)
 	}
 	if(is.na(ymax) | is.null(ymax) | is.infinite(ymax)){
-		insert.txt(main.txt.out,'Latitude max not valid',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Latitude max not valid',format=TRUE)
 		return(NULL)
 	}
 
@@ -76,7 +76,7 @@ displayMap4Extraction<-function(parent,shpf,ZoomXYval,notebookTab){
 
 	###################################################################
 
-	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=' Map ',tab.type,tab.data)
+	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=' Map ',AllOpenTabType,AllOpenTabData)
 	hscale<-as.numeric(tclvalue(tkget(spinH)))
 	vscale<-as.numeric(tclvalue(tkget(spinV)))
 

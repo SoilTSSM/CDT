@@ -8,7 +8,7 @@ Station<-paste('BaseSeries_',station,sep='')
 #  ErrorMSG<-NA
 #  assign("ErrorMSG",ErrorMSG,envir=.GlobalEnv)
   if(!p.lev%in%c(0.75,0.8,0.9,0.95,0.99,0.9999)){
-	insert.txt(main.txt.out,paste("FindU: input p.lev",p.lev,"error"),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("FindU: input p.lev",p.lev,"error"),format=TRUE)
 	#cat(paste("FindU: input p.lev",p.lev,"error"),'\n')
 #      ErrorMSG<<-paste("FindU: input p.lev",p.lev,"error\n",
 #                 get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -21,7 +21,7 @@ Station<-paste('BaseSeries_',station,sep='')
   flog<-paste(output,".log",sep="")
   itmp<-Read(InSeries,MissingValueCode)
   if(itmp<0){
-	insert.txt(main.txt.out,paste("StepSize: Error in read data from",Station),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("StepSize: Error in read data from",Station),format=TRUE)
 	#cat(paste("StepSize: Error in read data from",Station),'\n')
 #    ErrorMSG<<-paste("StepSize: Error in read data from",Station,"\n",
 #               get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -46,7 +46,7 @@ Station<-paste('BaseSeries_',station,sep='')
     if(sum(is.na(Ips))>0|!identical(Ips,sort(Ips))){
 #      ErrorMSG<<-paste("StepSize: Ips read in from ",basename(InCs),"error:")
       for(i in 1:Ns)
-	 insert.txt(main.txt.out,paste("StepSize: Ips read in from ",basename(InCs),"error:",Ips[i]),format=TRUE)
+	 InsertMessagesTxt(main.txt.out,paste("StepSize: Ips read in from ",basename(InCs),"error:",Ips[i]),format=TRUE)
 	#cat(paste("StepSize: Ips read in from ",basename(InCs),"error:",Ips[i]),'\n')
 #        ErrorMSG<<-paste(get("ErrorMSG",env=.GlobalEnv),Ips[i])
 #      ErrorMSG<<-paste(get("ErrorMSG",env=.GlobalEnv),"\n\n")
@@ -64,7 +64,7 @@ Station<-paste('BaseSeries_',station,sep='')
   EB<-oout$EB
   assign("EB",EB,envir=.GlobalEnv)
   if(length(EB)!=length(Icy)) {
-	insert.txt(main.txt.out,"Annual cycle length (from non-missing data) differ from original dataset",format=TRUE)
+	InsertMessagesTxt(main.txt.out,"Annual cycle length (from non-missing data) differ from original dataset",format=TRUE)
 	#cat("Annual cycle length (from non-missing data) differ from original dataset",'\n')
 #    ErrorMSG<<-paste("Annual cycle length (from non-missing data) differ from original dataset",
 #                     "\n",get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -483,7 +483,7 @@ Station<-paste('BaseSeries_',station,sep='')
   else{
     file.copy(from=ofileIout,to=ofileMout,overwrite=TRUE)
     #cat("StepSize finished successfully...\n")
-    insert.txt(main.txt.out,paste("StepSize finished successfully for",station))
+    InsertMessagesTxt(main.txt.out,paste("StepSize finished successfully for",station))
     return(0)
   }
 }

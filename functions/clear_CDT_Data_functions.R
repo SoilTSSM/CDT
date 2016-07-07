@@ -5,17 +5,17 @@ splitCDTData<-function(donne,period){
 	ideb<-nrow(donne)
 	if(period=='daily'){
 		if(nchar(as.character(donne[ideb,1]))!=8){
-			insert.txt(main.txt.out,'Station data: not a daily data',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Station data: not a daily data',format=TRUE)
 			return(NULL)
 		}
 	}else if(period=='dekadal'){
 		if(nchar(as.character(donne[ideb,1]))!=7){
-			insert.txt(main.txt.out,'Station data: not a dekadal data',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Station data: not a dekadal data',format=TRUE)
 			return(NULL)
 		}
 	}else if(period=='monthly'){
 		if(nchar(as.character(donne[ideb,1]))!=6){
-			insert.txt(main.txt.out,'Station data: not a monthly data',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Station data: not a monthly data',format=TRUE)
 			return(NULL)
 		}
 	}
@@ -133,7 +133,7 @@ splitCDTData<-function(donne,period){
 
 #	test<-apply(donne,2,function(x) CheckNumeric(x))
 #	if(sum(!test)>0){
-#		insert.txt(main.txt.out,'There is Non-Numeric value in data',format=TRUE)
+#		InsertMessagesTxt(main.txt.out,'There is Non-Numeric value in data',format=TRUE)
 #		return(NULL)
 #	}
 
@@ -143,7 +143,7 @@ splitTsData<-function(donne,period,filefrmt,datefrmt){
 	if(period=='daily'){
 		if(datefrmt=="1"){
 			if(nchar(as.character(donne[5,1]))!=8){
-				insert.txt(main.txt.out,'Station data: not a daily data',format=TRUE)
+				InsertMessagesTxt(main.txt.out,'Station data: not a daily data',format=TRUE)
 				return(NULL)
 			}
 			dates<-as.Date(as.character(donne[,1]),format='%Y%m%d')
@@ -153,7 +153,7 @@ splitTsData<-function(donne,period,filefrmt,datefrmt){
 	}else if(period=='dekadal'){
 		if(datefrmt=="1"){ #1date
 			if(nchar(as.character(donne[5,1]))!=7){
-				insert.txt(main.txt.out,'Station data: not a dekadal data',format=TRUE)
+				InsertMessagesTxt(main.txt.out,'Station data: not a dekadal data',format=TRUE)
 				return(NULL)
 			}
 			xan<-substr(as.character(donne[,1]),1,4)
@@ -170,7 +170,7 @@ splitTsData<-function(donne,period,filefrmt,datefrmt){
 	}else if(period=='monthly'){
 		if(datefrmt=="1"){ #1date
 			if(nchar(as.character(donne[5,1]))!=6){
-				insert.txt(main.txt.out,'Station data: not a monthly data',format=TRUE)
+				InsertMessagesTxt(main.txt.out,'Station data: not a monthly data',format=TRUE)
 				return(NULL)
 			}
 			xan<-substr(as.character(donne[,1]),1,4)
@@ -256,7 +256,7 @@ splitTsData<-function(donne,period,filefrmt,datefrmt){
 		nbvar<-3
 	}
 	if(length(dates)==0){
-		insert.txt(main.txt.out,'Wrong date format',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Wrong date format',format=TRUE)
 		return(NULL)
 	}
 	ret<-list(period=period,nbvar=nbvar,var=var,dates=dates,datesDupl=dup.dates)

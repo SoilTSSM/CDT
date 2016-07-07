@@ -1,22 +1,22 @@
 
 ValidationDataFun<-function(retValidParams){
 	if(is.null(retValidParams$donne)){
-		insert.txt(main.txt.out,'No station data found',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'No station data found',format=TRUE)
 		return(NULL)
 	}
 
 	if(is.null(retValidParams$rfedata)){
-		insert.txt(main.txt.out,'Provide a sample of NetCDF data',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Provide a sample of NetCDF data',format=TRUE)
 		return(NULL)
 	}
 
 	if(retValidParams$ncdir=='' | retValidParams$ncdir=="NA"){
-		insert.txt(main.txt.out,'Directory containing the NetCDF data not found',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Directory containing the NetCDF data not found',format=TRUE)
 		return(NULL)
 	}
 
 	if(retValidParams$dir2sav=='' | retValidParams$dir2sav=="NA"){
-		insert.txt(main.txt.out,'Provide a directory to save results',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Provide a directory to save results',format=TRUE)
 		return(NULL)
 	}
 
@@ -175,7 +175,7 @@ ExtractNC2Stn<-function(retValidParams){
 
 	existFl<-unlist(lapply(testfile,file.exists))
 	if(length(which(existFl))==0){
-		insert.txt(main.txt.out,"RFE data not found",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"RFE data not found",format=TRUE)
 		return(NULL)
 	}
 	rfeDataFl<-testfile[existFl]

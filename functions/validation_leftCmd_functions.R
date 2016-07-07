@@ -1,6 +1,6 @@
 
 ValidationPanelCmd<-function(){
-	file.list<-openFile_ttkcomboList()
+	listOpenFiles<-openFile_ttkcomboList()
 
 	##tkcombo& tkentry width
 	#largeur<-27
@@ -48,24 +48,24 @@ ValidationPanelCmd<-function(){
 
 	#######################
 	file.stnfl <- tclVar()
-	combStnfl.tab1<-ttkcombobox(frameStn,values=unlist(file.list),textvariable=file.stnfl,width=largeur)
+	combStnfl.tab1<-ttkcombobox(frameStn,values=unlist(listOpenFiles),textvariable=file.stnfl,width=largeur)
 	btStnfl.tab1<-tkbutton(frameStn, text="...")
 	tkconfigure(btStnfl.tab1,command=function(){
 		dat.opfiles<-getOpenFiles(main.win,all.opfiles)
 		if(!is.null(dat.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'ascii'
-			file.opfiles[[nopf+1]]<<-dat.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.stnfl)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combStnfl.tab1,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(combgrdCDF.tab1,values=unlist(file.list), textvariable=file.grdCDF)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'ascii'
+			AllOpenFilesData[[nopf+1]]<<-dat.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.stnfl)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(combStnfl.tab1,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(combgrdCDF.tab1,values=unlist(listOpenFiles), textvariable=file.grdCDF)
 		}else return(NULL)
 	})
 	infobulle(combStnfl.tab1,'Choose the station data in the list')
-	status.bar.display(combStnfl.tab1,txt.stbr1,'Choose the file containing the station data in CDT format')
+	status.bar.display(combStnfl.tab1,TextOutputVar,'Choose the file containing the station data in CDT format')
 	infobulle(btStnfl.tab1,'Browse file if not listed')
-	status.bar.display(btStnfl.tab1,txt.stbr1,'Browse file if not listed')
+	status.bar.display(btStnfl.tab1,TextOutputVar,'Browse file if not listed')
 
 	#############################
 	tkgrid(combPrd.tab1,row=0,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=2,ipadx=1,ipady=1)
@@ -91,12 +91,12 @@ ValidationPanelCmd<-function(){
 	cap1.tab1<-tklabel(frameNcdf,text="NetCDF file format",anchor='e',justify='right')
 	netCDFff.tab1<-tkentry(frameNcdf,textvariable=netCDFff,width=wncdf_ff)
 	infobulle(netCDFff.tab1,'Enter the format of the NetCDF files names,\nexample: rfe1983_01-dk1.nc')
-	status.bar.display(netCDFff.tab1,txt.stbr1,'Enter the format of the NetCDF files names, example: rfe1983_01-dk1.nc')
+	status.bar.display(netCDFff.tab1,TextOutputVar,'Enter the format of the NetCDF files names, example: rfe1983_01-dk1.nc')
 
 	labRFE.tab1<-tklabel(frameNcdf,text="NetCDF's sample file",anchor='w',justify='left')
 
 	file.grdCDF <- tclVar()
-	combgrdCDF.tab1<-ttkcombobox(frameNcdf, values=unlist(file.list), textvariable=file.grdCDF,width=largeur)
+	combgrdCDF.tab1<-ttkcombobox(frameNcdf, values=unlist(listOpenFiles), textvariable=file.grdCDF,width=largeur)
 	btgrdCDF.tab1<-tkbutton(frameNcdf, text="...")
 	tkconfigure(btgrdCDF.tab1,command=function(){
 		fileopen<-tclvalue(tkgetOpenFile(initialdir=tclvalue(dirNetCDF),initialfile = "",filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
@@ -105,19 +105,19 @@ ValidationPanelCmd<-function(){
 		nc.opfiles<-list(basename(fileopen),nc.opfiles1,fileopen)
 		if(!is.null(nc.opfiles1)){
 			tkinsert(all.opfiles,"end",basename(fileopen))
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'netcdf'
-			file.opfiles[[nopf+1]]<<-nc.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(file.grdCDF)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combStnfl.tab1,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(combgrdCDF.tab1,values=unlist(file.list), textvariable=file.grdCDF)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'netcdf'
+			AllOpenFilesData[[nopf+1]]<<-nc.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.grdCDF)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(combStnfl.tab1,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(combgrdCDF.tab1,values=unlist(listOpenFiles), textvariable=file.grdCDF)
 		}else return(NULL)
 	})
 	infobulle(combgrdCDF.tab1,'Choose the file in the list')
-	status.bar.display(combgrdCDF.tab1,txt.stbr1,'File containing a sample of NetCDF data')
+	status.bar.display(combgrdCDF.tab1,TextOutputVar,'File containing a sample of NetCDF data')
 	infobulle(btgrdCDF.tab1,'Browse file if not listed')
-	status.bar.display(btgrdCDF.tab1,txt.stbr1,'Browse file if not listed')
+	status.bar.display(btgrdCDF.tab1,TextOutputVar,'Browse file if not listed')
 
 	#############################
 	tkgrid(labNcdir.tab1,row=0,column=0,sticky='we',rowspan=1,columnspan=6,padx=1,pady=1,ipadx=1,ipady=1)
@@ -139,9 +139,9 @@ ValidationPanelCmd<-function(){
 	tkconfigure(bfl2sav.tab1,command=function() fileORdir2Save(file.save1,isFile=FALSE))
 
 	infobulle(fl2sav.tab1,'Enter the full path to the directory  to save result')
-	status.bar.display(fl2sav.tab1,txt.stbr1,'Enter the full path to the directory to save extracted data')
+	status.bar.display(fl2sav.tab1,TextOutputVar,'Enter the full path to the directory to save extracted data')
 	infobulle(bfl2sav.tab1,'Browse here the full path to the directory to save result')
-	status.bar.display(bfl2sav.tab1,txt.stbr1,'Browse here the full path to the directory to save extracted data')
+	status.bar.display(bfl2sav.tab1,TextOutputVar,'Browse here the full path to the directory to save extracted data')
 
 	#############################
 	tkgrid(fl2sav.tab1,row=0,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=1,ipadx=1,ipady=1)
@@ -230,7 +230,7 @@ ValidationPanelCmd<-function(){
 		start_mois=tclvalue(start_mois),end_mois=tclvalue(end_mois),do_extr=do_extr)
 		
 		tkconfigure(main.win,cursor='watch')
-		insert.txt(main.txt.out,"Validation.................")
+		InsertMessagesTxt(main.txt.out,"Validation.................")
 		tcl('update')
 
 		tryCatch(outValiddata<<-ValidationDataFun(retValidParams),
@@ -238,7 +238,7 @@ ValidationPanelCmd<-function(){
 		error=function(e) errorFun(e),finally={
 			tkconfigure(main.win,cursor='')
 		})
-		if(!is.null(outValiddata)) insert.txt(main.txt.out,"Validation finished successfully")
+		if(!is.null(outValiddata)) InsertMessagesTxt(main.txt.out,"Validation finished successfully")
 	})
 
 	####
@@ -252,10 +252,10 @@ ValidationPanelCmd<-function(){
 				dat2disp<-outValiddata$sp.stat
 				titleTab<-'Spatial-Average Statistics'
 			}
-			retNBTab<-tableValidationNotebookTab_unik(tknotes,dat2disp,titleTab,validStatTab,tab.type,tab.data)
+			retNBTab<-tableValidationNotebookTab_unik(tknotes,dat2disp,titleTab,validStatTab,AllOpenTabType,AllOpenTabData)
 			validStatTab<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
 		}
 	})
 
@@ -265,10 +265,10 @@ ValidationPanelCmd<-function(){
 		if(!is.null(outValiddata)){
 			imgContainer<-displayGGvsSatFun(tknotes,notebookTab1,outValiddata,dataType)
 			if(!is.null(imgContainer)){
-				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab1,tab.type,tab.data)
+				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab1,AllOpenTabType,AllOpenTabData)
 				notebookTab1<<-retNBTab$notebookTab
-				tab.type<<-retNBTab$tab.type
-				tab.data<<-retNBTab$tab.data
+				AllOpenTabType<<-retNBTab$AllOpenTabType
+				AllOpenTabData<<-retNBTab$AllOpenTabData
 			}
 		}
 	})
@@ -279,10 +279,10 @@ ValidationPanelCmd<-function(){
 		if(!is.null(outValiddata)){
 			imgContainer<-displayCDFGGvsSatFun(tknotes,notebookTab2,outValiddata,dataType)
 			if(!is.null(imgContainer)){
-				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab2,tab.type,tab.data)
+				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab2,AllOpenTabType,AllOpenTabData)
 				notebookTab2<<-retNBTab$notebookTab
-				tab.type<<-retNBTab$tab.type
-				tab.data<<-retNBTab$tab.data
+				AllOpenTabType<<-retNBTab$AllOpenTabType
+				AllOpenTabData<<-retNBTab$AllOpenTabData
 			}
 		}
 	})

@@ -1,12 +1,12 @@
 
 TreatbiasRain<-function(origdir){
-	freqData<-gal.params$period
-	file.pars<-as.character(gal.params$file.io$Values)
+	freqData<-GeneralParameters$period
+	file.pars<-as.character(GeneralParameters$file.io$Values)
 	dir.create(origdir,showWarnings=FALSE)
 
-	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+	all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 	jfile<-which(all.open.file==file.pars[1])
-	donne<-file.opfiles[[jfile]][[2]]
+	donne<-AllOpenFilesData[[jfile]][[2]]
 
 	#######get data
 	donne<-splitCDTData(donne,freqData)
@@ -24,9 +24,9 @@ TreatbiasRain<-function(origdir){
 	stnlist<-list(id=stn.id,lon=stn.lon,lat=stn.lat,elv=elv,dates=dates,data=donne)
 
 	###get elevation data
-	if(gal.params$CreateGrd=="2"){
+	if(GeneralParameters$CreateGrd=="2"){
 		jncdf<-which(all.open.file==file.pars[2])
-		fdem<-file.opfiles[[jncdf]][[2]]
+		fdem<-AllOpenFilesData[[jncdf]][[2]]
 		dem<-fdem$value
 		dem[dem<0]<-0
 		dem.coord<-data.frame(expand.grid(lon=fdem$x,lat=fdem$y))
@@ -38,7 +38,7 @@ TreatbiasRain<-function(origdir){
 
 	##RFE sample file
 	jrfe<-which(all.open.file==file.pars[3])
-	ncrfe<-file.opfiles[[jrfe]][[2]]
+	ncrfe<-AllOpenFilesData[[jrfe]][[2]]
 	rfe.coord<-data.frame(expand.grid(lon=ncrfe$x,lat=ncrfe$y))
 	coordinates(rfe.coord) = ~lon+lat
 	rfelist<-list(lon=ncrfe$x,lat=ncrfe$y,rfeGrd=rfe.coord,rfeVarid=ncrfe$varid,rfeILon=ncrfe$ilon,rfeILat=ncrfe$ilat,irevlat=ncrfe$irevlat)
@@ -54,11 +54,11 @@ TreatbiasRain<-function(origdir){
 
 execBiasRain<-function(origdir){
 
-	freqData<-gal.params$period
+	freqData<-GeneralParameters$period
 	mrgRaindat<-TreatbiasRain(origdir)
 	if(is.null(mrgRaindat)) return(NULL)
 
-	create.grd<-as.character(gal.params$CreateGrd)
+	create.grd<-as.character(GeneralParameters$CreateGrd)
 	##Create grid for interpolation
 	if(create.grd=='1'){
 		grd.lon<-mrgRaindat$rfeData$lon
@@ -71,12 +71,12 @@ execBiasRain<-function(origdir){
 		nlon0<-length(grd.lon)
 		nlat0<-length(grd.lat)
 	}else if(create.grd=='3'){
-		X0<-as.numeric(as.character(gal.params$new.grid$Values[1]))
-		X1<-as.numeric(as.character(gal.params$new.grid$Values[2]))
-		pX<-as.numeric(as.character(gal.params$new.grid$Values[3]))
-		Y0<-as.numeric(as.character(gal.params$new.grid$Values[4]))
-		Y1<-as.numeric(as.character(gal.params$new.grid$Values[5]))
-		pY<-as.numeric(as.character(gal.params$new.grid$Values[6]))
+		X0<-as.numeric(as.character(GeneralParameters$new.grid$Values[1]))
+		X1<-as.numeric(as.character(GeneralParameters$new.grid$Values[2]))
+		pX<-as.numeric(as.character(GeneralParameters$new.grid$Values[3]))
+		Y0<-as.numeric(as.character(GeneralParameters$new.grid$Values[4]))
+		Y1<-as.numeric(as.character(GeneralParameters$new.grid$Values[5]))
+		pY<-as.numeric(as.character(GeneralParameters$new.grid$Values[6]))
 
 		grd.lon<-seq(X0,X1,pX)
 		nlon0<-length(grd.lon)
@@ -107,9 +107,9 @@ execBiasRain<-function(origdir){
 	outfile<-file.path(origdir,'DataUsed2ComputeBias.RData',fsep = .Platform$file.sep)
 	save(mrgRaindat,file=outfile)
 
-	rfe_stn <-ExtractRFE2Stn(ijGrd,gal.params,mrgRaindat)
+	rfe_stn <-ExtractRFE2Stn(ijGrd,GeneralParameters,mrgRaindat)
 	if(is.null(rfe_stn)) return(NULL)
-	ret<-ComputeMeanBiasRain(rfe_stn,gal.params,mrgRaindat,paramGrd,origdir)
+	ret<-ComputeMeanBiasRain(rfe_stn,GeneralParameters,mrgRaindat,paramGrd,origdir)
 	if(!is.null(ret)){
 		if(ret==0) return(0)
 		else return(ret)
@@ -120,12 +120,12 @@ execBiasRain<-function(origdir){
 
 TreatAdjBiasRain<-function(origdir,freqData){
 
-	file.pars<-as.character(gal.params$file.io$Values)
+	file.pars<-as.character(GeneralParameters$file.io$Values)
 	dir.create(origdir,showWarnings=FALSE)
-	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+	all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 
 	jfile<-which(all.open.file==file.pars[1])
-	donne<-file.opfiles[[jfile]][[2]]
+	donne<-AllOpenFilesData[[jfile]][[2]]
 
 	#######get data
 	donne<-splitCDTData(donne,freqData)
@@ -144,7 +144,7 @@ TreatAdjBiasRain<-function(origdir,freqData){
 
 	##RFE sample file
 	jrfe<-which(all.open.file==file.pars[2])
-	ncrfe<-file.opfiles[[jrfe]][[2]]
+	ncrfe<-AllOpenFilesData[[jrfe]][[2]]
 	rfe.coord<-data.frame(expand.grid(lon=ncrfe$x,lat=ncrfe$y))
 	coordinates(rfe.coord) = ~lon+lat
 	rfelist<-list(lon=ncrfe$x,lat=ncrfe$y,rfeGrd=rfe.coord,rfeVarid=ncrfe$varid,rfeILon=ncrfe$ilon,rfeILat=ncrfe$ilat,irevlat=ncrfe$irevlat)
@@ -160,19 +160,19 @@ TreatAdjBiasRain<-function(origdir,freqData){
 execAdjBiasRain<-function(origdir){
 
 	dir.create(origdir,showWarnings=FALSE)
-	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+	all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 
-	jrfe<-which(all.open.file==as.character(gal.params$file.io$Values[1]))
-	ncrfe<-file.opfiles[[jrfe]][[2]]
+	jrfe<-which(all.open.file==as.character(GeneralParameters$file.io$Values[1]))
+	ncrfe<-AllOpenFilesData[[jrfe]][[2]]
 	rfeData<-list(rfeVarid=ncrfe$varid,rfeILon=ncrfe$ilon,rfeILat=ncrfe$ilat,irevlat=ncrfe$irevlat)
 
-	dataBiasfl<-file.path(as.character(gal.params$file.io$Values[3]),'DataUsed2ComputeBias.RData',fsep = .Platform$file.sep)
+	dataBiasfl<-file.path(as.character(GeneralParameters$file.io$Values[3]),'DataUsed2ComputeBias.RData',fsep = .Platform$file.sep)
 
 	load(dataBiasfl)
 	paramGrd<-mrgRaindat$stnData$paramGrd
 
-	freqData<-gal.params$period
-	datesSE<-as.numeric(as.character(gal.params$dates.adj$Values))
+	freqData<-GeneralParameters$period
+	datesSE<-as.numeric(as.character(GeneralParameters$dates.adj$Values))
 
 	istart<-as.Date(paste(datesSE[1],datesSE[2],datesSE[3],sep='-'))
 	iend<-as.Date(paste(datesSE[4],datesSE[5],datesSE[6],sep='-'))
@@ -184,7 +184,7 @@ execAdjBiasRain<-function(origdir){
 		iend<-format(iend,'%Y%m%d')
 	}
 
-	ret<-AjdMeanBiasRain(freqData,istart,iend,rfeData,paramGrd,gal.params,origdir)
+	ret<-AjdMeanBiasRain(freqData,istart,iend,rfeData,paramGrd,GeneralParameters,origdir)
 	if(!is.null(ret)){
 		if(ret==0) return(0)
 		else return(ret)
@@ -196,13 +196,13 @@ execAdjBiasRain<-function(origdir){
 
 TreatMergeRain<-function(origdir,freqData){
 
-	file.pars<-as.character(gal.params$file.io$Values)
+	file.pars<-as.character(GeneralParameters$file.io$Values)
 	dir.create(origdir,showWarnings=FALSE)
 
-	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+	all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 
 	jfile<-which(all.open.file==file.pars[1])
-	donne<-file.opfiles[[jfile]][[2]]
+	donne<-AllOpenFilesData[[jfile]][[2]]
 
 	#######get data
 	donne<-splitCDTData(donne,freqData)
@@ -220,9 +220,9 @@ TreatMergeRain<-function(origdir,freqData){
 	stnlist<-list(id=stn.id,lon=stn.lon,lat=stn.lat,elv=elv,dates=dates,data=donne)
 
 	###get elevation data
-	if(gal.params$NewGrd=='1' & gal.params$CreateGrd=="2"){
+	if(GeneralParameters$NewGrd=='1' & GeneralParameters$CreateGrd=="2"){
 		jncdf<-which(all.open.file==file.pars[2])
-		fdem<-file.opfiles[[jncdf]][[2]]
+		fdem<-AllOpenFilesData[[jncdf]][[2]]
 		dem<-fdem$value
 		dem[dem<0]<-0
 		dem.coord<-data.frame(expand.grid(lon=fdem$x,lat=fdem$y))
@@ -231,9 +231,9 @@ TreatMergeRain<-function(origdir,freqData){
 		demdf <-  SpatialPointsDataFrame(coords=dem.coord,data=demdf, proj4string = CRS(as.character(NA)))
 		demlist1<-list(lon=fdem$x,lat=fdem$y,demGrd=demdf)
 	}else demlist1<-NULL
-	if(gal.params$blankGrd=="2"){
+	if(GeneralParameters$blankGrd=="2"){
 		jncdf<-which(all.open.file==file.pars[7])
-		fdem<-file.opfiles[[jncdf]][[2]]
+		fdem<-AllOpenFilesData[[jncdf]][[2]]
 		dem<-fdem$value
 		dem[dem<0]<-0
 		dem.coord<-data.frame(expand.grid(lon=fdem$x,lat=fdem$y))
@@ -244,18 +244,18 @@ TreatMergeRain<-function(origdir,freqData){
 	}else demlist2<-NULL
 
 	##RFE sample file
-	if(gal.params$NewGrd=='1'){
+	if(GeneralParameters$NewGrd=='1'){
 		jrfe<-which(all.open.file==file.pars[3])
-		ncrfe<-file.opfiles[[jrfe]][[2]]
+		ncrfe<-AllOpenFilesData[[jrfe]][[2]]
 		rfe.coord<-data.frame(expand.grid(lon=ncrfe$x,lat=ncrfe$y))
 		coordinates(rfe.coord) = ~lon+lat
 		rfelist<-list(lon=ncrfe$x,lat=ncrfe$y,rfeGrd=rfe.coord,rfeVarid=ncrfe$varid,rfeILon=ncrfe$ilon,rfeILat=ncrfe$ilat,irevlat=ncrfe$irevlat)
 	}else rfelist<-NULL
 
 	##Shapefile
-	if(gal.params$blankGrd=="3"){
+	if(GeneralParameters$blankGrd=="3"){
 		jshp<-which(all.open.file==file.pars[6])
-		shpd<-file.opfiles[[jshp]][[2]]
+		shpd<-AllOpenFilesData[[jshp]][[2]]
 	}else shpd<-NULL
 
 	mrgRaindat<-list(stnData=stnlist,demData1=demlist1,demData2=demlist2,rfeData=rfelist,shpData=shpd)
@@ -267,10 +267,10 @@ TreatMergeRain<-function(origdir,freqData){
 
 ##############################################################################################################
 execMergeRain<-function(origdir){
-	freqData<-gal.params$period
+	freqData<-GeneralParameters$period
 	mrgRaindat<-TreatMergeRain(origdir,freqData)
 
-	datesSE<-as.numeric(as.character(gal.params$dates.mrg$Values))
+	datesSE<-as.numeric(as.character(GeneralParameters$dates.mrg$Values))
 	istart<-as.Date(paste(datesSE[1],datesSE[2],datesSE[3],sep='-'))
 	iend<-as.Date(paste(datesSE[4],datesSE[5],datesSE[6],sep='-'))
 	if(freqData=='dekadal'){
@@ -282,8 +282,8 @@ execMergeRain<-function(origdir){
 	}
 
 	####Create grid
-	if(gal.params$NewGrd=='1'){
-		create.grd<-as.character(gal.params$CreateGrd)
+	if(GeneralParameters$NewGrd=='1'){
+		create.grd<-as.character(GeneralParameters$CreateGrd)
 		##Create grid for interpolation
 		if(create.grd=='1'){
 			grd.lon<-mrgRaindat$rfeData$lon
@@ -296,12 +296,12 @@ execMergeRain<-function(origdir){
 			nlon0<-length(grd.lon)
 			nlat0<-length(grd.lat)
 		}else if(create.grd=='3'){
-			X0<-as.numeric(as.character(gal.params$new.grid$Values[1]))
-			X1<-as.numeric(as.character(gal.params$new.grid$Values[2]))
-			pX<-as.numeric(as.character(gal.params$new.grid$Values[3]))
-			Y0<-as.numeric(as.character(gal.params$new.grid$Values[4]))
-			Y1<-as.numeric(as.character(gal.params$new.grid$Values[5]))
-			pY<-as.numeric(as.character(gal.params$new.grid$Values[6]))
+			X0<-as.numeric(as.character(GeneralParameters$new.grid$Values[1]))
+			X1<-as.numeric(as.character(GeneralParameters$new.grid$Values[2]))
+			pX<-as.numeric(as.character(GeneralParameters$new.grid$Values[3]))
+			Y0<-as.numeric(as.character(GeneralParameters$new.grid$Values[4]))
+			Y1<-as.numeric(as.character(GeneralParameters$new.grid$Values[5]))
+			pY<-as.numeric(as.character(GeneralParameters$new.grid$Values[6]))
 
 			grd.lon<-seq(X0,X1,pX)
 			nlon0<-length(grd.lon)
@@ -309,13 +309,13 @@ execMergeRain<-function(origdir){
 			nlat0<-length(grd.lat)
 		}
 	}else{
-		adjDir<-as.character(gal.params$file.io$Values[4])
-		adjPrefix<-as.character(gal.params$prefix$Values[1])
-		#mrgPrefix<-as.character(gal.params$prefix$Values[2])
+		adjDir<-as.character(GeneralParameters$file.io$Values[4])
+		adjPrefix<-as.character(GeneralParameters$prefix$Values[1])
+		#mrgPrefix<-as.character(GeneralParameters$prefix$Values[2])
 		fstdate<-ifelse(freqData=='monthly',substr(istart,1,6),istart)
 		adjFile<-file.path(adjDir,paste(adjPrefix,'_',fstdate,'.nc',sep=''),fsep = .Platform$file.sep)
 		if(!file.exists(adjFile)){
-			insert.txt(main.txt.out,"Adjusted RFE data not found",format=TRUE)
+			InsertMessagesTxt(main.txt.out,"Adjusted RFE data not found",format=TRUE)
 			return(NULL)
 		}
 		nc<-nc_open(adjFile)
@@ -331,7 +331,7 @@ execMergeRain<-function(origdir){
 	newlocation.merging<-SpatialPixels(points =newlocation.merging, tolerance =sqrt(sqrt(.Machine$double.eps)),proj4string = CRS(as.character(NA)))
 
 	########Blank mask
-	usemask<-as.character(gal.params$blankGrd)
+	usemask<-as.character(GeneralParameters$blankGrd)
 	if(usemask=="1") outMask<-NULL
 	if(usemask=="2"){
 		dem.grd<-krige(formula = dem ~ 1,locations=mrgRaindat$demData2$demGrd, newdata=newlocation.merging,nmax=4,nmin =2,debug.level=0)

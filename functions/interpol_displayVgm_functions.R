@@ -19,12 +19,12 @@ plotVariogramFun<-function(odata,vgmChx,VgmMod,vgmModList,useELV){
 ###############################
 displayVariogramFun<-function(parent,notebookTab,donne,vgmChx,VgmMod,vgmModList,useELV){
 	if(is.null(donne)){
-		insert.txt(main.txt.out,'No station data found',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'No station data found',format=TRUE)
 		return(NULL)
 	}
 
 	if(useELV=='1' & is.null(donne$elv)){
-		insert.txt(main.txt.out,'No DEM data found',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'No DEM data found',format=TRUE)
 		return(NULL)
 	}
 
@@ -36,12 +36,12 @@ displayVariogramFun<-function(parent,notebookTab,donne,vgmChx,VgmMod,vgmModList,
 	odata<-odata[!is.na(odata$z), ]
 
 	if(nrow(odata)<5){
-		insert.txt(main.txt.out,'Number of observations is too small to interpolate',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Number of observations is too small to interpolate',format=TRUE)
 		return(NULL)
 	}
 
 	if(vgmChx=='1' & length(vgmModList)<1){
-		insert.txt(main.txt.out,'No variogram model found',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'No variogram model found',format=TRUE)
 		return(NULL)
 	}
 
@@ -56,7 +56,7 @@ displayVariogramFun<-function(parent,notebookTab,donne,vgmChx,VgmMod,vgmModList,
 
 	###################################################################
 
-	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=paste('Variogram -',donne$date),tab.type,tab.data)
+	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=paste('Variogram -',donne$date),AllOpenTabType,AllOpenTabData)
 
 	hscale<-as.numeric(tclvalue(tkget(spinH)))
 	vscale<-as.numeric(tclvalue(tkget(spinV)))

@@ -54,7 +54,7 @@ names(itable)<-c("id1","id2","id3","data")
   Nall<-dim(itable)[1]
   ind<-ori.itable[ooflg,1]*10000+ori.itable[ooflg,2]*100+ori.itable[ooflg,3]
   if(sum(!(ind%in%Ind2))>0|all.equal(ind,sort(ind))!=T){
-	insert.txt(main.txt.out,"Input data series not continuous",format=TRUE)
+	InsertMessagesTxt(main.txt.out,"Input data series not continuous",format=TRUE)
 	#cat("Input data series not continuous",'\n')
 #   ErrorMSG<<-paste("Input data series not continuous\n")
     return(-1)
@@ -80,7 +80,7 @@ names(itable)<-c("id1","id2","id3","data")
     if(Ti[i+1]-Ti[i]==1) IY0flg[i]<-1
   }
   if(sum(IY0flg)<10){  # too few available data for autocorlh
-	insert.txt(main.txt.out,"Too many missing values to estimate autocorrelation",format=TRUE)
+	InsertMessagesTxt(main.txt.out,"Too many missing values to estimate autocorrelation",format=TRUE)
 	#cat("Too many missing values to estimate autocorrelation",'\n')
 #    ErrorMSG<<-paste("Too many missing values to estimate autocorrelation\n")
     return(-1)

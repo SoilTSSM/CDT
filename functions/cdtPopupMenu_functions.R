@@ -4,18 +4,18 @@ popup.opfiles <- tkmenu(all.opfiles, tearoff = FALSE)
 tkadd(popup.opfiles, "command", label = "Remove data", command=function() removeList())
 tkadd(popup.opfiles, "separator")
 tkadd(popup.opfiles, "command", label = "Open in table", command=function(){
-	tp.file<-type.opfiles[[as.numeric(tclvalue(tkcurselection(all.opfiles)))+1]]
+	tp.file<-AllOpenFilesType[[as.numeric(tclvalue(tkcurselection(all.opfiles)))+1]]
 	if(length(tp.file)!=0){
 		if(tp.file=='ascii'){
 			tkconfigure(main.win,cursor='watch');tcl('update')
 			tab.array<-displayInTable(tknotes)
 			tkconfigure(main.win,cursor='')
-			ntab<-length(tab.type)
-			tab.type[[ntab+1]]<<-'arr'
-			tab.data[[ntab+1]]<<-tab.array
+			ntab<-length(AllOpenTabType)
+			AllOpenTabType[[ntab+1]]<<-'arr'
+			AllOpenTabData[[ntab+1]]<<-tab.array
 			tkselect(tknotes,ntab)
 			#getTableInChange(tknotes)
-		}else insert.txt(main.txt.out,'This data type can not be displayed on a table',format=TRUE)
+		}else InsertMessagesTxt(main.txt.out,'This data type can not be displayed on a table',format=TRUE)
 	}else return(NULL)
 })
 
@@ -24,7 +24,7 @@ defile.popup <- function(x, y) {
 	rooty <- as.integer(tkwinfo("rooty", all.opfiles))
 	xTxt <- as.integer(x) + rootx
 	yTxt <- as.integer(y) + rooty
-	tkselection.clear(all.opfiles,"0",as.character(length(file.opfiles)-1))
+	tkselection.clear(all.opfiles,"0",as.character(length(AllOpenFilesData)-1))
 	idsel<-tclvalue(tkindex(all.opfiles,paste("@",x,",",y,sep="")))
 	tkselection.set(all.opfiles,idsel)
 	#tkitemconfigure(all.opfiles,idsel,selectbackground="yellow",selectforeground="blue")
@@ -40,20 +40,20 @@ tkbind(all.opfiles, "<Button-3>", function(x,y){
 removeList<-function(){
 	id.act<-as.numeric(tclvalue(tkcurselection(all.opfiles)))+1
 	tkdelete(all.opfiles,id.act-1)
-	type.opfiles[id.act]<<-NULL
-	file.opfiles[id.act]<<-NULL
-	#type.opfiles<<-type.opfiles[-id.act]
-	#file.opfiles<<-file.opfiles[-id.act]
+	AllOpenFilesType[id.act]<<-NULL
+	AllOpenFilesData[id.act]<<-NULL
+	#AllOpenFilesType<<-AllOpenFilesType[-id.act]
+	#AllOpenFilesData<<-AllOpenFilesData[-id.act]
 }
 
 ###Display in a table
 displayInTable<-function(parent){
 	id.act<-as.numeric(tclvalue(tkcurselection(all.opfiles)))+1
-	onglet<-addNewTab(parent,tab.title=file.opfiles[[id.act]][[1]])
-	dat.file<-file.opfiles[[id.act]][[2]]
+	onglet<-addNewTab(parent,tab.title=AllOpenFilesData[[id.act]][[1]])
+	dat.file<-AllOpenFilesData[[id.act]][[2]]
 	dtab<-tclArrayVar(dat.file)
 	table1<-displayTable(onglet[[2]],tclArray=dtab)
-	return(list(onglet,table1,file.opfiles[[id.act]][[3]]))
+	return(list(onglet,table1,AllOpenFilesData[[id.act]][[3]]))
 }
 
 #########################################################################################################
@@ -99,8 +99,8 @@ popupAddRemoveRow0<-function(parent,tabData,tabid){
 ##################################################
 popupAddRemoveRow<-function(parent){
 	tabid<-as.numeric(tclvalue(tkindex(parent,'current')))+1
-	table1<-tab.data[[tabid]][[2]][[1]]
-	data_arr<-tab.data[[tabid]][[2]][[2]]
+	table1<-AllOpenTabData[[tabid]][[2]][[1]]
+	data_arr<-AllOpenTabData[[tabid]][[2]][[2]]
 	nl<-data_arr$nrow
 	popup.EditTable <- tkmenu(table1, tearoff = FALSE)
 	tkadd(popup.EditTable, "command", label = "Insert row above", command=function(){

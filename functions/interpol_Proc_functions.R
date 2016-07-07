@@ -72,18 +72,18 @@ interpolationProc<-function(donne,demdata,interpolParams){
 
 
 	if(is.null(donne)){
-		insert.txt(main.txt.out,'No station data found',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'No station data found',format=TRUE)
 		return(NULL)
 	}
 
 	if(useELV=='1' & is.null(donne$elv)) return(NULL)
 	if(useELV=='1' & is.null(demdata)){
-		insert.txt(main.txt.out,'No DEM data found',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'No DEM data found',format=TRUE)
 		return(NULL)
 	}
 
 	if(is.na(file2save) | file2save==''){
-		insert.txt(main.txt.out,'No output file provided',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'No output file provided',format=TRUE)
 		return(NULL)
 	}
 
@@ -95,7 +95,7 @@ interpolationProc<-function(donne,demdata,interpolParams){
 	odata<-odata[!is.na(odata$z), ]
 
 	if(nrow(odata)<5){
-		insert.txt(main.txt.out,'Number of observations is too small to interpolate',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Number of observations is too small to interpolate',format=TRUE)
 		return(NULL)
 	}
 
@@ -107,19 +107,19 @@ interpolationProc<-function(donne,demdata,interpolParams){
 
 	if(grdChx=='0'){
 		if(is.na(ncfila) | ncfila==''){
-			insert.txt(main.txt.out,'No NetCDF gridded data provided',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'No NetCDF gridded data provided',format=TRUE)
 			return(NULL)
 		}
-		all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+		all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 		jfile<-which(all.open.file==ncfila)
-		fdem<-file.opfiles[[jfile]][[2]]
+		fdem<-AllOpenFilesData[[jfile]][[2]]
 		xlon<-fdem$x
 		xlat<-fdem$y
 	}
 	if(grdChx=='1'){
 		parGrd<-as.numeric(as.character(grdCR$new.grid$Values))
 		if(sum(is.na(parGrd))>0){
-			insert.txt(main.txt.out,'Some values for grid are missing',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Some values for grid are missing',format=TRUE)
 			return(NULL)
 		}
 		xlon<-seq(parGrd[1],parGrd[2],parGrd[3])
@@ -144,8 +144,8 @@ interpolationProc<-function(donne,demdata,interpolParams){
 			#fvgm<-try(fit.variogram(evgm,model=vgm(psill=max(evgm$gamma,na.rm=T), model=VgmMod, range=max(evgm$dist,na.rm=T), nugget=min(evgm$gamma,na.rm=T))),silent=TRUE)
 			fvgm<-try(fit.variogram(evgm,model=vgm(psill=var(odata$z,na.rm=T), model=VgmMod,range=quantile(evgm$dist,probs=0.8,na.rm=T), nugget=min(evgm$gamma,na.rm=T))),silent=TRUE)
 			if(inherits(fvgm, "try-error")){
-				insert.txt(main.txt.out,"Variogram fitting failed",format=TRUE)
-				insert.txt(main.txt.out,gsub('[\r\n]','',fvgm[1]),format=TRUE)
+				InsertMessagesTxt(main.txt.out,"Variogram fitting failed",format=TRUE)
+				InsertMessagesTxt(main.txt.out,gsub('[\r\n]','',fvgm[1]),format=TRUE)
 				return(NULL)
 			}
 		}
@@ -153,8 +153,8 @@ interpolationProc<-function(donne,demdata,interpolParams){
 			if(useELV=='1') autovgm<-try(autofitVariogram(z~elv,model=vgmModList,input_data=odata),silent=TRUE)
 			else autovgm<-try(autofitVariogram(z~1,model=vgmModList,input_data=odata),silent=TRUE)
 			if(inherits(autovgm, "try-error")){
-				insert.txt(main.txt.out,"Variogram fitting failed",format=TRUE)
-				insert.txt(main.txt.out,gsub('[\r\n]','',autovgm[1]),format=TRUE)
+				InsertMessagesTxt(main.txt.out,"Variogram fitting failed",format=TRUE)
+				InsertMessagesTxt(main.txt.out,gsub('[\r\n]','',autovgm[1]),format=TRUE)
 				return(NULL)
 			}else{
 				fvgm<-autovgm$var_model
@@ -208,8 +208,8 @@ interpolationProc<-function(donne,demdata,interpolParams){
 		nc_close(nc2)
 		return(list(filename,list(x=xlon,y=xlat,value=out.interp0),outfl))
 	}else{
-		insert.txt(main.txt.out,"Interpolation failed",format=TRUE)
-		insert.txt(main.txt.out,gsub('[\r\n]','',intrpdata[1]),format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Interpolation failed",format=TRUE)
+		InsertMessagesTxt(main.txt.out,gsub('[\r\n]','',intrpdata[1]),format=TRUE)
 		return(NULL)
 	}
 }

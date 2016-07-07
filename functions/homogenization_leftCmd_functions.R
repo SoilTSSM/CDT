@@ -1,5 +1,5 @@
 
-HomogCmdBut<-function(gal.params){
+HomogCmdBut<-function(GeneralParameters){
 	cmd.frame<-tkframe(panel.left,relief='groove',bd=2)
 #	tkgrid(cmd.frame,sticky='we',pady=5)
 
@@ -35,7 +35,7 @@ HomogCmdBut<-function(gal.params){
 	homAdjframe<-ttklabelframe(cmd.frame,text="Adjusted series selection",labelanchor="nw",relief="groove",borderwidth=2)
 	tkgrid(homAdjframe,padx=2,pady=5,sticky='we')
 	infobulle(homAdjframe,'Select the adjusted series to be retained')
-	status.bar.display(homAdjframe,txt.stbr1,'Select the adjusted series to be retained')
+	status.bar.display(homAdjframe,TextOutputVar,'Select the adjusted series to be retained')
 
 
 	AdjMthdRadio1<- tkradiobutton(homAdjframe,text="By Mean",anchor='w',justify='left')
@@ -52,88 +52,88 @@ HomogCmdBut<-function(gal.params){
 ####################
 	PrevwHomIdTab<-NULL
 	tkconfigure(cmd.preview,command=function(){
-		if(!is.null(ret.results)){
-			res2disp<-ret.results
+		if(!is.null(ReturnExecResults)){
+			res2disp<-ReturnExecResults
 			res2disp$refSerie<-NULL
 
-			retNBTab<-consolOutNotebookTab_unik(tknotes,res2disp,paste(res2disp$station,'-Output Preview'),PrevwHomIdTab,tab.type,tab.data)
+			retNBTab<-consolOutNotebookTab_unik(tknotes,res2disp,paste(res2disp$station,'-Output Preview'),PrevwHomIdTab,AllOpenTabType,AllOpenTabData)
 			PrevwHomIdTab<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
-		}else insert.txt(main.txt.out,'There is no homogenization results',format=TRUE)
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
+		}else InsertMessagesTxt(main.txt.out,'There is no homogenization results',format=TRUE)
 	})
 
 ########
 	noteHomBrkPlot<-NULL
 	tkconfigure(cmd.plot,command=function(){
-		if(!is.null(ret.results) & !is.null(gal.params)){
+		if(!is.null(ReturnExecResults) & !is.null(GeneralParameters)){
 			imgContainer<-plotHomogBreakPts(tknotes,noteHomBrkPlot,replotBreak=FALSE)
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteHomBrkPlot,tab.type,tab.data)
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteHomBrkPlot,AllOpenTabType,AllOpenTabData)
 			noteHomBrkPlot<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
-		}else insert.txt(main.txt.out,'There is no homogenization results',format=TRUE)
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
+		}else InsertMessagesTxt(main.txt.out,'There is no homogenization results',format=TRUE)
 	})
 
 #######
 	noteHomBrkPlot1<-NULL
 	tkconfigure(cmd.replot,command=function(){
-		if(!is.null(ret.results) & !is.null(gal.params)){
+		if(!is.null(ReturnExecResults) & !is.null(GeneralParameters)){
 			imgContainer<-plotHomogBreakPts(tknotes,noteHomBrkPlot1,replotBreak=TRUE)
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteHomBrkPlot1,tab.type,tab.data)
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteHomBrkPlot1,AllOpenTabType,AllOpenTabData)
 			noteHomBrkPlot1<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
-		}else insert.txt(main.txt.out,'There is no homogenization results',format=TRUE)
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
+		}else InsertMessagesTxt(main.txt.out,'There is no homogenization results',format=TRUE)
 	})
 
 ######
 	noteHomAdjPlot<-NULL
 	tkconfigure(cmd.adjplot,command=function(){
-		if(!is.null(ret.results) & !is.null(adjDon)){
+		if(!is.null(ReturnExecResults) & !is.null(adjDon)){
 			iselect<-as.numeric(tkcurselection(cmd.ltbx))+1
 
 			imgContainer<-plotadjusted(tknotes,iselect,noteHomAdjPlot)
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteHomAdjPlot,tab.type,tab.data)
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,noteHomAdjPlot,AllOpenTabType,AllOpenTabData)
 			noteHomAdjPlot<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
-		}else insert.txt(main.txt.out,'There is no adjusted data yet',format=TRUE)
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
+		}else InsertMessagesTxt(main.txt.out,'There is no adjusted data yet',format=TRUE)
 	})
 
 #######
 	HomEditSetTab<-NULL
 	tkconfigure(cmd.chgcpt,command=function(){
-		if(!is.null(ret.results)){
-			retNBTab<-tableHomogNotebookTab_unik(tknotes,paste(ret.results$station,'_Edit',sep=''),HomEditSetTab,tab.type,tab.data)
+		if(!is.null(ReturnExecResults)){
+			retNBTab<-tableHomogNotebookTab_unik(tknotes,paste(ReturnExecResults$station,'_Edit',sep=''),HomEditSetTab,AllOpenTabType,AllOpenTabData)
 			HomEditSetTab<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
-		}else insert.txt(main.txt.out,'There is no homogenization results',format=TRUE)
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
+		}else InsertMessagesTxt(main.txt.out,'There is no homogenization results',format=TRUE)
 	})
 
 #######
 	tkconfigure(cmd.reset,command=function(){
-		if(!is.null(ret.results)) undoBreaksChange()
-		else insert.txt(main.txt.out,'There is no homogenization results',format=TRUE)
+		if(!is.null(ReturnExecResults)) undoBreaksChange()
+		else InsertMessagesTxt(main.txt.out,'There is no homogenization results',format=TRUE)
 	})
 
 	tkconfigure(cmd.adjust,command=function(){
-		if(!is.null(ret.results) & !is.null(gal.params)){
+		if(!is.null(ReturnExecResults) & !is.null(GeneralParameters)){
 			adj2run<-try(adjDon<<-AdjustInHomog(as.numeric(tclvalue(ChoixAjustment))), silent=TRUE)
 			is.ok.adj <- !inherits(adj2run, "try-error")
 			if(is.ok.adj){
-				retdata<-DisplayHomInfo(tknotes,data.frame(adjDon$Info),paste(ret.results$station,'Adj.Info'))
-				ntab<-length(tab.type)
-				tab.type[[ntab+1]]<<-'homInfo'
-				tab.data[[ntab+1]]<<-retdata
+				retdata<-DisplayHomInfo(tknotes,data.frame(adjDon$Info),paste(ReturnExecResults$station,'Adj.Info'))
+				ntab<-length(AllOpenTabType)
+				AllOpenTabType[[ntab+1]]<<-'homInfo'
+				AllOpenTabData[[ntab+1]]<<-retdata
 				tkselect(tknotes,ntab)
-				insert.txt(main.txt.out,paste("Adjustment finished successfully for", ret.results$station))
+				InsertMessagesTxt(main.txt.out,paste("Adjustment finished successfully for", ReturnExecResults$station))
 			}else{
-				insert.txt(main.txt.out,paste("Adjustment failed for",ret.results$station),format=TRUE)
-				insert.txt(main.txt.out,gsub('[\r\n]','',adj2run[1]),format=TRUE)
+				InsertMessagesTxt(main.txt.out,paste("Adjustment failed for",ReturnExecResults$station),format=TRUE)
+				InsertMessagesTxt(main.txt.out,gsub('[\r\n]','',adj2run[1]),format=TRUE)
 			}
-		}else insert.txt(main.txt.out,'Reinitialize the operation. Parameters or Outputs are not a homogenization results',format=TRUE)
+		}else InsertMessagesTxt(main.txt.out,'Reinitialize the operation. Parameters or Outputs are not a homogenization results',format=TRUE)
 	})
 
 
@@ -142,6 +142,6 @@ HomogCmdBut<-function(gal.params){
 	tkgrid(cmd.frame,sticky='nswe',pady=5)
 	######
 
-	return(list(cmd.frame,gal.params))
+	return(list(cmd.frame,GeneralParameters))
 }
 

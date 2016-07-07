@@ -1,19 +1,19 @@
-getRHtestsData<-function(gal.params){
-	freqdata<-gal.params$period
-	single.series<-gal.params$single.series
-	useref<-gal.params$use.ref.series
-	filedatefrmt<-as.character(gal.params$file.date.format$Values)
+getRHtestsData<-function(GeneralParameters){
+	freqdata<-GeneralParameters$period
+	single.series<-GeneralParameters$single.series
+	useref<-GeneralParameters$use.ref.series
+	filedatefrmt<-as.character(GeneralParameters$file.date.format$Values)
 	filefrmt<-filedatefrmt[1]
 	datefrmt<-filedatefrmt[2]
 	varcat<-filedatefrmt[3]
-	comppars<-as.character(gal.params$compute.var$Values)
+	comppars<-as.character(GeneralParameters$compute.var$Values)
 	comp.fun<-comppars[1]
 	miss.frac<-as.numeric(comppars[2])
-	file.pars<-as.character(gal.params$file.io$Values)
+	file.pars<-as.character(GeneralParameters$file.io$Values)
 
-	outdir<-file.path(as.character(gal.params$file.io$Values[4]),paste('RHtests_Output',getf.no.ext(as.character(gal.params$file.io$Values[1])),sep='_'),'Outputs',fsep = .Platform$file.sep)
+	outdir<-file.path(as.character(GeneralParameters$file.io$Values[4]),paste('RHtests_Output',getf.no.ext(as.character(GeneralParameters$file.io$Values[1])),sep='_'),'Outputs',fsep = .Platform$file.sep)
 	dir.create(outdir,showWarnings=FALSE,recursive=TRUE)
-	origdir<-file.path(as.character(gal.params$file.io$Values[4]),paste('RHtests_Output',getf.no.ext(as.character(gal.params$file.io$Values[1])),sep='_'),'Data',fsep = .Platform$file.sep)
+	origdir<-file.path(as.character(GeneralParameters$file.io$Values[4]),paste('RHtests_Output',getf.no.ext(as.character(GeneralParameters$file.io$Values[1])),sep='_'),'Data',fsep = .Platform$file.sep)
 	dir.create(origdir,showWarnings=FALSE,recursive=TRUE)
 
 	flmondata<-file.path(origdir, paste('MONTHLY',file.pars[1],sep='_'),fsep = .Platform$file.sep)
@@ -23,10 +23,10 @@ getRHtestsData<-function(gal.params){
 	}
 
 	#####
-	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+	all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 	jfile<-which(all.open.file==file.pars[1])
-	donne<-file.opfiles[[jfile]][[2]]
-	MissingValue<-file.opfiles[[jfile]][[4]]$miss.val
+	donne<-AllOpenFilesData[[jfile]][[2]]
+	MissingValue<-AllOpenFilesData[[jfile]][[4]]$miss.val
 
 	##CDT data format
 	retval<-NULL
@@ -92,11 +92,11 @@ getRHtestsData<-function(gal.params){
 	}else{ #1series
 		if(useref==1){ #1series with ref
 			if(file.pars[2]==""){
-				insert.txt(main.txt.out,'There is no reference series provided',format=TRUE)
+				InsertMessagesTxt(main.txt.out,'There is no reference series provided',format=TRUE)
 				return(NULL)
 			}else{
 				jfile1<-which(all.open.file==file.pars[2])
-				donne1<-file.opfiles[[jfile1]][[2]]
+				donne1<-AllOpenFilesData[[jfile1]][[2]]
 			}
 		}
 
@@ -332,26 +332,26 @@ getRHtestsData<-function(gal.params){
 
 ######################################################################
 
-getRHtestsDEM<-function(donnees,gal.params){
-	single.series<-gal.params$single.series
-	useref<-as.character(gal.params$use.ref.series)
-	uselv<-as.character(gal.params$ref.series.choix$Values[2])
-	interp.dem<-as.character(gal.params$ref.series.choix$Values[3])
-	file.dem<-as.character(gal.params$file.io$Values[3])
+getRHtestsDEM<-function(donnees,GeneralParameters){
+	single.series<-GeneralParameters$single.series
+	useref<-as.character(GeneralParameters$use.ref.series)
+	uselv<-as.character(GeneralParameters$ref.series.choix$Values[2])
+	interp.dem<-as.character(GeneralParameters$ref.series.choix$Values[3])
+	file.dem<-as.character(GeneralParameters$file.io$Values[3])
 	if(single.series=="0"){
 		if(useref=="1" & uselv=="1"){
 			if(is.null(donnees)){
-				insert.txt(main.txt.out,'Data not yet loaded.',format=TRUE)
+				InsertMessagesTxt(main.txt.out,'Data not yet loaded.',format=TRUE)
 				return(NULL)
 			}else{
 				if(interp.dem=="0"){
 					if(file.dem==""){
-						insert.txt(main.txt.out,'There is no elevation data in format NetCDF',format=TRUE)
+						InsertMessagesTxt(main.txt.out,'There is no elevation data in format NetCDF',format=TRUE)
 						return(NULL)
 					}else{
-						all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+						all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 						jncdf<-which(all.open.file==file.dem)
-						fdem<-file.opfiles[[jncdf]][[2]]
+						fdem<-AllOpenFilesData[[jncdf]][[2]]
 						dem<-fdem$value
 						dem[dem<0]<-NA
 						dem<-data.frame(expand.grid(x=fdem$x,y=fdem$y),z=c(dem))
@@ -360,7 +360,7 @@ getRHtestsDEM<-function(donnees,gal.params){
 					}
 				}else{
 					if(is.null(donnees$Elv)){
-						insert.txt(main.txt.out,'There is no elevation data in your file',format=TRUE)
+						InsertMessagesTxt(main.txt.out,'There is no elevation data in your file',format=TRUE)
 						return(NULL)
 					}else  elv<-donnees$Elv
 				}
@@ -374,13 +374,13 @@ getRHtestsDEM<-function(donnees,gal.params){
 ##############################################################################
 
 
-getRHtestsRefSeries<-function(xpos,donnees,dem_data,gal.params,freqDON='MON'){
+getRHtestsRefSeries<-function(xpos,donnees,dem_data,GeneralParameters,freqDON='MON'){
 
 	if(freqDON=='MON') don<-donnees$datmon
 	if(freqDON=='DEK') don<-donnees$datdek
 	if(freqDON=='DLY') don<-donnees$datdly
 
-	parsRef<-as.character(gal.params$ref.series.choix$Values)
+	parsRef<-as.character(GeneralParameters$ref.series.choix$Values)
 	weight.fac<-parsRef[1]
 	uselv<-parsRef[2]
 	min.stn<-as.numeric(parsRef[4])
@@ -389,9 +389,9 @@ getRHtestsRefSeries<-function(xpos,donnees,dem_data,gal.params,freqDON='MON'){
 	elv.diff<-as.numeric(parsRef[7])
 	min.rho<-as.numeric(parsRef[8])
 
-	if(gal.params$use.ref.series=='1'){
-		if(gal.params$ref.series.user=='1'){
-			ypos<-gal.params$stn.user.choice
+	if(GeneralParameters$use.ref.series=='1'){
+		if(GeneralParameters$ref.series.user=='1'){
+			ypos<-GeneralParameters$stn.user.choice
 			if(is.null(ypos)){
 				ref<-NULL
 				msg<-'There is no station selected'

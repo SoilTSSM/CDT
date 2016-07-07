@@ -1,5 +1,5 @@
 PlotMergingOutputCmd<-function(){
-	file.list<-openFile_ttkcomboList()
+	listOpenFiles<-openFile_ttkcomboList()
 
 	##tkcombo& tkentry width
 	#largeur<-27  
@@ -50,24 +50,24 @@ PlotMergingOutputCmd<-function(){
 	combPrd.tab1<-ttkcombobox(frameStn, values=c('Daily data','Dekadal data','Monthly data'), textvariable=file.period)
 
 	file.stnfl <- tclVar()
-	combStnfl.tab1<-ttkcombobox(frameStn,values=unlist(file.list),textvariable=file.stnfl,width=largeur)
+	combStnfl.tab1<-ttkcombobox(frameStn,values=unlist(listOpenFiles),textvariable=file.stnfl,width=largeur)
 	btStnfl.tab1<-tkbutton(frameStn, text="...") 
 	tkconfigure(btStnfl.tab1,command=function(){
 		dat.opfiles<-getOpenFiles(main.win,all.opfiles)
 		if(!is.null(dat.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'ascii'
-			file.opfiles[[nopf+1]]<<-dat.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]] 
-			tclvalue(file.stnfl)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combStnfl.tab1,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(combShp.tab1,values=unlist(file.list), textvariable=file.plotShp)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'ascii'
+			AllOpenFilesData[[nopf+1]]<<-dat.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]] 
+			tclvalue(file.stnfl)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(combStnfl.tab1,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(combShp.tab1,values=unlist(listOpenFiles), textvariable=file.plotShp)
 		}else return(NULL)
 	})
 	infobulle(combStnfl.tab1,'Choose the station data in the list')
-	status.bar.display(combStnfl.tab1,txt.stbr1,'Choose the file containing the station data')
+	status.bar.display(combStnfl.tab1,TextOutputVar,'Choose the file containing the station data')
 	infobulle(btStnfl.tab1,'Browse file if not listed')
-	status.bar.display(btStnfl.tab1,txt.stbr1,'Browse file if not listed')
+	status.bar.display(btStnfl.tab1,TextOutputVar,'Browse file if not listed')
 	#######################
 	labDate.tab1<-tklabel(frameStn,text="Date",anchor='e',justify='right')
 	yrsLab.tab1<-tklabel(frameStn,text='Year',anchor='w',justify='left')
@@ -87,13 +87,13 @@ PlotMergingOutputCmd<-function(){
 	obsLab.tab1<-tklabel(frameStn,text='Title',anchor='e',justify='right')
 	obsEd.tab1<-tkentry(frameStn, width=14,textvariable=obs_name,justify = "left")
 	infobulle(obsEd.tab1,'Title of the panel')
-	status.bar.display(obsEd.tab1,txt.stbr1,'Title of the panel')
+	status.bar.display(obsEd.tab1,TextOutputVar,'Title of the panel')
 
 	unit_sym<-tclVar('mm')	
 	unitLab.tab1<-tklabel(frameStn,text='Units',anchor='e',justify='right')
 	unitEd.tab1<-tkentry(frameStn, width=8,textvariable=unit_sym,justify = "left")
 	infobulle(unitEd.tab1,'Display unit on colorscale')
-	status.bar.display(unitEd.tab1,txt.stbr1,'Display unit on colorscale')
+	status.bar.display(unitEd.tab1,TextOutputVar,'Display unit on colorscale')
 
 	####################
 	tkgrid(combPrd.tab1,row=0,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=2,ipadx=1,ipady=1)
@@ -115,18 +115,18 @@ PlotMergingOutputCmd<-function(){
 	frameShp<-ttklabelframe(subfr1,text="Shapefiles for boundary",relief='groove')
 	
 	file.plotShp <- tclVar()
-	combShp.tab1<-ttkcombobox(frameShp, values=unlist(file.list), textvariable=file.plotShp,width=largeur) 
+	combShp.tab1<-ttkcombobox(frameShp, values=unlist(listOpenFiles), textvariable=file.plotShp,width=largeur) 
 	btShp.tab1<-tkbutton(frameShp, text="...") 
 	tkconfigure(btShp.tab1,command=function(){
 		shp.opfiles<-getOpenShp(main.win,all.opfiles)
 		if(!is.null(shp.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'shp'
-			file.opfiles[[nopf+1]]<<-shp.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]		
-			tclvalue(file.plotShp)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combStnfl.tab1,values=unlist(file.list), textvariable=file.stnfl)
-			tkconfigure(combShp.tab1,values=unlist(file.list), textvariable=file.plotShp)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'shp'
+			AllOpenFilesData[[nopf+1]]<<-shp.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]		
+			tclvalue(file.plotShp)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(combStnfl.tab1,values=unlist(listOpenFiles), textvariable=file.stnfl)
+			tkconfigure(combShp.tab1,values=unlist(listOpenFiles), textvariable=file.plotShp)
 		}
 	})
 	
@@ -168,21 +168,21 @@ PlotMergingOutputCmd<-function(){
 			else tclvalue(dir_ncdf)<-dir4ncdf
 		})
 		infobulle(dir_ncdfEd.tab2,'Enter the full path to\ndirectory containing the NetCDF files')
-		status.bar.display(dir_ncdfEd.tab2,txt.stbr1,'Enter the full path to directory containing the NetCDF files')
+		status.bar.display(dir_ncdfEd.tab2,TextOutputVar,'Enter the full path to directory containing the NetCDF files')
 		infobulle(dir_ncdfBt.tab2,'Select directory here')
-		status.bar.display(dir_ncdfBt.tab2,txt.stbr1,'Select directory here')
+		status.bar.display(dir_ncdfBt.tab2,TextOutputVar,'Select directory here')
 
 		ff_ncdf <-tclVar("rfe%s_%s_%s.nc")
 		ff_ncdfLab.tab2<-tklabel(frameNcdf,text='NetCDF filename format',anchor='w',justify='left')
 		ff_ncdfEd.tab2<-tkentry(frameNcdf,width=14,textvariable=ff_ncdf,justify = "left")
 		infobulle(ff_ncdfEd.tab2,'Enter the format of the NetCDF files names,\nexample: rfe1983_01_01.nc')
-		status.bar.display(ff_ncdfEd.tab2,txt.stbr1,'Enter the format of the NetCDF files names, example: rfe1983_01_01.nc')
+		status.bar.display(ff_ncdfEd.tab2,TextOutputVar,'Enter the format of the NetCDF files names, example: rfe1983_01_01.nc')
 
 		title_ncdf<-tclVar(paste('NetCDF',nfr))	
 		ttl_ncdfLab.tab2<-tklabel(frameNcdf,text='Plot Title',anchor='w',justify='left')
 		ttl_ncdfEd.tab2<-tkentry(frameNcdf, width=14,textvariable=title_ncdf,justify = "left")
 		infobulle(ttl_ncdfEd.tab2,'Title of the plot')
-		status.bar.display(ttl_ncdfEd.tab2,txt.stbr1,'Title of the plot')
+		status.bar.display(ttl_ncdfEd.tab2,TextOutputVar,'Title of the plot')
 
 		#######################
 		tkgrid(dir_ncdfLab.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=6,padx=1,pady=1,ipadx=1,ipady=1)
@@ -257,11 +257,11 @@ PlotMergingOutputCmd<-function(){
 	butCustoLev.tab3<-tkbutton(subfr3, text="Custom",state='disabled')
 
 	infobulle(combPresetCol.tab3,'Predefined color palettes')
-	status.bar.display(combPresetCol.tab3,txt.stbr1,'Predefined color palettes')
+	status.bar.display(combPresetCol.tab3,TextOutputVar,'Predefined color palettes')
 	infobulle(nbPresetCol.tab3,'Number of color levels to be in the palette')
-	status.bar.display(nbPresetCol.tab3,txt.stbr1,'Number of color levels to be in the palette')
+	status.bar.display(nbPresetCol.tab3,TextOutputVar,'Number of color levels to be in the palette')
 	infobulle(chkRevCol.tab3,'Reverse the color palettes')
-	status.bar.display(chkRevCol.tab3,txt.stbr1,'Reverse the color palettes')
+	status.bar.display(chkRevCol.tab3,TextOutputVar,'Reverse the color palettes')
 
 	#####
 	tkgrid(labPresetCol.tab3,row=0,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
@@ -393,10 +393,10 @@ PlotMergingOutputCmd<-function(){
 		
 		imgContainer<-displayPlotMerging(tknotes,notebookTab,allDATA,atLev,listCol,shpf,tclvalue(unit_sym))
 		if(!is.null(imgContainer)){
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,tab.type,tab.data)
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,AllOpenTabType,AllOpenTabData)
 			notebookTab<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
 		}
 	})	
 
@@ -407,14 +407,14 @@ PlotMergingOutputCmd<-function(){
 		if(tclvalue(file.period)=='Dekadal data'){
 			dek<-as.numeric(tclvalue(idate_day))
 			if(is.na(dek) | dek<1 | dek>3){
-				insert.txt(main.txt.out,"Dekad must be 1, 2 or 3",format=TRUE)
+				InsertMessagesTxt(main.txt.out,"Dekad must be 1, 2 or 3",format=TRUE)
 				return(NULL)
 			}
 			todaty<-paste(as.numeric(tclvalue(idate_yrs)),as.numeric(tclvalue(idate_mon)),dek,sep='-')
 		}
 		daty<-try(as.Date(todaty),silent=TRUE)
 		if(inherits(daty, "try-error") | is.na(daty)){
-			insert.txt(main.txt.out,paste("Date invalid",todaty),format=TRUE)
+			InsertMessagesTxt(main.txt.out,paste("Date invalid",todaty),format=TRUE)
 			return(NULL)
 		}
 		if(tclvalue(file.period)=='Daily data') daty <- daty-1
@@ -453,10 +453,10 @@ PlotMergingOutputCmd<-function(){
 		
 		imgContainer<-displayPlotMerging(tknotes,notebookTab,allDATA,atLev,listCol,shpf,tclvalue(unit_sym))
 		if(!is.null(imgContainer)){
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,tab.type,tab.data)
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,AllOpenTabType,AllOpenTabData)
 			notebookTab<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
 		}
 	})
 
@@ -467,14 +467,14 @@ PlotMergingOutputCmd<-function(){
 		if(tclvalue(file.period)=='Dekadal data'){
 			dek<-as.numeric(tclvalue(idate_day))
 			if(is.na(dek) | dek<1 | dek>3){
-				insert.txt(main.txt.out,"Dekad must be 1, 2 or 3",format=TRUE)
+				InsertMessagesTxt(main.txt.out,"Dekad must be 1, 2 or 3",format=TRUE)
 				return(NULL)
 			}
 			todaty<-paste(as.numeric(tclvalue(idate_yrs)),as.numeric(tclvalue(idate_mon)),dek,sep='-')
 		}
 		daty<-try(as.Date(todaty),silent=TRUE)
 		if(inherits(daty, "try-error") | is.na(daty)){
-			insert.txt(main.txt.out,paste("Date invalid",todaty),format=TRUE)
+			InsertMessagesTxt(main.txt.out,paste("Date invalid",todaty),format=TRUE)
 			return(NULL)
 		}
 		if(tclvalue(file.period)=='Daily data') daty <- daty+1
@@ -513,10 +513,10 @@ PlotMergingOutputCmd<-function(){
 		
 		imgContainer<-displayPlotMerging(tknotes,notebookTab,allDATA,atLev,listCol,shpf,tclvalue(unit_sym))
 		if(!is.null(imgContainer)){
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,tab.type,tab.data)
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,AllOpenTabType,AllOpenTabData)
 			notebookTab<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
 		}
 	})
 

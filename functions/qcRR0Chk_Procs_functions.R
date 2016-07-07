@@ -67,14 +67,14 @@ ZeroCheckStn<-function(pos,rr.dat,dates,coords,Zparams){
 ###################################################################
 
 QcOutZeroChkFormat<-function(){
-	outputdir<-ret.results$outputdir
-	if(ret.results$AllOrOne=='one'){
-		IJstation<-ret.results$station
+	outputdir<-ReturnExecResults$outputdir
+	if(ReturnExecResults$AllOrOne=='one'){
+		IJstation<-ReturnExecResults$station
 	}
-	if(ret.results$AllOrOne=='all'){
-		stns<-sapply(ret.results$res, function(x) x$station)
+	if(ReturnExecResults$AllOrOne=='all'){
+		stns<-sapply(ReturnExecResults$res, function(x) x$station)
 		ijstn<-which(stns==tclvalue(stn.choix.val))
-		IJstation<-ret.results$res[[ijstn]]$station
+		IJstation<-ReturnExecResults$res[[ijstn]]$station
 	}
 
 	fileout<-file.path(outputdir,IJstation,paste(IJstation,'.txt',sep=''),fsep = .Platform$file.sep)
@@ -84,9 +84,7 @@ QcOutZeroChkFormat<-function(){
 	return(retdata)
 }
 
-
 ###################################################################
-
 
 replaceZeroChkbyNA<-function(IJstation,retRes){
 	outputdir<-retRes$outputdir
@@ -94,25 +92,25 @@ replaceZeroChkbyNA<-function(IJstation,retRes){
 
 	filein<-file.path(outputdir,IJstation,paste(IJstation,'.txt',sep=''),fsep = .Platform$file.sep)
 	if(!file.exists(filein)){
-		insert.txt(main.txt.out,paste(IJstation,'not checked'),format=TRUE)
+		InsertMessagesTxt(main.txt.out,paste(IJstation,'not checked'),format=TRUE)
 		return(NULL)
 	}
 	outstn<-read.table(filein,header=TRUE,colClasses='character')
 	zcdaty<-as.character(outstn$YYYYMM)
 	if(sum(!is.na(zcdaty))==0){
-		insert.txt(main.txt.out,paste(IJstation,'OK! No data replaced'))
+		InsertMessagesTxt(main.txt.out,paste(IJstation,'OK! No data replaced'))
 		return(1)
 	}
 	zcdaty<-zcdaty[!is.na(zcdaty)]
 	zcdaty<-str_trim(zcdaty)
 	notmonth<-which(nchar(zcdaty)!=6)
 	if(length(notmonth)>0){
-		insert.txt(main.txt.out,paste(paste(zcdaty[notmonth],collapse=';'),'wrong date format'),format=TRUE)
+		InsertMessagesTxt(main.txt.out,paste(paste(zcdaty[notmonth],collapse=';'),'wrong date format'),format=TRUE)
 		return(NULL)
 	}
 	filein1<-file.path(datadir,IJstation,paste(IJstation,'.txt',sep=''),fsep = .Platform$file.sep)
 	if(!file.exists(filein1)){
-		insert.txt(main.txt.out,paste(filein1,'not found'),format=TRUE)
+		InsertMessagesTxt(main.txt.out,paste(filein1,'not found'),format=TRUE)
 		return(NULL)
 	}
 	datstn<-read.table(filein1)
@@ -122,4 +120,46 @@ replaceZeroChkbyNA<-function(IJstation,retRes){
 	return(0)
 }
 
+###################################################################
+
+QcOutZeroChk_Neighbors<-function(IJstation,date_month){
+	idstn<-EnvQcZeroChkData$donnees$id
+	dates<-EnvQcZeroChkData$donnees$dates
+	lon<-EnvQcZeroChkData$donnees$lon
+	lat<-EnvQcZeroChkData$donnees$lat
+	rr.dat<-EnvQcZeroChkData$donnees$data
+
+	##
+	pos<-which(idstn==IJstation)
+	imon<-substr(dates,1,6)==date_month
+
+	coordStn<-matrix(c(lon[pos],lat[pos]),ncol=2)
+	coordNei<-matrix(c(lon,lat),ncol=2)
+	dist<-as.numeric(rdist.earth(coordStn,coordNei, miles=FALSE))
+	ii<- dist<=as.numeric(GeneralParameters$param.zero$Values[4])
+	ii[pos]<-FALSE
+	rr.nei<-rr.dat[imon,ii]
+	dst.nei<-dist[ii]
+	id.nei<-idstn[ii]
+	rr.stn<-rr.dat[imon,pos]
+
+	num.days2<-as.numeric(apply(rr.nei,2,function(x) sum(x>=0,na.rm=T)))
+	ix<-which(num.days2 >=as.numeric(GeneralParameters$param.zero$Values[3]))
+	dst.nei <- dst.nei[ix]
+	rr.nei <- rr.nei[,ix]
+	id.nei <- id.nei[ix]
+	nmax.nei <- if(length(ix) > as.numeric(GeneralParameters$param.zero$Values[2])) as.numeric(GeneralParameters$param.zero$Values[2]) else length(ix)
+	oo<-order(dst.nei)
+	dst.nei <- dst.nei[oo]
+	rr.nei <- rr.nei[,oo]
+	id.nei <- id.nei[oo]
+	dst.nei <- dst.nei[1:nmax.nei]
+	rr.nei <- rr.nei[,1:nmax.nei]
+	id.nei <- id.nei[1:nmax.nei]
+
+	xdon<-cbind(c('Stations','Distance',dates[imon]),t(cbind(cbind(c(tclvalue(stn.choix.val),id.nei),c(0,round(dst.nei,1))),t(cbind(rr.stn,rr.nei)))))
+	xdon<-data.frame(xdon)
+	names(xdon)<-NULL
+	return(xdon)
+}
 

@@ -3,7 +3,7 @@
 
 
 ExtractDataPanelCmd<-function(){
-	file.list<-openFile_ttkcomboList()
+	listOpenFiles<-openFile_ttkcomboList()
 
 	##tkcombo& tkentry width
 	#largeur<-27
@@ -67,7 +67,7 @@ ExtractDataPanelCmd<-function(){
 	cap1.tab1<-tklabel(subfr1,text="NetCDF file format",anchor='e',justify='right')
 	netCDFff.tab1<-tkentry(subfr1,textvariable=netCDFff,width=wncdf_ff)
 	infobulle(netCDFff.tab1,'Enter the format of the NetCDF files names,\nexample: rr_mrg_1983011.nc')
-	status.bar.display(netCDFff.tab1,txt.stbr1,'Enter the format of the NetCDF files names, example: rr_mrg_1983011.nc')
+	status.bar.display(netCDFff.tab1,TextOutputVar,'Enter the format of the NetCDF files names, example: rr_mrg_1983011.nc')
 
 	#######################
 	sep2.tab1<-ttkseparator(subfr1)
@@ -75,18 +75,18 @@ ExtractDataPanelCmd<-function(){
 
 	Admin_shp <- tclVar()
 	lab2.tab1<-tklabel(subfr1,text="Shapefile for administrative boundaries",anchor='w',justify='left')
-	cbSHP.tab1<-ttkcombobox(subfr1, values=unlist(file.list), textvariable=Admin_shp,width=largeur)
+	cbSHP.tab1<-ttkcombobox(subfr1, values=unlist(listOpenFiles), textvariable=Admin_shp,width=largeur)
 	btSHP.tab1<-tkbutton(subfr1, text="...")
 	tkconfigure(btSHP.tab1,command=function(){
 		shp.opfiles<-getOpenShp(main.win,all.opfiles)
 
 		if(!is.null(shp.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'shp'
-			file.opfiles[[nopf+1]]<<-shp.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(Admin_shp)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cbSHP.tab1,values=unlist(file.list), textvariable=Admin_shp)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'shp'
+			AllOpenFilesData[[nopf+1]]<<-shp.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(Admin_shp)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cbSHP.tab1,values=unlist(listOpenFiles), textvariable=Admin_shp)
 
 			shpf<-getShpOpenData(Admin_shp)
 			shpAttr<-names(shpf[[2]]@data)
@@ -112,9 +112,9 @@ ExtractDataPanelCmd<-function(){
 			table1<-displayTable(onglet[[2]],tclArray=dtab)
 			tab.array<-list(onglet,table1,shpf[[3]])
 
-			ntab<-length(tab.type)
-			tab.type[[ntab+1]]<<-'arr'
-			tab.data[[ntab+1]]<<-tab.array
+			ntab<-length(AllOpenTabType)
+			AllOpenTabType[[ntab+1]]<<-'arr'
+			AllOpenTabData[[ntab+1]]<<-tab.array
 			tkselect(tknotes,ntab)
 		}
 	})
@@ -146,11 +146,11 @@ ExtractDataPanelCmd<-function(){
 			ZoomXYval<-as.numeric(c(tclvalue(xx1),tclvalue(xx2),tclvalue(yy1),tclvalue(yy2)))
 
 			imgContainer<-displayMap4Extraction(tknotes,shpf,ZoomXYval,notebookTab)
-			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,tab.type,tab.data)
+			retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,AllOpenTabType,AllOpenTabData)
 			notebookTab<<-retNBTab$notebookTab
-			tab.type<<-retNBTab$tab.type
-			tab.data<<-retNBTab$tab.data
-		}else insert.txt(main.txt.out,'Provide the ESRI shapfile for for administrative boundaries',format=TRUE)
+			AllOpenTabType<<-retNBTab$AllOpenTabType
+			AllOpenTabData<<-retNBTab$AllOpenTabData
+		}else InsertMessagesTxt(main.txt.out,'Provide the ESRI shapfile for for administrative boundaries',format=TRUE)
 	})
 
 
@@ -243,11 +243,11 @@ ExtractDataPanelCmd<-function(){
 	MissFracVal.tab2<-tkentry(subfr2,width=4,textvariable=MissFrac,justify = "left")
 
 	infobulle(CbAggreFun.tab2,'Function to be used to compute dekadal, monthly and yearly series')
-	status.bar.display(CbAggreFun.tab2,txt.stbr1,'Function to be used to convert dekadal, monthly and yearly series')
+	status.bar.display(CbAggreFun.tab2,TextOutputVar,'Function to be used to convert dekadal, monthly and yearly series')
 	infobulle(MissFracLab.tab2,'Minimum fraction of available data that must be present for the time period to compute')
-	status.bar.display(MissFracLab.tab2,txt.stbr1,'Minimum fraction of available data that must be present for the time period to compute')
+	status.bar.display(MissFracLab.tab2,TextOutputVar,'Minimum fraction of available data that must be present for the time period to compute')
 	infobulle(MissFracVal.tab2,'Minimum fraction of available data that must be present for the time period to compute')
-	status.bar.display(MissFracVal.tab2,txt.stbr1,'Minimum fraction of available data that must be present for the time period to compute')
+	status.bar.display(MissFracVal.tab2,TextOutputVar,'Minimum fraction of available data that must be present for the time period to compute')
 
 
 	######
@@ -303,17 +303,17 @@ ExtractDataPanelCmd<-function(){
 	btReset.tab3<-tkbutton(subfr3,image=pikReset,relief='raised')
 
 	infobulle(btZoomP.tab3,'Zoom In')
-	status.bar.display(btZoomP.tab3,txt.stbr1,'Zoom In')
+	status.bar.display(btZoomP.tab3,TextOutputVar,'Zoom In')
 	infobulle(btZoomM.tab3,'Zoom Out')
-	status.bar.display(btZoomM.tab3,txt.stbr1,'Zoom Out')
+	status.bar.display(btZoomM.tab3,TextOutputVar,'Zoom Out')
 	infobulle(btZoomRect.tab3,'Zoom Area')
-	status.bar.display(btZoomRect.tab3,txt.stbr1,'Zoom Area')
+	status.bar.display(btZoomRect.tab3,TextOutputVar,'Zoom Area')
 	infobulle(btPanImg.tab3,'Pan Tool')
-	status.bar.display(btPanImg.tab3,txt.stbr1,'Pan Tool')
+	status.bar.display(btPanImg.tab3,TextOutputVar,'Pan Tool')
 	infobulle(btRedraw.tab3,'Redraw Map')
-	status.bar.display(btRedraw.tab3,txt.stbr1,'Redraw Map')
+	status.bar.display(btRedraw.tab3,TextOutputVar,'Redraw Map')
 	infobulle(btReset.tab3,' Zoom Reset')
-	status.bar.display(btReset.tab3,txt.stbr1,' Zoom Reset')
+	status.bar.display(btReset.tab3,TextOutputVar,' Zoom Reset')
 
 	##########################
 	sep1.tab3<-ttkseparator(subfr3)
@@ -356,13 +356,13 @@ ExtractDataPanelCmd<-function(){
 	##########################
 #	sep4.tab3<-ttkseparator(subfr3)
 #	multipoints <- tclVar()
-#	cbmltpts.tab3<-ttkcombobox(subfr3, values=unlist(file.list), textvariable=multipoints,width=largeur)
+#	cbmltpts.tab3<-ttkcombobox(subfr3, values=unlist(listOpenFiles), textvariable=multipoints,width=largeur)
 #	btmltpts.tab3<-tkbutton(subfr3, text="...")
 
 #	infobulle(cbmltpts.tab3,'File containing the coordinates of points to be extracted')
-#	status.bar.display(cbmltpts.tab3,txt.stbr1,'File containing the coordinates of points to be extracted')
+#	status.bar.display(cbmltpts.tab3,TextOutputVar,'File containing the coordinates of points to be extracted')
 #	infobulle(btmltpts.tab3,'File containing the coordinates of points to be extracted')
-#	status.bar.display(btmltpts.tab3,txt.stbr1,'File containing the coordinates of points to be extracted')
+#	status.bar.display(btmltpts.tab3,TextOutputVar,'File containing the coordinates of points to be extracted')
 
 	##########################
 #	sep5.tab3<-ttkseparator(subfr3)
@@ -418,10 +418,10 @@ ExtractDataPanelCmd<-function(){
 	tkconfigure(btRedraw.tab3,command=function(){
 		ZoomXYval<<-as.numeric(c(tclvalue(xx1),tclvalue(xx2),tclvalue(yy1),tclvalue(yy2)))
 		tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
-		if(length(tab.type)>0){
-			if(tab.type[[tabid]]=="img"){
-				assign("ZoomXYval", ZoomXYval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
+		if(length(AllOpenTabType)>0){
+			if(AllOpenTabType[[tabid]]=="img"){
+				assign("ZoomXYval", ZoomXYval, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				refreshPlot1(W=AllOpenTabData[[tabid]][[2]][[1]],img=AllOpenTabData[[tabid]][[2]][[2]],
 				hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 				tkconfigure(btRedraw.tab3,relief='raised',bg='lightblue')
 			}
@@ -436,10 +436,10 @@ ExtractDataPanelCmd<-function(){
 		tclvalue(yy1)<<-ZoomXYval0[3]
 		tclvalue(yy2)<<-ZoomXYval0[4]
 		tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
-		if(length(tab.type)>0){
-			if(tab.type[[tabid]]=="img"){
-				assign("ZoomXYval", ZoomXYval, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
+		if(length(AllOpenTabType)>0){
+			if(AllOpenTabType[[tabid]]=="img"){
+				assign("ZoomXYval", ZoomXYval, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				refreshPlot1(W=AllOpenTabData[[tabid]][[2]][[1]],img=AllOpenTabData[[tabid]][[2]][[2]],
 				hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 				tkconfigure(btRedraw.tab3,relief='raised',bg='lightblue')
 			}
@@ -612,7 +612,7 @@ ExtractDataPanelCmd<-function(){
 
 	outputype.tab4<-ttklabelframe(subfr4,text="Output File Formats",labelanchor="nw",relief="groove",borderwidth=2)
 	infobulle(outputype.tab4,'Select the file format to save result in case of Rectangle or Polygon')
-	status.bar.display(outputype.tab4,txt.stbr1,'Select the file format to save result in case of Rectangle or Polygon')
+	status.bar.display(outputype.tab4,TextOutputVar,'Select the file format to save result in case of Rectangle or Polygon')
 
 
 	outTypeRadio1<- tkradiobutton(outputype.tab4,text="Separate Files Matrix",anchor='w',justify='left')
@@ -638,9 +638,9 @@ ExtractDataPanelCmd<-function(){
 	tkconfigure(bfl2sav.tab4,command=function() fileORdir2Save(file.save1,isFile=TRUE))
 
 	infobulle(fl2sav.tab4,'Enter the full path to the directory or file to save result')
-	status.bar.display(fl2sav.tab4,txt.stbr1,'Enter the full path to the directory or file to save extracted data')
+	status.bar.display(fl2sav.tab4,TextOutputVar,'Enter the full path to the directory or file to save extracted data')
 	infobulle(bfl2sav.tab4,'Browse here the full path to the directory or file to save result')
-	status.bar.display(bfl2sav.tab4,txt.stbr1,'Browse here the full path to the directory or file to save extracted data')
+	status.bar.display(bfl2sav.tab4,TextOutputVar,'Browse here the full path to the directory or file to save extracted data')
 
 	##########################
 	sep3.tab4<-ttkseparator(subfr4)
@@ -659,7 +659,7 @@ ExtractDataPanelCmd<-function(){
 # assign('retExtractParams',retExtractParams,envir=.GlobalEnv)
 
 		tkconfigure(main.win,cursor='watch');tcl('update')
-		insert.txt(main.txt.out,"Extraction.................")
+		InsertMessagesTxt(main.txt.out,"Extraction.................")
 		ret<-tryCatch(getExtractDataFun(retExtractParams),
 		#warning=function(w) warningFun(w),
 		error=function(e) errorFun(e),finally={
@@ -667,10 +667,10 @@ ExtractDataPanelCmd<-function(){
 		})
 # assign('rett',ret,envir=.GlobalEnv)
 		if(!is.null(ret)){
-			if(ret==0) insert.txt(main.txt.out,"Extraction finished successfully")
-			else insert.txt(main.txt.out,"Extraction failed",format=TRUE)
+			if(ret==0) InsertMessagesTxt(main.txt.out,"Extraction finished successfully")
+			else InsertMessagesTxt(main.txt.out,"Extraction failed",format=TRUE)
 		}else{
-			insert.txt(main.txt.out,"Extraction failed",format=TRUE)
+			InsertMessagesTxt(main.txt.out,"Extraction failed",format=TRUE)
 		}
 	})
 
@@ -703,7 +703,7 @@ ExtractDataPanelCmd<-function(){
 		if(tclvalue(file.period)=='Daily data'){
 			tclvalue(netCDFff)<-"rr_mrg_%s%s%s.nc"
 			infobulle(netCDFff.tab1,'Enter the format of the NetCDF files names,\nexample: rr_mrg_19830101.nc')
-			status.bar.display(netCDFff.tab1,txt.stbr1,'Enter the format of the NetCDF files names, example: rr_mrg_19830101.nc')
+			status.bar.display(netCDFff.tab1,TextOutputVar,'Enter the format of the NetCDF files names, example: rr_mrg_19830101.nc')
 			tclvalue(dayLabTab2_Var)<-'Day'
 			tkconfigure(day1.tab2,state='normal')
 			tkconfigure(day2.tab2,state='normal')
@@ -714,7 +714,7 @@ ExtractDataPanelCmd<-function(){
 		if(tclvalue(file.period)=='Dekadal data'){
 			tclvalue(netCDFff)<-"rr_mrg_%s%s%s.nc"
 			infobulle(netCDFff.tab1,'Enter the format of the NetCDF files names,\nexample: rr_mrg_1983011.nc')
-			status.bar.display(netCDFff.tab1,txt.stbr1,'Enter the format of the NetCDF files names, example: rr_mrg_1983011.nc')
+			status.bar.display(netCDFff.tab1,TextOutputVar,'Enter the format of the NetCDF files names, example: rr_mrg_1983011.nc')
 			tclvalue(dayLabTab2_Var)<-'Dek'
 			tkconfigure(day1.tab2,state='normal')
 			tkconfigure(day2.tab2,state='normal')
@@ -725,7 +725,7 @@ ExtractDataPanelCmd<-function(){
 		if(tclvalue(file.period)=='Monthly data'){
 			tclvalue(netCDFff)<-"rr_mrg_%s%s.nc"
 			infobulle(netCDFff.tab1,'Enter the format of the NetCDF files names,\nexample: rr_mrg_198301.nc')
-			status.bar.display(netCDFff.tab1,txt.stbr1,'Enter the format of the NetCDF files names, example: rr_mrg_198301.nc')
+			status.bar.display(netCDFff.tab1,TextOutputVar,'Enter the format of the NetCDF files names, example: rr_mrg_198301.nc')
 			tkconfigure(day1.tab2,state='disabled')
 			tkconfigure(day2.tab2,state='disabled')
 			tkconfigure(cbOutTS.tab2,values=c('Monthly','3-Months','6-Months','Yearly'))
@@ -899,12 +899,12 @@ ExtractDataPanelCmd<-function(){
 		tkconfigure(getArea.tab3,relief='raised',bg='lightblue',state='normal')
 
 		tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
-		if(length(tab.type)>0){
-			if(tab.type[[tabid]]=="img"){
-				assign("selectedPolygon", selectedPolygon, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
+		if(length(AllOpenTabType)>0){
+			if(AllOpenTabType[[tabid]]=="img"){
+				assign("selectedPolygon", selectedPolygon, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				refreshPlot1(W=AllOpenTabData[[tabid]][[2]][[1]],img=AllOpenTabData[[tabid]][[2]][[2]],
 				hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
-				tkdelete(tkwinfo('children',tab.data[[tabid]][[1]][[2]]),'rect')
+				tkdelete(tkwinfo('children',AllOpenTabData[[tabid]][[1]][[2]]),'rect')
 			}
 		}
 	})
@@ -926,10 +926,10 @@ ExtractDataPanelCmd<-function(){
 			selectedPolygon<-NULL
 		}
 		tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
-		if(length(tab.type)>0){
-			if(tab.type[[tabid]]=="img"){
-				assign("selectedPolygon", selectedPolygon, envir=environment(tab.data[[tabid]][[2]][[2]]$fun))
-				refreshPlot1(W=tab.data[[tabid]][[2]][[1]],img=tab.data[[tabid]][[2]][[2]],
+		if(length(AllOpenTabType)>0){
+			if(AllOpenTabType[[tabid]]=="img"){
+				assign("selectedPolygon", selectedPolygon, envir=environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+				refreshPlot1(W=AllOpenTabData[[tabid]][[2]][[1]],img=AllOpenTabData[[tabid]][[2]][[2]],
 				hscale=as.numeric(tclvalue(tkget(spinH))), vscale=as.numeric(tclvalue(tkget(spinV))))
 			}
 		}
@@ -992,7 +992,7 @@ ExtractDataPanelCmd<-function(){
 ####
 
 previewWin<-function(parent.win,states,shpL){
-	file.list<-openFile_ttkcomboList()
+	listOpenFiles<-openFile_ttkcomboList()
 	tt<-tktoplevel()
 	frA<-tkframe(tt,relief="raised",borderwidth=2)
 	frB<-tkframe(tt)
@@ -1008,24 +1008,24 @@ previewWin<-function(parent.win,states,shpL){
 
 	##
 	coordsfiles <- tclVar()
-	cbmltpts<-ttkcombobox(frA1, values=unlist(file.list), textvariable=coordsfiles,state=states[1],width=w.opfiles-5)
+	cbmltpts<-ttkcombobox(frA1, values=unlist(listOpenFiles), textvariable=coordsfiles,state=states[1],width=w.opfiles-5)
 	btmltpts<-tkbutton(frA1, text="...",state=states[1])
 	tkgrid(cbmltpts,row=0,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(btmltpts,row=0,column=1,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
 
 	infobulle(frA1,'File containing the coordinates of points to be extracted')
-	status.bar.display(frA1,txt.stbr1,'File containing the coordinates of points to be extracted')
+	status.bar.display(frA1,TextOutputVar,'File containing the coordinates of points to be extracted')
 
 	tkconfigure(btmltpts,command=function(){
 		tkdelete(textObj, "0.0","end")
 		dat.opfiles<-getOpenFiles(main.win,all.opfiles)
 		if(!is.null(dat.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'ascii'
-			file.opfiles[[nopf+1]]<<-dat.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]
-			tclvalue(coordsfiles)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(cbmltpts,values=unlist(file.list), textvariable=coordsfiles)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'ascii'
+			AllOpenFilesData[[nopf+1]]<<-dat.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(coordsfiles)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cbmltpts,values=unlist(listOpenFiles), textvariable=coordsfiles)
 			crds<-dat.opfiles[[2]]
 			for(i in 1:nrow(crds))	tkinsert(textObj,"end",paste(crds[i,1],crds[i,2],"\n"))
 		}
@@ -1033,9 +1033,9 @@ previewWin<-function(parent.win,states,shpL){
 
 	tkbind(cbmltpts,"<<ComboboxSelected>>",function(){
 		tkdelete(textObj, "0.0","end")
-		all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+		all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 		jfile<-which(all.open.file==tclvalue(coordsfiles))
-		crds<-file.opfiles[[jfile]][[2]]
+		crds<-AllOpenFilesData[[jfile]][[2]]
 		for(i in 1:nrow(crds))	tkinsert(textObj,"end",paste(crds[i,1],crds[i,2],"\n"))
  	})
 

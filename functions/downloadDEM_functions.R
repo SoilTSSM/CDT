@@ -24,10 +24,10 @@ getDEMFun<-function(parent.win){
 	grd_lb1<-tklabel(fr_grd, text="Minimum")
 	grd_lb2<-tklabel(fr_grd, text="Maximum")
 
-	grd_vlon1<-tkentry.h(fr_grd,txt.stbr1,'Minimum longitude in degree','Minimum longitude in degree')
-	grd_vlon2<-tkentry.h(fr_grd,txt.stbr1,'Maximum longitude in degree','Maximum longitude in degree')
-	grd_vlat1<-tkentry.h(fr_grd,txt.stbr1,'Minimum latitude in degree','Minimum latitude in degree')
-	grd_vlat2<-tkentry.h(fr_grd,txt.stbr1,'Maximum latitude in degree','Maximum latitude in degree')
+	grd_vlon1<-tkentry.h(fr_grd,TextOutputVar,'Minimum longitude in degree','Minimum longitude in degree')
+	grd_vlon2<-tkentry.h(fr_grd,TextOutputVar,'Maximum longitude in degree','Maximum longitude in degree')
+	grd_vlat1<-tkentry.h(fr_grd,TextOutputVar,'Minimum latitude in degree','Minimum latitude in degree')
+	grd_vlat2<-tkentry.h(fr_grd,TextOutputVar,'Maximum latitude in degree','Maximum latitude in degree')
 
 	minLon<-tclVar('42')
 	maxLon<-tclVar('52')
@@ -53,11 +53,11 @@ getDEMFun<-function(parent.win){
 
 	dir2save <-tclVar('')
 	enfile.save<-tkentry(frA2,textvariable=dir2save,width=largeur)  #
-	btfile.save<-tkbutton.h(frA2, text="...",txt.stbr1,'or browse here','')
+	btfile.save<-tkbutton.h(frA2, text="...",TextOutputVar,'or browse here','')
 	tkconfigure(btfile.save,command=function() fileORdir2Save(dir2save,isFile=FALSE))
 
 	infobulle(frA2,'Enter the full path to directory to save downloaded files')
-	status.bar.display(frA2,txt.stbr1,'Enter the full path to directory to save downloaded files')
+	status.bar.display(frA2,TextOutputVar,'Enter the full path to directory to save downloaded files')
 
 	tkgrid(lab2,row=0,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
 	tkgrid(enfile.save,row=1,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
@@ -81,11 +81,11 @@ getDEMFun<-function(parent.win){
 			tkdestroy(tt)
 			tkfocus(parent.win)
 			if(testConnection()){
-				insert.txt(main.txt.out,"Downloading.................")
+				InsertMessagesTxt(main.txt.out,"Downloading.................")
 				#return(ExecDownload_DEM(minlon,maxlon,minlat,maxlat,outdir))
 				ExecDownload_DEM(minlon,maxlon,minlat,maxlat,outdir)
 			}else{
-				insert.txt(main.txt.out,'No internet connection',format=TRUE)
+				InsertMessagesTxt(main.txt.out,'No internet connection',format=TRUE)
 				return(NULL)
 			}
 		}
@@ -172,18 +172,18 @@ getDEM<-function(minlon,maxlon,minlat,maxlat,outdir){
 	aggregateDEM2Merge<-function(ret,destfile,res1,varid,longname,msg){
 		if(ret==0){
 			down<-try(aggregateDEM(destfile,xm,ym,outdir,varid,longname,res1),silent=TRUE)
-			if(!inherits(down, "try-error")) insert.txt(main.txt.out,msg)
+			if(!inherits(down, "try-error")) InsertMessagesTxt(main.txt.out,msg)
 			else{
-				insert.txt(main.txt.out,'Unable to aggregate DEM for mering',format=TRUE)
-				insert.txt(main.txt.out,gsub('[\r\n]','',down[1]),format=TRUE)
+				InsertMessagesTxt(main.txt.out,'Unable to aggregate DEM for mering',format=TRUE)
+				InsertMessagesTxt(main.txt.out,gsub('[\r\n]','',down[1]),format=TRUE)
 			}
-		}else insert.txt(main.txt.out,gsub('[\r\n]','',ret[1]),format=TRUE)
+		}else InsertMessagesTxt(main.txt.out,gsub('[\r\n]','',ret[1]),format=TRUE)
 	}
 
 	aggregateFailedMsg<-function(ret,destfile,msg){
 		unlink(destfile)
-		insert.txt(main.txt.out,msg,format=TRUE)
-		insert.txt(main.txt.out,gsub('[\r\n]','',ret[1]),format=TRUE)
+		InsertMessagesTxt(main.txt.out,msg,format=TRUE)
+		InsertMessagesTxt(main.txt.out,gsub('[\r\n]','',ret[1]),format=TRUE)
 	}
 
 	if(!inherits(ret, "try-error")) aggregateDEM2Merge(ret,destfile,TRUE,'z',"Elevation and bathymetric data",'Download finished for DEM 2-min')

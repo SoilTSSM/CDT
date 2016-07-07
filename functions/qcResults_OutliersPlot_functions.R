@@ -1,12 +1,12 @@
 plotOutliers<-function(jmo){
-	if(gal.params$AllOrOne=='one'){
-		IJoutputdir<-ret.results$outputdir
-		IJstation<-ret.results$station
+	if(GeneralParameters$AllOrOne=='one'){
+		IJoutputdir<-ReturnExecResults$outputdir
+		IJstation<-ReturnExecResults$station
 	}
-	if(gal.params$AllOrOne=='all'){
-		ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
-		IJoutputdir<-ret.results$outputdir[[ijstn]]
-		IJstation<-ret.results$station[[ijstn]]
+	if(GeneralParameters$AllOrOne=='all'){
+		ijstn<-which(as.character(GeneralParameters$parameter[[2]][,1])==tclvalue(stn.choix.val))
+		IJoutputdir<-ReturnExecResults$outputdir[[ijstn]]
+		IJstation<-ReturnExecResults$station[[ijstn]]
 	}
 
 	outlparams<-getOutlier.params(IJstation,IJoutputdir)
@@ -18,8 +18,8 @@ plotOutliers<-function(jmo){
 		opar<-par(mar = c(3,4,3,1))
 
 		outdates<-as.character(outqcf$dates)
-		if(gal.params$action=='qc.rain') outlq<-as.character(outqcf$upper.outlier)
-		if(gal.params$action=='qc.temp') outlq<-as.character(outqcf$outlier.check)
+		if(GeneralParameters$action=='qc.rain') outlq<-as.character(outqcf$upper.outlier)
+		if(GeneralParameters$action=='qc.temp') outlq<-as.character(outqcf$outlier.check)
 		outdates1<-outdates[!is.na(outlq)]
 		moqc<-substr(outdates1,5,6)
 		moval<-substr(xdates,5,6)
@@ -29,39 +29,39 @@ plotOutliers<-function(jmo){
 		datym<-xdates[idm]
 		valm<-xdat[idm]
 
-		if(gal.params$period=='daily'){
+		if(GeneralParameters$period=='daily'){
 			datym1st<-which(substr(datym,7,8)=='01')
 			datymid<-which(substr(datym,7,8)=='15')
-			if(gal.params$action=='qc.rain'){
+			if(GeneralParameters$action=='qc.rain'){
 				ylab<-'Daily rainfall [mm]'
 			}
-			if(gal.params$action=='qc.temp'){
-				if(Sys.info()["sysname"] == "Windows") ylab<-expression(paste("Daily", ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,"temperature[ " * degree,'C]'))
-				else ylab<-paste('Daily',ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,'temperature [°C]')
+			if(GeneralParameters$action=='qc.temp'){
+				if(Sys.info()["sysname"] == "Windows") ylab<-expression(paste("Daily", ifelse(as.character(GeneralParameters$test.tx)=='1','maximum','minimum') ,"temperature[ " * degree,'C]'))
+				else ylab<-paste('Daily',ifelse(as.character(GeneralParameters$test.tx)=='1','maximum','minimum') ,'temperature [°C]')
 			}
 			xlabels<-format(as.Date(datym[datymid],format='%Y%m%d'), '%Y')
 		}
-		if(gal.params$period=='dekadal'){
+		if(GeneralParameters$period=='dekadal'){
 			datym1st<-which(substr(datym,7,7)=='1')
 			datymid<-which(substr(datym,7,7)=='2')
-			if(gal.params$action=='qc.rain'){
+			if(GeneralParameters$action=='qc.rain'){
 				ylab<-'Dekadal rainfall [mm]'
 			}
-			if(gal.params$action=='qc.temp'){
-				if(Sys.info()["sysname"] == "Windows") ylab<-expression(paste("Dekadal", ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,"temperature[ " * degree,'C]'))
-				else ylab<-paste('Dekadal',ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,'temperature [°C]')
+			if(GeneralParameters$action=='qc.temp'){
+				if(Sys.info()["sysname"] == "Windows") ylab<-expression(paste("Dekadal", ifelse(as.character(GeneralParameters$test.tx)=='1','maximum','minimum') ,"temperature[ " * degree,'C]'))
+				else ylab<-paste('Dekadal',ifelse(as.character(GeneralParameters$test.tx)=='1','maximum','minimum') ,'temperature [°C]')
 			}
 			xlabels<-format(as.Date(datym[datymid],format='%Y%m%d'), '%Y')
 		}
-		if(gal.params$period=='monthly'){
+		if(GeneralParameters$period=='monthly'){
 			datym1st<-1:length(datym)
 			datymid<-1:length(datym)
-			if(gal.params$action=='qc.rain'){
+			if(GeneralParameters$action=='qc.rain'){
 				ylab<-'Monthly rainfall [mm]'
 			}
-			if(gal.params$action=='qc.temp'){
-				if(Sys.info()["sysname"] == "Windows") ylab<-expression(paste("Monthly", ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,"temperature[ " * degree,'C]'))
-				else ylab<-paste('Monthly',ifelse(as.character(gal.params$test.tx)=='1','maximum','minimum') ,'temperature [°C]')
+			if(GeneralParameters$action=='qc.temp'){
+				if(Sys.info()["sysname"] == "Windows") ylab<-expression(paste("Monthly", ifelse(as.character(GeneralParameters$test.tx)=='1','maximum','minimum') ,"temperature[ " * degree,'C]'))
+				else ylab<-paste('Monthly',ifelse(as.character(GeneralParameters$test.tx)=='1','maximum','minimum') ,'temperature [°C]')
 			}
 			xlabels<-format(as.Date(paste(datym,'15',sep=''),format='%Y%m%d'), '%Y')
 		}
@@ -95,12 +95,12 @@ plotOutliers<-function(jmo){
 
 DisplayOutliers<-function(parent,jmo,noteQcOutlierCheck){
 
-	if(gal.params$AllOrOne=='one'){
-		IJstation<-ret.results$station
+	if(GeneralParameters$AllOrOne=='one'){
+		IJstation<-ReturnExecResults$station
 	}
-	if(gal.params$AllOrOne=='all'){
-		ijstn<-which(as.character(gal.params$parameter[[2]][,1])==tclvalue(stn.choix.val))
-		IJstation<-ret.results$station[[ijstn]]
+	if(GeneralParameters$AllOrOne=='all'){
+		ijstn<-which(as.character(GeneralParameters$parameter[[2]][,1])==tclvalue(stn.choix.val))
+		IJstation<-ReturnExecResults$station[[ijstn]]
 	}
 
 	########PLOT
@@ -114,18 +114,18 @@ DisplayOutliers<-function(parent,jmo,noteQcOutlierCheck){
 		if(is.null(noteQcOutlierCheck)){
 			onglet<-addNewTab(parent,tab.title=paste(IJstation,format(ISOdate(2014,jmo,1),"%b"),'Outliers Check',sep='-'))
 		}else{
-			ntab<-length(tab.type)
+			ntab<-length(AllOpenTabType)
 			if(ntab>0){
 				AllNoteTab<-sapply(1:ntab,function(j){
-					if(!is.null(attributes(tab.data[[j]][[1]][[1]]))) tab.data[[j]][[1]][[1]]$ID
-					else tab.data[[j]][[1]][[1]]
+					if(!is.null(attributes(AllOpenTabData[[j]][[1]][[1]]))) AllOpenTabData[[j]][[1]][[1]]$ID
+					else AllOpenTabData[[j]][[1]][[1]]
 				})
 				idTabs<-which(AllNoteTab==noteQcOutlierCheck[[2]])
 
 				if(length(idTabs)>0){
 					onglet<-noteQcOutlierCheck[[1]]
-					tkdestroy(tab.data[[idTabs]][[2]])
-					tcl(tknotes,'tab',tab.data[[idTabs]][[1]][[1]],'-text',
+					tkdestroy(AllOpenTabData[[idTabs]][[2]])
+					tcl(tknotes,'tab',AllOpenTabData[[idTabs]][[1]][[1]],'-text',
 					paste(IJstation,format(ISOdate(2014,jmo,1),"%b"),'Outliers Check   ',sep='-'))
 				}else{
 					onglet<-addNewTab(parent,tab.title=paste(IJstation,format(ISOdate(2014,jmo,1),"%b"),'Outliers Check',sep='-'))
@@ -148,7 +148,7 @@ DisplayOutliers<-function(parent,jmo,noteQcOutlierCheck){
 	parPlotSize<-pltusr$plt
 	usrCoords<-pltusr$usr
 
-	if(gal.params$period=='monthly'){
+	if(GeneralParameters$period=='monthly'){
 		dates<-as.Date(paste(pltusr$dates,'15',sep=''),format='%Y%m%d')
 	}else{
 		dates<-as.Date(pltusr$dates,format='%Y%m%d')
@@ -188,11 +188,11 @@ DisplayOutliers<-function(parent,jmo,noteQcOutlierCheck){
 
 		ipos<-as.integer(round(xcoord))
 
-		if(gal.params$period=='monthly'){
+		if(GeneralParameters$period=='monthly'){
 			labdates<-format(dates[ipos],'%b-%Y')
-		}else if(gal.params$period=='dekadal'){
+		}else if(GeneralParameters$period=='dekadal'){
 			labdates<-substr(format(dates[ipos],'%d-%b-%Y'),2,11)
-		}else if(gal.params$period=='daily'){
+		}else if(GeneralParameters$period=='daily'){
 			labdates<-format(dates[ipos],'%d-%b-%Y')
 		}
 

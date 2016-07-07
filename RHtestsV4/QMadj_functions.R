@@ -255,8 +255,8 @@ QMadjGaussian.wRef<-function(B,Dif,Ips,Mq,Iseg.adj,Nadj,Nt,Ny4a){
             Mq<-Mq-1
           }
           else{
-          	insert.txt(main.txt.out,"!!!! Warning - The Ref series has too many missing values to do QM-adjustments.",format=TRUE)
-			insert.txt(main.txt.out,"Only mean-adjustments were done. You may want to use a better Ref series if possible!",format=TRUE)
+          	InsertMessagesTxt(main.txt.out,"!!!! Warning - The Ref series has too many missing values to do QM-adjustments.",format=TRUE)
+			InsertMessagesTxt(main.txt.out,"Only mean-adjustments were done. You may want to use a better Ref series if possible!",format=TRUE)
 
 #cat("!!!! Warning - The Ref series has too many missing values to do QM-adjustments.",'\n')
 #cat("Only mean-adjustments were done. You may want to use a better Ref series if possible!",'\n')

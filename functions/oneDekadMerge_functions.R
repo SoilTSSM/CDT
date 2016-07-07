@@ -1,23 +1,23 @@
 
 Treat1DekRain<-function(){
 
-	file.pars<-as.character(gal.params$file.io$Values)
-	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+	file.pars<-as.character(GeneralParameters$file.io$Values)
+	all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 	jfile<-which(all.open.file==file.pars[1])
-	donne<-file.opfiles[[jfile]][[2]]
+	donne<-AllOpenFilesData[[jfile]][[2]]
 
 	#######get data
 	stn.lon<-as.numeric(donne[2,-1])
 	stn.lat<-as.numeric(donne[3,-1])
 	dates<-as.character(donne[nrow(donne),1])
 	if(nchar(as.character(dates))!=7){
-		insert.txt(main.txt.out,'Station data: not a dekadal data',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Station data: not a dekadal data',format=TRUE)
 		return(NULL)
 	}
 
 	donne<-donne[nrow(donne),-1,drop=F]
 
-	daty<-as.character(gal.params$dates.mrg$Values)
+	daty<-as.character(GeneralParameters$dates.mrg$Values)
 	yrs<-as.numeric(daty[1])
 	mon<-as.numeric(daty[2])
 	dek<-as.numeric(daty[3])
@@ -25,16 +25,16 @@ Treat1DekRain<-function(){
 
 	ix<-which(dates%in%daty1)
 	if(length(ix)==0){
-		insert.txt(main.txt.out,"The input date does not match the date in the station data file",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"The input date does not match the date in the station data file",format=TRUE)
 		return(NULL)
 	}
 	donne1<-as.numeric(donne[ix,])
 	stnlist<-list(lon=stn.lon,lat=stn.lat,dates=daty1,data=donne1)
 
 	###get elevation data
-	if(gal.params$blankGrd=="2"){
+	if(GeneralParameters$blankGrd=="2"){
 		jncdf<-which(all.open.file==file.pars[5])
-		fdem<-file.opfiles[[jncdf]][[2]]
+		fdem<-AllOpenFilesData[[jncdf]][[2]]
 		dem<-fdem$value
 		dem[dem<0]<-0
 		dem.coord<-data.frame(expand.grid(lon=fdem$x,lat=fdem$y))
@@ -45,9 +45,9 @@ Treat1DekRain<-function(){
 	}else demlist<-NULL
 
 	##Shapefile
-	if(gal.params$blankGrd=="3"){
+	if(GeneralParameters$blankGrd=="3"){
 		jshp<-which(all.open.file==file.pars[6])
-		shpd<-file.opfiles[[jshp]][[2]]
+		shpd<-AllOpenFilesData[[jshp]][[2]]
 	}else shpd<-NULL
 
 	mrgRaindat<-list(stnData=stnlist,demData=demlist,shpData=shpd)
@@ -62,32 +62,32 @@ mergeOneDekadRain<-function(){
 	if(is.null(mrgRaindat)) return(NULL)
 	VarioModel<-c("Sph", "Exp", "Gau")
 
-	origdir<-as.character(gal.params$file.io$Values[4])
-	nmin<-as.numeric(as.character(gal.params$params.int$Values[1]))
-	nozero<-as.numeric(as.character(gal.params$params.int$Values[2]))
-	max.RnR.dist<-as.numeric(as.character(gal.params$params.int$Values[3]))
-	maxdist<-as.numeric(as.character(gal.params$params.int$Values[4]))
-	min.nbrs<-as.numeric(as.character(gal.params$params.int$Values[5]))
-	max.nbrs<-as.numeric(as.character(gal.params$params.int$Values[6]))
+	origdir<-as.character(GeneralParameters$file.io$Values[4])
+	nmin<-as.numeric(as.character(GeneralParameters$params.int$Values[1]))
+	nozero<-as.numeric(as.character(GeneralParameters$params.int$Values[2]))
+	max.RnR.dist<-as.numeric(as.character(GeneralParameters$params.int$Values[3]))
+	maxdist<-as.numeric(as.character(GeneralParameters$params.int$Values[4]))
+	min.nbrs<-as.numeric(as.character(GeneralParameters$params.int$Values[5]))
+	max.nbrs<-as.numeric(as.character(GeneralParameters$params.int$Values[6]))
 
-	interpMethod<-as.character(gal.params$params.mrg$Values[1])
-	RainNoRain<-as.character(gal.params$params.mrg$Values[2])
+	interpMethod<-as.character(GeneralParameters$params.mrg$Values[1])
+	RainNoRain<-as.character(GeneralParameters$params.mrg$Values[2])
 
 	####bias adj
-	rfeDir<-as.character(gal.params$file.io$Values[2])
-	biasDir<-as.character(gal.params$file.io$Values[3])
+	rfeDir<-as.character(GeneralParameters$file.io$Values[2])
+	biasDir<-as.character(GeneralParameters$file.io$Values[3])
 
-	rfeFileFormat<-as.character(gal.params$prefix$Values[1])
-	meanBiasPrefix<-as.character(gal.params$prefix$Values[2])
+	rfeFileFormat<-as.character(GeneralParameters$prefix$Values[1])
+	meanBiasPrefix<-as.character(GeneralParameters$prefix$Values[2])
 
 	biasFile<-file.path(biasDir,paste(meanBiasPrefix,'_1.nc',sep=''),fsep = .Platform$file.sep)
 	if(!file.exists(biasFile)){
-		insert.txt(main.txt.out,"Mean bias coefficients not found",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Mean bias coefficients not found",format=TRUE)
 		return(NULL)
 	}
 
 	####
-	daty<-as.character(gal.params$dates.mrg$Values)
+	daty<-as.character(GeneralParameters$dates.mrg$Values)
 	yrs<-as.numeric(daty[1])
 	mon<-as.numeric(daty[2])
 	dek<-as.numeric(daty[3])
@@ -146,7 +146,7 @@ mergeOneDekadRain<-function(){
 	grid.loc<-SpatialPixels(points =grid.loc, tolerance =sqrt(sqrt(.Machine$double.eps)),proj4string = CRS(as.character(NA)))
 
 	########Blank mask
-	usemask<-as.character(gal.params$blankGrd)
+	usemask<-as.character(GeneralParameters$blankGrd)
 	if(usemask=="1") outMask<-NULL
 	if(usemask=="2"){
 		dem.grd<-krige(formula = dem ~ 1,locations=mrgRaindat$demData$demGrd,newdata=newlocation.merging,nmax=8,nmin =3,debug.level=0)

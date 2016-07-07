@@ -1,5 +1,5 @@
 PlotGriddedNcdfCmd<-function(){
-	file.list<-openFile_ttkcomboList()
+	listOpenFiles<-openFile_ttkcomboList()
 
 	##tkcombo& tkentry width
 	#largeur<-27  
@@ -45,31 +45,31 @@ PlotGriddedNcdfCmd<-function(){
 	frameNcdf<-ttklabelframe(subfr1,text="NetCDF data file",relief='groove')
 
 	file.netcdf <- tclVar()
-	combNetcdf.tab1<-ttkcombobox(frameNcdf,values=unlist(file.list),textvariable=file.netcdf,width=largeur)
+	combNetcdf.tab1<-ttkcombobox(frameNcdf,values=unlist(listOpenFiles),textvariable=file.netcdf,width=largeur)
 	btNetcdf.tab1<-tkbutton(frameNcdf, text="...") 
 	tkconfigure(btNetcdf.tab1,command=function(){
 		nc.opfiles<-getOpenNetcdf(main.win,all.opfiles)
 		if(!is.null(nc.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'netcdf'
-			file.opfiles[[nopf+1]]<<-nc.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]] 
-			tclvalue(file.netcdf)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combNetcdf.tab1,values=unlist(file.list), textvariable=file.netcdf)
-			tkconfigure(combShp.tab1,values=unlist(file.list), textvariable=file.plotShp)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'netcdf'
+			AllOpenFilesData[[nopf+1]]<<-nc.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]] 
+			tclvalue(file.netcdf)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(combNetcdf.tab1,values=unlist(listOpenFiles), textvariable=file.netcdf)
+			tkconfigure(combShp.tab1,values=unlist(listOpenFiles), textvariable=file.plotShp)
 		}else return(NULL)
 	})
 	infobulle(combNetcdf.tab1,'Choose a NetCDF data in the list')
-	status.bar.display(combNetcdf.tab1,txt.stbr1,'Choose the file containing the NetCDF data')
+	status.bar.display(combNetcdf.tab1,TextOutputVar,'Choose the file containing the NetCDF data')
 	infobulle(btNetcdf.tab1,'Browse file if not listed')
-	status.bar.display(btNetcdf.tab1,txt.stbr1,'Browse file if not listed')
+	status.bar.display(btNetcdf.tab1,TextOutputVar,'Browse file if not listed')
 
 	#######################
 	unit_sym<-tclVar('mm')	
 	unitLab.tab1<-tklabel(frameNcdf,text='Units',anchor='e',justify='right')
 	unitEd.tab1<-tkentry(frameNcdf, width=8,textvariable=unit_sym,justify = "left")
 	infobulle(unitEd.tab1,'Display unit on colorscale')
-	status.bar.display(unitEd.tab1,txt.stbr1,'Display unit on colorscale')
+	status.bar.display(unitEd.tab1,TextOutputVar,'Display unit on colorscale')
 
 	#######################
 	tkgrid(combNetcdf.tab1,row=0,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=2,ipadx=1,ipady=1)
@@ -81,18 +81,18 @@ PlotGriddedNcdfCmd<-function(){
 	frameShp<-ttklabelframe(subfr1,text="Shapefiles for boundary",relief='groove')
 
 	file.plotShp <- tclVar()
-	combShp.tab1<-ttkcombobox(frameShp, values=unlist(file.list), textvariable=file.plotShp,width=largeur) 
+	combShp.tab1<-ttkcombobox(frameShp, values=unlist(listOpenFiles), textvariable=file.plotShp,width=largeur) 
 	btShp.tab1<-tkbutton(frameShp, text="...") 
 	tkconfigure(btShp.tab1,command=function(){
 		shp.opfiles<-getOpenShp(main.win,all.opfiles)
 		if(!is.null(shp.opfiles)){
-			nopf<-length(type.opfiles)
-			type.opfiles[[nopf+1]]<<-'shp'
-			file.opfiles[[nopf+1]]<<-shp.opfiles
-			file.list[[length(file.list)+1]]<<-file.opfiles[[nopf+1]][[1]]		
-			tclvalue(file.plotShp)<-file.opfiles[[nopf+1]][[1]]
-			tkconfigure(combNetcdf.tab1,values=unlist(file.list), textvariable=file.netcdf)
-			tkconfigure(combShp.tab1,values=unlist(file.list), textvariable=file.plotShp)
+			nopf<-length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]]<<-'shp'
+			AllOpenFilesData[[nopf+1]]<<-shp.opfiles
+			listOpenFiles[[length(listOpenFiles)+1]]<<-AllOpenFilesData[[nopf+1]][[1]]		
+			tclvalue(file.plotShp)<-AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(combNetcdf.tab1,values=unlist(listOpenFiles), textvariable=file.netcdf)
+			tkconfigure(combShp.tab1,values=unlist(listOpenFiles), textvariable=file.plotShp)
 		}
 	})
 
@@ -101,7 +101,7 @@ PlotGriddedNcdfCmd<-function(){
 	blankVal <- tclVar('0')
 	cbBlank.tab1 <- tkcheckbutton(subfr1,variable=blankVal,text='Blank grid',anchor='w',justify='left')
 	infobulle(cbBlank.tab1,'Blank grid outside the country boundaries or over ocean')
-	status.bar.display(cbBlank.tab1,txt.stbr1,'Blank grid outside the country boundaries  or over ocean given by the shapefile')
+	status.bar.display(cbBlank.tab1,TextOutputVar,'Blank grid outside the country boundaries  or over ocean given by the shapefile')
 	
 	###########
 	tkgrid(combShp.tab1,row=0,column=0,sticky='we',rowspan=1,columnspan=5,padx=1,pady=2,ipadx=1,ipady=1)
@@ -149,11 +149,11 @@ PlotGriddedNcdfCmd<-function(){
 	butCustoLev.tab2<-tkbutton(subfr2, text="Custom",state='disabled')
 
 	infobulle(combPresetCol.tab2,'Predefined color palettes')
-	status.bar.display(combPresetCol.tab2,txt.stbr1,'Predefined color palettes')
+	status.bar.display(combPresetCol.tab2,TextOutputVar,'Predefined color palettes')
 	infobulle(nbPresetCol.tab2,'Number of color levels to be in the palette')
-	status.bar.display(nbPresetCol.tab2,txt.stbr1,'Number of color levels to be in the palette')
+	status.bar.display(nbPresetCol.tab2,TextOutputVar,'Number of color levels to be in the palette')
 	infobulle(chkRevCol.tab2,'Reverse the color palettes')
-	status.bar.display(chkRevCol.tab2,txt.stbr1,'Reverse the color palettes')
+	status.bar.display(chkRevCol.tab2,TextOutputVar,'Reverse the color palettes')
 
 	#####
 	tkgrid(labPresetCol.tab2,row=0,column=0,sticky='we',rowspan=1,columnspan=2,padx=1,pady=1,ipadx=1,ipady=1)
@@ -259,14 +259,14 @@ PlotGriddedNcdfCmd<-function(){
 		}
 		shpf<-getShpOpenData(file.plotShp)[[2]]
 		if(tclvalue(blankVal)=='1' & is.null(shpf)){
-			insert.txt(main.txt.out,'Need ESRI shapefile for blanking',format=TRUE)
+			InsertMessagesTxt(main.txt.out,'Need ESRI shapefile for blanking',format=TRUE)
 		}else{
 			imgContainer<-displayNetCDFdata(tknotes,notebookTab,donne,atLev,listCol,shpf,tclvalue(unit_sym),tclvalue(blankVal))
 			if(!is.null(imgContainer)){
-				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,tab.type,tab.data)
+				retNBTab<-imageNotebookTab_unik(tknotes,imgContainer,notebookTab,AllOpenTabType,AllOpenTabData)
 				notebookTab<<-retNBTab$notebookTab
-				tab.type<<-retNBTab$tab.type
-				tab.data<<-retNBTab$tab.data
+				AllOpenTabType<<-retNBTab$AllOpenTabType
+				AllOpenTabData<<-retNBTab$AllOpenTabData
 			}
 		}
 	})	

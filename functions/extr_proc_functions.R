@@ -32,7 +32,7 @@ getExtractDataFun<-function(retExtractParams){
 
 	####
 	if(is.na(yrs1) | is.na(mon1) | is.na(day1) | is.na(yrs2) | is.na(mon2) | is.na(day2)){
-		insert.txt(main.txt.out,"Invalid date for time series extraction",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Invalid date for time series extraction",format=TRUE)
 		return(NULL)
 	}
 
@@ -57,41 +57,41 @@ getExtractDataFun<-function(retExtractParams){
 	}
 
 	if(!file.exists(ncdir)){
-		insert.txt(main.txt.out,"Directory containing NetCDF files does not exist",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Directory containing NetCDF files does not exist",format=TRUE)
 		return(NULL)
 	}
 
 	ncpath<-file.path(ncdir,ncfiles,fsep = .Platform$file.sep)
 	existFl<-unlist(lapply(ncpath,file.exists))
 	if(length(which(existFl))==0){
-		insert.txt(main.txt.out,"Invalid filename format or date outside the range",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Invalid filename format or date outside the range",format=TRUE)
 		return(NULL)
 	}
 
 	############
 	if(extType=='Point'){
 		if(is.na(xminLon) | is.na(xminLat)){
-			insert.txt(main.txt.out,"Invalid coordinates to extract",format=TRUE)
+			InsertMessagesTxt(main.txt.out,"Invalid coordinates to extract",format=TRUE)
 			return(NULL)
 		}
 	}
 
 	if(extType=='Rectangle'){
 		if(is.na(xminLon) | is.na(xmaxLon) | is.na(xminLat) | is.na(xmaxLat)){
-			insert.txt(main.txt.out,"Invalid coordinates for the extraction",format=TRUE)
+			InsertMessagesTxt(main.txt.out,"Invalid coordinates for the extraction",format=TRUE)
 			return(NULL)
 		}
 	}
 
 	if(extType=='Polygon'){
-		all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+		all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 		jfile<-which(all.open.file==shpfl)
-		if(type.opfiles[[jfile]]=="shp"){
-			shpf<-file.opfiles[[jfile]][[2]]
+		if(AllOpenFilesType[[jfile]]=="shp"){
+			shpf<-AllOpenFilesData[[jfile]][[2]]
 			regOI<-shpf[as.character(shpf@data[,shpId])==polyName,]
 			bbxregOI<-bbox(regOI)
 		}else{
-			insert.txt(main.txt.out,"Ceci ne devrait pas se produire",format=TRUE)
+			InsertMessagesTxt(main.txt.out,"Ceci ne devrait pas se produire",format=TRUE)
 			return(NULL)
 		}
 	}
@@ -112,22 +112,22 @@ getExtractDataFun<-function(retExtractParams){
 		}
 
 		if(extType=='Multiple Polygons'){
-			all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+			all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 			jfile<-which(all.open.file==shpfl)
-			if(type.opfiles[[jfile]]=="shp"){
-				shpf<-file.opfiles[[jfile]][[2]]
+			if(AllOpenFilesType[[jfile]]=="shp"){
+				shpf<-AllOpenFilesData[[jfile]][[2]]
 				multiptspoly<-str_trim(multiptspoly)
 				regOI<-shpf[as.character(shpf@data[,shpId])%in%multiptspoly,]
 				bbxregOI<-bbox(regOI)
 				headinfo<-cbind(as.character(regOI@data[,shpId]),round(coordinates(regOI),5))
 			}else{
-				insert.txt(main.txt.out,"Ceci ne devrait pas se produire",format=TRUE)
+				InsertMessagesTxt(main.txt.out,"Ceci ne devrait pas se produire",format=TRUE)
 				return(NULL)
 			}
 		}
 	}else{
-		if(extType=='Multiple Points') insert.txt(main.txt.out,"No selected points",format=TRUE)
-		if(extType=='Multiple Polygons') insert.txt(main.txt.out,"No selected polygons",format=TRUE)
+		if(extType=='Multiple Points') InsertMessagesTxt(main.txt.out,"No selected points",format=TRUE)
+		if(extType=='Multiple Polygons') InsertMessagesTxt(main.txt.out,"No selected polygons",format=TRUE)
 		return(NULL)
 	}
 	#############
@@ -136,7 +136,7 @@ getExtractDataFun<-function(retExtractParams){
 
 	for(fl in seq_along(ncpath)){
 		if(!file.exists(ncpath[fl])){
-			insert.txt(main.txt.out,paste('File',basename(ncpath[fl]),'does not exist') ,format=TRUE)
+			InsertMessagesTxt(main.txt.out,paste('File',basename(ncpath[fl]),'does not exist') ,format=TRUE)
 			next
 		}
 

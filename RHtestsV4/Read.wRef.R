@@ -111,7 +111,7 @@ names(rtable)<-c("id1","id2","id3","data")
 
   for(i in 1:length(Ind1)){
    if(Ind1[i]!=YMD.base[i]|is.na(YMD.base[i])){
-	insert.txt(main.txt.out,paste("input base series not continuous at:",Ind1[i],YMD.base[i]),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("input base series not continuous at:",Ind1[i],YMD.base[i]),format=TRUE)
 	return(-1)
     #stop(paste("input base series not continuous at:",Ind1[i],YMD.base[i]))
 	}
@@ -129,7 +129,7 @@ names(rtable)<-c("id1","id2","id3","data")
   YMD.ref<-rtable[,1]*10000+rtable[,2]*100+rtable[,3]
 
   for(i in 1:length(Ind2)) if(Ind2[i]!=YMD.ref[i]|is.na(YMD.ref[i])) {
-	insert.txt(main.txt.out,paste("input ref series not continuous at:",Ind2[i],YMD.base[i]),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("input ref series not continuous at:",Ind2[i],YMD.base[i]),format=TRUE)
 	#cat(paste("input ref series not continuous at:",Ind2[i],YMD.base[i]),'\n')
 #    ErrorMSG<-paste("input ref series not continuous at:",Ind2[i],YMD.base[i],
 #              "\n",get("ErrorMSG",env=.GlobalEnv))
@@ -188,7 +188,7 @@ names(rtable)<-c("id1","id2","id3","data")
 
   for(i in 1:Nt){
     if(sum(is.na(itmp[itmp[,1]==Icy[i]])==F)<10){
-	insert.txt(main.txt.out,paste("input data too few at:",Icy[i]),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("input data too few at:",Icy[i]),format=TRUE)
 	#cat(paste("input data too few at:",Icy[i]),'\n')
 
 #      ErrorMSG<<-paste("input data too few at:",Icy[i],
@@ -200,7 +200,7 @@ names(rtable)<-c("id1","id2","id3","data")
   for(i in 1:(dim(itmp)[1]-1))
     if(is.na(itmp[i,2])==F&is.na(itmp[(i+1),2])==F) itmp1<-itmp1+1
   if(itmp1<10) {
-	insert.txt(main.txt.out,"input data too few for autocorrelation calculating",format=TRUE)
+	InsertMessagesTxt(main.txt.out,"input data too few for autocorrelation calculating",format=TRUE)
 
 	#cat(paste("input data too few for autocorrelation calculating",'\n'))
 

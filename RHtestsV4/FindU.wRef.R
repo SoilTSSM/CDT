@@ -13,7 +13,7 @@ Station_Ref<-paste('RefSeries_',station_ref,sep='')
   assign("Nmin",Nmin,envir=.GlobalEnv)
   if(Ny4a>0&Ny4a<=5) Ny4a<-5
   if(!p.lev%in%c(0.75,0.8,0.9,0.95,0.99,0.9999)){
-	insert.txt(main.txt.out,paste("FindU: input p.lev",p.lev,"error"),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("FindU: input p.lev",p.lev,"error"),format=TRUE)
 	#cat(paste("FindU: input p.lev",p.lev,"error"),'\n')
 #      ErrorMSG<<-paste("FindU: input p.lev",p.lev,"error\n",
 #                 get("ErrorMSG",env=.GlobalEnv),"\n")
@@ -73,7 +73,7 @@ Station_Ref<-paste('RefSeries_',station_ref,sep='')
 	    if(id==length(Ips1)) {
 	      print(Ips1)
 	      print(id)
-		  insert.txt(main.txt.out,"error in FindSteps",format=TRUE)
+		  InsertMessagesTxt(main.txt.out,"error in FindSteps",format=TRUE)
 	      return(-1)
 	      #stop("error in FindSteps")
 	    }
@@ -144,7 +144,7 @@ Station_Ref<-paste('RefSeries_',station_ref,sep='')
     cat(paste(Ns,"changepoints in Series", Station,
               paste("sample:(",sprintf("%1.0f",1)," ",sprintf("%-4.4s","YifD"),
 	       sprintf("%10.0f",19000101),")",sep=""),"\n"),file=ofileIout)
-	insert.txt(main.txt.out,paste("PMF finds no Type-1 changepoints in the series",station))
+	InsertMessagesTxt(main.txt.out,paste("PMF finds no Type-1 changepoints in the series",station))
     #cat("PMT finds no Type-1 changepoints in the series!\n")
     Ns<-0
     Ips<-N
@@ -183,7 +183,7 @@ Station_Ref<-paste('RefSeries_',station_ref,sep='')
 	  if(id==length(Ips1)) {
 	    print(Ips1)
 	    print(id)
-	    insert.txt(main.txt.out,"error in FindSteps",format=TRUE)
+	    InsertMessagesTxt(main.txt.out,"error in FindSteps",format=TRUE)
 	    return(-1)
 	    #stop("error in FindSteps")
 	  }
@@ -296,7 +296,7 @@ Station_Ref<-paste('RefSeries_',station_ref,sep='')
     cat(paste(Ns,"changepoints in Series", Station,",",Station_Ref,
               paste("sample:(",sprintf("%1.0f",1)," ",sprintf("%-4.4s","YifD"),
 	       sprintf("%10.0f",19000101),")",sep=""),"\n"),file=ofileIout)
-	insert.txt(main.txt.out,paste("PMT finds no Type-1 changepoints in the series",station))
+	InsertMessagesTxt(main.txt.out,paste("PMT finds no Type-1 changepoints in the series",station))
     #cat("PMT finds no Type-1 changepoints in the series!\n")
   }
 
@@ -803,7 +803,7 @@ Station_Ref<-paste('RefSeries_',station_ref,sep='')
   else{
     file.copy(from=ofileIout,to=ofileMout,overwrite=TRUE)
    # cat("FindU.wRef finished successfully...\n")
-	insert.txt(main.txt.out,paste("FindU.wRef finished successfully for",station))
+	InsertMessagesTxt(main.txt.out,paste("FindU.wRef finished successfully for",station))
     return(0)
   }
 }

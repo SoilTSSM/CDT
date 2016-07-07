@@ -33,7 +33,7 @@ Station_Ref<-paste('RefSeries_',station_ref,sep='')
       Ids[i]<-as.numeric(substr(itmp[i+1],1,1))
     }
     if(sum(is.na(Ips))>0|!identical(Ips,sort(Ips))){
-	insert.txt(main.txt.out,paste("StepSize.wRef: Ips read in from ",basename(InCs),"error!"),format=TRUE)
+	InsertMessagesTxt(main.txt.out,paste("StepSize.wRef: Ips read in from ",basename(InCs),"error!"),format=TRUE)
 #      ErrorMSG<<-paste("StepSize.wRef: Ips read in from ",basename(InCs),"error!\n",
 #                 get("ErrorMSG",env=.GlobalEnv),"\n")
 #      if(!GUI) cat(ErrorMSG)
@@ -329,7 +329,7 @@ Station_Ref<-paste('RefSeries_',station_ref,sep='')
   ofileAout<-paste(output,paste("_QMadj",fsuffix,"wRef.dat",sep=''),sep="")
   write.table(odata,file=ofileAout,na=as.character(MissingValueCode),col.names=F,row.names=F)
 
-  insert.txt(main.txt.out,paste(paste("QMadj",fsuffix,".wRef",sep=''),"finished successfully for",station))
+  InsertMessagesTxt(main.txt.out,paste(paste("QMadj",fsuffix,".wRef",sep=''),"finished successfully for",station))
   return(0)
 
 }

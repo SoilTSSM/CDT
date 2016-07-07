@@ -1,9 +1,9 @@
 
 getElevationData2<-function(){
-	single.series<-as.character(gal.params$use.method$Values[2])
-	uselv<-as.character(gal.params$ref.series.choix$Values[3])
-	interp.dem<-as.character(gal.params$ref.series.choix$Values[4])
-	file.pars<-as.character(gal.params$file.io$Values)
+	single.series<-as.character(GeneralParameters$use.method$Values[2])
+	uselv<-as.character(GeneralParameters$ref.series.choix$Values[3])
+	interp.dem<-as.character(GeneralParameters$ref.series.choix$Values[4])
+	file.pars<-as.character(GeneralParameters$file.io$Values)
 
 	if(!is.null(EnvHomogzData$donnees1)){
 		###get elevation data
@@ -18,9 +18,9 @@ getElevationData2<-function(){
 				if(interp.dem=="0"){
 					if(file.pars[3]=="") msg<-'There is no elevation data in format NetCDF'
 					else{
-						all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+						all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 						jncdf<-which(all.open.file==file.pars[3])
-						fdem<-file.opfiles[[jncdf]][[2]]
+						fdem<-AllOpenFilesData[[jncdf]][[2]]
 						dem<-fdem$value
 						dem[dem<0]<-NA
 						dem<-data.frame(expand.grid(x=fdem$x,y=fdem$y),z=c(dem))
@@ -39,13 +39,13 @@ getElevationData2<-function(){
 
 ##################################################################################
 
-computeHomogData<-function(gal.params){
-	freqdata<-gal.params$period
-	umthdpas<-as.character(gal.params$use.method$Values)
+computeHomogData<-function(GeneralParameters){
+	freqdata<-GeneralParameters$period
+	umthdpas<-as.character(GeneralParameters$use.method$Values)
 	single.series<-umthdpas[2]
 	useref<-umthdpas[3]
-	varcat<-as.character(gal.params$file.date.format$Values[3])
-	comppars<-as.character(gal.params$compute.var$Values)
+	varcat<-as.character(GeneralParameters$file.date.format$Values[3])
+	comppars<-as.character(GeneralParameters$compute.var$Values)
 	comp.fun<-comppars[1]
 	miss.frac<-as.numeric(comppars[2])
 
@@ -179,13 +179,13 @@ computeHomogData<-function(gal.params){
 ##################################################################################
 
 ExecHomData<-function(get.stn){
-	freqdata<-gal.params$period
-	umthdpas<-as.character(gal.params$use.method$Values)
+	freqdata<-GeneralParameters$period
+	umthdpas<-as.character(GeneralParameters$use.method$Values)
 	single.series<-umthdpas[2]
 	useref<-umthdpas[3]
 
-	stnref.choix<-as.character(gal.params$ref.series.user)
-	ypos<-as.numeric(gal.params$stn.user.choice)
+	stnref.choix<-as.character(GeneralParameters$ref.series.user)
+	ypos<-as.numeric(GeneralParameters$stn.user.choice)
 
 
 	if(single.series=="0"){
@@ -199,17 +199,17 @@ ExecHomData<-function(get.stn){
 				#monthly
 				moref<-RefSer$retmon$refs
 				momsg<-RefSer$retmon$msg
-				if(!is.null(momsg)) insert.txt(main.txt.out,paste(get.stn,'::',momsg$msg,'==>',momsg$msg1,'for monthly data'),format=TRUE)
+				if(!is.null(momsg)) InsertMessagesTxt(main.txt.out,paste(get.stn,'::',momsg$msg,'==>',momsg$msg1,'for monthly data'),format=TRUE)
 				if(freqdata!='monthly'){
 					#dekadal
 					dkref<-RefSer$retdek$refs
 					dkmsg<-RefSer$retdek$msg
-					if(!is.null(dkmsg)) insert.txt(main.txt.out,paste(get.stn,'::',dkmsg$msg,'==>',dkmsg$msg1,'for dekadal data'),format=TRUE)
+					if(!is.null(dkmsg)) InsertMessagesTxt(main.txt.out,paste(get.stn,'::',dkmsg$msg,'==>',dkmsg$msg1,'for dekadal data'),format=TRUE)
 					if(freqdata=='daily'){
 						#daily
 						dyref<-RefSer$retdly$refs
 						dymsg<-RefSer$retdly$msg
-						if(!is.null(dymsg)) insert.txt(main.txt.out,paste(get.stn,'::',dymsg$msg,'==>',dymsg$msg1,'for daily data'),format=TRUE)
+						if(!is.null(dymsg)) InsertMessagesTxt(main.txt.out,paste(get.stn,'::',dymsg$msg,'==>',dymsg$msg1,'for daily data'),format=TRUE)
 					}
 				}
 			}else{
@@ -240,7 +240,7 @@ ExecHomData<-function(get.stn){
 						dkref<-RefSer$retdek
 						if(freqdata=='daily') dyref<-RefSer$retdly
 					}
-					insert.txt(main.txt.out,paste(get.stn,'::','No chosen station','==>','The breakpoint detection is carried without reference series'),format=TRUE)
+					InsertMessagesTxt(main.txt.out,paste(get.stn,'::','No chosen station','==>','The breakpoint detection is carried without reference series'),format=TRUE)
 				}
 			}
 		}else{

@@ -140,7 +140,7 @@ displayConsOutputTabs<-function(parent,out2disp,title,rhtests=FALSE){ #tknotes
 DisplayQcHom<-function(parent,outqchom,title){
 	onglet<-addNewTab(parent,tab.title=title)
 	dtab<-tclArrayVar(outqchom[[1]])
-	col<-if(ret.results$action=='homog' | gal.params$action=="rhtests") '15' else '10'
+	col<-if(ReturnExecResults$action=='homog' | GeneralParameters$action=="rhtests") '15' else '10'
 	table1<-displayTable(onglet[[2]],tclArray=dtab,colwidth=col)
 	return(list(onglet,table1,outqchom[-1]))
 }
@@ -169,7 +169,7 @@ CloseNotebookTab<-function(index){
 	if(is.na(tabid)){
 		return(NULL)
 	}else{
-		if(tab.type[[tabid]]=="arr"){
+		if(AllOpenTabType[[tabid]]=="arr"){
 			##message (yes/no/cancel)
 #			retval <- tkmessageBox(message = "Do you want to save before quitting?",icon = "question", type = "yesnocancel", default = "yes")
 #			if(tclvalue(retval)!="cancel"){
@@ -177,68 +177,68 @@ CloseNotebookTab<-function(index){
 #				if(tclvalue(retval)=="yes"){
 #					file.to.save<-tclvalue(tkgetSaveFile(initialdir=getwd(),initialfile = "",
 #					filetypes="{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}"))
-#					Objarray<-tab.data[[tabid]][[2]]
+#					Objarray<-AllOpenTabData[[tabid]][[2]]
 #					tkconfigure(main.win,cursor='watch');tcl('update')
 #					dat2sav<-tclArray2dataframe(Objarray)
 #					write.table(dat2sav,file.to.save,row.names=F,col.names=T)
 #					tkconfigure(main.win,cursor='')
 #				}
-				tkdestroy(tab.data[[tabid]][[1]][[1]])
-				tab.data[tabid]<<-NULL
-				tab.type[tabid]<<-NULL
-				#tab.data<<-tab.data[-tabid]
-				#tab.type<<-tab.type[-tabid]
+				tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
+				AllOpenTabData[tabid]<<-NULL
+				AllOpenTabType[tabid]<<-NULL
+				#AllOpenTabData<<-AllOpenTabData[-tabid]
+				#AllOpenTabType<<-AllOpenTabType[-tabid]
 #			}
 #			if(tclvalue(retval)=="cancel") return(NULL)
-		}else if(tab.type[[tabid]]=="ctxt"){
-			tkdestroy(tab.data[[tabid]][[1]])
-			tab.data[tabid]<<-NULL
-			tab.type[tabid]<<-NULL
-			#tab.data<<-tab.data[-tabid]
-			#tab.type<<-tab.type[-tabid]
-		}else if(tab.type[[tabid]]=="img"){
-			#.Tcl(paste("image delete", tab.data[[tabid]][[2]]$image))
-			#tkdestroy(tab.data[[tabid]][[2]])
-			tkdestroy(tab.data[[tabid]][[1]][[2]])
-			tkdestroy(tab.data[[tabid]][[1]][[1]])
-			tab.data[tabid]<<-NULL
-			tab.type[tabid]<<-NULL
-			#tab.data<<-tab.data[-tabid]
-			#tab.type<<-tab.type[-tabid]
-		}else if(tab.type[[tabid]]=="arrhom"){
-			tkdestroy(tab.data[[tabid]][[1]][[1]])
-			tab.data[tabid]<<-NULL
-			tab.type[tabid]<<-NULL
-			#tab.data<<-tab.data[-tabid]
-			#tab.type<<-tab.type[-tabid]
-		}else if(tab.type[[tabid]]=="arrRHtest"){
-			tkdestroy(tab.data[[tabid]][[1]][[1]])
-			tab.data[tabid]<<-NULL
-			tab.type[tabid]<<-NULL
-		}else if(tab.type[[tabid]]=="arrqc"){
-			tkdestroy(tab.data[[tabid]][[1]][[1]])
-			tab.data[tabid]<<-NULL
-			tab.type[tabid]<<-NULL
-		}else if(tab.type[[tabid]]=="arrzc"){
-			tkdestroy(tab.data[[tabid]][[1]][[1]])
-			tab.data[tabid]<<-NULL
-			tab.type[tabid]<<-NULL
-		}else if(tab.type[[tabid]]=="arrInterp"){
-			tkdestroy(tab.data[[tabid]][[1]][[1]])
-			tab.data[tabid]<<-NULL
-			tab.type[tabid]<<-NULL
-		}else if(tab.type[[tabid]]=="homInfo"){
-			tkdestroy(tab.data[[tabid]][[1]][[1]])
-			tab.data[tabid]<<-NULL
-			tab.type[tabid]<<-NULL
-		}else if(tab.type[[tabid]]=="StnInfo"){
-			tkdestroy(tab.data[[tabid]][[1]][[1]])
-			tab.data[tabid]<<-NULL
-			tab.type[tabid]<<-NULL
-		}else if(tab.type[[tabid]]=="arrValid"){
-			tkdestroy(tab.data[[tabid]][[1]][[1]])
-			tab.data[tabid]<<-NULL
-			tab.type[tabid]<<-NULL
+		}else if(AllOpenTabType[[tabid]]=="ctxt"){
+			tkdestroy(AllOpenTabData[[tabid]][[1]])
+			AllOpenTabData[tabid]<<-NULL
+			AllOpenTabType[tabid]<<-NULL
+			#AllOpenTabData<<-AllOpenTabData[-tabid]
+			#AllOpenTabType<<-AllOpenTabType[-tabid]
+		}else if(AllOpenTabType[[tabid]]=="img"){
+			#.Tcl(paste("image delete", AllOpenTabData[[tabid]][[2]]$image))
+			#tkdestroy(AllOpenTabData[[tabid]][[2]])
+			tkdestroy(AllOpenTabData[[tabid]][[1]][[2]])
+			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
+			AllOpenTabData[tabid]<<-NULL
+			AllOpenTabType[tabid]<<-NULL
+			#AllOpenTabData<<-AllOpenTabData[-tabid]
+			#AllOpenTabType<<-AllOpenTabType[-tabid]
+		}else if(AllOpenTabType[[tabid]]=="arrhom"){
+			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
+			AllOpenTabData[tabid]<<-NULL
+			AllOpenTabType[tabid]<<-NULL
+			#AllOpenTabData<<-AllOpenTabData[-tabid]
+			#AllOpenTabType<<-AllOpenTabType[-tabid]
+		}else if(AllOpenTabType[[tabid]]=="arrRHtest"){
+			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
+			AllOpenTabData[tabid]<<-NULL
+			AllOpenTabType[tabid]<<-NULL
+		}else if(AllOpenTabType[[tabid]]=="arrqc"){
+			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
+			AllOpenTabData[tabid]<<-NULL
+			AllOpenTabType[tabid]<<-NULL
+		}else if(AllOpenTabType[[tabid]]=="arrzc"){
+			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
+			AllOpenTabData[tabid]<<-NULL
+			AllOpenTabType[tabid]<<-NULL
+		}else if(AllOpenTabType[[tabid]]=="arrInterp"){
+			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
+			AllOpenTabData[tabid]<<-NULL
+			AllOpenTabType[tabid]<<-NULL
+		}else if(AllOpenTabType[[tabid]]=="homInfo"){
+			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
+			AllOpenTabData[tabid]<<-NULL
+			AllOpenTabType[tabid]<<-NULL
+		}else if(AllOpenTabType[[tabid]]=="StnInfo"){
+			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
+			AllOpenTabData[tabid]<<-NULL
+			AllOpenTabType[tabid]<<-NULL
+		}else if(AllOpenTabType[[tabid]]=="arrValid"){
+			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
+			AllOpenTabData[tabid]<<-NULL
+			AllOpenTabType[tabid]<<-NULL
 		}else{
 			return(NULL)
 		}
@@ -249,19 +249,19 @@ CloseNotebookTab<-function(index){
 SaveNotebookTabArray<-function(parent){
 	tabid<-as.numeric(tclvalue(tkindex(parent,'current')))+1
 	#tkconfigure(main.win,cursor='watch');tcl('update')
-	if(length(tab.type)>0){
-		if(tab.type[[tabid]]=="arr"){
-			filetosave<-tab.data[[tabid]][[3]]
-			Objarray<-tab.data[[tabid]][[2]]
+	if(length(AllOpenTabType)>0){
+		if(AllOpenTabType[[tabid]]=="arr"){
+			filetosave<-AllOpenTabData[[tabid]][[3]]
+			Objarray<-AllOpenTabData[[tabid]][[2]]
 			dat2sav<-tclArray2dataframe(Objarray)
 			write.table(dat2sav,filetosave,row.names=F,col.names=T)
-		}else if(tab.type[[tabid]]=="arrhom"){
-			if(ret.results$action=='homog' & ret.results$period=='daily'){
-				filetosave<-tab.data[[tabid]][[3]]
+		}else if(AllOpenTabType[[tabid]]=="arrhom"){
+			if(ReturnExecResults$action=='homog' & ReturnExecResults$period=='daily'){
+				filetosave<-AllOpenTabData[[tabid]][[3]]
 				f2sdly<-filetosave[[1]]
 				f2sdek<-filetosave[[2]]
 				f2smon<-filetosave[[3]]
-				Objarray<-tab.data[[tabid]][[2]]
+				Objarray<-AllOpenTabData[[tabid]][[2]]
 				dat2format<-tclArray2dataframe(Objarray)
 				# if(!is.null(dat2format)){
 					dat2sav<-reHomOutFormat(dat2format)
@@ -269,32 +269,32 @@ SaveNotebookTabArray<-function(parent){
 					write.table(dat2sav[[2]],f2sdek,row.names=F,col.names=T)
 					write.table(dat2sav[[3]],f2smon,row.names=F,col.names=T)
 				# }
-			}else if(ret.results$action=='homog' & ret.results$period=='dekadal'){
-				filetosave<-tab.data[[tabid]][[3]]
+			}else if(ReturnExecResults$action=='homog' & ReturnExecResults$period=='dekadal'){
+				filetosave<-AllOpenTabData[[tabid]][[3]]
 				f2sdek<-filetosave[[1]]
 				f2smon<-filetosave[[2]]
-				Objarray<-tab.data[[tabid]][[2]]
+				Objarray<-AllOpenTabData[[tabid]][[2]]
 				dat2format<-tclArray2dataframe(Objarray)
 				# if(!is.null(dat2format)){
 					dat2sav<-reHomOutFormat(dat2format)
 					write.table(dat2sav[[1]],f2sdek,row.names=F,col.names=T)
 					write.table(dat2sav[[2]],f2smon,row.names=F,col.names=T)
 				# }
-			}else if(ret.results$action=='homog' & ret.results$period=='monthly'){
-				filetosave<-tab.data[[tabid]][[3]]
+			}else if(ReturnExecResults$action=='homog' & ReturnExecResults$period=='monthly'){
+				filetosave<-AllOpenTabData[[tabid]][[3]]
 				f2smon<-filetosave[[1]]
-				Objarray<-tab.data[[tabid]][[2]]
+				Objarray<-AllOpenTabData[[tabid]][[2]]
 				dat2format<-tclArray2dataframe(Objarray)
 				# if(!is.null(dat2format)){
 					dat2sav<-reHomOutFormat(dat2format)
 					write.table(dat2sav[[1]],f2smon,row.names=F,col.names=T)
 				# }
 			}else{
-				insert.txt(main.txt.out,'The table could not be saved correctly',format=TRUE)
+				InsertMessagesTxt(main.txt.out,'The table could not be saved correctly',format=TRUE)
 			}
-		}else if(tab.type[[tabid]]=="arrRHtest"){
-			f2save<-tab.data[[tabid]][[3]][[1]]
-			Objarray<-tab.data[[tabid]][[2]]
+		}else if(AllOpenTabType[[tabid]]=="arrRHtest"){
+			f2save<-AllOpenTabData[[tabid]][[3]][[1]]
+			Objarray<-AllOpenTabData[[tabid]][[2]]
 			dat2sav<-tclArray2dataframe(Objarray)
 			head<-readLines(f2save,n=1)
 			cat(paste(head,'\n'),file=f2save)
@@ -326,38 +326,38 @@ SaveNotebookTabArray<-function(parent){
 					")\n",sep=""),file=f2save,append=TRUE)
 				}
 			}
-		}else if(tab.type[[tabid]]=="arrqc"){
-			f2save<-tab.data[[tabid]][[3]][[1]]
-			Objarray<-tab.data[[tabid]][[2]]
+		}else if(AllOpenTabType[[tabid]]=="arrqc"){
+			f2save<-AllOpenTabData[[tabid]][[3]][[1]]
+			Objarray<-AllOpenTabData[[tabid]][[2]]
 			dat2sav<-tclArray2dataframe0(Objarray)
 			write.table(dat2sav,f2save,row.names=F,col.names=T)
-		}else if(tab.type[[tabid]]=="arrzc"){
-			f2save<-tab.data[[tabid]][[3]][[1]]
-			Objarray<-tab.data[[tabid]][[2]]
+		}else if(AllOpenTabType[[tabid]]=="arrzc"){
+			f2save<-AllOpenTabData[[tabid]][[3]][[1]]
+			Objarray<-AllOpenTabData[[tabid]][[2]]
 			dat2sav<-tclArray2dataframe0(Objarray)
 			write.table(dat2sav,f2save,row.names=F,col.names=T)
-		}else if(tab.type[[tabid]]=="arrInterp"){
-			Objarray<-tab.data[[tabid]][[2]]
+		}else if(AllOpenTabType[[tabid]]=="arrInterp"){
+			Objarray<-AllOpenTabData[[tabid]][[2]]
 			dat2sav<-tclArray2dataframe(Objarray)
 			elvd<-as.numeric(as.character(dat2sav$elv))
 			if(sum(!is.na(elvd))==0) elvd<-NULL
-			donnees<-list(date=tab.data[[tabid]][[3]][[1]],
+			donnees<-list(date=AllOpenTabData[[tabid]][[3]][[1]],
 			lon=as.numeric(as.character(dat2sav$lon)),
 			lat=as.numeric(as.character(dat2sav$lat)),
 			id=as.character(dat2sav$id),
 			z=as.numeric(as.character(dat2sav$z)),
 			elv=elvd)
-#			cat(tab.data[[tabid]][[3]][[2]],'\n')
+#			cat(AllOpenTabData[[tabid]][[3]][[2]],'\n')
 			assign('donnees',donnees,envir=EnvInterpolation)
-		}else if(tab.type[[tabid]]=="StnInfo"){
-			if(ret.results$action=='chk.coords'){
-				f2save<-file.path(ret.results$outdir,paste(getf.no.ext(as.character(gal.params$file.io$Values[1])),
+		}else if(AllOpenTabType[[tabid]]=="StnInfo"){
+			if(ReturnExecResults$action=='chk.coords'){
+				f2save<-file.path(ReturnExecResults$outdir,paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])),
 				'_2CORRECT_STATIONS.txt',sep=''),fsep = .Platform$file.sep)
-				Objarray<-tab.data[[tabid]][[2]]
+				Objarray<-AllOpenTabData[[tabid]][[2]]
 				dat2sav<-tclArray2dataframe0(Objarray)
 				write.table(dat2sav,f2save,row.names=F,col.names=T)
 			}else{
-				insert.txt(main.txt.out,'The table could not be saved correctly',format=TRUE)
+				InsertMessagesTxt(main.txt.out,'The table could not be saved correctly',format=TRUE)
 			}
 		}else{
 			return(NULL)
@@ -374,18 +374,18 @@ SaveNotebookTabArray<-function(parent){
 
 SavePlot<-function(){
 	tabid<-as.numeric(tclvalue(tkindex(tknotes,'current')))+1
-	if(length(tab.type)>0){
-		if(tab.type[[tabid]]=="img"){
+	if(length(AllOpenTabType)>0){
+		if(AllOpenTabType[[tabid]]=="img"){
 			filename <- tclvalue(tkgetSaveFile(initialfile="", defaultextension=".jpeg",
 			filetypes="{JPEG {.jpeg .jpg}} {{All files} {*.*}}"))
 			if (filename != ""){
 				#jpeg(file=filename,width = 960, height = 480)
-				#tab.data[[tabid]][[2]]$fun()
+				#AllOpenTabData[[tabid]][[2]]$fun()
 				width<-as.numeric(tclvalue(tkget(spinH)))*480
 				height<-as.numeric(tclvalue(tkget(spinV)))*480
 				jpeg(file=filename,width = width, height = height)
-				if(class(tab.data[[tabid]][[2]])=="tkwin") tab.data[[tabid]][[2]]$fun()
-				else tab.data[[tabid]][[2]][[2]]$fun()
+				if(class(AllOpenTabData[[tabid]][[2]])=="tkwin") AllOpenTabData[[tabid]][[2]]$fun()
+				else AllOpenTabData[[tabid]][[2]][[2]]$fun()
 				dev.off()
 			}
 			#else tkmessageBox(title="",message="No file name provided", icon="error",type="ok")

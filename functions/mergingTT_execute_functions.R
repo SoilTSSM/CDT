@@ -1,12 +1,12 @@
 TreatCoefDownTemp<-function(origdir){
-	freqData<-gal.params$period
-	file.pars<-as.character(gal.params$file.io$Values)
+	freqData<-GeneralParameters$period
+	file.pars<-as.character(GeneralParameters$file.io$Values)
 	dir.create(origdir,showWarnings=FALSE)
 
-	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+	all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 
 	jfile<-which(all.open.file==file.pars[1])
-	donne<-file.opfiles[[jfile]][[2]]
+	donne<-AllOpenFilesData[[jfile]][[2]]
 
 	#######get data
 	donne<-splitCDTData(donne,freqData)
@@ -23,7 +23,7 @@ TreatCoefDownTemp<-function(origdir){
 
 	###get elevation data
 	jncdf<-which(all.open.file==file.pars[2])
-	fdem<-file.opfiles[[jncdf]][[2]]
+	fdem<-AllOpenFilesData[[jncdf]][[2]]
 	dem<-fdem$value
 	dem[dem<0]<-0
 	dem.coord<-data.frame(expand.grid(lon=fdem$x,lat=fdem$y))
@@ -68,14 +68,14 @@ execCoefDownTemp<-function(origdir){
 #######################################################################################
 
 TreatDownscalingTemp<-function(origdir){
-	file.pars<-as.character(gal.params$file.io$Values)
+	file.pars<-as.character(GeneralParameters$file.io$Values)
 	dir.create(origdir,showWarnings=FALSE)
 
-	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+	all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 
 	###get elevation data
 	jncdf<-which(all.open.file==file.pars[2])
-	fdem<-file.opfiles[[jncdf]][[2]]
+	fdem<-AllOpenFilesData[[jncdf]][[2]]
 	dem<-fdem$value
 	dem[dem<0]<-0
 	dem.coord<-data.frame(expand.grid(lon=fdem$x,lat=fdem$y))
@@ -86,7 +86,7 @@ TreatDownscalingTemp<-function(origdir){
 
 	##RFE sample file
 	jrfe<-which(all.open.file==file.pars[3])
-	ncrfe<-file.opfiles[[jrfe]][[2]]
+	ncrfe<-AllOpenFilesData[[jrfe]][[2]]
 	rfe.coord<-data.frame(expand.grid(lon=ncrfe$x,lat=ncrfe$y))
 	coordinates(rfe.coord) = ~lon+lat
 	rfelist<-list(lon=ncrfe$x,lat=ncrfe$y,rfeGrd=rfe.coord,rfeVarid=ncrfe$varid,rfeILon=ncrfe$ilon,rfeILat=ncrfe$ilat,irevlat=ncrfe$irevlat)
@@ -99,11 +99,11 @@ TreatDownscalingTemp<-function(origdir){
 #####################################################
 
 execDownscalingTemp<-function(origdir){
-	freqData<-gal.params$period
+	freqData<-GeneralParameters$period
 	downTempdat<-TreatDownscalingTemp(origdir)
 
-	create.grd<-as.character(gal.params$CreateGrd)
-	datesSE<-as.numeric(as.character(gal.params$dates.down$Values))
+	create.grd<-as.character(GeneralParameters$CreateGrd)
+	datesSE<-as.numeric(as.character(GeneralParameters$dates.down$Values))
 
 	istart<-as.Date(paste(datesSE[1],datesSE[2],datesSE[3],sep='-'))
 	iend<-as.Date(paste(datesSE[4],datesSE[5],datesSE[6],sep='-'))
@@ -124,12 +124,12 @@ execDownscalingTemp<-function(origdir){
 		nlat0<-length(grd.lat)
 		newlocation.merging <- expand.grid(lon=grd.lon, lat=grd.lat)
 	}else if(create.grd=='2'){
-		X0<-as.numeric(as.character(gal.params$new.grid$Values[1]))
-		X1<-as.numeric(as.character(gal.params$new.grid$Values[2]))
-		pX<-as.numeric(as.character(gal.params$new.grid$Values[3]))
-		Y0<-as.numeric(as.character(gal.params$new.grid$Values[4]))
-		Y1<-as.numeric(as.character(gal.params$new.grid$Values[5]))
-		pY<-as.numeric(as.character(gal.params$new.grid$Values[6]))
+		X0<-as.numeric(as.character(GeneralParameters$new.grid$Values[1]))
+		X1<-as.numeric(as.character(GeneralParameters$new.grid$Values[2]))
+		pX<-as.numeric(as.character(GeneralParameters$new.grid$Values[3]))
+		Y0<-as.numeric(as.character(GeneralParameters$new.grid$Values[4]))
+		Y1<-as.numeric(as.character(GeneralParameters$new.grid$Values[5]))
+		pY<-as.numeric(as.character(GeneralParameters$new.grid$Values[6]))
 
 		grd.lon<-seq(X0,X1,pX)
 		nlon0<-length(grd.lon)
@@ -179,14 +179,14 @@ execDownscalingTemp<-function(origdir){
 #####################################################
 ###Compute Mean Bias Coef
 TreatBiasCoefTemp<-function(origdir){
-	freqData<-gal.params$period
-	file.pars<-as.character(gal.params$file.io$Values)
+	freqData<-GeneralParameters$period
+	file.pars<-as.character(GeneralParameters$file.io$Values)
 	dir.create(origdir,showWarnings=FALSE)
 
-	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+	all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 
 	jfile<-which(all.open.file==file.pars[1])
-	donne<-file.opfiles[[jfile]][[2]]
+	donne<-AllOpenFilesData[[jfile]][[2]]
 
 	#######get data
 	donne<-splitCDTData(donne,freqData)
@@ -203,7 +203,7 @@ TreatBiasCoefTemp<-function(origdir){
 
 	###get elevation data
 	jncdf<-which(all.open.file==file.pars[2])
-	fdem<-file.opfiles[[jncdf]][[2]]
+	fdem<-AllOpenFilesData[[jncdf]][[2]]
 	dem<-fdem$value
 	dem[dem<0]<-0
 	dem.coord<-data.frame(expand.grid(lon=fdem$x,lat=fdem$y))
@@ -222,18 +222,18 @@ TreatBiasCoefTemp<-function(origdir){
 execCoefBiasCompute<-function(origdir){
 	coefBiasTempdat<-TreatBiasCoefTemp(origdir)
 
-	downscaledDir<-as.character(gal.params$file.io$Values[3])
-	biasRemoval<- as.character(gal.params$bias.method)
+	downscaledDir<-as.character(GeneralParameters$file.io$Values[3])
+	biasRemoval<- as.character(GeneralParameters$bias.method)
 
-	year1<-as.numeric(as.character(gal.params$dates.coef$Values[1]))
-	year2<-as.numeric(as.character(gal.params$dates.coef$Values[2]))
+	year1<-as.numeric(as.character(GeneralParameters$dates.coef$Values[1]))
+	year2<-as.numeric(as.character(GeneralParameters$dates.coef$Values[2]))
 	coef.dates<-c(year1,year2)
 
-	downPrefix<-as.character(gal.params$prefix$Values[1])
+	downPrefix<-as.character(GeneralParameters$prefix$Values[1])
 	#########
 	downFile<-list.files(downscaledDir,downPrefix)[1]
 	if(is.na(downFile)){
-		insert.txt(main.txt.out,"Downscaled data not found",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Downscaled data not found",format=TRUE)
 		return(NULL)
 	}
 	downfl<-file.path(downscaledDir,downFile,fsep = .Platform$file.sep)
@@ -293,12 +293,12 @@ execCoefBiasCompute<-function(origdir){
 
 ##Adjust downscaled data
 TreatAjdBiasDownTemp<-function(){
-	freqData<-gal.params$period
-	file.pars<-as.character(gal.params$file.io$Values)
-	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+	freqData<-GeneralParameters$period
+	file.pars<-as.character(GeneralParameters$file.io$Values)
+	all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 
 	jfile<-which(all.open.file==file.pars[1])
-	donne<-file.opfiles[[jfile]][[2]]
+	donne<-AllOpenFilesData[[jfile]][[2]]
 
 	#######get data
 	donne<-splitCDTData(donne,freqData)
@@ -315,7 +315,7 @@ TreatAjdBiasDownTemp<-function(){
 
 	###get elevation data
 	jncdf<-which(all.open.file==file.pars[2])
-	fdem<-file.opfiles[[jncdf]][[2]]
+	fdem<-AllOpenFilesData[[jncdf]][[2]]
 	dem<-fdem$value
 	dem[dem<0]<-0
 	dem.coord<-data.frame(expand.grid(lon=fdem$x,lat=fdem$y))
@@ -332,13 +332,13 @@ TreatAjdBiasDownTemp<-function(){
 #############
 
 execAjdBiasDownTemp<-function(origdir){
-	freqData<-gal.params$period
+	freqData<-GeneralParameters$period
 	adjdownTempdat<-TreatAjdBiasDownTemp()
 
-	downscaledDir<-as.character(gal.params$file.io$Values[3])
-	biasDirORFile<-as.character(gal.params$file.io$Values[4])
-	biasRemoval<- as.character(gal.params$bias.method)
-	datesSE<-as.numeric(as.character(gal.params$dates.adj$Values))
+	downscaledDir<-as.character(GeneralParameters$file.io$Values[3])
+	biasDirORFile<-as.character(GeneralParameters$file.io$Values[4])
+	biasRemoval<- as.character(GeneralParameters$bias.method)
+	datesSE<-as.numeric(as.character(GeneralParameters$dates.adj$Values))
 
 	istart<-as.Date(paste(datesSE[1],datesSE[2],datesSE[3],sep='-'))
 	iend<-as.Date(paste(datesSE[4],datesSE[5],datesSE[6],sep='-'))
@@ -350,31 +350,31 @@ execAjdBiasDownTemp<-function(origdir){
 		iend<-format(iend,'%Y%m%d')
 	}
 
-	downPrefix<-as.character(gal.params$prefix$Values[1])
-	meanBiasPrefix<-as.character(gal.params$prefix$Values[2])
-	adjPrefix<-as.character(gal.params$prefix$Values[3])
+	downPrefix<-as.character(GeneralParameters$prefix$Values[1])
+	meanBiasPrefix<-as.character(GeneralParameters$prefix$Values[2])
+	adjPrefix<-as.character(GeneralParameters$prefix$Values[3])
 
 	#########
 	fstdate<-ifelse(freqData=='monthly',substr(istart,1,6),istart)
 	downFile<-file.path(downscaledDir,paste(downPrefix,'_',fstdate,'.nc',sep=''),fsep = .Platform$file.sep)
 	if(!file.exists(downFile)){
-		insert.txt(main.txt.out,"Downscaled data not found",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Downscaled data not found",format=TRUE)
 		return(NULL)
 	}
 	if(biasRemoval=='Bias-kriging'){
 		biasFile<-file.path(biasDirORFile,paste(meanBiasPrefix,'_1.nc',sep=''),fsep = .Platform$file.sep)
 		if(!file.exists(biasFile)){
-			insert.txt(main.txt.out,"Mean bias coefficients not found",format=TRUE)
+			InsertMessagesTxt(main.txt.out,"Mean bias coefficients not found",format=TRUE)
 			return(NULL)
 		}
 	}else{
 		if(!file.exists(biasDirORFile)){
-			insert.txt(main.txt.out,"Regression coefficients not found",format=TRUE)
+			InsertMessagesTxt(main.txt.out,"Regression coefficients not found",format=TRUE)
 			return(NULL)
 		}
 		is.rdble<-!inherits(try(coefReg<-read.table(biasDirORFile,header=TRUE),silent=TRUE),"try-error")
 		if(!is.rdble){
-			insert.txt(main.txt.out,paste("Unable to open file",biasDirORFile),format=TRUE)
+			InsertMessagesTxt(main.txt.out,paste("Unable to open file",biasDirORFile),format=TRUE)
 			return(NULL)
 		}
 	}
@@ -429,14 +429,14 @@ execAjdBiasDownTemp<-function(origdir){
 }
 #######################################################################################
 TreatmergeTemp<-function(origdir){
-	freqData<-gal.params$period
-	file.pars<-as.character(gal.params$file.io$Values)
+	freqData<-GeneralParameters$period
+	file.pars<-as.character(GeneralParameters$file.io$Values)
 	dir.create(origdir,showWarnings=FALSE)
 
-	all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+	all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 
 	jfile<-which(all.open.file==file.pars[1])
-	donne<-file.opfiles[[jfile]][[2]]
+	donne<-AllOpenFilesData[[jfile]][[2]]
 
 	#######get data
 	donne<-splitCDTData(donne,freqData)
@@ -452,9 +452,9 @@ TreatmergeTemp<-function(origdir){
 	stnlist<-list(id=stn.id,lon=stn.lon,lat=stn.lat,elv=elv,dates=dates,data=donne)
 
 	###get elevation data
-	if(gal.params$blankGrd=="2"){
+	if(GeneralParameters$blankGrd=="2"){
 		jncdf<-which(all.open.file==file.pars[2])
-		fdem<-file.opfiles[[jncdf]][[2]]
+		fdem<-AllOpenFilesData[[jncdf]][[2]]
 		dem<-fdem$value
 		dem[dem<0]<-0
 		dem.coord<-data.frame(expand.grid(lon=fdem$x,lat=fdem$y))
@@ -464,9 +464,9 @@ TreatmergeTemp<-function(origdir){
 		demlist<-list(lon=fdem$x,lat=fdem$y,demGrd=demdf)
 	}else demlist<-NULL
 	###get boundaries shape
-	if(gal.params$blankGrd=="3"){
+	if(GeneralParameters$blankGrd=="3"){
 		jshp<-which(all.open.file==file.pars[3])
-		shpd<-file.opfiles[[jshp]][[2]]
+		shpd<-AllOpenFilesData[[jshp]][[2]]
 	}else shpd<-NULL
 
 	mrgTempdat<-list(stnData=stnlist,demData=demlist,shpData=shpd)
@@ -476,10 +476,10 @@ TreatmergeTemp<-function(origdir){
 ###########################
 
 execMergeTemp<-function(origdir){
-	freqData<-gal.params$period
+	freqData<-GeneralParameters$period
 	mrgTempdat<-TreatmergeTemp(origdir)
 
-	datesSE<-as.numeric(as.character(gal.params$dates.mrg$Values))
+	datesSE<-as.numeric(as.character(GeneralParameters$dates.mrg$Values))
 	istart<-as.Date(paste(datesSE[1],datesSE[2],datesSE[3],sep='-'))
 	iend<-as.Date(paste(datesSE[4],datesSE[5],datesSE[6],sep='-'))
 	if(freqData=='dekadal'){
@@ -490,16 +490,16 @@ execMergeTemp<-function(origdir){
 		iend<-format(iend,'%Y%m%d')
 	}
 
-	adjDir<-as.character(gal.params$file.io$Values[4])
-	adjPrefix<-as.character(gal.params$prefix$Values[1])
-	mrgPrefix<-as.character(gal.params$prefix$Values[2])
-	mrgSuffix<-as.character(gal.params$prefix$Values[3])
-	usemask<-as.character(gal.params$blankGrd)
+	adjDir<-as.character(GeneralParameters$file.io$Values[4])
+	adjPrefix<-as.character(GeneralParameters$prefix$Values[1])
+	mrgPrefix<-as.character(GeneralParameters$prefix$Values[2])
+	mrgSuffix<-as.character(GeneralParameters$prefix$Values[3])
+	usemask<-as.character(GeneralParameters$blankGrd)
 
 	fstdate<-ifelse(freqData=='monthly',substr(istart,1,6),istart)
 	downFile<-file.path(adjDir,paste(adjPrefix,'_',fstdate,'.nc',sep=''),fsep = .Platform$file.sep)
 	if(!file.exists(downFile)){
-		insert.txt(main.txt.out,"Downscaled or adjusted data not found",format=TRUE)
+		InsertMessagesTxt(main.txt.out,"Downscaled or adjusted data not found",format=TRUE)
 		return(NULL)
 	}
 

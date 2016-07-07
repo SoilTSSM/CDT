@@ -1,9 +1,9 @@
 
 getElevationData1<-function(){
-	single.series<-as.character(gal.params$use.method$Values[1])
-	uselv<-as.character(gal.params$use.method$Values[3])
-	interp.dem<-as.character(gal.params$use.method$Values[4])
-	file.pars<-as.character(gal.params$file.io$Values)
+	single.series<-as.character(GeneralParameters$use.method$Values[1])
+	uselv<-as.character(GeneralParameters$use.method$Values[3])
+	interp.dem<-as.character(GeneralParameters$use.method$Values[4])
+	file.pars<-as.character(GeneralParameters$file.io$Values)
 
 	if(!is.null(EnvQcOutlierData$donnees1)){
 		###get elevation data
@@ -18,9 +18,9 @@ getElevationData1<-function(){
 				if(interp.dem=="0"){
 					if(file.pars[3]=="") msg<-'There is no elevation data in format NetCDF'
 					else{
-						all.open.file<-as.character(unlist(lapply(1:length(file.opfiles),function(j) file.opfiles[[j]][[1]])))
+						all.open.file<-as.character(unlist(lapply(1:length(AllOpenFilesData),function(j) AllOpenFilesData[[j]][[1]])))
 						jncdf<-which(all.open.file==file.pars[3])
-						fdem<-file.opfiles[[jncdf]][[2]]
+						fdem<-AllOpenFilesData[[jncdf]][[2]]
 						dem<-fdem$value
 						dem[dem<0]<-NA
 						dem<-data.frame(expand.grid(x=fdem$x,y=fdem$y),z=c(dem))
@@ -42,7 +42,7 @@ getElevationData1<-function(){
 execQctempFun<-function(get.stn){
 	status<-0
 	msg<-NULL
-	regparams<-as.character(gal.params$parameter[[1]]$Values)
+	regparams<-as.character(GeneralParameters$parameter[[1]]$Values)
 	min.stn<-as.numeric(regparams[1])
 	max.stn<-as.numeric(regparams[2])
 	win<-as.numeric(regparams[3])
@@ -51,13 +51,13 @@ execQctempFun<-function(get.stn){
 	R<-as.numeric(regparams[5])
 	elv.diff<-as.numeric(regparams[6])
 
-	test.tx<-as.character(gal.params$test.tx)
-	single.series<-as.character(gal.params$use.method$Values[1])
-	const.chk<-as.character(gal.params$use.method$Values[2])
-	uselv<-as.character(gal.params$use.method$Values[3])
-	interp.dem<-as.character(gal.params$use.method$Values[4])
+	test.tx<-as.character(GeneralParameters$test.tx)
+	single.series<-as.character(GeneralParameters$use.method$Values[1])
+	const.chk<-as.character(GeneralParameters$use.method$Values[2])
+	uselv<-as.character(GeneralParameters$use.method$Values[3])
+	interp.dem<-as.character(GeneralParameters$use.method$Values[4])
 
-	bounds<-gal.params$parameter[[2]]
+	bounds<-GeneralParameters$parameter[[2]]
 	spregpar<-c(thres,max.stn)
 	spthres<-c(min.stn,R,elv.diff)
 
@@ -70,7 +70,7 @@ execQctempFun<-function(get.stn){
 				r_elv<-getElevationData1()
 				assign('r_elv',r_elv,envir=EnvQcOutlierData)
 			}else{
-				if(interp.dem=="0" & (is.null(EnvQcOutlierData$r_elv[[2]]) | EnvQcOutlierData$r_elv[[4]]!=as.character(gal.params$file.io$Values[3]))){
+				if(interp.dem=="0" & (is.null(EnvQcOutlierData$r_elv[[2]]) | EnvQcOutlierData$r_elv[[4]]!=as.character(GeneralParameters$file.io$Values[3]))){
 					r_elv<-getElevationData1()
 					EnvQcOutlierData$r_elv[2:4]<-r_elv[2:4]
 				}else if(interp.dem=="1" & is.null(EnvQcOutlierData$r_elv[[1]])){
@@ -131,7 +131,7 @@ execQctempFun<-function(get.stn){
 				}
 				tx.test<-FALSE
 			}
-			testpars<-list(tx.test=tx.test,int.check=int.check,omit=FALSE,period=gal.params$period)
+			testpars<-list(tx.test=tx.test,int.check=int.check,omit=FALSE,period=GeneralParameters$period)
 			xparams<-list(coords=coords,elv=elv,win=win,thres=thres,spthres=spthres,spregpar=spregpar,limsup=limsup)
 			Tsdata<-list(data=donne,date=dates,tx.data=TxData,tx.date=TxDate,tn.data=TnData,tn.date=TnDate)
 			res.qc.txtn<-txtnQcSpatialCheck(jstn1,idstn,Tsdata,xparams=xparams,testpars=testpars)
@@ -149,7 +149,7 @@ execQctempFun<-function(get.stn){
 				ddates<-dates1<-EnvQcOutlierData$donnees1$dates
 				tx.test<-FALSE
 			}
-			testpars<-list(tx.test=tx.test,int.check=FALSE,omit=TRUE,period=gal.params$period)
+			testpars<-list(tx.test=tx.test,int.check=FALSE,omit=TRUE,period=GeneralParameters$period)
 			xparams<-list(coords=coords,elv=elv,win=win,thres=thres,spthres=spthres,spregpar=spregpar,limsup=limsup)
 			Tsdata<-list(data=ddonne,date=ddates,tx.data=donne[,jstn],tx.date=dates,tn.data=donne1[,jstn],tn.date=dates1)
 			res.qc.txtn<-txtnQcSpatialCheck(jstn,idstn,Tsdata,xparams=xparams,testpars=testpars)
@@ -180,7 +180,7 @@ execQctempFun<-function(get.stn){
 			}
 			Tsdata<-list(tx.data=TxData,tx.date=TxDate,tn.data=TnData,tn.date=TnDate)
 			xparams<-list(thres=thres,limsup=limsup)
-			testpars<-list(tx.test=tx.test,int.check=TRUE,period=gal.params$period)
+			testpars<-list(tx.test=tx.test,int.check=TRUE,period=GeneralParameters$period)
 			res.qc.txtn<-txtnQcSingleSeries(idstn,Tsdata,xparams=xparams,testpars=testpars)
 		}else{
 			if(test.tx=="1"){
@@ -198,13 +198,13 @@ execQctempFun<-function(get.stn){
 			}
 			Tsdata<-list(tx.data=TxData,tx.date=TxDate,tn.data=TnDate,tn.date=TnDate)
 			xparams<-list(thres=thres,limsup=limsup)
-			testpars<-list(tx.test=tx.test,int.check=FALSE,period=gal.params$period)
+			testpars<-list(tx.test=tx.test,int.check=FALSE,period=GeneralParameters$period)
 			res.qc.txtn<-txtnQcSingleSeries(idstn,Tsdata,xparams=xparams,testpars=testpars)
 		}
 	}
 	on.exit({
-		if(status=='ok') insert.txt(main.txt.out,msg)
-		if(status=='no') insert.txt(main.txt.out,msg,format=TRUE)
+		if(status=='ok') InsertMessagesTxt(main.txt.out,msg)
+		if(status=='no') InsertMessagesTxt(main.txt.out,msg,format=TRUE)
 	})
 	return(res.qc.txtn)
 }
@@ -216,12 +216,12 @@ ExecQcTemp<-function(get.stn){
 		status<-0
 		msg<-NULL
 		dates<-EnvQcOutlierData$donnees1$dates
-		if(as.character(gal.params$use.method$Values[1])=="0"){
+		if(as.character(GeneralParameters$use.method$Values[1])=="0"){
 			xpos<-which(as.character(EnvQcOutlierData$donnees1$id)==jlstn)
 			xdat<-EnvQcOutlierData$donnees1$data[,xpos]
 		}else{
 			if(EnvQcOutlierData$donnees1$nbvar==3){
-				if(as.character(gal.params$test.tx)=='1') xdat<-EnvQcOutlierData$donnees1$var$tx
+				if(as.character(GeneralParameters$test.tx)=='1') xdat<-EnvQcOutlierData$donnees1$var$tx
 				else xdat<-EnvQcOutlierData$donnees1$var$tn
 			}else xdat<-EnvQcOutlierData$donnees1$var$var
 		}
@@ -242,14 +242,14 @@ ExecQcTemp<-function(get.stn){
 				dirPlot<-file.path(outsdir,paste(jlstn,'OUTLIERS_PLOT',sep='_'),fsep = .Platform$file.sep)
 				if(!file.exists(dirPlot)) dir.create(dirPlot,showWarnings=FALSE,recursive=TRUE)
 				##
-				if(gal.params$AllOrOne=='all') ret.qcout<-qcout
-				ret.res<-list(action=gal.params$action,period=gal.params$period,station=jlstn,res=qcout,outputdir=outsdir,AllOrOne=gal.params$AllOrOne)
+				if(GeneralParameters$AllOrOne=='all') ret.qcout<-qcout
+				ret.res<-list(action=GeneralParameters$action,period=GeneralParameters$period,station=jlstn,res=qcout,outputdir=outsdir,AllOrOne=GeneralParameters$AllOrOne)
 				save(ret.res,file=fileoutRdata)
 
 				## Default: not replace outliers if less/greater than limsup
 				lenNoRepl<-rep(NA,nrow(qcout))
 				resqc<-as.numeric(qcout$values)
-				limsup<-as.numeric(gal.params$parameter[[2]][as.character(gal.params$parameter[[2]][,1])==jlstn,2:3])
+				limsup<-as.numeric(GeneralParameters$parameter[[2]][as.character(GeneralParameters$parameter[[2]][,1])==jlstn,2:3])
 				lenNoRepl[resqc>limsup[1] & resqc<limsup[2]]<-1
 
 				qcout<-data.frame(qcout,not.replace=lenNoRepl,change.values=NA)
@@ -270,18 +270,18 @@ ExecQcTemp<-function(get.stn){
 				msg<-paste("Quality control finished successfully for", jlstn)
 				status<-'ok'
 			}else{
-				if(gal.params$AllOrOne=='one') ret.res<-NULL
-				if(gal.params$AllOrOne=='all') ret.qcout<-NULL
+				if(GeneralParameters$AllOrOne=='one') ret.res<-NULL
+				if(GeneralParameters$AllOrOne=='all') ret.qcout<-NULL
 				msg<-paste("Quality control failed for", jlstn)
 				status<-'no'
 			}
 		}else{
-			if(gal.params$AllOrOne=='one') ret.res<-NULL
-			if(gal.params$AllOrOne=='all') ret.qcout<-NULL
+			if(GeneralParameters$AllOrOne=='one') ret.res<-NULL
+			if(GeneralParameters$AllOrOne=='all') ret.qcout<-NULL
 			msg<-paste(paste("Quality control failed for", jlstn),'\n',gsub('[\r\n]','',qcout[1]),sep='')
 			status<-'no'
 		}
-		if(gal.params$AllOrOne=='all'){
+		if(GeneralParameters$AllOrOne=='all'){
 			tcl("update")
 			ret.res<-list(ret.qcout,jlstn,outsdir)
 		}
@@ -290,15 +290,15 @@ ExecQcTemp<-function(get.stn){
 		sdon<-data.frame(dates,xdat)
 		write.table(sdon,file_corrected,col.names=FALSE,row.names=FALSE)
 		on.exit({
-			if(status=='ok') insert.txt(main.txt.out,msg)
-			if(status=='no') insert.txt(main.txt.out,msg,format=TRUE)
+			if(status=='ok') InsertMessagesTxt(main.txt.out,msg)
+			if(status=='no') InsertMessagesTxt(main.txt.out,msg,format=TRUE)
 		})
 		return(ret.res)
 	}
 
 	#############
 	ExecTempALLStations<-function(){
-		allstn2loop<-as.character(gal.params$parameter[[2]][,1])
+		allstn2loop<-as.character(GeneralParameters$parameter[[2]][,1])
 
 		tcl("update","idletasks")
 		##Use parLapply
@@ -308,12 +308,12 @@ ExecQcTemp<-function(get.stn){
 		ret.stnid<-lapply(retAllRun,function(x) x[[2]])
 		ret.outdir<-lapply(retAllRun,function(x) x[[3]])
 
-		ret.res<-list(action=gal.params$action,period=gal.params$period,station=ret.stnid,res=ret.qcout,outputdir=ret.outdir,AllOrOne=gal.params$AllOrOne)
+		ret.res<-list(action=GeneralParameters$action,period=GeneralParameters$period,station=ret.stnid,res=ret.qcout,outputdir=ret.outdir,AllOrOne=GeneralParameters$AllOrOne)
 		return(ret.res)
 	}
 
 	#############
-	if(gal.params$AllOrOne=='one') ret.res<-ExecTempOneStation(get.stn)
-	if(gal.params$AllOrOne=='all') ret.res<-ExecTempALLStations()
+	if(GeneralParameters$AllOrOne=='one') ret.res<-ExecTempOneStation(get.stn)
+	if(GeneralParameters$AllOrOne=='all') ret.res<-ExecTempALLStations()
 	return(ret.res)
 }

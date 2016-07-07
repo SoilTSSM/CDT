@@ -75,7 +75,7 @@ preview.data<-function(parent.win,fileopen,title.pop){
 
 	is.rdble <- !inherits(try(rdL<-readLines(fileopen,n=10,warn=F), silent=TRUE), "try-error")
 	if(!is.rdble){
-		insert.txt(main.txt.out,paste("Unable to open file ",fileopen),format=TRUE)
+		InsertMessagesTxt(main.txt.out,paste("Unable to open file ",fileopen),format=TRUE)
 		tkgrab.release(tt)
 		tkdestroy(tt)
 		tkfocus(parent.win)

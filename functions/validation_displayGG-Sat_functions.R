@@ -18,7 +18,7 @@ displayGGvsSatFun<-function(parent,notebookTab,outValiddata,dataType){
 		plotGGvsSatellite(outValiddata,dataType)
 	}
 
-	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle='Gauge-RFE',tab.type,tab.data)
+	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle='Gauge-RFE',AllOpenTabType,AllOpenTabData)
 
 	hscale<-as.numeric(tclvalue(tkget(spinH)))
 	vscale<-as.numeric(tclvalue(tkget(spinV)))
@@ -59,7 +59,7 @@ displayCDFGGvsSatFun<-function(parent,notebookTab,outValiddata,dataType){
 		cdfGGvsSatellite(outValiddata,dataType)
 	}
 
-	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle='CDF Gauge-RFE',tab.type,tab.data)
+	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle='CDF Gauge-RFE',AllOpenTabType,AllOpenTabData)
 
 	hscale<-as.numeric(tclvalue(tkget(spinH)))
 	vscale<-as.numeric(tclvalue(tkget(spinV)))

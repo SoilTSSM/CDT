@@ -1,7 +1,7 @@
 
 getrefSeries<-function(xpos){
-	freqdata<-gal.params$period
-	refpars<-as.character(gal.params$ref.series.choix$Values)
+	freqdata<-GeneralParameters$period
+	refpars<-as.character(GeneralParameters$ref.series.choix$Values)
 	diff.ratio<-refpars[1]
 	weight.fac<-refpars[2]
 	uselv<-refpars[3]
@@ -27,7 +27,7 @@ getrefSeries<-function(xpos){
 			r_elv<-getElevationData2()
 			assign('r_elv',r_elv,envir=EnvHomogzData)
 		}else{
-			if(interp.dem=="0" & (is.null(EnvHomogzData$r_elv[[2]]) | EnvHomogzData$r_elv[[4]]!=as.character(gal.params$file.io$Values[3]))){
+			if(interp.dem=="0" & (is.null(EnvHomogzData$r_elv[[2]]) | EnvHomogzData$r_elv[[4]]!=as.character(GeneralParameters$file.io$Values[3]))){
 				r_elv<-getElevationData2()
 				EnvHomogzData$r_elv[2:4]<-r_elv[2:4]
 			}else if(interp.dem=="1" & is.null(EnvHomogzData$r_elv[[1]])){
@@ -83,11 +83,11 @@ getrefSeries<-function(xpos){
 #######################################################################################
 
 getrefSeriesUser<-function(xpos){
-	freqdata<-gal.params$period
-	refpars<-as.character(gal.params$ref.series.choix$Values)
+	freqdata<-GeneralParameters$period
+	refpars<-as.character(GeneralParameters$ref.series.choix$Values)
 	diff.ratio<-refpars[1]
 	weight.fac<-refpars[2]
-	ypos<-as.numeric(gal.params$stn.user.choice)
+	ypos<-as.numeric(GeneralParameters$stn.user.choice)
 
 	datdly<-EnvHomogzData$dly_data[[1]]$data
 	dydates<-EnvHomogzData$dly_data[[1]]$date
@@ -122,8 +122,8 @@ getrefSeriesUser<-function(xpos){
 #######################################################################################
 
 getrefSeries1S<-function(xpos,ypos){
-	freqdata<-gal.params$period
-	diff.ratio<-as.character(gal.params$ref.series.choix$Values[1])
+	freqdata<-GeneralParameters$period
+	diff.ratio<-as.character(GeneralParameters$ref.series.choix$Values[1])
 
 	if(!is.null(xpos)){
 		datdly<-EnvHomogzData$dly_data[[1]]$data[,xpos]
@@ -184,7 +184,7 @@ getrefSeries1S<-function(xpos,ypos){
 #######################################################################################
 
 gettestSeries<-function(xpos){
-	freqdata<-gal.params$period
+	freqdata<-GeneralParameters$period
 
 	if(!is.null(xpos)){
 		datdly<-EnvHomogzData$dly_data[[1]]$data[,xpos]
@@ -217,14 +217,14 @@ gettestSeries<-function(xpos){
 
 
 getBreakpoints<-function(dyref,dkref,moref){
-	freqdata<-gal.params$period
-	hompars<-as.character(gal.params$hom.opts$Values)
+	freqdata<-GeneralParameters$period
+	hompars<-as.character(GeneralParameters$hom.opts$Values)
 	cropb<-hompars[1]
 	h<-as.numeric(hompars[2])
 	conf.lev<-as.numeric(hompars[3])
 	cpt.max<-as.numeric(hompars[4])
 	min.int<-as.numeric(hompars[5])
-	stat.fun<-as.character(gal.params$use.method$Values[1])
+	stat.fun<-as.character(GeneralParameters$use.method$Values[1])
 
 	homog.mthd <- matrix(c(c("Pettitt Test","SNHT(Alexandersson & Moberg,1997)","CUSUM-type (Gallagher et al.,2013)",
 	"CUSUM-type with Trend(Gallagher et al.,2013)"),c('PettittRank.s','SNHT.s','cusum.s','cusum.t'),
@@ -315,7 +315,7 @@ getBreakpointsData<-function(homRetRes){
 
 		return(list(dlybreakpts=dlybreakpts,dekbreakpts=dekbreakpts,monbreakpts=monbreakpts))
 	}else{
-		insert.txt(main.txt.out,'There is no homogenization results',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'There is no homogenization results',format=TRUE)
 		return(NULL)
 	}
 }
@@ -325,24 +325,24 @@ getBreakpointsData<-function(homRetRes){
 ###Format
 
 HomOutFormat<-function(){
-	if(ret.results$action=='homog'){
+	if(ReturnExecResults$action=='homog'){
 
-		monfileout<-file.path(ret.results$outputdir,paste(ret.results$station,'_MON.txt',sep=''),fsep = .Platform$file.sep)
+		monfileout<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_MON.txt',sep=''),fsep = .Platform$file.sep)
 		modat<-read.table(monfileout,header=TRUE,colClasses='character')
 		datarr<-as.matrix(rbind(c('Monthly',c(rep(NA,ncol(modat)))),cbind(c(rep(NA,nrow(modat))),modat)))
 		datarr<-data.frame(datarr,row.names=1:nrow(datarr))
 		names(datarr)<-c('Period',names(modat))
 		retdata<-list(datarr,monfileout)
 
-		if(ret.results$period!='monthly'){
-			dekfileout<-file.path(ret.results$outputdir,paste(ret.results$station,'_DEK.txt',sep=''),fsep = .Platform$file.sep)
+		if(ReturnExecResults$period!='monthly'){
+			dekfileout<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_DEK.txt',sep=''),fsep = .Platform$file.sep)
 			dkdat<-read.table(dekfileout,header=TRUE,colClasses='character')
 			datarr<-rbind(as.matrix(rbind(c('Dekadal',c(rep(NA,ncol(dkdat)))),cbind(c(rep(NA,nrow(dkdat))),dkdat),NA)),as.matrix(rbind(c('Monthly',c(rep(NA,ncol(modat)))),cbind(c(rep(NA,nrow(modat))),modat))))
 			datarr<-data.frame(datarr,row.names=1:nrow(datarr))
 			names(datarr)<-c('Period',names(dkdat))
 			retdata<-list(datarr,dekfileout,monfileout)
-			if(ret.results$period=='daily'){
-				dlyfileout<-file.path(ret.results$outputdir,paste(ret.results$station,'_DLY.txt',sep=''),fsep = .Platform$file.sep)
+			if(ReturnExecResults$period=='daily'){
+				dlyfileout<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_DLY.txt',sep=''),fsep = .Platform$file.sep)
 				dydat<-read.table(dlyfileout,header=TRUE,colClasses='character')
 				datarr<-rbind(as.matrix(rbind(c('Daily',c(rep(NA,ncol(dydat)))),cbind(c(rep(NA,nrow(dydat))),dydat),NA)),as.matrix(rbind(c('Dekadal',c(rep(NA,ncol(dkdat)))),cbind(c(rep(NA,nrow(dkdat))),dkdat),NA)),as.matrix(rbind(c('Monthly',c(rep(NA,ncol(modat)))),cbind(c(rep(NA,nrow(modat))),modat))))
 				datarr<-data.frame(datarr,row.names=1:nrow(datarr))
@@ -351,7 +351,7 @@ HomOutFormat<-function(){
 			}
 		}
 	}else{
-		insert.txt(main.txt.out,'There is no homogenization results',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'There is no homogenization results',format=TRUE)
 		retdata<-NULL
 	}
 	return(retdata)
@@ -361,7 +361,7 @@ HomOutFormat<-function(){
 ##############################################
 
 reHomOutFormat<-function(dat2format){
-	if(ret.results$action=='homog'){
+	if(ReturnExecResults$action=='homog'){
 		iper<-as.character(dat2format$Period)
 		lper<-length(iper)
 		ldates<-as.character(dat2format$Breakpoints.Date)
@@ -377,7 +377,7 @@ reHomOutFormat<-function(dat2format){
 			datys1<-as.Date(paste(datys1,'01',sep=''),format='%Y%m%d')
 			msgdt<-which(is.na(datys1) | ndatys!=6)
 			if(length(msgdt)>0){
-				insert.txt(main.txt.out,paste('Wrong date format [monthly]: ',paste('[',datys[msgdt],']',sep='',collapse='|')),format=TRUE)
+				InsertMessagesTxt(main.txt.out,paste('Wrong date format [monthly]: ',paste('[',datys[msgdt],']',sep='',collapse='|')),format=TRUE)
 				#return(NULL)
 			}else{
 				idna<-which(is.na(as.character(dmo$Breakpoints.Index)))
@@ -388,7 +388,7 @@ reHomOutFormat<-function(dat2format){
 		}else dmo[1,]<-NA
 		retdata<-list(dmo)
 
-		if(ret.results$period!='monthly'){
+		if(ReturnExecResults$period!='monthly'){
 			idk<-grep('Dekadal',as.character(iper))
 			iidk<-ldates[idk:(imo-1)]
 			ddk<-dat2format[idk:(imo-1),-1]
@@ -400,7 +400,7 @@ reHomOutFormat<-function(dat2format){
 				datys1<-as.Date(datys1,format='%Y%m%d')
 				msgdt<-which(is.na(datys1) | ndatys!=7)
 				if(length(msgdt)>0){
-					insert.txt(main.txt.out,paste('Wrong date format [dekadal]: ',paste('[',datys[msgdt],']',sep='',collapse='|')),format=TRUE)
+					InsertMessagesTxt(main.txt.out,paste('Wrong date format [dekadal]: ',paste('[',datys[msgdt],']',sep='',collapse='|')),format=TRUE)
 					#return(NULL)
 				}else{
 					idna<-which(is.na(as.character(ddk$Breakpoints.Index)))
@@ -411,7 +411,7 @@ reHomOutFormat<-function(dat2format){
 			}else ddk[1,]<-NA
 			retdata<-list(ddk,dmo)
 
-			if(ret.results$period=='daily'){
+			if(ReturnExecResults$period=='daily'){
 				idy<-grep('Daily',as.character(iper))
 				iidy<-ldates[idy:(idk-1)]
 				ddy<-dat2format[idy:(idk-1),-1]
@@ -423,7 +423,7 @@ reHomOutFormat<-function(dat2format){
 					datys1<-as.Date(datys1,format='%Y%m%d')
 					msgdt<-which(is.na(datys1) | ndatys!=8)
 					if(length(msgdt)>0){
-						insert.txt(main.txt.out,paste('Wrong date format [daily]: ',paste('[',datys[msgdt],']',sep='',collapse='|')),format=TRUE)
+						InsertMessagesTxt(main.txt.out,paste('Wrong date format [daily]: ',paste('[',datys[msgdt],']',sep='',collapse='|')),format=TRUE)
 						#return(NULL)
 					}else{
 						idna<-which(is.na(as.character(ddy$Breakpoints.Index)))
@@ -436,7 +436,7 @@ reHomOutFormat<-function(dat2format){
 			}
 		}
 	}else{
-		insert.txt(main.txt.out,'Reinitialize the operation. Parameters or Outputs are not a homogenization results',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Reinitialize the operation. Parameters or Outputs are not a homogenization results',format=TRUE)
 		retdata<-NULL
 	}
 	return(retdata)
@@ -445,22 +445,22 @@ reHomOutFormat<-function(dat2format){
 #####################################################################################3
 
 undoBreaksChange<-function(){
-	if(ret.results$action=='homog'){
-		monfileout<-file.path(ret.results$outputdir,paste(ret.results$station,'_MON.txt',sep=''),fsep = .Platform$file.sep)
-		monfileout0<-file.path(ret.results$outputdir,paste(ret.results$station,'_MON0.txt',sep=''),fsep = .Platform$file.sep)
+	if(ReturnExecResults$action=='homog'){
+		monfileout<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_MON.txt',sep=''),fsep = .Platform$file.sep)
+		monfileout0<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_MON0.txt',sep=''),fsep = .Platform$file.sep)
 		file.copy(monfileout0,monfileout,overwrite=TRUE)
-		if(ret.results$period!='monthly'){
-			dekfileout<-file.path(ret.results$outputdir,paste(ret.results$station,'_DEK.txt',sep=''),fsep = .Platform$file.sep)
-			dekfileout0<-file.path(ret.results$outputdir,paste(ret.results$station,'_DEK0.txt',sep=''),fsep = .Platform$file.sep)
+		if(ReturnExecResults$period!='monthly'){
+			dekfileout<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_DEK.txt',sep=''),fsep = .Platform$file.sep)
+			dekfileout0<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_DEK0.txt',sep=''),fsep = .Platform$file.sep)
 			file.copy(dekfileout0,dekfileout,overwrite=TRUE)
-			if(ret.results$period=='daily'){
-				dlyfileout<-file.path(ret.results$outputdir,paste(ret.results$station,'_DLY.txt',sep=''),fsep = .Platform$file.sep)
-				dlyfileout0<-file.path(ret.results$outputdir,paste(ret.results$station,'_DLY0.txt',sep=''),fsep = .Platform$file.sep)
+			if(ReturnExecResults$period=='daily'){
+				dlyfileout<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_DLY.txt',sep=''),fsep = .Platform$file.sep)
+				dlyfileout0<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_DLY0.txt',sep=''),fsep = .Platform$file.sep)
 				file.copy(dlyfileout0,dlyfileout,overwrite=TRUE)
 			}
 		}
 	}else{
-		insert.txt(main.txt.out,'There is no homogenization results',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'There is no homogenization results',format=TRUE)
 		return(NULL)
 	}
 }
@@ -468,38 +468,38 @@ undoBreaksChange<-function(){
 #####################################################################################3
 
 AdjustInHomog<-function(choix){
-	if(ret.results$action=='homog' & gal.params$action=='homog'){
+	if(ReturnExecResults$action=='homog' & GeneralParameters$action=='homog'){
 
-		adjustdir<-file.path(paste(head(unlist(strsplit(ret.results$outputdir,.Platform$file.sep)),n=-2),sep ='',collapse=.Platform$file.sep),'AdjustedData',fsep = .Platform$file.sep)
+		adjustdir<-file.path(paste(head(unlist(strsplit(ReturnExecResults$outputdir,.Platform$file.sep)),n=-2),sep ='',collapse=.Platform$file.sep),'AdjustedData',fsep = .Platform$file.sep)
 		if(!file.exists(adjustdir)) dir.create(adjustdir,showWarnings=FALSE,recursive=TRUE)
-		adjustdirstn<-file.path(adjustdir,ret.results$station,fsep = .Platform$file.sep)
+		adjustdirstn<-file.path(adjustdir,ReturnExecResults$station,fsep = .Platform$file.sep)
 		if(!file.exists(adjustdirstn)) dir.create(adjustdirstn,showWarnings=FALSE,recursive=TRUE)
 
-		infofileadj<-file.path(adjustdirstn,paste(ret.results$station,'_INFO.txt',sep=''),fsep = .Platform$file.sep)
-		choixfileadj<-file.path(adjustdirstn,paste(ret.results$station,'_CHOICE.txt',sep=''),fsep = .Platform$file.sep)
+		infofileadj<-file.path(adjustdirstn,paste(ReturnExecResults$station,'_INFO.txt',sep=''),fsep = .Platform$file.sep)
+		choixfileadj<-file.path(adjustdirstn,paste(ReturnExecResults$station,'_CHOICE.txt',sep=''),fsep = .Platform$file.sep)
 
-		dlyfileadj<-file.path(adjustdirstn,paste(ret.results$station,'_DLY.txt',sep=''),fsep = .Platform$file.sep)
-		dekfileadj<-file.path(adjustdirstn,paste(ret.results$station,'_DEK.txt',sep=''),fsep = .Platform$file.sep)
-		monfileadj<-file.path(adjustdirstn,paste(ret.results$station,'_MON.txt',sep=''),fsep = .Platform$file.sep)
+		dlyfileadj<-file.path(adjustdirstn,paste(ReturnExecResults$station,'_DLY.txt',sep=''),fsep = .Platform$file.sep)
+		dekfileadj<-file.path(adjustdirstn,paste(ReturnExecResults$station,'_DEK.txt',sep=''),fsep = .Platform$file.sep)
+		monfileadj<-file.path(adjustdirstn,paste(ReturnExecResults$station,'_MON.txt',sep=''),fsep = .Platform$file.sep)
 
-		dlyfileout<-file.path(ret.results$outputdir,paste(ret.results$station,'_DLY.txt',sep=''),fsep = .Platform$file.sep)
-		dekfileout<-file.path(ret.results$outputdir,paste(ret.results$station,'_DEK.txt',sep=''),fsep = .Platform$file.sep)
-		monfileout<-file.path(ret.results$outputdir,paste(ret.results$station,'_MON.txt',sep=''),fsep = .Platform$file.sep)
+		dlyfileout<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_DLY.txt',sep=''),fsep = .Platform$file.sep)
+		dekfileout<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_DEK.txt',sep=''),fsep = .Platform$file.sep)
+		monfileout<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_MON.txt',sep=''),fsep = .Platform$file.sep)
 
-		stat.fun<-as.character(gal.params$use.method$Values[1])
-		minadjmo<-as.numeric(as.character(gal.params$Adjust.method$Values[1]))
-		minadjdk<-as.numeric(as.character(gal.params$Adjust.method$Values[2]))
-		minadjdy<-as.numeric(as.character(gal.params$Adjust.method$Values[3]))
-		SegAdjmo<-as.numeric(as.character(gal.params$Adjust.method$Values[4]))
-		SegAdjdk<-as.numeric(as.character(gal.params$Adjust.method$Values[5]))
-		SegAdjdy<-as.numeric(as.character(gal.params$Adjust.method$Values[6]))
+		stat.fun<-as.character(GeneralParameters$use.method$Values[1])
+		minadjmo<-as.numeric(as.character(GeneralParameters$Adjust.method$Values[1]))
+		minadjdk<-as.numeric(as.character(GeneralParameters$Adjust.method$Values[2]))
+		minadjdy<-as.numeric(as.character(GeneralParameters$Adjust.method$Values[3]))
+		SegAdjmo<-as.numeric(as.character(GeneralParameters$Adjust.method$Values[4]))
+		SegAdjdk<-as.numeric(as.character(GeneralParameters$Adjust.method$Values[5]))
+		SegAdjdy<-as.numeric(as.character(GeneralParameters$Adjust.method$Values[6]))
 
 		dydates<-EnvHomogzData$dly_data[[1]]$date
 		dkdates<-EnvHomogzData$dek_data[[1]]$date
 		modates<-EnvHomogzData$mon_data[[1]]$date
 
-		if(as.character(gal.params$use.method$Values[2])=="0"){
-			get.stn<-ret.results$station
+		if(as.character(GeneralParameters$use.method$Values[2])=="0"){
+			get.stn<-ReturnExecResults$station
 			xpos<-which(as.character(EnvHomogzData$donnees1$id)==get.stn)
 			xdly<-EnvHomogzData$dly_data[[1]]$data[,xpos]
 			xdek<-EnvHomogzData$dek_data[[1]]$data[,xpos]
@@ -536,21 +536,21 @@ AdjustInHomog<-function(choix){
 		}
 		###
 		if(!is.null(vmon)){
-			if(as.character(gal.params$ref.series.choix$Values[1])!='1') vmon[xmon==0 | vmon<0]<-0
+			if(as.character(GeneralParameters$ref.series.choix$Values[1])!='1') vmon[xmon==0 | vmon<0]<-0
 			smon<-vmon
 			adjvmon<-if(length(cptmo)>0) c('Monthly Data','Adjusted',adjmth,'Adjusted Value') else c('Monthlyly Data','No adjustment needed','No breakpoints','Original Data')
 		}else{
-			insert.txt(main.txt.out,paste('Monthly data:: No adjustment by mean was made for',ret.results$station,' :: ',msgmon),format=TRUE)
+			InsertMessagesTxt(main.txt.out,paste('Monthly data:: No adjustment by mean was made for',ReturnExecResults$station,' :: ',msgmon),format=TRUE)
 			smon<-xmon
 			adjvmon<-c('Monthly Data','No adjustment performed','Options not match','Original Data')
 		}
 		###
 		if(!is.null(vmon1)){
-			if(as.character(gal.params$ref.series.choix$Values[1])!='1') vmon1[xmon==0 | vmon1<0]<-0
+			if(as.character(GeneralParameters$ref.series.choix$Values[1])!='1') vmon1[xmon==0 | vmon1<0]<-0
 			smon1<-vmon1
 			adjvmon1<-if(length(cptmo)>0) c('Monthly Data','Adjusted',adjmth1,'Adjusted Value') else c('Monthlyly Data','No adjustment needed','No breakpoints','Original Data')
 		}else{
-			insert.txt(main.txt.out,paste('Monthly data:: No adjustment by quantile matching was made for',ret.results$station,' :: ',msgmon1),format=TRUE)
+			InsertMessagesTxt(main.txt.out,paste('Monthly data:: No adjustment by quantile matching was made for',ReturnExecResults$station,' :: ',msgmon1),format=TRUE)
 			smon1<-xmon
 			adjvmon1<-c('Monthly Data','No adjustment performed','Options not match','Original Data')
 		}
@@ -560,7 +560,7 @@ AdjustInHomog<-function(choix){
 		infotxt<-t(cbind(adjvmon,adjvmon1))
 		retdata<-list(Info=infotxt,DataMon=xmon,DataAdjMon=smon,DataAdjMon1=smon1,DatesAdjmon=modates)
 
-		if(ret.results$period!='monthly'){
+		if(ReturnExecResults$period!='monthly'){
 			dkdat<-read.table(dekfileout,header=TRUE,colClasses='character')
 			cptdk<-sort(na.omit(as.numeric(as.character(dkdat$Breakpoints.Index))))
 			if(stat.fun=="CUSUM-type with Trend(Gallagher et al.,2013)"){
@@ -586,21 +586,21 @@ AdjustInHomog<-function(choix){
 			}
 			###
 			if(!is.null(vdek)){
-				if(as.character(gal.params$ref.series.choix$Values[1])!='1') vdek[xdek==0 | vdek<0]<-0
+				if(as.character(GeneralParameters$ref.series.choix$Values[1])!='1') vdek[xdek==0 | vdek<0]<-0
 				sdek<-vdek
 				adjvdek<-if(length(cptdk)>0) c('Dekadal Data','Adjusted',adjmth,'Adjusted Value') else c('Dekadal Data','No adjustment needed','No breakpoints','Original Data')
 			}else{
-				insert.txt(main.txt.out,paste('Dekadal data:: No adjustment by mean was made for',ret.results$station,' :: ',msgdek),format=TRUE)
+				InsertMessagesTxt(main.txt.out,paste('Dekadal data:: No adjustment by mean was made for',ReturnExecResults$station,' :: ',msgdek),format=TRUE)
 				sdek<-xdek
 				adjvdek<-c('Dekadal Data','No adjustment performed','Options not match','Original Data')
 			}
 			####
 			if(!is.null(vdek1)){
-				if(as.character(gal.params$ref.series.choix$Values[1])!='1') vdek1[xdek==0 | vdek1<0]<-0
+				if(as.character(GeneralParameters$ref.series.choix$Values[1])!='1') vdek1[xdek==0 | vdek1<0]<-0
 				sdek1<-vdek1
 				adjvdek1<-if(length(cptdk)>0) c('Dekadal Data','Adjusted',adjmth1,'Adjusted Value') else c('Dekadal Data','No adjustment needed','No breakpoints','Original Data')
 			}else{
-				insert.txt(main.txt.out,paste('Dekadal data:: No adjustment by quantile matching was made for',ret.results$station,' :: ',msgdek1),format=TRUE)
+				InsertMessagesTxt(main.txt.out,paste('Dekadal data:: No adjustment by quantile matching was made for',ReturnExecResults$station,' :: ',msgdek1),format=TRUE)
 				sdek1<-xdek
 				adjvdek1<-c('Dekadal Data','No adjustment performed','Options not match','Original Data')
 			}
@@ -610,7 +610,7 @@ AdjustInHomog<-function(choix){
 			infotxt<-t(cbind(adjvdek,adjvdek1,adjvmon,adjvmon1))
 			retdata<-list(Info=infotxt,DataDek=xdek,DataAdjDek=sdek,DataAdjDek1=sdek1,DatesAdjDek=dkdates,DataMon=xmon,DataAdjMon=smon,DataAdjMon1=smon1,DatesAdjmon=modates)
 
-			if(ret.results$period=='daily'){
+			if(ReturnExecResults$period=='daily'){
 				dydat<-read.table(dlyfileout,header=TRUE,colClasses='character')
 				cptdy<-sort(na.omit(as.numeric(as.character(dydat$Breakpoints.Index))))
 				if(stat.fun=="CUSUM-type with Trend(Gallagher et al.,2013)"){
@@ -636,21 +636,21 @@ AdjustInHomog<-function(choix){
 				}
 				###
 				if(!is.null(vdly)){
-					if(as.character(gal.params$ref.series.choix$Values[1])!='1') vdly[xdly==0 | vdly<0]<-0
+					if(as.character(GeneralParameters$ref.series.choix$Values[1])!='1') vdly[xdly==0 | vdly<0]<-0
 					sdly<-vdly
 					adjvdly<-if(length(cptdy)>0) c('Daily Data','Adjusted',adjmth,'Adjusted Value') else c('Daily Data','No adjustment needed','No breakpoints','Original Data')
 				}else{
-					insert.txt(main.txt.out,paste('Daily data:: No adjustment by mean was made for',ret.results$station,' :: ',msgdly),format=TRUE)
+					InsertMessagesTxt(main.txt.out,paste('Daily data:: No adjustment by mean was made for',ReturnExecResults$station,' :: ',msgdly),format=TRUE)
 					sdly<-xdly
 					adjvdly<-c('Daily Data','No adjustment performed','Options not match','Original Data')
 				}
 				#####
 				if(!is.null(vdly1)){
-					if(as.character(gal.params$ref.series.choix$Values[1])!='1') vdly1[xdly==0 | vdly1<0]<-0
+					if(as.character(GeneralParameters$ref.series.choix$Values[1])!='1') vdly1[xdly==0 | vdly1<0]<-0
 					sdly1<-vdly1
 					adjvdly1<-if(length(cptdy)>0) c('Daily Data','Adjusted',adjmth1,'Adjusted Value') else c('Daily Data','No adjustment needed','No breakpoints','Original Data')
 				}else{
-					insert.txt(main.txt.out,paste('Daily data:: No adjustment by quantile matching was made for',ret.results$station,' :: ',msgdly1),format=TRUE)
+					InsertMessagesTxt(main.txt.out,paste('Daily data:: No adjustment by quantile matching was made for',ReturnExecResults$station,' :: ',msgdly1),format=TRUE)
 					sdly1<-xdly
 					adjvdly1<-c('Daily Data','No adjustment performed','Options not match','Original Data')
 				}
@@ -666,7 +666,7 @@ AdjustInHomog<-function(choix){
 		write.table(choix,choixfileadj,col.names=FALSE,row.names=FALSE)
 		return(retdata)
 	}else{
-		insert.txt(main.txt.out,'Reinitialize the operation. Parameters or Outputs are not a homogenization results',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Reinitialize the operation. Parameters or Outputs are not a homogenization results',format=TRUE)
 		return(NULL)
 	}
 }

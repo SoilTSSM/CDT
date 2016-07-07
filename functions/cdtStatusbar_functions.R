@@ -11,7 +11,7 @@ tkgrid.columnconfigure(status.frame,3,weight=1)
 bstatus1<-tkframe(status.frame,relief='sunken',bd=2)  #
 lhelp<-tklabel(bstatus1,anchor='w',width=wbstatus1) #change dyn ,width=80
 tkgrid(lhelp,sticky="we")
-tkconfigure(lhelp,textvariable=txt.stbr1)
+tkconfigure(lhelp,textvariable=TextOutputVar)
 
 bstatus2<-tkframe(status.frame,relief='sunken',bd=2)
 

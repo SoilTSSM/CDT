@@ -1,13 +1,13 @@
 
-plotCPTFun<-function(ret.results,stat.fun,replotBreak){
+plotCPTFun<-function(ReturnExecResults,stat.fun,replotBreak){
 
 		dydates<-EnvHomogzData$dly_data[[1]]$date
 		dkdates<-EnvHomogzData$dek_data[[1]]$date
 		modates<-EnvHomogzData$mon_data[[1]]$date
 
 	##base series
-	#if(as.character(gal.params$use.method$Values[2])=="0"){
-	#	get.stn<-ret.results$station
+	#if(as.character(GeneralParameters$use.method$Values[2])=="0"){
+	#	get.stn<-ReturnExecResults$station
 	#	xpos<-which(as.character(EnvHomogzData$donnees1$id)==get.stn)
 	#	dyx<-EnvHomogzData$dly_data[[1]]$data[,xpos]
 	#	dkx<-EnvHomogzData$dek_data[[1]]$data[,xpos]
@@ -19,35 +19,35 @@ plotCPTFun<-function(ret.results,stat.fun,replotBreak){
 	#}
 
 	##series composite used for the test
-	dyx<-ret.results$refSerie$dyref
-	dkx<-ret.results$refSerie$dkref
-	mox<-ret.results$refSerie$moref
+	dyx<-ReturnExecResults$refSerie$dyref
+	dkx<-ReturnExecResults$refSerie$dkref
+	mox<-ReturnExecResults$refSerie$moref
 
 	##cpt obj
 	if(replotBreak){
 		dyobj<-dkobj<-moobj<-NULL
-		monfileout<-file.path(ret.results$outputdir,paste(ret.results$station,'_MON.txt',sep=''),fsep = .Platform$file.sep)
+		monfileout<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_MON.txt',sep=''),fsep = .Platform$file.sep)
 		modat<-read.table(monfileout,header=TRUE,colClasses='character')
 		moobj<-na.omit(as.numeric(as.character(modat$Breakpoints.Index)))
-		if(ret.results$period!='monthly'){
-			dekfileout<-file.path(ret.results$outputdir,paste(ret.results$station,'_DEK.txt',sep=''),fsep = .Platform$file.sep)
+		if(ReturnExecResults$period!='monthly'){
+			dekfileout<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_DEK.txt',sep=''),fsep = .Platform$file.sep)
 			dkdat<-read.table(dekfileout,header=TRUE,colClasses='character')
 			dkobj<-na.omit(as.numeric(as.character(dkdat$Breakpoints.Index)))
-			if(ret.results$period=='daily'){
-				dlyfileout<-file.path(ret.results$outputdir,paste(ret.results$station,'_DLY.txt',sep=''),fsep = .Platform$file.sep)
+			if(ReturnExecResults$period=='daily'){
+				dlyfileout<-file.path(ReturnExecResults$outputdir,paste(ReturnExecResults$station,'_DLY.txt',sep=''),fsep = .Platform$file.sep)
 				dydat<-read.table(dlyfileout,header=TRUE,colClasses='character')
 				dyobj<-na.omit(as.numeric(as.character(dydat$Breakpoints.Index)))
 			}
 		}
 	}else{
-		dyobj<-ret.results$res$dyobj[[2]]
-		dkobj<-ret.results$res$dkobj[[2]]
-		moobj<-ret.results$res$moobj[[2]]
+		dyobj<-ReturnExecResults$res$dyobj[[2]]
+		dkobj<-ReturnExecResults$res$dkobj[[2]]
+		moobj<-ReturnExecResults$res$moobj[[2]]
 	}
 
-	if(ret.results$period=='daily') testIfList<-is.list(dyobj) & is.list(dkobj) & is.list(moobj)
-	if(ret.results$period=='dekadal') testIfList<-is.list(dkobj) & is.list(moobj)
-	if(ret.results$period=='monthly') testIfList<-is.list(moobj)
+	if(ReturnExecResults$period=='daily') testIfList<-is.list(dyobj) & is.list(dkobj) & is.list(moobj)
+	if(ReturnExecResults$period=='dekadal') testIfList<-is.list(dkobj) & is.list(moobj)
+	if(ReturnExecResults$period=='monthly') testIfList<-is.list(moobj)
 
 	##cpt index
 	if(testIfList){
@@ -96,7 +96,7 @@ plotCPTFun<-function(ret.results,stat.fun,replotBreak){
 
 
 	#######
-	if(ret.results$period=='daily'){
+	if(ReturnExecResults$period=='daily'){
 		##format dates
 		dydates<-as.Date(dydates,format='%Y%m%d')
 		dycptd<-dydates[dydx]
@@ -146,7 +146,7 @@ plotCPTFun<-function(ret.results,stat.fun,replotBreak){
 		par(op)
 		return(list(pltmo=pltmo,usrmo=usrmo,pltdk=pltdk,usrdk=usrdk,pltdy=pltdy,usrdy=usrdy))
 	}
-	if(ret.results$period=='dekadal'){
+	if(ReturnExecResults$period=='dekadal'){
 		##format dates
 		dkdates<-as.Date(paste(substr(dkdates,1,6),ifelse(substr(dkdates,7,7)=="1","05",ifelse(substr(dkdates,7,7)=="2","15","25")),sep=''),format='%Y%m%d')
 		dkcptd<-dkdates[dkdx]
@@ -182,7 +182,7 @@ plotCPTFun<-function(ret.results,stat.fun,replotBreak){
 		par(op)
 		return(list(pltmo=pltmo,usrmo=usrmo,pltdk=pltdk,usrdk=usrdk))
 	}
-	if(ret.results$period=='monthly'){
+	if(ReturnExecResults$period=='monthly'){
 		##format dates
 		modates<-as.Date(paste(modates,16,sep=''),format='%Y%m%d')
 		mocptd<-modates[modx]
@@ -212,23 +212,23 @@ plotCPTFun<-function(ret.results,stat.fun,replotBreak){
 plotHomogBreakPts<-function(parent,notebookTab,replotBreak){
 	pltusr <- NULL
 
-	if(ret.results$action=='homog' & gal.params$action=='homog'){
-		stat.fun<-as.character(gal.params$use.method$Values[1])
+	if(ReturnExecResults$action=='homog' & GeneralParameters$action=='homog'){
+		stat.fun<-as.character(GeneralParameters$use.method$Values[1])
 		plotIt <- function(){
 			op1<-par(bg='white')
-			pltusr<<-plotCPTFun(ret.results,stat.fun,replotBreak)
+			pltusr<<-plotCPTFun(ReturnExecResults,stat.fun,replotBreak)
 			par(op1)
 		}
 	}else{
-		insert.txt(main.txt.out,'Reinitialize the operation. Parameters or Outputs are not a homogenization results',format=TRUE)
+		InsertMessagesTxt(main.txt.out,'Reinitialize the operation. Parameters or Outputs are not a homogenization results',format=TRUE)
 		return(NULL)
 	}
 
 	###################################################################
 
-	if(replotBreak) tabTitre<-paste(ret.results$station,'Changed-Breakpoints',sep='-')
-	else tabTitre<-paste(ret.results$station,'Breakpoints',sep='-')
-	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=tabTitre,tab.type,tab.data)
+	if(replotBreak) tabTitre<-paste(ReturnExecResults$station,'Changed-Breakpoints',sep='-')
+	else tabTitre<-paste(ReturnExecResults$station,'Breakpoints',sep='-')
+	onglet<-imageNotebookTab_open(parent,notebookTab,tabTitle=tabTitre,AllOpenTabType,AllOpenTabData)
 
 	#########
 	hscale<-as.numeric(tclvalue(tkget(spinH)))
@@ -258,7 +258,7 @@ plotHomogBreakPts<-function(parent,notebookTab,replotBreak){
 		xpos<-(xmouse-orgx)/imgw
 		ypos<-1-(ymouse-orgy)/imgh
 
-		if(ret.results$period=='daily'){
+		if(ReturnExecResults$period=='daily'){
 
 			xpltmo1 <- pltusr$pltmo[1]
 			xpltmo2 <- pltusr$pltmo[2]
@@ -314,7 +314,7 @@ plotHomogBreakPts<-function(parent,notebookTab,replotBreak){
 				frxcoord<-''
 				frycoord<-''
 			}
-		}else if(ret.results$period=='dekadal'){
+		}else if(ReturnExecResults$period=='dekadal'){
 			xpltmo1 <- pltusr$pltmo[1]
 			xpltmo2 <- pltusr$pltmo[2]
 			ypltmo1 <- pltusr$pltmo[3]
@@ -354,7 +354,7 @@ plotHomogBreakPts<-function(parent,notebookTab,replotBreak){
 				frxcoord<-''
 				frycoord<-''
 			}
-		}else if(ret.results$period=='monthly'){
+		}else if(ReturnExecResults$period=='monthly'){
 			xpltmo1 <- pltusr$pltmo[1]
 			xpltmo2 <- pltusr$pltmo[2]
 			ypltmo1 <- pltusr$pltmo[3]

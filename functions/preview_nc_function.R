@@ -14,7 +14,7 @@ preview.data.nc<-function(parent.win,openncf,title.pop){
 	# is.rdble <- !inherits(try(nc <- open.ncdf(openncf), silent=TRUE), "try-error")
 	is.rdble <- !inherits(try(nc <- nc_open(openncf), silent=TRUE), "try-error")
 	if(!is.rdble){
-		insert.txt(main.txt.out,paste("Unable to open file ",openncf),format=TRUE)
+		InsertMessagesTxt(main.txt.out,paste("Unable to open file ",openncf),format=TRUE)
 		tkgrab.release(tt)
 		tkdestroy(tt)
 		tkfocus(parent.win)
