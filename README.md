@@ -9,13 +9,12 @@ Climate Data Tools (CDT) is a  set of utility functions for meteorological data 
 
 ### Step 2: Installing `R` packages
 
-Open an `R` shell and type:
+Open an `R` console and type:
 
 ```R
 packages <- c('stringr','tkrplot','gmt','fields','latticeExtra','sp','maptools','gstat','automap','rgeos','reshape2','ncdf4','rgdal','foreach','doParallel')
 install.packages(packages)
 ```
-
 You are asked which repository `R` should use. Select your nearest site from the list of CRAN Mirrors.
 
 ### Step 3: Download and Install `Tcl/Tk`
@@ -24,4 +23,28 @@ You are asked which repository `R` should use. Select your nearest site from the
 
 Linux and Mac OS X: If you installed `Tcl/Tk` from the system's software manager. You have to install separately this two libraries: `Tktable` and `BWidget`.
 You can download `Tktable` at [https://sourceforge.net/projects/tktable/files/tktable/2.10/](https://sourceforge.net/projects/tktable/files/tktable/2.10/) and `BWidget` at [https://sourceforge.net/projects/tcllib/files/BWidget/](https://sourceforge.net/projects/tcllib/files/BWidget/). If you use ActiveTcl for `Tcl/Tk`, you only need to specify the `Tktable`  and `BWidget` installation path.
+
+### Step 4: Getting `CDT` Code
+
+You can use Git to clone `CDT` repository on your local machine. 
+
+```bash
+# cd to the directory you want to put CDT
+git clone https://github.com/rijaf/CDT.git
+```
+This will create a new directory CDT, containing a clone of CDT's GitHub repository. 
+
+If you cannot use git, download [CDT zip file](https://github.com/rijaf/CDT/archive/master.zip) directly from Github , then unzip it somewhere in a directory you want.
+
+### Step 5: Run `CDT`
+
+Open an `R` console and type:
+
+```R
+source("/path_to/CDT/CDT.R")
+# <path_to> is the full path of the directory where you put CDT
+```
+## Windows installation
+
+ You can find [here](https://www.dropbox.com/sh/h0ltn8sugu38nie/AAC3WmyPkKY-4RzjXKtffPUza?dl=0) all the resources needed and instruction to install `CDT` on Windows.
 
