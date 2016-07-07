@@ -3,11 +3,22 @@ Climate Data Tools (CDT) is a  set of utility functions for meteorological data 
 
 ## Installation
 
-### Download and Install `R`
+### Step 1: Download and Install `R`
 
-`CDT` is based on [R programming language](https://www.r-project.org/) a very powerful and freely available software environment for statistical computing and graphics. You can download and install the current version of `R` at [https://cran.r-project.org](https://cran.r-project.org)
+`CDT` is based on [R programming language](https://www.r-project.org/) a very powerful and freely available software environment for statistical computing and graphics. You can download and install the current version of `R` at [https://cran.r-project.org](https://cran.r-project.org).
 
-### Download and Install `Tcl/Tk`
+### Step 2: Installing R packages
+
+Open an R shell and type:
+
+```R
+packages <- c('stringr','tkrplot','gmt','fields','latticeExtra','sp','maptools','gstat','automap','rgeos','reshape2','ncdf4','rgdal','foreach','doParallel')
+install.packages(packages)
+```
+
+You are asked which repository R should use. Select your nearest site from the list of CRAN Mirrors
+
+### Step 3: Download and Install `Tcl/Tk`
 
 `CDT` needs `Tcl/Tk` to work properly for the GUI part. The easiest way to get `Tcl/Tk` installed is via ActiveState's free ActiveTcl distribution, which includes precompiled versions of not only the core `Tcl/Tk`, but dozens of libraries. You can download ActiveTcl from ActiveState's websites [https://www.activestate.com/activetcl/downloads](https://www.activestate.com/activetcl/downloads).
 
@@ -15,3 +26,4 @@ Linux and Mac OS X: If you installed `Tcl/Tk` from the system's software manager
 You can download `Tktable` at [https://sourceforge.net/projects/tktable/files/tktable/2.10/](https://sourceforge.net/projects/tktable/files/tktable/2.10/) and `BWidget` at [https://sourceforge.net/projects/tcllib/files/BWidget/](https://sourceforge.net/projects/tcllib/files/BWidget/). If you use ActiveTcl for `Tcl/Tk`, you only need to specify the `Tktable`  and `BWidget` installation path.
 
 
+you are asked which repository R should use.
