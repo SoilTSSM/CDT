@@ -7,16 +7,16 @@ Climate Data Tools (CDT) is a  set of utility functions for meteorological data 
 
 `CDT` is based on [R programming language](https://www.r-project.org/) a very powerful and freely available software environment for statistical computing and graphics. You can download and install the current version of `R` at [https://cran.r-project.org](https://cran.r-project.org).
 
-### Step 2: Installing R packages
+### Step 2: Installing `R` packages
 
-Open an R shell and type:
+Open an `R` shell and type:
 
 ```R
 packages <- c('stringr','tkrplot','gmt','fields','latticeExtra','sp','maptools','gstat','automap','rgeos','reshape2','ncdf4','rgdal','foreach','doParallel')
 install.packages(packages)
 ```
 
-You are asked which repository R should use. Select your nearest site from the list of CRAN Mirrors
+You are asked which repository `R` should use. Select your nearest site from the list of CRAN Mirrors.
 
 ### Step 3: Download and Install `Tcl/Tk`
 
@@ -25,5 +25,3 @@ You are asked which repository R should use. Select your nearest site from the l
 Linux and Mac OS X: If you installed `Tcl/Tk` from the system's software manager. You have to install separately this two libraries: `Tktable` and `BWidget`.
 You can download `Tktable` at [https://sourceforge.net/projects/tktable/files/tktable/2.10/](https://sourceforge.net/projects/tktable/files/tktable/2.10/) and `BWidget` at [https://sourceforge.net/projects/tcllib/files/BWidget/](https://sourceforge.net/projects/tcllib/files/BWidget/). If you use ActiveTcl for `Tcl/Tk`, you only need to specify the `Tktable`  and `BWidget` installation path.
 
-
-you are asked which repository R should use.
