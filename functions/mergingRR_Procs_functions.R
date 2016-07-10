@@ -163,7 +163,7 @@ ComputeMeanBiasRain<-function(rfe_stn,GeneralParameters,mrgRaindat,paramGrd,orig
 	stn.data<-stn.data[istdt,,drop=F]
 	if(length(bsdates)>0){
 		for (i in 1:nstn){
-			for (nt in 1:36){
+			for (nt in 1:ntimes){
 				if(freqData=='daily'){
 					ix1<-which(as.numeric(substr(bsdates,7,8))==vtimes[nt,1] & as.numeric(substr(bsdates,5,6))==vtimes[nt,2])
 					ix1<-c(sapply(ix1,function(x) x+(-5:5)))
