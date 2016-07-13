@@ -1,0 +1,155 @@
+---
+title: "CDT Input Data Format"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+---
+
+
+
+CDT can handle daily, dekadal (10-days) or monthly series. A file can contains one station or several stations series. Input data series for one station can contains one or three variables (precipitation-maximum temperature-minimum temperature in this order). Each input data series should be stored in a text/ASCII or CSV (Comma-separated values) format file.
+
+
+##  Data format with several stations
+
+In this format, all the series for one variable from different stations are put together  on a single file. It is the standard input data format used by CDT, in which the first line is the ID or name of the stations (__*avoid putting space in stations name*__), the second  and third lines are longitude  and latitude of the stations,  and the fourth line is elevation data in meter (if it exists), and the following lines contain the observations, in which the first column is the date of observations. The following tables show the format of data
+
+
+```{r datanoelev, echo=FALSE, results='asis'}
+dat<-read.table('../../R_Data/daily_rr.txt')
+print(xtable::xtable(dat,caption = "Input series without elevation data"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData0\" border=0')
+```  
+<br>
+
+
+```{r datawelev, echo=FALSE, results='asis'}
+dat<-read.table('../../R_Data/daily_rr_elv.txt')
+print(xtable::xtable(dat,caption = "Input series with elevation data"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData0\" border=0')
+```   
+ <br>
+
+**_Date format_** 
+
+> Date format must be grouped.  
+> 
+> **Daily series** : **`YYYYMMDD`** (calendar year YYYY, month MM, and day DD), 3rd and 4th are  in the following format  "DAILY/LAT" or "DAILY/ELEV" whether or not there is elevation data.    
+> **Dekadal series** : **`YYYYMMD`** (year, month and dekad), dekad must be 1, 2 or 3, 3rd and 4th are  in the following format "DEKADAL/LAT" or "DEKADAL/ELEV" whether or not there is elevation data.  
+> **Monthly series** : **`YYYYMM`** (year and month), 3rd and 4th are  in the following format "MONTHLY/LAT" or "MONTHLY/ELEV" according elevation data. 
+<br>
+
+**_Missing values_**
+
+> CDT use "-99" to code missing value in the data series. You can use your own missing value flag (the  missing value code you provided must be exactly the same as used in the data; for example, "-99." and "-99.0" are different; you can not tell to CDT "-99." instead of "-99.0" when "-99.0" is used in the input data series; it will produce some odd results).
+
+
+## Input series for one station
+
+Several formats are possible for input data series for one station. Series can have header (the column names) or not and  can contain one or three variables in the following order: precipitation-maximum temperature-minimum temperature. Observations dates can be grouped or separated. The following examples give us an overview of possibility.
+
+
+<div id="onestnseries">
+```{r day1v1dnh, echo=FALSE, results='asis'}
+dat<-read.table('../../R_Data/var1_date1_rr_day.txt')
+print(xtable::xtable(head(dat),caption = "Daily time series, 1 variable, grouped date, no header"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
+```  
+
+```{r day3v3dwh, echo=FALSE, results='asis'}
+dat<-read.table('../../R_Data/var3_date3_header_day.txt')
+print(xtable::xtable(head(dat),caption = "Daily time series, 3 variables, separated date, with header"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
+```  
+<div id="clearleft"></div>
+</div>
+
+<br>
+
+<div id="onestnseries">
+```{r dek1v3dwh, echo=FALSE, results='asis'}
+dat<-read.table('../../R_Data/var1_date3_tx_header_dek.txt')
+print(xtable::xtable(head(dat),caption = "Dekadal time series, 1 variable, separated date, with header"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
+```  
+
+```{r dek3v1dnh, echo=FALSE, results='asis'}
+dat<-read.table('../../R_Data/var3_date1_dek.txt')
+print(xtable::xtable(head(dat),caption = "Dekadal time series, 3 variables, grouped date, no header"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
+```  
+<div id="clearleft"></div>
+</div>
+
+<br>
+
+<div id="onestnseries">
+```{r mon1v3dnh, echo=FALSE, results='asis'}
+dat<-read.table('../../R_Data/var1_date3_rr_mon.txt')
+print(xtable::xtable(head(dat),caption = "Monthly time series, 1 variable, separated date, no header"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
+```  
+
+```{r mon3v1dwh, echo=FALSE, results='asis'}
+dat<-read.table('../../R_Data/var3_date1_header_mon.txt')
+print(xtable::xtable(head(dat),caption = "Monthly time series, 3 variables, grouped date, with header"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
+```  
+<div id="clearleft"></div>
+</div>  
+
+<br>
+
+As we can see, observations date can have two types of template formats: grouped and separated.
+
+> _**Grouped**_
+> 
+> There is no space between the years (YYYY), the months (MM) and the dekads or days (D/DD)  
+> **Daily series** : **`YYYYMMDD`**   
+> **Dekadal series** : **`YYYYMMD`**  
+>  **Monthly series** : **`YYYYMM`**  
+
+
+> _**Separated**_
+> 
+>  Date separation depends on the field separator character of the file (space, tabs, comma, semicolon, ...), month and day format can be one or two digit.    
+> **Daily series** : **`YYYY MM DD`**   
+> **Dekadal series** : **`YYYY MM D`**  
+>  **Monthly series** : **`YYYY MM`**
+
+
+## NetCDF data
+
+[NetCDF](http://www.unidata.ucar.edu/software/netcdf/docs) files contain one or more variables, which are usually structured as regular multi-dimensional arrays. CDT can handle 2D (lat/lon) NetCDF data with several variables, in other words ***data for each date should be stored in a separate file***, a file may contain only data for one day, dekad or month. For example, if we have a dekadal rainfall series, then the data for each dekad should be stored in a separate file as follows :
+
+```
+rfe2014_01-dk1
+rfe2014_01-dk2
+rfe2014_01-dk3
+rfe2014_02-dk1
+rfe2014_02-dk2
+ ......
+``` 
+The format of the filenames is arbitrary.
+
+Any time you open a NetCDF file, you will be asked to provide a sample file and select the target variable and the order of the coordinates (lat-lon or lon-lat). The following examples show the order of the dimensions.
+
+```{r ncdf_open1}
+## Elevation/bathymetry, longitude (X) goes first then latitude (Y)
+require(ncdf4)
+nc <- nc_open('../../R_Data/DEM_2_Arc-Minute.nc')
+nc
+```  
+```{r ncdf_close1,echo=FALSE}
+nc_close(nc)
+```  
+
+```{r ncdf_open2}
+## TAMSAT dekadal precipitation, latitude (lat) goes first then longitude (lon)
+## Note that there is a 3rd dimension time, but it only has one value for this dekad.
+nc <- nc_open('../../R_Data/rfe2014_01-dk3.nc')
+nc
+```  
+```{r ncdf_close2,echo=FALSE}
+nc_close(nc)
+```  
+
+```{r, child="_generated_date.Rmd"}
+```
+
+[saka_kely]: images/cdt_file/example_image.png "Saka io"

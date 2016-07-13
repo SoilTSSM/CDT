@@ -1,0 +1,9 @@
+html_document:
+    mathjax: local
+    self_contained: false
+    theme: default
+    highlight: textmate
+    include:
+      after_body: footer.html
+    css: styles.css
+    lib_dir: libs

@@ -1,0 +1,21 @@
+---
+title: "Homogeneity Test"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+---
+
+Homogeneity Test
+
+## RHTestv4
+
+## CDT methods
+
+## Agreggate homogenized data
+
+
+```{r, child="_generated_date.Rmd"}
+```

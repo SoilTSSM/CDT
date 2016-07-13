@@ -1,0 +1,11 @@
+---
+title: "Aggregating Time Series"
+---
+
+Aggregating time series
+
+
+
+
+```{r, child="_generated_date.Rmd"}
+```

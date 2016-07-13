@@ -1,0 +1,13 @@
+---
+title: "Assess Data Availability"
+---
+
+Assess Data Availability
+
+
+```{r ,child="_attente.Rmd"}
+```
+
+
+```{r, child="_generated_date.Rmd"}
+```

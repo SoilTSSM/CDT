@@ -15,5 +15,15 @@
 vignettes/*.html
 vignettes/*.pdf
 
+# All hidden files and the  dot underscore
+.*
+!/.gitignore
+
+# Init config
+configure/RHtestsV4_User_Agreement
+configure/configure0
+country/Mali/Climatological_MeanBias_RainDek
+R_Data
+
 # OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
 .httr-oauth

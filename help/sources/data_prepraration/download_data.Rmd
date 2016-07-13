@@ -1,0 +1,14 @@
+---
+title: "Download data"
+---
+
+Download data
+
+
+
+```{r ,child="_attente.Rmd"}
+```
+
+
+```{r, child="_generated_date.Rmd"}
+```

@@ -1,0 +1,111 @@
+* {
+    margin: 0;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    /*margin-bottom: 60px;*/
+}
+
+
+/* navbar */
+
+.navbar-inverse .navbar-nav li a {
+    color: white !important;
+    font-size: 0.8em !important;
+}
+
+.nav .dropdown-menu li a {
+    color: black !important;
+    font-size: 0.9em !important;
+}
+
+
+/* footer */
+
+.footer {
+    float: right;
+    margin: 2px 0;
+    color: #ffffff;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.navbar-footer>img {
+    height: 45px;
+    padding: 1px;
+    width: auto;
+}
+
+
+/******Table*******/
+
+#cdtInputData {
+    border-collapse: collapse;
+    border: 1px solid #839E99;
+    background: #f1f8ee;
+    /*font: 1.0em/1.2em Georgia, "Times New Roman", Times, serif;*/
+    color: #033;
+}
+
+#cdtInputData td {
+    text-align: right;
+    line-height: 1.3em;
+}
+
+.cdtInputData0 td {
+    padding: 3px 3px .75em 3px;
+}
+
+.cdtInputData0 caption {
+    font-size: 1.1em;
+    font-weight: bold;
+    /*text-align: left;*/
+    padding: 1em 4px;
+}
+
+.cdtInputData1 td {
+    padding: 3px 10px .75em 10px;
+}
+
+#onestnseries .cdtInputData1 {
+    /*display: inline-block;*/
+    float: left;
+    width: 30%;
+    margin: 0 20px;
+}
+
+#clearleft {
+    clear: left;
+}
+
+
+/***** blockquote ****/
+
+blockquote {
+    font-size: 1em;
+    background: #fcfcfc;
+}
+
+blockquote code {
+    background: #fff8e6;
+    font-size: 1.2em;
+}
+
+
+/**** sary ****/
+
+#sakakely {
+    text-align: center;
+}
+
+#sakakely img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}

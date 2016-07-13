@@ -1,0 +1,11 @@
+---
+title: "Interpolation"
+---
+
+Interpolation
+
+
+
+
+```{r, child="_generated_date.Rmd"}
+```

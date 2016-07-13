@@ -1,0 +1,13 @@
+---
+title: "Foramt CDT Input data"
+---
+
+Format CDTs Input Data
+
+
+```{r ,child="_attente.Rmd"}
+```
+
+
+```{r, child="_generated_date.Rmd"}
+```

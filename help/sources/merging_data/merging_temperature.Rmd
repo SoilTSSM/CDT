@@ -1,0 +1,25 @@
+---
+title: "Temperatures Merging"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+---
+
+Temperatures Merging
+
+## Compute downscaling coefficients
+
+## Reanalysis downscaling
+
+## Compute mean bias
+
+## Bias correction
+
+## Merging data
+
+
+```{r, child="_generated_date.Rmd"}
+```

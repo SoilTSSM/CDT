@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>CDT Input Data Format</title>
+
+<script src="libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="libs/tocify-1.9.1/jquery.tocify.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<link href="libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet"
+      href="libs/highlight/textmate.css"
+      type="text/css" />
+<script src="libs/highlight/highlight.js"></script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="libs/navigation-1.0/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.9em;
+  padding-left: 5px;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+  padding-left: 10px;
+}
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="index.html">CDT User Guide</a>
+            <!-- <a class="navbar-brand" href="https://iri.columbia.edu/resources/enacts/"><img src="images/common/enacts128.png" alt="CDT"> -->
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <!-- 
+                <li>
+                    <a href="index.html">CDT User Guide</a>
+                </li>
+                 -->
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+              CDT GUI &amp; Data
+
+              <span class="caret"></span>
+            </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li>
+                            <a href="cdt_file_menu.html">CDT GUI</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="cdt_data_input.html">CDT Data</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li class="dropdown-header">Data Preparation</li>
+                        <li>
+                            <a href="format_cdt_data.html">Format CDT Input Data</a>
+                        </li>
+                        <li>
+                            <a href="assess_data_availability.html">Assess Data Availability</a>
+                        </li>
+                        <li>
+                            <a href="download_data.html">Download Data</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+              Quality Control
+              
+              <span class="caret"></span>
+            </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li>
+                            <a href="check_stations_coords.html">Check Stations Coordinates</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="quality_control.html">Quality Control</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="homogeneity_test.html">Homogeneity Test</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+              Merging Data
+
+              <span class="caret"></span>
+            </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li>
+                            <a href="merging_rainfall.html">Merging Rainfall</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="merging_temperature.html">Merging Temperature</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="update_dekadal_rainfall.html">Updating Dekal Rainfall</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="precipitation_validation.html">Precipitation Validation</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+              Processing &amp; Plot
+              
+              <span class="caret"></span>
+            </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li class="divider"></li>
+                        <li class="dropdown-header">Data Processing</li>
+                        <li>
+                            <a href="interpolation.html">Interpolation</a>
+                        </li>
+                        <li>
+                            <a href="aggregate_TS.html">Aggregating Time Series</a>
+                        </li>
+                        <li>
+                            <a href="extract_ncdf_data.html">Extract NetCDF gridded data</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li class="dropdown-header">Plot Data</li>
+                        <li>
+                            <a href="plot_CDT_data.html">Plot CDT data format</a>
+                        </li>
+                        <li>
+                            <a href="plot_ncdf_data.html">Plot NetCDF gridded data</a>
+                        </li>
+                        <li>
+                            <a href="plot_merging_output.html">Plot Merging Outputs</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="https://github.com/rijaf/CDT">
+                        <span class="fa fa-github fa-lg"></span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <!--/.nav-collapse -->
+    </div>
+    <!--/.container -->
+</div>
+<!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">CDT Input Data Format</h1>
+
+</div>
+
+
+<p>CDT can handle daily, dekadal (10-days) or monthly series. A file can contains one station or several stations series. Input data series for one station can contains one or three variables (precipitation-maximum temperature-minimum temperature in this order). Each input data series should be stored in a text/ASCII or CSV (Comma-separated values) format file.</p>
+<div id="data-format-with-several-stations" class="section level2">
+<h2>Data format with several stations</h2>
+<p>In this format, all the series for one variable from different stations are put together on a single file. It is the standard input data format used by CDT, in which the first line is the ID or name of the stations (<strong><em>avoid putting space in stations name</em></strong>), the second and third lines are longitude and latitude of the stations, and the fourth line is elevation data in meter (if it exists), and the following lines contain the observations, in which the first column is the date of observations. The following tables show the format of data</p>
+<!-- html table generated in R 3.3.0 by xtable 1.8-2 package -->
+<!-- Wed Jul 13 03:30:21 2016 -->
+<table id="cdtInputData" class="cdtInputData0" border="0">
+<caption align="top">
+Input series without elevation data
+</caption>
+<tr>
+<td>
+STATIONS
+</td>
+<td>
+ARARAT13
+</td>
+<td>
+ARDAGA13
+</td>
+<td>
+ARGUNN13
+</td>
+<td>
+ARHURU13
+</td>
+<td>
+ARKULU11
+</td>
+<td>
+AROGOL13
+</td>
+<td>
+ARROBE21
+</td>
+<td>
+BAHUNT21
+</td>
+<td>
+KFASSE13
+</td>
+</tr>
+<tr>
+<td>
+LON
+</td>
+<td>
+39.05944
+</td>
+<td>
+38.8375
+</td>
+<td>
+39.88333
+</td>
+<td>
+39.3422
+</td>
+<td>
+39.1553
+</td>
+<td>
+39.0182
+</td>
+<td>
+39.6221
+</td>
+<td>
+39.4
+</td>
+<td>
+37.21667
+</td>
+</tr>
+<tr>
+<td>
+DAILY/LAT
+</td>
+<td>
+7.982778
+</td>
+<td>
+7.4337
+</td>
+<td>
+8.36667
+</td>
+<td>
+8.142
+</td>
+<td>
+8.0097
+</td>
+<td>
+8.0398
+</td>
+<td>
+7.8757
+</td>
+<td>
+7.05
+</td>
+<td>
+7.75
+</td>
+</tr>
+<tr>
+<td>
+20080625
+</td>
+<td>
+15.7
+</td>
+<td>
+5
+</td>
+<td>
+9.3
+</td>
+<td>
+7.3
+</td>
+<td>
+0
+</td>
+<td>
+-99
+</td>
+<td>
+5.6
+</td>
+<td>
+6.5
+</td>
+<td>
+23.1
+</td>
+</tr>
+<tr>
+<td>
+20080626
+</td>
+<td>
+6.3
+</td>
+<td>
+6
+</td>
+<td>
+3.2
+</td>
+<td>
+1.3
+</td>
+<td>
+0.4
+</td>
+<td>
+-99
+</td>
+<td>
+2.6
+</td>
+<td>
+0
+</td>
+<td>
+2.3
+</td>
+</tr>
+<tr>
+<td>
+20080627
+</td>
+<td>
+0
+</td>
+<td>
+0.6
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+-99
+</td>
+<td>
+-99
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<td>
+20080628
+</td>
+<td>
+0
+</td>
+<td>
+1.2
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+-99
+</td>
+<td>
+-99
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<td>
+20080629
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+-99
+</td>
+<td>
+-99
+</td>
+<td>
+0
+</td>
+<td>
+1.6
+</td>
+<td>
+12.3
+</td>
+</tr>
+<tr>
+<td>
+20080630
+</td>
+<td>
+13.8
+</td>
+<td>
+3.8
+</td>
+<td>
+1.3
+</td>
+<td>
+0
+</td>
+<td>
+-99
+</td>
+<td>
+-99
+</td>
+<td>
+11
+</td>
+<td>
+13.2
+</td>
+<td>
+3.6
+</td>
+</tr>
+<tr>
+<td>
+20080701
+</td>
+<td>
+0
+</td>
+<td>
+7.3
+</td>
+<td>
+0
+</td>
+<td>
+3.2
+</td>
+<td>
+0
+</td>
+<td>
+5.8
+</td>
+<td>
+3.6
+</td>
+<td>
+1.2
+</td>
+<td>
+0.3
+</td>
+</tr>
+</table>
+<p><br></p>
+<!-- html table generated in R 3.3.0 by xtable 1.8-2 package -->
+<!-- Wed Jul 13 03:30:21 2016 -->
+<table id="cdtInputData" class="cdtInputData0" border="0">
+<caption align="top">
+Input series with elevation data
+</caption>
+<tr>
+<td>
+STATIONS
+</td>
+<td>
+Abejorral
+</td>
+<td>
+Ábrego
+</td>
+<td>
+Abriaqui
+</td>
+<td>
+Acacias
+</td>
+<td>
+Acevedo
+</td>
+<td>
+Agrado
+</td>
+<td>
+Aguadas
+</td>
+<td>
+Aguazul
+</td>
+<td>
+Aipe
+</td>
+</tr>
+<tr>
+<td>
+LON
+</td>
+<td>
+-75.43000
+</td>
+<td>
+-73.23000
+</td>
+<td>
+-76.07000
+</td>
+<td>
+-73.77000
+</td>
+<td>
+-75.88000
+</td>
+<td>
+-75.71667
+</td>
+<td>
+-75.60000
+</td>
+<td>
+-72.55000
+</td>
+<td>
+-75.50000
+</td>
+</tr>
+<tr>
+<td>
+LAT
+</td>
+<td>
+5.783333
+</td>
+<td>
+8.083333
+</td>
+<td>
+6.633333
+</td>
+<td>
+3.983333
+</td>
+<td>
+1.833333
+</td>
+<td>
+2.333333
+</td>
+<td>
+5.733333
+</td>
+<td>
+5.183333
+</td>
+<td>
+3.266667
+</td>
+</tr>
+<tr>
+<td>
+DAILY/ELEV
+</td>
+<td>
+2180
+</td>
+<td>
+1430
+</td>
+<td>
+1920
+</td>
+<td>
+525
+</td>
+<td>
+1235
+</td>
+<td>
+1725
+</td>
+<td>
+560
+</td>
+<td>
+380
+</td>
+<td>
+1085
+</td>
+</tr>
+<tr>
+<td>
+20050601
+</td>
+<td>
+0.0
+</td>
+<td>
+2.3
+</td>
+<td>
+0.0
+</td>
+<td>
+24.0
+</td>
+<td>
+0.0
+</td>
+<td>
+0.0
+</td>
+<td>
+-99
+</td>
+<td>
+-99
+</td>
+<td>
+0.0
+</td>
+</tr>
+<tr>
+<td>
+20050602
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+4
+</td>
+<td>
+2
+</td>
+<td>
+2
+</td>
+<td>
+0
+</td>
+<td>
+-99
+</td>
+<td>
+-99
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<td>
+20050603
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+19
+</td>
+<td>
+18
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+-99
+</td>
+<td>
+-99
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<td>
+20050604
+</td>
+<td>
+10.0
+</td>
+<td>
+5.1
+</td>
+<td>
+17.0
+</td>
+<td>
+11.0
+</td>
+<td>
+20.0
+</td>
+<td>
+6.0
+</td>
+<td>
+-99
+</td>
+<td>
+-99
+</td>
+<td>
+1.0
+</td>
+</tr>
+<tr>
+<td>
+20050605
+</td>
+<td>
+9.0
+</td>
+<td>
+2.8
+</td>
+<td>
+18.0
+</td>
+<td>
+58.0
+</td>
+<td>
+60.0
+</td>
+<td>
+7.0
+</td>
+<td>
+-99
+</td>
+<td>
+-99
+</td>
+<td>
+2.9
+</td>
+</tr>
+<tr>
+<td>
+20050606
+</td>
+<td>
+39.0
+</td>
+<td>
+4.4
+</td>
+<td>
+38.0
+</td>
+<td>
+41.0
+</td>
+<td>
+3.0
+</td>
+<td>
+0.0
+</td>
+<td>
+-99
+</td>
+<td>
+-99
+</td>
+<td>
+0.0
+</td>
+</tr>
+</table>
+<p><br></p>
+<p><strong><em>Date format</em></strong></p>
+<blockquote>
+<p>Date format must be grouped.</p>
+<p><strong>Daily series</strong> : <strong><code>YYYYMMDD</code></strong> (calendar year YYYY, month MM, and day DD), 3rd and 4th are in the following format “DAILY/LAT” or “DAILY/ELEV” whether or not there is elevation data.<br />
+<strong>Dekadal series</strong> : <strong><code>YYYYMMD</code></strong> (year, month and dekad), dekad must be 1, 2 or 3, 3rd and 4th are in the following format “DEKADAL/LAT” or “DEKADAL/ELEV” whether or not there is elevation data.<br />
+<strong>Monthly series</strong> : <strong><code>YYYYMM</code></strong> (year and month), 3rd and 4th are in the following format “MONTHLY/LAT” or “MONTHLY/ELEV” according elevation data. <br></p>
+</blockquote>
+<p><strong><em>Missing values</em></strong></p>
+<blockquote>
+<p>CDT use “-99” to code missing value in the data series. You can use your own missing value flag (the missing value code you provided must be exactly the same as used in the data; for example, “-99.” and “-99.0” are different; you can not tell to CDT “-99.” instead of “-99.0” when “-99.0” is used in the input data series; it will produce some odd results).</p>
+</blockquote>
+</div>
+<div id="input-series-for-one-station" class="section level2">
+<h2>Input series for one station</h2>
+<p>Several formats are possible for input data series for one station. Series can have header (the column names) or not and can contain one or three variables in the following order: precipitation-maximum temperature-minimum temperature. Observations dates can be grouped or separated. The following examples give us an overview of possibility.</p>
+<div id="onestnseries">
+<!-- html table generated in R 3.3.0 by xtable 1.8-2 package -->
+<!-- Wed Jul 13 03:30:21 2016 -->
+<table id="cdtInputData" class="cdtInputData1" border="0">
+<caption align="top">
+Daily time series, 1 variable, grouped date, no header
+</caption>
+<tr>
+<td align="right">
+20090111
+</td>
+<td align="right">
+2.60
+</td>
+</tr>
+<tr>
+<td align="right">
+20090112
+</td>
+<td align="right">
+1.10
+</td>
+</tr>
+<tr>
+<td align="right">
+20090113
+</td>
+<td align="right">
+1.40
+</td>
+</tr>
+<tr>
+<td align="right">
+20090114
+</td>
+<td align="right">
+18.70
+</td>
+</tr>
+<tr>
+<td align="right">
+20090115
+</td>
+<td align="right">
+0.00
+</td>
+</tr>
+<tr>
+<td align="right">
+20090116
+</td>
+<td align="right">
+9.00
+</td>
+</tr>
+</table>
+<!-- html table generated in R 3.3.0 by xtable 1.8-2 package -->
+<!-- Wed Jul 13 03:30:21 2016 -->
+<table id="cdtInputData" class="cdtInputData1" border="0">
+<caption align="top">
+Daily time series, 3 variables, separated date, with header
+</caption>
+<tr>
+<td>
+year
+</td>
+<td>
+month
+</td>
+<td>
+day
+</td>
+<td>
+precip
+</td>
+<td>
+tmax
+</td>
+<td>
+tmin
+</td>
+</tr>
+<tr>
+<td>
+2009
+</td>
+<td>
+1
+</td>
+<td>
+11
+</td>
+<td>
+2.6
+</td>
+<td>
+31.4
+</td>
+<td>
+21.9
+</td>
+</tr>
+<tr>
+<td>
+2009
+</td>
+<td>
+1
+</td>
+<td>
+12
+</td>
+<td>
+1.1
+</td>
+<td>
+29.9
+</td>
+<td>
+22.4
+</td>
+</tr>
+<tr>
+<td>
+2009
+</td>
+<td>
+1
+</td>
+<td>
+13
+</td>
+<td>
+1.4
+</td>
+<td>
+30
+</td>
+<td>
+22.7
+</td>
+</tr>
+<tr>
+<td>
+2009
+</td>
+<td>
+1
+</td>
+<td>
+14
+</td>
+<td>
+18.7
+</td>
+<td>
+29
+</td>
+<td>
+23.7
+</td>
+</tr>
+<tr>
+<td>
+2009
+</td>
+<td>
+1
+</td>
+<td>
+15
+</td>
+<td>
+0
+</td>
+<td>
+31.5
+</td>
+<td>
+22.8
+</td>
+</tr>
+</table>
+<div id="clearleft">
+
+</div>
+</div>
+<p><br></p>
+<div id="onestnseries">
+<!-- html table generated in R 3.3.0 by xtable 1.8-2 package -->
+<!-- Wed Jul 13 03:30:21 2016 -->
+<table id="cdtInputData" class="cdtInputData1" border="0">
+<caption align="top">
+Dekadal time series, 1 variable, separated date, with header
+</caption>
+<tr>
+<td>
+year
+</td>
+<td>
+month
+</td>
+<td>
+dekad
+</td>
+<td>
+tmax
+</td>
+</tr>
+<tr>
+<td>
+2010
+</td>
+<td>
+8
+</td>
+<td>
+1
+</td>
+<td>
+29
+</td>
+</tr>
+<tr>
+<td>
+2010
+</td>
+<td>
+8
+</td>
+<td>
+2
+</td>
+<td>
+29.8
+</td>
+</tr>
+<tr>
+<td>
+2010
+</td>
+<td>
+8
+</td>
+<td>
+3
+</td>
+<td>
+29.6
+</td>
+</tr>
+<tr>
+<td>
+2010
+</td>
+<td>
+9
+</td>
+<td>
+1
+</td>
+<td>
+30.6
+</td>
+</tr>
+<tr>
+<td>
+2010
+</td>
+<td>
+9
+</td>
+<td>
+2
+</td>
+<td>
+30.6
+</td>
+</tr>
+</table>
+<!-- html table generated in R 3.3.0 by xtable 1.8-2 package -->
+<!-- Wed Jul 13 03:30:21 2016 -->
+<table id="cdtInputData" class="cdtInputData1" border="0">
+<caption align="top">
+Dekadal time series, 3 variables, grouped date, no header
+</caption>
+<tr>
+<td align="right">
+2010081
+</td>
+<td align="right">
+9.50
+</td>
+<td align="right">
+29.00
+</td>
+<td align="right">
+19.70
+</td>
+</tr>
+<tr>
+<td align="right">
+2010082
+</td>
+<td align="right">
+3.80
+</td>
+<td align="right">
+29.80
+</td>
+<td align="right">
+19.40
+</td>
+</tr>
+<tr>
+<td align="right">
+2010083
+</td>
+<td align="right">
+15.70
+</td>
+<td align="right">
+29.60
+</td>
+<td align="right">
+20.30
+</td>
+</tr>
+<tr>
+<td align="right">
+2010091
+</td>
+<td align="right">
+2.70
+</td>
+<td align="right">
+30.60
+</td>
+<td align="right">
+19.80
+</td>
+</tr>
+<tr>
+<td align="right">
+2010092
+</td>
+<td align="right">
+0.00
+</td>
+<td align="right">
+30.60
+</td>
+<td align="right">
+20.70
+</td>
+</tr>
+<tr>
+<td align="right">
+2010093
+</td>
+<td align="right">
+10.50
+</td>
+<td align="right">
+30.20
+</td>
+<td align="right">
+20.40
+</td>
+</tr>
+</table>
+<div id="clearleft">
+
+</div>
+</div>
+<p><br></p>
+<div id="onestnseries">
+<!-- html table generated in R 3.3.0 by xtable 1.8-2 package -->
+<!-- Wed Jul 13 03:30:21 2016 -->
+<table id="cdtInputData" class="cdtInputData1" border="0">
+<caption align="top">
+Monthly time series, 1 variable, separated date, no header
+</caption>
+<tr>
+<td align="right">
+2010
+</td>
+<td align="right">
+1
+</td>
+<td align="right">
+408.60
+</td>
+</tr>
+<tr>
+<td align="right">
+2010
+</td>
+<td align="right">
+2
+</td>
+<td align="right">
+108.80
+</td>
+</tr>
+<tr>
+<td align="right">
+2010
+</td>
+<td align="right">
+3
+</td>
+<td align="right">
+160.30
+</td>
+</tr>
+<tr>
+<td align="right">
+2010
+</td>
+<td align="right">
+4
+</td>
+<td align="right">
+13.20
+</td>
+</tr>
+<tr>
+<td align="right">
+2010
+</td>
+<td align="right">
+5
+</td>
+<td align="right">
+17.90
+</td>
+</tr>
+<tr>
+<td align="right">
+2010
+</td>
+<td align="right">
+6
+</td>
+<td align="right">
+56.40
+</td>
+</tr>
+</table>
+<!-- html table generated in R 3.3.0 by xtable 1.8-2 package -->
+<!-- Wed Jul 13 03:30:21 2016 -->
+<table id="cdtInputData" class="cdtInputData1" border="0">
+<caption align="top">
+Monthly time series, 3 variables, grouped date, with header
+</caption>
+<tr>
+<td>
+date
+</td>
+<td>
+precip
+</td>
+<td>
+tmax
+</td>
+<td>
+tmin
+</td>
+</tr>
+<tr>
+<td>
+201001
+</td>
+<td>
+408.6
+</td>
+<td>
+31.1
+</td>
+<td>
+23
+</td>
+</tr>
+<tr>
+<td>
+201002
+</td>
+<td>
+108.8
+</td>
+<td>
+32.2
+</td>
+<td>
+23.9
+</td>
+</tr>
+<tr>
+<td>
+201003
+</td>
+<td>
+160.3
+</td>
+<td>
+31.3
+</td>
+<td>
+23.3
+</td>
+</tr>
+<tr>
+<td>
+201004
+</td>
+<td>
+13.2
+</td>
+<td>
+32
+</td>
+<td>
+23.2
+</td>
+</tr>
+<tr>
+<td>
+201005
+</td>
+<td>
+17.9
+</td>
+<td>
+31.7
+</td>
+<td>
+22.6
+</td>
+</tr>
+</table>
+<div id="clearleft">
+
+</div>
+</div>
+<p><br></p>
+<p>As we can see, observations date can have two types of template formats: grouped and separated.</p>
+<blockquote>
+<p><em><strong>Grouped</strong></em></p>
+<p>There is no space between the years (YYYY), the months (MM) and the dekads or days (D/DD)<br />
+<strong>Daily series</strong> : <strong><code>YYYYMMDD</code></strong><br />
+<strong>Dekadal series</strong> : <strong><code>YYYYMMD</code></strong><br />
+<strong>Monthly series</strong> : <strong><code>YYYYMM</code></strong></p>
+</blockquote>
+<blockquote>
+<p><em><strong>Separated</strong></em></p>
+<p>Date separation depends on the field separator character of the file (space, tabs, comma, semicolon, …), month and day format can be one or two digit.<br />
+<strong>Daily series</strong> : <strong><code>YYYY MM DD</code></strong><br />
+<strong>Dekadal series</strong> : <strong><code>YYYY MM D</code></strong><br />
+<strong>Monthly series</strong> : <strong><code>YYYY MM</code></strong></p>
+</blockquote>
+</div>
+<div id="netcdf-data" class="section level2">
+<h2>NetCDF data</h2>
+<p><a href="http://www.unidata.ucar.edu/software/netcdf/docs">NetCDF</a> files contain one or more variables, which are usually structured as regular multi-dimensional arrays. CDT can handle 2D (lat/lon) NetCDF data with several variables, in other words <strong><em>data for each date should be stored in a separate file</em></strong>, a file may contain only data for one day, dekad or month. For example, if we have a dekadal rainfall series, then the data for each dekad should be stored in a separate file as follows :</p>
+<pre><code>rfe2014_01-dk1
+rfe2014_01-dk2
+rfe2014_01-dk3
+rfe2014_02-dk1
+rfe2014_02-dk2
+ ......</code></pre>
+<p>The format of the filenames is arbitrary.</p>
+<p>Any time you open a NetCDF file, you will be asked to provide a sample file and select the target variable and the order of the coordinates (lat-lon or lon-lat). The following examples show the order of the dimensions.</p>
+<pre class="r"><code>## Elevation/bathymetry, longitude (X) goes first then latitude (Y)
+require(ncdf4)
+nc &lt;- nc_open(&#39;../../R_Data/DEM_2_Arc-Minute.nc&#39;)
+nc</code></pre>
+<pre><code>## File ../../R_Data/DEM_2_Arc-Minute.nc (NC_FORMAT_CLASSIC):
+## 
+##      1 variables (excluding dimension variables):
+##         float z[X,Y]   
+##             actual_range: -10791
+##              actual_range: 8440
+##             missing_value: NaN
+##             units: m
+##             long_name: elevation/bathymetry
+## 
+##      2 dimensions:
+##         X  Size:302
+##             pointwidth: 0.0333333276212215
+##             gridtype: 0
+##             units: degree_east
+##         Y  Size:424
+##             pointwidth: 0.0333333313465118
+##             gridtype: 0
+##             units: degree_north</code></pre>
+<pre class="r"><code>## TAMSAT dekadal precipitation, latitude (lat) goes first then longitude (lon)
+## Note that there is a 3rd dimension time, but it only has one value for this dekad.
+nc &lt;- nc_open(&#39;../../R_Data/rfe2014_01-dk3.nc&#39;)
+nc</code></pre>
+<pre><code>## File ../../R_Data/rfe2014_01-dk3.nc (NC_FORMAT_CLASSIC):
+## 
+##      1 variables (excluding dimension variables):
+##         short rfe[lon,lat,time]   
+##             units: mm
+##             long_name: Rain Fall Estimate
+##             short_name: rfe
+##             _FillValue: -99
+## 
+##      3 dimensions:
+##         lat  Size:1974
+##             long_name: latitude
+##             standard_name: latitude
+##             units: degrees_north
+##             axis: Y
+##         lon  Size:1894
+##             long_name: longitude
+##             standard_name: longitude
+##             units: degrees_east
+##             axis: X
+##         time  Size:1   *** is unlimited ***
+##             long_name: time
+##             units: days since 2014-01-01 0:0:0
+##             day_begins: 06:15
+## 
+##     11 global attributes:
+##         title: TAMSAT Rain Fall Estimate (RFE)
+##         institution: TAMSAT Research Group, Meteorology Department, University of Reading, UK
+##         contact: tamsat@reading.ac.uk
+##         Conventions: CF-1.5
+##         history: Processed from TIR archive using satop2 with max_gap[mins]=180
+##         latmin: -35.9625
+##         latmax: 38.025
+##         lonmin: -19.0125
+##         lonmax: 51.975
+##         latres: 0.0375
+##         lonres: 0.0375</code></pre>
+<hr />
+<p>Generated on : July 13, 2016, 03:30</p>
+</div>
+
+<footer class="navbar navbar-inverse  navbar-fixed-bottom">
+    <p>
+        <small class="footer">
+           <a href="index.html">Climate Data Tools, 2016</a> &nbsp;
+           <a  class="navbar-footer" href="https://iri.columbia.edu/"><img src="images/common/iri_logo_full.gif" alt="IRI"/></a> 
+         </small>
+    </p>
+</footer>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "libs/mathjax-local/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

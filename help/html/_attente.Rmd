@@ -1,0 +1,9 @@
+<div id="sakakely">
+![](images/common/under-construction.gif "ingahyHomer"){.sakakely}
+</div>
+
+<br>
+
+<div id="sakakely">
+![Smile! Io misy saka kely](images/common/example_image.png "kitten"){.sakakely}
+</div>

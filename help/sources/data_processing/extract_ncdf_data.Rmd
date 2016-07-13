@@ -1,0 +1,11 @@
+---
+title: "Extract NetCDF gridded data"
+---
+
+Extract NetCDF gridded data
+
+
+
+
+```{r, child="_generated_date.Rmd"}
+```

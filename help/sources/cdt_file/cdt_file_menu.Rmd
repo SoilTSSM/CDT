@@ -1,0 +1,15 @@
+---
+title: "CDT File menu"
+---
+
+CDT File menu
+
+
+
+```{r ,child="_attente.Rmd"}
+```
+
+
+
+```{r, child="_generated_date.Rmd"}
+```

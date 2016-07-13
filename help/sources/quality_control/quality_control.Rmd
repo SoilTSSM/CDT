@@ -1,0 +1,41 @@
+---
+title: "Quality Control"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+---
+
+ Quality Control
+
+# Rainfall
+
+## False zero check
+
+One station
+
+All stations
+
+## Outliers check
+
+One station
+
+All stations
+
+# Temperatures
+
+One station
+
+All stations
+
+# Aggregate checked stations
+
+
+
+
+
+
+```{r, child="_generated_date.Rmd"}
+```

@@ -1,0 +1,21 @@
+---
+title: "Rainfall Merging"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+---
+
+Rainfall Merging
+
+## Compute mean bias
+
+## Bias correction
+
+## Merging data
+
+
+```{r, child="_generated_date.Rmd"}
+```

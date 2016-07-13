@@ -1,0 +1,11 @@
+---
+title: "Precipitation validation"
+---
+
+Precipitation validation
+
+
+
+
+```{r, child="_generated_date.Rmd"}
+```
