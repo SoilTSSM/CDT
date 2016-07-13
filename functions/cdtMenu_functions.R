@@ -810,7 +810,7 @@ tkadd(top.menu, "cascade", label="Help", menu=menu.aide, underline=0)
 
 ##########
 tkadd(menu.aide, "command", label="Help         ",command=function(){
-	browseURL(paste0('file://',file.path(apps.dir,'help','User_guide.html',fsep = .Platform$file.sep)))
+	browseURL(paste0('file://',file.path(apps.dir,'help','html','index.html',fsep = .Platform$file.sep)))
 })
 
 ##########
