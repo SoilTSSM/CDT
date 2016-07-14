@@ -98,6 +98,96 @@ blockquote code {
 }
 
 
+/******* tags *********/
+
+span.menuselection {
+    font-size: 1.1em;
+    font-weight: bold;
+    border: 1px dashed #ddd;
+    background: #eee;
+    color: #217AEC;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+#cdtIcons {
+    width: 1.2em;
+    height: 1.2em;
+}
+
+.cdtIcons1 {
+    background: #add8e6;
+}
+
+.cdtIcons2 {
+    background-color: #ff0000;
+    border-style: solid;
+    border-color: #ff0000;
+    border-width: 1px;
+    background-image: -moz-linear-gradient(45deg, #ffffff 25%, transparent 25%), -moz-linear-gradient(-45deg, #ffffff 25%, transparent 25%), -moz-linear-gradient(45deg, transparent 75%, #ffffff 75%), -moz-linear-gradient(-45deg, transparent 75%, #ffffff 75%);
+    background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.25, #ffffff), color-stop(.25, transparent)), -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.25, #ffffff), color-stop(.25, transparent)), -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.75, transparent), color-stop(.75, #ffffff)), -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.75, transparent), color-stop(.75, #ffffff));
+    background-image: -webkit-linear-gradient(45deg, #ffffff 25%, transparent 25%), -webkit-linear-gradient(-45deg, #ffffff 25%, transparent 25%), -webkit-linear-gradient(45deg, transparent 75%, #ffffff 75%), -webkit-linear-gradient(-45deg, transparent 75%, #ffffff 75%);
+    background-image: -o-linear-gradient(45deg, #ffffff 25%, transparent 25%), -o-linear-gradient(-45deg, #ffffff 25%, transparent 25%), -o-linear-gradient(45deg, transparent 75%, #ffffff 75%), -o-linear-gradient(-45deg, transparent 75%, #ffffff 75%);
+    background-image: linear-gradient(45deg, #ffffff 25%, transparent 25%), linear-gradient(-45deg, #ffffff 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ffffff 75%), linear-gradient(-45deg, transparent 75%, #ffffff 75%);
+    -moz-background-size: 2px 2px;
+    background-size: 2px 2px;
+    -webkit-background-size: 2px 2.1px;
+    background-position: 0 0, 1px 0, 1px -1px, 0px 1px;
+}
+
+.cdtIcons2a {
+    background-color: #ff0000;
+}
+
+span.buttonclass {
+    font-size: 0.9em;
+    background-color: #e6e6e6;
+    /*font-weight: bold;*/
+    padding: 1px 3px;
+    border-style: solid;
+    border-color: #f2f2f2 #d9d9d9 #d9d9d9 #f2f2f2;
+}
+
+span.ongletclass {
+    background-color: #e6e6e6;
+    /*font-weight: bold;*/
+    padding: 1px 3px;
+    border-style: solid solid none solid;
+    border-color: #f2f2f2 #d9d9d9 #d9d9d9 #f2f2f2;
+    border-radius: 10px 10px 0px 0px;
+}
+
+span.dropdclass {
+    font-size: 0.9em;
+    background-color: #e6e6e6;
+    padding: 0px 2px;
+    border-style: solid solid solid none;
+    border-color: #f2f2f2 #bfbfbf #bfbfbf #ffffff;
+}
+
+span.dropdlistclass {
+    font-size: 0.9em;
+    background-color: #ffffff;
+    color: #ffffff;
+    padding: 0px 2px;
+    border-style: inset none inset inset;
+    border-color: #e6e6e6;
+}
+
+span.radiochckbutclass {
+    color: #ffffff;
+    /*font-size: 1.0em;*/
+    background-color: #e6e6e6;
+    padding: 1px 1px 1px 4px;
+}
+
+span.radiochcktextclass {
+    /*font-size: 1.0em;*/
+    background-color: #e6e6e6;
+    padding: 1px 8px 1px 1px;
+}
+
+
 /**** sary ****/
 
 #sakakely {
@@ -108,4 +198,64 @@ blockquote code {
     display: block;
     margin-left: auto;
     margin-right: auto;
+}
+
+
+/* ######################################## */
+
+.dotted0 {
+    padding: 2.25em 1.6875em;
+    background-image: -webkit-repeating-radial-gradient(center center, rgba(0, 0, 0, .2), rgba(0, 0, 0, .2) 1px, transparent 1px, transparent 100%);
+    background-image: -moz-repeating-radial-gradient(center center, rgba(0, 0, 0, .2), rgba(0, 0, 0, .2) 1px, transparent 1px, transparent 100%);
+    background-image: -ms-repeating-radial-gradient(center center, rgba(0, 0, 0, .2), rgba(0, 0, 0, .2) 1px, transparent 1px, transparent 100%);
+    background-image: repeating-radial-gradient(center center, rgba(0, 0, 0, .2), rgba(0, 0, 0, .2) 1px, transparent 1px, transparent 100%);
+    -webkit-background-size: 3px 3px;
+    -moz-background-size: 3px 3px;
+    background-size: 3px 3px;
+}
+
+.dotted1 {
+    background-color: #ff0000;
+    border-style: solid;
+    border-color: #ff0000;
+    border-width: 1px;
+    /* padding: 2.25em 1.6875em; */
+    background-image: -webkit-repeating-radial-gradient(center center, #ffffff, #ffffff 1px, transparent 1px, transparent 100%);
+    background-image: -moz-repeating-radial-gradient(center center, #ffffff, #ffffff 1px, transparent 1px, transparent 100%);
+    background-image: -ms-repeating-radial-gradient(center center, #ffffff, #ffffff 1px, transparent 1px, transparent 100%);
+    background-image: repeating-radial-gradient(center center, #ffffff, #ffffff 1px, transparent 1px, transparent 100%);
+    -webkit-background-size: 3px 3px;
+    -moz-background-size: 3px 3px;
+    background-size: 3px 3px;
+}
+
+
+/* http://stackoverflow.com/questions/13607117/css-css3-pixelate-dot-background */
+
+.dotted2 {
+    background-color: #ff0000;
+    border-style: solid;
+    border-color: #ff0000;
+    border-width: 1px;
+    background-image: -moz-linear-gradient(45deg, #ffffff 25%, transparent 25%), -moz-linear-gradient(-45deg, #ffffff 25%, transparent 25%), -moz-linear-gradient(45deg, transparent 75%, #ffffff 75%), -moz-linear-gradient(-45deg, transparent 75%, #ffffff 75%);
+    background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.25, #ffffff), color-stop(.25, transparent)), -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.25, #ffffff), color-stop(.25, transparent)), -webkit-gradient(linear, 0 100%, 100% 0, color-stop(.75, transparent), color-stop(.75, #ffffff)), -webkit-gradient(linear, 0 0, 100% 100%, color-stop(.75, transparent), color-stop(.75, #ffffff));
+    background-image: -webkit-linear-gradient(45deg, #ffffff 25%, transparent 25%), -webkit-linear-gradient(-45deg, #ffffff 25%, transparent 25%), -webkit-linear-gradient(45deg, transparent 75%, #ffffff 75%), -webkit-linear-gradient(-45deg, transparent 75%, #ffffff 75%);
+    background-image: -o-linear-gradient(45deg, #ffffff 25%, transparent 25%), -o-linear-gradient(-45deg, #ffffff 25%, transparent 25%), -o-linear-gradient(45deg, transparent 75%, #ffffff 75%), -o-linear-gradient(-45deg, transparent 75%, #ffffff 75%);
+    background-image: linear-gradient(45deg, #ffffff 25%, transparent 25%), linear-gradient(-45deg, #ffffff 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ffffff 75%), linear-gradient(-45deg, transparent 75%, #ffffff 75%);
+    -moz-background-size: 2px 2px;
+    background-size: 2px 2px;
+    -webkit-background-size: 2px 2.1px;
+    /* override value for webkit */
+    background-position: 0 0, 1px 0, 1px -1px, 0px 1px;
+}
+
+.stripped {
+    padding: 2.25em 1.6875em;
+    background-image: -webkit-repeating-linear-gradient(135deg, rgba(0, 0, 0, .3), rgba(0, 0, 0, .3) 1px, transparent 2px, transparent 2px, rgba(0, 0, 0, .3) 3px);
+    background-image: -moz-repeating-linear-gradient(135deg, rgba(0, 0, 0, .3), rgba(0, 0, 0, .3) 1px, transparent 2px, transparent 2px, rgba(0, 0, 0, .3) 3px);
+    background-image: -o-repeating-linear-gradient(135deg, rgba(0, 0, 0, .3), rgba(0, 0, 0, .3) 1px, transparent 2px, transparent 2px, rgba(0, 0, 0, .3) 3px);
+    background-image: repeating-linear-gradient(135deg, rgba(0, 0, 0, .3), rgba(0, 0, 0, .3) 1px, transparent 2px, transparent 2px, rgba(0, 0, 0, .3) 3px);
+    -webkit-background-size: 4px 4px;
+    -moz-background-size: 4px 4px;
+    background-size: 4px 4px;
 }

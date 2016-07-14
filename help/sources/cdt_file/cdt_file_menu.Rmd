@@ -2,14 +2,46 @@
 title: "CDT File menu"
 ---
 
-CDT File menu
-
-
-
-```{r ,child="_attente.Rmd"}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.path='images/R_images/cdt_file_menu.')
 ```
 
+```{r, child="cdtMenuToolbar.Rmd"}
+```
+
+
+This is a reference ![image][executetask] with multimarkdown attributes.
+
+
+
+test fonc `r menuselection('rija faniriantsoa',nata,ranto,ando)`
+
+
+## GUI Conventions
+
+This section describes the uniform styles that will be used throughout this manual.
+
+* Menu Options: `r menuselection('rija faniriantsoa',nata,ranto,ando)`
+* Toolbar icons: ![][redrawplot0]
+* Toolbar icons: ![][redrawplot1]
+
+* button: `r button(Cancel)`
+* browse: `r button('...')`
+* Tabs: `r onglet(Options)`
+* drop down list button: `r dropdownlistBut()`
+* checkbox: `r checkbox('Use elevation')`
+* radio button:  `r radiobutton('Use elevation')`
+* dropdown list: This ![][dropdownarrow] a listbox
+* Select a number: ![][spinbox]
+* Browse for a file: ![][browsebutf]
+
+* Zoom in non active: ![][zoomin0]
+* Zoom in active: ![][zoomin1]
+
+* Redraw map non active: ![][redrawmap0]
+* Redraw map  active: ![][redrawmap1]
 
 
 ```{r, child="_generated_date.Rmd"}
 ```
+

@@ -15,7 +15,7 @@
 vignettes/*.html
 vignettes/*.pdf
 
-# All hidden files and the  dot underscore
+# All hidden files
 .*
 !/.gitignore
 

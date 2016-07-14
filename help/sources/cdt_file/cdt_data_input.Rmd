@@ -8,7 +8,9 @@ output:
       collapsed: false
 ---
 
-
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.path='images/R_images/cdt_data_input.')
+```
 
 CDT can handle daily, dekadal (10-days) or monthly series. A file can contains one station or several stations series. Input data series for one station can contains one or three variables (precipitation-maximum temperature-minimum temperature in this order). Each input data series should be stored in a text/ASCII or CSV (Comma-separated values) format file.
 
