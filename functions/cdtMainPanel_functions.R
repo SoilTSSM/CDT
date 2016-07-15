@@ -3,42 +3,28 @@
 ###Widgets left panel
 
 frame.opfiles<-ttklabelframe(panel.left,text="Open Files",relief='groove',width=wpanel.left)
-tkgrid(frame.opfiles,sticky='nwe')
-#tkgrid.columnconfigure(frame.opfiles,0,weight=1)
+choixStn.frame<-ttklabelframe(panel.left,text="Choose station",relief='groove')
+cmd.frame<-tkframe(panel.left,relief='groove',bd=2)
+lcmd.frame<-cmd.frame
 
+##### List open files
 scr.opfiles <- tkscrollbar(frame.opfiles, repeatinterval=5, command=function(...)tkyview(all.opfiles,...))
-all.opfiles<-tklistbox(frame.opfiles,selectmode="single",selectbackground="yellow",selectforeground="blue",
-yscrollcommand=function(...)tkset(scr.opfiles,...),background="white")
-tkgrid(all.opfiles,scr.opfiles)
-tkgrid.configure(all.opfiles,sticky="n")
-tkgrid.configure(scr.opfiles,rowspan=4,sticky="ns")
-tkconfigure(all.opfiles,height=5,width=w.opfiles)
+all.opfiles<-tklistbox(frame.opfiles,selectmode="single",height=5,width=w.opfiles,
+						 selectbackground="yellow",selectforeground="blue",background="white",
+						 yscrollcommand=function(...)tkset(scr.opfiles,...))
+###
+tkgrid(all.opfiles,row=0,column=0,sticky="n")
+tkgrid(scr.opfiles,row=0,column=1,rowspan=4,sticky="ns")
 
-#tkgrid.columnconfigure(all.opfiles,0,weight=1)
-
-
-####Choix station
-frame.optexe<-tkframe(panel.left,relief='groove',bd=2)
-tkgrid(frame.optexe,sticky='nwe')
-
-frame.choix.stn<-ttklabelframe(frame.optexe,text="Choose station",relief='groove')
-setting.frame<-tkframe(frame.optexe)
-tkgrid(frame.choix.stn,setting.frame)
-
+#### Choix station
 stn.choix<-c('')
 stn.choix.val <- tclVar()
 tclvalue(stn.choix.val) <- stn.choix[1]
-stn.choix.cb<-ttkcombobox(frame.choix.stn, values=stn.choix, textvariable=stn.choix.val,state='normal',
-width=wframe.choix.stn)
-tkgrid(stn.choix.cb,padx=1,pady=5)
-frame.choix.prevnext<-tkframe(frame.choix.stn)
-tkgrid(frame.choix.prevnext)
-stn.choix.prev<-tkbutton(frame.choix.prevnext, text="<<-Prev",state='disabled')
-stn.choix.next<-tkbutton(frame.choix.prevnext, text="Next->>",state='disabled')
-#tkgrid(stn.choix.prev,stn.choix.next)
-tkgrid(stn.choix.prev,row=0,column=0,padx=5)
-tkgrid(stn.choix.next,row=0,column=2,padx=5)
 
+stn.choix.cb<-ttkcombobox(choixStn.frame, values=stn.choix, textvariable=stn.choix.val,state='normal', width=wframe.choix.stn)
+stn.choix.prev<-tkbutton(choixStn.frame, text="<<-Prev",state='disabled')
+stn.choix.next<-tkbutton(choixStn.frame, text="Next->>",state='disabled')
+setting.button<-tkbutton(choixStn.frame, text="Options",state='disabled')
 
 button_next<-function(){
 	istn<-as.numeric(tclvalue(tcl(stn.choix.cb,"current")))+1
@@ -56,11 +42,6 @@ button_prev<-function(){
 
 tkconfigure(stn.choix.prev,command=button_prev)
 tkconfigure(stn.choix.next,command=button_next)
-
-#####################################
-setting.button<-tkbutton(setting.frame, text="Options",state='disabled')
-tkgrid(setting.button,row=0,column=0)
-
 tkconfigure(setting.button,command=function(){
 	if(GeneralParameters$action=='zero.check') GeneralParameters<<-qcGetZeroCheckInfo(main.win,GeneralParameters)
 	if(GeneralParameters$action=='qc.rain') GeneralParameters<<-qc.get.info.rain(main.win,GeneralParameters)
@@ -69,38 +50,33 @@ tkconfigure(setting.button,command=function(){
 #	if(GeneralParameters$action=='rhtests') GeneralParameters<<-rhtests_inputData(main.win,GeneralParameters)
 })
 
+###
+tkgrid(stn.choix.cb,row=0,column=0,sticky='we',rowspan=1,columnspan=3,padx=1,pady=1,ipadx=1,ipady=1)
+tkgrid(stn.choix.prev,row=1,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+tkgrid(stn.choix.next,row=1,column=2,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+tkgrid(setting.button,row=0,column=3,sticky='we',rowspan=2,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
 
-###################Output cmd
-cmd.frame<-tkframe(panel.left,relief='groove',bd=2)
-#tkgrid(cmd.frame,sticky='we',pady=1)
-lcmd.frame<-cmd.frame
-
-#ladjset.frame<-NULL
-#adjset.frame<-tkframe(panel.left,relief='groove',bd=2)
-#tkgrid(adjset.frame,sticky='we',pady=1)
-#ladjset.frame<-adjset.frame
-
+#######
+tkgrid(frame.opfiles,sticky='nwe')
+tkgrid(choixStn.frame,sticky='nwe',pady=5)
 
 #####**************************** RIGHT ************************######
 ##Onglet right panel
-area.frame<-tkframe(panel.right) #,bd=2,relief='sunken'
-tkgrid(area.frame)
-tkgrid.configure(area.frame,row=0,column=0,sticky='nswe')
+
+area.frame<-tkframe(panel.right)
+tknotes <- ttknotebook(area.frame)
+
+tkgrid(tknotes,row=0,column=0,sticky='nswe')
+tkgrid(area.frame,row=0,column=0,sticky='nswe')
+
+###
+tkgrid.columnconfigure(tknotes,0,weight=1)
+for(i in 0:3) tkgrid.rowconfigure(tknotes,i,weight=1)
+
 tkgrid.columnconfigure(area.frame,0,weight=1)
 tkgrid.rowconfigure(area.frame,0,weight=1)
 
-#NOTEBOOKS
-tknotes <- ttknotebook(area.frame)
-tkgrid(tknotes)
-#tkconfigure(tknotes)
-tkgrid.configure(tknotes,row=0,column=0,sticky='nswe')
-tkgrid.columnconfigure(tknotes,0,weight=1)
-tkgrid.rowconfigure(tknotes,0,weight=1)
-tkgrid.rowconfigure(tknotes,1,weight=1)
-tkgrid.rowconfigure(tknotes,2,weight=1)
-tkgrid.rowconfigure(tknotes,3,weight=1)
-
-
+#####
 pressed_index<-tclVar('')
 tkbind(tknotes,"<ButtonPress-1>", function(x,y,W) btn_press(x,y,W))
 tkbind(tknotes,"<ButtonRelease-1>", function(x,y,W) btn_releases(x,y,W))

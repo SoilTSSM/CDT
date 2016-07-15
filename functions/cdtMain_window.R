@@ -41,7 +41,6 @@ h.scale<-function(per) as.integer(per*height.scr/100)
 ##font width
 sfont0<-as.numeric(tclvalue(tkfont.measure(main.win,paste("0123456789",paste(letters[1:26],LETTERS[1:26],collapse='',sep=''),sep=''))))/(10+2*26)
 ##left panel width
-#wpanel.left<-w.scale(25)
 wpanel.left<-w.scale(30)
 hpanel.left<-h.scale(70)
 ##List open files width
@@ -56,8 +55,6 @@ wbstatus3<-as.integer(w.scale(15)/sfont0)
 ##Output message, tktext height
 txtHeight<-7
 if(Sys.info()["sysname"] == "Windows") txtHeight<-6
-
-
 
 #####**************************** TOP MENU ************************######
 
@@ -79,7 +76,6 @@ main.pane0<-ttkpanedwindow (main.frame0,orient='vertical')
 #####**************************** MAIN PANEL ************************######
 
 main.frame<-ttkpanedwindow (main.pane0,orient='horizontal',height=hpanel.left)
-#main.frame<-tkframe(main.win,bd=2,relief='ridge')
 #left panel
 panel.left<-tkframe(main.frame,relief='raised',bd=2,width=wpanel.left)  
 #right panel
@@ -90,7 +86,6 @@ source(file.path(apps.dir,'functions','cdtMainPanel_functions.R',fsep = .Platfor
 #####**************************** TEXT OUTPUT ************************######
 
 out.frame<-tkframe(main.pane0,bd=2,relief='groove')
-#out.frame<-tkframe(main.win,bd=2,relief='ridge')
 source(file.path(apps.dir,'functions','cdtOutputmsg_functions.R',fsep = .Platform$file.sep))
 
 #####**************************** STATUS BAR ************************######
@@ -102,17 +97,13 @@ source(file.path(apps.dir,'functions','cdtStatusbar_functions.R',fsep = .Platfor
 
 tkadd(main.frame,panel.left)
 tkadd(main.frame,panel.right)
+
 #left panel
-#tkgrid(panel.left,row=0,column=0,rowspan=1,columnspan=1,sticky="snew")
-#tkgrid.rowconfigure(panel.left,0,weight=1)
 tkgrid.columnconfigure(panel.left,0,weight=1)
 
 #right panel
-#tkgrid(panel.right,row=0,column=1,rowspan=1,columnspan=1,sticky="snew")
 tkgrid.columnconfigure(panel.right,0,weight=1)
 tkgrid.rowconfigure(panel.right,0,weight=1)
-# tkgrid.rowconfigure(panel.right,1,weight=1)
-# tkgrid.rowconfigure(panel.right,2,weight=1)
 
 #####
 tkgrid(tools.frame,row=0,column=0,rowspan=1,columnspan=2,sticky="new",padx=5)
@@ -121,11 +112,9 @@ tkgrid(tools.frame,row=0,column=0,rowspan=1,columnspan=2,sticky="new",padx=5)
 tkadd(main.pane0,main.frame)
 tkadd(main.pane0,out.frame)
 
-#tkgrid(main.frame,row=1,column=0,rowspan=1,columnspan=2,sticky="snew",padx=5) 
-tkgrid.columnconfigure(main.frame,0,weight=1)  #
+tkgrid.columnconfigure(main.frame,0,weight=1)
 tkgrid.columnconfigure(main.frame,1,weight=1)
 tkgrid.rowconfigure(main.frame,0,weight=1)
-#tkgrid(out.frame,row=2,column=0,rowspan=1,columnspan=2,sticky='swe',padx=5)
 tkgrid.columnconfigure(out.frame,0,weight=1)
 tkgrid.rowconfigure(out.frame,0,weight=1)
 
@@ -141,7 +130,7 @@ tkgrid.rowconfigure(main.frame0,0,weight=1)
 tkgrid.columnconfigure(main.frame0,0,weight=1)
 
 ##statusbar
-tkgrid(frstatusbar,row=2,column=0,rowspan=1,columnspan=1,sticky="snew") #,padx=5
+tkgrid(frstatusbar,row=2,column=0,rowspan=1,columnspan=1,sticky="snew")
 tkgrid.columnconfigure(frstatusbar,0,weight=1)
 
 grip.right <- ttksizegrip(main.win)
@@ -165,12 +154,12 @@ tkwm.deiconify(main.win)
 #####**************************** fullscreen option ************************######
 
 if(Sys.info()["sysname"] == "Linux") {
-	tcl('wm','attributes',main.win,fullscreen=FALSE,zoomed=TRUE) #on linux
+	tcl('wm','attributes',main.win,fullscreen=FALSE,zoomed=TRUE) #Linux
 }else if(Sys.info()["sysname"] == "Darwin"){
 	tcl('wm','attributes',main.win,fullscreen=FALSE,zoomed=TRUE)
 }else if(Sys.info()["sysname"] == "Windows"){
 	tcl('wm','attributes',main.win,fullscreen=FALSE)
-	tcl('wm','state',main.win,'zoomed') ##on Win 
+	tcl('wm','state',main.win,'zoomed') #Windows
 }
 
 #####**************************** Close CDT ************************######
@@ -190,7 +179,6 @@ tcl("wm", "protocol", main.win, "WM_DELETE_WINDOW", function() {
 
 #####**************************** LOAD Functions ************************######
 
-#source(file.path(apps.dir,'functions','loadAll_functions.R',fsep = .Platform$file.sep))
 tryCatch(source(file.path(apps.dir,'functions','loadAll_functions.R',fsep = .Platform$file.sep)),
 		warning=function(w) warningFun(w),
 		error=function(e) errorFun(e))
