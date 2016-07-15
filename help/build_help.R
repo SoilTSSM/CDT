@@ -39,11 +39,11 @@ figure_files <- list.files(r_images,recursive=TRUE,full.names=TRUE)
 # html_files<-paste(all_files,'.html',sep='')
 # figure_dir<-paste(all_files,'_files',sep='')
 
-# all_files <- "cdt_file_menu"
-# rmd_files<-"cdt_file_menu.Rmd"
-# parent_dir<-"cdt_file"
-# html_files<-"cdt_file_menu.html"
-# figure_dir<-"cdt_file_menu_files"
+all_files <- "cdt_file_menu"
+rmd_files<-"cdt_file_menu.Rmd"
+parent_dir<-"cdt_file"
+html_files<-"cdt_file_menu.html"
+figure_dir<-"cdt_file_menu_files"
 
 ######
 

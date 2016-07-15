@@ -1,44 +1,44 @@
 ---
-title: "CDT File menu"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false 
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(fig.path='images/R_images/cdt_file_menu.')
 ```
-
 ```{r, child="cdtMenuToolbar.Rmd"}
 ```
 
+## CDT Main Window
 
-This is a reference ![image][executetask] with multimarkdown attributes.
+![](images/common/cdt_main_win.png)
 
-
-
-test fonc `r menuselection('rija faniriantsoa',nata,ranto,ando)`
-
+<br>
 
 ## GUI Conventions
 
 This section describes the uniform styles that will be used throughout this manual.
 
-* Menu Options: `r menuselection('rija faniriantsoa',nata,ranto,ando)`
-* Toolbar icons: ![][redrawplot0]
-* Toolbar icons: ![][redrawplot1]
+* Menu selection: `r menuselection('Quality Control','QC check: One station',Rainfall,'Zeros check')`
+* Toolbar icons: ![][savetable]
 
-* button: `r button(Cancel)`
-* browse: `r button('...')`
+* Button: `r button(Cancel)`
+
 * Tabs: `r onglet(Options)`
-* drop down list button: `r dropdownlistBut()`
-* checkbox: `r checkbox('Use elevation')`
-* radio button:  `r radiobutton('Use elevation')`
-* dropdown list: This ![][dropdownarrow] a listbox
-* Select a number: ![][spinbox]
-* Browse for a file: ![][browsebutf]
+* Checkbox: `r checkbox('Use elevation')`
+* Radio button:  `r radiobutton('Use elevation')`
+* Dropdown list: This ![][dropdownarrow] is listbox
+* Spinbox, select a number: ![][spinbox]
+* Browse for a file or directory: ![][browsebutf]
 
-* Zoom in non active: ![][zoomin0]
+* Zoom in non-active: ![][zoomin0]
 * Zoom in active: ![][zoomin1]
 
-* Redraw map non active: ![][redrawmap0]
+* Redraw map non-active: ![][redrawmap0]
 * Redraw map  active: ![][redrawmap1]
 
 

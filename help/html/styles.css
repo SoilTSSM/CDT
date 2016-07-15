@@ -158,7 +158,7 @@ span.ongletclass {
 }
 
 span.dropdclass {
-    font-size: 0.9em;
+    font-size: 0.7em;
     background-color: #e6e6e6;
     padding: 0px 2px;
     border-style: solid solid solid none;
@@ -166,7 +166,7 @@ span.dropdclass {
 }
 
 span.dropdlistclass {
-    font-size: 0.9em;
+    font-size: 0.7em;
     background-color: #ffffff;
     color: #ffffff;
     padding: 0px 2px;
@@ -174,16 +174,15 @@ span.dropdlistclass {
     border-color: #e6e6e6;
 }
 
-span.radiochckbutclass {
-    color: #ffffff;
-    /*font-size: 1.0em;*/
-    background-color: #e6e6e6;
-    padding: 1px 1px 1px 4px;
+img.radiochckbutclass {
+    width: 1.25em;
+    height: 1.3em;
+    margin-bottom: 3px;
 }
 
 span.radiochcktextclass {
     /*font-size: 1.0em;*/
-    background-color: #e6e6e6;
+    background-color: #d9d9d9;
     padding: 1px 8px 1px 1px;
 }
 

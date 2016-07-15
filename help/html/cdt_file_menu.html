@@ -11,9 +11,12 @@
 
 
 
-<title>CDT File menu</title>
+<title></title>
 
 <script src="libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="libs/tocify-1.9.1/jquery.tocify.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
 <script src="libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
@@ -164,6 +167,106 @@ $(document).ready(function () {
 
 
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.9em;
+  padding-left: 5px;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+  padding-left: 10px;
+}
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
 
 <div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
     <div class="container">
@@ -304,36 +407,38 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">CDT File menu</h1>
 
 </div>
 
 
-<p>This is a reference <img src="/Volumes/ECHANGE/github/CDT/images/run24.gif" title="Execute the append task" alt="image" id="cdtIcons" class="cdtIcons" /> with multimarkdown attributes.</p>
-<p>test fonc <span class="menuselection">rija faniriantsoa ‣ nata ‣ ranto ‣ ando</span></p>
+<div id="cdt-main-window" class="section level2">
+<h2>CDT Main Window</h2>
+<div class="figure">
+<img src="images/common/cdt_main_win.png" />
+
+</div>
+<p><br></p>
+</div>
 <div id="gui-conventions" class="section level2">
 <h2>GUI Conventions</h2>
 <p>This section describes the uniform styles that will be used throughout this manual.</p>
 <ul>
-<li>Menu Options: <span class="menuselection">rija faniriantsoa ‣ nata ‣ ranto ‣ ando</span></li>
-<li>Toolbar icons: <img src="/Volumes/ECHANGE/github/CDT/images/RedrawButton24.gif" title="Redraw plot" id="cdtIcons" class="cdtIcons" /></li>
-<li><p>Toolbar icons: <img src="/Volumes/ECHANGE/github/CDT/images/RedrawButton-Change24.gif" title="Redraw plot change" id="cdtIcons" class="cdtIcons" /></p></li>
-<li>button: <span class="buttonclass"> Cancel </span></li>
-<li>browse: <span class="buttonclass"> … </span></li>
+<li>Menu selection: <span class="menuselection">Quality Control ‣ QC check: One station ‣ Rainfall ‣ Zeros check</span></li>
+<li><p>Toolbar icons: <img src="images/common/save_table24.gif" title="Save table" id="cdtIcons" class="cdtIcons" /></p></li>
+<li><p>Button: <span class="buttonclass"> Cancel </span></p></li>
 <li>Tabs: <span class="ongletclass"> Options </span></li>
-<li>drop down list button: <span class="dropdlistclass">AA</span><span class="dropdclass">▾</span></li>
-<li>checkbox: <span class="radiochckbutclass">◼</span><span class="radiochcktextclass"> Use elevation </span></li>
-<li>radio button: <span class="radiochckbutclass">⚪</span><span class="radiochcktextclass"> Use elevation </span></li>
-<li>dropdown list: This <img src="images/common/dropdown.png" title="Drop down arrow" id="cdtIcons" class="cdtIcons" /> a listbox</li>
-<li>Select a number: <img src="images/common/spinH.png" title="Spinbox" id="cdtSpin" class="cdtSpin" width="130" height="70" /></li>
-<li><p>Browse for a file: <img src="images/common/browsefiledir.png" title="Browse for a file" id="cdtIcons" class="cdtIcons" /></p></li>
-<li>Zoom in non active: <img src="/Volumes/ECHANGE/github/CDT/images/ZoomIn128.gif" title="Zoom in" id="cdtIcons" class="cdtIcons1" /></li>
-<li><p>Zoom in active: <img src="/Volumes/ECHANGE/github/CDT/images/ZoomIn128.gif" title="Zoom in" id="cdtIcons" class="cdtIcons2" /></p></li>
-<li>Redraw map non active: <img src="/Volumes/ECHANGE/github/CDT/images/redraw128.gif" title="Redraw map" id="cdtIcons" class="cdtIcons1" /></li>
-<li><p>Redraw map active: <img src="/Volumes/ECHANGE/github/CDT/images/redraw128.gif" title="Redraw map" id="cdtIcons" class="cdtIcons2a" /></p></li>
+<li>Checkbox: <img src='images/common/checkbox.png' title='Checkbox' class='radiochckbutclass' /><span class="radiochcktextclass"> Use elevation </span></li>
+<li>Radio button: <img src='images/common/radiobutton.png' title='Radio button' class='radiochckbutclass' /><span class="radiochcktextclass"> Use elevation </span></li>
+<li>Dropdown list: This <img src="images/common/dropdown.png" title="Drop down arrow" id="cdtIcons" class="cdtIcons" /> is listbox</li>
+<li>Spinbox, select a number: <img src="images/common/spinH.png" title="Spinbox" id="cdtSpin" class="cdtSpin" width="130" height="70" /></li>
+<li><p>Browse for a file or directory: <img src="images/common/browsefiledir.png" title="Browse for a file" id="cdtIcons" class="cdtIcons" /></p></li>
+<li>Zoom in non-active: <img src="images/common/ZoomIn128.gif" title="Zoom in" id="cdtIcons" class="cdtIcons1" /></li>
+<li><p>Zoom in active: <img src="images/common/ZoomIn128.gif" title="Zoom in" id="cdtIcons" class="cdtIcons2" /></p></li>
+<li>Redraw map non-active: <img src="images/common/redraw128.gif" title="Redraw map" id="cdtIcons" class="cdtIcons1" /></li>
+<li><p>Redraw map active: <img src="images/common/redraw128.gif" title="Redraw map" id="cdtIcons" class="cdtIcons2a" /></p></li>
 </ul>
 <hr />
-<p>Generated on : July 14, 2016, 17:02</p>
+<p>Generated on : July 15, 2016, 11:06</p>
 </div>
 
 <footer class="navbar navbar-inverse  navbar-fixed-bottom">
@@ -346,6 +451,8 @@ $(document).ready(function () {
 </footer>
 
 
+</div>
+</div>
 
 </div>
 

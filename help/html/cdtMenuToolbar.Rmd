@@ -7,39 +7,39 @@ menuselection <- function(...) {
 button <- function(...) paste("<span class='buttonclass'>",as.character(eval(substitute(alist(...)))),"</span>")
 onglet <- function(...) paste("<span class='ongletclass'>",as.character(eval(substitute(alist(...)))),"</span>")
 dropdownlistBut <- function() "<span class='dropdlistclass'>AA</span><span class='dropdclass'>&#9662;</span>"
-checkbox <- function(...) paste("<span class='radiochckbutclass'>&#9724;</span><span class='radiochcktextclass'>",as.character(eval(substitute(alist(...)))),"</span>")
-radiobutton <- function(...) paste("<span class='radiochckbutclass'>&#9898;</span><span class='radiochcktextclass'>",as.character(eval(substitute(alist(...)))),"</span>")
+checkbox <- function(...) paste("<img src='images/common/checkbox.png' title='Checkbox' class='radiochckbutclass' /><span class='radiochcktextclass'>",as.character(eval(substitute(alist(...)))),"</span>")
+radiobutton <- function(...) paste("<img src='images/common/radiobutton.png' title='Radio button' class='radiochckbutclass' /><span class='radiochcktextclass'>",as.character(eval(substitute(alist(...)))),"</span>")
 ```
 
 
-[executetask]: ../../images/run24.gif "Execute the append task" id=cdtIcons class=cdtIcons
-[openfile]: ../../images/open24.gif "Open data frame" id=cdtIcons class=cdtIcons
-[saveimage]: ../../images/save_img24.gif "Save image" id=cdtIcons class=cdtIcons
-[exitcdt]: ../../images/rexit24.gif "Exit CDT" id=cdtIcons class=cdtIcons
-[closetab]: ../../images/close_tab24.gif "Close active tab" id=cdtIcons class=cdtIcons
+[executetask]: images/common/run24.gif "Execute the append task" id=cdtIcons class=cdtIcons
+[openfile]: images/common/open24.gif "Open data frame" id=cdtIcons class=cdtIcons
+[saveimage]: images/common/save_img24.gif "Save image" id=cdtIcons class=cdtIcons
+[exitcdt]: images/common/exit24.gif "Exit CDT" id=cdtIcons class=cdtIcons
+[closetab]: images/common/close_tab24.gif "Close active tab" id=cdtIcons class=cdtIcons
 [closetab1]: images/common/closetabs.png "Close active tab" id=cdtIcons class=cdtIcons
-[opentable]: ../../images/open_table24.gif "Open table" id=cdtIcons class=cdtIcons
-[savetable]: ../../images/save_table24.gif "Save table" id=cdtIcons class=cdtIcons
+[opentable]: images/common/open_table24.gif "Open table" id=cdtIcons class=cdtIcons
+[savetable]: images/common/save_table24.gif "Save table" id=cdtIcons class=cdtIcons
 [browsebutf]: images/common/browsefiledir.png "Browse for a file" id=cdtIcons class=cdtIcons 
 [dropdownarrow]: images/common/dropdown.png "Drop down arrow" id=cdtIcons class=cdtIcons 
 
 [spinbox]: images/common/spinH.png "Spinbox" id=cdtSpin class=cdtSpin width=130px height=70px
 
-[redrawplot0]: ../../images/RedrawButton24.gif "Redraw plot" id=cdtIcons class=cdtIcons
-[redrawplot1]: ../../images/RedrawButton-Change24.gif "Redraw plot change" id=cdtIcons class=cdtIcons
+[redrawplot0]: images/common/RedrawButton24.gif "Redraw plot" id=cdtIcons class=cdtIcons
+[redrawplot1]: images/common/RedrawButton-Change24.gif "Redraw plot change" id=cdtIcons class=cdtIcons
 
-[zoomreset]: ../../images/reset128.gif "Zoom reset" id=cdtIcons class=cdtIcons
+[zoomreset]: images/common/reset128.gif "Zoom reset" id=cdtIcons class=cdtIcons
 
-[zoomrect0]: ../../images/ZoomRect128.gif "Zoom areas" id=cdtIcons class=cdtIcons1
-[zoomin0]: ../../images/ZoomIn128.gif "Zoom in" id=cdtIcons class=cdtIcons1
-[zoomout0]: ../../images/ZoomOut128.gif "Zoom out" id=cdtIcons class=cdtIcons1
-[redrawmap0]: ../../images/redraw128.gif "Redraw map" id=cdtIcons class=cdtIcons1
-[panmap0]: ../../images/PanImage32.gif "Pan map" id=cdtIcons class=cdtIcons1
+[zoomrect0]: images/common/ZoomRect128.gif "Zoom areas" id=cdtIcons class=cdtIcons1
+[zoomin0]: images/common/ZoomIn128.gif "Zoom in" id=cdtIcons class=cdtIcons1
+[zoomout0]: images/common/ZoomOut128.gif "Zoom out" id=cdtIcons class=cdtIcons1
+[redrawmap0]: images/common/redraw128.gif "Redraw map" id=cdtIcons class=cdtIcons1
+[panmap0]: images/common/PanImage32.gif "Pan map" id=cdtIcons class=cdtIcons1
 
-[zoomrect1]: ../../images/ZoomRect128.gif "Zoom areas" id=cdtIcons class=cdtIcons2
-[zoomin1]: ../../images/ZoomIn128.gif "Zoom in" id=cdtIcons class=cdtIcons2
-[zoomout1]: ../../images/ZoomOut128.gif "Zoom out" id=cdtIcons class=cdtIcons2
-[redrawmap1]: ../../images/redraw128.gif "Redraw map" id=cdtIcons class=cdtIcons2a
-[panmap1]: ../../images/PanImage32.gif "Pan map" id=cdtIcons class=cdtIcons2
+[zoomrect1]: images/common/ZoomRect128.gif "Zoom areas" id=cdtIcons class=cdtIcons2
+[zoomin1]: images/common/ZoomIn128.gif "Zoom in" id=cdtIcons class=cdtIcons2
+[zoomout1]: images/common/ZoomOut128.gif "Zoom out" id=cdtIcons class=cdtIcons2
+[redrawmap1]: images/common/redraw128.gif "Redraw map" id=cdtIcons class=cdtIcons2a
+[panmap1]: images/common/PanImage32.gif "Pan map" id=cdtIcons class=cdtIcons2
 
 
