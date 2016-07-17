@@ -7,7 +7,7 @@ choixStn.frame<-ttklabelframe(panel.left,text="Choose station",relief='groove')
 cmd.frame<-tkframe(panel.left,relief='groove',bd=2)
 lcmd.frame<-cmd.frame
 
-##### List open files
+##### List open files 
 scr.opfiles <- tkscrollbar(frame.opfiles, repeatinterval=5, command=function(...)tkyview(all.opfiles,...))
 all.opfiles<-tklistbox(frame.opfiles,selectmode="single",height=5,width=w.opfiles,
 						 selectbackground="yellow",selectforeground="blue",background="white",
@@ -15,6 +15,7 @@ all.opfiles<-tklistbox(frame.opfiles,selectmode="single",height=5,width=w.opfile
 ###
 tkgrid(all.opfiles,row=0,column=0,sticky="n")
 tkgrid(scr.opfiles,row=0,column=1,rowspan=4,sticky="ns")
+tkgrid.columnconfigure(all.opfiles,0,weight=1)
 
 #### Choix station
 stn.choix<-c('')
@@ -55,10 +56,13 @@ tkgrid(stn.choix.cb,row=0,column=0,sticky='we',rowspan=1,columnspan=3,padx=1,pad
 tkgrid(stn.choix.prev,row=1,column=0,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
 tkgrid(stn.choix.next,row=1,column=2,sticky='we',rowspan=1,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
 tkgrid(setting.button,row=0,column=3,sticky='we',rowspan=2,columnspan=1,padx=1,pady=1,ipadx=1,ipady=1)
+tkgrid.columnconfigure(stn.choix.cb,0,weight=1)
 
 #######
 tkgrid(frame.opfiles,sticky='nwe')
 tkgrid(choixStn.frame,sticky='nwe',pady=5)
+tkgrid.columnconfigure(frame.opfiles,0,weight=1)
+for(i in 0:3)  tkgrid.columnconfigure(choixStn.frame,i,weight=1)
 
 #####**************************** RIGHT ************************######
 ##Onglet right panel
@@ -70,8 +74,8 @@ tkgrid(tknotes,row=0,column=0,sticky='nswe')
 tkgrid(area.frame,row=0,column=0,sticky='nswe')
 
 ###
-tkgrid.columnconfigure(tknotes,0,weight=1)
-for(i in 0:3) tkgrid.rowconfigure(tknotes,i,weight=1)
+for(i in 0:60) tkgrid.columnconfigure(tknotes,i,weight=1)
+for(i in 0:12) tkgrid.rowconfigure(tknotes,i,weight=1)
 
 tkgrid.columnconfigure(area.frame,0,weight=1)
 tkgrid.rowconfigure(area.frame,0,weight=1)

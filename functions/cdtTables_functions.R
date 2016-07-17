@@ -29,6 +29,7 @@ openTable<-function(parent.win,parent,fileopen){
 
 ##################################################################################################################
 tclArrayVar<-function(Rarray=NULL){
+	# http://www.sciviews.org/recipes/tcltk/TclTk-using-tk-table-widget/
 	if(!is.null(Rarray) && !is.vector(Rarray) && length(dim(Rarray))!=2) stop("Array must be one-dimensional or two-dimensional.")
 
 	n <- .TkRoot$env$TclVarCount <- .TkRoot$env$TclVarCount + 1L

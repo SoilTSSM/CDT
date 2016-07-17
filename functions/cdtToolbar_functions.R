@@ -12,82 +12,75 @@ vertiS<-round(verti,1)
 hRedraw <- tkimage.create('photo','-file',file.path(imgdir,'RedrawButton24.gif',fsep = .Platform$file.sep))
 hRedraw1 <- tkimage.create('photo','-file',file.path(imgdir,'RedrawButton-Change24.gif',fsep = .Platform$file.sep))
 
-
 ####################################################################################################
 
 tb.open.file<-tkbutton.toolbar(tools.frame,imgdir,"open24.gif",TextOutputVar,"Open file","Open file format: txt,csv,...")
-#tb.save.file<-tkbutton.toolbar(tools.frame,imgdir,"save24.gif",TextOutputVar,"Save file","Save file")
 tb.save.image<-tkbutton.toolbar(tools.frame,imgdir,"save_img24.gif",TextOutputVar,"Save image","Save image")
-tb.exit.win<-tkbutton.toolbar(tools.frame,imgdir,"exit24.gif",TextOutputVar,"Exit window","Exit the main window")
-tb.run<-tkbutton.toolbar(tools.frame,imgdir,"run24.gif",TextOutputVar,"Execute","Execute the append task")
-tb.close.tab<-tkbutton.toolbar(tools.frame,imgdir,"close_tab24.gif",TextOutputVar,"Close active tab","Close active tab")
-
-tb.separator<-ttkseparator(tools.frame,orient='vertical')
-tb.separator1<-ttkseparator(tools.frame,orient='vertical')
-tb.separator2<-ttkseparator(tools.frame,orient='vertical')
-tb.separator3<-ttkseparator(tools.frame,orient='vertical')
-tb.separator4<-ttkseparator(tools.frame,orient='vertical')
-tb.separator5<-ttkseparator(tools.frame,orient='vertical')
-tb.separator6<-ttkseparator(tools.frame,orient='vertical')
-#tb.separator7<-ttkseparator(tools.frame,orient='vertical')
-#tb.separator8<-ttkseparator(tools.frame,orient='vertical')
-
 tb.open.table<-tkbutton.toolbar(tools.frame,imgdir,"open_table24.gif",TextOutputVar,"Open table","Open table")
 tb.save.table<-tkbutton.toolbar(tools.frame,imgdir,"save_table24.gif",TextOutputVar,"Save table","Save table")
-#tb.edit.table<-tkbutton.toolbar(tools.frame,imgdir,"edit_table24.gif",TextOutputVar,"Edit table","Edit table")
-#tb.close.table<-tkbutton.toolbar(tools.frame,imgdir,"close_table24.gif",TextOutputVar,"Close table","Close table")
 
-#tb.plot.point<-tkbutton.toolbar(tools.frame,imgdir,"pointplot24.gif",TextOutputVar,"Graduate color points","Graduate color points")
-#tb.plot.raster<-tkbutton.toolbar(tools.frame,imgdir,"rasterplot24.gif",TextOutputVar,"Raster plot","Raster plot")
+###
+tb.run<-tkbutton.toolbar(tools.frame,imgdir,"run24.gif",TextOutputVar,"Execute","Execute the append task")
 
+###
 lspinH<-tklabel.h(tools.frame,'Width:',TextOutputVar,'Horizontal scale factor for image size','Horizontal scale factor for image size')
 spinH<-ttkspinbox(tools.frame,from=0.5,to=5.0,increment=0.1,justify='center',width=6,state='disabled')
 tkset(spinH,horizS)
 infobulle(spinH,'Horizontal scale factor for image size')
 status.bar.display(spinH,TextOutputVar,'Horizontal scale factor for image size')
 
+###
 lspinV<-tklabel.h(tools.frame,'Height:',TextOutputVar,'Vertical scale factor for image size','Vertical scale factor for image size')
 spinV<-ttkspinbox(tools.frame,from=0.5,to=5.0,increment=0.1,justify='center',width=6,state='disabled')
 tkset(spinV,vertiS)
 infobulle(spinV,'Vertical scale factor for image size')
 status.bar.display(spinV,TextOutputVar,'Vertical scale factor for image size')
 
+###
 plotRedraw<-tkbutton.toolbar(tools.frame,imgdir,"RedrawButton24.gif",TextOutputVar,"Redraw plot","Redraw plot")
 
+###
+tb.close.tab<-tkbutton.toolbar(tools.frame,imgdir,"close_tab24.gif",TextOutputVar,"Close active Tab","Close active tab")
+tb.exit.win<-tkbutton.toolbar(tools.frame,imgdir,"exit24.gif",TextOutputVar,"Quit CDT","Quit CDT")
+
+######
+tb.separator0<-ttkseparator(tools.frame,orient='vertical')
+tb.separator1<-ttkseparator(tools.frame,orient='vertical')
+tb.separator2<-ttkseparator(tools.frame,orient='vertical')
+tb.separator3<-ttkseparator(tools.frame,orient='vertical')
+# tb.separator4<-ttkseparator(tools.frame,orient='vertical')
+# tb.separator5<-ttkseparator(tools.frame,orient='vertical')
+
 ########
-#tkgrid(tb.open.file,tb.open.table,tb.separator,tb.save.image,tb.save.table,
-#tb.separator1,tb.run,tb.separator2,tb.exit.win,tb.separator3,tb.close.tab,tb.separator4,
-#lspinH,spinH,tb.separator5,lspinV,spinV,tb.separator6,plotRedraw,tb.separator7,
-#tb.plot.point,tb.plot.raster,tb.separator8)
+tkgrid(tb.open.file,tb.save.image,tb.separator0,
+	tb.open.table,tb.save.table, tb.separator1,
+	tb.run,tb.separator2,
+	lspinH,spinH,lspinV,spinV,plotRedraw,tb.separator3,
+	tb.close.tab,tb.exit.win)
 
 #######
-tkgrid(tb.open.file,tb.open.table,tb.separator,tb.save.image,tb.save.table,
-tb.separator1,tb.run,tb.separator2,tb.exit.win,tb.separator3,tb.close.tab,tb.separator4,
-lspinH,spinH,tb.separator5,lspinV,spinV,tb.separator6,plotRedraw)
-
-#######
-tkgrid.configure(tb.separator,sticky='ns')
+tkgrid.configure(tb.separator0,sticky='ns')
 tkgrid.configure(tb.separator1,sticky='ns')
-tkgrid.configure(tb.separator2,sticky='ns',padx=10)
-tkgrid.configure(tb.separator3,sticky='ns',padx=10)
-tkgrid.configure(tb.separator4,sticky='ns',padx=10)
-tkgrid.configure(tb.separator5,sticky='ns',padx=10)
-tkgrid.configure(tb.separator6,sticky='ns',padx=10)
-#tkgrid.configure(tb.separator7,sticky='ns',padx=10)
-#tkgrid.configure(tb.separator8,sticky='ns',padx=10)
+tkgrid.configure(tb.separator2,sticky='ns',padx=20)
+tkgrid.configure(tb.separator3,sticky='ns',padx=20)
+# tkgrid.configure(tb.separator4,sticky='ns',padx=10)
+# tkgrid.configure(tb.separator5,sticky='ns',padx=10)
+
+tkgrid.configure(tb.open.file,padx=5)
+tkgrid.configure(tb.save.image,padx=5)
 
 tkgrid.configure(tb.open.table,padx=5)
 tkgrid.configure(tb.save.table,padx=5)
-#tkgrid.configure(tb.edit.table,padx=2)
-#tkgrid.configure(tb.close.table,padx=2)
 
-tkgrid.configure(tb.open.file,padx=5)
-#tkgrid.configure(tb.save.file,padx=2)
-tkgrid.configure(tb.save.image,padx=5)
+###
+tkgrid.configure(tb.run,padx=20,ipadx=5)
 
-tkgrid.configure(tb.exit.win,padx=5,sticky='w')
-tkgrid.configure(tb.run,padx=5)
+###
+tkgrid.configure(plotRedraw,padx=5)
+
+###
 tkgrid.configure(tb.close.tab,padx=5)
+tkgrid.configure(tb.exit.win,padx=30,sticky='e')
 
 #####**************************** Change plot window scale ************************######
 
@@ -155,6 +148,8 @@ tkconfigure(tb.open.file,state='normal',command=function(){
 
 #######
 tkconfigure(tb.save.image,state='normal',command=function(){
+	## add options (width, height in px, in, cm)
+	## add jpeg/png/gif
 	SavePlot()
 })
 
@@ -190,11 +185,6 @@ tkconfigure(tb.save.table,state='normal',command=function(){
 		return(NULL)
 	}
 })
-
-#######
-#tkconfigure(tb.save.file,state='disabled',command=function() return(NULL))
-#tkconfigure(tb.edit.table,state='disabled',command=function() return(NULL))
-#tkconfigure(tb.close.table,state='disabled',command=function() return(NULL))
 
 #####**************************** Run Task ************************######
 tkconfigure(tb.run,state='normal',command=function(){

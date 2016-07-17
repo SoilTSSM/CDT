@@ -112,7 +112,7 @@ tkadd(menu.file,"command", label="Configurations", command=function() configCDT(
 tkadd(menu.file, "separator")
 
 ##########
-tkadd(menu.file,"command", label="Quit", command=function(){
+tkadd(menu.file,"command", label="Quit CDT", command=function(){
 	on.exit({
 		#sink(type="message")
 		#close(msgOUT)

@@ -20,6 +20,7 @@ QcCmdBut<-function(stateReplaceAll){
 
 	tknote.cmd<-bwNoteBook(cmd.frame)
 	tkgrid(tknote.cmd ,sticky='nwes')
+	for(i in 0:10) tkgrid.columnconfigure(tknote.cmd,i,weight=1)
 
 	cmd.tab1 <- bwAddTab(tknote.cmd,text="QC Outputs")
 	cmd.tab2 <- bwAddTab(tknote.cmd,text="Plot Outputs")
@@ -842,6 +843,7 @@ QcCmdBut<-function(stateReplaceAll){
 	######
 	tcl('update')
 	tkgrid(cmd.frame,sticky='nswe',pady=5)
+	tkgrid.columnconfigure(cmd.frame,0,weight=1)
 	######
 
 	return(cmd.frame)
