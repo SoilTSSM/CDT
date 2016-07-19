@@ -1,23 +1,23 @@
 #Standard Normal Homogeneity Test (Alexandersson and Moberg, 1997)
-SNHT.s<-function(x){
-	nl<-length(x)
-	ilen<-1:nl
-	ilen<-ilen[!is.na(x)]
-	x<-x[!is.na(x)]
+SNHT.s <- function(x){
+	nl <- length(x)
+	ilen <- 1:nl
+	ilen <- ilen[!is.na(x)]
+	x <- x[!is.na(x)]
 	x<-(x-mean(x))/sd(x)
-	n<-length(x)
-	Ts<-numeric(n)
-	#for(t in 1:(n-1)) Ts[t]<- t*mean(x[1:t])^2+(n-t)*mean(x[(t+1):n])^2
+	n <- length(x)
+	Ts <- numeric(n)
+	#for(t in 1:(n-1)) Ts[t] <- t*mean(x[1:t])^2+(n-t)*mean(x[(t+1):n])^2
 	z1<-(1:n)*(cumsum(x)/(1:n))^2
-	z2<-rev((1:n)*(cumsum(rev(x))/(1:n))^2)
-	Ts[1:(n-1)]<-z1[-n]+z2[-1]
-	idm<-which.max(Ts)
-	Tm<-max(Ts)
-	Vcritic<-fSNHT.Vc(n)
-	test<- Tm>=Vcritic[,2]
-	if(sum(test)>0){
-		mx.cl<-max(Vcritic[test,1])
-		return(list(index.change=ilen[idm]+1,stat.change=Tm,max.confL=mx.cl))
+	z2 <- rev((1:n)*(cumsum(rev(x))/(1:n))^2)
+	Ts[1:(n-1)] <- z1[-n]+z2[-1]
+	idm <- which.max(Ts)
+	Tm <- max(Ts)
+	Vcritic <- fSNHT.Vc(n)
+	test <- Tm >= Vcritic[,2]
+	if(sum(test) > 0){
+		mx.cl <- max(Vcritic[test, 1])
+		return(list(index.change = ilen[idm]+1, stat.change = Tm, max.confL = mx.cl))
 	}else{
 		return(NULL)
 	}
@@ -27,27 +27,27 @@ SNHT.s<-function(x){
 #Standard Normal Homogeneity Test (Alexandersson and Moberg, 1997)
 #cropping bounds
 
-SNHT.sh<-function(x,h){
-	nl<-length(x)
-	ilen<-1:nl
-	ilen<-ilen[!is.na(x)]
-	x<-x[!is.na(x)]
+SNHT.sh <- function(x, h){
+	nl <- length(x)
+	ilen <- 1:nl
+	ilen <- ilen[!is.na(x)]
+	x <- x[!is.na(x)]
 	x<-(x-mean(x))/sd(x)
-	n<-length(x)
-	idh<-which((1:n/n)>=h & (1:n/n)<=1-h)
-	Ts<-Tsh<-numeric(n)
-	#for(t in 1:(n-1)) Ts[t]<- t*mean(x[1:t])^2+(n-t)*mean(x[(t+1):n])^2
+	n <- length(x)
+	idh <- which((1:n/n) >= h & (1:n/n) <= 1-h)
+	Ts <- Tsh <- numeric(n)
+	#for(t in 1:(n-1)) Ts[t] <- t*mean(x[1:t])^2+(n-t)*mean(x[(t+1):n])^2
 	z1<-(1:n)*(cumsum(x)/(1:n))^2
-	z2<-rev((1:n)*(cumsum(rev(x))/(1:n))^2)
-	Ts[1:(n-1)]<-z1[-n]+z2[-1]
-	Tsh[idh]<-Ts[idh]
-	idm<-which.max(Tsh)
-	Tm<-max(Tsh)
-	Vcritic<-fSNHT.Vc(n)
-	test<- Tm>=Vcritic[,2]
-	if(sum(test)>0){
-		mx.cl<-max(Vcritic[test,1])
-		return(list(index.change=ilen[idm]+1,stat.change=Tm,max.confL=mx.cl))
+	z2 <- rev((1:n)*(cumsum(rev(x))/(1:n))^2)
+	Ts[1:(n-1)] <- z1[-n]+z2[-1]
+	Tsh[idh] <- Ts[idh]
+	idm <- which.max(Tsh)
+	Tm <- max(Tsh)
+	Vcritic <- fSNHT.Vc(n)
+	test <- Tm >= Vcritic[,2]
+	if(sum(test) > 0){
+		mx.cl <- max(Vcritic[test, 1])
+		return(list(index.change = ilen[idm]+1, stat.change = Tm, max.confL = mx.cl))
 	}else{
 		return(NULL)
 	}
@@ -56,22 +56,22 @@ SNHT.sh<-function(x,h){
 
 #################################################################################################
 #Pettitt Test (based on the rank)
-PettittRank.s<-function(x){
-	Vcritic<-c(90.0,92.0,95.0,97.5,99.0,99.9)
-	nl<-length(x)
-	ilen<-1:nl
-	ilen<-ilen[!is.na(x)]
-	x<-x[!is.na(x)]
-	n<-length(x)
-	Sr<-2*cumsum(rank(x))-(1:n)*(n+1)
-	Sr<-abs(Sr)
-	idm<-which.max(Sr)
-	Sm<-max(Sr)
-	Pm<-1-exp((-6*Sm^2)/(n^3+n^2))
-	test<- Pm*100>=Vcritic
-	if(sum(test)>0){
-		mx.cl<-max(Vcritic[test])
-		return(list(index.change=ilen[idm]+1,stat.change=Sm,max.confL=mx.cl))
+PettittRank.s <- function(x){
+	Vcritic <- c(90.0,92.0,95.0,97.5,99.0,99.9)
+	nl <- length(x)
+	ilen <- 1:nl
+	ilen <- ilen[!is.na(x)]
+	x <- x[!is.na(x)]
+	n <- length(x)
+	Sr <- 2*cumsum(rank(x))-(1:n)*(n+1)
+	Sr <- abs(Sr)
+	idm <- which.max(Sr)
+	Sm <- max(Sr)
+	Pm <- 1-exp((-6*Sm^2)/(n^3+n^2))
+	test <- Pm*100 >= Vcritic
+	if(sum(test) > 0){
+		mx.cl <- max(Vcritic[test])
+		return(list(index.change = ilen[idm]+1, stat.change = Sm, max.confL = mx.cl))
 	}else{
 		return(NULL)
 	}
@@ -80,25 +80,25 @@ PettittRank.s<-function(x){
 #################################################################################################
 #Pettitt Test (based on the rank)
 #cropping bounds
-PettittRank.sh<-function(x,h){
-	Vcritic<-c(90.0,92.0,95.0,97.5,99.0,99.9)
-	nl<-length(x)
-	ilen<-1:nl
-	ilen<-ilen[!is.na(x)]
-	x<-x[!is.na(x)]
-	n<-length(x)
-	idh<-which((1:n/n)>=h & (1:n/n)<=1-h)
-	Srh<-numeric(n)
-	Sr<-2*cumsum(rank(x))-(1:n)*(n+1)
-	Sr<-abs(Sr)
-	Srh[idh]<-Sr[idh]
-	idm<-which.max(Srh)
-	Sm<-max(Srh)
-	Pm<-1-exp((-6*Sm^2)/(n^3+n^2))
-	test<- Pm*100>=Vcritic
-	if(sum(test)>0){
-		mx.cl<-max(Vcritic[test])
-		return(list(index.change=ilen[idm]+1,stat.change=Sm,max.confL=mx.cl))
+PettittRank.sh <- function(x, h){
+	Vcritic <- c(90.0,92.0,95.0,97.5,99.0,99.9)
+	nl <- length(x)
+	ilen <- 1:nl
+	ilen <- ilen[!is.na(x)]
+	x <- x[!is.na(x)]
+	n <- length(x)
+	idh <- which((1:n/n) >= h & (1:n/n) <= 1-h)
+	Srh <- numeric(n)
+	Sr <- 2*cumsum(rank(x))-(1:n)*(n+1)
+	Sr <- abs(Sr)
+	Srh[idh] <- Sr[idh]
+	idm <- which.max(Srh)
+	Sm <- max(Srh)
+	Pm <- 1-exp((-6*Sm^2)/(n^3+n^2))
+	test <- Pm*100 >= Vcritic
+	if(sum(test) > 0){
+		mx.cl <- max(Vcritic[test])
+		return(list(index.change = ilen[idm]+1, stat.change = Sm, max.confL = mx.cl))
 	}else{
 		return(NULL)
 	}
@@ -107,25 +107,25 @@ PettittRank.sh<-function(x,h){
 #################################################################################################
 #CUSUM-type statistics (Gallagher et al.,2013)
 #powerful arround the center
-cusum.s<-function(x){
-	Vcritic<-matrix(c(90.0, 1.224,95.0, 1.358,97.5,1.480,99.0, 1.628,99.9, 1.949),ncol=2,byrow=T)
-	nl<-length(x)
-	ilen<-1:nl
-	ilen<-ilen[!is.na(x)]
-	x<-x[!is.na(x)]
-	n<-length(x)
-	s<-sum(x)
-	sig<-sd(x)
-	#cus<-numeric(n)
+cusum.s <- function(x){
+	Vcritic <- matrix(c(90.0, 1.224,95.0, 1.358,97.5,1.480,99.0, 1.628,99.9, 1.949), ncol = 2, byrow = T)
+	nl <- length(x)
+	ilen <- 1:nl
+	ilen <- ilen[!is.na(x)]
+	x <- x[!is.na(x)]
+	n <- length(x)
+	s <- sum(x)
+	sig <- sd(x)
+	#cus <- numeric(n)
 	#for(t in 1:n) cus[t]<-(1/sqrt(n))*(sum(x[1:t])-(t*s/n))
 	cus<-(1/sqrt(n))*(cumsum(x)-((1:n)*s/n))
-	C<-abs(cus)/sig
-	idm<-which.max(C)
-	Cm<-max(C)
-	test<- Cm>=Vcritic[,2]
-	if(sum(test)>0){
-		mx.cl<-max(Vcritic[test,1])
-		return(list(index.change=ilen[idm]+1,stat.change=Cm,max.confL=mx.cl))
+	C <- abs(cus)/sig
+	idm <- which.max(C)
+	Cm <- max(C)
+	test <- Cm >= Vcritic[,2]
+	if(sum(test) > 0){
+		mx.cl <- max(Vcritic[test, 1])
+		return(list(index.change = ilen[idm]+1, stat.change = Cm, max.confL = mx.cl))
 	}else{
 		return(NULL)
 	}
@@ -135,54 +135,54 @@ cusum.s<-function(x){
 #CUSUM-type statistics (Gallagher et al.,2013)
 #cropping bounds
 #powerful arround the boundaries
-cusum.sh<-function(x,h){
-	Vcritic<-matrix(c(NA, 0.010, 0.025, 0.050, 0.100, 90.0, 9.209, 8.752, 8.312, 7.728,95.0, 10.788,
+cusum.sh <- function(x, h){
+	Vcritic <- matrix(c(NA, 0.010, 0.025, 0.050, 0.100, 90.0, 9.209, 8.752, 8.312, 7.728,95.0, 10.788,
 	10.338, 9.885, 9.304, 97.5, 12.331, 11.904, 11.409, 10.827,99.0, 14.364, 13.925, 13.421, 12.827,
-	99.9, 19.278, 18.890, 18.377, 17.741),nrow=6,byrow=T)
-	nl<-length(x)
-	ilen<-1:nl
-	ilen<-ilen[!is.na(x)]
-	x<-x[!is.na(x)]
-	n<-length(x)
-	s<-sum(x)
-	sig<-sd(x)
-	idh<-which((1:n/n)>=h & (1:n/n)<=1-h)
-	Z<-numeric(n)
+	99.9, 19.278, 18.890, 18.377, 17.741), nrow = 6, byrow = T)
+	nl <- length(x)
+	ilen <- 1:nl
+	ilen <- ilen[!is.na(x)]
+	x <- x[!is.na(x)]
+	n <- length(x)
+	s <- sum(x)
+	sig <- sd(x)
+	idh <- which((1:n/n) >= h & (1:n/n) <= 1-h)
+	Z <- numeric(n)
 	#for(t in idh) Z[t]<-((1/sqrt(n))*(sum(x[1:t])-(t*s/n)))/(sqrt(n)*sig*sqrt((t/n)*(1-(t/n))))
-	Z1<-cumsum(x[1:max(idh)])
+	Z1 <- cumsum(x[1:max(idh)])
 	Z[idh]<-((1/sqrt(n))*(Z1[idh]-(idh*s/n)))/(sqrt(n)*sig*sqrt((idh/n)*(1-(idh/n))))
-	C<-n*Z^2
-	idm<-which.max(C)
-	Cm<-max(C)
-	test<- Cm>=Vcritic[-1,which(Vcritic[1,]==h)]
-	if(sum(test)>0){
-		mx.cl<-max(Vcritic[c(FALSE,test),1])
-		return(list(index.change=ilen[idm]+1,stat.change=Cm,max.confL=mx.cl))
+	C <- n*Z^2
+	idm <- which.max(C)
+	Cm <- max(C)
+	test <- Cm >= Vcritic[-1, which(Vcritic[1,] == h)]
+	if(sum(test) > 0){
+		mx.cl <- max(Vcritic[c(FALSE, test), 1])
+		return(list(index.change = ilen[idm]+1, stat.change = Cm, max.confL = mx.cl))
 	}else{
 		return(NULL)
 	}
 }
 #######################################################################################
 #CUSUM-type statistics with trends (Gallagher et al.,2013)
-cusum.t<-function(x){
-	Vcritic<-matrix(c(90.0, 0.836, 95.0, 0.906, 97.5, 0.970, 99.0, 1.047, 99.9 ,1.222),ncol=2,byrow=T)
-	nl<-length(x)
-	ilen<-1:nl
-	ilen<-ilen[!is.na(x)]
-	x<-x[!is.na(x)]
-	n<-length(x)
-	epst<-as.vector(residuals(lm(x~ilen)))
-	sig<-sqrt(sum(epst^2)/(n-2))
-	#D<-numeric(n)
-	#for(t in 1:n) D[t]<- sum(epst[1:t])/(sig*sqrt(n))
-	D<- cumsum(epst)/(sig*sqrt(n))
-	Dc<-abs(D)/sig
-	idm<-which.max(Dc)
-	Dm<-max(Dc)
-	test<- Dm>=Vcritic[,2]
-	if(sum(test)>0){
-		mx.cl<-max(Vcritic[test,1])
-		return(list(index.change=ilen[idm]+1,stat.change=Dm,max.confL=mx.cl))
+cusum.t <- function(x){
+	Vcritic <- matrix(c(90.0, 0.836, 95.0, 0.906, 97.5, 0.970, 99.0, 1.047, 99.9 ,1.222), ncol = 2, byrow = T)
+	nl <- length(x)
+	ilen <- 1:nl
+	ilen <- ilen[!is.na(x)]
+	x <- x[!is.na(x)]
+	n <- length(x)
+	epst <- as.vector(residuals(lm(x~ilen)))
+	sig <- sqrt(sum(epst^2)/(n-2))
+	#D <- numeric(n)
+	#for(t in 1:n) D[t] <- sum(epst[1:t])/(sig*sqrt(n))
+	D <- cumsum(epst)/(sig*sqrt(n))
+	Dc <- abs(D)/sig
+	idm <- which.max(Dc)
+	Dm <- max(Dc)
+	test <- Dm >= Vcritic[,2]
+	if(sum(test) > 0){
+		mx.cl <- max(Vcritic[test, 1])
+		return(list(index.change = ilen[idm]+1, stat.change = Dm, max.confL = mx.cl))
 	}else{
 		return(NULL)
 	}
@@ -190,29 +190,29 @@ cusum.t<-function(x){
 #########################################
 #CUSUM-type statistics with trends (Gallagher et al.,2013)
 #cropping bounds
-cusum.th<-function(x,h){
-	Vcritic<-matrix(c(NA, 0.010, 0.025, 0.050, 0.100,90.0, 10.341, 10.061, 9.790, 9.459,95.0,
+cusum.th <- function(x, h){
+	Vcritic <- matrix(c(NA, 0.010, 0.025, 0.050, 0.100,90.0, 10.341, 10.061, 9.790, 9.459,95.0,
 	11.956, 11.684,	11.415, 11.077,97.5, 13.532, 13.271, 12.989, 12.662,99.0, 15.540, 15.301, 15.011,
-	14.692,99.9, 20.600, 20.218, 20.114, 19.758),nrow=6,byrow=T)
-	nl<-length(x)
-	ilen<-1:nl
-	ilen<-ilen[!is.na(x)]
-	x<-x[!is.na(x)]
-	n<-length(x)
-	epst<-as.vector(residuals(lm(x~ilen)))
-	sig<-sqrt(sum(epst^2)/(n-2))
-	idh<-which((1:n/n)>=h & (1:n/n)<=1-h)
-	Ts<-numeric(n)
+	14.692,99.9, 20.600, 20.218, 20.114, 19.758), nrow = 6, byrow = T)
+	nl <- length(x)
+	ilen <- 1:nl
+	ilen <- ilen[!is.na(x)]
+	x <- x[!is.na(x)]
+	n <- length(x)
+	epst <- as.vector(residuals(lm(x~ilen)))
+	sig <- sqrt(sum(epst^2)/(n-2))
+	idh <- which((1:n/n) >= h & (1:n/n) <= 1-h)
+	Ts <- numeric(n)
 	#for(t in idh) Ts[t]<- (-1)*sum(epst[1:t])/(sig*sqrt(n)*sqrt((t/n)*(1-(t/n))*(1-3*(t/n)*(1-(t/n)))))
-	T1<-cumsum(epst[1:max(idh)])
+	T1 <- cumsum(epst[1:max(idh)])
 	Ts[idh]<-(-1)*T1[idh]/(sig*sqrt(n)*sqrt((idh/n)*(1-(idh/n))*(1-3*(idh/n)*(1-(idh/n)))))
-	Tc<- Ts^2
-	idm<-which.max(Tc)
-	Tm<-max(Tc)
-	test<- Tm>=Vcritic[-1,which(Vcritic[1,]==h)]
-	if(sum(test)>0){
-		mx.cl<-max(Vcritic[c(FALSE,test),1])
-		return(list(index.change=ilen[idm]+1,stat.change=Tm,max.confL=mx.cl))
+	Tc <- Ts^2
+	idm <- which.max(Tc)
+	Tm <- max(Tc)
+	test <- Tm >= Vcritic[-1, which(Vcritic[1,] == h)]
+	if(sum(test) > 0){
+		mx.cl <- max(Vcritic[c(FALSE, test), 1])
+		return(list(index.change = ilen[idm]+1, stat.change = Tm, max.confL = mx.cl))
 	}else{
 		return(NULL)
 	}
@@ -221,8 +221,8 @@ cusum.th<-function(x,h){
 
 #############################################################
 #SNHT Critical Values
-fSNHT.Vc<-function(n){
-dat<-read.table(text = "NA 90 92 94 95 97.5 99
+fSNHT.Vc <- function(n){
+dat <- read.table(text = "NA 90 92 94 95 97.5 99
 10 4.964 5.197 5.473 5.637 6.188 6.769
 12 5.288 5.554 5.876 6.068 6.729 7.459
 14 5.54 5.831 6.187 6.402 7.152 8.001
@@ -332,12 +332,12 @@ dat<-read.table(text = "NA 90 92 94 95 97.5 99
 20000 10.236 10.743 11.388 11.791 13.305 15.271
 50000 10.48 10.988 11.634 12.039 13.556 15.523", sep = " ")
 
-len<-as.numeric(dat[-1,1])
-vCI<-as.numeric(dat[1,-1])
-Vcritic<-as.matrix(dat[-1,-1])
-for(j in 1:6) assign(paste('f',j,sep=''),splinefun(len, Vcritic[,j]))
-for(j in 1:6)  assign(paste('val',j,sep=''),eval(parse(text=paste(paste('f',j,sep=''),'(n)',sep=''))))
-return(cbind(vCI,c(val1,val2,val3,val4,val5,val6)))
+len <- as.numeric(dat[-1,1])
+vCI <- as.numeric(dat[1,-1])
+Vcritic <- as.matrix(dat[-1,-1])
+for(j in 1:6) assign(paste('f', j, sep = ''), splinefun(len, Vcritic[,j]))
+for(j in 1:6)  assign(paste('val', j, sep = ''), eval(parse(text = paste(paste('f', j, sep = ''),'(n)',sep = ''))))
+return(cbind(vCI, c(val1, val2, val3, val4, val5, val6)))
 }
 
 

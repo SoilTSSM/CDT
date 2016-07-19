@@ -37,8 +37,8 @@ print(xtable::xtable(dat,caption = "Input series with elevation data"),type='htm
 
 > Date format must be grouped.  
 > 
-> **Daily series** : **`YYYYMMDD`** (calendar year YYYY, month MM, and day DD), 3rd and 4th are  in the following format  "DAILY/LAT" or "DAILY/ELEV" whether or not there is elevation data.    
-> **Dekadal series** : **`YYYYMMD`** (year, month and dekad), dekad must be 1, 2 or 3, 3rd and 4th are  in the following format "DEKADAL/LAT" or "DEKADAL/ELEV" whether or not there is elevation data.  
+> **Daily series** : **`YYYYMMDD`** (calendar year YYYY, month MM, and day DD), the 3rd or 4th columns are  in the following format  "DAILY/LAT" or "DAILY/ELEV" whether or not there is elevation data.    
+> **Dekadal series** : **`YYYYMMD`** (year, month and dekad), dekad must be 1, 2 or 3, the 3rd or 4th  columns are  in the following format "DEKADAL/LAT" or "DEKADAL/ELEV" whether or not there is elevation data.  
 > **Monthly series** : **`YYYYMM`** (year and month), 3rd and 4th are  in the following format "MONTHLY/LAT" or "MONTHLY/ELEV" according elevation data. 
 <br>
 

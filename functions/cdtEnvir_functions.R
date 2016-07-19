@@ -1,20 +1,20 @@
 
 ##define new environment
 #Extract Multiple Points and Polygons functions
-EnvMultiPP<-new.env()
+EnvMultiPP <- new.env()
 
 #Interpolation delete data
-EnvInterpolation<-new.env()
+EnvInterpolation <- new.env()
 
 #QC zeros check  daily rainfall data
-EnvQcZeroChkData<-new.env()
+EnvQcZeroChkData <- new.env()
 
 #QC outliers rainfall data
-EnvQcOutlierData<-new.env()
+EnvQcOutlierData <- new.env()
 
 #Homogenization
-EnvHomogzData<-new.env()
+EnvHomogzData <- new.env()
 
 #Rainfall Validation
-EnvRainValidation<-new.env()
+EnvRainValidation <- new.env()
 
