@@ -330,12 +330,12 @@ SaveNotebookTabArray <- function(parent){
 			f2save <- AllOpenTabData[[tabid]][[3]][[1]]
 			Objarray <- AllOpenTabData[[tabid]][[2]]
 			dat2sav <- tclArray2dataframe0(Objarray)
-			write.table(dat2sav,f2save, row.names = F, col.names = T)
+			write.table(dat2sav, f2save, row.names = F, col.names = T)
 		}else if(AllOpenTabType[[tabid]] == "arrzc"){
 			f2save <- AllOpenTabData[[tabid]][[3]][[1]]
 			Objarray <- AllOpenTabData[[tabid]][[2]]
 			dat2sav <- tclArray2dataframe0(Objarray)
-			write.table(dat2sav,f2save, row.names = F, col.names = T)
+			write.table(dat2sav, f2save, row.names = F, col.names = T)
 		}else if(AllOpenTabType[[tabid]] == "arrInterp"){
 			Objarray <- AllOpenTabData[[tabid]][[2]]
 			dat2sav <- tclArray2dataframe(Objarray)
@@ -355,7 +355,7 @@ SaveNotebookTabArray <- function(parent){
 				'_2CORRECT_STATIONS.txt', sep = ''), fsep = .Platform$file.sep)
 				Objarray <- AllOpenTabData[[tabid]][[2]]
 				dat2sav <- tclArray2dataframe0(Objarray)
-				write.table(dat2sav,f2save, row.names = F, col.names = T)
+				write.table(dat2sav, f2save, row.names = F, col.names = T)
 			}else{
 				InsertMessagesTxt(main.txt.out, 'The table could not be saved correctly', format = TRUE)
 			}

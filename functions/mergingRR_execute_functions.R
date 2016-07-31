@@ -18,8 +18,8 @@ TreatbiasRain <- function(origdir){
 	dates <- donne$dates
 	donne <- donne$data
 
-	#if(nrow(donne$stnDuplCoords) > 0)  #diplay table
-	#if(nrow(dat$stnMissCoords) > 0)
+	#if(nrow(donne$duplicated.coords) > 0)  #diplay table
+	#if(nrow(dat$missing.coords) > 0)
 
 	stnlist <- list(id = stn.id, lon = stn.lon, lat = stn.lat, elv = elv, dates = dates, data = donne)
 
@@ -109,7 +109,7 @@ execBiasRain <- function(origdir){
 
 	rfe_stn <- ExtractRFE2Stn(ijGrd, GeneralParameters, mrgRaindat)
 	if(is.null(rfe_stn)) return(NULL)
-	ret <- ComputeMeanBiasRain(rfe_stn,GeneralParameters, mrgRaindat, paramGrd, origdir)
+	ret <- ComputeMeanBiasRain(rfe_stn, GeneralParameters, mrgRaindat, paramGrd, origdir)
 	if(!is.null(ret)){
 		if(ret == 0) return(0)
 		else return(ret)
@@ -137,8 +137,8 @@ TreatAdjBiasRain <- function(origdir, freqData){
 	dates <- donne$dates
 	donne <- donne$data
 
-	#if(nrow(donne$stnDuplCoords) > 0)  #diplay table
-	#if(nrow(dat$stnMissCoords) > 0)
+	#if(nrow(donne$duplicated.coords) > 0)  #diplay table
+	#if(nrow(dat$missing.coords) > 0)
 
 	stnlist <- list(id = stn.id, lon = stn.lon, lat = stn.lat, elv = elv, dates = dates, data = donne)
 
@@ -214,8 +214,8 @@ TreatMergeRain <- function(origdir, freqData){
 	dates <- donne$dates
 	donne <- donne$data
 
-	#if(nrow(donne$stnDuplCoords) > 0)  #diplay table
-	#if(nrow(dat$stnMissCoords) > 0)
+	#if(nrow(donne$duplicated.coords) > 0)  #diplay table
+	#if(nrow(dat$missing.coords) > 0)
 
 	stnlist <- list(id = stn.id, lon = stn.lon, lat = stn.lat, elv = elv, dates = dates, data = donne)
 

@@ -102,8 +102,8 @@ update1DekProc_Mali <- function(origdir){
 	dx <- ncdim_def("Lon", "degreeE", xm)
 	dy <- ncdim_def("Lat", "degreeN", ym)
 	nc_out_var <- ncvar_def('precip', "mm", list(dx, dy), -99, longname = "TAMSAT Rain Fall Estimate (RFE)", prec = "short")
-	nc <- nc_create(nc_out_file,nc_out_var)
-	ncvar_put(nc,nc_out_var,xdat)
+	nc <- nc_create(nc_out_file, nc_out_var)
+	ncvar_put(nc, nc_out_var, xdat)
 	nc_close(nc)
 
 	newlocation.merging <- expand.grid(lon = xm, lat = ym)
@@ -151,7 +151,7 @@ update1DekProc_Mali <- function(origdir){
 		xdat.adj[is.na(xdat.adj)] <- -99
 		grd.adj <- ncvar_def("precip", "mm", list(dx, dy),-99, longname=" Mean-Bias Adjusted satellite Rainfall", prec = "short")
 		nc_adj_file <- file.path(outdir1, paste('rr_adj_', year, mon, dek,'.nc', sep = ''), fsep = .Platform$file.sep)
-		nc <- nc_create(nc_adj_file,grd.adj)
+		nc <- nc_create(nc_adj_file, grd.adj)
 		ncvar_put(nc, grd.adj, xdat.adj)
 		nc_close(nc)
 		rm(xdat.adj)
@@ -188,7 +188,7 @@ update1DekProc_Mali <- function(origdir){
 		out.mrg <- rfe.vec  ##Initial rfe
 
 		if(sum(stn.data, na.rm = TRUE) > 0 & length(ix) >= minStnNoNA){
-			rr.stn <- data.frame(cbind(stn.lon, stn.lat, stn.data,rfe_gg,dff))
+			rr.stn <- data.frame(cbind(stn.lon, stn.lat, stn.data, rfe_gg, dff))
 			rr.stn <- rr.stn[ix,]
 			names(rr.stn) <- c("lon", "lat", "gg", "rfe", "dff")
 			coordinates(rr.stn) = ~lon+lat
@@ -272,13 +272,13 @@ update1DekProc_Mali <- function(origdir){
 
 		#Apply mask for area of interest
 		out.mrg[is.na(outMask)] <- -99
-		nc2 <- nc_create(rr_mrg_mon,grd.out)
+		nc2 <- nc_create(rr_mrg_mon, grd.out)
 		ncvar_put(nc2, grd.out, out.mrg)
 		nc_close(nc2)
 	}else{
 		xdat[is.na(outMask)] <- -99
-		nc <- nc_create(rr_mrg_mon,nc_out_var)
-		ncvar_put(nc,nc_out_var,xdat)
+		nc <- nc_create(rr_mrg_mon, nc_out_var)
+		ncvar_put(nc, nc_out_var, xdat)
 		nc_close(nc)
 	}
 

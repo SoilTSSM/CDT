@@ -74,7 +74,7 @@ ExtractRFE2Stn <- function(ijGrd, GeneralParameters, mrgRaindat){
 
 ########################################################################################################
 
-calcBiasRain <- function(i, ix1, stn.data,rfe_stn){
+calcBiasRain <- function(i, ix1, stn.data, rfe_stn){
 	stn.val <- as.numeric(stn.data[ix1, i])
 	stn.rfe <- as.numeric(rfe_stn[ix1, i])
 	ix0 <- !is.na(stn.val) & !is.na(stn.rfe)
@@ -100,7 +100,7 @@ calcBiasRain <- function(i, ix1, stn.data,rfe_stn){
 
 ########################################################################################################
 
-ComputeMeanBiasRain <- function(rfe_stn,GeneralParameters, mrgRaindat, paramGrd, origdir){
+ComputeMeanBiasRain <- function(rfe_stn, GeneralParameters, mrgRaindat, paramGrd, origdir){
 	# freqData <- GeneralParameters$period
 	# if(doparallel & freqData != 'monthly'){
 	# 	klust <- makeCluster(nb_cores)
@@ -175,7 +175,7 @@ ComputeMeanBiasRain <- function(rfe_stn,GeneralParameters, mrgRaindat, paramGrd,
 				if(freqData == 'monthly'){
 					ix1 <- which(as.numeric(substr(bsdates, 5,6)) == vtimes[nt])
 				}
-				bias[nt, i] <- calcBiasRain(i, ix1, stn.data,rfe_stn)
+				bias[nt, i] <- calcBiasRain(i, ix1, stn.data, rfe_stn)
 			}
 		}
 	}
@@ -422,8 +422,9 @@ MergingFunction <- function(mrgRaindat, VarioModel, paramsMRG, origdir){
 
 	####
 	# for (jfl in seq_along(rfeDataFl))
-	ret <- foreach(jfl = seq_along(rfeDataFl),.combine = 'c',.export = c('rfeDataFl', 'mrg.dates1', 'mergingProcs', 'GeneralParameters', 'mrgRaindat', 'origdir', 'outMask', 'InsertMessagesTxt', 'main.txt.out'),
-		.packages = c('sp', 'gstat', 'automap', 'ncdf4', 'fields')) %parLoop% {
+	packages <- c('sp', 'gstat', 'automap', 'ncdf4', 'fields')
+	toExports <- c('rfeDataFl', 'mrg.dates1', 'mergingProcs', 'GeneralParameters', 'mrgRaindat', 'origdir', 'outMask', 'InsertMessagesTxt', 'main.txt.out')
+	ret <- foreach(jfl = seq_along(rfeDataFl), .combine = 'c', .export = toExports, .packages = packages) %parLoop% {
 		if(GeneralParameters$NewGrd == '1'){
 			nc <- nc_open(rfeDataFl[jfl])
 			rfe.lon <- nc$dim[[mrgRaindat$rfeData$rfeILon]]$vals
@@ -514,8 +515,8 @@ mergingProcs <- function(stn.lon, stn.lat, stn.data, stn.dates, ijGrd, rfe.val, 
 
 	if(sum(gg, na.rm = TRUE) > 0 & length(ix) >= nmin){
 
-		rr.stn <- data.frame(cbind(stn.lon, jitter(stn.lat), gg,rfe_gg,dff))
-		#rr.stn <- data.frame(cbind(stn.lon, stn.lat, gg,rfe_gg,dff))
+		rr.stn <- data.frame(cbind(stn.lon, jitter(stn.lat), gg, rfe_gg, dff))
+		#rr.stn <- data.frame(cbind(stn.lon, stn.lat, gg, rfe_gg, dff))
 		rr.stn <- rr.stn[ix,]
 		names(rr.stn) <- c("lon", "lat", "gg", "rfe", "dff")
 		coordinates(rr.stn) = ~lon+lat
@@ -532,7 +533,7 @@ mergingProcs <- function(stn.lon, stn.lat, stn.data, stn.dates, ijGrd, rfe.val, 
 				grd.rr <- krige(res~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0)
 				res.pred <- grd.rr$var1.pred
 			}else if(interpMethod == "Kriging"){
-				grd.rr <- try(autoKrige(res~1, input_data = rr.stn,new_data = newlocation.merging, model = VarioModel, block = bGrd, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0), silent = TRUE)
+				grd.rr <- try(autoKrige(res~1, input_data = rr.stn, new_data = newlocation.merging, model = VarioModel, block = bGrd, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0), silent = TRUE)
 				is.okKR <- !inherits(grd.rr, "try-error")
 				if(is.okKR){
 					res.pred <- grd.rr$krige_output$var1.pred

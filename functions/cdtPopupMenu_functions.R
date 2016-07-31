@@ -66,14 +66,14 @@ popupAddRemoveRow0 <- function(parent, tabData, tabid){
 	nl <- data_arr$nrow
 	popup.EditTable <- tkmenu(table1, tearoff = FALSE)
 	tkadd(popup.EditTable, "command", label = "Insert row above", command = function(){
-	 	nl <<- insertRowAbove(table1, data_arr,nl)
+	 	nl <<- insertRowAbove(table1, data_arr, nl)
 	 })
 	tkadd(popup.EditTable, "command", label = "Insert row below", command = function(){
-	 	nl <<- insertRowBelow(table1, data_arr,nl)
+	 	nl <<- insertRowBelow(table1, data_arr, nl)
 	 })
 	tkadd(popup.EditTable, "separator")
 	tkadd(popup.EditTable, "command", label = "Delete selected row", command = function(){
-		nl <<- deleteSelRow(table1, data_arr,nl)
+		nl <<- deleteSelRow(table1, data_arr, nl)
 	})
 
 	defile.popup1 <- function(x, y) {
@@ -84,7 +84,7 @@ popupAddRemoveRow0 <- function(parent, tabData, tabid){
 		if(tclvalue(tkindex(table1, paste("@", x,",", y, sep = ""), "col")) == "0"){
 			#tkselection.clear(table1, "all")
 			selrow <- tclvalue(tkindex(table1, paste("@", x,",", y, sep = ""), "row"))
-			tkselection.set(table1, paste(selrow, 0, sep = ','), paste(selrow,data_arr$ncol, sep = ','))
+			tkselection.set(table1, paste(selrow, 0, sep = ','), paste(selrow, data_arr$ncol, sep = ','))
 			#selrow <- unlist(strsplit(tclvalue(tcl(table1, "curselection")),' '))
 			#tkselection.set(table1, selrow[1], selrow[length(selrow)])
 			.Tcl(paste("tk_popup", .Tcl.args(popup.EditTable, xTxt, yTxt)))
@@ -104,14 +104,14 @@ popupAddRemoveRow <- function(parent){
 	nl <- data_arr$nrow
 	popup.EditTable <- tkmenu(table1, tearoff = FALSE)
 	tkadd(popup.EditTable, "command", label = "Insert row above", command = function(){
-	 	nl <<- insertRowAbove(table1, data_arr,nl)
+	 	nl <<- insertRowAbove(table1, data_arr, nl)
 	 })
 	tkadd(popup.EditTable, "command", label = "Insert row below", command = function(){
-	 	nl <<- insertRowBelow(table1, data_arr,nl)
+	 	nl <<- insertRowBelow(table1, data_arr, nl)
 	 })
 	tkadd(popup.EditTable, "separator")
 	tkadd(popup.EditTable, "command", label = "Delete selected row", command = function(){
-		nl <<- deleteSelRow(table1, data_arr,nl)
+		nl <<- deleteSelRow(table1, data_arr, nl)
 	})
 
 	defile.popup1 <- function(x, y) {
@@ -122,7 +122,7 @@ popupAddRemoveRow <- function(parent){
 		if(tclvalue(tkindex(table1, paste("@", x,",", y, sep = ""), "col")) == "0"){
 			#tkselection.clear(table1, "all")
 			selrow <- tclvalue(tkindex(table1, paste("@", x,",", y, sep = ""), "row"))
-			tkselection.set(table1, paste(selrow, 0, sep = ','), paste(selrow,data_arr$ncol, sep = ','))
+			tkselection.set(table1, paste(selrow, 0, sep = ','), paste(selrow, data_arr$ncol, sep = ','))
 			#selrow <- unlist(strsplit(tclvalue(tcl(table1, "curselection")),' '))
 			#tkselection.set(table1, selrow[1], selrow[length(selrow)])
 			.Tcl(paste("tk_popup", .Tcl.args(popup.EditTable, xTxt, yTxt)))
@@ -134,7 +134,7 @@ popupAddRemoveRow <- function(parent){
 	})
 }
 #############################################
-insertRowAbove <- function(parent,data_arr,nl){
+insertRowAbove <- function(parent, data_arr, nl){
 	tkinsert(parent, "rows", unlist(strsplit(tclvalue(tcl(parent, "curselection")),','))[1], "-1")
 	nl <- nl+1
 	data_arr$nrow <- nl #as.numeric(tclvalue(tkindex(parent, 'end', 'row')))
@@ -142,7 +142,7 @@ insertRowAbove <- function(parent,data_arr,nl){
 	nl
 }
 
-insertRowBelow <- function(parent,data_arr,nl){
+insertRowBelow <- function(parent, data_arr, nl){
 	tkinsert(parent, "rows", unlist(strsplit(tclvalue(tcl(parent, "curselection")),','))[1], "1")
 	nl <- nl+1
 	data_arr$nrow <- nl
@@ -150,7 +150,7 @@ insertRowBelow <- function(parent,data_arr,nl){
 	nl
 }
 
-deleteSelRow <- function(parent,data_arr,nl){
+deleteSelRow <- function(parent, data_arr, nl){
 	#tkdelete(parent, "rows", unlist(strsplit(tclvalue(tcl(parent, "curselection")),','))[1], "1")
 	#nl <- nl-1
 	tmp <- unlist(strsplit(tclvalue(tcl(parent, "curselection")),' '))

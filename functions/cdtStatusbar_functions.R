@@ -36,8 +36,8 @@ tkgrid.configure(lycoords, sticky = "we")
 tkgrid(bstatus2a, row = 0, column = 0, sticky = "we")
 tkgrid(xy.separator, row = 0, column = 1, sticky = 'ns', padx = 5)
 tkgrid(bstatus2b, row = 0, column = 2, sticky = "we")
-tkgrid.columnconfigure(bstatus2a,1, weight = 1)
-tkgrid.columnconfigure(bstatus2b,1, weight = 1)
+tkgrid.columnconfigure(bstatus2a, 1, weight = 1)
+tkgrid.columnconfigure(bstatus2b, 1, weight = 1)
 
 bstatus3 <- tkframe(status.frame, relief = 'sunken', bd = 2)
 

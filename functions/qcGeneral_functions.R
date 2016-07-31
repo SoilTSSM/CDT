@@ -280,7 +280,7 @@ getRainInitParams <- function(donne, period){
 	################################
 
 	if(nb_cores>1){
-		clust <- makeCluster(nb_cores,type = "PSOCK")  #"FORK" linux/mac #"PSOCK" windows
+		clust <- makeCluster(nb_cores, type = "PSOCK")  #"FORK" linux/mac #"PSOCK" windows
 		clusterExport(clust, varlist = c("quantilef", "quantilef1", "indepStationParams", "depStationParams",
 		"idst", "donne", "months", "period"), envir = environment())
 		indepRes <- parLapply(clust, ijall, function(jst) indepStationParams(jst, donne, months, period))

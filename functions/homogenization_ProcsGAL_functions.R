@@ -25,7 +25,7 @@ getrefSeries <- function(xpos){
 	if(uselv == '1'){
 		if(is.null(EnvHomogzData$r_elv)){
 			r_elv <- getElevationData2()
-			assign('r_elv',r_elv,envir = EnvHomogzData)
+			assign('r_elv',r_elv, envir = EnvHomogzData)
 		}else{
 			if(interp.dem == "0" & (is.null(EnvHomogzData$r_elv[[2]]) | EnvHomogzData$r_elv[[4]] != as.character(GeneralParameters$file.io$Values[3]))){
 				r_elv <- getElevationData2()

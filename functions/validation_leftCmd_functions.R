@@ -170,8 +170,8 @@ ValidationPanelCmd <- function(){
 	MonthsName <- format(ISOdate(2014,1:12,1), "%B")
 	start_mois <- tclVar(MonthsName[1])
 	end_mois <- tclVar(MonthsName[12])
-	cbChoixM1.tab2 <- ttkcombobox(frameSeason, values = MonthsName, textvariable = start_mois,width = 10) #
-	cbChoixM2.tab2 <- ttkcombobox(frameSeason, values = MonthsName, textvariable = end_mois,width = 10) #
+	cbChoixM1.tab2 <- ttkcombobox(frameSeason, values = MonthsName, textvariable = start_mois, width = 10) #
+	cbChoixM2.tab2 <- ttkcombobox(frameSeason, values = MonthsName, textvariable = end_mois, width = 10) #
 
 	tkgrid(mon1Lab.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 2, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(mon2Lab.tab2, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 2, pady = 1, ipadx = 1, ipady = 1)

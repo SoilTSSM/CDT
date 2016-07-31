@@ -207,7 +207,7 @@ executeOnQMadj <- function(donnees, GeneralParameters, choix){
 
 #############################################################################
 
-executeOnFindU.wRef <- function(donnees,dem_data,GeneralParameters){
+executeOnFindU.wRef <- function(donnees, dem_data, GeneralParameters){
 	LSmultiple <<- match.fun("LSmultiple.RHtestsV4")
 	LSmultipleRed <<- match.fun("LSmultipleRed.RHtestsV4")
 
@@ -220,7 +220,7 @@ executeOnFindU.wRef <- function(donnees,dem_data,GeneralParameters){
 	if(GeneralParameters$single.series == "0"){
 		xpos <- which(as.character(donnees$IDs) == sel.stn)
 		xval <- donnees$datmon[,xpos]
-		refseries <- getRHtestsRefSeries(xpos, donnees,dem_data,GeneralParameters)
+		refseries <- getRHtestsRefSeries(xpos, donnees, dem_data, GeneralParameters)
 		xrefs <- refseries$ref
 		station_base <- station_ref<-sel.stn
 		if(as.character(GeneralParameters$ref.series.choix$Values[2]) == '1' & is.null(dem_data)) InsertMessagesTxt(main.txt.out, refseries$msg, format = TRUE)
@@ -264,7 +264,7 @@ executeOnFindU.wRef <- function(donnees,dem_data,GeneralParameters){
 	write.table(wRefseries, file.path(dirRefSeries, paste(sel.stn, paste('RefS-','MON','.txt', sep = ''), sep = '_'), fsep = .Platform$file.sep), col.names = F, row.names = F)
 
 	fileout <- file.path(dirSelectStn, sel.stn, fsep = .Platform$file.sep)
-	ret <- FindU.wRef(InSeries, RefSeries, fileout,station_base,station_ref,MissingValueCode = donnees$MissingValue, p.lev = pars[1], Iadj = pars[2], Mq = pars[3], Ny4a = pars[4])
+	ret <- FindU.wRef(InSeries, RefSeries, fileout, station_base, station_ref, MissingValueCode = donnees$MissingValue, p.lev = pars[1], Iadj = pars[2], Mq = pars[3], Ny4a = pars[4])
 	if(ret < 0){
 		InsertMessagesTxt(main.txt.out, 'FindU.wRef failed...',format = TRUE)
 		res <- NULL
@@ -274,7 +274,7 @@ executeOnFindU.wRef <- function(donnees,dem_data,GeneralParameters){
 
 
 #######
-executeOnFindUD.wRef <- function(donnees,dem_data,GeneralParameters){
+executeOnFindUD.wRef <- function(donnees, dem_data, GeneralParameters){
 	LSmultiple <<- match.fun("LSmultiple.RHtestsV4")
 	LSmultipleRed <<- match.fun("LSmultipleRed.RHtestsV4")
 
@@ -287,7 +287,7 @@ executeOnFindUD.wRef <- function(donnees,dem_data,GeneralParameters){
 	if(GeneralParameters$single.series == "0"){
 		xpos <- which(as.character(donnees$IDs) == sel.stn)
 		xval <- donnees$datmon[,xpos]
-		refseries <- getRHtestsRefSeries(xpos, donnees,dem_data,GeneralParameters)
+		refseries <- getRHtestsRefSeries(xpos, donnees, dem_data, GeneralParameters)
 		xrefs <- refseries$ref
 		station_base <- station_ref<-sel.stn
 		if(as.character(GeneralParameters$ref.series.choix$Values[2]) == '1' & is.null(dem_data)) InsertMessagesTxt(main.txt.out, refseries$msg, format = TRUE)
@@ -337,7 +337,7 @@ executeOnFindUD.wRef <- function(donnees,dem_data,GeneralParameters){
 		return(NULL)
 	}
 
-	ret <- FindUD.wRef(InSeries, RefSeries, InCs, fileout,station_base,station_ref,MissingValueCode = donnees$MissingValue, p.lev = pars[1], Iadj = pars[2], Mq = pars[3], Ny4a = pars[4])
+	ret <- FindUD.wRef(InSeries, RefSeries, InCs, fileout, station_base, station_ref, MissingValueCode = donnees$MissingValue, p.lev = pars[1], Iadj = pars[2], Mq = pars[3], Ny4a = pars[4])
 	if(ret < 0){
 		InsertMessagesTxt(main.txt.out, 'FindUD.wRef failed...',format = TRUE)
 		res <- NULL
@@ -348,7 +348,7 @@ executeOnFindUD.wRef <- function(donnees,dem_data,GeneralParameters){
 }
 
 ##########
-executeOnStepSize.wRef <- function(donnees,dem_data,GeneralParameters){
+executeOnStepSize.wRef <- function(donnees, dem_data, GeneralParameters){
 	LSmultiple <<- match.fun("LSmultiple.RHtestsV4")
 	LSmultipleRed <<- match.fun("LSmultipleRed.RHtestsV4")
 
@@ -361,7 +361,7 @@ executeOnStepSize.wRef <- function(donnees,dem_data,GeneralParameters){
 	if(GeneralParameters$single.series == "0"){
 		xpos <- which(as.character(donnees$IDs) == sel.stn)
 		xval <- donnees$datmon[,xpos]
-		refseries <- getRHtestsRefSeries(xpos, donnees,dem_data,GeneralParameters)
+		refseries <- getRHtestsRefSeries(xpos, donnees, dem_data, GeneralParameters)
 		xrefs <- refseries$ref
 		station_base <- station_ref<-sel.stn
 		if(as.character(GeneralParameters$ref.series.choix$Values[2]) == '1' & is.null(dem_data)) InsertMessagesTxt(main.txt.out, refseries$msg, format = TRUE)
@@ -411,7 +411,7 @@ executeOnStepSize.wRef <- function(donnees,dem_data,GeneralParameters){
 		return(NULL)
 	}
 
-	ret <- StepSize.wRef(InSeries, RefSeries, InCs, fileout,station_base,station_ref,MissingValueCode = donnees$MissingValue, p.lev = pars[1], Iadj = pars[2], Mq = pars[3], Ny4a = pars[4])
+	ret <- StepSize.wRef(InSeries, RefSeries, InCs, fileout, station_base, station_ref, MissingValueCode = donnees$MissingValue, p.lev = pars[1], Iadj = pars[2], Mq = pars[3], Ny4a = pars[4])
 	if(ret < 0){
 		InsertMessagesTxt(main.txt.out, 'StepSize.wRef failed...',format = TRUE)
 		res <- NULL
@@ -420,7 +420,7 @@ executeOnStepSize.wRef <- function(donnees,dem_data,GeneralParameters){
 }
 
 ##########
-executeOnQMadj.wRef <- function(donnees,dem_data,GeneralParameters, choix){
+executeOnQMadj.wRef <- function(donnees, dem_data, GeneralParameters, choix){
 	LSmultiple <<- match.fun("LSmultiple.RHtestsV4")
 	LSmultipleRed <<- match.fun("LSmultipleRed.RHtestsV4")
 
@@ -451,7 +451,7 @@ executeOnQMadj.wRef <- function(donnees,dem_data,GeneralParameters, choix){
 	if(as.character(GeneralParameters$prcpdata$Values[1]) == '1' & as.character(GeneralParameters$prcpdata$Values[2]) == '1'){
 		if(GeneralParameters$single.series == "0"){
 			xval0 <- donnees$datmon[,xpos]
-			refseries0 <- getRHtestsRefSeries(xpos, donnees,dem_data,GeneralParameters, 'MON')
+			refseries0 <- getRHtestsRefSeries(xpos, donnees, dem_data, GeneralParameters, 'MON')
 			xrefs0 <- refseries0$ref
 			station_base <- station_ref<-sel.stn
 		}else{
@@ -462,7 +462,7 @@ executeOnQMadj.wRef <- function(donnees,dem_data,GeneralParameters, choix){
 		}
 		InSeries0 <- cbind(as.numeric(substr(donnees$modates, 1,4)), as.numeric(substr(donnees$modates, 5,6)), 0, xval0)
 		RefSeries0 <- cbind(as.numeric(substr(donnees$modates, 1,4)), as.numeric(substr(donnees$modates, 5,6)), 0, xrefs0)
-		ret0 <- QMadj.GaussianDLY.wRef(InSeries0, RefSeries0, InCs, fileout,station_base,station_ref,fsuffix = 'MON', MissingValueCode = donnees$MissingValue, Iadj = pars[2], Mq = pars[3], Ny4a = pars[4])
+		ret0 <- QMadj.GaussianDLY.wRef(InSeries0, RefSeries0, InCs, fileout, station_base, station_ref, fsuffix = 'MON', MissingValueCode = donnees$MissingValue, Iadj = pars[2], Mq = pars[3], Ny4a = pars[4])
 		if(ret0 < 0){
 			InsertMessagesTxt(main.txt.out, 'QMadj.wRef failed for Monthly data', format = TRUE)
 			return(NULL)
@@ -484,7 +484,7 @@ executeOnQMadj.wRef <- function(donnees,dem_data,GeneralParameters, choix){
 	if(GeneralParameters$period != 'monthly'){
 		if(GeneralParameters$single.series == "0"){
 			xval1 <- donnees$datdek[,xpos]
-			refseries1 <- getRHtestsRefSeries(xpos, donnees,dem_data,GeneralParameters, 'DEK')
+			refseries1 <- getRHtestsRefSeries(xpos, donnees, dem_data, GeneralParameters, 'DEK')
 			xrefs1 <- refseries1$ref
 			station_base <- station_ref<-sel.stn
 		}else{
@@ -499,7 +499,7 @@ executeOnQMadj.wRef <- function(donnees,dem_data,GeneralParameters, choix){
 		wRefseries1 <- data.frame(donnees$dkdates, round(xrefs1, 4))
 		write.table(wRefseries1, file.path(dirRefSeries, paste(sel.stn, paste('RefS-','DEK','.txt', sep = ''), sep = '_'), fsep = .Platform$file.sep), col.names = F, row.names = F)
 
-		ret1 <- QMadj.GaussianDLY.wRef(InSeries1, RefSeries1, InCs, fileout,station_base,station_ref,fsuffix = 'DEK', MissingValueCode = donnees$MissingValue, Iadj = pars[2], Mq = pars[3], Ny4a = pars[4])
+		ret1 <- QMadj.GaussianDLY.wRef(InSeries1, RefSeries1, InCs, fileout, station_base, station_ref, fsuffix = 'DEK', MissingValueCode = donnees$MissingValue, Iadj = pars[2], Mq = pars[3], Ny4a = pars[4])
 		if(ret1 < 0){
 			InsertMessagesTxt(main.txt.out, 'QMadj.wRef failed for dekadal data', format = TRUE)
 			return(NULL)
@@ -515,7 +515,7 @@ executeOnQMadj.wRef <- function(donnees,dem_data,GeneralParameters, choix){
 
 			if(GeneralParameters$single.series == "0"){
 				xval2 <- donnees$datdly[,xpos]
-				refseries2 <- getRHtestsRefSeries(xpos, donnees,dem_data,GeneralParameters, 'DLY')
+				refseries2 <- getRHtestsRefSeries(xpos, donnees, dem_data, GeneralParameters, 'DLY')
 				xrefs2 <- refseries2$ref
 				station_base <- station_ref<-sel.stn
 			}else{
@@ -530,7 +530,7 @@ executeOnQMadj.wRef <- function(donnees,dem_data,GeneralParameters, choix){
 			wRefseries2 <- data.frame(donnees$dydates, round(xrefs2, 4))
 			write.table(wRefseries2, file.path(dirRefSeries, paste(sel.stn, paste('RefS-','DLY','.txt', sep = ''), sep = '_'), fsep = .Platform$file.sep), col.names = F, row.names = F)
 
-			ret2 <- QMadj.GaussianDLY.wRef(InSeries2, RefSeries2, InCs, fileout,station_base,station_ref,fsuffix = 'DLY', MissingValueCode = donnees$MissingValue, Iadj = pars[2], Mq = pars[3], Ny4a = pars[4])
+			ret2 <- QMadj.GaussianDLY.wRef(InSeries2, RefSeries2, InCs, fileout, station_base, station_ref, fsuffix = 'DLY', MissingValueCode = donnees$MissingValue, Iadj = pars[2], Mq = pars[3], Ny4a = pars[4])
 			if(ret2 < 0){
 				InsertMessagesTxt(main.txt.out, 'QMadj.wRef failed for daily data', format = TRUE)
 				return(NULL)

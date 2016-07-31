@@ -77,15 +77,15 @@ InterpolationPanelCmd <- function(){
 	yrsLab.tab1 <- tklabel(frameStn, text = 'Year', anchor = 'w', justify = 'left')
 	monLab.tab1 <- tklabel(frameStn, text = 'Month', anchor = 'w', justify = 'left')
 	dayLabTab1_Var <- tclVar('Dek')
-	dayLab.tab1 <- tklabel(frameStn, text = tclvalue(dayLabTab1_Var), textvariable = dayLabTab1_Var,anchor = 'w', justify = 'left')
+	dayLab.tab1 <- tklabel(frameStn, text = tclvalue(dayLabTab1_Var), textvariable = dayLabTab1_Var, anchor = 'w', justify = 'left')
 
 	idate_yrs <- tclVar('1983')
 	idate_mon <- tclVar('1')
 	idate_day <- tclVar('1')
 
-	yrs1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_yrs,justify = "left")
-	mon1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_mon,justify = "left")
-	day1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_day,justify = "left")
+	yrs1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_yrs, justify = "left")
+	mon1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_mon, justify = "left")
+	day1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_day, justify = "left")
 
 	#############################
 	tkgrid(combPrd.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
@@ -227,12 +227,12 @@ InterpolationPanelCmd <- function(){
 	elvdiff_vars <- tclVar('200')
 	omax_vars <- tclVar('0')
 
-	maxdist.tab2 <- tkentry(frameOpt1, width = 6, textvariable = maxdist_vars,justify = "left")
-	nmin.tab2 <- tkentry(frameOpt1, width = 6, textvariable = nmin_vars,justify = "left")
-	nmax.tab2 <- tkentry(frameOpt1, width = 6, textvariable = nmax_vars,justify = "left")
-	idp.tab2 <- tkentry(frameOpt1, width = 6, textvariable = idp_vars,justify = "left")
-	elvdiff.tab2 <- tkentry(frameOpt1, width = 6, textvariable = elvdiff_vars,justify = "left")
-	omax.tab2 <- tkentry(frameOpt1, width = 6, textvariable = omax_vars,justify = "left")
+	maxdist.tab2 <- tkentry(frameOpt1, width = 6, textvariable = maxdist_vars, justify = "left")
+	nmin.tab2 <- tkentry(frameOpt1, width = 6, textvariable = nmin_vars, justify = "left")
+	nmax.tab2 <- tkentry(frameOpt1, width = 6, textvariable = nmax_vars, justify = "left")
+	idp.tab2 <- tkentry(frameOpt1, width = 6, textvariable = idp_vars, justify = "left")
+	elvdiff.tab2 <- tkentry(frameOpt1, width = 6, textvariable = elvdiff_vars, justify = "left")
+	omax.tab2 <- tkentry(frameOpt1, width = 6, textvariable = omax_vars, justify = "left")
 
 	infobulle(maxdist.tab2, 'Radius of search (in km)')
 	status.bar.display(maxdist.tab2, TextOutputVar, 'Only data within a distance of ‘maxdist’ from the prediction location are used')

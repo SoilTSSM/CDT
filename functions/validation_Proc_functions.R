@@ -27,7 +27,7 @@ ValidationDataFun <- function(retValidParams){
 
 	if(retValidParams$do_extr == 1){
 		extr_stn <- ExtractNC2Stn(retValidParams)
-		assign('extr_stn',extr_stn,envir = EnvRainValidation)
+		assign('extr_stn',extr_stn, envir = EnvRainValidation)
 	}else extr_stn <- EnvRainValidation$extr_stn
 	if(is.null(extr_stn)) return(NULL)
 
@@ -37,8 +37,8 @@ ValidationDataFun <- function(retValidParams){
 
 	donnees_stn <- t(cbind(t(headinfo), t(cbind(stn.dates, stn.data))))
 	donnees_ncdf <- t(cbind(t(headinfo), t(cbind(stn.dates, round(stn.ncdata, 1)))))
-	write.table(donnees_stn,file.path(outValidation, 'Gauge_VALIDATION_DATA.txt', fsep = .Platform$file.sep), col.names = F, row.names = F, quote = F)
-	write.table(donnees_ncdf,file.path(outValidation, 'RFE_VALIDATION_DATA.txt', fsep = .Platform$file.sep), col.names = F, row.names = F, quote = F)
+	write.table(donnees_stn, file.path(outValidation, 'Gauge_VALIDATION_DATA.txt', fsep = .Platform$file.sep), col.names = F, row.names = F, quote = F)
+	write.table(donnees_ncdf, file.path(outValidation, 'RFE_VALIDATION_DATA.txt', fsep = .Platform$file.sep), col.names = F, row.names = F, quote = F)
 
 	start_mois <- retValidParams$start_mois
 	end_mois <- retValidParams$end_mois
@@ -77,15 +77,15 @@ ValidationDataFun <- function(retValidParams){
 	gg_tms[is.nan(gg_tms)] <- NA
 	rfe_tms <- apply(stn.ncdata, 1, mean, na.rm = T)
 	rfe_tms[is.nan(rfe_tms)] <- NA
-	area_avg <- data.frame(date = stn.dates[seasL], stn = round(gg_tms,1), rfe = round(rfe_tms,1))
-	write.table(area_avg,file.path(outValidation, 'Spatial_Average_GG-RFE.txt', fsep = .Platform$file.sep), col.names = T, row.names = F, quote = F)
+	area_avg <- data.frame(date = stn.dates[seasL], stn = round(gg_tms, 1), rfe = round(rfe_tms, 1))
+	write.table(area_avg, file.path(outValidation, 'Spatial_Average_GG-RFE.txt', fsep = .Platform$file.sep), col.names = T, row.names = F, quote = F)
 
-	area_stat <- validationStats(gg_tms,rfe_tms,retValidParams$donne$freq)
-	write.table(area_stat,file.path(outValidation, 'Spatial_Average_Validation_Statistics.txt', fsep = .Platform$file.sep), col.names = T, row.names = F)
+	area_stat <- validationStats(gg_tms, rfe_tms, retValidParams$donne$freq)
+	write.table(area_stat, file.path(outValidation, 'Spatial_Average_Validation_Statistics.txt', fsep = .Platform$file.sep), col.names = T, row.names = F)
 
-	grphlim0 <- c(0, max(gg_tms,rfe_tms))
+	grphlim0 <- c(0, max(gg_tms, rfe_tms))
 	jpeg(file.path(outValidation, 'Spatial_Average_Scatter_Gauge-RFE.jpg', fsep = .Platform$file.sep), width = 960, height = 960, quality = 95)
-	plot(gg_tms,rfe_tms,xlab = "Gauge", ylab = "RFE", xlim = grphlim0, ylim = grphlim0)
+	plot(gg_tms, rfe_tms, xlab = "Gauge", ylab = "RFE", xlim = grphlim0, ylim = grphlim0)
 	abline(a = 0, b = 1, lwd = 2, col = 'red')
 	dev.off()
 
@@ -95,7 +95,7 @@ ValidationDataFun <- function(retValidParams){
 	legend('bottomright', c('Gauge', 'RFE'), col = c('blue', 'red'), lwd = 3, bg = 'lightgray')
 	dev.off()
 
-	return(list(x = stn.data[inNA], y = stn.ncdata[inNA], stat = stat, xs = gg_tms,ys = rfe_tms,sp.stat = area_stat))
+	return(list(x = stn.data[inNA], y = stn.ncdata[inNA], stat = stat, xs = gg_tms, ys = rfe_tms, sp.stat = area_stat))
 }
 
 ###################
@@ -204,6 +204,6 @@ ExtractNC2Stn <- function(retValidParams){
 		rfe_stn[jfl,] <- rfe.val[ijGrd]
 	}
 
-	return(list(rfe_stn,data.stn1, date.stn1))
+	return(list(rfe_stn, data.stn1, date.stn1))
 }
 

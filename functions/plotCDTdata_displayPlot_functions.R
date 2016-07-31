@@ -115,15 +115,15 @@ displayCDTdata <- function(parent, notebookTab, donne, atLev, listCol, shpf, uni
 	# ratio_plot_horiz <- diff(par_usr_horiz)/diff(par_usr_verti)
 	# ratio_plot_verti <- diff(par_usr_verti)/diff(par_usr_horiz)
 	# if(ratio_plot_horiz <= 1){
-		# hscale <- round(area_plot_horiz*ratio_plot_horiz,1)
-		# vscale <- round(area_plot_verti,1)
+		# hscale <- round(area_plot_horiz*ratio_plot_horiz, 1)
+		# vscale <- round(area_plot_verti, 1)
 	# }else{
 		# if(ratio_plot_verti >= 1){
-			# hscale <- round(area_plot_horiz,1)
-			# vscale <- round(area_plot_verti*ratio_plot_verti,1)
+			# hscale <- round(area_plot_horiz, 1)
+			# vscale <- round(area_plot_verti*ratio_plot_verti, 1)
 		# }else{
-			# hscale <- round(area_plot_horiz,1)
-			# vscale <- round(area_plot_verti,1)
+			# hscale <- round(area_plot_horiz, 1)
+			# vscale <- round(area_plot_verti, 1)
 		# }
 	# }
 	# tkset(spinH, hscale)

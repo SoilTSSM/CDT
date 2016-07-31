@@ -50,7 +50,7 @@ status.bar.display <- function(tclobj, tclvar, text){
 
 
 ###########################################
-helpWidget <- function(tclobj,statusbar_tclvar,text_ballon,text_statusbar){
+helpWidget <- function(tclobj, statusbar_tclvar, text_ballon, text_statusbar){
 	tkbind(tclobj,"<Enter>", function() tclvalue(statusbar_tclvar)<-text_statusbar)
 	tkbind(tclobj,"<Leave>", function() tclvalue(statusbar_tclvar)<-"")
 	tcl("DynamicHelp::register", tclobj, 'balloon', text_ballon)
@@ -206,7 +206,7 @@ bwAddPanedWindow <- function(parent,...){
 }
 
 ##Usage
-# panw <- bwPanedWindow(parent_frame,side = 'right')
+# panw <- bwPanedWindow(parent_frame, side = 'right')
 # tkgrid(panw)
 # panfr <- bwAddPanedWindow(panw, minsize = 100)
 # fr1 <- tkframe(panfr)
@@ -230,7 +230,7 @@ bwScrollableFrame <- function(parent,...){
 }
 
 ##Usage
-# scrwin <- bwScrolledWindow(parent_frame,relief = 'sunken', borderwidth = 2)
+# scrwin <- bwScrolledWindow(parent_frame, relief = 'sunken', borderwidth = 2)
 # tkgrid(scrwin)
 # subfram <- bwScrollableFrame(scrwin, width = 400, height = 400)
 # lid <- tklabel(subfram, text = "Name")
@@ -256,7 +256,7 @@ setScrollCanvas1 <- function(parent){
 }
 
 ##Usage
-# scrwin <- bwScrolledWindow(parent_frame,relief = 'sunken', borderwidth = 2)
+# scrwin <- bwScrolledWindow(parent_frame, relief = 'sunken', borderwidth = 2)
 # tkgrid(scrwin)
 # canvas <- ScrollCanvasscrwin, width = 600, height = 400)
 # tkgrid(canvas)
@@ -502,11 +502,11 @@ getNcdfData2Plot <- function(dataNCDF, freqData, yrs, mon, day, ncOrder = c(1,2)
 #################################################################################
 ## get RFE data plot qc spatial check result
 
-getSatelliteData <- function(dir_ncdf,ff_ncdf,spchkQcDateVal){
+getSatelliteData <- function(dir_ncdf, ff_ncdf, spchkQcDateVal){
 	if(!is.null(ReturnExecResults)){
 		spchkoutdates <- isSpatialCheckOk()
 		if(nrow(spchkoutdates) != 0){
-			dataNCDF <- list(dir_ncdf,ff_ncdf)
+			dataNCDF <- list(dir_ncdf, ff_ncdf)
 			freqData <- ifelse(ReturnExecResults$period == 'daily', 'Daily data', ifelse(ReturnExecResults$period == 'dekadal', 'Dekadal data', 'Monthly data'))
 			spdaty <- tclvalue(spchkQcDateVal)
 			year <- as.numeric(substr(spdaty, 1,4))

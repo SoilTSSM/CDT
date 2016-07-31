@@ -350,9 +350,9 @@ homogen.get.info <- function(parent.win, GeneralParameters){
 				intest1 <- paramsGAL$inputPars$period == GeneralParameters$period & all(AllOpenFilesData[[jfile]][3:4]%in%paramsGAL$dataPars[[1]])
 				if(intest1){
 					assign('donnees1', paramsGAL$data[[1]], envir = EnvHomogzData)
-					assign('dly_data', paramsGAL$data1$dly_data,envir = EnvHomogzData)
-					assign('dek_data', paramsGAL$data1$dek_data,envir = EnvHomogzData)
-					assign('mon_data', paramsGAL$data1$mon_data,envir = EnvHomogzData)
+					assign('dly_data', paramsGAL$data1$dly_data, envir = EnvHomogzData)
+					assign('dek_data', paramsGAL$data1$dek_data, envir = EnvHomogzData)
+					assign('mon_data', paramsGAL$data1$mon_data, envir = EnvHomogzData)
 					if(xtest){
 						assign('donnees2', paramsGAL$data[[2]], envir = EnvHomogzData)
 						if(length(paramsGAL$dataPars) == 1){
@@ -385,7 +385,7 @@ homogen.get.info <- function(parent.win, GeneralParameters){
 					#calculate mon/dek
 					computeHomogData(GeneralParameters)
 					paramsGAL <- retDonPar[[1]]
-					paramsGAL$data1 <- list(dly_data = EnvHomogzData$dly_data,dek_data = EnvHomogzData$dek_data,mon_data = EnvHomogzData$mon_data)
+					paramsGAL$data1 <- list(dly_data = EnvHomogzData$dly_data, dek_data = EnvHomogzData$dek_data, mon_data = EnvHomogzData$mon_data)
 					save(paramsGAL, file = fileparams)
 					rm(retDonPar, paramsGAL)
 				}
@@ -398,7 +398,7 @@ homogen.get.info <- function(parent.win, GeneralParameters){
 				#calculate mon/dek
 				computeHomogData(GeneralParameters)
 				paramsGAL <- retDonPar[[1]]
-				paramsGAL$data1 <- list(dly_data = EnvHomogzData$dly_data,dek_data = EnvHomogzData$dek_data,mon_data = EnvHomogzData$mon_data)
+				paramsGAL$data1 <- list(dly_data = EnvHomogzData$dly_data, dek_data = EnvHomogzData$dek_data, mon_data = EnvHomogzData$mon_data)
 				save(paramsGAL, file = fileparams)
 				rm(retDonPar, paramsGAL)
 			}

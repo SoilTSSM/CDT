@@ -15,7 +15,7 @@ standard.daily <- function(var, dates){
 	mat1 <- c((mat-cmoy)/csd)
 	if(elen > 0) mat1 <- head(mat1,-elen)
 	if(slen > 0) mat1 <- tail(mat1,-slen)
-	lmat1<-(var[leap.year]-cmoy[59])/csd[59]
+	lmat1 <- (var[leap.year]-cmoy[59])/csd[59]
 	var[leap.year] <- lmat1
 	var[!leap.year] <- mat1
 	var[is.nan(var)] <- 0
@@ -175,9 +175,8 @@ ratio.dekadal <- function(var, dates){
 	return(var)
 }
 
-
 ########################
-climato.monthly <- function(var, dates, fun){
+climato.monthly <- function(var, dates, fun = 'mean'){
 	dates <- as.character(dates)
 	fun <- match.fun(fun)
 	an <- as.numeric(substr(dates, 1,4))
@@ -189,7 +188,7 @@ climato.monthly <- function(var, dates, fun){
 	return(rvar)
 }
 
-climato.dekadal <- function(var, dates, fun){
+climato.dekadal <- function(var, dates, fun = 'mean'){
 	dates <- as.character(dates)
 	fun <- match.fun(fun)
 	an <- as.numeric(substr(dates, 1,4))
@@ -200,6 +199,23 @@ climato.dekadal <- function(var, dates, fun){
 	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
 	mat <- matrix(as.numeric(c(rep(NA, slen), var, rep(NA, elen))), nrow = 36)
 	rvar <- as.numeric(apply(mat, 1, fun, na.rm = T))
+	return(rvar)
+}
+
+climato.daily <- function(var, dates, fun = 'mean'){
+	dates <- as.character(dates)
+	fun <- match.fun(fun)
+	dates <- as.Date(dates, format='%Y%m%d')
+	leap.year <- format(dates,'%m%d') == '0229'
+	var <- var[!leap.year]
+	dates <- dates[!leap.year]
+	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
+	dstart <- dstart[-length(dstart)]
+	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
+	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
+	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+	mat <- matrix(as.numeric(c(rep(NA, slen), var, rep(NA, elen))), nrow = 365)
+	rvar <- apply(mat, 1, fun, na.rm = T)
 	return(rvar)
 }
 
@@ -332,7 +348,7 @@ seasonal_fun <- function(freq, var, dates, smon, lmon, fun, frac = 1){
 	an <- sort(as.numeric(levels(as.factor(an[seasL]))))
 	xtmp <- aggregate(var, by = list(as.factor(dtseas)), fun, na.rm = FALSE)[,2]
 	if(length(an) != length(xtmp)) an <- c(an[1]-1, an)
-	rval <- data.frame(Season = seas,Start_Year = an, Values = xtmp)
+	rval <- data.frame(Season = seas, Start_Year = an, Values = xtmp)
 
 	if(freq == 'daily'){
 		eom <- sum(sapply(im, function(x) rev((28:31)[which(!is.na(as.Date(paste(2014, x, 28:31, sep = '-'))))])[1]))
@@ -380,7 +396,7 @@ seasonal_fun <- function(freq, var, dates, smon, lmon, fun, frac = 1){
 #	an <- sort(levels(as.factor(an[seasL])))
 #	xtmp <- aggregate(var, by = list(as.factor(dtseas)), fun, na.rm = FALSE)[,2]
 #	if(length(an) != length(xtmp)) an <- c(as.numeric(an[1])-1, an)
-#	rval <- data.frame(Season = seas,Start_Year = an, Values = xtmp)
+#	rval <- data.frame(Season = seas, Start_Year = an, Values = xtmp)
 
 #	##eto no miova
 #	eom <- sum(sapply(im, function(x) rev((28:31)[which(!is.na(as.Date(paste(2014, x, 28:31, sep = '-'))))])[1]))
@@ -417,7 +433,7 @@ seasonal_fun <- function(freq, var, dates, smon, lmon, fun, frac = 1){
 #	an <- sort(levels(as.factor(an[seasL])))
 #	xtmp <- aggregate(var, by = list(as.factor(dtseas)), fun, na.rm = FALSE)[,2]
 #	if(length(an) != length(xtmp)) an <- c(as.numeric(an[1])-1, an)
-#	rval <- data.frame(Season = seas,Start_Year = an, Values = xtmp)
+#	rval <- data.frame(Season = seas, Start_Year = an, Values = xtmp)
 
 #	##eto no miova
 #	nbd[1] <- 3*lmon
@@ -453,7 +469,7 @@ seasonal_fun <- function(freq, var, dates, smon, lmon, fun, frac = 1){
 #	an <- sort(levels(as.factor(an[seasL])))
 #	xtmp <- aggregate(var, by = list(as.factor(dtseas)), fun, na.rm = FALSE)[,2]
 #	if(length(an) != length(xtmp)) an <- c(as.numeric(an[1])-1, an)
-#	rval <- data.frame(Season = seas,Start_Year = an, Values = xtmp)
+#	rval <- data.frame(Season = seas, Start_Year = an, Values = xtmp)
 
 #	##eto no miova
 #	nbd[1] <- lmon

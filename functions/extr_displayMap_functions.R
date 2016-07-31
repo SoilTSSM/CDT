@@ -86,7 +86,7 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 	img <- tkrplot1(canvas, fun = plotIt, hscale = hscale, vscale = vscale)
 	img_w <- as.double(tcl('image', 'width', img$image))
 	img_h <- as.double(tcl('image', 'height', img$image))
-	tkconfigure(canvas, width = img_w,height = img_h)
+	tkconfigure(canvas, width = img_w, height = img_h)
 	tkcreate(canvas, "image", 0, 0, anchor = 'nw', image = img$image)
 
 	tcl('raise', canvas)
@@ -156,7 +156,7 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 				ids <- as.numeric(tclvalue(tcl(adminVar.tab1, 'current')))+1
 				admin_name <- admin_name[ids]
 				#labAdmin_name <- ifelse(is.na(admin_name), tclvalue(namePoly), as.character(admin_name))
-				#cat(paste(ids,labAdmin_name),'\n')
+				#cat(paste(ids, labAdmin_name),'\n')
 				#tclvalue(namePoly) <<- labAdmin_name
 				if(!is.na(admin_name)){
 					tclvalue(namePoly) <<- as.character(admin_name)

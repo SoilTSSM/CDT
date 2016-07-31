@@ -498,7 +498,7 @@ tkconfigure(findUr.tab1, command = function(){
 	getpars.wRef()
 	if(!is.null(donnees)){
 		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnFindU.wRef(donnees,dem_data,GeneralParameters),
+		ReturnExecResults <<- tryCatch(executeOnFindU.wRef(donnees, dem_data, GeneralParameters),
 			#warning = function(w) warningFun(w),
 			error = function(e) errorFun(e), finally={
 			tkconfigure(main.win, cursor='')
@@ -512,7 +512,7 @@ tkconfigure(findUDr.tab1, command = function(){
 	getpars.wRef()
 	if(!is.null(donnees)){
 		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnFindUD.wRef(donnees,dem_data,GeneralParameters),
+		ReturnExecResults <<- tryCatch(executeOnFindUD.wRef(donnees, dem_data, GeneralParameters),
 			#warning = function(w) warningFun(w),
 			error = function(e) errorFun(e), finally={
 			tkconfigure(main.win, cursor='')
@@ -526,7 +526,7 @@ tkconfigure(stepsizer.tab1, command = function(){
 	getpars.wRef()
 	if(!is.null(donnees)){
 		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnStepSize.wRef(donnees,dem_data,GeneralParameters),
+		ReturnExecResults <<- tryCatch(executeOnStepSize.wRef(donnees, dem_data, GeneralParameters),
 			#warning = function(w) warningFun(w),
 			error = function(e) errorFun(e), finally={
 			tkconfigure(main.win, cursor='')
@@ -540,7 +540,7 @@ tkconfigure(qmadjr.tab1, command = function(){
 	getpars.wRef()
 	if(!is.null(donnees)){
 		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnQMadj.wRef(donnees,dem_data,GeneralParameters, as.numeric(tclvalue(ChoixAjustment))),
+		ReturnExecResults <<- tryCatch(executeOnQMadj.wRef(donnees, dem_data, GeneralParameters, as.numeric(tclvalue(ChoixAjustment))),
 			#warning = function(w) warningFun(w),
 			error = function(e) errorFun(e), finally={
 			tkconfigure(main.win, cursor='')

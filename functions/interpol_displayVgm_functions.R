@@ -8,8 +8,8 @@ plotVariogramFun <- function(odata, vgmChx, VgmMod, vgmModList, useELV){
 	}
 
 	if(vgmChx == '1'){
-		if(useELV == '1') autovgm <- autofitVariogram(z~elv, model = vgmModList,input_data = odata)
-		else autovgm <- autofitVariogram(z~1, model = vgmModList,input_data = odata)
+		if(useELV == '1') autovgm <- autofitVariogram(z~elv, model = vgmModList, input_data = odata)
+		else autovgm <- autofitVariogram(z~1, model = vgmModList, input_data = odata)
 		p1 <- plot(autovgm)
 	}
 	print(p1)

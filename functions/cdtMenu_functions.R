@@ -2,7 +2,7 @@
 ##########xxxxxxxxxxxxxxxxxx Menu File xxxxxxxxxxxxxxxxxx##########
 
 menu.file <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
-tkadd(top.menu, "cascade", label = "File", menu = menu.file, underline = 0)
+tkadd(top.menu, "cascade", label = "File", menu = menu.file)
 
 ##########
 tkadd(menu.file, "command", label = "Open data.frame", command = function(){
@@ -80,7 +80,7 @@ tkadd(menu.file, "command", label = "Save table", command = function(){
 		return(NULL)
 	}
  })
-#
+
 ##########
 tkadd(menu.file, "command", label = "Save table As...        ", command = function(){
 	tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
@@ -124,7 +124,7 @@ tkadd(menu.file, "command", label = "Quit CDT", command = function(){
 ##########xxxxxxxxxxxxxxxxxx Menu Data Preparation xxxxxxxxxxxxxxxxxx##########
 
 menu.dataprep <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
-tkadd(top.menu, "cascade", label = "Data Preparation", menu = menu.dataprep, underline = 0)
+tkadd(top.menu, "cascade", label = "Data Preparation", menu = menu.dataprep)
 
 ##########
 tkadd(menu.dataprep, "command", label = "Format CDTs Input Data", command = function(){
@@ -141,7 +141,6 @@ tkadd(menu.dataprep, "command", label = "Format CDTs Input Data", command = func
 tkadd(menu.dataprep, "separator")
 
 ##########
-##
 tkadd(menu.dataprep, "command", label = "Assess Data Availability", command = function(){
 	source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
 	source(file.path(apps.dir, 'functions', 'initialize', fsep = .Platform$file.sep))
@@ -162,6 +161,25 @@ tkadd(menu.dataprep, "command", label = "Assess Data Availability", command = fu
 tkadd(menu.dataprep, "separator")
 
 ##########
+tkadd(menu.dataprep, "command", label = "Aggregating Time Series", command = function(){
+	source(file.path(apps.dir, 'functions', 'initialize', fsep = .Platform$file.sep))
+	if(!is.null(GeneralParameters)){
+		if(GeneralParameters$action == 'agg.ts') initpars <- GeneralParameters
+		else{
+			initpars <- init.params('agg.ts', as.character(GeneralParameters$period))
+			source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
+		}
+	}else{
+		initpars <- init.params('agg.ts', 'daily')
+		source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
+	}
+	GeneralParameters <<- mainDialogAggTs(main.win, initpars)
+})
+
+##########
+tkadd(menu.dataprep, "separator")
+
+##########
 tkadd(menu.dataprep, "command", label = "Download DEM", command = function(){
 	getDEMFun(main.win)
 })
@@ -170,9 +188,6 @@ tkadd(menu.dataprep, "command", label = "Download DEM", command = function(){
 tkadd(menu.dataprep, "command", label = "Download Country boundary", command = function(){
 	getCountryShapefile(main.win)
 })
-
-##########
-#tkadd(menu.dataprep, "separator")
 
 ##########
 
@@ -184,7 +199,7 @@ tkadd(menu.dataprep, "command", label = "Download RFE data", command = function(
 ##########xxxxxxxxxxxxxxxxxx Menu Quality Control xxxxxxxxxxxxxxxxxx##########
 
 menu.qchom <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
-tkadd(top.menu, "cascade", label = "Quality Control", menu = menu.qchom, underline = 0)
+tkadd(top.menu, "cascade", label = "Quality Control", menu = menu.qchom)
 
 
 ##########
@@ -274,9 +289,6 @@ tkadd(menu.qc, "command", label = "Temperatures", command = function(){
 	initpars$AllOrOne <- 'one'
 	GeneralParameters <<- qc.get.info.txtn(main.win, initpars)
 })
-
-##########
-#tkadd(menu.qchom, "separator")
 
 ##########
 ##Qc all Run
@@ -432,7 +444,7 @@ tkadd(menu.qchom, "command", label = "Aggregate homogenized stations", command =
 ##########xxxxxxxxxxxxxxxxxx Menu Merging Data xxxxxxxxxxxxxxxxxx##########
 
 menu.mrg <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
-tkadd(top.menu, "cascade", label = "Merging Data", menu = menu.mrg, underline = 0)
+tkadd(top.menu, "cascade", label = "Merging Data", menu = menu.mrg)
 
 ##########rain
 menu.mrg.rain <- tkmenu(top.menu, tearoff = FALSE)
@@ -631,25 +643,13 @@ tkadd(menu.mrg, "command", label = "Mali - Mise à jour décadaire", command = f
 	GeneralParameters <<- update1DekInfo_Mali(main.win, initpars)
 })
 
-##########
-#tkadd(menu.mrg, "separator")
-#menu.mrgtls <- tkmenu(top.menu, tearoff = FALSE)
-#tkadd(menu.mrg, "cascade", label = "Merging Tools", menu = menu.mrgtls)
-#tkadd(menu.mrgtls, "command", label = "Handling NetCDF Files", command = function(){
-#source(file.path(apps.dir, 'functions', 'initialize', fsep = .Platform$file.sep))
-#})
-#tkadd(menu.mrgtls, "command", label = "Format Input Data", command = function(){
-#source(file.path(apps.dir, 'functions', 'initialize', fsep = .Platform$file.sep))
-#})
-
 ##########xxxxxxxxxxxxxxxxxx Menu Data Processing xxxxxxxxxxxxxxxxxx##########
 
 menu.dataproc <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
-tkadd(top.menu, "cascade", label = "Data Processing", menu = menu.dataproc, underline = 5)
-
+tkadd(top.menu, "cascade", label = "Data Processing", menu = menu.dataproc)
 
 ##########
-tkadd(menu.dataproc, "command", label = "Interpolation", command = function(){
+tkadd(menu.dataproc, "command", label = "Spatial  Interpolation", command = function(){
 	source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
 	source(file.path(apps.dir, 'functions', 'initialize', fsep = .Platform$file.sep))
 	tkconfigure(spinH, state = 'normal')
@@ -664,7 +664,12 @@ tkadd(menu.dataproc, "command", label = "Interpolation", command = function(){
 tkadd(menu.dataproc, "separator")
 
 ##########
-tkadd(menu.dataproc, "command", label = "Precipitation Validation", command = function(){
+menu.valid <- tkmenu(top.menu, tearoff = FALSE)
+tkadd(menu.dataproc, "cascade", label = "Validation", menu = menu.valid)
+
+########
+# Precipitation validation
+tkadd(menu.valid, "command", label = "Precipitation", command = function(){
 	source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
 	source(file.path(apps.dir, 'functions', 'initialize', fsep = .Platform$file.sep))
 	tkconfigure(spinH, state = 'normal')
@@ -675,32 +680,20 @@ tkadd(menu.dataproc, "command", label = "Precipitation Validation", command = fu
 	}
 })
 
-
 ##########
-tkadd(menu.dataproc, "separator")
+tkadd(menu.valid, "separator")
 
-
-##########
-tkadd(menu.dataproc, "command", label = "Aggregating Time Series", command = function(){
-	source(file.path(apps.dir, 'functions', 'initialize', fsep = .Platform$file.sep))
-	if(!is.null(GeneralParameters)){
-		if(GeneralParameters$action == 'agg.ts') initpars <- GeneralParameters
-		else{
-			initpars <- init.params('agg.ts', as.character(GeneralParameters$period))
-			source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
-		}
-	}else{
-		initpars <- init.params('agg.ts', 'daily')
-		source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
-	}
-	GeneralParameters <<- mainDialogAggTs(main.win, initpars)
+#########
+# Temperature validation
+tkadd(menu.valid, "command", label = "Temperature", state = 'disabled', command = function(){
+return(NULL)
 })
 
 ##########
 tkadd(menu.dataproc, "separator")
 
 ##########
-tkadd(menu.dataproc, "command", label = "Extract NetCDF gridded data", command = function(){
+tkadd(menu.dataproc, "command", label = "Data Extraction", command = function(){
 	source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
 	source(file.path(apps.dir, 'functions', 'initialize', fsep = .Platform$file.sep))
 	tkconfigure(spinH, state = 'normal')
@@ -711,55 +704,33 @@ tkadd(menu.dataproc, "command", label = "Extract NetCDF gridded data", command =
 	}
 })
 
-###########
-#tkadd(menu.dataproc, "command", label = "Compute Climatology", state = 'disabled', command = function(){
-#	source(file.path(apps.dir, 'functions', 'initialize', fsep = .Platform$file.sep))
-#	if(!is.null(GeneralParameters)){
-#		if(GeneralParameters$action == 'clim.ts') initpars <- GeneralParameters
-#		else{
-#			#initpars <- init.params('clim.ts', as.character(GeneralParameters$period))
-#			source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
-#		}
-#	}else{
-#		#initpars <- init.params('clim.ts', 'dekadal')
-#		source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
-#	}
-#	#GeneralParameters <<- mainDialogClimatogy(main.win, initpars)
-#})
-
-###########
-#tkadd(menu.dataproc, "separator")
-
-###########
-#tkadd(menu.dataproc, "command", label = "Calculate  Anomalies", state = 'disabled', command = function(){
-#	source(file.path(apps.dir, 'functions', 'initialize', fsep = .Platform$file.sep))
-#	if(!is.null(GeneralParameters)){
-#		if(GeneralParameters$action == 'anom.ts') initpars <- GeneralParameters
-#		else{
-#			#initpars <- init.params('anom.ts', as.character(GeneralParameters$period))
-#			source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
-#		}
-#	}else{
-#		#initpars <- init.params('anom.ts', 'dekadal')
-#		source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
-#	}
-#	#GeneralParameters <<- mainDialogAnomalies(main.win, initpars)
-#})
-
+##########
+tkadd(menu.dataproc, "separator")
 
 ##########
-#menu.map <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
-#tkadd(top.menu, "cascade", label = "Map", menu = menu.map)
-#tkadd(menu.map, "command", label = "CDT Station Data", state = 'disabled', command = function(){stationPlot()})
-#tkadd(menu.map, "separator")
-#tkadd(menu.map, "command", label = "NetCDF Gridded Data", state = 'disabled', command = function(){netcdfPlot()})
-#tkadd(menu.map, "separator")
-#tkadd(menu.map, "command", label = "Merging Output Maps", state = 'disabled', command = function(){mergingComparePlot()})
+menu.stats <- tkmenu(top.menu, tearoff = FALSE)
+tkadd(menu.dataproc, "cascade", label = "Statistical Analysis", menu = menu.stats)
+
+########
+# Time series analysis
+tkadd(menu.stats, "command", label = "Time Series", command = function(){
+return(NULL)
+})
+
+##########
+tkadd(menu.stats, "separator")
+
+#########
+# spatial 
+tkadd(menu.stats, "command", label = "Spatial Statistics", state = 'disabled', command = function(){
+return(NULL)
+})
+
 
 ##########xxxxxxxxxxxxxxxxxx Menu Plot Data xxxxxxxxxxxxxxxxxx##########
 
 menu.plot <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
-tkadd(top.menu, "cascade", label = "Plot Data", menu = menu.plot, underline = 4)
+tkadd(top.menu, "cascade", label = "Plot Data", menu = menu.plot)
 
 ##########
 tkadd(menu.plot, "command", label = "Plot CDT data format", command = function(){
@@ -806,10 +777,10 @@ tkadd(menu.plot, "command", label = "Plot Merging Outputs", command = function()
 ##########xxxxxxxxxxxxxxxxxx Menu help xxxxxxxxxxxxxxxxxx##########
 
 menu.aide <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
-tkadd(top.menu, "cascade", label = "Help", menu = menu.aide, underline = 0)
+tkadd(top.menu, "cascade", label = "Help", menu = menu.aide)
 
 ##########
-tkadd(menu.aide, "command", label = "Help         ", command = function(){
+tkadd(menu.aide, "command", label = "CDT User Guide", command = function(){
 	browseURL(paste0('file://',file.path(apps.dir, 'help', 'html', 'index.html', fsep = .Platform$file.sep)))
 })
 

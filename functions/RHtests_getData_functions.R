@@ -40,8 +40,8 @@ getRHtestsData <- function(GeneralParameters){
 		dates <- donne$dates
 		donne <- donne$data
 
-		#if(nrow(donne$stnDuplCoords) > 0)  #diplay table
-		#if(nrow(dat$stnMissCoords) > 0)
+		#if(nrow(donne$duplicated.coords) > 0)  #diplay table
+		#if(nrow(dat$missing.coords) > 0)
 
 		if(!is.null(donne)){
 			flstninfo <- file.path(origdir, paste('Infos', file.pars[1], sep = '_'), fsep = .Platform$file.sep)
@@ -220,10 +220,10 @@ getRHtestsData <- function(GeneralParameters){
 				comdt1 <- dates1%in%dates
 				cand_var <- var[comdt]
 				ref_var <- var1[comdt1]
-				mcand <- daily2monthly(cand_var,dates = dates, fun = comp.fun, frac = miss.frac)
-				mrefs <- daily2monthly(ref_var,dates = dates, fun = comp.fun, frac = miss.frac)
-				dcand <- daily2dekadal(cand_var,dates = dates, fun = comp.fun, frac = miss.frac)
-				drefs <- daily2dekadal(ref_var,dates = dates, fun = comp.fun, frac = miss.frac)
+				mcand <- daily2monthly(cand_var, dates = dates, fun = comp.fun, frac = miss.frac)
+				mrefs <- daily2monthly(ref_var, dates = dates, fun = comp.fun, frac = miss.frac)
+				dcand <- daily2dekadal(cand_var, dates = dates, fun = comp.fun, frac = miss.frac)
+				drefs <- daily2dekadal(ref_var, dates = dates, fun = comp.fun, frac = miss.frac)
 				dydonne <- cand_var
 				rdydonne <- ref_var
 				dydaty <- dates
@@ -249,8 +249,8 @@ getRHtestsData <- function(GeneralParameters){
 				comdt1 <- dates1%in%dates
 				cand_var <- var[comdt]
 				ref_var <- var1[comdt1]
-				mcand <- dekadal2monthly(cand_var,dates = dates, fun = comp.fun)
-				mrefs <- dekadal2monthly(ref_var,dates = dates, fun = comp.fun)
+				mcand <- dekadal2monthly(cand_var, dates = dates, fun = comp.fun)
+				mrefs <- dekadal2monthly(ref_var, dates = dates, fun = comp.fun)
 				dkdonne <- cand_var
 				rdkdonne <- ref_var
 				dkdaty <- dates
@@ -373,7 +373,7 @@ getRHtestsDEM <- function(donnees, GeneralParameters){
 ##############################################################################
 
 
-getRHtestsRefSeries <- function(xpos, donnees,dem_data,GeneralParameters, freqDON = 'MON'){
+getRHtestsRefSeries <- function(xpos, donnees, dem_data, GeneralParameters, freqDON = 'MON'){
 
 	if(freqDON == 'MON') don <- donnees$datmon
 	if(freqDON == 'DEK') don <- donnees$datdek
@@ -429,7 +429,7 @@ getRHtestsRefSeries <- function(xpos, donnees,dem_data,GeneralParameters, freqDO
 				}
 			}
 		}else{
-			ret <- choose.neignbors(mvar = don, xpos = xpos, lon = donnees$Lon, lat = donnees$Lat, elv = dem_data,max.dist = max.dist, min.stn = min.stn)
+			ret <- choose.neignbors(mvar = don, xpos = xpos, lon = donnees$Lon, lat = donnees$Lat, elv = dem_data, max.dist = max.dist, min.stn = min.stn)
 			ret <- use.elevation(ret = ret, uselv = uselv, elv.diff = elv.diff, min.stn = min.stn)
 
 			if(weight.fac == 'Average'){

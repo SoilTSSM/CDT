@@ -34,7 +34,7 @@ getElevationData <- function(){
 			}
 		}
 	}else msg <- 'No station data found'
-	return(list(elv_stn,elv_dem,msg, file.pars[2]))
+	return(list(elv_stn, elv_dem, msg, file.pars[2]))
 }
 
 #####################################################
@@ -82,7 +82,7 @@ execQcrainFun <- function(get.stn){
 		if(uselv == '1'){
 			if(is.null(EnvQcOutlierData$r_elv)){
 				r_elv <- getElevationData()
-				assign('r_elv',r_elv,envir = EnvQcOutlierData)
+				assign('r_elv',r_elv, envir = EnvQcOutlierData)
 			}else{
 				if(interp.dem == "0" & (is.null(EnvQcOutlierData$r_elv[[2]]) | EnvQcOutlierData$r_elv[[4]] != as.character(GeneralParameters$file.io$Values[2]))){
 					r_elv <- getElevationData()
@@ -205,7 +205,7 @@ ExecQcRain <- function(get.stn){
 
 		# ##create by default
 		sdon <- data.frame(dates, xdat)
-		write.table(sdon,file_corrected,col.names = FALSE, row.names = FALSE)
+		write.table(sdon, file_corrected, col.names = FALSE, row.names = FALSE)
 		on.exit({
 			if(status == 'ok') InsertMessagesTxt(main.txt.out, msg)
 			if(status == 'no') InsertMessagesTxt(main.txt.out, msg, format = TRUE)

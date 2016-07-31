@@ -34,7 +34,7 @@ getElevationData1 <- function(){
 			}
 		}
 	}else msg <- 'No station data found'
-	return(list(elv_stn,elv_dem,msg, file.pars[3]))
+	return(list(elv_stn, elv_dem, msg, file.pars[3]))
 }
 
 #####################################################
@@ -68,7 +68,7 @@ execQctempFun <- function(get.stn){
 		if(uselv == '1'){
 			if(is.null(EnvQcOutlierData$r_elv)){
 				r_elv <- getElevationData1()
-				assign('r_elv',r_elv,envir = EnvQcOutlierData)
+				assign('r_elv',r_elv, envir = EnvQcOutlierData)
 			}else{
 				if(interp.dem == "0" & (is.null(EnvQcOutlierData$r_elv[[2]]) | EnvQcOutlierData$r_elv[[4]] != as.character(GeneralParameters$file.io$Values[3]))){
 					r_elv <- getElevationData1()
@@ -288,7 +288,7 @@ ExecQcTemp <- function(get.stn){
 
 		# ##create by default
 		sdon <- data.frame(dates, xdat)
-		write.table(sdon,file_corrected,col.names = FALSE, row.names = FALSE)
+		write.table(sdon, file_corrected, col.names = FALSE, row.names = FALSE)
 		on.exit({
 			if(status == 'ok') InsertMessagesTxt(main.txt.out, msg)
 			if(status == 'no') InsertMessagesTxt(main.txt.out, msg, format = TRUE)

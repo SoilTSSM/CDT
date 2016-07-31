@@ -34,7 +34,7 @@ getElevationData2 <- function(){
 			}
 		}
 	}else msg <- 'No station data found'
-	return(list(elv_stn,elv_dem,msg, file.pars[3]))
+	return(list(elv_stn, elv_dem, msg, file.pars[3]))
 }
 
 ##################################################################################

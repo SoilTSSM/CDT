@@ -187,7 +187,7 @@ mergeOneDekadRain <- function(){
 
 	if(sum(stn.data, na.rm = TRUE) > 0 & length(ix) >= nmin){
 
-		rr.stn <- data.frame(cbind(stn.lon, jitter(stn.lat), stn.data,rfe_gg,dff))
+		rr.stn <- data.frame(cbind(stn.lon, jitter(stn.lat), stn.data, rfe_gg, dff))
 		rr.stn <- rr.stn[ix,]
 		names(rr.stn) <- c("lon", "lat", "gg", "rfe", "dff")
 		coordinates(rr.stn) = ~lon+lat
@@ -206,7 +206,7 @@ mergeOneDekadRain <- function(){
 				grd.rr <- krige(res~1, locations = rr.stn, newdata = newlocation.merging, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0)
 				res.pred <- grd.rr$var1.pred
 			}else if(interpMethod == "Kriging"){
-				grd.rr <- try(autoKrige(res~1, input_data = rr.stn,new_data = newlocation.merging, model = VarioModel, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0), silent = TRUE)
+				grd.rr <- try(autoKrige(res~1, input_data = rr.stn, new_data = newlocation.merging, model = VarioModel, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0), silent = TRUE)
 				if(!inherits(grd.rr, "try-error")){
 					res.pred <- grd.rr$krige_output$var1.pred
 				}else{

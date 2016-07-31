@@ -142,10 +142,10 @@ QcCmdBut <- function(stateReplaceAll){
 		xycrd <- matrix(as.numeric(strsplit(tclvalue(XYCoordinates),' ')[[1]]), ncol = 2)
 		stn_lon <- xycrd[,1]
 		stn_lat <- xycrd[,2]
-		xminlo <- round(min(stn_lon,na.rm = T)-0.1,4)
-		xmaxlo <- round(max(stn_lon,na.rm = T)+0.1,4)
-		xminla <- round(min(stn_lat,na.rm = T)-0.1,4)
-		xmaxla <- round(max(stn_lat,na.rm = T)+0.1,4)
+		xminlo <- round(min(stn_lon, na.rm = T)-0.1,4)
+		xmaxlo <- round(max(stn_lon, na.rm = T)+0.1,4)
+		xminla <- round(min(stn_lat, na.rm = T)-0.1,4)
+		xmaxla <- round(max(stn_lat, na.rm = T)+0.1,4)
 		ZoomXYval0 <- c(xminlo, xmaxlo, xminla, xmaxla)
 	}else{
 		xminlo<-''
@@ -248,7 +248,7 @@ QcCmdBut <- function(stateReplaceAll){
 	frameRFE <- ttklabelframe(subfr4, text = "Satellite Data (NetCDF)", relief = 'groove')
 	dir_ncdf <- tclVar()
 	dir_ncdfLab.tab4 <- tklabel(frameRFE, text = 'Directory of satellite files', anchor = 'w', justify = 'left')
-	dir_ncdfEd.tab4 <- tkentry(frameRFE, textvariable = dir_ncdf,width = wttkcombo+2)
+	dir_ncdfEd.tab4 <- tkentry(frameRFE, textvariable = dir_ncdf, width = wttkcombo+2)
 	dir_ncdfBt.tab4 <- tkbutton(frameRFE, text = "...") 
 	tkconfigure(dir_ncdfBt.tab4, command = function(){
 		dir4ncdf <- tk_choose.dir(getwd(), "")
@@ -262,7 +262,7 @@ QcCmdBut <- function(stateReplaceAll){
 
 	ff_ncdf <- tclVar("rfe%s_%s_%s.nc")
 	ff_ncdfLab.tab4 <- tklabel(frameRFE, text = 'RFE filename format', anchor = 'w', justify = 'left')
-	ff_ncdfEd.tab4 <- tkentry(frameRFE, width = 14, textvariable = ff_ncdf,justify = "left")
+	ff_ncdfEd.tab4 <- tkentry(frameRFE, width = 14, textvariable = ff_ncdf, justify = "left")
 	infobulle(ff_ncdfEd.tab4, 'Enter the format of the satellite files names,\nexample: rfe1983_01_01.nc')
 	status.bar.display(ff_ncdfEd.tab4, TextOutputVar, 'Enter the format of the satellite files names, example: rfe1983_01_01.nc')
 
@@ -292,7 +292,7 @@ QcCmdBut <- function(stateReplaceAll){
 		shpf <- if(tclvalue(cbValshp) == '1') getShpOpenData(file.plotShp)[[2]] else NULL
 		dem <- if(tclvalue(cbValdem) == '1') getDemOpenData(file.plotDem) else NULL
 		showval <- if(tclvalue(vShowVal) == "1") TRUE else FALSE
-		rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
+		rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf, ff_ncdf, spchkQcDateVal) else NULL
 		tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
 		if(length(AllOpenTabType) > 0){
 			if(AllOpenTabType[[tabid]] == "img"){
@@ -318,7 +318,7 @@ QcCmdBut <- function(stateReplaceAll){
 		showval <- if(tclvalue(vShowVal) == "1") TRUE else FALSE
 		shpf <- if(tclvalue(cbValshp) == '1') getShpOpenData(file.plotShp)[[2]] else NULL
 		dem <- if(tclvalue(cbValdem) == '1') getDemOpenData(file.plotDem) else NULL
-		rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
+		rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf, ff_ncdf, spchkQcDateVal) else NULL
 		tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
 		if(length(AllOpenTabType) > 0){
 			if(AllOpenTabType[[tabid]] == "img"){
@@ -344,7 +344,7 @@ QcCmdBut <- function(stateReplaceAll){
 		showval <- if(tclvalue(vShowVal) == "0") TRUE else FALSE
 		shpf <- if(tclvalue(cbValshp) == '1') getShpOpenData(file.plotShp)[[2]] else NULL
 		dem <- if(tclvalue(cbValdem) == '1') getDemOpenData(file.plotDem) else NULL
-		rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
+		rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf, ff_ncdf, spchkQcDateVal) else NULL
 		tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
 		if(length(AllOpenTabType) > 0){
 			if(AllOpenTabType[[tabid]] == "img"){
@@ -372,7 +372,7 @@ QcCmdBut <- function(stateReplaceAll){
 			#shpf <- if(tclvalue(cbValshp) == '0') getShpOpenData(file.plotShp)[[2]] else NULL
 			showval <- if(tclvalue(vShowVal) == "1") TRUE else FALSE
 			dem <- if(tclvalue(cbValdem) == '1') getDemOpenData(file.plotDem) else NULL
-			rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
+			rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf, ff_ncdf, spchkQcDateVal) else NULL
 			ZoomXYval <- as.numeric(c(tclvalue(xx1), tclvalue(xx2), tclvalue(yy1), tclvalue(yy2)))
 			tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
 			if(length(AllOpenTabType) > 0){
@@ -401,7 +401,7 @@ QcCmdBut <- function(stateReplaceAll){
 			#dem <- if(tclvalue(cbValdem) == '0') getDemOpenData(file.plotDem) else NULL
 			showval <- if(tclvalue(vShowVal) == "1") TRUE else FALSE
 			shpf <- if(tclvalue(cbValshp) == '1') getShpOpenData(file.plotShp)[[2]] else NULL
-			rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
+			rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf, ff_ncdf, spchkQcDateVal) else NULL
 			ZoomXYval <- as.numeric(c(tclvalue(xx1), tclvalue(xx2), tclvalue(yy1), tclvalue(yy2)))
 			tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
 			if(length(AllOpenTabType) > 0){
@@ -423,7 +423,7 @@ QcCmdBut <- function(stateReplaceAll){
 	tkbind(cbRFE.tab2,"<Button-1>", function(){
 		if(!is.null(noteQcSpatCheck)){
 			if(tclvalue(cbValrfe) == '0'){
-				rfedat <- getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal)
+				rfedat <- getSatelliteData(dir_ncdf, ff_ncdf, spchkQcDateVal)
 				if(is.null(rfedat)) InsertMessagesTxt(main.txt.out, 'No satellite data provided', format = TRUE)
 			}else  rfedat <- NULL
 
@@ -751,7 +751,7 @@ QcCmdBut <- function(stateReplaceAll){
 
 				shpf <- if(tclvalue(cbValshp) == '1') getShpOpenData(file.plotShp)[[2]] else NULL
 				dem <- if(tclvalue(cbValdem) == '1') getDemOpenData(file.plotDem) else NULL
-				rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
+				rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf, ff_ncdf, spchkQcDateVal) else NULL
 				showval <- if(tclvalue(vShowVal) == "1") TRUE else FALSE
 				ZoomXYval <- as.numeric(c(tclvalue(xx1), tclvalue(xx2), tclvalue(yy1), tclvalue(yy2)))
 
@@ -789,7 +789,7 @@ QcCmdBut <- function(stateReplaceAll){
 
 				shpf <- if(tclvalue(cbValshp) == '1') getShpOpenData(file.plotShp)[[2]] else NULL
 				dem <- if(tclvalue(cbValdem) == '1') getDemOpenData(file.plotDem) else NULL
-				rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
+				rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf, ff_ncdf, spchkQcDateVal) else NULL
 				showval <- if(tclvalue(vShowVal) == "1") TRUE else FALSE
 				ZoomXYval <- as.numeric(c(tclvalue(xx1), tclvalue(xx2), tclvalue(yy1), tclvalue(yy2)))
 
@@ -820,7 +820,7 @@ QcCmdBut <- function(stateReplaceAll){
 			if(nrow(spchkoutdates) != 0){
 				shpf <- if(tclvalue(cbValshp) == '1') getShpOpenData(file.plotShp)[[2]] else NULL
 				dem <- if(tclvalue(cbValdem) == '1') getDemOpenData(file.plotDem) else NULL
-				rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf,ff_ncdf,spchkQcDateVal) else NULL
+				rfedat <- if(tclvalue(cbValrfe) == '1') getSatelliteData(dir_ncdf, ff_ncdf, spchkQcDateVal) else NULL
 				showval <- if(tclvalue(vShowVal) == "1") TRUE else FALSE
 				ZoomXYval <- as.numeric(c(tclvalue(xx1), tclvalue(xx2), tclvalue(yy1), tclvalue(yy2)))
 

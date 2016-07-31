@@ -178,7 +178,7 @@ DisplaySpatialCheck <- function(parent, ijsp, ZoomXYval, dem, rfedat, shpf, show
 	img <- tkrplot1(canvas, fun = plotIt, hscale = hscale, vscale = vscale)
 	img_w <- as.double(tcl('image', 'width', img$image))
 	img_h <- as.double(tcl('image', 'height', img$image))
-	tkconfigure(canvas, width = img_w,height = img_h)
+	tkconfigure(canvas, width = img_w, height = img_h)
 	tkcreate(canvas, "image", 0, 0, anchor = 'nw', image = img$image)
 
 	tcl('raise', canvas)

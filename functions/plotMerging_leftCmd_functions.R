@@ -73,25 +73,25 @@ PlotMergingOutputCmd <- function(){
 	yrsLab.tab1 <- tklabel(frameStn, text = 'Year', anchor = 'w', justify = 'left')
 	monLab.tab1 <- tklabel(frameStn, text = 'Month', anchor = 'w', justify = 'left')
 	dayLabTab1_Var <- tclVar('Dek')
-	dayLab.tab1 <- tklabel(frameStn, text = tclvalue(dayLabTab1_Var), textvariable = dayLabTab1_Var,anchor = 'w', justify = 'left')
+	dayLab.tab1 <- tklabel(frameStn, text = tclvalue(dayLabTab1_Var), textvariable = dayLabTab1_Var, anchor = 'w', justify = 'left')
 	
 	idate_yrs <- tclVar('1983')
 	idate_mon <- tclVar('1')
 	idate_day <- tclVar('1')
 	
-	yrs1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_yrs,justify = "left")
-	mon1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_mon,justify = "left")
-	day1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_day,justify = "left")
+	yrs1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_yrs, justify = "left")
+	mon1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_mon, justify = "left")
+	day1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_day, justify = "left")
 
 	obs_name <- tclVar('Observation')	
 	obsLab.tab1 <- tklabel(frameStn, text = 'Title', anchor = 'e', justify = 'right')
-	obsEd.tab1 <- tkentry(frameStn, width = 14, textvariable = obs_name,justify = "left")
+	obsEd.tab1 <- tkentry(frameStn, width = 14, textvariable = obs_name, justify = "left")
 	infobulle(obsEd.tab1, 'Title of the panel')
 	status.bar.display(obsEd.tab1, TextOutputVar, 'Title of the panel')
 
 	unit_sym <- tclVar('mm')	
 	unitLab.tab1 <- tklabel(frameStn, text = 'Units', anchor = 'e', justify = 'right')
-	unitEd.tab1 <- tkentry(frameStn, width = 8, textvariable = unit_sym,justify = "left")
+	unitEd.tab1 <- tkentry(frameStn, width = 8, textvariable = unit_sym, justify = "left")
 	infobulle(unitEd.tab1, 'Display unit on colorscale')
 	status.bar.display(unitEd.tab1, TextOutputVar, 'Display unit on colorscale')
 
@@ -160,7 +160,7 @@ PlotMergingOutputCmd <- function(){
 		
 		dir_ncdf <- tclVar()
 		dir_ncdfLab.tab2 <- tklabel(frameNcdf, text = 'Directory of NetCDF files', anchor = 'w', justify = 'left')
-		dir_ncdfEd.tab2 <- tkentry(frameNcdf, textvariable = dir_ncdf,width = largeur)
+		dir_ncdfEd.tab2 <- tkentry(frameNcdf, textvariable = dir_ncdf, width = largeur)
 		dir_ncdfBt.tab2 <- tkbutton(frameNcdf, text = "...") 
 		tkconfigure(dir_ncdfBt.tab2, command = function(){
 			dir4ncdf <- tk_choose.dir(getwd(), "")
@@ -174,13 +174,13 @@ PlotMergingOutputCmd <- function(){
 
 		ff_ncdf <- tclVar("rfe%s_%s_%s.nc")
 		ff_ncdfLab.tab2 <- tklabel(frameNcdf, text = 'NetCDF filename format', anchor = 'w', justify = 'left')
-		ff_ncdfEd.tab2 <- tkentry(frameNcdf, width = 14, textvariable = ff_ncdf,justify = "left")
+		ff_ncdfEd.tab2 <- tkentry(frameNcdf, width = 14, textvariable = ff_ncdf, justify = "left")
 		infobulle(ff_ncdfEd.tab2, 'Enter the format of the NetCDF files names,\nexample: rfe1983_01_01.nc')
 		status.bar.display(ff_ncdfEd.tab2, TextOutputVar, 'Enter the format of the NetCDF files names, example: rfe1983_01_01.nc')
 
 		title_ncdf <- tclVar(paste('NetCDF', nfr))	
 		ttl_ncdfLab.tab2 <- tklabel(frameNcdf, text = 'Plot Title', anchor = 'w', justify = 'left')
-		ttl_ncdfEd.tab2 <- tkentry(frameNcdf, width = 14, textvariable = title_ncdf,justify = "left")
+		ttl_ncdfEd.tab2 <- tkentry(frameNcdf, width = 14, textvariable = title_ncdf, justify = "left")
 		infobulle(ttl_ncdfEd.tab2, 'Title of the plot')
 		status.bar.display(ttl_ncdfEd.tab2, TextOutputVar, 'Title of the plot')
 
@@ -195,7 +195,7 @@ PlotMergingOutputCmd <- function(){
 
 		######
 		tkgrid(frameNcdf, row = nfr, column = 0, sticky = 'we')
-		return(list(dir_ncdf,ff_ncdf,title_ncdf))
+		return(list(dir_ncdf, ff_ncdf, title_ncdf))
 	}
 	
 	#######################################################################################################
@@ -357,9 +357,9 @@ PlotMergingOutputCmd <- function(){
 	plotDataBut <- tkbutton(plotBut.cmd, text = "Plot Data")
 	plot_next <- tkbutton(plotBut.cmd, text = "Next->>")
 
-	tkgrid(plot_prev,row = 0, column = 0, sticky = 'w', padx = 5, pady = 5)
+	tkgrid(plot_prev, row = 0, column = 0, sticky = 'w', padx = 5, pady = 5)
 	tkgrid(plotDataBut, row = 0, column = 1, sticky = 'we', padx = 5, pady = 5)
-	tkgrid(plot_next,row = 0, column = 2, sticky = 'e', padx = 5, pady = 5)
+	tkgrid(plot_next, row = 0, column = 2, sticky = 'e', padx = 5, pady = 5)
 
 	#################	
 	notebookTab <- NULL
@@ -401,7 +401,7 @@ PlotMergingOutputCmd <- function(){
 	})	
 
 	######
-	tkconfigure(plot_prev,command = function(){
+	tkconfigure(plot_prev, command = function(){
 		if(tclvalue(file.period) == 'Daily data') todaty <- paste(as.numeric(tclvalue(idate_yrs)), as.numeric(tclvalue(idate_mon)), as.numeric(tclvalue(idate_day)), sep = '-')
 		if(tclvalue(file.period) == 'Monthly data') todaty <- paste(as.numeric(tclvalue(idate_yrs)), as.numeric(tclvalue(idate_mon)), 15, sep = '-')
 		if(tclvalue(file.period) == 'Dekadal data'){
@@ -461,7 +461,7 @@ PlotMergingOutputCmd <- function(){
 	})
 
 	######
-	tkconfigure(plot_next,command = function(){
+	tkconfigure(plot_next, command = function(){
 		if(tclvalue(file.period) == 'Daily data') todaty <- paste(as.numeric(tclvalue(idate_yrs)), as.numeric(tclvalue(idate_mon)), as.numeric(tclvalue(idate_day)), sep = '-')
 		if(tclvalue(file.period) == 'Monthly data') todaty <- paste(as.numeric(tclvalue(idate_yrs)), as.numeric(tclvalue(idate_mon)), 15, sep = '-')
 		if(tclvalue(file.period) == 'Dekadal data'){

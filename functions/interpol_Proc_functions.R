@@ -150,8 +150,8 @@ interpolationProc <- function(donne, demdata, interpolParams){
 			}
 		}
 		if(vgmChx == '1'){
-			if(useELV == '1') autovgm <- try(autofitVariogram(z~elv, model = vgmModList,input_data = odata), silent = TRUE)
-			else autovgm <- try(autofitVariogram(z~1, model = vgmModList,input_data = odata), silent = TRUE)
+			if(useELV == '1') autovgm <- try(autofitVariogram(z~elv, model = vgmModList, input_data = odata), silent = TRUE)
+			else autovgm <- try(autofitVariogram(z~1, model = vgmModList, input_data = odata), silent = TRUE)
 			if(inherits(autovgm, "try-error")){
 				InsertMessagesTxt(main.txt.out, "Variogram fitting failed", format = TRUE)
 				InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',autovgm[1]), format = TRUE)

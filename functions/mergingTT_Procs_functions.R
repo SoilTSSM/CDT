@@ -225,7 +225,7 @@ ExtractReanal2Stn <- function(ijGrd, nstn, coef.dates){
 }
 
 # #######################################
-calcBiasTemp <- function(i, ix1, stn.data,model_stn){
+calcBiasTemp <- function(i, ix1, stn.data, model_stn){
 	stn.val <- as.numeric(stn.data[ix1, i])
 	stn.mod <- as.numeric(model_stn[ix1, i])
 	ix <- which(!is.na(stn.val) & !is.na(stn.mod))
@@ -315,7 +315,7 @@ ComputeMeanBias <- function(paramsBias){
 			for (i in 1:nstn){
 				for (nt in 1:ntimes){
 					ix1 <- which(as.numeric(substr(bsdates, 7,8)) == vtimes[nt, 1] & as.numeric(substr(bsdates, 5,6)) == vtimes[nt, 2])
-					bias[nt, i] <- calcBiasTemp(i, ix1, stn.data,model_stn)
+					bias[nt, i] <- calcBiasTemp(i, ix1, stn.data, model_stn)
 				}
 			}
 		}
@@ -337,7 +337,7 @@ ComputeMeanBias <- function(paramsBias){
 			for (i in 1:nstn){
 				for (nt in 1:ntimes){
 					ix1 <- which(as.numeric(substr(bsdates, 7,7)) == vtimes[nt, 1] & as.numeric(substr(bsdates, 5,6)) == vtimes[nt, 2])
-					bias[nt, i] <- calcBiasTemp(i, ix1, stn.data,model_stn)
+					bias[nt, i] <- calcBiasTemp(i, ix1, stn.data, model_stn)
 				}
 			}
 		}
@@ -358,7 +358,7 @@ ComputeMeanBias <- function(paramsBias){
 			for (i in 1:nstn){
 				for (nt in 1:ntimes){
 					ix1 <- which(as.numeric(substr(bsdates, 5,6)) == vtimes[nt])
-					bias[nt, i] <- calcBiasTemp(i, ix1, stn.data,model_stn)
+					bias[nt, i] <- calcBiasTemp(i, ix1, stn.data, model_stn)
 				}
 			}
 		}
@@ -394,7 +394,7 @@ ComputeMeanBias <- function(paramsBias){
 			# else vgm_model <- Variogrm_modeling(bias.df)
 			bias.stn <- bias.stn[ix,]
 			coordinates(bias.stn) =~lon + lat
-			gbias <- krige(bias~1, locations = bias.stn, newdata = newlocation.merging, model = vgm_model,block = bGrd, nmin = min.nbrs, nmax = max.nbrs, maxdist = max.dst, debug.level = 0)
+			gbias <- krige(bias~1, locations = bias.stn, newdata = newlocation.merging, model = vgm_model, block = bGrd, nmin = min.nbrs, nmax = max.nbrs, maxdist = max.dst, debug.level = 0)
 			grd.bias <- gbias$var1.pred
 			grd.bias[is.na(grd.bias)] <- 1
 			#smoothing
@@ -783,7 +783,7 @@ MergeTemp <- function(mrgParam){
 				grd.res <- krige(diff~1, locations = tt.stn, newdata = newlocation.merging, nmax = max.nbrs, nmin = min.nbrs, maxdist = max.dst, debug.level = 0)
 				tt.mrg <- grd.res$var1.pred+tt.mrg
 			}else if(interpMethod == "Kriging"){
-				grd.res <- try(autoKrige(diff~1, input_data = tt.stn,new_data = newlocation.merging, model = VarioModel, nmin = min.nbrs, nmax = max.nbrs, maxdist = max.dst, debug.level = 0), silent = TRUE)
+				grd.res <- try(autoKrige(diff~1, input_data = tt.stn, new_data = newlocation.merging, model = VarioModel, nmin = min.nbrs, nmax = max.nbrs, maxdist = max.dst, debug.level = 0), silent = TRUE)
 				if(!inherits(grd.res, "try-error")){
 					tt.mrg <- grd.res$krige_output$var1.pred+tt.mrg
 				}else{

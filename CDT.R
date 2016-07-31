@@ -32,7 +32,7 @@ if(useTcl == "1"){
 }
 
 #########Load library
-options(warn=-1)
+options(warn = -1)
 library(tools)
 library(tcltk)
 library(tkrplot)
@@ -89,7 +89,7 @@ if(file.exists(confpath)){
 	addTclPath(path = conffile[3])		
 	tclRequire("Tktable")
 	tclRequire("BWidget")
-	tcl("package", "require", "BWidget") 	
+	# tcl("package", "require", "BWidget") 	
 	source(file.path(apps.dir, 'functions', 'cdtMain_window.R', fsep = .Platform$file.sep))
 }else{
 	configCDT()

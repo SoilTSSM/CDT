@@ -1,6 +1,6 @@
 
 ##write files (table or csv)
-writeFiles <- function(dat2save,file2save, row.names = FALSE, col.names = FALSE, quote = FALSE, append = FALSE,...){
+writeFiles <- function(dat2save, file2save, row.names = FALSE, col.names = FALSE, quote = FALSE, append = FALSE,...){
 	require(tools)
 	extFl <- file_ext(basename(file2save))
 	if(extFl == "csv" | extFl == "CSV") sep=','
@@ -9,7 +9,7 @@ writeFiles <- function(dat2save,file2save, row.names = FALSE, col.names = FALSE,
 }
 
 ###
-#writeFiles <- function(dat2save,file2save, row.names = FALSE, col.names = FALSE, quote = FALSE, append = FALSE,...){
+#writeFiles <- function(dat2save, file2save, row.names = FALSE, col.names = FALSE, quote = FALSE, append = FALSE,...){
 #	require(tools)
 #	extFl <- file_ext(basename(file2save))
 #	if(extFl == "csv" | extFl == "CSV"){

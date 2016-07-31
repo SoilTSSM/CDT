@@ -17,8 +17,9 @@ TreatCoefDownTemp <- function(origdir){
 	elv <- donne$elv
 	dates <- donne$dates
 	donne <- donne$data
-	#if(nrow(donne$stnDuplCoords) > 0)  #display table
-	#if(nrow(dat$stnMissCoords) > 0)
+	#if(nrow(donne$duplicated.coords) > 0)  #diplay table
+	#if(nrow(dat$missing.coords) > 0)
+
 	stnlist <- list(id = stn.id, lon = stn.lon, lat = stn.lat, elv = elv, dates = dates, data = donne)
 
 	###get elevation data
@@ -197,8 +198,9 @@ TreatBiasCoefTemp <- function(origdir){
 	elv <- donne$elv
 	dates <- donne$dates
 	donne <- donne$data
-	#if(nrow(donne$stnDuplCoords) > 0)  #display table
-	#if(nrow(dat$stnMissCoords) > 0)
+	#if(nrow(donne$duplicated.coords) > 0)  #diplay table
+	#if(nrow(dat$missing.coords) > 0)
+
 	stnlist <- list(id = stn.id, lon = stn.lon, lat = stn.lat, elv = elv, dates = dates, data = donne)
 
 	###get elevation data
@@ -275,13 +277,13 @@ execCoefBiasCompute <- function(origdir){
 
 	#method 1
 	if(biasRemoval == 'Bias-kriging'){
-		paramsBias <- list(stnDatas = coefBiasTempdat$stnData,model_stn = model_stn,coef.dates = coef.dates, xy.dim = xy.dim, nlon0 = nlon0, nlat0 = nlat0, newlocation.merging = newlocation.merging, dirBias = origdir)
+		paramsBias <- list(stnDatas = coefBiasTempdat$stnData, model_stn = model_stn, coef.dates = coef.dates, xy.dim = xy.dim, nlon0 = nlon0, nlat0 = nlat0, newlocation.merging = newlocation.merging, dirBias = origdir)
 		ret <- ComputeMeanBias(paramsBias)
 	}
 
 	#method 2
 	if(biasRemoval == 'Regression-QM'){
-		paramsRegQM <- list(stn.data = stn.data, stn.dates = stn.dates, coef.dates = coef.dates, dem.stn = dem.stn,model_stn = model_stn,origdir = origdir)
+		paramsRegQM <- list(stn.data = stn.data, stn.dates = stn.dates, coef.dates = coef.dates, dem.stn = dem.stn, model_stn = model_stn, origdir = origdir)
 		ret <- ComputeRegCoeff(paramsRegQM)
 	}
 	if(!is.null(ret)){
@@ -309,8 +311,9 @@ TreatAjdBiasDownTemp <- function(){
 	elv <- donne$elv
 	dates <- donne$dates
 	donne <- donne$data
-	#if(nrow(donne$stnDuplCoords) > 0)  #display table
-	#if(nrow(dat$stnMissCoords) > 0)
+	#if(nrow(donne$duplicated.coords) > 0)  #diplay table
+	#if(nrow(dat$missing.coords) > 0)
+
 	stnlist <- list(id = stn.id, lon = stn.lon, lat = stn.lat, elv = elv, dates = dates, data = donne)
 
 	###get elevation data
@@ -445,8 +448,9 @@ TreatmergeTemp <- function(origdir){
 	elv <- donne$elv
 	dates <- donne$dates
 	donne <- donne$data
-	#if(nrow(donne$stnDuplCoords) > 0)  #display table
-	#if(nrow(dat$stnMissCoords) > 0)
+	#if(nrow(donne$duplicated.coords) > 0)  #diplay table
+	#if(nrow(dat$missing.coords) > 0)
+
 	stnlist <- list(id = stn.id, lon = stn.lon, lat = stn.lat, elv = elv, dates = dates, data = donne)
 
 	###get elevation data

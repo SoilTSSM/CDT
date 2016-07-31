@@ -26,9 +26,21 @@ getExtractDataFun <- function(retExtractParams){
 	ChoixOutType <- retExtractParams[25]
 	multiptspoly <- retExtractParams[26]
 
+	calc.anomaly <- retExtractParams[27]
+	calc.stanomaly <- retExtractParams[28]
+	calc.climato <- retExtractParams[29]
+	# period.climato <- retExtractParams[30]
+	pmLon <- abs(as.numeric(retExtractParams[30]))
+	pmLat <- abs(as.numeric(retExtractParams[31]))
+
 	####
 	outTsTable <- cbind(c('Daily', 'Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'), c('daily', 'dekadal', 'monthly', 'season3', 'season6', 'yearly'))
 	period1 <- outTsTable[outTsTable[,1] == outTS, 2]
+	# period.clim <- outTsTable[outTsTable[,1] == period.climato, 2]
+
+	if(calc.climato == "1") out2sav.clim <- file.path(dirname(out2sav), paste('Climatologies_', basename(out2sav), sep = ''))
+	if(calc.anomaly == "1") out2sav.anom <- file.path(dirname(out2sav), paste('Anomalies_', basename(out2sav), sep = ''))
+	if(calc.stanomaly == "1") out2sav.stanom <- file.path(dirname(out2sav), paste('StandardizedAnomalies_', basename(out2sav), sep = ''))
 
 	####
 	if(is.na(yrs1) | is.na(mon1) | is.na(day1) | is.na(yrs2) | is.na(mon2) | is.na(day2)){
@@ -106,9 +118,6 @@ getExtractDataFun <- function(retExtractParams){
 			if(nrow(multiptspoly) > 1) multiptspoly <- apply(multiptspoly, 2, as.numeric)
 			else multiptspoly <- matrix(as.numeric(multiptspoly), ncol = 2)
 			headinfo <- cbind(paste('Pts', 1:nrow(multiptspoly), sep = ''), multiptspoly)
-			pts.loc <- as.data.frame(multiptspoly)
-			names(pts.loc) <- c('x', 'y')
-			coordinates(pts.loc)<- ~x+y
 		}
 
 		if(extType == 'Multiple Polygons'){
@@ -130,13 +139,152 @@ getExtractDataFun <- function(retExtractParams){
 		if(extType == 'Multiple Polygons') InsertMessagesTxt(main.txt.out, "No selected polygons", format = TRUE)
 		return(NULL)
 	}
+
+	#############
+
+	TSClimatologyFun <- function(){
+		if(calc.anomaly == "1"){
+			xanom <- data.frame(xtmp,  stringsAsFactors = FALSE)
+			if(period1 %in% c('daily', 'dekadal', 'monthly')){
+				xanom[, 2] <- as.numeric(xanom[, 2])
+				xanom[xanom[, 2] == -99, 2] <- NA
+				comp.fun <- paste('anomaly', period1, sep = '.')
+				comp.fun <- match.fun(comp.fun)
+				xanom <- data.frame(Date = as.character(xanom[, 1]), Values = round(comp.fun(xanom[,2], as.character(xanom[, 1])), 1))
+				xanom[is.na(xanom[, 2]), 2] <- -9999
+			}else{
+				if(period1 == 'yearly'){
+					xanom[, 2] <- as.numeric(xanom[, 2])
+					xanom[xanom[, 2] == -99, 2] <- NA
+					xanom[, 2] <- round(xanom[, 2]-mean(xanom[, 2], na.rm = TRUE), 1)
+					xanom[is.na(xanom[, 2]), 2] <- -9999		
+				}else{
+					xanom[, 3] <- as.numeric(xanom[, 3])
+					xanom[xanom[, 3] == -99, 3] <- NA
+					xanom[, 3] <- round(xanom[, 3]-mean(xanom[, 3], na.rm = TRUE), 1)
+					xanom[is.na(xanom[, 3]), 3] <- -9999
+				}
+			}
+			writeFiles(xanom, out2sav.anom)
+		}
+
+		if(calc.stanomaly == "1"){
+			xstanom <- data.frame(xtmp,  stringsAsFactors = FALSE)
+			if(period1 %in% c('daily', 'dekadal', 'monthly')){
+				xstanom[, 2] <- as.numeric(xstanom[, 2])
+				xstanom[xstanom[, 2] == -99, 2] <- NA
+				comp.fun <- paste('standard', period1, sep = '.')
+				comp.fun <- match.fun(comp.fun)
+				xstanom <- data.frame(Date = as.character(xstanom[, 1]), Values = comp.fun(xstanom[,2], as.character(xstanom[, 1])))
+				xstanom[is.na(xstanom[, 2]), 2] <- -9999
+			}else{
+				if(period1 == 'yearly'){
+					xstanom[, 2] <- as.numeric(xstanom[, 2])
+					xstanom[xstanom[, 2] == -99, 2] <- NA
+					xstanom[, 2] <- (xstanom[, 2]-mean(xstanom[, 2], na.rm = TRUE))/sd(xstanom[, 2], na.rm = TRUE)
+					xstanom[is.na(xstanom[, 2]), 2] <- -9999
+				}else{
+					xstanom[, 3] <- as.numeric(xstanom[, 3])
+					xstanom[xstanom[, 3] == -99, 3] <- NA
+					xstanom[, 3] <- (xstanom[, 3]-mean(xstanom[, 3], na.rm = TRUE))/sd(xstanom[, 3], na.rm = TRUE)
+					xstanom[is.na(xstanom[, 3]), 3] <- -9999
+				}
+			}
+			writeFiles(xstanom, out2sav.stanom)
+		}
+
+		if(calc.climato == "1"){
+			xclim <- data.frame(xtmp,  stringsAsFactors = FALSE)
+			if(period1 %in% c('daily', 'dekadal', 'monthly')){
+				xclim [, 2] <- as.numeric(xclim [, 2])
+				xclim[xclim[, 2] == -99, 2] <- NA
+				comp.fun <- paste('climato', period1, sep = '.')
+				comp.fun <- match.fun(comp.fun)
+				xclim <- round(comp.fun(xclim[,2], as.character(xclim[,1]), 'mean'), 1)
+				xclim <- cbind(seq_along(xclim), xclim)
+			}else{
+				if(period1 == 'yearly'){
+					xclim [, 2] <- as.numeric(xclim [, 2])
+					xclim[xclim[, 2] == -99, 2] <- NA
+					xclim <- data.frame(Year =  'Yearly.mean', round(mean(xclim[, 2], na.rm = TRUE), 1))
+				}else{
+					xclim [, 3] <- as.numeric(xclim [, 3])
+					xclim[xclim[, 3] == -99, 3] <- NA
+					xclim <- data.frame(Season = as.character(xclim[1, 1]), Values = round(mean(xclim[, 3], na.rm = TRUE), 1))
+				}
+			}
+			xclim[is.na(xclim[, 2]), 2] <- -99
+			writeFiles(xclim, out2sav.clim)
+		}
+	}
+
+	CDTClimatologyFun <- function(){
+		if(calc.anomaly == "1"){
+			xanom <- xanom0 <- xtmp
+			xdates <- as.character(xanom0[-(1:3), 1])
+			xanom0 <- apply(xanom0[-(1:3), -1], 2, as.numeric)
+			xanom0[xanom0 == -99] <- NA
+			if(period1 %in% c('daily', 'dekadal', 'monthly')){
+				comp.fun <- paste('anomaly', period1 , sep = '.') 
+				comp.fun <- match.fun(comp.fun)
+				xanom0 <- round(apply(xanom0, 2, comp.fun, dates = xdates), 1)
+			}else{
+				xanom0 <- round(t(t(xanom0)-apply(xanom0, 2, mean, na.rm = TRUE)), 1)
+			}
+			xanom[-(1:3), -1]  <- xanom0
+			xanom[is.na(xanom)] <- -9999
+			writeFiles(xanom, out2sav.anom)
+		}
+
+		if(calc.stanomaly == "1"){
+			xstanom <- xstanom0 <- xtmp
+			xdates <- as.character(xstanom0[-(1:3), 1])
+			xstanom0 <- apply(xstanom0[-(1:3), -1], 2, as.numeric)
+			xstanom0[xstanom0 == -99] <- NA
+			if(period1 %in% c('daily', 'dekadal', 'monthly')){
+				comp.fun <- paste('standard', period1, sep = '.')
+				comp.fun <- match.fun(comp.fun)
+				xstanom0 <- apply(xstanom0, 2, comp.fun, dates = xdates)
+			}else{
+				xstanom0 <- t((t(xstanom0)-apply(xstanom0, 2, mean, na.rm = TRUE))/apply(xstanom0, 2, sd, na.rm = TRUE))
+			}
+			xstanom[-(1:3), -1]  <- xstanom0
+			xstanom[is.na(xstanom)] <- -9999
+			writeFiles(xstanom, out2sav.stanom)
+		}
+
+		if(calc.climato == "1"){
+			xclim <- xclim0 <- xtmp
+			xdates <- as.character(xclim0[-(1:3), 1])
+			xclim0 <- apply(xclim0[-(1:3), -1], 2, as.numeric)
+			xclim0[xclim0 == -99] <- NA
+			if(period1 %in% c('daily', 'dekadal', 'monthly')){
+				comp.fun <- paste('climato', period1, sep = '.')
+				comp.fun <- match.fun(comp.fun)
+				xclim0 <- round(apply(xclim0, 2, comp.fun, dates = xdates, fun = 'mean'), 1)
+				xclim <- xclim[1:(nrow(xclim0)+3), ]
+				xclim[-(1:3), -1] <- xclim0
+				xclim[-(1:3), 1] <- 1:nrow(xclim0)
+			}else{
+				xclim0 <- round(apply(xclim0, 2, mean, na.rm = TRUE), 1)
+				xclim <- xclim[1:4, ]
+				xclim[4, -1] <- xclim0
+				if(period1 == 'yearly') xclim[4, 1] <- 'Yearly.mean'
+				else xclim[4, 1] <- strsplit(xclim[4, 1],'-')[[1]][1]
+			}
+			xclim[is.na(xclim)] <- -99
+			writeFiles(xclim, out2sav.clim)
+		}
+	}
+
 	#############
 
 	RVAL <- vector(mode = 'list', length = length(ncpath))
 
 	for(fl in seq_along(ncpath)){
-		if(!file.exists(ncpath[fl])){
+		if(!existFl[fl]){
 			InsertMessagesTxt(main.txt.out, paste('File', basename(ncpath[fl]),'does not exist') ,format = TRUE)
+			tcl('update')
 			next
 		}
 
@@ -147,33 +295,71 @@ getExtractDataFun <- function(retExtractParams){
 		xval <- ncvar_get(nc, varid = nc$var[[1]]$name)
 		nc_close(nc)
 
-#Multiple Points & Polygons still slow
+		#Multiple Points & Polygons extraction still slow
 		#######
 		if(extType == 'Point'){
-			iclo <- findInterval(xminLon, xlon)
-			ilo <- iclo+(2 * xminLon > xlon[iclo]+xlon[iclo+1])
-			icla <- findInterval(xminLat, xlat)
-			ila <- icla+(2 * xminLat > xlat[icla]+xlat[icla+1])
-			if(length(ilo) == 0 | is.na(ilo) | length(ila) == 0 | is.na(ila))  rval <- NA
-			else rval <- xval[ilo, ila]
+
+			nx <- xlon[2]-xlon[1]
+			padx <- round(pmLon/nx)
+			ny <- xlat[2]-xlat[1]
+			pady <- round(pmLat/ny)
+			voisin <- expand.grid(x = xminLon + nx*(-padx:padx), y =  xminLat + ny*(-pady:pady))
+
+			iclo <- findInterval(voisin$x, xlon)
+			ilo <- iclo+(2 * voisin$x > xlon[iclo]+xlon[iclo+1])
+			icla <- findInterval(voisin$y, xlat)
+			ila <- icla+(2 * voisin$y > xlat[icla]+xlat[icla+1])
+
+			ilola <- !is.na(ilo) & !is.na(ila)
+			if(!any(ilola)) rval <- NA
+			else{
+				ilo <- ilo[ilola]
+				ila <- ila[ilola]
+				if(length(ilo) > 1) rval <- mean(diag(xval[ilo,ila]), na.rm = TRUE)
+				else rval <- xval[ilo,ila]
+			}
 			RVAL[[fl]] <- rval
 		}else if(extType == 'Multiple Points'){
-			ilo <- xlon >= min(multiptspoly[,1], na.rm = TRUE) & xlon <= max(multiptspoly[,1], na.rm = TRUE)
-			ila <- xlat >= min(multiptspoly[,2], na.rm = TRUE) & xlat <= max(multiptspoly[,2], na.rm = TRUE)
+			ilo <- xlon >= (min(multiptspoly[,1], na.rm = TRUE)-pmLon) & xlon <= (max(multiptspoly[,1], na.rm = TRUE)+pmLon)
 			iloL <- which(ilo)
-			ilaL <- which(ila)
 			if(iloL[1] > 1) ilo[iloL[1]-1] <- TRUE
 			if(iloL[length(iloL)] < length(ilo)) ilo[iloL[length(iloL)]+1] <- TRUE
+			rlon <- xlon[ilo]
+
+			ila <- xlat >= (min(multiptspoly[,2], na.rm = TRUE)-pmLat) & xlat <= (max(multiptspoly[,2], na.rm = TRUE)+pmLat)
+			ilaL <- which(ila)
 			if(ilaL[1] > 1) ila[ilaL[1]-1] <- TRUE
 			if(ilaL[length(ilaL)] < length(ila)) ila[ilaL[length(ilaL)]+1] <- TRUE
-			rval <- xval[ilo, ila]
-			rlon <- xlon[ilo]
 			rlat <- xlat[ila]
+
+			rval <- xval[ilo, ila]
 
 			sptNC <- expand.grid(x = rlon, y = rlat)
 			coordinates(sptNC)<- ~x+y
 			sptNC <- SpatialPixels(points = sptNC, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
-			RVAL[[fl]] <- rval[unname(over(pts.loc, geometry(sptNC)))]
+			nx <- sptNC@grid@cellsize[1]
+			padx <- round(pmLon/nx)
+			ny <- sptNC@grid@cellsize[2]
+			pady <- round(pmLat/ny)
+
+			pts.loc <- as.data.frame(multiptspoly)
+			names(pts.loc) <- c('x', 'y')
+
+			pts.w.voisin <-lapply(1:nrow(pts.loc), function(j){
+				voisin <- expand.grid(x = pts.loc$x[j] + nx*(-padx:padx), y =  pts.loc$y[j] + ny*(-pady:pady))
+				cbind(voisin, j)
+			})
+			pts.w.voisin <- do.call('rbind', pts.w.voisin)
+
+			if(pmLon > 0 | pmLat > 0){
+				coordinates(pts.w.voisin)<- ~x+y
+				pts.w.voisin$ijv <- unname(over(pts.w.voisin, geometry(sptNC)))
+				pts.w.voisin<- pts.w.voisin[!is.na(pts.w.voisin$ijv), ]
+				RVAL[[fl]] <- tapply(rval[pts.w.voisin$ijv], pts.w.voisin$j, mean, na.rm = TRUE)
+			}else{
+				coordinates(pts.loc)<- ~x+y
+				RVAL[[fl]] <- rval[unname(over(pts.loc, geometry(sptNC)))]
+			}
 		}else if(extType == 'Multiple Polygons'){
 			ilo <- xlon >= bbxregOI[1,1] & xlon <= bbxregOI[1,2]
 			ila <- xlat >= bbxregOI[2,1] & xlat <= bbxregOI[2,2]
@@ -189,16 +375,16 @@ getExtractDataFun <- function(retExtractParams){
 			if(extType == 'Rectangle'){
 				ilo <- xlon >= xminLon & xlon <= xmaxLon
 				ila <- xlat >= xminLat & xlat <= xmaxLat
-				rval <- xval[ilo, ila]
 				rlon <- xlon[ilo]
 				rlat <- xlat[ila]
+				rval <- xval[ilo, ila]
 			}
 			if(extType == 'Polygon'){
 				ilo <- xlon >= bbxregOI[1,1] & xlon <= bbxregOI[1,2]
 				ila <- xlat >= bbxregOI[2,1] & xlat <= bbxregOI[2,2]
-				rval <- xval[ilo, ila]
 				rlon <- xlon[ilo]
 				rlat <- xlat[ila]
+				rval <- xval[ilo, ila]
 
 				sptNC <- data.frame(expand.grid(x = rlon, y = rlat), z = c(rval))
 				coordinates(sptNC)<- ~x+y
@@ -214,15 +400,15 @@ getExtractDataFun <- function(retExtractParams){
 		}
 	}
 
-
 	##################################
 
 	if(extType == 'Point'){
 		RVAL[sapply(RVAL, is.null)] <- NA
 		xval <- unlist(RVAL)
 		if(period0 == period1){
-			xval[is.na(xval)]<- -99
-			xtmp <- cbind(dates, xval)
+			xtmp <- round(xval, 1)
+			xtmp[is.na(xtmp)]<- -99
+			xtmp <- cbind(dates, xtmp)
 			writeFiles(xtmp, out2sav)
 		}else{
 			if(period1 == 'season3'){
@@ -242,16 +428,19 @@ getExtractDataFun <- function(retExtractParams){
 			}
 			writeFiles(xtmp, out2sav)
 		}
+
+		###### clim
+		TSClimatologyFun()
+
 	}else if(extType == 'Multiple Points' | extType == 'Multiple Polygons'){
 		RVAL[sapply(RVAL, is.null)] <- rep(NA, nrow(headinfo))
 		xval <- do.call('rbind', RVAL)
-#	assign('RVAL', RVAL, envir = .GlobalEnv)
-#	assign('RVAL0', xval, envir = .GlobalEnv)
 		capition <- c('Stations', 'LON', 'DATE/LAT')
 
 		if(period0 == period1){
-			xval[is.na(xval)]<- -99
-			xtmp <- t(cbind(t(cbind(capition, t(headinfo))), t(cbind(dates, xval))))
+			xtmp <- round(xval, 1)
+			xtmp[is.na(xtmp)]<- -99
+			xtmp <- t(cbind(t(cbind(capition, t(headinfo))), t(cbind(dates, xtmp))))
 			writeFiles(xtmp, out2sav)
 		}else{
 			if(period1 == 'season3'){
@@ -267,8 +456,6 @@ getExtractDataFun <- function(retExtractParams){
 			}else{
 				comp.fun <- paste(period0, 2, period1, sep = '')
 				comp.fun <- match.fun(comp.fun)
-
-				#xtmp <- comp.fun(xval, dates, fun = aggfun, frac = missfrac)
 				xtmp <- apply(xval, 2, comp.fun, dates = dates, fun = aggfun, frac = missfrac)
 				xtmp0 <- as.character(xtmp[[1]][,1])
 				xtmp <- round(sapply(xtmp, function(x)x[,2]), 1)
@@ -278,6 +465,10 @@ getExtractDataFun <- function(retExtractParams){
 			xtmp <- t(cbind(t(cbind(capition, t(headinfo))), t(xtmp)))
 			writeFiles(xtmp, out2sav)
 		}
+
+		###### clim
+		CDTClimatologyFun()
+		
 	}else{
 		if(spAvrg == '1'){
 			RVAL[sapply(RVAL, is.null)] <- NA
@@ -304,6 +495,10 @@ getExtractDataFun <- function(retExtractParams){
 				}
 				writeFiles(xtmp, out2sav)
 			}
+
+			###### clim
+			TSClimatologyFun()
+			
 		}else{
 			RVAL[sapply(RVAL, is.null)] <- matrix(NA, ncol = length(rlat), nrow = length(rlon))
 			rlon <- matrix(round(rlon, 5), nrow = nrow(rval), ncol = ncol(rval))
@@ -349,7 +544,7 @@ getExtractDataFun <- function(retExtractParams){
 					lstOmat <- seasonal_lstOmat(period0, RVAL, dates, smon = season1, lmon = 3, fun = aggfun, minfrac = missfrac)
 					Season <- lstOmat[[1]]
 					Start_Year <- lstOmat[[2]]
-					daty <- paste(Season,Start_Year,sep = '-')
+					daty <- paste(Season, Start_Year, sep = '-')
 					fileout <- file.path(out2sav, paste('Output_', Season, '_',Start_Year,'.txt', sep = ''), fsep = .Platform$file.sep)
 					capdate <- paste('Season:',Season, 'Start_Year:',Start_Year)
 					RVAL <- lstOmat[[3]]
@@ -357,7 +552,7 @@ getExtractDataFun <- function(retExtractParams){
 					lstOmat <- seasonal_lstOmat(period0, RVAL, dates, smon = season1, lmon = 6, fun = aggfun, minfrac = missfrac)
 					Season <- lstOmat[[1]]
 					Start_Year <- lstOmat[[2]]
-					daty <- paste(Season,Start_Year,sep = '-')
+					daty <- paste(Season, Start_Year, sep = '-')
 					fileout <- file.path(out2sav, paste('Output_', Season, '_',Start_Year,'.txt', sep = ''), fsep = .Platform$file.sep)
 					capdate <- paste('Season:',Season, 'Start_Year:',Start_Year)
 					RVAL <- lstOmat[[3]]
@@ -383,20 +578,14 @@ getExtractDataFun <- function(retExtractParams){
 					}
 				}
 				if(ChoixOutType == '2'){
-					#write.table('Longitude', file = out2sav, append = TRUE, row.names = FALSE, col.names = FALSE)
 					writeFiles('Longitude', file = out2sav, append = TRUE)
-					#write.table(rlon, file = out2sav, append = TRUE, row.names = FALSE, col.names = FALSE)
 					writeFiles(rlon, file = out2sav, append = TRUE)
-					#write.table('Latitude', file = out2sav, append = TRUE, row.names = FALSE, col.names = FALSE)
 					writeFiles('Latitude', file = out2sav, append = TRUE)
-					#write.table(rlat, file = out2sav, append = TRUE, row.names = FALSE, col.names = FALSE)
 					writeFiles(rlat, file = out2sav, append = TRUE)
 					for(j in seq_along(RVAL)){
-						#write.table(capdate[j], file = out2sav, append = TRUE, row.names = FALSE, col.names = FALSE)
 						writeFiles(capdate[j], file = out2sav, append = TRUE)
 						xtmp <- round(RVAL[[j]], 1)
 						xtmp[is.na(xtmp)]<- -99
-						#write.table(xtmp, file = out2sav, append = TRUE, row.names = FALSE, col.names = FALSE)
 						writeFiles(xtmp, file = out2sav, append = TRUE)
 					}
 				}

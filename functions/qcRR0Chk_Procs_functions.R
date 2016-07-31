@@ -122,7 +122,7 @@ replaceZeroChkbyNA <- function(IJstation, retRes){
 
 ###################################################################
 
-QcOutZeroChk_Neighbors <- function(IJstation,date_month){
+QcOutZeroChk_Neighbors <- function(IJstation, date_month){
 	idstn <- EnvQcZeroChkData$donnees$id
 	dates <- EnvQcZeroChkData$donnees$dates
 	lon <- EnvQcZeroChkData$donnees$lon

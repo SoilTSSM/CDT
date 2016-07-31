@@ -67,7 +67,7 @@ PlotGriddedNcdfCmd <- function(){
 	#######################
 	unit_sym <- tclVar('mm')	
 	unitLab.tab1 <- tklabel(frameNcdf, text = 'Units', anchor = 'e', justify = 'right')
-	unitEd.tab1 <- tkentry(frameNcdf, width = 8, textvariable = unit_sym,justify = "left")
+	unitEd.tab1 <- tkentry(frameNcdf, width = 8, textvariable = unit_sym, justify = "left")
 	infobulle(unitEd.tab1, 'Display unit on colorscale')
 	status.bar.display(unitEd.tab1, TextOutputVar, 'Display unit on colorscale')
 

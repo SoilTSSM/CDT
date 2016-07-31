@@ -18,16 +18,16 @@ getDEMFun <- function(parent.win){
 	###
 
 	fr_grd <- ttklabelframe(frA1, text = "Area of interest", relief = "groove", borderwidth = 2)
-	tkgrid(fr_grd,padx = 5, pady = 5)
+	tkgrid(fr_grd, padx = 5, pady = 5)
 	grd_llon <- tklabel(fr_grd, text = "Longitude", anchor = 'e', justify = 'right')
 	grd_llat <- tklabel(fr_grd, text = "Latitude", anchor = 'e', justify = 'right')
 	grd_lb1 <- tklabel(fr_grd, text = "Minimum")
 	grd_lb2 <- tklabel(fr_grd, text = "Maximum")
 
-	grd_vlon1 <- tkentry.h(fr_grd,TextOutputVar, 'Minimum longitude in degree', 'Minimum longitude in degree')
-	grd_vlon2 <- tkentry.h(fr_grd,TextOutputVar, 'Maximum longitude in degree', 'Maximum longitude in degree')
-	grd_vlat1 <- tkentry.h(fr_grd,TextOutputVar, 'Minimum latitude in degree', 'Minimum latitude in degree')
-	grd_vlat2 <- tkentry.h(fr_grd,TextOutputVar, 'Maximum latitude in degree', 'Maximum latitude in degree')
+	grd_vlon1 <- tkentry.h(fr_grd, TextOutputVar, 'Minimum longitude in degree', 'Minimum longitude in degree')
+	grd_vlon2 <- tkentry.h(fr_grd, TextOutputVar, 'Maximum longitude in degree', 'Maximum longitude in degree')
+	grd_vlat1 <- tkentry.h(fr_grd, TextOutputVar, 'Minimum latitude in degree', 'Minimum latitude in degree')
+	grd_vlat2 <- tkentry.h(fr_grd, TextOutputVar, 'Maximum latitude in degree', 'Maximum latitude in degree')
 
 	minLon <- tclVar('42')
 	maxLon <- tclVar('52')
@@ -41,10 +41,10 @@ getDEMFun <- function(parent.win){
 
 	tkgrid(grd_lb1, row = 0, column = 1, sticky = "ew")
 	tkgrid(grd_lb2, row = 0, column = 2, sticky = "ew")
-	tkgrid(grd_llon,row = 1, column = 0, sticky = "ew")
+	tkgrid(grd_llon, row = 1, column = 0, sticky = "ew")
 	tkgrid(grd_vlon1, row = 1, column = 1, sticky = "ew")
 	tkgrid(grd_vlon2, row = 1, column = 2, sticky = "ew")
-	tkgrid(grd_llat,row = 2, column = 0, sticky = "ew")
+	tkgrid(grd_llat, row = 2, column = 0, sticky = "ew")
 	tkgrid(grd_vlat1, row = 2, column = 1, sticky = "ew")
 	tkgrid(grd_vlat2, row = 2, column = 2, sticky = "ew")
 

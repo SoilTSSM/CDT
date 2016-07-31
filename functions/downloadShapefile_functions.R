@@ -31,16 +31,16 @@ getCountryShapefile <- function(parent.win){
 	lab2 <- tklabel(frA1, text = 'Select level subdivisions', anchor = 'w', justify = 'left')
 
 	level_sub <- tclVar(0)
-	cb.level_sub <- ttkcombobox(frA1, values = 0:4, textvariable = level_sub,width = 34)  #
+	cb.level_sub <- ttkcombobox(frA1, values = 0:4, textvariable = level_sub, width = 34)  #
 	infobulle(cb.level_sub,'Choose level subdivisions such as\ncountry, provinces, districts,...\n0 is country level')
-	status.bar.display(cb.level_sub,TextOutputVar, 'Choose level subdivisions such as country, provinces, districts,...(0 is country level)')
+	status.bar.display(cb.level_sub, TextOutputVar, 'Choose level subdivisions such as country, provinces, districts,...(0 is country level)')
 
 	###
 	tkgrid(lab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cb.country, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(separator1, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(lab2, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cb.level_sub,row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.level_sub, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	###
 	tkbind(cb.country,"<<ComboboxSelected>>", function(){
@@ -48,7 +48,7 @@ getCountryShapefile <- function(parent.win){
 		maxlev <- as.numeric(cntr[cntr_id,"max_lev"])
 		level_val <- 0:maxlev
 		tclvalue(level_sub)<-'0'
-		tkconfigure(cb.level_sub,values = level_val)
+		tkconfigure(cb.level_sub, values = level_val)
 	})
 
 	###
@@ -74,7 +74,7 @@ getCountryShapefile <- function(parent.win){
 		level <- tclvalue(level_sub)
 		outdir <- tclvalue(dir2save)
 
-		cntr_id <- match(cntr_choix,cbvalues)
+		cntr_id <- match(cntr_choix, cbvalues)
 		cntr_iso3 <- cntr[cntr_id,"ISO3"]
 		if(outdir == "" | outdir == "NA"){
 			tkmessageBox(message = "Browse or enter directory to save results", icon = "warning", type = "ok")

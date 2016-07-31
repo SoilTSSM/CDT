@@ -74,19 +74,19 @@ PlotCDTDataFormatCmd <- function(){
 	yrsLab.tab1 <- tklabel(frameStn, text = 'Year', anchor = 'w', justify = 'left')
 	monLab.tab1 <- tklabel(frameStn, text = 'Month', anchor = 'w', justify = 'left')
 	dayLabTab1_Var <- tclVar('Dek')
-	dayLab.tab1 <- tklabel(frameStn, text = tclvalue(dayLabTab1_Var), textvariable = dayLabTab1_Var,anchor = 'w', justify = 'left')
+	dayLab.tab1 <- tklabel(frameStn, text = tclvalue(dayLabTab1_Var), textvariable = dayLabTab1_Var, anchor = 'w', justify = 'left')
 	
 	idate_yrs <- tclVar('1983')
 	idate_mon <- tclVar('1')
 	idate_day <- tclVar('1')
 	
-	yrs1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_yrs,justify = "left")
-	mon1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_mon,justify = "left")
-	day1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_day,justify = "left")
+	yrs1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_yrs, justify = "left")
+	mon1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_mon, justify = "left")
+	day1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_day, justify = "left")
 
 	unit_sym <- tclVar('mm')	
 	unitLab.tab1 <- tklabel(frameStn, text = 'Units', anchor = 'e', justify = 'right')
-	unitEd.tab1 <- tkentry(frameStn, width = 8, textvariable = unit_sym,justify = "left")
+	unitEd.tab1 <- tkentry(frameStn, width = 8, textvariable = unit_sym, justify = "left")
 	infobulle(unitEd.tab1, 'Display unit on colorscale')
 	status.bar.display(unitEd.tab1, TextOutputVar, 'Display unit on colorscale')
 

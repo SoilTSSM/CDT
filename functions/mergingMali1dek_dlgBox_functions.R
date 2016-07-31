@@ -46,7 +46,7 @@ update1DekInfo_Mali <- function(parent.win, GeneralParameters){
 		tclvalue(fileRFE) <- ncfileopen
 	})
 
-	tkgrid(cbAdownRFE_f,row = 0, column = 0, sticky = 'w', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cbAdownRFE_f, row = 0, column = 0, sticky = 'w', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(enAdownRFE, row = 1, column = 0, sticky = 'w', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(btAdownRFE, row = 1, column = 1, sticky = 'e', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
@@ -78,7 +78,7 @@ update1DekInfo_Mali <- function(parent.win, GeneralParameters){
 		}
 	})
 
-	tkgrid(cbStnDispo_f,row = 0, column = 0, sticky = 'w', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cbStnDispo_f, row = 0, column = 0, sticky = 'w', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cb.stnfl, row = 1, column = 0, sticky = 'w', padx = 2, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(bt.stnfl, row = 1, column = 1, sticky = 'e', padx = 2, pady = 1, ipadx = 1, ipady = 1)
 

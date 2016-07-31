@@ -64,7 +64,7 @@ for(jj in 1:length(rmd_files)) render(rmd_files[jj])
 exist_rmd_wd_files <- file.exists(rmd_files)
 if(any(exist_rmd_wd_files)) unlink(rmd_files[exist_rmd_wd_files])
 
-unlink('../index.html')
-file.symlink(file.path(getwd(),'index.html'), '../index.html')
+# unlink('../index.html')
+# file.symlink(file.path(getwd(),'index.html'), '../index.html')
 # system('ln -s "$PWD"/index.html ../index.html')
 
