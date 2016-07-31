@@ -709,7 +709,7 @@ tkadd(menu.dataproc, "separator")
 
 ##########
 menu.stats <- tkmenu(top.menu, tearoff = FALSE)
-tkadd(menu.dataproc, "cascade", label = "Statistical Analysis", menu = menu.stats)
+tkadd(menu.dataproc, "cascade", label = "Statistical Analysis", state = 'disabled', menu = menu.stats)
 
 ########
 # Time series analysis
