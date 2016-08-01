@@ -38,10 +38,6 @@ getExtractDataFun <- function(retExtractParams){
 	period1 <- outTsTable[outTsTable[,1] == outTS, 2]
 	# period.clim <- outTsTable[outTsTable[,1] == period.climato, 2]
 
-	if(calc.climato == "1") out2sav.clim <- file.path(dirname(out2sav), paste('Climatologies_', basename(out2sav), sep = ''))
-	if(calc.anomaly == "1") out2sav.anom <- file.path(dirname(out2sav), paste('Anomalies_', basename(out2sav), sep = ''))
-	if(calc.stanomaly == "1") out2sav.stanom <- file.path(dirname(out2sav), paste('StandardizedAnomalies_', basename(out2sav), sep = ''))
-
 	####
 	if(is.na(yrs1) | is.na(mon1) | is.na(day1) | is.na(yrs2) | is.na(mon2) | is.na(day2)){
 		InsertMessagesTxt(main.txt.out, "Invalid date for time series extraction", format = TRUE)
@@ -140,7 +136,11 @@ getExtractDataFun <- function(retExtractParams){
 		return(NULL)
 	}
 
-	#############
+	###################################################################################
+
+	if(calc.climato == "1") out2sav.clim <- file.path(dirname(out2sav), paste('Climatologies_', basename(out2sav), sep = ''))
+	if(calc.anomaly == "1") out2sav.anom <- file.path(dirname(out2sav), paste('Anomalies_', basename(out2sav), sep = ''))
+	if(calc.stanomaly == "1") out2sav.stanom <- file.path(dirname(out2sav), paste('StandardizedAnomalies_', basename(out2sav), sep = ''))
 
 	TSClimatologyFun <- function(){
 		if(calc.anomaly == "1"){
@@ -277,10 +277,142 @@ getExtractDataFun <- function(retExtractParams){
 		}
 	}
 
-	#############
+	ListDataClimatologyFun <- function(){
+		if(calc.anomaly == "1"){
+			xRVAL <- RVAL
+			if(period1 %in% c('daily', 'dekadal', 'monthly')){
+				comp.fun <- paste('anomaly.', period1, '_lstOmat', sep = '')
+				comp.fun <- match.fun(comp.fun)
+				xRVAL <- comp.fun(xRVAL, daty)
+			}else{
+				cmoy <- apply(simplify2array(xRVAL), 1:2, mean, na.rm = TRUE)
+				xRVAL <- lapply(xRVAL, function(x) x-cmoy)
+				rm(cmoy)
+			}
+			xRVAL <- lapply(xRVAL, function(x){
+				x[is.na(x)] <- -9999
+				x
+			})
+			fileout.anom <- file.path(dirname(fileout), paste('Anomalies_', basename(fileout), sep = ''))
+			writeFilesListData(xRVAL, daty, capdate, fileout.anom, out2sav.anom)
+		}
+
+		if(calc.stanomaly == "1"){
+			xRVAL <- RVAL
+			if(period1 %in% c('daily', 'dekadal', 'monthly')){
+				comp.fun <- paste('standard.', period1, '_lstOmat', sep = '')
+				comp.fun <- match.fun(comp.fun)
+				xRVAL <- comp.fun(xRVAL, daty)
+			}else{
+					cmoy <- apply(simplify2array(xRVAL), 1:2, mean, na.rm = TRUE)
+					csd <- apply(simplify2array(xRVAL), 1:2, sd, na.rm = TRUE)
+					xRVAL <- lapply(xRVAL, function(x) (x-cmoy)/csd)
+					rm(cmoy, csd)
+			}
+			xRVAL <- lapply(xRVAL, function(x){
+				x[is.na(x)] <- -9999
+				x
+			})
+			fileout.stanom <- file.path(dirname(fileout), paste('StandardizedAnomalies_', basename(fileout), sep = ''))
+			writeFilesListData(xRVAL, daty, capdate, fileout.stanom, out2sav.stanom)
+		}
+
+		if(calc.climato == "1"){
+			xRVAL <- RVAL
+			if(period1 %in% c('daily', 'dekadal', 'monthly')){
+				comp.fun <- paste('climato.', period1, '_lstOmat', sep = '')
+				comp.fun <- match.fun(comp.fun)
+				xRVAL <- comp.fun(xRVAL, daty, fun = 'mean')
+				fileout.clim <- file.path(dirname(fileout[1]), paste('Climatologies_Output_', 1:length(xRVAL), '.', file_ext(basename(fileout[1])), sep = ''))
+				capdate <- paste('DATE:', 1:length(xRVAL))
+			}else{
+				xRVAL <- apply(simplify2array(xRVAL), 1:2, mean, na.rm = TRUE)
+				if(period1 == 'yearly'){
+					daty <- 'Year'
+					fileout.clim <- file.path(dirname(fileout[1]), paste('Climatologies_Output_Year', file_ext(basename(fileout[1])), sep = '.'))
+					capdate <- paste('DATE:', 'Yearly.mean')
+				}else{
+					daty <- strsplit(daty[1],'-')[[1]][1]
+					fileout.clim <- file.path(dirname(fileout[1]), paste('Climatologies_Output_', daty,'.', file_ext(basename(fileout[1])), sep = ''))
+					capdate <- paste('DATE:', daty)
+				}
+			}
+			if(is.list(xRVAL)){
+				xRVAL <- lapply(xRVAL, function(x){
+					x[is.na(x)] <- -99
+					x
+				})
+			}else{
+				xRVAL[is.na(xRVAL)] <- -99
+			}
+			writeFilesListData(xRVAL, daty, capdate, fileout.clim, out2sav.clim)
+		}
+	}
+
+	writeFilesListData <- function(RVAL, daty, capdate, fileout1, out2sav1){
+		if(ChoixOutType == '1'){
+			if(is.list(RVAL)){
+				for(j in seq_along(RVAL)){
+					writeFiles('Longitude', file = fileout1[j], append = TRUE)
+					writeFiles(rlon, file = fileout1[j], append = TRUE)
+					writeFiles('Latitude', file = fileout1[j], append = TRUE)
+					writeFiles(rlat, file = fileout1[j], append = TRUE)
+					writeFiles(capdate[j], file = fileout1[j], append = TRUE)
+					xtmp <- round(RVAL[[j]], 1)
+					xtmp[is.na(xtmp)]<- -99
+					writeFiles(xtmp, file = fileout1[j], append = TRUE)
+				}
+			}else{
+				writeFiles('Longitude', file = fileout1, append = TRUE)
+				writeFiles(rlon, file = fileout1, append = TRUE)
+				writeFiles('Latitude', file = fileout1, append = TRUE)
+				writeFiles(rlat, file = fileout1, append = TRUE)
+				writeFiles(capdate, file = fileout1, append = TRUE)
+				xtmp <- round(RVAL, 1)
+				xtmp[is.na(xtmp)]<- -99
+				writeFiles(xtmp, file = fileout1, append = TRUE)
+			}	
+		}
+
+		if(ChoixOutType == '2'){
+			writeFiles('Longitude', file = out2sav1, append = TRUE)
+			writeFiles(rlon, file = out2sav1, append = TRUE)
+			writeFiles('Latitude', file = out2sav1, append = TRUE)
+			writeFiles(rlat, file = out2sav1, append = TRUE)
+			if(is.list(RVAL)){
+				for(j in seq_along(RVAL)){
+					writeFiles(capdate[j], file = out2sav1, append = TRUE)
+					xtmp <- round(RVAL[[j]], 1)
+					xtmp[is.na(xtmp)]<- -99
+					writeFiles(xtmp, file = out2sav1, append = TRUE)
+				}
+			}else{
+				writeFiles(capdate, file = out2sav1, append = TRUE)
+				xtmp <- round(RVAL, 1)
+				xtmp[is.na(xtmp)]<- -99
+				writeFiles(xtmp, file = out2sav1, append = TRUE)
+			}	
+		}
+
+		if(ChoixOutType == '3'){
+			xlon <- rlon[,1]
+			xlat <- as.numeric(rlat[1,])
+			xcrds <- expand.grid(xlon, xlat, daty)
+			xcrds <- xcrds[,3:1]
+			if(is.list(RVAL)) xdata <- round(unlist(RVAL), 1)
+			else xdata <- round(c(RVAL), 1)
+			xdata[is.na(xdata)]<- -99
+			xtmp <- cbind(xcrds, xdata)
+			writeFiles(xtmp, out2sav1)
+		}
+	}
+
+
+	###########################################################################################
 
 	RVAL <- vector(mode = 'list', length = length(ncpath))
 
+	## try foreach
 	for(fl in seq_along(ncpath)){
 		if(!existFl[fl]){
 			InsertMessagesTxt(main.txt.out, paste('File', basename(ncpath[fl]),'does not exist') ,format = TRUE)
@@ -400,16 +532,17 @@ getExtractDataFun <- function(retExtractParams){
 		}
 	}
 
-	##################################
+	######################################################################################################
 
 	if(extType == 'Point'){
+		
 		RVAL[sapply(RVAL, is.null)] <- NA
 		xval <- unlist(RVAL)
+		
 		if(period0 == period1){
 			xtmp <- round(xval, 1)
 			xtmp[is.na(xtmp)]<- -99
 			xtmp <- cbind(dates, xtmp)
-			writeFiles(xtmp, out2sav)
 		}else{
 			if(period1 == 'season3'){
 				xtmp <- seasonal_fun(period0, xval, dates, smon = season1, lmon = 3, fun = aggfun, frac = missfrac)
@@ -426,13 +559,14 @@ getExtractDataFun <- function(retExtractParams){
 				xtmp[,2] <- round(xtmp[,2], 1)
 				xtmp[is.na(xtmp[,2]), 2]<- -99
 			}
-			writeFiles(xtmp, out2sav)
 		}
 
+		writeFiles(xtmp, out2sav)
 		###### clim
 		TSClimatologyFun()
 
 	}else if(extType == 'Multiple Points' | extType == 'Multiple Polygons'){
+		
 		RVAL[sapply(RVAL, is.null)] <- rep(NA, nrow(headinfo))
 		xval <- do.call('rbind', RVAL)
 		capition <- c('Stations', 'LON', 'DATE/LAT')
@@ -440,8 +574,7 @@ getExtractDataFun <- function(retExtractParams){
 		if(period0 == period1){
 			xtmp <- round(xval, 1)
 			xtmp[is.na(xtmp)]<- -99
-			xtmp <- t(cbind(t(cbind(capition, t(headinfo))), t(cbind(dates, xtmp))))
-			writeFiles(xtmp, out2sav)
+			xtmp <- cbind(dates, xtmp)
 		}else{
 			if(period1 == 'season3'){
 				xtmp <- seasonal_funMat(period0, xval, dates, smon = season1, lmon = 3, fun = aggfun, frac = missfrac)
@@ -462,21 +595,22 @@ getExtractDataFun <- function(retExtractParams){
 				xtmp[is.na(xtmp)]<- -99
 				xtmp <- cbind(xtmp0, xtmp)
 			}
-			xtmp <- t(cbind(t(cbind(capition, t(headinfo))), t(xtmp)))
-			writeFiles(xtmp, out2sav)
 		}
-
+		
+		xtmp <- t(cbind(t(cbind(capition, t(headinfo))), t(xtmp)))
+		writeFiles(xtmp, out2sav)
 		###### clim
 		CDTClimatologyFun()
 		
 	}else{
 		if(spAvrg == '1'){
+			
 			RVAL[sapply(RVAL, is.null)] <- NA
 			xval <- unlist(RVAL)
+			
 			if(period0 == period1){
 				xval[is.na(xval)]<- -99
 				xtmp <- cbind(dates, xval)
-				writeFiles(xtmp, out2sav)
 			}else{
 				if(period1 == 'season3'){
 					xtmp <- seasonal_fun(period0, xval, dates, smon = season1, lmon = 3, fun = aggfun, frac = missfrac)
@@ -493,52 +627,21 @@ getExtractDataFun <- function(retExtractParams){
 					xtmp[,2] <- round(xtmp[,2], 1)
 					xtmp[is.na(xtmp[,2]), 2]<- -99
 				}
-				writeFiles(xtmp, out2sav)
 			}
-
+			
+			writeFiles(xtmp, out2sav)
 			###### clim
 			TSClimatologyFun()
 			
 		}else{
-			RVAL[sapply(RVAL, is.null)] <- matrix(NA, ncol = length(rlat), nrow = length(rlon))
+			RVAL[sapply(RVAL, is.null)] <- list(matrix(NA, ncol = length(rlat), nrow = length(rlon)))
 			rlon <- matrix(round(rlon, 5), nrow = nrow(rval), ncol = ncol(rval))
 			rlat <- matrix(round(rlat, 5), nrow = nrow(rval), ncol = ncol(rval), byrow = T)
 			if(period0 == period1){
-				if(ChoixOutType == '1'){
-					for(j in seq_along(RVAL)){
-						fileout <- file.path(out2sav, paste('Output_', dates[j],'.txt', sep = ''), fsep = .Platform$file.sep)
-						write.table('Longitude', file = fileout, append = TRUE, row.names = FALSE, col.names = FALSE)
-						write.table(rlon, file = fileout, append = TRUE, row.names = FALSE, col.names = FALSE)
-						write.table('Latitude', file = fileout, append = TRUE, row.names = FALSE, col.names = FALSE)
-						write.table(rlat, file = fileout, append = TRUE, row.names = FALSE, col.names = FALSE)
-						write.table(paste('DATE:',dates[j]), file = fileout, append = TRUE, row.names = FALSE, col.names = FALSE)
-						xtmp <- RVAL[[j]]
-						xtmp[is.na(xtmp)]<- -99
-						write.table(xtmp, file = fileout, append = TRUE, row.names = FALSE, col.names = FALSE)
-					}
-				}
-				if(ChoixOutType == '2'){
-					write.table('Longitude', file = out2sav, append = TRUE, row.names = FALSE, col.names = FALSE)
-					write.table(rlon, file = out2sav, append = TRUE, row.names = FALSE, col.names = FALSE)
-					write.table('Latitude', file = out2sav, append = TRUE, row.names = FALSE, col.names = FALSE)
-					write.table(rlat, file = out2sav, append = TRUE, row.names = FALSE, col.names = FALSE)
-					for(j in seq_along(RVAL)){
-						write.table(paste('DATE:',dates[j]), file = out2sav, append = TRUE, row.names = FALSE, col.names = FALSE)
-						xtmp <- RVAL[[j]]
-						xtmp[is.na(xtmp)]<- -99
-						write.table(xtmp, file = out2sav, append = TRUE, row.names = FALSE, col.names = FALSE)
-					}
-				}
-				if(ChoixOutType == '3'){
-					xlon <- rlon[,1]
-					xlat <- as.numeric(rlat[1,])
-					xcrds <- expand.grid(xlon, xlat, dates)
-					xcrds <- xcrds[,3:1]
-					xdata <- unlist(RVAL)
-					xdata[is.na(xdata)]<- -99
-					xtmp <- cbind(xcrds, xdata)
-					writeFiles(xtmp, out2sav)
-				}
+				daty <- dates
+				fileout <- file.path(out2sav, paste('Output_', daty,'.txt', sep = ''), fsep = .Platform$file.sep)
+				capdate <- paste('DATE:',daty)
+				####
 			}else{
 				if(period1 == 'season3'){
 					lstOmat <- seasonal_lstOmat(period0, RVAL, dates, smon = season1, lmon = 3, fun = aggfun, minfrac = missfrac)
@@ -565,41 +668,13 @@ getExtractDataFun <- function(retExtractParams){
 					capdate <- paste('DATE:',daty)
 					RVAL <- lstOmat[[2]]
 				}
-				if(ChoixOutType == '1'){
-					for(j in seq_along(RVAL)){
-						write.table('Longitude', file = fileout[j], append = TRUE, row.names = FALSE, col.names = FALSE)
-						write.table(rlon, file = fileout[j], append = TRUE, row.names = FALSE, col.names = FALSE)
-						write.table('Latitude', file = fileout[j], append = TRUE, row.names = FALSE, col.names = FALSE)
-						write.table(rlat, file = fileout[j], append = TRUE, row.names = FALSE, col.names = FALSE)
-						write.table(capdate[j], file = fileout[j], append = TRUE, row.names = FALSE, col.names = FALSE)
-						xtmp <- round(RVAL[[j]], 1)
-						xtmp[is.na(xtmp)]<- -99
-						write.table(xtmp, file = fileout[j], append = TRUE, row.names = FALSE, col.names = FALSE)
-					}
-				}
-				if(ChoixOutType == '2'){
-					writeFiles('Longitude', file = out2sav, append = TRUE)
-					writeFiles(rlon, file = out2sav, append = TRUE)
-					writeFiles('Latitude', file = out2sav, append = TRUE)
-					writeFiles(rlat, file = out2sav, append = TRUE)
-					for(j in seq_along(RVAL)){
-						writeFiles(capdate[j], file = out2sav, append = TRUE)
-						xtmp <- round(RVAL[[j]], 1)
-						xtmp[is.na(xtmp)]<- -99
-						writeFiles(xtmp, file = out2sav, append = TRUE)
-					}
-				}
-				if(ChoixOutType == '3'){
-					xlon <- rlon[,1]
-					xlat <- as.numeric(rlat[1,])
-					xcrds <- expand.grid(xlon, xlat, daty)
-					xcrds <- xcrds[,3:1]
-					xdata <- round(unlist(RVAL), 1)
-					xdata[is.na(xdata)]<- -99
-					xtmp <- cbind(xcrds, xdata)
-					writeFiles(xtmp, out2sav)
-				}
+				####
 			}
+
+			writeFilesListData(RVAL, daty, capdate, fileout, out2sav)
+			###### clim	
+			ListDataClimatologyFun()
+
 		}
 	}
 	return(0)

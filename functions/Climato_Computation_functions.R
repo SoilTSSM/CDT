@@ -1,222 +1,538 @@
-standard.daily <- function(var, dates){
-	vtmp <- var
+standard.daily <- function(xvar, dates){
 	dates <- as.Date(dates, format='%Y%m%d')
 	leap.year <- format(dates,'%m%d') == '0229'
+	
+	vtmp <- xvar
 	vtmp <- vtmp[!leap.year]
 	vdates <- dates[!leap.year]
+	
 	dstart <- seq(as.Date(paste(format(vdates[1],'%Y'), 1,1, sep = '-')), vdates[1],'day')
 	dstart <- dstart[-length(dstart)]
 	dend <- seq(vdates[length(vdates)], as.Date(paste(format(vdates[length(vdates)],'%Y'), 12,31, sep = '-')),'day')[-1]
 	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
 	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+	
 	mat <- matrix(as.numeric(c(rep(NA, slen), vtmp, rep(NA, elen))), nrow = 365)
 	cmoy <- apply(mat, 1, mean, na.rm = T)
 	csd <- apply(mat, 1, sd, na.rm = T)
+
 	mat1 <- c((mat-cmoy)/csd)
 	if(elen > 0) mat1 <- head(mat1,-elen)
 	if(slen > 0) mat1 <- tail(mat1,-slen)
-	lmat1 <- (var[leap.year]-cmoy[59])/csd[59]
-	var[leap.year] <- lmat1
-	var[!leap.year] <- mat1
-	var[is.nan(var)] <- 0
-	var[is.infinite(var)] <- NA
-	return(var)
+	xvar[!leap.year] <- mat1
+	xvar[leap.year] <- (xvar[leap.year]-cmoy[59])/csd[59]
+	xvar[is.nan(xvar)] <- 0
+	xvar[is.infinite(xvar)] <- 0
+	rm(vtmp, cmoy, csd, vdates, dates, dstart, dend, mat, mat1)
+	return(xvar)
 }
 
-standard.monthly <- function(var, dates){
-	dates <- as.character(dates)
-	an <- as.numeric(substr(dates, 1,4))
-	mois <- as.numeric(substr(dates, 5,6))
-	slen <- mois[1]-1
-	elen <- 12-mois[length(mois)]
-	mat <- matrix(as.numeric(c(rep(NA, slen), var, rep(NA, elen))), nrow = 12)
-	cmoy <- apply(mat, 1, mean, na.rm = T)
-	csd <- apply(mat, 1, sd, na.rm = T)
-	var <- c((mat-cmoy)/csd)
-	if(elen > 0) var <- head(var,-elen)
-	if(slen > 0) var <- tail(var,-slen)
-	var[is.nan(var)] <- 0
-	var[is.infinite(var)] <- NA
-	return(var)
-}
-
-standard.dekadal <- function(var, dates){
-	dates <- as.character(dates)
-	an <- as.numeric(substr(dates, 1,4))
-	mois <- as.numeric(substr(dates, 5,6))
-	dek <- as.numeric(substr(dates, 7,7))
-	oneyrdek <- rev(expand.grid(1:3,1:12))
-	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
-	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
-	mat <- matrix(as.numeric(c(rep(NA, slen), var, rep(NA, elen))), nrow = 36)
-	cmoy <- apply(mat, 1, mean, na.rm = T)
-	csd <- apply(mat, 1, sd, na.rm = T)
-	var <- c((mat-cmoy)/csd)
-	if(elen > 0) var <- head(var,-elen)
-	if(slen > 0) var <- tail(var,-slen)
-	var[is.nan(var)] <- 0
-	var[is.infinite(var)] <- NA
-	return(var)
-}
-#########################################################
-anomaly.daily <- function(var, dates){
-	vtmp <- var
+standard.daily_lstOmat <- function(xvar, dates){
 	dates <- as.Date(dates, format='%Y%m%d')
 	leap.year <- format(dates,'%m%d') == '0229'
+	
+	vtmp <- xvar
 	vtmp <- vtmp[!leap.year]
 	vdates <- dates[!leap.year]
+	
 	dstart <- seq(as.Date(paste(format(vdates[1],'%Y'), 1,1, sep = '-')), vdates[1],'day')
 	dstart <- dstart[-length(dstart)]
 	dend <- seq(vdates[length(vdates)], as.Date(paste(format(vdates[length(vdates)],'%Y'), 12,31, sep = '-')),'day')[-1]
 	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
 	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+
+	vmat <- vtmp[[1]]
+	vmat[] <- NA
+	vmat1 <- vector(mode = 'list', length = slen)
+	vmat2 <- vector(mode = 'list', length = elen)
+	vtmp <- c(lapply(vmat1, function(x) vmat), vtmp, lapply(vmat2, function(x) vmat))
+	cmoy <- lapply(1:365, function(j) apply(simplify2array(vtmp[seq(j, length(vtmp), 365)]), 1:2, mean, na.rm = TRUE))
+	csd  <- lapply(1:365, function(j) apply(simplify2array(vtmp[seq(j, length(vtmp), 365)]), 1:2, sd, na.rm = TRUE))
+
+	for(j in 1:365) vtmp[seq(j, length(vtmp), 365)] <- lapply(vtmp[seq(j, length(vtmp), 365)], function(x) (x-cmoy[[j]])/csd[[j]])
+	if(elen > 0) vtmp <- vtmp[head(1:length(vtmp), -elen)]
+	if(slen > 0) vtmp <- vtmp[tail(1:length(vtmp), -slen)]
+	xvar[!leap.year]  <- vtmp
+	xvar[leap.year] <- lapply(xvar[leap.year], function(x) (x-cmoy[[59]])/csd[[59]])
+	xvar <- lapply(xvar, function(x){
+		x[is.nan(x)] <- 0
+		x[is.infinite(x)] <- 0
+		x
+	})
+	rm(vtmp, cmoy, csd, vdates, dates, dstart, dend, vmat, vamt1, vmat2)
+	return(xvar)
+}
+
+#####
+
+standard.monthly <- function(xvar, dates){
+	dates <- as.character(dates)
+	an <- as.numeric(substr(dates, 1,4))
+	mois <- as.numeric(substr(dates, 5,6))
+
+	slen <- mois[1]-1
+	elen <- 12-mois[length(mois)]
+	
+	mat <- matrix(as.numeric(c(rep(NA, slen), xvar, rep(NA, elen))), nrow = 12)
+	cmoy <- apply(mat, 1, mean, na.rm = T)
+	csd <- apply(mat, 1, sd, na.rm = T)
+	
+	xvar <- c((mat-cmoy)/csd)
+	if(elen > 0) xvar <- head(xvar,-elen)
+	if(slen > 0) xvar <- tail(xvar,-slen)
+	xvar[is.nan(xvar)] <- 0
+	xvar[is.infinite(xvar)] <- 0
+	rm(mat, cmoy, csd, dates, an, mois)
+	return(xvar)
+}
+
+standard.monthly_lstOmat <- function(xvar, dates){
+	dates <- as.character(dates)
+	an <- as.numeric(substr(dates, 1,4))
+	mois <- as.numeric(substr(dates, 5,6))
+
+	slen <- mois[1]-1
+	elen <- 12-mois[length(mois)]
+
+	vmat <- xvar[[1]]
+	vmat[] <- NA
+	vmat1 <- vector(mode = 'list', length = slen)
+	vmat2 <- vector(mode = 'list', length = elen)
+	xvar <- c(lapply(vmat1, function(x) vmat), xvar, lapply(vmat2, function(x) vmat))
+
+	cmoy <- lapply(1:12, function(j) apply(simplify2array(xvar[seq(j, length(xvar), 12)]), 1:2, mean, na.rm = TRUE))
+	csd  <- lapply(1:12, function(j) apply(simplify2array(xvar[seq(j, length(xvar), 12)]), 1:2, sd, na.rm = TRUE))
+	for(j in 1:12) xvar[seq(j, length(xvar), 12)] <- lapply(xvar[seq(j, length(xvar), 12)], function(x) (x-cmoy[[j]])/csd[[j]])
+	if(elen > 0) xvar <- xvar[head(1:length(xvar), -elen)]
+	if(slen > 0) xvar <- xvar[tail(1:length(xvar), -slen)]
+	xvar <- lapply(xvar, function(x){
+		x[is.nan(x)] <- 0
+		x[is.infinite(x)] <- 0
+		x
+	})
+	rm(vmat, vmat1, vmat2, cmoy, csd, dates, an, mois)
+	return(xvar)
+}
+
+#######
+
+standard.dekadal <- function(xvar, dates){
+	dates <- as.character(dates)
+	an <- as.numeric(substr(dates, 1,4))
+	mois <- as.numeric(substr(dates, 5,6))
+	dek <- as.numeric(substr(dates, 7,7))
+
+	oneyrdek <- rev(expand.grid(1:3,1:12))
+	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
+	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+	
+	mat <- matrix(as.numeric(c(rep(NA, slen), xvar, rep(NA, elen))), nrow = 36)
+	cmoy <- apply(mat, 1, mean, na.rm = T)
+	csd <- apply(mat, 1, sd, na.rm = T)
+
+	xvar <- c((mat-cmoy)/csd)
+	if(elen > 0) xvar <- head(xvar,-elen)
+	if(slen > 0) xvar <- tail(xvar,-slen)
+	xvar[is.nan(xvar)] <- 0
+	xvar[is.infinite(xvar)] <- 0
+	rm(mat, cmoy, csd, dates, an, mois, dek)
+	return(xvar)
+}
+
+standard.dekadal_lstOmat <- function(xvar, dates){
+	dates <- as.character(dates)
+	an <- as.numeric(substr(dates, 1,4))
+	mois <- as.numeric(substr(dates, 5,6))
+	dek <- as.numeric(substr(dates, 7,7))
+
+	oneyrdek <- rev(expand.grid(1:3,1:12))
+	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
+	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+
+	vmat <- xvar[[1]]
+	vmat[] <- NA
+	vmat1 <- vector(mode = 'list', length = slen)
+	vmat2 <- vector(mode = 'list', length = elen)
+	xvar <- c(lapply(vmat1, function(x) vmat), xvar, lapply(vmat2, function(x) vmat))
+
+	cmoy <- lapply(1:36, function(j) apply(simplify2array(xvar[seq(j, length(xvar), 36)]), 1:2, mean, na.rm = TRUE))
+	csd  <- lapply(1:36, function(j) apply(simplify2array(xvar[seq(j, length(xvar), 36)]), 1:2, sd, na.rm = TRUE))
+	for(j in 1:36) xvar[seq(j, length(xvar), 36)] <- lapply(xvar[seq(j, length(xvar), 36)], function(x) (x-cmoy[[j]])/csd[[j]])
+	if(elen > 0) xvar <- xvar[head(1:length(xvar), -elen)]
+	if(slen > 0) xvar <- xvar[tail(1:length(xvar), -slen)]
+	xvar <- lapply(xvar, function(x){
+		x[is.nan(x)] <- 0
+		x[is.infinite(x)] <- 0
+		x
+	})
+	rm(vmat, vmat1, vmat2, cmoy, csd, dates, an, mois, dek)
+	return(xvar)
+}
+
+#########################################################
+
+anomaly.daily <- function(xvar, dates){
+	dates <- as.Date(dates, format='%Y%m%d')
+	leap.year <- format(dates,'%m%d') == '0229'
+	
+	vtmp <- xvar
+	vtmp <- vtmp[!leap.year]
+	vdates <- dates[!leap.year]
+
+	dstart <- seq(as.Date(paste(format(vdates[1],'%Y'), 1,1, sep = '-')), vdates[1],'day')
+	dstart <- dstart[-length(dstart)]
+	dend <- seq(vdates[length(vdates)], as.Date(paste(format(vdates[length(vdates)],'%Y'), 12,31, sep = '-')),'day')[-1]
+	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
+	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+
 	mat <- matrix(as.numeric(c(rep(NA, slen), vtmp, rep(NA, elen))), nrow = 365)
 	cmoy <- apply(mat, 1, mean, na.rm = T)
+
 	mat1 <- c(mat-cmoy)
 	if(elen > 0) mat1 <- head(mat1,-elen)
 	if(slen > 0) mat1 <- tail(mat1,-slen)
-	lmat1<-(var[leap.year]-cmoy[59])
-	var[leap.year] <- lmat1
-	var[!leap.year] <- mat1
-	var[is.nan(var)] <- 0
-	var[is.infinite(var)] <- NA
-	return(var)
+	xvar[!leap.year] <- mat1
+	xvar[leap.year] <- xvar[leap.year]-cmoy[59]
+	xvar[is.nan(xvar)] <- 0
+	xvar[is.infinite(xvar)] <- 0
+	rm(vtmp, cmoy, vdates, dates, dstart, dend, mat, mat1)
+	return(xvar)
 }
 
-anomaly.monthly <- function(var, dates){
-	dates <- as.character(dates)
-	an <- as.numeric(substr(dates, 1,4))
-	mois <- as.numeric(substr(dates, 5,6))
-	slen <- mois[1]-1
-	elen <- 12-mois[length(mois)]
-	mat <- matrix(as.numeric(c(rep(NA, slen), var, rep(NA, elen))), nrow = 12)
-	cmoy <- apply(mat, 1, mean, na.rm = T)
-	var <- c(mat-cmoy)
-	if(elen > 0) var <- head(var,-elen)
-	if(slen > 0) var <- tail(var,-slen)
-	var[is.nan(var)] <- 0
-	var[is.infinite(var)] <- NA
-	return(var)
-}
-
-anomaly.dekadal <- function(var, dates){
-	dates <- as.character(dates)
-	an <- as.numeric(substr(dates, 1,4))
-	mois <- as.numeric(substr(dates, 5,6))
-	dek <- as.numeric(substr(dates, 7,7))
-	oneyrdek <- rev(expand.grid(1:3,1:12))
-	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
-	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
-	mat <- matrix(as.numeric(c(rep(NA, slen), var, rep(NA, elen))), nrow = 36)
-	cmoy <- apply(mat, 1, mean, na.rm = T)
-	var <- c(mat-cmoy)
-	if(elen > 0) var <- head(var,-elen)
-	if(slen > 0) var <- tail(var,-slen)
-	var[is.nan(var)] <- 0
-	var[is.infinite(var)] <- NA
-	return(var)
-}
-####################################################
-ratio.daily <- function(var, dates){
-	vtmp <- var
+anomaly.daily_lstOmat <- function(xvar, dates){
 	dates <- as.Date(dates, format='%Y%m%d')
 	leap.year <- format(dates,'%m%d') == '0229'
+
+	vtmp <- xvar
 	vtmp <- vtmp[!leap.year]
 	vdates <- dates[!leap.year]
+	
 	dstart <- seq(as.Date(paste(format(vdates[1],'%Y'), 1,1, sep = '-')), vdates[1],'day')
 	dstart <- dstart[-length(dstart)]
 	dend <- seq(vdates[length(vdates)], as.Date(paste(format(vdates[length(vdates)],'%Y'), 12,31, sep = '-')),'day')[-1]
 	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
 	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+
+	vmat <- vtmp[[1]]
+	vmat[] <- NA
+	vmat1 <- vector(mode = 'list', length = slen)
+	vmat2 <- vector(mode = 'list', length = elen)
+	vtmp <- c(lapply(vmat1, function(x) vmat), vtmp, lapply(vmat2, function(x) vmat))
+	cmoy <- lapply(1:365, function(j) apply(simplify2array(vtmp[seq(j, length(vtmp), 365)]), 1:2, mean, na.rm = TRUE))
+
+	for(j in 1:365) vtmp[seq(j, length(vtmp), 365)] <- lapply(vtmp[seq(j, length(vtmp), 365)], function(x) x-cmoy[[j]])
+	if(elen > 0) vtmp <- vtmp[head(1:length(vtmp), -elen)]
+	if(slen > 0) vtmp <- vtmp[tail(1:length(vtmp), -slen)]
+	xvar[!leap.year]  <- vtmp
+	xvar[leap.year] <- lapply(xvar[leap.year], function(x) x-cmoy[[59]])
+	xvar <- lapply(xvar, function(x){
+		x[is.nan(x)] <- 0
+		x[is.infinite(x)] <- 0
+		x
+	})
+	rm(vtmp, cmoy, vdates, dates, dstart, dend, vmat, vamt1, vmat2)
+	return(xvar)
+}
+
+#######
+
+anomaly.monthly <- function(xvar, dates){
+	dates <- as.character(dates)
+	an <- as.numeric(substr(dates, 1,4))
+	mois <- as.numeric(substr(dates, 5,6))
+
+	slen <- mois[1]-1
+	elen <- 12-mois[length(mois)]
+	
+	mat <- matrix(as.numeric(c(rep(NA, slen), xvar, rep(NA, elen))), nrow = 12)
+	cmoy <- apply(mat, 1, mean, na.rm = T)
+	
+	xvar <- c(mat-cmoy)
+	if(elen > 0) xvar <- head(xvar,-elen)
+	if(slen > 0) xvar <- tail(xvar,-slen)
+	xvar[is.nan(xvar)] <- 0
+	xvar[is.infinite(xvar)] <- 0
+	rm(mat, cmoy, dates, an, mois)
+	return(xvar)
+}
+
+anomaly.monthly_lstOmat <- function(xvar, dates){
+	dates <- as.character(dates)
+	an <- as.numeric(substr(dates, 1,4))
+	mois <- as.numeric(substr(dates, 5,6))
+
+	slen <- mois[1]-1
+	elen <- 12-mois[length(mois)]
+
+	vmat <- xvar[[1]]
+	vmat[] <- NA
+	vmat1 <- vector(mode = 'list', length = slen)
+	vmat2 <- vector(mode = 'list', length = elen)
+	xvar <- c(lapply(vmat1, function(x) vmat), xvar, lapply(vmat2, function(x) vmat))
+
+	cmoy <- lapply(1:12, function(j) apply(simplify2array(xvar[seq(j, length(xvar), 12)]), 1:2, mean, na.rm = TRUE))
+	
+	for(j in 1:12) xvar[seq(j, length(xvar), 12)] <- lapply(xvar[seq(j, length(xvar), 12)], function(x) x-cmoy[[j]])
+	if(elen > 0) xvar <- xvar[head(1:length(xvar), -elen)]
+	if(slen > 0) xvar <- xvar[tail(1:length(xvar), -slen)]
+	xvar <- lapply(xvar, function(x){
+		x[is.nan(x)] <- 0
+		x[is.infinite(x)] <- 0
+		x
+	})
+	rm(vmat, vmat1, vmat2, cmoy, dates, an, mois)
+	return(xvar)
+}
+
+#######
+
+anomaly.dekadal <- function(xvar, dates){
+	dates <- as.character(dates)
+	an <- as.numeric(substr(dates, 1,4))
+	mois <- as.numeric(substr(dates, 5,6))
+	dek <- as.numeric(substr(dates, 7,7))
+
+	oneyrdek <- rev(expand.grid(1:3,1:12))
+	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
+	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+	
+	mat <- matrix(as.numeric(c(rep(NA, slen), xvar, rep(NA, elen))), nrow = 36)
+	cmoy <- apply(mat, 1, mean, na.rm = T)
+	
+	xvar <- c(mat-cmoy)
+	if(elen > 0) xvar <- head(xvar,-elen)
+	if(slen > 0) xvar <- tail(xvar,-slen)
+	xvar[is.nan(xvar)] <- 0
+	xvar[is.infinite(xvar)] <- 0
+	rm(mat, cmoy, dates, an, mois, dek)
+	return(xvar)
+}
+
+anomaly.dekadal_lstOmat <- function(xvar, dates){
+	dates <- as.character(dates)
+	an <- as.numeric(substr(dates, 1,4))
+	mois <- as.numeric(substr(dates, 5,6))
+	dek <- as.numeric(substr(dates, 7,7))
+
+	oneyrdek <- rev(expand.grid(1:3,1:12))
+	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
+	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+
+	vmat <- xvar[[1]]
+	vmat[] <- NA
+	vmat1 <- vector(mode = 'list', length = slen)
+	vmat2 <- vector(mode = 'list', length = elen)
+	xvar <- c(lapply(vmat1, function(x) vmat), xvar, lapply(vmat2, function(x) vmat))
+
+	cmoy <- lapply(1:36, function(j) apply(simplify2array(xvar[seq(j, length(xvar), 36)]), 1:2, mean, na.rm = TRUE))
+	
+	for(j in 1:36) xvar[seq(j, length(xvar), 36)] <- lapply(xvar[seq(j, length(xvar), 36)], function(x) x-cmoy[[j]])
+	if(elen > 0) xvar <- xvar[head(1:length(xvar), -elen)]
+	if(slen > 0) xvar <- xvar[tail(1:length(xvar), -slen)]
+	xvar <- lapply(xvar, function(x){
+		x[is.nan(x)] <- 0
+		x[is.infinite(x)] <- 0
+		x
+	})
+	rm(vmat, vmat1, vmat2, cmoy, dates, an, mois, dek)
+	return(xvar)
+}
+
+
+####################################################
+ratio.daily <- function(xvar, dates){
+	dates <- as.Date(dates, format='%Y%m%d')
+	leap.year <- format(dates,'%m%d') == '0229'
+
+	vtmp <- xvar
+	vtmp <- vtmp[!leap.year]
+	vdates <- dates[!leap.year]
+
+	dstart <- seq(as.Date(paste(format(vdates[1],'%Y'), 1,1, sep = '-')), vdates[1],'day')
+	dstart <- dstart[-length(dstart)]
+	dend <- seq(vdates[length(vdates)], as.Date(paste(format(vdates[length(vdates)],'%Y'), 12,31, sep = '-')),'day')[-1]
+	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
+	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+	
 	mat <- matrix(as.numeric(c(rep(NA, slen), vtmp, rep(NA, elen))), nrow = 365)
 	cmoy <- apply(mat, 1, mean, na.rm = T)
+	
 	mat1 <- c(mat/cmoy)
 	if(elen > 0) mat1 <- head(mat1,-elen)
 	if(slen > 0) mat1 <- tail(mat1,-slen)
-	lmat1<-(var[leap.year]/cmoy[59])
-	var[leap.year] <- lmat1
-	var[!leap.year] <- mat1
-	var[is.nan(var)] <- 0
-	var[is.infinite(var)] <- NA
-	return(var)
+	xvar[!leap.year] <- mat1
+	xvar[leap.year] <- xvar[leap.year]/cmoy[59]
+	xvar[is.nan(xvar)] <- 0
+	xvar[is.infinite(xvar)] <- 0
+	return(xvar)
 }
 
-ratio.monthly <- function(var, dates){
+ratio.monthly <- function(xvar, dates){
 	dates <- as.character(dates)
 	an <- as.numeric(substr(dates, 1,4))
 	mois <- as.numeric(substr(dates, 5,6))
+
 	slen <- mois[1]-1
 	elen <- 12-mois[length(mois)]
-	mat <- matrix(as.numeric(c(rep(NA, slen), var, rep(NA, elen))), nrow = 12)
+	
+	mat <- matrix(as.numeric(c(rep(NA, slen), xvar, rep(NA, elen))), nrow = 12)
 	cmoy <- apply(mat, 1, mean, na.rm = T)
-	var <- c(mat/cmoy)
-	if(elen > 0) var <- head(var,-elen)
-	if(slen > 0) var <- tail(var,-slen)
-	var[is.nan(var)] <- 0
-	var[is.infinite(var)] <- NA
-	return(var)
+	
+	xvar <- c(mat/cmoy)
+	if(elen > 0) xvar <- head(xvar,-elen)
+	if(slen > 0) xvar <- tail(xvar,-slen)
+	xvar[is.nan(xvar)] <- 0
+	xvar[is.infinite(xvar)] <- 0
+	return(xvar)
 }
 
-ratio.dekadal <- function(var, dates){
+ratio.dekadal <- function(xvar, dates){
 	dates <- as.character(dates)
 	an <- as.numeric(substr(dates, 1,4))
 	mois <- as.numeric(substr(dates, 5,6))
 	dek <- as.numeric(substr(dates, 7,7))
+
 	oneyrdek <- rev(expand.grid(1:3,1:12))
 	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
 	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
-	mat <- matrix(as.numeric(c(rep(NA, slen), var, rep(NA, elen))), nrow = 36)
+	
+	mat <- matrix(as.numeric(c(rep(NA, slen), xvar, rep(NA, elen))), nrow = 36)
 	cmoy <- apply(mat, 1, mean, na.rm = T)
-	var <- c(mat/cmoy)
-	if(elen > 0) var <- head(var,-elen)
-	if(slen > 0) var <- tail(var,-slen)
-	var[is.nan(var)] <- 0
-	var[is.infinite(var)] <- NA
-	return(var)
+	
+	xvar <- c(mat/cmoy)
+	if(elen > 0) xvar <- head(xvar,-elen)
+	if(slen > 0) xvar <- tail(xvar,-slen)
+	xvar[is.nan(xvar)] <- 0
+	xvar[is.infinite(xvar)] <- 0
+	return(xvar)
 }
 
 ########################
-climato.monthly <- function(var, dates, fun = 'mean'){
-	dates <- as.character(dates)
+climato.monthly <- function(xvar, dates, fun = 'mean'){
 	fun <- match.fun(fun)
+
+	dates <- as.character(dates)
 	an <- as.numeric(substr(dates, 1,4))
 	mois <- as.numeric(substr(dates, 5,6))
+
 	slen <- mois[1]-1
 	elen <- 12-mois[length(mois)]
-	mat <- matrix(as.numeric(c(rep(NA, slen), var, rep(NA, elen))), nrow = 12)
-	rvar <- as.numeric(apply(mat, 1, fun, na.rm = T))
-	return(rvar)
+
+	mat <- matrix(as.numeric(c(rep(NA, slen), xvar, rep(NA, elen))), nrow = 12)
+	xvar <- as.numeric(apply(mat, 1, fun, na.rm = T))
+	return(xvar)
 }
 
-climato.dekadal <- function(var, dates, fun = 'mean'){
-	dates <- as.character(dates)
+climato.monthly_lstOmat <- function(xvar, dates, fun = 'mean'){
 	fun <- match.fun(fun)
+
+	dates <- as.character(dates)
+	an <- as.numeric(substr(dates, 1,4))
+	mois <- as.numeric(substr(dates, 5,6))
+
+	slen <- mois[1]-1
+	elen <- 12-mois[length(mois)]
+
+	vmat <- xvar[[1]]
+	vmat[] <- NA
+	vmat1 <- vector(mode = 'list', length = slen)
+	vmat2 <- vector(mode = 'list', length = elen)
+	xvar <- c(lapply(vmat1, function(x) vmat), xvar, lapply(vmat2, function(x) vmat))
+
+	xvar <- lapply(1:12, function(j) apply(simplify2array(xvar[seq(j, length(xvar), 12)]), 1:2, fun, na.rm = TRUE))
+	rm(vmat, vmat1, vmat2, dates, an, mois)
+	return(xvar)
+}
+
+#########
+
+climato.dekadal <- function(xvar, dates, fun = 'mean'){
+	fun <- match.fun(fun)
+
+	dates <- as.character(dates)
 	an <- as.numeric(substr(dates, 1,4))
 	mois <- as.numeric(substr(dates, 5,6))
 	dek <- as.numeric(substr(dates, 7,7))
+
 	oneyrdek <- rev(expand.grid(1:3,1:12))
 	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
 	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
-	mat <- matrix(as.numeric(c(rep(NA, slen), var, rep(NA, elen))), nrow = 36)
-	rvar <- as.numeric(apply(mat, 1, fun, na.rm = T))
-	return(rvar)
+	
+	mat <- matrix(as.numeric(c(rep(NA, slen), xvar, rep(NA, elen))), nrow = 36)
+	xvar <- as.numeric(apply(mat, 1, fun, na.rm = T))
+	return(xvar)
 }
 
-climato.daily <- function(var, dates, fun = 'mean'){
-	dates <- as.character(dates)
+climato.dekadal_lstOmat <- function(xvar, dates, fun = 'mean'){
 	fun <- match.fun(fun)
+
+	dates <- as.character(dates)
+	an <- as.numeric(substr(dates, 1,4))
+	mois <- as.numeric(substr(dates, 5,6))
+	dek <- as.numeric(substr(dates, 7,7))
+
+	oneyrdek <- rev(expand.grid(1:3,1:12))
+	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
+	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+
+	vmat <- xvar[[1]]
+	vmat[] <- NA
+	vmat1 <- vector(mode = 'list', length = slen)
+	vmat2 <- vector(mode = 'list', length = elen)
+	xvar <- c(lapply(vmat1, function(x) vmat), xvar, lapply(vmat2, function(x) vmat))
+
+	xvar <- lapply(1:36, function(j) apply(simplify2array(xvar[seq(j, length(xvar), 36)]), 1:2, fun, na.rm = TRUE))
+	rm(vmat, vmat1, vmat2, dates, an, mois, dek)
+	return(xvar)
+}
+
+########
+
+climato.daily <- function(xvar, dates, fun = 'mean'){
+	fun <- match.fun(fun)
+
+	dates <- as.character(dates)
 	dates <- as.Date(dates, format='%Y%m%d')
 	leap.year <- format(dates,'%m%d') == '0229'
-	var <- var[!leap.year]
+
+	xvar <- xvar[!leap.year]
 	dates <- dates[!leap.year]
+
 	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
 	dstart <- dstart[-length(dstart)]
 	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
 	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
 	elen <- length(dend[!format(dend,'%m%d') == '0229'])
-	mat <- matrix(as.numeric(c(rep(NA, slen), var, rep(NA, elen))), nrow = 365)
-	rvar <- apply(mat, 1, fun, na.rm = T)
-	return(rvar)
+	
+	mat <- matrix(as.numeric(c(rep(NA, slen), xvar, rep(NA, elen))), nrow = 365)
+	xvar <- apply(mat, 1, fun, na.rm = T)
+	return(xvar)
+}
+
+climato.daily_lstOmat <- function(xvar, dates, fun = 'mean'){
+	fun <- match.fun(fun)
+
+	dates <- as.Date(dates, format='%Y%m%d')
+	leap.year <- format(dates,'%m%d') == '0229'
+
+	xvar <- xvar[!leap.year]
+	dates <- dates[!leap.year]
+	
+	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
+	dstart <- dstart[-length(dstart)]
+	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
+	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
+	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+
+	vmat <- xvar[[1]]
+	vmat[] <- NA
+	vmat1 <- vector(mode = 'list', length = slen)
+	vmat2 <- vector(mode = 'list', length = elen)
+	xvar <- c(lapply(vmat1, function(x) vmat), xvar, lapply(vmat2, function(x) vmat))
+
+	xvar <- lapply(1:365, function(j) apply(simplify2array(xvar[seq(j, length(xvar), 365)]), 1:2, fun, na.rm = TRUE))
+	rm(dates, dstart, dend, vmat, vamt1, vmat2)
+	return(xvar)
 }
 
 ########################################################
@@ -372,114 +688,6 @@ seasonal_fun <- function(freq, var, dates, smon, lmon, fun, frac = 1){
 
 ##############
 
-
-#daily2seasonal <- function(var, dates, smon, lmon, fun, frac = 1){
-#	dates <- as.character(dates)
-#	fun <- match.fun(fun)
-#	an <- as.character(substr(dates, 1,4))
-#	mois <- as.character(substr(dates, 5,6))
-
-#	tmois <- format(ISOdate(2014,1:12,1), "%B")
-#	ix <- which(tmois == smon)
-#	im<-(ix:(ix+(lmon-1)))%%12
-#	im[im == 0] <- 12
-
-#	seas <- paste(substr(tmois, 1,1)[im], collapse='')
-#	im <- ifelse(im < 10, paste(0, im, sep = ''), im)
-#	seasL <- mois%in%im
-#	rrL <- rle(seasL)
-#	nbd <- rrL$lengths[rrL$values]
-#	xsL <- rep(1:length(nbd), times = nbd)
-#	dtseas <- paste(seas, xsL, sep = '')
-
-#	var <- var[seasL]
-#	an <- sort(levels(as.factor(an[seasL])))
-#	xtmp <- aggregate(var, by = list(as.factor(dtseas)), fun, na.rm = FALSE)[,2]
-#	if(length(an) != length(xtmp)) an <- c(as.numeric(an[1])-1, an)
-#	rval <- data.frame(Season = seas, Start_Year = an, Values = xtmp)
-
-#	##eto no miova
-#	eom <- sum(sapply(im, function(x) rev((28:31)[which(!is.na(as.Date(paste(2014, x, 28:31, sep = '-'))))])[1]))
-#	nbd[1] <- eom
-#	nbd[length(nbd)] <- eom
-
-#	w <- ifelse(is.na(var), 0,1)
-#	nna <- aggregate(w, by = list(as.factor(dtseas)), sum, na.rm = T)[,2]
-#	rval[which((nna/nbd) < frac), 3] <- NA
-#	return(rval)
-#}
-
-
-#####
-#dekadal2seasonal <- function(var, dates, smon, lmon, fun, frac = 1){
-#	dates <- as.character(dates)
-#	fun <- match.fun(fun)
-#	an <- as.character(substr(dates, 1,4))
-#	mois <- as.character(substr(dates, 5,6))
-
-#	tmois <- format(ISOdate(2014,1:12,1), "%B")
-#	ix <- which(tmois == smon)
-#	im<-(ix:(ix+(lmon-1)))%%12
-#	im[im == 0] <- 12
-#	seas <- paste(substr(tmois, 1,1)[im], collapse='')
-#	im <- ifelse(im < 10, paste(0, im, sep = ''), im)
-#	seasL <- mois%in%im
-#	rrL <- rle(seasL)
-#	nbd <- rrL$lengths[rrL$values]
-#	xsL <- rep(1:length(nbd), times = nbd)
-#	dtseas <- paste(seas, xsL, sep = '')
-
-#	var <- var[seasL]
-#	an <- sort(levels(as.factor(an[seasL])))
-#	xtmp <- aggregate(var, by = list(as.factor(dtseas)), fun, na.rm = FALSE)[,2]
-#	if(length(an) != length(xtmp)) an <- c(as.numeric(an[1])-1, an)
-#	rval <- data.frame(Season = seas, Start_Year = an, Values = xtmp)
-
-#	##eto no miova
-#	nbd[1] <- 3*lmon
-#	nbd[length(nbd)] <- 3*lmon
-#
-#	w <- ifelse(is.na(var), 0,1)
-#	nna <- aggregate(w, by = list(as.factor(dtseas)), sum, na.rm = T)[,2]
-#	rval[which((nna/nbd) < frac), 3] <- NA
-#	return(rval)
-#}
-
-####
-
-#monthly2seasonal <- function(var, dates, smon, lmon, fun, frac = 1){
-#	dates <- as.character(dates)
-#	fun <- match.fun(fun)
-#	an <- as.character(substr(dates, 1,4))
-#	mois <- as.character(substr(dates, 5,6))
-
-#	tmois <- format(ISOdate(2014,1:12,1), "%B")
-#	ix <- which(tmois == smon)
-#	im<-(ix:(ix+(lmon-1)))%%12
-#	im[im == 0] <- 12
-#	seas <- paste(substr(tmois, 1,1)[im], collapse='')
-#	im <- ifelse(im < 10, paste(0, im, sep = ''), im)
-#	seasL <- mois%in%im
-#	rrL <- rle(seasL)
-#	nbd <- rrL$lengths[rrL$values]
-#	xsL <- rep(1:length(nbd), times = nbd)
-#	dtseas <- paste(seas, xsL, sep = '')
-
-#	var <- var[seasL]
-#	an <- sort(levels(as.factor(an[seasL])))
-#	xtmp <- aggregate(var, by = list(as.factor(dtseas)), fun, na.rm = FALSE)[,2]
-#	if(length(an) != length(xtmp)) an <- c(as.numeric(an[1])-1, an)
-#	rval <- data.frame(Season = seas, Start_Year = an, Values = xtmp)
-
-#	##eto no miova
-#	nbd[1] <- lmon
-#	nbd[length(nbd)] <- lmon
-
-#	w <- ifelse(is.na(var), 0,1)
-#	nna <- aggregate(w, by = list(as.factor(dtseas)), sum, na.rm = T)[,2]
-#	rval[which((nna/nbd) < frac), 3] <- NA
-#	return(rval)
-#}
 ########################################################
 
 seasonal_funMat <- function(freq, var, dates, smon, lmon, fun, frac = 1){

@@ -3,8 +3,8 @@
 writeFiles <- function(dat2save, file2save, row.names = FALSE, col.names = FALSE, quote = FALSE, append = FALSE,...){
 	require(tools)
 	extFl <- file_ext(basename(file2save))
-	if(extFl == "csv" | extFl == "CSV") sep=','
-	else sep=' '
+	if(extFl == "csv" | extFl == "CSV") sep = ','
+	else  sep = ' '
 	write.table(dat2save, file = file2save, row.names = row.names, col.names = col.names, quote = quote, sep = sep, append = append,...)
 }
 
