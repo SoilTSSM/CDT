@@ -163,12 +163,11 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 	tkgrid(en.file.save, row = 0, column = 0, sticky = 'w')
 	tkgrid(bt.file.save, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.file.save, command = function(){
-		file2save1 <- tkgetSaveFile(initialdir = getwd(), initialfile = "",
-		filetypes = "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}")
-		if(is.na(file2save1)) tclvalue(file.save1)<-""
-		else{
-			tclvalue(file.save1) <- file2save1
-		}
+		filetypes  <-  "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}"
+		if (Sys.info()["sysname"] == "Windows") file2save1 <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes, defaultextension = TRUE)
+		else file2save1 <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes)
+		if(is.na(file2save1)) tclvalue(file.save1) <- ""
+		else tclvalue(file.save1) <- file2save1
 	})
 	#####################################################
 	tkbind(Cbdatatype,"<<ComboboxSelected>>", function(){

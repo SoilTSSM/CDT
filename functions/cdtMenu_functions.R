@@ -86,8 +86,9 @@ tkadd(menu.file, "command", label = "Save table As...        ", command = functi
 	tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
 	if(!is.na(tabid)){
 		if(AllOpenTabType[[tabid]] == "arr"){
-			file.to.save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "",
-			filetypes="{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}"))
+			filetypes <- "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}"
+			if(Sys.info()["sysname"] == "Windows") file.to.save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes, defaultextension = TRUE))
+			else file.to.save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
 			Objarray <- AllOpenTabData[[tabid]][[2]]
 			tkconfigure(main.win, cursor = 'watch');tcl('update')
 			dat2sav <- tclArray2dataframe(Objarray)

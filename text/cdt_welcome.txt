@@ -1,3 +1,3 @@
 Welcome!
-Climate data tools (CDT) is a tool for data quality control, homogenization and merging station data with satellite and others proxies.
 
+The Climate Data Tools (CDT) is a powerful tool for quality control of station data, merging station data with satellite and others proxies, and processing station and gridded data.

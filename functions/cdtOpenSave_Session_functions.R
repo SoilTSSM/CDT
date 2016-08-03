@@ -1,5 +1,7 @@
 saveCurrentCDTtask <- function(){
-	filename <- tclvalue(tkgetSaveFile(initialfile="", defaultextension=".cdt", filetypes="{{CDT Files} {.cdt}} {{All files} {*.*}}"))
+	filetypes <- "{{CDT Files} {.cdt}} {{All files} {*.*}}"
+	if(Sys.info()["sysname"] == "Windows")  filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes, defaultextension = TRUE))
+	else filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes))
 	if (filename != "" | filename != 'NA' | !is.na(filename)){
 		lastStnChoix <- tclvalue(stn.choix.val)
 		save(AllOpenFilesType, AllOpenFilesData,
@@ -20,7 +22,7 @@ OpenOldCDTtask <- function(){
 	AllOpenFilesType <<- vector(mode = 'list', length = 0)
 	tkdelete(all.opfiles, 0, as.numeric(tclvalue(tksize(all.opfiles)))-1)
 
-	fileOpenCDT <- tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes="{{CDT Files} {.cdt}} {{All files} {*.*}}")
+	fileOpenCDT <- tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = "{{CDT Files} {.cdt}} {{All files} {*.*}}")
 	if(tclvalue(fileOpenCDT) != '' | !is.na(tclvalue(fileOpenCDT))) load(tclvalue(fileOpenCDT))
 	if(GeneralParameters$action == 'qc.rain'	| GeneralParameters$action == 'qc.temp' | GeneralParameters$action == 'homog' | GeneralParameters$action == 'zero.check'){
 		if(GeneralParameters$action == 'qc.rain'	| GeneralParameters$action == 'qc.temp'){

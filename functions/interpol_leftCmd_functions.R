@@ -431,8 +431,10 @@ InterpolationPanelCmd <- function(){
 	fl2sav.tab3 <- tkentry(frameSaveInt, textvariable = file.save1, width = largeur) 
 	bfl2sav.tab3 <- tkbutton(frameSaveInt, text = "...")
 	tkconfigure(bfl2sav.tab3, command = function(){
-		file2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = "{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}")
-		if(is.na(file2save)) tclvalue(file.save1)<-""
+		filetypes <- "{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"
+		if(Sys.info()["sysname"] == "Windows")  file2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes, defaultextension = TRUE)
+		else file2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes)
+		if(is.na(file2save)) tclvalue(file.save1) <- ""
 		else tclvalue(file.save1) <- file2save
 	})
 

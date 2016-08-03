@@ -112,8 +112,10 @@ createColorkey <- function(parent.win, listCol){
 			listCol <- vcolor
 		}else{
 			listCol <- listCol[!is.na(listCol)]
-		} 
-		file2save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "", defaultextension=".clr", filetypes="{{Color Files} {.clr .CLR}} {{All files} *}"))
+		}
+		filetypes <- "{{Color Files} {.clr .CLR}} {{All files} *}" 
+		if(Sys.info()["sysname"] == "Windows") file2save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes, defaultextension = TRUE))
+		else file2save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
 		write.table(listCol, file2save, row.names = F, col.names = F)
 	})
 

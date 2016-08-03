@@ -7,7 +7,8 @@ wcdtAccInfo <- as.integer(w.scale(70)/30)
 cdtfont1 <- tkfont.create(family = "times", size = 30, weight = "bold")
 cdtfont2 <- tkfont.create(family = "times", size = 18, weight = "bold")
 cdtfont3 <- tkfont.create(family = "times", size = 12)
-cdtfont4 <- tkfont.create(family = "courier", size = 12)
+cdtfont4 <- tkfont.create(family = "times", size = 11, weight = "bold")
+cdtfont5 <- tkfont.create(family = "times", size = 15, weight = "bold")
 
 infofl.cdtAcc <- file.path(apps.dir, 'text', 'cdt_welcome.txt', fsep = .Platform$file.sep)
 rdL.cdtAcc <- readLines(infofl.cdtAcc, warn = FALSE)
@@ -31,12 +32,13 @@ cdtauth1 <- tklabel(frame_cdt, text = 'Rija Faniriantsoa, Tufa Dinku', font = cd
 ## MSG
 # xscr.cdtAcc <- tkscrollbar(frame_msg, repeatinterval = 5, orient = "horizontal", command = function(...) tkxview(txta.cdtAcc,...))
 # yscr.cdtAcc <- tkscrollbar(frame_msg, repeatinterval = 5, command = function(...) tkyview(txta.cdtAcc,...))
-# txta.cdtAcc <- tktext(frame_msg, bg = "white", font = "courier", cursor="", wrap = "word", height = 10, width = wcdtAccInfo,
+# txta.cdtAcc <- tktext(frame_msg, bg = "white", font = "courier", cursor="", wrap = "word", height = 8, width = wcdtAccInfo,
 # 						xscrollcommand = function(...) tkset(xscr.cdtAcc,...),
 # 						yscrollcommand = function(...) tkset(yscr.cdtAcc,...))
 
-txta.cdtAcc <- tktext(frame_msg, bg = "white", font = "courier", cursor="", wrap = "word", height = 10, width = wcdtAccInfo)
+txta.cdtAcc <- tktext(frame_msg, bg = "white", font = "courier", cursor="", wrap = "word", height = 8, width = wcdtAccInfo)
 tktag.configure(txta.cdtAcc, "cdtfont4f", font = cdtfont4)
+tktag.configure(txta.cdtAcc, "welcome", font = cdtfont5, foreground = 'blue4', justify = 'center')
 
 ## IMG & IRI
 imgcdtoutput <- tklabel(frame_img, image = imgfl.cdtAcc)
@@ -73,5 +75,8 @@ tkgrid.rowconfigure(frame_iri, 0, weight = 1)
 tkgrid.columnconfigure(frame_iri, 0, weight = 1)
 
 tcl("update", "idletasks")
-for(i in 1:length(rdL.cdtAcc)) tkinsert(txta.cdtAcc, "end", paste(rdL.cdtAcc[i], "\n"), "cdtfont4f")
+tkinsert(txta.cdtAcc, "1.0", paste(rdL.cdtAcc[1], "\n"), "welcome")
+for(i in 2:length(rdL.cdtAcc)) tkinsert(txta.cdtAcc, "end", paste(rdL.cdtAcc[i], "\n"), "cdtfont4f")
+tktag.add(txta.cdtAcc, "welcome", "1.0", "1.end")
+
 tkconfigure(txta.cdtAcc, state = "disabled")

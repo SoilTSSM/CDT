@@ -145,11 +145,11 @@ AggregateInputStationData <- function(parent.win, GeneralParameters){
 	tkgrid.configure(en.file.save, row = 0, column = 0, sticky = 'w')
 	tkgrid.configure(bt.file.save, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.file.save, command = function(){
-		file2save1 <- tkgetSaveFile(initialfile = "", filetypes = "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}")
+		filetypes  <-  "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}"
+		if (Sys.info()["sysname"] == "Windows") file2save1 <- tkgetSaveFile(initialfile = "", filetypes = filetypes, defaultextension = TRUE)
+		else file2save1 <- tkgetSaveFile(initialfile = "", filetypes = filetypes)
 		if(is.na(file2save1)) tclvalue(file.save1) <- as.character(GeneralParameters$file.io$Values[4])
-		else{
-			tclvalue(file.save1) <- file2save1
-		}
+		else tclvalue(file.save1) <- file2save1
 	})
 
 	###############################################

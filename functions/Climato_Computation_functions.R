@@ -59,7 +59,7 @@ standard.daily_lstOmat <- function(xvar, dates){
 		x[is.infinite(x)] <- 0
 		x
 	})
-	rm(vtmp, cmoy, csd, vdates, dates, dstart, dend, vmat, vamt1, vmat2)
+	rm(vtmp, cmoy, csd, vdates, dates, dstart, dend, vmat, vmat1, vmat2)
 	return(xvar)
 }
 
@@ -230,7 +230,7 @@ anomaly.daily_lstOmat <- function(xvar, dates){
 		x[is.infinite(x)] <- 0
 		x
 	})
-	rm(vtmp, cmoy, vdates, dates, dstart, dend, vmat, vamt1, vmat2)
+	rm(vtmp, cmoy, vdates, dates, dstart, dend, vmat, vmat1, vmat2)
 	return(xvar)
 }
 

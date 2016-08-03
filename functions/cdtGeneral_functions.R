@@ -121,46 +121,46 @@ InsertMessagesTxt <- function(wdgt, texta, format = FALSE, fgcolor = 'red', bgco
 ###############################################################################
 ###To remplace the tooltip and statusbar widget
 ## generic
-tkwidget.x <- function (parent, type, txtVar, txtSatus, txtTooltip,...){
-	win <- .Tk.subwin(parent)
-	tcl(type, win, ...)
-	infobulle(win, txtTooltip)
-	status.bar.display(win, txtVar, txtSatus)
-	return(win)
-}
+# tkwidget.x <- function (parent, type, txtVar, txtSatus, txtTooltip,...){
+# 	win <- .Tk.subwin(parent)
+# 	tcl(type, win, ...)
+# 	infobulle(win, txtTooltip)
+# 	status.bar.display(win, txtVar, txtSatus)
+# 	return(win)
+# }
 
 ##############Redefine widget
-tkbutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "button", txtVar, txtSatus, txtTooltip,...)
-tkcanvas.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "canvas", txtVar, txtSatus, txtTooltip,...)
-tkcheckbutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "checkbutton", txtVar, txtSatus, txtTooltip,...)
-tkentry.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "entry", txtVar, txtSatus, txtTooltip,...)
-tkframe.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "frame", txtVar, txtSatus, txtTooltip,...)
-tklabel.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "label", txtVar, txtSatus, txtTooltip,...)
-tklistbox.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "listbox", txtVar, txtSatus, txtTooltip,...)
-tkmenu.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "menu", txtVar, txtSatus, txtTooltip,...)
-tkmenubutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "menubutton", txtVar, txtSatus, txtTooltip,...)
-tkmessage.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "message", txtVar, txtSatus, txtTooltip,...)
-tkradiobutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "radiobutton", txtVar, txtSatus, txtTooltip,...)
-tkscale.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "scale", txtVar, txtSatus, txtTooltip,...)
-tkscrollbar.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "scrollbar", txtVar, txtSatus, txtTooltip,...)
-tktext.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "text", txtVar, txtSatus, txtTooltip,...)
-ttkbutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::button", txtVar, txtSatus, txtTooltip,...)
-ttkcheckbutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::checkbutton", txtVar, txtSatus, txtTooltip,...)
-ttkcombobox.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::combobox", txtVar, txtSatus, txtTooltip,...)
-ttkentry.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::entry", txtVar, txtSatus, txtTooltip,...)
-ttkframe.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::frame", txtVar, txtSatus, txtTooltip,...)
-ttkimage.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::image", txtVar, txtSatus, txtTooltip,...)
-ttklabel.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::label", txtVar, txtSatus, txtTooltip,...)
-ttklabelframe.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::labelframe", txtVar, txtSatus, txtTooltip,...)
-ttkmenubutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::menubutton", txtVar, txtSatus, txtTooltip,...)
-ttknotebook.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::notebook", txtVar, txtSatus, txtTooltip,...)
-ttkpanedwindow.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::panedwindow", txtVar, txtSatus, txtTooltip,...)
-ttkprogressbar.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::progressbar", txtVar, txtSatus, txtTooltip,...)
-ttkradiobutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::radiobutton", txtVar, txtSatus, txtTooltip,...)
-ttkscrollbar.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::scrollbar", txtVar, txtSatus, txtTooltip,...)
-ttkseparator.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::separator", txtVar, txtSatus, txtTooltip,...)
-ttksizegrip.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::sizegrip", txtVar, txtSatus, txtTooltip,...)
-ttktreeview.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::treeview", txtVar, txtSatus, txtTooltip,...)
+# tkbutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "button", txtVar, txtSatus, txtTooltip,...)
+# tkcanvas.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "canvas", txtVar, txtSatus, txtTooltip,...)
+# tkcheckbutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "checkbutton", txtVar, txtSatus, txtTooltip,...)
+# tkentry.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "entry", txtVar, txtSatus, txtTooltip,...)
+# tkframe.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "frame", txtVar, txtSatus, txtTooltip,...)
+# tklabel.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "label", txtVar, txtSatus, txtTooltip,...)
+# tklistbox.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "listbox", txtVar, txtSatus, txtTooltip,...)
+# tkmenu.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "menu", txtVar, txtSatus, txtTooltip,...)
+# tkmenubutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "menubutton", txtVar, txtSatus, txtTooltip,...)
+# tkmessage.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "message", txtVar, txtSatus, txtTooltip,...)
+# tkradiobutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "radiobutton", txtVar, txtSatus, txtTooltip,...)
+# tkscale.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "scale", txtVar, txtSatus, txtTooltip,...)
+# tkscrollbar.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "scrollbar", txtVar, txtSatus, txtTooltip,...)
+# tktext.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "text", txtVar, txtSatus, txtTooltip,...)
+# ttkbutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::button", txtVar, txtSatus, txtTooltip,...)
+# ttkcheckbutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::checkbutton", txtVar, txtSatus, txtTooltip,...)
+# ttkcombobox.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::combobox", txtVar, txtSatus, txtTooltip,...)
+# ttkentry.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::entry", txtVar, txtSatus, txtTooltip,...)
+# ttkframe.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::frame", txtVar, txtSatus, txtTooltip,...)
+# ttkimage.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::image", txtVar, txtSatus, txtTooltip,...)
+# ttklabel.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::label", txtVar, txtSatus, txtTooltip,...)
+# ttklabelframe.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::labelframe", txtVar, txtSatus, txtTooltip,...)
+# ttkmenubutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::menubutton", txtVar, txtSatus, txtTooltip,...)
+# ttknotebook.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::notebook", txtVar, txtSatus, txtTooltip,...)
+# ttkpanedwindow.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::panedwindow", txtVar, txtSatus, txtTooltip,...)
+# ttkprogressbar.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::progressbar", txtVar, txtSatus, txtTooltip,...)
+# ttkradiobutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::radiobutton", txtVar, txtSatus, txtTooltip,...)
+# ttkscrollbar.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::scrollbar", txtVar, txtSatus, txtTooltip,...)
+# ttkseparator.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::separator", txtVar, txtSatus, txtTooltip,...)
+# ttksizegrip.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::sizegrip", txtVar, txtSatus, txtTooltip,...)
+# ttktreeview.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::treeview", txtVar, txtSatus, txtTooltip,...)
 
 ###############################################################################
 #BWidget NoteBook
@@ -318,13 +318,14 @@ addDekads <- function(daty, n = 1){
 
 fileORdir2Save <- function(filedirVar, isFile = TRUE){
 	if(isFile){
-		file2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "",
-		filetypes = "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}")		
-		if(is.na(file2save)) tclvalue(filedirVar)<-""
+		filetypes  <-  "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}"
+		if(Sys.info()["sysname"] == "Windows") file2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes, defaultextension = TRUE)
+		else file2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes)
+		if(is.na(file2save)) tclvalue(filedirVar) <- ""
 		else tclvalue(filedirVar) <- file2save
 	}else{
 		dir2save <- tk_choose.dir(getwd(), "")
-		if(is.na(dir2save)) tclvalue(filedirVar)<-""
+		if(is.na(dir2save)) tclvalue(filedirVar) <- ""
 		else{
 			dir.create(dir2save, showWarnings = FALSE, recursive = TRUE)
 			tclvalue(filedirVar) <- dir2save

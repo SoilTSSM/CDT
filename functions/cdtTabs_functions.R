@@ -376,8 +376,9 @@ SavePlot <- function(){
 	tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
 	if(length(AllOpenTabType) > 0){
 		if(AllOpenTabType[[tabid]] == "img"){
-			filename <- tclvalue(tkgetSaveFile(initialfile="", defaultextension=".jpeg",
-			filetypes="{JPEG {.jpeg .jpg}} {{All files} {*.*}}"))
+			filetypes <- "{JPEG {.jpeg .jpg}} {{All files} {*.*}}"
+			if(Sys.info()["sysname"] == "Windows") filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes, defaultextension = TRUE))
+			else filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes))
 			if (filename != ""){
 				#jpeg(file = filename, width = 960, height = 480)
 				#AllOpenTabData[[tabid]][[2]]$fun()

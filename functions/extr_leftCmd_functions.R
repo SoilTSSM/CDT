@@ -395,20 +395,7 @@ ExtractDataPanelCmd <- function(){
 	cbpolyType.tab3 <- ttkcombobox(subfr3, values='', textvariable = namePoly, width = 10, state = 'disabled') #
 
 	##########################
-#	sep4.tab3 <- ttkseparator(subfr3)
-#	multipoints <- tclVar()
-#	cbmltpts.tab3 <- ttkcombobox(subfr3, values = unlist(listOpenFiles), textvariable = multipoints, width = largeur)
-#	btmltpts.tab3 <- tkbutton(subfr3, text = "...")
 
-#	infobulle(cbmltpts.tab3, 'File containing the coordinates of points to be extracted')
-#	status.bar.display(cbmltpts.tab3, TextOutputVar, 'File containing the coordinates of points to be extracted')
-#	infobulle(btmltpts.tab3, 'File containing the coordinates of points to be extracted')
-#	status.bar.display(btmltpts.tab3, TextOutputVar, 'File containing the coordinates of points to be extracted')
-
-	##########################
-#	sep5.tab3 <- ttkseparator(subfr3)
-
-	###########
 	tkgrid(xentr1.tab3, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1)
 	tkgrid(xentr2.tab3, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
 	tkgrid(yentr1.tab3, row = 2, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
@@ -454,12 +441,6 @@ ExtractDataPanelCmd <- function(){
 	tkgrid(sep3.tab3, row = 10, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, pady = 5)
 	tkgrid(lab3.tab3, row = 11, column = 0, sticky = 'w', rowspan = 1, columnspan = 5)
 	tkgrid(cbpolyType.tab3, row = 11, column = 1, sticky = 'we', rowspan = 1, columnspan = 4)
-
-	#tkgrid(sep4.tab3, row = 12, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, pady = 5)
-	#tkgrid(cbmltpts.tab3, row = 13, column = 0, sticky = 'we', rowspan = 1, columnspan = 4)
-	#tkgrid(btmltpts.tab3, row = 13, column = 4, sticky = 'we', rowspan = 1, columnspan = 1)
-
-	#tkgrid(sep5.tab3, row = 14, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, pady = 5)
 
 	##########################
 	tkconfigure(btRedraw.tab3, command = function(){
@@ -650,10 +631,6 @@ ExtractDataPanelCmd <- function(){
 
 	##########################
 	sep1.tab4 <- ttkseparator(subfr4)
-
-#'Separate file'
-#'one file XYZ'
-#'one file Matrix'
 
 	outputype.tab4 <- ttklabelframe(subfr4, text = "Output File Formats", labelanchor = "nw", relief = "groove", borderwidth = 2)
 	infobulle(outputype.tab4, 'Select the file format to save result in case of Rectangle or Polygon')
