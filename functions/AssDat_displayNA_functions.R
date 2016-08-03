@@ -125,10 +125,9 @@ funCorDist <- function(donne, latlon){
 			x[1]
 		})
 
-		infoIDen <- cbind(idStn[id0], lon[id0], lat[id0], val)
+		infoIDen <- cbind(lon[id0], lat[id0], val)
 		lon <- lon[!id0]
 		lat <- lat[!id0]
-		idStn <- idStn[!id0]
 		donne <- donne[!id0]
 	}
 	##
