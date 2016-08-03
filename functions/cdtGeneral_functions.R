@@ -430,6 +430,34 @@ getCDTdata1Date <- function(donne, yrs, mon, day){
 }	
 
 #################################################################################
+##
+
+getCDTdataAndDisplayMsg <- function(donne, period){
+	if(is.null(donne)) return(NULL)
+	donne <- splitCDTData(donne, period)
+	if(is.null(donne)) return(NULL)
+	if(nrow(donne$duplicated.coords) > 0){
+		tmp <- as.matrix(donne$duplicated.coords)
+		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
+		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
+		InsertMessagesTxt(main.txt.out, 'Duplicated coordinates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, tmp0)
+	}
+	if(nrow(donne$missing.coords) > 0){
+		tmp <- as.matrix(donne$missing.coords)
+		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
+		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
+		InsertMessagesTxt(main.txt.out, 'Missing coordinates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, tmp0)
+	}
+	if(length(donne$duplicated.dates) > 0){
+		InsertMessagesTxt(main.txt.out, 'Duplicated dates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, paste(donne$duplicated.dates, collapse = ' '))
+	}
+	return(donne)
+}
+
+#################################################################################
 ## get DEM data  in the list (all open files)
 ## return $lon $lat $dem
 

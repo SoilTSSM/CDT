@@ -10,11 +10,11 @@ plotNASummary <- function(dates, xseries, jstn, period){
 	yval <- as.vector(yNonNA)
 	at_val <- at_lab[yval > 0]
 	yval <- yval[yval > 0]
-	if(period == 'daily') ylim <- c(0,400)
-	if(period == 'dekadal') ylim <- c(0,40)
-	if(period == 'monthly') ylim <- c(0,14)
+	if(period == 'daily') ylim <- c(0, 400)
+	if(period == 'dekadal') ylim <- c(0, 40)
+	if(period == 'monthly') ylim <- c(0, 14)
 
-	opar <- par(mar = c(3.5,4,3,2))
+	opar <- par(mar = c(3.5, 4, 3, 2))
 	barplot(yNonNA, space = 0, ylab = 'Number of Non-Missing data/Year', ylim = ylim, col = 'cyan', xaxt = 'n', yaxt = 'n', main = jstn)
 	axis(side = 2)
 	axis(side = 1, at = at_tick - 1, labels = FALSE)
@@ -34,7 +34,7 @@ plotAllNASummary <- function(donne, dates, period){
 		xdates <- as.Date(dates, format='%Y%m%d')
 	}else if(period == 'dekadal'){
 		xdates <- as.Date(paste(substr(dates, 1,6), ifelse(substr(dates, 7,7) == "1", "05",
-		ifelse(substr(dates, 7,7) == "2", "15", "25")), sep = ''), format='%Y%m%d')
+		ifelse(substr(dates, 7, 7) == "2", "15", "25")), sep = ''), format='%Y%m%d')
 	}else if(period == 'monthly'){
 		xdates <- as.Date(paste(dates, 16, sep = ''), format='%Y%m%d')
 	}
@@ -52,7 +52,7 @@ plotAllNASummary <- function(donne, dates, period){
 	for(j in 1:nbstn) mat[tstn[j, 1]:tstn[j, 2], j] <- 1
 	sworking <- apply(mat, 1, sum)
 
-	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.1,1), respect = FALSE)
+	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.1, 1), respect = FALSE)
 	op <- par(mar = c(0, 0, 0, 0))
 	plot.new()
 	legend("center", "groups", legend = c('Active Stations', 'Reported Data'), fill = c('cyan1', 'pink'), horiz = TRUE)
@@ -72,8 +72,8 @@ plotAllNASummary <- function(donne, dates, period){
 ######################################################################################################
 
 funCorDist <- function(donne, latlon){
-	lon <- latlon[,1]
-	lat <- latlon[,2]
+	lon <- latlon[, 1]
+	lat <- latlon[, 2]
 	#######
 
 	test_equal <- function(x){
@@ -90,16 +90,16 @@ funCorDist <- function(donne, latlon){
 		nbrk <- nbreaks(length(x))
 		ibrk <- seq(0, length(x), nbrk)
 		if(length(ibrk[length(ibrk)]:length(x)) < nbrk/4){
-			breaks <- c(0, x[ibrk[-c(1, length(ibrk))]],max(x))
+			breaks <- c(0, x[ibrk[-c(1, length(ibrk))]], max(x))
 		}else{
 			breaks <- c(0, x[ibrk[-1]], max(x))
 		}
 
-		xquant <- tapply(y, list(cut(x, breaks = breaks)), quantile, prob = c(0.05,0.5,0.95))
+		xquant <- tapply(y, list(cut(x, breaks = breaks)), quantile, prob = c(0.05, 0.5, 0.95))
 		intrv <- names(xquant)
-		intrv <- gsub('\\(|\\]|\\[','',intrv)
-		Intrv <- matrix(as.numeric(do.call('rbind', strsplit(intrv,','))), ncol = 2)
-		mids<-(Intrv[,2]+Intrv[,1])/2
+		intrv <- gsub('\\(|\\]|\\[', '', intrv)
+		Intrv <- matrix(as.numeric(do.call('rbind', strsplit(intrv, ','))), ncol = 2)
+		mids<-(Intrv[, 2]+Intrv[, 1])/2
 		xquant <- do.call('rbind', xquant)
 		return(unname(cbind(mids, xquant)))
 	}
@@ -120,7 +120,7 @@ funCorDist <- function(donne, latlon){
 	infoIDen <- NULL
 	if(sum(id0) > 0){
 		val <- sapply(which(id0), function(j){
-			x <- donne[,j]
+			x <- donne[, j]
 			x <- x[!is.na(x)]
 			x[1]
 		})
@@ -143,87 +143,27 @@ funCorDist <- function(donne, latlon){
 	###
 	loess <- loess.smooth(x, y)
 	###
-	op <- par(mar = c(4,4,2,2))
+	op <- par(mar = c(4, 4, 2, 2))
 	plot(x, y, xlab = "Distance (km)", ylab = "Correlation", xlim = c(0, max(x, na.rm = T)), ylim = c(min(xysumm[,2], na.rm = T),
-	ifelse(max(xysumm[,4], na.rm = T) < 0.9, max(xysumm[,4], na.rm = T)+0.1,1)), type = 'n')
-	polygon(c(rev(xysumm[,1]), xysumm[,1]), c(rev(xysumm[,4]), xysumm[,2]), col = "darkslategray1", border = NA)
-	lines(xysumm[,1], xysumm[,3], col = 'blue', lwd = 2)
+	ifelse(max(xysumm[, 4], na.rm = T) < 0.9, max(xysumm[, 4], na.rm = T)+0.1, 1)), type = 'n')
+	polygon(c(rev(xysumm[, 1]), xysumm[, 1]), c(rev(xysumm[, 4]), xysumm[, 2]), col = "darkslategray1", border = NA)
+	lines(xysumm[, 1], xysumm[, 3], col = 'blue', lwd = 2)
 	lines(loess$x, loess$y, lwd = 2, col = 'red')
 	abline(v = axTicks(1), h = axTicks(2), col = 'lightgrey', lty = "dotted")
 	legend(x = 'topright', legend = c("5/95th Percentile", "Median", 'Loess smooth'),
-	col = c('darkslategray1', 'blue', 'red'), lty = c(0,1,1), lwd = c(0,2,2),
-	pch = c(22, NA, NA), pt.bg = c('darkslategray1', NA, NA), pt.cex = 2, bg = 'gray97')
+		col = c('darkslategray1', 'blue', 'red'), lty = c(0, 1, 1), lwd = c(0, 2, 2),
+		pch = c(22, NA, NA), pt.bg = c('darkslategray1', NA, NA), pt.cex = 2, bg = 'gray97')
 	par(op)
 }
 
 ######################################################################################################
 
-DisplayStnNASum <- function(parent, jstn, donne, vdates, notebookTab){
-
-	if(vdates == 'Daily data') period <- 'daily'
-	if(vdates == 'Dekadal data') period <- 'dekadal'
-	if(vdates == 'Monthly data') period <- 'monthly'
-	donne <- splitCDTData(donne, period)
-	if(is.null(donne)) return(NULL)
-	if(nrow(donne$duplicated.coords) > 0){
-		tmp <- as.matrix(donne$duplicated.coords)
-		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
-		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
-		InsertMessagesTxt(main.txt.out, 'Duplicated coordinates', format = TRUE)
-		InsertMessagesTxt(main.txt.out, tmp0)
-	}
-	if(nrow(donne$missing.coords) > 0){
-		tmp <- as.matrix(donne$missing.coords)
-		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
-		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
-		InsertMessagesTxt(main.txt.out, 'Missing coordinates', format = TRUE)
-		InsertMessagesTxt(main.txt.out, tmp0)
-	}
-	if(length(donne$duplicated.dates) > 0){
-		InsertMessagesTxt(main.txt.out, 'Duplicated dates', format = TRUE)
-		InsertMessagesTxt(main.txt.out, paste(donne$duplicated.dates, collapse = ' '))
-	}
+DisplayStnNASum <- function(parent, jstn, donne, period, notebookTab){
 	dates <- donne$dates
 	IdStn <- donne$id
 	donne <- donne$data
 	ijx <- which(IdStn == jstn)
 	xseries <- donne[, ijx]
-
-	# if(vdates == 'Daily data'){
-	# 	period <- 'daily'
-	# 	if(nchar(as.character(donne[5,1])) != 8){
-	# 		InsertMessagesTxt(main.txt.out, 'Station data: not a daily data', format = TRUE)
-	# 		return(NULL)
-	# 	}
-	# }
-	# if(vdates == 'Dekadal data'){
-	# 	period <- 'dekadal'
-	# 	if(nchar(as.character(donne[5,1])) != 7){
-	# 		InsertMessagesTxt(main.txt.out, 'Station data: not a dekadal data', format = TRUE)
-	# 		return(NULL)
-	# 	}
-	# }
-	# if(vdates == 'Monthly data'){
-	# 	period <- 'monthly'
-	# 	if(nchar(as.character(donne[5,1])) != 6){
-	# 		InsertMessagesTxt(main.txt.out, 'Station data: not a monthly data', format = TRUE)
-	# 		return(NULL)
-	# 	}
-	# }
-
-	# if(length(grep('alt|elev|elv', donne[4,1], ignore.case = TRUE)) == 1){
-	# 	Info <- data.frame(t(donne[1:4,-1]))
-	# 	dates <- as.character(donne[-c(1:4), 1])
-	# 	donne <- donne[-c(1:4),-1]
-	# }else{
-	# 	Info <- data.frame(t(donne[1:3,-1]))
-	# 	dates <- as.character(donne[-c(1:3), 1])
-	# 	donne <- donne[-c(1:3),-1]
-	# }
-
-	# IdStn <- as.character(Info[,1])
-	# ijx <- which(IdStn == jstn)
-	# xseries <- as.numeric(donne[,ijx])
 
 	########PLOT
 	pltusr <- NULL
@@ -258,8 +198,8 @@ DisplayStnNASum <- function(parent, jstn, donne, vdates, notebookTab){
 
 		posimgx <- round((imgmw-imgw)/2)
 		posimgy <- round((imgmh-imgh)/2)
-		orgx <- ifelse(posimgx < 0,0, posimgx)
-		orgy <- ifelse(posimgy < 0,0, posimgy)
+		orgx <- ifelse(posimgx < 0, 0, posimgx)
+		orgy <- ifelse(posimgy < 0, 0, posimgy)
 
 		xpos<-(xmouse-orgx)/imgw
 		ypos <- 1-(ymouse-orgy)/imgh
@@ -280,15 +220,15 @@ DisplayStnNASum <- function(parent, jstn, donne, vdates, notebookTab){
 		ipos <- ceiling(xcoord)
 		labdates <- pltusr$years[ipos]
 
-		frxcoord <- ifelse(ipos < 1 | ipos > length(pltusr$years) | ycoord < usrCoords[3] | ycoord > usrCoords[4],'',labdates)
-		frycoord <- ifelse(xcoord < usrCoords[1] | xcoord > usrCoords[2] | ycoord < usrCoords[3] | ycoord > usrCoords[4],'',round(ycoord, 1))
+		frxcoord <- ifelse(ipos < 1 | ipos > length(pltusr$years) | ycoord < usrCoords[3] | ycoord > usrCoords[4], '', labdates)
+		frycoord <- ifelse(xcoord < usrCoords[1] | xcoord > usrCoords[2] | ycoord < usrCoords[3] | ycoord > usrCoords[4], '', round(ycoord, 1))
 
 		tclvalue(xpcoord) <- frxcoord
 		tclvalue(ypcoord) <- frycoord
 	}
 
 	tkbind(img,"<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
-	tkbind(img,"<Leave>", function() tkconfigure(img, cursor=''))
+	tkbind(img,"<Leave>", function() tkconfigure(img, cursor = ''))
 	tkbind(img, "<Motion>", function(x, y){
 		display.cursor.type(x, y)
 	})
@@ -297,73 +237,12 @@ DisplayStnNASum <- function(parent, jstn, donne, vdates, notebookTab){
 }
 
 ######################################################################################################
-#donne0 = donne
 
-DisplayAllStnNASum <- function(parent, donne, vdates){
-	if(vdates == 'Daily data') period <- 'daily'
-	if(vdates == 'Dekadal data') period <- 'dekadal'
-	if(vdates == 'Monthly data') period <- 'monthly'
-	donne <- splitCDTData(donne, period)
-	if(is.null(donne)) return(NULL)
-	if(nrow(donne$duplicated.coords) > 0){
-		tmp <- as.matrix(donne$duplicated.coords)
-		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
-		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
-		InsertMessagesTxt(main.txt.out, 'Duplicated coordinates', format = TRUE)
-		InsertMessagesTxt(main.txt.out, tmp0)
-	}
-	if(nrow(donne$missing.coords) > 0){
-		tmp <- as.matrix(donne$missing.coords)
-		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
-		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
-		InsertMessagesTxt(main.txt.out, 'Missing coordinates', format = TRUE)
-		InsertMessagesTxt(main.txt.out, tmp0)
-	}
-	if(length(donne$duplicated.dates) > 0){
-		InsertMessagesTxt(main.txt.out, 'Duplicated dates', format = TRUE)
-		InsertMessagesTxt(main.txt.out, paste(donne$duplicated.dates, collapse = ' '))
-	}
+DisplayAllStnNASum <- function(parent, donne, period){
 	dates <- donne$dates
 	donne <- donne$data
 	nna <- apply(donne, 2, function(x) sum(is.na(x)))
 	donne <- donne[,nna != nrow(donne)] #exclude station without data (all missing values)
-
-
-	# if(vdates == 'Daily data'){
-	# 	period <- 'daily'
-	# 	if(nchar(as.character(donne[5,1])) != 8){
-	# 		InsertMessagesTxt(main.txt.out, 'Station data: not a daily data', format = TRUE)
-	# 		return(NULL)
-	# 	}
-	# }
-	# if(vdates == 'Dekadal data'){
-	# 	period <- 'dekadal'
-	# 	if(nchar(as.character(donne[5,1])) != 7){
-	# 		InsertMessagesTxt(main.txt.out, 'Station data: not a dekadal data', format = TRUE)
-	# 		return(NULL)
-	# 	}
-	# }
-	# if(vdates == 'Monthly data'){
-	# 	period <- 'monthly'
-	# 	if(nchar(as.character(donne[5,1])) != 6){
-	# 		InsertMessagesTxt(main.txt.out, 'Station data: not a monthly data', format = TRUE)
-	# 		return(NULL)
-	# 	}
-	# }
-
-	# if(length(grep('alt|elev|elv', donne[4,1], ignore.case = TRUE)) == 1){
-	# 	Info <- data.frame(t(donne[1:4,-1]))
-	# 	dates <- as.character(donne[-c(1:4), 1])
-	# 	donne <- donne[-c(1:4),-1]
-	# }else{
-	# 	Info <- data.frame(t(donne[1:3,-1]))
-	# 	dates <- as.character(donne[-c(1:3), 1])
-	# 	donne <- donne[-c(1:3),-1]
-	# }
-
-	# donne <- apply(donne, 2, as.numeric)
-	# nna <- apply(donne, 2, function(x) sum(is.na(x)))
-	# donne <- donne[,nna != nrow(donne)]
 
 	########PLOT
 	pltusr <- NULL
@@ -398,8 +277,8 @@ DisplayAllStnNASum <- function(parent, donne, vdates){
 
 		posimgx <- round((imgmw-imgw)/2)
 		posimgy <- round((imgmh-imgh)/2)
-		orgx <- ifelse(posimgx < 0,0, posimgx)
-		orgy <- ifelse(posimgy < 0,0, posimgy)
+		orgx <- ifelse(posimgx < 0, 0, posimgx)
+		orgy <- ifelse(posimgy < 0, 0, posimgy)
 
 		xpos<-(xmouse-orgx)/imgw
 		ypos <- 1-(ymouse-orgy)/imgh
@@ -427,15 +306,15 @@ DisplayAllStnNASum <- function(parent, donne, vdates){
 		}
 		if(period == 'monthly') labdates <- format(as.Date(xcoord, origin = '1970-1-1'),'%b-%Y')
 
-		frxcoord <- ifelse(xcoord < usrCoords[1] | xcoord > usrCoords[2] | ycoord < usrCoords[3] | ycoord > usrCoords[4],'',labdates)
-		frycoord <- ifelse(xcoord < usrCoords[1] | xcoord > usrCoords[2] | ycoord < usrCoords[3] | ycoord > usrCoords[4],'',round(ycoord, 1))
+		frxcoord <- ifelse(xcoord < usrCoords[1] | xcoord > usrCoords[2] | ycoord < usrCoords[3] | ycoord > usrCoords[4], '', labdates)
+		frycoord <- ifelse(xcoord < usrCoords[1] | xcoord > usrCoords[2] | ycoord < usrCoords[3] | ycoord > usrCoords[4], '', round(ycoord, 1))
 
 		tclvalue(xpcoord) <- frxcoord
 		tclvalue(ypcoord) <- frycoord
 	}
 
 	tkbind(img,"<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
-	tkbind(img,"<Leave>", function() tkconfigure(img, cursor=''))
+	tkbind(img,"<Leave>", function() tkconfigure(img, cursor = ''))
 	tkbind(img, "<Motion>", function(x, y){
 		display.cursor.type(x, y)
 	})
@@ -445,30 +324,7 @@ DisplayAllStnNASum <- function(parent, donne, vdates){
 
 ######################################################################################################
 
-DisplayDistCorr <- function(parent, donne, vdates){
-	if(vdates == 'Daily data') period <- 'daily'
-	if(vdates == 'Dekadal data') period <- 'dekadal'
-	if(vdates == 'Monthly data') period <- 'monthly'
-	donne <- splitCDTData(donne, period)
-	if(is.null(donne)) return(NULL)
-	if(nrow(donne$duplicated.coords) > 0){
-		tmp <- as.matrix(donne$duplicated.coords)
-		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
-		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
-		InsertMessagesTxt(main.txt.out, 'Duplicated coordinates', format = TRUE)
-		InsertMessagesTxt(main.txt.out, tmp0)
-	}
-	if(nrow(donne$missing.coords) > 0){
-		tmp <- as.matrix(donne$missing.coords)
-		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
-		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
-		InsertMessagesTxt(main.txt.out, 'Missing coordinates', format = TRUE)
-		InsertMessagesTxt(main.txt.out, tmp0)
-	}
-	if(length(donne$duplicated.dates) > 0){
-		InsertMessagesTxt(main.txt.out, 'Duplicated dates', format = TRUE)
-		InsertMessagesTxt(main.txt.out, paste(donne$duplicated.dates, collapse = ' '))
-	}
+DisplayDistCorr <- function(parent, donne, period){
 	# dates <- donne$dates
 	latlon <- cbind(donne$lon, donne$lat)
 	donne <- donne$data
@@ -477,22 +333,6 @@ DisplayDistCorr <- function(parent, donne, vdates){
 	latlon <- latlon[nna != nrow(donne),]
 	donne <- donne[,nna != nrow(donne)]
 
-	# if(length(grep('alt|elev|elv', donne[4,1], ignore.case = TRUE)) == 1){
-	# 	Info <- data.frame(t(donne[1:4,-1]))
-	# 	dates <- as.character(donne[-c(1:4), 1])
-	# 	donne <- donne[-c(1:4),-1]
-	# }else{
-	# 	Info <- data.frame(t(donne[1:3,-1]))
-	# 	dates <- as.character(donne[-c(1:3), 1])
-	# 	donne <- donne[-c(1:3),-1]
-	# }
-
-	# latlon <- apply(Info[,2:3], 2, as.numeric)
-	# donne <- apply(donne, 2, as.numeric)
-	# nna <- apply(donne, 2, function(x) sum(is.na(x)))
-	# latlon <- latlon[nna != nrow(donne),]
-	# donne <- donne[,nna != nrow(donne)]
-
 	########PLOT
 	plotIt <- function(){
 		op <- par(bg = "white")
@@ -500,7 +340,7 @@ DisplayDistCorr <- function(parent, donne, vdates){
 		par(op)
 	}
 
-	onglet <- addNewTab(parent, tab.title='Distance_Corrorelation')
+	onglet <- addNewTab(parent, tab.title = 'Distance_Corrorelation')
 	#########
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
@@ -511,7 +351,7 @@ DisplayDistCorr <- function(parent, donne, vdates){
 	tkgrid.columnconfigure(img, 0, weight = 1)
 
 	tkbind(img,"<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
-	tkbind(img,"<Leave>", function() tkconfigure(img, cursor=''))
+	tkbind(img,"<Leave>", function() tkconfigure(img, cursor = ''))
 	return(list(onglet, img))
 }
 

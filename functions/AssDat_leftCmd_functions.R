@@ -12,8 +12,7 @@ AssessDataPanelCmd <- function(){
 	tkgrid(chkframe, sticky = 'we')
 	tkgrid(chkframe1, sticky = 'we', pady = 10)
 
-	file.period <- tclVar()
-	tclvalue(file.period) <- 'Dekadal data'
+	file.period <- tclVar('Dekadal data')
 	cbperiod <- ttkcombobox(chkframe, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
 
 	sep1 <- ttkseparator(chkframe)
@@ -56,42 +55,82 @@ AssessDataPanelCmd <- function(){
 	tkgrid(bt.stnfl, row = 3, column = 5, rowspan = 1, columnspan = 1, padx = 1, pady = 1, sticky = "e")
 	tkgrid(sep2, row = 4, column = 0, rowspan = 1, columnspan = 6, pady = 5, sticky = 'we')
 
-	tkgrid(cmd.DistCor, row = 5, column = 0, rowspan = 1, columnspan = 3, padx = 1, pady = 1, sticky = "we")
-	tkgrid(cmd.AllNA, row = 5, column = 3, rowspan = 1, columnspan = 3, padx = 1, pady = 1, sticky = "we")
+	tkgrid(cmd.DistCor, row = 5, column = 0, rowspan = 1, columnspan = 3, padx = 1, pady = 2, sticky = "we")
+	tkgrid(cmd.AllNA, row = 5, column = 3, rowspan = 1, columnspan = 3, padx = 1, pady = 2, sticky = "we")
 
 	stnSumNA.val <- tclVar()
-	stnSumNA.cb <- ttkcombobox(chkframe1, values='', textvariable = stnSumNA.val, state = 'normal', width = largeur)
-	stnSumNA.prev <- tkbutton(chkframe1, text=" <<- Prev")
-	stnSumNA.next <- tkbutton(chkframe1, text = "Next->>")
+	stnSumNA.cb <- ttkcombobox(chkframe1, values='', textvariable = stnSumNA.val, state = 'normal')
+	stnSumNA.prev <- tkbutton(chkframe1, text="<<-")
+	stnSumNA.next <- tkbutton(chkframe1, text = "->>")
 
-	tkgrid(stnSumNA.cb, row = 0, column = 0, columnspan = 4, padx = 1, pady = 1)
-	tkgrid(stnSumNA.prev, row = 1, column = 0, padx = 5)
-	tkgrid(stnSumNA.next, row = 1, column = 3, padx = 5)
+	tkgrid(stnSumNA.prev, row = 0, column = 0, padx = 1, pady = 3)
+	tkgrid(stnSumNA.cb, row = 0, column = 1, padx = 1, pady = 3)
+	tkgrid(stnSumNA.next, row = 0, column = 2, padx = 1, pady = 3)
 
 	#######################
+
+	get.period <- function(){
+		if(tclvalue(file.period) == 'Daily data') period <- 'daily'
+		if(tclvalue(file.period) == 'Dekadal data') period <- 'dekadal'
+		if(tclvalue(file.period) == 'Monthly data') period <- 'monthly'
+		return(period)		
+	}
+
+	#######################
+
+	assessAva <- new.env()
+	assign('DONNEES', NULL, envir = assessAva)
+	assign('input.file', NULL, envir = assessAva)
+
+	get.donnees <- function(period, file.stnfl){
+		if(is.null(assessAva$DONNEES)){
+			donne <- getStnOpenData(file.stnfl)
+			donne <- getCDTdataAndDisplayMsg(donne, period)
+			assessAva$DONNEES <- donne
+			assessAva$input.file <- tclvalue(file.stnfl)
+		}else{
+			if(tclvalue(file.stnfl) != assessAva$input.file){
+				donne <- getStnOpenData(file.stnfl)
+				donne <- getCDTdataAndDisplayMsg(donne, period)
+				assessAva$DONNEES <- donne
+				assessAva$input.file <- tclvalue(file.stnfl)
+			}else{
+				donne <- assessAva$DONNEES
+			}
+		}
+		return(donne)
+	}
+
+	#######################
+		
 	tkbind(cb.stnfl,"<<ComboboxSelected>>", function(){
-		donne <- getStnOpenData(file.stnfl)
+		period <- get.period()
+		donne <- get.donnees(period, file.stnfl)
+
 		if(!is.null(donne)){
-		stnSumNA <- as.character(donne[1,-1])
-		tclvalue(stnSumNA.val) <- stnSumNA[1]
-		tkconfigure(stnSumNA.cb, values = stnSumNA, textvariable = stnSumNA.val)
+			stnSumNA <- donne$id
+			tclvalue(stnSumNA.val) <- stnSumNA[1]
+			tkconfigure(stnSumNA.cb, values = stnSumNA, textvariable = stnSumNA.val)
 		}
 	})
 
 	#######################
+
 	notebookTab <- NULL
 
 	tkconfigure(stnSumNA.next, command = function(){
-		donne <- getStnOpenData(file.stnfl)
+		period <- get.period()
+		donne <- get.donnees(period, file.stnfl)
+
 		if(!is.null(donne)){
 			istn <- as.numeric(tclvalue(tcl(stnSumNA.cb, "current")))+1
 			istn <- istn+1
-			stnSumNA <- as.character(donne[1,-1])
+			stnSumNA <- donne$id
 			if(istn > length(stnSumNA)) istn <- 1
 			tclvalue(stnSumNA.val) <- stnSumNA[istn]
 			jstn <- tclvalue(stnSumNA.val)
 
-			imgContainer <- DisplayStnNASum(tknotes, jstn, donne, tclvalue(file.period), notebookTab)
+			imgContainer <- DisplayStnNASum(tknotes, jstn, donne, period, notebookTab)
 			if(!is.null(imgContainer)){
 				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, notebookTab, AllOpenTabType, AllOpenTabData)
 				notebookTab <<- retNBTab$notebookTab
@@ -100,19 +139,22 @@ AssessDataPanelCmd <- function(){
 			}
 		}else InsertMessagesTxt(main.txt.out, 'No station data found', format = TRUE)
 	})
+
 	#######################
 
 	tkconfigure(stnSumNA.prev, command = function(){
-		donne <- getStnOpenData(file.stnfl)
+		period <- get.period()
+		donne <- get.donnees(period, file.stnfl)
+
 		if(!is.null(donne)){
 			istn <- as.numeric(tclvalue(tcl(stnSumNA.cb, "current")))+1
 			istn <- istn-1
-			stnSumNA <- as.character(donne[1,-1])
+			stnSumNA <- donne$id
 			if(istn < 1) istn <- length(stnSumNA)
 			tclvalue(stnSumNA.val) <- stnSumNA[istn]
 			jstn <- tclvalue(stnSumNA.val)
 
-			imgContainer <- DisplayStnNASum(tknotes, jstn, donne, tclvalue(file.period), notebookTab)
+			imgContainer <- DisplayStnNASum(tknotes, jstn, donne, period, notebookTab)
 			if(!is.null(imgContainer)){
 				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, notebookTab, AllOpenTabType, AllOpenTabData)
 				notebookTab <<- retNBTab$notebookTab
@@ -121,13 +163,37 @@ AssessDataPanelCmd <- function(){
 			}
 		}else InsertMessagesTxt(main.txt.out, 'No station data found', format = TRUE)
 	})
+
+	#######################
+
+	tkbind(stnSumNA.cb, "<<ComboboxSelected>>", function(){
+		period <- get.period()
+		donne <- get.donnees(period, file.stnfl)
+
+		if(!is.null(donne)){
+			istn <- as.numeric(tclvalue(tcl(stnSumNA.cb, "current")))+1
+			stnSumNA <- donne$id
+			jstn <- stnSumNA[istn]
+
+			imgContainer <- DisplayStnNASum(tknotes, jstn, donne, period, notebookTab)
+			if(!is.null(imgContainer)){
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, notebookTab, AllOpenTabType, AllOpenTabData)
+				notebookTab <<- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		}else InsertMessagesTxt(main.txt.out, 'No station data found', format = TRUE)
+	})
+
 	#######################
 
 	tkconfigure(cmd.DistCor, command = function(){
-		donne <- getStnOpenData(file.stnfl)
+		period <- get.period()
+		donne <- get.donnees(period, file.stnfl)
+
 		if(!is.null(donne)){
 			tkconfigure(main.win, cursor = 'watch');tcl('update')
-			imgContainer <- try(DisplayDistCorr(tknotes, donne, tclvalue(file.period)), silent = TRUE)
+			imgContainer <- try(DisplayDistCorr(tknotes, donne, period), silent = TRUE)
 			if(!inherits(imgContainer, "try-error")){
 				if(!is.null(imgContainer)){
 					ntab <- length(AllOpenTabType)
@@ -143,12 +209,16 @@ AssessDataPanelCmd <- function(){
 			}
 		}else InsertMessagesTxt(main.txt.out, 'No station data found', format = TRUE)
 	})
+
 	#######################
+
 	tkconfigure(cmd.AllNA, command = function(){
-		donne <- getStnOpenData(file.stnfl)
+		period <- get.period()
+		donne <- get.donnees(period, file.stnfl)
+
 		if(!is.null(donne)){
 			tkconfigure(main.win, cursor = 'watch');tcl('update')
-			imgContainer <- try(DisplayAllStnNASum(tknotes, donne, tclvalue(file.period)), silent = TRUE)
+			imgContainer <- try(DisplayAllStnNASum(tknotes, donne, period), silent = TRUE)
 			if(!inherits(imgContainer, "try-error")){
 				if(!is.null(imgContainer)){
 					ntab <- length(AllOpenTabType)
