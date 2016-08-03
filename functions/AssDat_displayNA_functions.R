@@ -128,7 +128,7 @@ funCorDist <- function(donne, latlon){
 		infoIDen <- cbind(lon[id0], lat[id0], val)
 		lon <- lon[!id0]
 		lat <- lat[!id0]
-		donne <- donne[!id0]
+		donne <- donne[, !id0]
 	}
 	##
 	coord <- matrix(c(lon, lat), ncol = 2)
