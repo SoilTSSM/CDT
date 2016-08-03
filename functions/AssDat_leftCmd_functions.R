@@ -127,7 +127,7 @@ AssessDataPanelCmd <- function(){
 		donne <- getStnOpenData(file.stnfl)
 		if(!is.null(donne)){
 			tkconfigure(main.win, cursor = 'watch');tcl('update')
-			imgContainer <- try(DisplayDistCorr(tknotes, donne), silent = TRUE)
+			imgContainer <- try(DisplayDistCorr(tknotes, donne, tclvalue(file.period)), silent = TRUE)
 			if(!inherits(imgContainer, "try-error")){
 				if(!is.null(imgContainer)){
 					ntab <- length(AllOpenTabType)

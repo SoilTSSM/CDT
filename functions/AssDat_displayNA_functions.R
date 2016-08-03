@@ -53,12 +53,12 @@ plotAllNASummary <- function(donne, dates, period){
 	sworking <- apply(mat, 1, sum)
 
 	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.1,1), respect = FALSE)
-	op <- par(mar = c(0,0,0,0))
+	op <- par(mar = c(0, 0, 0, 0))
 	plot.new()
-	legend("center", "groups", legend = c('Working Satitions', 'Non Missing Data'), fill = c('cyan1', 'pink'), horiz = TRUE)
+	legend("center", "groups", legend = c('Active Stations', 'Reported Data'), fill = c('cyan1', 'pink'), horiz = TRUE)
 	par(op)
-	op <- par(mar = c(3.5,4,0,2))
-	plot(xdates, sworking, xlab='',ylab = 'Number of stations', ylim = c(0, max(sworking, na.rm = TRUE)+1), type = 'n')
+	op <- par(mar = c(3.5, 4, 0, 2))
+	plot(xdates, sworking, xlab = '', ylab = 'Number of stations', ylim = c(0, max(sworking, na.rm = TRUE)+1), type = 'n')
 	polygon(c(rev(xdates), xdates), c(rev(vNonNA), rep(0, nlstn)), col = 'pink', border = NA)
 	polygon(c(rev(xdates), xdates), c(rev(sworking), vNonNA), col = 'cyan1', border = NA)
 	abline(v = pretty(extendrange(xdates)), h = pretty(extendrange(c(0, sworking))), col = 'lightgrey', lty = "dotted")
@@ -160,41 +160,70 @@ funCorDist <- function(donne, latlon){
 
 DisplayStnNASum <- function(parent, jstn, donne, vdates, notebookTab){
 
-	if(vdates == 'Daily data'){
-		period <- 'daily'
-		if(nchar(as.character(donne[5,1])) != 8){
-			InsertMessagesTxt(main.txt.out, 'Station data: not a daily data', format = TRUE)
-			return(NULL)
-		}
+	if(vdates == 'Daily data') period <- 'daily'
+	if(vdates == 'Dekadal data') period <- 'dekadal'
+	if(vdates == 'Monthly data') period <- 'monthly'
+	donne <- splitCDTData(donne, period)
+	if(is.null(donne)) return(NULL)
+	if(nrow(donne$duplicated.coords) > 0){
+		tmp <- as.matrix(donne$duplicated.coords)
+		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
+		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
+		InsertMessagesTxt(main.txt.out, 'Duplicated coordinates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, tmp0)
 	}
-	if(vdates == 'Dekadal data'){
-		period <- 'dekadal'
-		if(nchar(as.character(donne[5,1])) != 7){
-			InsertMessagesTxt(main.txt.out, 'Station data: not a dekadal data', format = TRUE)
-			return(NULL)
-		}
+	if(nrow(donne$missing.coords) > 0){
+		tmp <- as.matrix(donne$missing.coords)
+		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
+		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
+		InsertMessagesTxt(main.txt.out, 'Missing coordinates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, tmp0)
 	}
-	if(vdates == 'Monthly data'){
-		period <- 'monthly'
-		if(nchar(as.character(donne[5,1])) != 6){
-			InsertMessagesTxt(main.txt.out, 'Station data: not a monthly data', format = TRUE)
-			return(NULL)
-		}
+	if(length(donne$duplicated.dates) > 0){
+		InsertMessagesTxt(main.txt.out, 'Duplicated dates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, paste(donne$duplicated.dates, collapse = ' '))
 	}
-
-	if(length(grep('alt|elev|elv', donne[4,1], ignore.case = TRUE)) == 1){
-		Info <- data.frame(t(donne[1:4,-1]))
-		dates <- as.character(donne[-c(1:4), 1])
-		donne <- donne[-c(1:4),-1]
-	}else{
-		Info <- data.frame(t(donne[1:3,-1]))
-		dates <- as.character(donne[-c(1:3), 1])
-		donne <- donne[-c(1:3),-1]
-	}
-
-	IdStn <- as.character(Info[,1])
+	dates <- donne$dates
+	IdStn <- donne$id
+	donne <- donne$data
 	ijx <- which(IdStn == jstn)
-	xseries <- as.numeric(donne[,ijx])
+	xseries <- donne[, ijx]
+
+	# if(vdates == 'Daily data'){
+	# 	period <- 'daily'
+	# 	if(nchar(as.character(donne[5,1])) != 8){
+	# 		InsertMessagesTxt(main.txt.out, 'Station data: not a daily data', format = TRUE)
+	# 		return(NULL)
+	# 	}
+	# }
+	# if(vdates == 'Dekadal data'){
+	# 	period <- 'dekadal'
+	# 	if(nchar(as.character(donne[5,1])) != 7){
+	# 		InsertMessagesTxt(main.txt.out, 'Station data: not a dekadal data', format = TRUE)
+	# 		return(NULL)
+	# 	}
+	# }
+	# if(vdates == 'Monthly data'){
+	# 	period <- 'monthly'
+	# 	if(nchar(as.character(donne[5,1])) != 6){
+	# 		InsertMessagesTxt(main.txt.out, 'Station data: not a monthly data', format = TRUE)
+	# 		return(NULL)
+	# 	}
+	# }
+
+	# if(length(grep('alt|elev|elv', donne[4,1], ignore.case = TRUE)) == 1){
+	# 	Info <- data.frame(t(donne[1:4,-1]))
+	# 	dates <- as.character(donne[-c(1:4), 1])
+	# 	donne <- donne[-c(1:4),-1]
+	# }else{
+	# 	Info <- data.frame(t(donne[1:3,-1]))
+	# 	dates <- as.character(donne[-c(1:3), 1])
+	# 	donne <- donne[-c(1:3),-1]
+	# }
+
+	# IdStn <- as.character(Info[,1])
+	# ijx <- which(IdStn == jstn)
+	# xseries <- as.numeric(donne[,ijx])
 
 	########PLOT
 	pltusr <- NULL
@@ -268,45 +297,73 @@ DisplayStnNASum <- function(parent, jstn, donne, vdates, notebookTab){
 }
 
 ######################################################################################################
-
+#donne0 = donne
 
 DisplayAllStnNASum <- function(parent, donne, vdates){
-
-	if(vdates == 'Daily data'){
-		period <- 'daily'
-		if(nchar(as.character(donne[5,1])) != 8){
-			InsertMessagesTxt(main.txt.out, 'Station data: not a daily data', format = TRUE)
-			return(NULL)
-		}
+	if(vdates == 'Daily data') period <- 'daily'
+	if(vdates == 'Dekadal data') period <- 'dekadal'
+	if(vdates == 'Monthly data') period <- 'monthly'
+	donne <- splitCDTData(donne, period)
+	if(is.null(donne)) return(NULL)
+	if(nrow(donne$duplicated.coords) > 0){
+		tmp <- as.matrix(donne$duplicated.coords)
+		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
+		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
+		InsertMessagesTxt(main.txt.out, 'Duplicated coordinates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, tmp0)
 	}
-	if(vdates == 'Dekadal data'){
-		period <- 'dekadal'
-		if(nchar(as.character(donne[5,1])) != 7){
-			InsertMessagesTxt(main.txt.out, 'Station data: not a dekadal data', format = TRUE)
-			return(NULL)
-		}
+	if(nrow(donne$missing.coords) > 0){
+		tmp <- as.matrix(donne$missing.coords)
+		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
+		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
+		InsertMessagesTxt(main.txt.out, 'Missing coordinates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, tmp0)
 	}
-	if(vdates == 'Monthly data'){
-		period <- 'monthly'
-		if(nchar(as.character(donne[5,1])) != 6){
-			InsertMessagesTxt(main.txt.out, 'Station data: not a monthly data', format = TRUE)
-			return(NULL)
-		}
+	if(length(donne$duplicated.dates) > 0){
+		InsertMessagesTxt(main.txt.out, 'Duplicated dates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, paste(donne$duplicated.dates, collapse = ' '))
 	}
-
-	if(length(grep('alt|elev|elv', donne[4,1], ignore.case = TRUE)) == 1){
-		Info <- data.frame(t(donne[1:4,-1]))
-		dates <- as.character(donne[-c(1:4), 1])
-		donne <- donne[-c(1:4),-1]
-	}else{
-		Info <- data.frame(t(donne[1:3,-1]))
-		dates <- as.character(donne[-c(1:3), 1])
-		donne <- donne[-c(1:3),-1]
-	}
-
-	donne <- apply(donne, 2, as.numeric)
+	dates <- donne$dates
+	donne <- donne$data
 	nna <- apply(donne, 2, function(x) sum(is.na(x)))
-	donne <- donne[,nna != nrow(donne)]
+	donne <- donne[,nna != nrow(donne)] #exclude station without data (all missing values)
+
+
+	# if(vdates == 'Daily data'){
+	# 	period <- 'daily'
+	# 	if(nchar(as.character(donne[5,1])) != 8){
+	# 		InsertMessagesTxt(main.txt.out, 'Station data: not a daily data', format = TRUE)
+	# 		return(NULL)
+	# 	}
+	# }
+	# if(vdates == 'Dekadal data'){
+	# 	period <- 'dekadal'
+	# 	if(nchar(as.character(donne[5,1])) != 7){
+	# 		InsertMessagesTxt(main.txt.out, 'Station data: not a dekadal data', format = TRUE)
+	# 		return(NULL)
+	# 	}
+	# }
+	# if(vdates == 'Monthly data'){
+	# 	period <- 'monthly'
+	# 	if(nchar(as.character(donne[5,1])) != 6){
+	# 		InsertMessagesTxt(main.txt.out, 'Station data: not a monthly data', format = TRUE)
+	# 		return(NULL)
+	# 	}
+	# }
+
+	# if(length(grep('alt|elev|elv', donne[4,1], ignore.case = TRUE)) == 1){
+	# 	Info <- data.frame(t(donne[1:4,-1]))
+	# 	dates <- as.character(donne[-c(1:4), 1])
+	# 	donne <- donne[-c(1:4),-1]
+	# }else{
+	# 	Info <- data.frame(t(donne[1:3,-1]))
+	# 	dates <- as.character(donne[-c(1:3), 1])
+	# 	donne <- donne[-c(1:3),-1]
+	# }
+
+	# donne <- apply(donne, 2, as.numeric)
+	# nna <- apply(donne, 2, function(x) sum(is.na(x)))
+	# donne <- donne[,nna != nrow(donne)]
 
 	########PLOT
 	pltusr <- NULL
@@ -388,23 +445,53 @@ DisplayAllStnNASum <- function(parent, donne, vdates){
 
 ######################################################################################################
 
-DisplayDistCorr <- function(parent, donne){
-
-	if(length(grep('alt|elev|elv', donne[4,1], ignore.case = TRUE)) == 1){
-		Info <- data.frame(t(donne[1:4,-1]))
-		dates <- as.character(donne[-c(1:4), 1])
-		donne <- donne[-c(1:4),-1]
-	}else{
-		Info <- data.frame(t(donne[1:3,-1]))
-		dates <- as.character(donne[-c(1:3), 1])
-		donne <- donne[-c(1:3),-1]
+DisplayDistCorr <- function(parent, donne, vdates){
+	if(vdates == 'Daily data') period <- 'daily'
+	if(vdates == 'Dekadal data') period <- 'dekadal'
+	if(vdates == 'Monthly data') period <- 'monthly'
+	donne <- splitCDTData(donne, period)
+	if(is.null(donne)) return(NULL)
+	if(nrow(donne$duplicated.coords) > 0){
+		tmp <- as.matrix(donne$duplicated.coords)
+		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
+		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
+		InsertMessagesTxt(main.txt.out, 'Duplicated coordinates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, tmp0)
 	}
+	if(nrow(donne$missing.coords) > 0){
+		tmp <- as.matrix(donne$missing.coords)
+		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
+		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
+		InsertMessagesTxt(main.txt.out, 'Missing coordinates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, tmp0)
+	}
+	if(length(donne$duplicated.dates) > 0){
+		InsertMessagesTxt(main.txt.out, 'Duplicated dates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, paste(donne$duplicated.dates, collapse = ' '))
+	}
+	# dates <- donne$dates
+	latlon <- cbind(donne$lon, donne$lat)
+	donne <- donne$data
 
-	latlon <- apply(Info[,2:3], 2, as.numeric)
-	donne <- apply(donne, 2, as.numeric)
 	nna <- apply(donne, 2, function(x) sum(is.na(x)))
 	latlon <- latlon[nna != nrow(donne),]
 	donne <- donne[,nna != nrow(donne)]
+
+	# if(length(grep('alt|elev|elv', donne[4,1], ignore.case = TRUE)) == 1){
+	# 	Info <- data.frame(t(donne[1:4,-1]))
+	# 	dates <- as.character(donne[-c(1:4), 1])
+	# 	donne <- donne[-c(1:4),-1]
+	# }else{
+	# 	Info <- data.frame(t(donne[1:3,-1]))
+	# 	dates <- as.character(donne[-c(1:3), 1])
+	# 	donne <- donne[-c(1:3),-1]
+	# }
+
+	# latlon <- apply(Info[,2:3], 2, as.numeric)
+	# donne <- apply(donne, 2, as.numeric)
+	# nna <- apply(donne, 2, function(x) sum(is.na(x)))
+	# latlon <- latlon[nna != nrow(donne),]
+	# donne <- donne[,nna != nrow(donne)]
 
 	########PLOT
 	plotIt <- function(){
