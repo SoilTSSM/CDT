@@ -59,8 +59,8 @@ AssessDataPanelCmd <- function(){
 	tkgrid(cmd.AllNA, row = 5, column = 3, rowspan = 1, columnspan = 3, padx = 1, pady = 2, sticky = "we")
 
 	stnSumNA.val <- tclVar()
-	stnSumNA.cb <- ttkcombobox(chkframe1, values='', textvariable = stnSumNA.val, state = 'normal')
-	stnSumNA.prev <- tkbutton(chkframe1, text="<<-")
+	stnSumNA.cb <- ttkcombobox(chkframe1, values = '', textvariable = stnSumNA.val, state = 'normal')
+	stnSumNA.prev <- tkbutton(chkframe1, text = "<<-")
 	stnSumNA.next <- tkbutton(chkframe1, text = "->>")
 
 	tkgrid(stnSumNA.prev, row = 0, column = 0, padx = 1, pady = 3)
@@ -192,7 +192,7 @@ AssessDataPanelCmd <- function(){
 		donne <- get.donnees(period, file.stnfl)
 
 		if(!is.null(donne)){
-			tkconfigure(main.win, cursor = 'watch');tcl('update')
+			tkconfigure(main.win, cursor = 'watch'); tcl('update')
 			imgContainer <- try(DisplayDistCorr(tknotes, donne, period), silent = TRUE)
 			if(!inherits(imgContainer, "try-error")){
 				if(!is.null(imgContainer)){
@@ -201,11 +201,11 @@ AssessDataPanelCmd <- function(){
 					AllOpenTabData[[ntab+1]] <<- imgContainer
 					tkselect(tknotes, ntab)
 				}
-				tkconfigure(main.win, cursor='')
+				tkconfigure(main.win, cursor = '')
 			}else{
 				InsertMessagesTxt(main.txt.out, 'Distance-Correlation computation failed', format = TRUE)
-				InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',imgContainer[1]), format = TRUE)
-				tkconfigure(main.win, cursor='')
+				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', imgContainer[1]), format = TRUE)
+				tkconfigure(main.win, cursor = '')
 			}
 		}else InsertMessagesTxt(main.txt.out, 'No station data found', format = TRUE)
 	})
@@ -217,7 +217,7 @@ AssessDataPanelCmd <- function(){
 		donne <- get.donnees(period, file.stnfl)
 
 		if(!is.null(donne)){
-			tkconfigure(main.win, cursor = 'watch');tcl('update')
+			tkconfigure(main.win, cursor = 'watch'); tcl('update')
 			imgContainer <- try(DisplayAllStnNASum(tknotes, donne, period), silent = TRUE)
 			if(!inherits(imgContainer, "try-error")){
 				if(!is.null(imgContainer)){
@@ -226,11 +226,11 @@ AssessDataPanelCmd <- function(){
 					AllOpenTabData[[ntab+1]] <<- imgContainer
 					tkselect(tknotes, ntab)
 				}
-				tkconfigure(main.win, cursor='')
+				tkconfigure(main.win, cursor = '')
 			}else{
 				InsertMessagesTxt(main.txt.out, 'Station missing data summaries failed', format = TRUE)
-				InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',imgContainer[1]), format = TRUE)
-				tkconfigure(main.win, cursor='')
+				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', imgContainer[1]), format = TRUE)
+				tkconfigure(main.win, cursor = '')
 			}
 		}else InsertMessagesTxt(main.txt.out, 'No station data found', format = TRUE)
 	})

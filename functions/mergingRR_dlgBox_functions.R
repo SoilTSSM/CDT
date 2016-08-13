@@ -27,15 +27,16 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 
 	###################
 	fr.A00 <- tkframe(fr.A0)
-	#fr.A01 <- tkframe(fr.A0)
 	tkgrid(fr.A00, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	#tkgrid(fr.A01, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period) == 'daily',
-	'Daily data', ifelse(as.character(GeneralParameters$period) == 'dekadal', 'Dekadal data', 'Monthly data'))
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(as.character(GeneralParameters$period), 
+									'daily' = cb.periodVAL[1], 
+									'dekadal' = cb.periodVAL[2],
+									'monthly' = cb.periodVAL[3])
 
-	cb.period <- ttkcombobox(fr.A00, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
+	cb.period <- ttkcombobox(fr.A00, values = cb.periodVAL, textvariable = file.period)
 	infobulle(cb.period, 'Choose the time step of the data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the time step of the data')
 	tkgrid(cb.period)
@@ -92,7 +93,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	tkgrid.configure(bt.dir.rfe, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.dir.rfe, command = function(){
 		dir4rfe <- tk_choose.dir(as.character(GeneralParameters$file.io$Values[4]), "")
-		if(is.na(dir4rfe)) tclvalue(dir.rfe)<-""
+		if(is.na(dir4rfe)) tclvalue(dir.rfe) <- ""
 		else tclvalue(dir.rfe) <- dir4rfe
 	})
 	#####
@@ -112,9 +113,9 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	tkgrid.configure(bt.grdrfe, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.grdrfe, command = function(){
 		fileopen <- tclvalue(tkgetOpenFile(initialdir = tclvalue(dir.rfe), initialfile = "",
-		filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
+								filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
 		if(fileopen == "" | is.na(fileopen)) return(NULL)
-		nc.opfiles1 <- preview.data.nc(tt, fileopen,"")
+		nc.opfiles1 <- preview.data.nc(tt, fileopen, "")
 		nc.opfiles <- list(basename(fileopen), nc.opfiles1, fileopen)
 		if(!is.null(nc.opfiles1)){
 			tkinsert(all.opfiles, "end", basename(fileopen))
@@ -387,8 +388,10 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 			tkmessageBox(message = "Choose or enter the path to directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{
-			GeneralParameters$period <<- ifelse(tclvalue(file.period) == 'Daily data', 'daily',
-			ifelse(tclvalue(file.period) == 'Dekadal data', 'dekadal', 'monthly'))
+			GeneralParameters$period <<- switch(tclvalue(file.period), 
+			 									'Daily data' = 'daily',
+												'Dekadal data' =  'dekadal',
+												'Monthly data' = 'monthly')
 			GeneralParameters$file.io$Values <<- c(tclvalue(file.stnfl), tclvalue(file.grddem),
 			tclvalue(file.grdrfe), tclvalue(dir.rfe), tclvalue(file.save1))
 			GeneralParameters$CreateGrd <<- tclvalue(varCreateGrd)
@@ -416,7 +419,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Mean Bias computation - Settings')
 	tkwm.deiconify(tt)
@@ -458,15 +461,16 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 
 	###################
 	fr.A00 <- tkframe(fr.A0)
-	#fr.A01 <- tkframe(fr.A0)
 	tkgrid(fr.A00, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	#tkgrid(fr.A01, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period) == 'daily',
-	'Daily data', ifelse(as.character(GeneralParameters$period) == 'dekadal', 'Dekadal data', 'Monthly data'))
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(as.character(GeneralParameters$period), 
+									'daily' = cb.periodVAL[1], 
+									'dekadal' = cb.periodVAL[2],
+									'monthly' = cb.periodVAL[3])
 
-	cb.period <- ttkcombobox(fr.A00, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
+	cb.period <- ttkcombobox(fr.A00, values = cb.periodVAL, textvariable = file.period)
 	infobulle(cb.period, 'Choose the time step of the data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the time step of the data')
 	tkgrid(cb.period)
@@ -489,7 +493,7 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	tkgrid.configure(bt.dir.rfe, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.dir.rfe, command = function(){
 		dir4rfe <- tk_choose.dir(as.character(GeneralParameters$file.io$Values[2]), "")
-		if(is.na(dir4rfe)) tclvalue(dir.rfe)<-""
+		if(is.na(dir4rfe)) tclvalue(dir.rfe) <- ""
 		else tclvalue(dir.rfe) <- dir4rfe
 	})
 	#####
@@ -509,9 +513,9 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	tkgrid.configure(bt.grdrfe, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.grdrfe, command = function(){
 		fileopen <- tclvalue(tkgetOpenFile(initialdir = tclvalue(dir.rfe), initialfile = "",
-		filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
+								filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
 		if(fileopen == "" | is.na(fileopen)) return(NULL)
-		nc.opfiles1 <- preview.data.nc(tt, fileopen,"")
+		nc.opfiles1 <- preview.data.nc(tt, fileopen, "")
 		nc.opfiles <- list(basename(fileopen), nc.opfiles1, fileopen)
 		if(!is.null(nc.opfiles1)){
 			tkinsert(all.opfiles, "end", basename(fileopen))
@@ -542,7 +546,7 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	en.dir.bias <- tkentry(fr.A21, textvariable = dir.bias, width = largeur)
 	infobulle(en.dir.bias, 'Enter the full path to directory containing the mean bias files')
 	status.bar.display(en.dir.bias, TextOutputVar, 'Enter the full path to directory containing the mean bias files')
-	bt.dir.bias <- tkbutton.h(fr.A21, text = "...", TextOutputVar, 'or browse here','')
+	bt.dir.bias <- tkbutton.h(fr.A21, text = "...", TextOutputVar, 'or browse here', '')
 	tkgrid(en.dir.bias, bt.dir.bias)
 	tkgrid.configure(en.dir.bias, row = 0, column = 0, sticky = 'w')
 	tkgrid.configure(bt.dir.bias, row = 0, column = 1, sticky = 'e')
@@ -565,7 +569,7 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	en.file.save <- tkentry(fr.A31, textvariable = file.save1, width = largeur)
 	infobulle(en.file.save, 'Enter the full path to\ndirectory to save result')
 	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to directory to save result')
-	bt.file.save <- tkbutton.h(fr.A31, text = "...", TextOutputVar, 'or browse here','')
+	bt.file.save <- tkbutton.h(fr.A31, text = "...", TextOutputVar, 'or browse here', '')
 	tkgrid(en.file.save, bt.file.save)
 	tkgrid.configure(en.file.save, row = 0, column = 0, sticky = 'w')
 	tkgrid.configure(bt.file.save, row = 0, column = 1, sticky = 'e')
@@ -707,10 +711,14 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 			tkmessageBox(message = "Choose or enter the path to directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{
-			GeneralParameters$period <<- ifelse(tclvalue(file.period) == 'Daily data', 'daily', ifelse(tclvalue(file.period) == 'Dekadal data', 'dekadal', 'monthly'))
+			GeneralParameters$period <<- switch(tclvalue(file.period), 
+			 									'Daily data' = 'daily',
+												'Dekadal data' =  'dekadal',
+												'Monthly data' = 'monthly')
 			GeneralParameters$file.io$Values <<- c(tclvalue(file.grdrfe), tclvalue(dir.rfe), tclvalue(dir.bias), tclvalue(file.save1))
 			GeneralParameters$prefix$Values <<- c(tclvalue(inrfeff), tclvalue(outmrgff), tclvalue(adjPrefix))
-			GeneralParameters$dates.adj$Values <<- c(tclvalue(istart.yrs), tclvalue(istart.mon), tclvalue(istart.day), tclvalue(iend.yrs), tclvalue(iend.mon), tclvalue(iend.day))
+			GeneralParameters$dates.adj$Values <<- c(tclvalue(istart.yrs), tclvalue(istart.mon), tclvalue(istart.day),
+														tclvalue(iend.yrs), tclvalue(iend.mon), tclvalue(iend.day))
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
@@ -732,7 +740,7 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Bias Adjustment Settings')
 	tkwm.deiconify(tt)
@@ -775,15 +783,16 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 
 	###################
 	fr.A00 <- tkframe(fr.A0)
-	#fr.A01 <- tkframe(fr.A0)
 	tkgrid(fr.A00, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	#tkgrid(fr.A01, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period) == 'daily',
-	'Daily data', ifelse(as.character(GeneralParameters$period) == 'dekadal', 'Dekadal data', 'Monthly data'))
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(as.character(GeneralParameters$period), 
+									'daily' = cb.periodVAL[1], 
+									'dekadal' = cb.periodVAL[2],
+									'monthly' = cb.periodVAL[3])
 
-	cb.period <- ttkcombobox(fr.A00, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
+	cb.period <- ttkcombobox(fr.A00, values = cb.periodVAL, textvariable = file.period)
 	infobulle(cb.period, 'Choose the time step of the data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the time step of the data')
 	tkgrid(cb.period)
@@ -841,7 +850,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	tkgrid.configure(bt.dir.rfe, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.dir.rfe, command = function(){
 		dir4rfe <- tk_choose.dir(as.character(GeneralParameters$file.io$Values[4]), "")
-		if(is.na(dir4rfe)) tclvalue(dir.rfe)<-""
+		if(is.na(dir4rfe)) tclvalue(dir.rfe) <- ""
 		else tclvalue(dir.rfe) <- dir4rfe
 	})
 
@@ -1214,10 +1223,13 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 			tkmessageBox(message = "Choose or enter the path to directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{
-			GeneralParameters$period <<- ifelse(tclvalue(file.period) == 'Daily data', 'daily', ifelse(tclvalue(file.period) == 'Dekadal data', 'dekadal', 'monthly'))
+			GeneralParameters$period <<- switch(tclvalue(file.period), 
+			 									'Daily data' = 'daily',
+												'Dekadal data' =  'dekadal',
+												'Monthly data' = 'monthly')
 			GeneralParameters$prefix$Values <<- c(tclvalue(adjPrefix), tclvalue(mrgPrefix), tclvalue(mrgSuffix))
 			valfl <- as.character(GeneralParameters$file.io$Values)
-			valfl[c(1,4,5,6,7)] <- c(tclvalue(file.stnfl), tclvalue(dir.rfe), tclvalue(file.save1), tclvalue(file.blkshp), tclvalue(file.grddem))
+			valfl[c(1, 4, 5, 6, 7)] <- c(tclvalue(file.stnfl), tclvalue(dir.rfe), tclvalue(file.save1), tclvalue(file.blkshp), tclvalue(file.grddem))
 			GeneralParameters$file.io$Values <<- valfl
 			GeneralParameters$dates.mrg$Values <<- c(tclvalue(istart.yrs), tclvalue(istart.mon), tclvalue(istart.day), tclvalue(iend.yrs), tclvalue(iend.mon), tclvalue(iend.day))
 			GeneralParameters$NewGrd <<- tclvalue(newGrd)
@@ -1244,7 +1256,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Merging data - Settings')
 	tkwm.deiconify(tt)
@@ -1350,10 +1362,8 @@ getParamMering <- function(tt, GeneralParameters){
 	interpMethod <- tclVar(as.character(GeneralParameters$params.mrg$Values[1]))
 	txt.interpMethod <- tklabel(fr.D, text = 'Interpolation method')
 	cb.interpMethod <- ttkcombobox(fr.D, values = c('IDW', 'Kriging'), textvariable = interpMethod)
-	infobulle(cb.interpMethod,
-	'Interpolation techniques: Kriging or Inverse Distance Weighted')
-	status.bar.display(cb.interpMethod, TextOutputVar,
-	'Interpolation techniques: Kriging or Inverse Distance Weighted')
+	infobulle(cb.interpMethod, 'Interpolation techniques: Kriging or Inverse Distance Weighted')
+	status.bar.display(cb.interpMethod, TextOutputVar, 'Interpolation techniques: Kriging or Inverse Distance Weighted')
 
 	RainNoRain <- tclVar(as.character(GeneralParameters$params.mrg$Values[2]))
 	txt.RainNoRain <- tklabel(fr.D, text = 'Rain-no-Rain mask')
@@ -1395,7 +1405,7 @@ getParamMering <- function(tt, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt1))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt1, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt1, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt1)
 	tkwm.title(tt1, 'Merging Parameters')
 	tkwm.deiconify(tt1)
@@ -1452,9 +1462,9 @@ createNewGrid2Merge <- function(parent.win, GeneralParameters){
 	tkgrid.configure(bt.grdrfe, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.grdrfe, command = function(){
 		fileopen <- tclvalue(tkgetOpenFile(initialdir = as.character(GeneralParameters$file.io$Values[4]),
-		initialfile = "", filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
+											initialfile = "", filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
 		if(fileopen == "" | is.na(fileopen)) return(NULL)
-		nc.opfiles1 <- preview.data.nc(tt, fileopen,"")
+		nc.opfiles1 <- preview.data.nc(tt, fileopen, "")
 		nc.opfiles <- list(basename(fileopen), nc.opfiles1, fileopen)
 		if(!is.null(nc.opfiles1)){
 			tkinsert(all.opfiles, "end", basename(fileopen))
@@ -1602,7 +1612,7 @@ createNewGrid2Merge <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'New grid - Settings')
 	tkwm.deiconify(tt)
@@ -1673,7 +1683,7 @@ getParamNewGrid <- function(tt, GeneralParameters){
 
 	tkconfigure(bt.prm.OK, command = function(){
 		GeneralParameters$new.grid$Values <<- c(as.character(tclvalue(minLon)), as.character(tclvalue(maxLon)), as.character(tclvalue(resLon)),
-		as.character(tclvalue(minLat)), as.character(tclvalue(maxLat)), as.character(tclvalue(resLat)))
+												as.character(tclvalue(minLat)), as.character(tclvalue(maxLat)), as.character(tclvalue(resLat)))
 		tkgrab.release(tt1)
 		tkdestroy(tt1)
 		tkfocus(tt)
@@ -1694,7 +1704,7 @@ getParamNewGrid <- function(tt, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt1))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt1, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt1, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt1)
 	tkwm.title(tt1, 'Grid Parameters')
 	tkwm.deiconify(tt1)

@@ -10,23 +10,28 @@ getElevationData1 <- function(){
 		msg <- NULL
 		elv_dem <- NULL
 		if(single.series == "0"){
-			lon <- EnvQcOutlierData$donnees1$lon
-			lat <- EnvQcOutlierData$donnees1$lat
+			# lon <- EnvQcOutlierData$donnees1$lon
+			# lat <- EnvQcOutlierData$donnees1$lat
 			elv_stn <- EnvQcOutlierData$donnees1$elv
 
 			if(uselv == "1"){
 				if(interp.dem == "0"){
 					if(file.pars[3] == "") msg <- 'There is no elevation data in format NetCDF'
 					else{
-						all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-						jncdf <- which(all.open.file == file.pars[3])
-						fdem <- AllOpenFilesData[[jncdf]][[2]]
-						dem <- fdem$value
-						dem[dem < 0] <- NA
-						dem <- data.frame(expand.grid(x = fdem$x, y = fdem$y), z = c(dem))
-						dem <- dem[!is.na(dem$z),]
-						xy0 <- data.frame(x = lon, y = lat)
-						elv_dem <- idw(formula = z ~ 1, locations= ~x+y, data = dem, newdata = xy0, nmax = 4, debug.level = 0)[,3]
+						demData <- getDemOpenDataSPDF(file.pars[2])
+						ijGrd <- grid2pointINDEX(list(lon = EnvQcOutlierData$donnees$lon, lat = EnvQcOutlierData$donnees$lat),
+							list(lon = demData$lon, lat = demData$lat))
+						elv_dem <- demData$demGrd@data[ijGrd, 1]
+
+						# all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
+						# jncdf <- which(all.open.file == file.pars[3])
+						# fdem <- AllOpenFilesData[[jncdf]][[2]]
+						# dem <- fdem$value
+						# dem[dem < 0] <- NA
+						# dem <- data.frame(expand.grid(x = fdem$x, y = fdem$y), z = c(dem))
+						# dem <- dem[!is.na(dem$z),]
+						# xy0 <- data.frame(x = lon, y = lat)
+						# elv_dem <- idw(formula = z ~ 1, locations= ~x+y, data = dem, newdata = xy0, nmax = 4, debug.level = 0)[,3]
 					}
 				}else{
 					if(is.null(elv_stn)) msg <- 'There is no elevation data in your file'
@@ -62,13 +67,13 @@ execQctempFun <- function(get.stn){
 	spthres <- c(min.stn, R, elv.diff)
 
 	if(single.series == "0"){
-		ijstn <- which(as.character(bounds[,1]) == get.stn)
+		ijstn <- which(as.character(bounds[, 1]) == get.stn)
 		limsup <- as.numeric(bounds[ijstn, 2:3])
 
 		if(uselv == '1'){
 			if(is.null(EnvQcOutlierData$r_elv)){
 				r_elv <- getElevationData1()
-				assign('r_elv',r_elv, envir = EnvQcOutlierData)
+				assign('r_elv', r_elv, envir = EnvQcOutlierData)
 			}else{
 				if(interp.dem == "0" & (is.null(EnvQcOutlierData$r_elv[[2]]) | EnvQcOutlierData$r_elv[[4]] != as.character(GeneralParameters$file.io$Values[3]))){
 					r_elv <- getElevationData1()
@@ -105,10 +110,10 @@ execQctempFun <- function(get.stn){
 			donne <- EnvQcOutlierData$donnees1$data
 			dates <- EnvQcOutlierData$donnees1$dates
 			if(test.tx == "1"){
-				TxData <- EnvQcOutlierData$donnees1$data[,jstn1]
+				TxData <- EnvQcOutlierData$donnees1$data[, jstn1]
 				TxDate <- EnvQcOutlierData$donnees1$dates
 				if(length(jstn2) > 0){
-					TnData <- EnvQcOutlierData$donnees2$data[,jstn2]
+					TnData <- EnvQcOutlierData$donnees2$data[, jstn2]
 					TnDate <- EnvQcOutlierData$donnees2$dates
 					int.check <- TRUE
 				}else{
@@ -118,10 +123,10 @@ execQctempFun <- function(get.stn){
 				}
 				tx.test <- TRUE
 			}else{
-				TnData <- EnvQcOutlierData$donnees1$data[,jstn1]
+				TnData <- EnvQcOutlierData$donnees1$data[, jstn1]
 				TnDate <- EnvQcOutlierData$donnees1$dates
 				if(length(jstn2) > 0){
-					TxData <- EnvQcOutlierData$donnees2$data[,jstn2]
+					TxData <- EnvQcOutlierData$donnees2$data[, jstn2]
 					TxDate <- EnvQcOutlierData$donnees2$dates
 					int.check <- TRUE
 				}else{
@@ -155,8 +160,8 @@ execQctempFun <- function(get.stn){
 			res.qc.txtn <- txtnQcSpatialCheck(jstn, idstn, Tsdata, xparams = xparams, testpars = testpars)
 		}
 	}else{ #a single series
-		idstn <- as.character(bounds[1,1])
-		limsup <- as.numeric(bounds[1,2:3])
+		idstn <- as.character(bounds[1, 1])
+		limsup <- as.numeric(bounds[1, 2:3])
 		if(const.chk == "1"){ #with c.check
 			if(EnvQcOutlierData$donnees1$nbvar == 3){
 				TxData <- EnvQcOutlierData$donnees1$var$tx
@@ -230,17 +235,17 @@ ExecQcTemp <- function(get.stn){
 		# ##create by default
 		corrdirstn <- file.path(EnvQcOutlierData$baseDir, 'CorrectedData', jlstn, fsep = .Platform$file.sep)
 		if(!file.exists(corrdirstn)) dir.create(corrdirstn, showWarnings = FALSE, recursive = TRUE)
-		file_corrected <- file.path(corrdirstn, paste(jlstn,'.txt', sep = ''), fsep = .Platform$file.sep)
+		file_corrected <- file.path(corrdirstn, paste(jlstn, '.txt', sep = ''), fsep = .Platform$file.sep)
 
 		qcout <- try(execQctempFun(jlstn), silent = TRUE)
 		if(!inherits(qcout, "try-error")){
 			if(!is.null(qcout)){
 				if(!file.exists(outsdir)) dir.create(outsdir, showWarnings = FALSE, recursive = TRUE)
-				fileoutRdata <- file.path(outsdir, paste(jlstn,'.Rdata', sep = ''), fsep = .Platform$file.sep)
-				fileoutTXT <- file.path(outsdir, paste(jlstn,'.txt', sep = ''), fsep = .Platform$file.sep)
+				fileoutRdata <- file.path(outsdir, paste(jlstn, '.Rdata', sep = ''), fsep = .Platform$file.sep)
+				fileoutTXT <- file.path(outsdir, paste(jlstn, '.txt', sep = ''), fsep = .Platform$file.sep)
 				##
-				dirPlot <- file.path(outsdir, paste(jlstn, 'OUTLIERS_PLOT', sep = '_'), fsep = .Platform$file.sep)
-				if(!file.exists(dirPlot)) dir.create(dirPlot, showWarnings = FALSE, recursive = TRUE)
+				# dirPlot <- file.path(outsdir, paste(jlstn, 'OUTLIERS_PLOT', sep = '_'), fsep = .Platform$file.sep)
+				# if(!file.exists(dirPlot)) dir.create(dirPlot, showWarnings = FALSE, recursive = TRUE)
 				##
 				if(GeneralParameters$AllOrOne == 'all') ret.qcout <- qcout
 				ret.res <- list(action = GeneralParameters$action, period = GeneralParameters$period, station = jlstn, res = qcout, outputdir = outsdir, AllOrOne = GeneralParameters$AllOrOne)
@@ -249,20 +254,20 @@ ExecQcTemp <- function(get.stn){
 				## Default: not replace outliers if less/greater than limsup
 				lenNoRepl <- rep(NA, nrow(qcout))
 				resqc <- as.numeric(qcout$values)
-				limsup <- as.numeric(GeneralParameters$parameter[[2]][as.character(GeneralParameters$parameter[[2]][,1]) == jlstn, 2:3])
+				limsup <- as.numeric(GeneralParameters$parameter[[2]][as.character(GeneralParameters$parameter[[2]][, 1]) == jlstn, 2:3])
 				lenNoRepl[resqc > limsup[1] & resqc < limsup[2]] <- 1
 
 				qcout <- data.frame(qcout, not.replace = lenNoRepl, change.values = NA)
 				write.table(qcout, fileoutTXT, col.names = TRUE, row.names = FALSE)
 				##
-				for(jmo in 1:12){
-					jmo <- ifelse(jmo < 10, paste('0', jmo, sep = ''), as.character(jmo))
-					flplot <- file.path(dirPlot, paste(format(ISOdate(2014, jmo, 1), "%B"),'.jpg', sep = ''), fsep = .Platform$file.sep)
-					if (Sys.info()["sysname"] == "Windows") jpeg(filename = flplot, width = 960, height = 620, quality = 100, restoreConsole = FALSE)
-					else jpeg(filename = flplot, width = 960, height = 620, quality = 100)
-					plotOutliers0(jmo, qcout, dates, xdat)
-					dev.off()
-				}
+				# for(jmo in 1:12){
+				# 	jmo <- ifelse(jmo < 10, paste('0', jmo, sep = ''), as.character(jmo))
+				# 	flplot <- file.path(dirPlot, paste(format(ISOdate(2014, jmo, 1), "%B"),'.jpg', sep = ''), fsep = .Platform$file.sep)
+				# 	if (Sys.info()["sysname"] == "Windows") jpeg(filename = flplot, width = 960, height = 620, quality = 100, restoreConsole = FALSE)
+				# 	else jpeg(filename = flplot, width = 960, height = 620, quality = 100)
+				# 	plotOutliers0(jmo, qcout, dates, xdat)
+				# 	dev.off()
+				# }
 
 				##Default: replace by NA (uncomment line below)
 				
@@ -278,7 +283,7 @@ ExecQcTemp <- function(get.stn){
 		}else{
 			if(GeneralParameters$AllOrOne == 'one') ret.res <- NULL
 			if(GeneralParameters$AllOrOne == 'all') ret.qcout <- NULL
-			msg <- paste(paste("Quality control failed for", jlstn),'\n', gsub('[\r\n]','',qcout[1]), sep = '')
+			msg <- paste(paste("Quality control failed for", jlstn), '\n', gsub('[\r\n]', '', qcout[1]), sep = '')
 			status <- 'no'
 		}
 		if(GeneralParameters$AllOrOne == 'all'){
@@ -300,14 +305,29 @@ ExecQcTemp <- function(get.stn){
 	ExecTempALLStations <- function(){
 		allstn2loop <- as.character(GeneralParameters$parameter[[2]][,1])
 
-		tcl("update", "idletasks")
-		##Use parLapply
-		retAllRun <- lapply(allstn2loop, function(jlstn) ExecTempOneStation(jlstn))
+		# if(doparallel & length(allstn2loop) >= 20){
+		# 	klust <- makeCluster(nb_cores)
+		# 	registerDoParallel(klust)
+		# 	`%parLoop%` <- `%dopar%`
+		# 	closeklust <- TRUE
+		# }else{
+			`%parLoop%` <- `%do%`
+			closeklust <- FALSE
+		# }
 
-		ret.qcout <- lapply(retAllRun, function(x) x[[1]])
-		ret.stnid <- lapply(retAllRun, function(x) x[[2]])
-		ret.outdir <- lapply(retAllRun, function(x) x[[3]])
-
+		toExports <- c('allstn2loop', 'EnvQcOutlierData', 'GeneralParameters', 'ExecTempOneStation', 'execQctempFun',
+					'txtnQcSpatialCheck', 'txtnQcSingleSeriesCalc', 'mergeQcValues', 'intConsistCheck', 'commonTxTn', 'txtnLinMod', 
+					'outlierTxTnQc', 'confTxTnQc', 'tempSigmaTest', 'txtnSpatialQc', 'txtnSpatReg', 'txtnChooseNeignbors',
+					'AllOpenFilesData', 'getElevationData', 'getDemOpenDataSPDF', 'grid2pointINDEX',
+					'InsertMessagesTxt', 'main.txt.out')
+		packages <- c('sp', 'gstat', 'fields', 'tcltk')
+		retAllRun <- foreach(jlstn = allstn2loop, .export = toExports, .packages = packages) %parLoop% {
+			ExecTempOneStation(jlstn)
+		}
+		# if(closeklust) stopCluster(klust)
+		ret.qcout <- lapply(retAllRun, '[[', 1)
+		ret.stnid <- lapply(retAllRun, '[[', 2)
+		ret.outdir <- lapply(retAllRun, '[[', 3)
 		ret.res <- list(action = GeneralParameters$action, period = GeneralParameters$period, station = ret.stnid, res = ret.qcout, outputdir = ret.outdir, AllOrOne = GeneralParameters$AllOrOne)
 		return(ret.res)
 	}

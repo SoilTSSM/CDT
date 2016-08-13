@@ -25,15 +25,16 @@ coefDownGetInfoTemp <- function(parent.win, GeneralParameters){
 
 	###################
 	fr.A00 <- tkframe(fr.A0)
-	#fr.A01 <- tkframe(fr.A0)
 	tkgrid(fr.A00, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	#tkgrid(fr.A01, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period) == 'daily',
-	'Daily data', ifelse(as.character(GeneralParameters$period) == 'dekadal', 'Dekadal data', 'Monthly data'))
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(as.character(GeneralParameters$period), 
+									'daily' = cb.periodVAL[1], 
+									'dekadal' = cb.periodVAL[2],
+									'monthly' = cb.periodVAL[3])
 
-	cb.period <- ttkcombobox(fr.A00, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
+	cb.period <- ttkcombobox(fr.A00, values = cb.periodVAL, textvariable = file.period)
 	infobulle(cb.period, 'Choose the time step of the data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the time step of the data')
 	tkgrid(cb.period)
@@ -89,7 +90,7 @@ coefDownGetInfoTemp <- function(parent.win, GeneralParameters){
 	en.file.save <- tkentry(fr.A22, textvariable = file.save1, width = largeur)
 	infobulle(en.file.save, 'Enter the full path to\ndirectory to save result')
 	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to directory to save result')
-	bt.file.save <- tkbutton.h(fr.A22, text = "...", TextOutputVar, 'or browse here','')
+	bt.file.save <- tkbutton.h(fr.A22, text = "...", TextOutputVar, 'or browse here', '')
 	tkgrid(en.file.save, bt.file.save)
 	tkgrid.configure(en.file.save, row = 0, column = 0, sticky = 'w')
 	tkgrid.configure(bt.file.save, row = 0, column = 1, sticky = 'e')
@@ -193,8 +194,10 @@ coefDownGetInfoTemp <- function(parent.win, GeneralParameters){
 			tkmessageBox(message = "Choose or enter the path to directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{
-			GeneralParameters$period <<- ifelse(tclvalue(file.period) == 'Daily data', 'daily',
-			ifelse(tclvalue(file.period) == 'Dekadal data', 'dekadal', 'monthly'))
+			GeneralParameters$period <<- switch(tclvalue(file.period), 
+			 									'Daily data' = 'daily',
+												'Dekadal data' =  'dekadal',
+												'Monthly data' = 'monthly')
 			GeneralParameters$file.io$Values <<- c(tclvalue(file.stnfl), tclvalue(file.grddem), tclvalue(file.save1))
 			GeneralParameters$dates.coef$Values <<- c(tclvalue(year1), tclvalue(year2))
 
@@ -221,7 +224,7 @@ coefDownGetInfoTemp <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Coefficients Downscaling-Settings')
 	tkwm.deiconify(tt)
@@ -234,6 +237,7 @@ coefDownGetInfoTemp <- function(parent.win, GeneralParameters){
 
 
 #################################################################################################3
+
 downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	##tkentry width, directory path
@@ -263,14 +267,16 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 
 	###################
 	fr.A00 <- tkframe(fr.A0)
-	#fr.A01 <- tkframe(fr.A0)
 	tkgrid(fr.A00, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	#tkgrid(fr.A01, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period) == 'daily', 'Daily data', ifelse(as.character(GeneralParameters$period) == 'dekadal', 'Dekadal data', 'Monthly data'))
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(as.character(GeneralParameters$period), 
+									'daily' = cb.periodVAL[1], 
+									'dekadal' = cb.periodVAL[2],
+									'monthly' = cb.periodVAL[3])
 
-	cb.period <- ttkcombobox(fr.A00, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
+	cb.period <- ttkcombobox(fr.A00, values = cb.periodVAL, textvariable = file.period)
 	infobulle(cb.period, 'Choose the time step of the data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the time step of the data')
 	tkgrid(cb.period)
@@ -295,8 +301,9 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	tkgrid(en.file.coef, row = 0, column = 0, sticky = 'w')
 	tkgrid(bt.file.coef, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.file.coef, command = function(){
-		file2coef <- tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}")
-		if(is.na(file2coef)) tclvalue(file.coef)<-""
+		file2coef <- tkgetOpenFile(initialdir = getwd(), initialfile = "",
+						filetypes = "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}")
+		if(is.na(file2coef)) tclvalue(file.coef) <- ""
 		else{
 			tclvalue(file.coef) <- file2coef
 		}
@@ -310,7 +317,7 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	en.dir.rfe <- tkentry(fr.A13, textvariable = dir.rfe, width = largeur)
 	infobulle(en.dir.rfe, 'Enter the full path to\ndirectory containing the Reanalysis files')
 	status.bar.display(en.dir.rfe, TextOutputVar, 'Enter the full path to directory containing the Reanalysis files')
-	bt.dir.rfe <- tkbutton.h(fr.A13, text = "...", TextOutputVar, 'or browse here','')
+	bt.dir.rfe <- tkbutton.h(fr.A13, text = "...", TextOutputVar, 'or browse here', '')
 	tkgrid(en.dir.rfe, bt.dir.rfe)
 	tkgrid.configure(en.dir.rfe, row = 0, column = 0, sticky = 'w')
 	tkgrid.configure(bt.dir.rfe, row = 0, column = 1, sticky = 'e')
@@ -337,9 +344,10 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	tkgrid.configure(cb.grdrfe, row = 0, column = 0, sticky = 'w')
 	tkgrid.configure(bt.grdrfe, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.grdrfe, command = function(){
-		fileopen <- tclvalue(tkgetOpenFile(initialdir = tclvalue(dir.rfe), initialfile = "", filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
+		fileopen <- tclvalue(tkgetOpenFile(initialdir = tclvalue(dir.rfe), initialfile = "",
+											filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
 		if(fileopen == "" | is.na(fileopen)) return(NULL)
-		nc.opfiles1 <- preview.data.nc(tt, fileopen,"")
+		nc.opfiles1 <- preview.data.nc(tt, fileopen, "")
 		nc.opfiles <- list(basename(fileopen), nc.opfiles1, fileopen)
 
 		if(!is.null(nc.opfiles1)){
@@ -633,11 +641,16 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 				tkwait.window(tt)
 			}
 
-			GeneralParameters$period <<- ifelse(tclvalue(file.period) == 'Daily data', 'daily', ifelse(tclvalue(file.period) == 'Dekadal data', 'dekadal', 'monthly'))
-			GeneralParameters$file.io$Values <<- c(tclvalue(file.coef), tclvalue(file.grddem), tclvalue(file.grdrfe), tclvalue(dir.rfe), tclvalue(file.save1))
+			GeneralParameters$period <<- switch(tclvalue(file.period), 
+			 									'Daily data' = 'daily',
+												'Dekadal data' =  'dekadal',
+												'Monthly data' = 'monthly')
+			GeneralParameters$file.io$Values <<- c(tclvalue(file.coef), tclvalue(file.grddem), tclvalue(file.grdrfe),
+													tclvalue(dir.rfe), tclvalue(file.save1))
 			GeneralParameters$CreateGrd <<- tclvalue(varCreateGrd)
 			GeneralParameters$IO.file.format$Values <<- c(tclvalue(inrfeff), tclvalue(downPrefix))
-			GeneralParameters$dates.down$Values <<- c(tclvalue(istart.yrs), tclvalue(istart.mon), tclvalue(istart.day), tclvalue(iend.yrs), tclvalue(iend.mon), tclvalue(iend.day))
+			GeneralParameters$dates.down$Values <<- c(tclvalue(istart.yrs), tclvalue(istart.mon), tclvalue(istart.day),
+														tclvalue(iend.yrs), tclvalue(iend.mon), tclvalue(iend.day))
 			GeneralParameters$params.int$Values <<- c(tclvalue(min.nbrs), tclvalue(max.nbrs), tclvalue(max.dst))
 			tkgrab.release(tt)
 			tkdestroy(tt)
@@ -662,7 +675,7 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Reanalysis Downscaling-Settings')
 	tkwm.deiconify(tt)
@@ -705,10 +718,13 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 	tkgrid(fr.A00, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period) == 'daily',
-	'Daily data', ifelse(as.character(GeneralParameters$period) == 'dekadal', 'Dekadal data', 'Monthly data'))
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(as.character(GeneralParameters$period), 
+									'daily' = cb.periodVAL[1], 
+									'dekadal' = cb.periodVAL[2],
+									'monthly' = cb.periodVAL[3])
 
-	cb.period <- ttkcombobox(fr.A00, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
+	cb.period <- ttkcombobox(fr.A00, values = cb.periodVAL, textvariable = file.period)
 	infobulle(cb.period, 'Choose the frequency of data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the frequency of data')
 	tkgrid(cb.period)
@@ -978,9 +994,13 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 			tkmessageBox(message = "Choose or enter the path to directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{
+			GeneralParameters$period <<- switch(tclvalue(file.period), 
+			 									'Daily data' = 'daily',
+												'Dekadal data' =  'dekadal',
+												'Monthly data' = 'monthly')
 
-			GeneralParameters$period <<- ifelse(tclvalue(file.period) == 'Daily data', 'daily', ifelse(tclvalue(file.period) == 'Dekadal data', 'dekadal', 'monthly'))
-			GeneralParameters$file.io$Values <<- c(tclvalue(file.stnfl), tclvalue(file.grddem), tclvalue(dir.down), tclvalue(file.save1))
+			GeneralParameters$file.io$Values <<- c(tclvalue(file.stnfl), tclvalue(file.grddem), tclvalue(dir.down),
+													tclvalue(file.save1))
 			GeneralParameters$bias.method <<- tclvalue(biasMethod)
 			GeneralParameters$prefix$Values <<- c(tclvalue(downPrefix), tclvalue(meanBiasPrefix))
 			GeneralParameters$dates.coef$Values <<- c(tclvalue(year1), tclvalue(year2))
@@ -1007,7 +1027,7 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Bias coefficients computation Settings')
 	tkwm.deiconify(tt)
@@ -1050,10 +1070,13 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 	tkgrid(fr.A00, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period) == 'daily',
-	'Daily data', ifelse(as.character(GeneralParameters$period) == 'dekadal', 'Dekadal data', 'Monthly data'))
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(as.character(GeneralParameters$period), 
+									'daily' = cb.periodVAL[1], 
+									'dekadal' = cb.periodVAL[2],
+									'monthly' = cb.periodVAL[3])
 
-	cb.period <- ttkcombobox(fr.A00, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
+	cb.period <- ttkcombobox(fr.A00, values = cb.periodVAL, textvariable = file.period)
 	infobulle(cb.period, 'Choose the frequency of data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the frequency of data')
 	tkgrid(cb.period)
@@ -1147,13 +1170,13 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 	en.dir.down <- tkentry(fr.A31, textvariable = dir.down, width = largeur)
 	infobulle(en.dir.down, 'Enter the full path to directory containing the downscaled reanalysis files')
 	status.bar.display(en.dir.down, TextOutputVar, 'Enter the full path to directory containing the downscaled reanalysis files')
-	bt.dir.down <- tkbutton.h(fr.A31, text = "...", TextOutputVar, 'or browse here','')
+	bt.dir.down <- tkbutton.h(fr.A31, text = "...", TextOutputVar, 'or browse here', '')
 	tkgrid(en.dir.down, bt.dir.down)
 	tkgrid.configure(en.dir.down, row = 0, column = 0, sticky = 'w')
 	tkgrid.configure(bt.dir.down, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.dir.down, command = function(){
 		dir4down <- tk_choose.dir(as.character(GeneralParameters$file.io$Values[3]), "")
-		if(is.na(dir4down)) tclvalue(dir.down)<-""
+		if(is.na(dir4down)) tclvalue(dir.down) <- ""
 		else tclvalue(dir.down) <- dir4down
 	})
 
@@ -1274,7 +1297,7 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 			'Enter the full path to directory containing the mean bias files')
 			tkconfigure(bt.dir.bias, command = function(){
 				dir4bias <- tk_choose.dir(as.character(GeneralParameters$file.io$Values[4]), "")
-				if(is.na(dir4bias)) tclvalue(dir.bias)<-""
+				if(is.na(dir4bias)) tclvalue(dir.bias) <- ""
 				else tclvalue(dir.bias) <- dir4bias
 			})
 		}
@@ -1286,8 +1309,8 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 			'Enter the full path to file containing the regression coefficients')
 			tkconfigure(bt.dir.bias, command = function(){
 				dir4bias <- tkgetOpenFile(initialdir = getwd(), initialfile = "",
-				filetypes = "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}")
-				if(is.na(dir4bias)) tclvalue(dir.bias)<-""
+										filetypes = "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}")
+				if(is.na(dir4bias)) tclvalue(dir.bias) <- ""
 				else tclvalue(dir.bias) <- dir4bias
 			})
 		}
@@ -1377,9 +1400,13 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 			tkmessageBox(message = "Choose or enter the path to directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{
+			GeneralParameters$period <<- switch(tclvalue(file.period), 
+			 									'Daily data' = 'daily',
+												'Dekadal data' =  'dekadal',
+												'Monthly data' = 'monthly')
 
-			GeneralParameters$period <<- ifelse(tclvalue(file.period) == 'Daily data', 'daily', ifelse(tclvalue(file.period) == 'Dekadal data', 'dekadal', 'monthly'))
-			GeneralParameters$file.io$Values <<- c(tclvalue(file.stnfl), tclvalue(file.grddem), tclvalue(dir.down), tclvalue(dir.bias), tclvalue(file.save1))
+			GeneralParameters$file.io$Values <<- c(tclvalue(file.stnfl), tclvalue(file.grddem), tclvalue(dir.down),
+													tclvalue(dir.bias), tclvalue(file.save1))
 			GeneralParameters$bias.method <<- tclvalue(biasMethod)
 			GeneralParameters$prefix$Values <<- c(tclvalue(downPrefix), tclvalue(meanBiasPrefix), tclvalue(adjPrefix))
 			GeneralParameters$dates.adj$Values <<- c(tclvalue(istart.yrs), tclvalue(istart.mon),
@@ -1406,7 +1433,7 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Bias Adjustment Settings')
 	tkwm.deiconify(tt)
@@ -1449,10 +1476,13 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 	tkgrid(fr.A00, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period) == 'daily',
-	'Daily data', ifelse(as.character(GeneralParameters$period) == 'dekadal', 'Dekadal data', 'Monthly data'))
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(as.character(GeneralParameters$period), 
+									'daily' = cb.periodVAL[1], 
+									'dekadal' = cb.periodVAL[2],
+									'monthly' = cb.periodVAL[3])
 
-	cb.period <- ttkcombobox(fr.A00, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
+	cb.period <- ttkcombobox(fr.A00, values = cb.periodVAL, textvariable = file.period)
 	infobulle(cb.period, 'Choose the frequency of data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the frequency of data')
 	tkgrid(cb.period)
@@ -1507,13 +1537,13 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 	en.dir.down <- tkentry(fr.A13, textvariable = dir.down, width = largeur)
 	infobulle(en.dir.down, 'Enter the full path to directory containing the downscaled or adjusted reanalysis files')
 	status.bar.display(en.dir.down, TextOutputVar, 'Enter the full path to directory containing the downscaled or adjusted reanalysis files')
-	bt.dir.down <- tkbutton.h(fr.A13, text = "...", TextOutputVar, 'or browse here','')
+	bt.dir.down <- tkbutton.h(fr.A13, text = "...", TextOutputVar, 'or browse here', '')
 	tkgrid(en.dir.down, bt.dir.down)
 	tkgrid.configure(en.dir.down, row = 0, column = 0, sticky = 'w')
 	tkgrid.configure(bt.dir.down, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.dir.down, command = function(){
 		dir4down <- tk_choose.dir(as.character(GeneralParameters$file.io$Values[4]), "")
-		if(is.na(dir4down)) tclvalue(dir.down)<-""
+		if(is.na(dir4down)) tclvalue(dir.down) <- ""
 		else tclvalue(dir.down) <- dir4down
 	})
 
@@ -1616,7 +1646,7 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 	en.file.save <- tkentry(fr.A31, textvariable = file.save1, width = largeur)
 	infobulle(en.file.save, 'Enter the full path to directory to save result')
 	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to directory to save result')
-	bt.file.save <- tkbutton.h(fr.A31, text = "...", TextOutputVar, 'or browse here','')
+	bt.file.save <- tkbutton.h(fr.A31, text = "...", TextOutputVar, 'or browse here', '')
 	tkgrid(en.file.save, bt.file.save)
 	tkgrid.configure(en.file.save, row = 0, column = 0, sticky = 'w')
 	tkgrid.configure(bt.file.save, row = 0, column = 1, sticky = 'e')
@@ -1795,12 +1825,17 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 			tkmessageBox(message = "Choose or enter the path to directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{
+			GeneralParameters$period <<- switch(tclvalue(file.period), 
+			 									'Daily data' = 'daily',
+												'Dekadal data' =  'dekadal',
+												'Monthly data' = 'monthly')
 
-			GeneralParameters$period <<- ifelse(tclvalue(file.period) == 'Daily data', 'daily', ifelse(tclvalue(file.period) == 'Dekadal data', 'dekadal', 'monthly'))
-			GeneralParameters$file.io$Values <<- c(tclvalue(file.stnfl), tclvalue(file.grddem), tclvalue(file.blkshp), tclvalue(dir.down), tclvalue(file.save1))
+			GeneralParameters$file.io$Values <<- c(tclvalue(file.stnfl), tclvalue(file.grddem), tclvalue(file.blkshp),
+													tclvalue(dir.down), tclvalue(file.save1))
 			GeneralParameters$blankGrd <<- ifelse(tclvalue(blankGrd) == 'None', '1', ifelse(tclvalue(blankGrd) == 'Use DEM', '2', '3'))
 			GeneralParameters$prefix$Values <<- c(tclvalue(adjPrefix), tclvalue(mrgPrefix), tclvalue(mrgSuffix))
-			GeneralParameters$dates.mrg$Values <<- c(tclvalue(istart.yrs), tclvalue(istart.mon), tclvalue(istart.day), tclvalue(iend.yrs), tclvalue(iend.mon), tclvalue(iend.day))
+			GeneralParameters$dates.mrg$Values <<- c(tclvalue(istart.yrs), tclvalue(istart.mon), tclvalue(istart.day),
+														tclvalue(iend.yrs), tclvalue(iend.mon), tclvalue(iend.day))
 
 			tkgrab.release(tt)
 			tkdestroy(tt)
@@ -1823,7 +1858,7 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Merging Settings')
 	tkwm.deiconify(tt)
@@ -1914,7 +1949,8 @@ getParamMeringTemp <- function(tt, GeneralParameters){
 	tkgrid(bt.prm.CA, row = 0, column = 1, sticky = 'e', padx = 5, pady = 1, ipadx = 1, ipady = 1)
 
 	tkconfigure(bt.prm.OK, command = function(){
-		GeneralParameters$params.mrg$Values <<- c(tclvalue(nmin), tclvalue(min.nbrs), tclvalue(max.nbrs), tclvalue(max.dst), tclvalue(interpMethod))
+		GeneralParameters$params.mrg$Values <<- c(tclvalue(nmin), tclvalue(min.nbrs), tclvalue(max.nbrs),
+													tclvalue(max.dst), tclvalue(interpMethod))
 
 		tkgrab.release(tt1)
 		tkdestroy(tt1)
@@ -1936,7 +1972,7 @@ getParamMeringTemp <- function(tt, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt1))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt1, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt1, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt1)
 	tkwm.title(tt1, 'Parameters')
 	tkwm.deiconify(tt1)

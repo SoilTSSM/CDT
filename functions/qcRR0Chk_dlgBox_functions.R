@@ -5,7 +5,6 @@ qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 	if (Sys.info()["sysname"] == "Windows") largeur <- 30
 	else largeur <- 28
 
-
 	tt <- tktoplevel()
 	tkgrab.set(tt)
 	tkfocus(tt)
@@ -20,7 +19,6 @@ qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 	for(i in 0:2) assign(paste('fr.A', i, sep = ''), tkframe(fr.A, relief = pr.relief.set[i+1], borderwidth = 2))
 	for(i in 0:2) tkgrid(get(paste('fr.A', i, sep = '')))
 	for(i in 0:2) tkgrid.configure(get(paste('fr.A', i, sep = '')), row = i, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
 
 	##########################################3
 
@@ -186,7 +184,8 @@ qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 
 			######
 			getInitDataParams <- function(GeneralParameters){
-				donstn <- splitCDTData(AllOpenFilesData[[jfile]][[2]],'daily')
+				donstn <- getCDTdataAndDisplayMsg(AllOpenFilesData[[jfile]][[2]], 'daily')
+
 				if(!is.null(donstn)){
 					stn.choix <- as.character(donstn$id)
 				}else tkwait.window(tt)
@@ -261,7 +260,6 @@ qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 		tkfocus(parent.win)
 	})
 
-
 	tkgrid(frMRG0, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frMRG1, row = 1, column = 1, sticky = 'se', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
@@ -272,7 +270,7 @@ qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Zeros Check-Settings')
 	tkwm.deiconify(tt)

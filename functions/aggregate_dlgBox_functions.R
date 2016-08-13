@@ -25,10 +25,12 @@ AggregateInputStationData <- function(parent.win, GeneralParameters){
 	tkgrid(fr.A02, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period) == 'daily',
-	'Daily data', ifelse(as.character(GeneralParameters$period) == 'dekadal', 'Dekadal data', 'Monthly data'))
-
-	cb.period <- ttkcombobox(fr.A02, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period, width = 25)
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(as.character(GeneralParameters$period), 
+									'daily' = cb.periodVAL[1], 
+									'dekadal' = cb.periodVAL[2],
+									'monthly' = cb.periodVAL[3])
+	cb.period <- ttkcombobox(fr.A02, values = cb.periodVAL, textvariable = file.period, width = 25)
 	infobulle(cb.period, 'Choose the frequency of data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the frequency of data')
 	tkgrid(cb.period)
@@ -123,7 +125,7 @@ AggregateInputStationData <- function(parent.win, GeneralParameters){
 	tkgrid.configure(bt.dir.stn, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.dir.stn, command = function(){
 		dir4stn <- tk_choose.dir(as.character(GeneralParameters$file.io$Values[3]), "")
-		if(is.na(dir4stn)) tclvalue(dir.stn)<-""
+		if(is.na(dir4stn)) tclvalue(dir.stn) <- ""
 		else tclvalue(dir.stn) <- dir4stn
 	})
 
@@ -226,7 +228,7 @@ AggregateInputStationData <- function(parent.win, GeneralParameters){
 	tkgrid(mon2.v, row = 2, column = 2, sticky = 'ew', padx = 1, pady = 1)
 	tkgrid(day2.v, row = 2, column = 3, sticky = 'ew', padx = 1, pady = 1)
 
-	tkbind(cb.period,"<<ComboboxSelected>>", function(){
+	tkbind(cb.period, "<<ComboboxSelected>>", function(){
 		if(tclvalue(file.period) == 'Daily data'){
 			tclvalue(lperiod) <- 'Day'
 			tkconfigure(day1.v, state = 'normal')
@@ -239,7 +241,7 @@ AggregateInputStationData <- function(parent.win, GeneralParameters){
 			xend <- as.numeric(as.character(GeneralParameters$StartEnd.date$Values[6]))
 			tclvalue(iend.day) <- ifelse(xend > 3, '3', as.character(xend))
 		}else if(tclvalue(file.period) == 'Monthly data'){
-			tclvalue(lperiod)<-''
+			tclvalue(lperiod) <- ''
 			tkconfigure(day1.v, state = 'disabled')
 			tkconfigure(day2.v, state = 'disabled')
 			tclvalue(iend.day) <- as.character(GeneralParameters$StartEnd.date$Values[6])
@@ -276,9 +278,12 @@ AggregateInputStationData <- function(parent.win, GeneralParameters){
 			tkmessageBox(message = "You have to provide the file name to save aggregated data", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{
+			GeneralParameters$period <<- switch(tclvalue(file.period), 
+			 									'Daily data' = 'daily',
+												'Dekadal data' =  'dekadal',
+												'Monthly data' = 'monthly')
 			GeneralParameters$file.io$Values <<- c(tclvalue(file.choix1), tclvalue(file.choix2), tclvalue(dir.stn), tclvalue(file.save1))
 			GeneralParameters$file.date.format$Values <<- c(tclvalue(rbffrmt), tclvalue(rbdtfrmt))
-			GeneralParameters$period <<- ifelse(tclvalue(file.period) == 'Daily data', 'daily', ifelse(tclvalue(file.period) == 'Dekadal data', 'dekadal', 'monthly'))
 			GeneralParameters$StartEnd.date$Values <<- c(tclvalue(istart.yrs), tclvalue(istart.mon), tclvalue(istart.day), tclvalue(iend.yrs), tclvalue(iend.mon), tclvalue(iend.day))
 			tkgrab.release(tt)
 			tkdestroy(tt)
@@ -300,7 +305,7 @@ AggregateInputStationData <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Aggregate Stations- Settings')
 	tkwm.deiconify(tt)
@@ -362,7 +367,7 @@ AggregateOutputStationData <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Aggregate data')
 	tkwm.deiconify(tt)

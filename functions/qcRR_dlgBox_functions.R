@@ -29,10 +29,12 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 	tkgrid(fr.A02, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period) == 'daily',
-	'Daily data', ifelse(as.character(GeneralParameters$period) == 'dekadal', 'Dekadal data', 'Monthly data'))
-
-	cb.period <- ttkcombobox(fr.A02, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(as.character(GeneralParameters$period), 
+									'daily' = cb.periodVAL[1], 
+									'dekadal' = cb.periodVAL[2],
+									'monthly' = cb.periodVAL[3])
+	cb.period <- ttkcombobox(fr.A02, values = cb.periodVAL, textvariable = file.period)
 	infobulle(cb.period, 'Choose the time step of the data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the time step of the data')
 	tkgrid(cb.period)
@@ -115,7 +117,7 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
 			tclvalue(file.choix2) <- AllOpenFilesData[[nopf+1]][[1]]
 		
-			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]		
+			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
 			tclvalue(file.choix2) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(cb.file.elv, values = unlist(listOpenFiles), textvariable = file.choix2)
 			tkconfigure(cb.file.stn, values = unlist(listOpenFiles), textvariable = file.choix1)
@@ -150,7 +152,6 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 		}else tclvalue(file.save1) <- file2save1
 	})
 
-
 	################################
 	bt.opt.set <- tkbutton.h(fr.A4, text = "Options - Settings", TextOutputVar, 'Set general options for QC', 'Set general options for QC') 
 	tkgrid(bt.opt.set, sticky = 'we', padx = 25, pady = 5, ipadx = 1, ipady = 1)
@@ -160,7 +161,6 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 		else state.parm <- c('disabled', 'normal')
 		GeneralParameters <<- get.param.rainfall(tt, GeneralParameters, state.parm)
 	})
-
 
 	################################
 	pr.relief.set1 <- c('sunken', 'sunken', 'sunken', 'flat')
@@ -193,14 +193,13 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 	tkgrid(cb.1intelv, row = 2, column = 0, sticky = 'w', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cb.1datelv, row = 3, column = 0, sticky = 'w', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	
-	
 	##########
 
 	fr.B11 <- ttklabelframe(fr.B1, text = "File Format", labelanchor = "nw", relief = "flat", borderwidth = 2)
 	tkgrid(fr.B11)
 	ffrmt1 <- tkradiobutton(fr.B11, text = "One variable", state = state1, anchor = 'w', justify = 'left')
 	infobulle(ffrmt1, 'In case of single serie:\nThe file contains 1 variable')
-	status.bar.display(ffrmt1, TextOutputVar, 'In case of single serie: The file contains 1 variable')	
+	status.bar.display(ffrmt1, TextOutputVar, 'In case of single serie: The file contains 1 variable')
 	ffrmt2 <- tkradiobutton(fr.B11, text = "Rain Tmax Tmin", state = state1, anchor = 'w', justify = 'left')
 	infobulle(ffrmt2, 'In case of single serie:\nThe file contains Rain, Tmax\nand Tmin in this order')
 	status.bar.display(ffrmt2, TextOutputVar, 'In case of single serie:The file contains Rain, Tmax and Tmin in this order')		
@@ -216,11 +215,11 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 	vdtfrmt1 <- tclVar("YYYYMMDD")
 	dtfrmt1 <- tkradiobutton(fr.B21, text = tclvalue(vdtfrmt1), textvariable = vdtfrmt1, state = state1, anchor = 'w', justify = 'left')
 	infobulle(dtfrmt1, 'In case of single serie:\n dates are merged')
-	status.bar.display(dtfrmt1, TextOutputVar, 'In case of single serie: dates are merged')		
+	status.bar.display(dtfrmt1, TextOutputVar, 'In case of single serie: dates are merged')
 	vdtfrmt2 <- tclVar("YYYY MM DD")
 	dtfrmt2 <- tkradiobutton(fr.B21, text = tclvalue(vdtfrmt2), textvariable = vdtfrmt2, state = state1, anchor = 'w', justify = 'left')
 	infobulle(dtfrmt2, 'In case of single serie:\ndates are separated by space\nor tabulation')
-	status.bar.display(dtfrmt2, TextOutputVar, 'In case of single serie:dates are separated by space or tabulation')		
+	status.bar.display(dtfrmt2, TextOutputVar, 'In case of single serie:dates are separated by space or tabulation')
 	tkgrid(dtfrmt1, row = 0, column = 0, sticky = "we")
 	tkgrid(dtfrmt2, row = 1, column = 0, sticky = "we")	
 	rbdtfrmt <- tclVar(as.character(GeneralParameters$file.date.format$Values[2]))
@@ -249,17 +248,17 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.1uselv, state = 'normal')
 			tkconfigure(cb.1intelv, state = 'disabled')
 			tkconfigure(cb.1datelv, state = 'disabled')	
-			tclvalue(cb.1uselv.val) <- "0"				
+			tclvalue(cb.1uselv.val) <- "0"
 			if(tclvalue(cb.1series.val) == "0"){
 				tkconfigure(ffrmt1, state = 'normal')
 				tkconfigure(ffrmt2, state = 'normal')
 				tkconfigure(dtfrmt1, state = 'normal')
-				tkconfigure(dtfrmt2, state = 'normal')			
+				tkconfigure(dtfrmt2, state = 'normal')
 			}else{
 				tkconfigure(ffrmt1, state = 'disabled')
 				tkconfigure(ffrmt2, state = 'disabled')
 				tkconfigure(dtfrmt1, state = 'disabled')
-				tkconfigure(dtfrmt2, state = 'disabled')			
+				tkconfigure(dtfrmt2, state = 'disabled')
 			}
 		}
 	})
@@ -269,21 +268,21 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 		tkconfigure(ffrmt2, state = 'disabled')
 		tkconfigure(dtfrmt1, state = 'disabled')
 		tkconfigure(dtfrmt2, state = 'disabled')
-		tclvalue(cb.1series.val) <- "0"				
+		tclvalue(cb.1series.val) <- "0"
 		if(tclvalue(cb.1uselv.val) == "0"){
 			if(tclvalue(uselv.ch) == "0") state1 <- 'normal'
 			else state1 <- 'disabled'
 			tkconfigure(cb.file.elv, state = state1)
-			tkconfigure(bt.file.elv, state = state1)				
+			tkconfigure(bt.file.elv, state = state1)
 			tkconfigure(cb.1uselv, state = 'normal')
 			tkconfigure(cb.1intelv, state = 'normal')
-			tkconfigure(cb.1datelv, state = 'normal')	
+			tkconfigure(cb.1datelv, state = 'normal')
 		}else{
 			tkconfigure(cb.file.elv, state = 'disabled')
 			tkconfigure(bt.file.elv, state = 'disabled')
 			tkconfigure(cb.1uselv, state = 'normal')
 			tkconfigure(cb.1intelv, state = 'disabled')
-			tkconfigure(cb.1datelv, state = 'disabled')				
+			tkconfigure(cb.1datelv, state = 'disabled')
 		}
 	})
 
@@ -295,7 +294,7 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 		}
 	})	
 	tkbind(cb.1datelv,"<Button-1>", function(){
-		if(tclvalue(cb.1uselv.val) == "1"){	
+		if(tclvalue(cb.1uselv.val) == "1"){
 			tkconfigure(cb.file.elv, state = 'disabled')
 			tkconfigure(bt.file.elv, state = 'disabled')
 		}
@@ -314,7 +313,7 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 		}else if(tclvalue(cb.1uselv.val) == "1" & tclvalue(uselv.ch) == "0" & tclvalue(file.choix2) == ""){
 			tkmessageBox(message = "You have to choose DEM data in NetCDF format\n if you want to extract elevation from DEM",
 			icon = "warning", type = "ok")
-			tkwait.window(tt)		
+			tkwait.window(tt)
 		}else if(tclvalue(file.save1) == "" | tclvalue(file.save1) == "NA"){
 			tkmessageBox(message = "Choose a directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
@@ -337,12 +336,15 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 			GeneralParameters$file.io$Values <<- c(tclvalue(file.choix1), tclvalue(file.choix2), tclvalue(file.save1))
 			GeneralParameters$file.date.format$Values <<- c(tclvalue(rbffrmt), tclvalue(rbdtfrmt))
 			GeneralParameters$use.method$Values <<- c(tclvalue(cb.1series.val), tclvalue(cb.1uselv.val), tclvalue(uselv.ch))
-			GeneralParameters$period <<- ifelse(tclvalue(file.period) == 'Daily data', 'daily', ifelse(tclvalue(file.period) == 'Dekadal data', 'dekadal', 'monthly'))
-			
+			GeneralParameters$period <<- switch(tclvalue(file.period), 
+			 									'Daily data' = 'daily',
+												'Dekadal data' =  'dekadal',
+												'Monthly data' = 'monthly')
 			######
-			getInitDataParams <- function(GeneralParameters){					
+			getInitDataParams <- function(GeneralParameters){
 				if(tclvalue(cb.1series.val) == "0"){
-					donstn <- splitCDTData(AllOpenFilesData[[jfile]][[2]], GeneralParameters$period)
+					donstn <- getCDTdataAndDisplayMsg(AllOpenFilesData[[jfile]][[2]], GeneralParameters$period)
+
 					xycrds <- NULL
 					if(!is.null(donstn)){
 						# limUp <- apply(donstn$data, 2, function(x){
@@ -362,10 +364,10 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 						GeneralParameters$parameter[[2]] <- limControl
 						#GeneralParameters$parameter[[2]] <- getRainInitParams0(donstn, GeneralParameters$period)
 						stn.choix <- as.character(donstn$id)
-						xycrds <- paste(c(as.character(donstn$lon), as.character(donstn$lat)), sep = '',collapse=' ')
+						xycrds <- paste(c(as.character(donstn$lon), as.character(donstn$lat)), sep = '', collapse = ' ')
 					}else tkwait.window(tt)
 				}else{
-					donstn <- splitTsData(AllOpenFilesData[[jfile]][[2]], GeneralParameters$period, tclvalue(rbffrmt), tclvalue(rbdtfrmt))
+					donstn <- getCDTTSdataAndDisplayMsg(AllOpenFilesData[[jfile]][[2]], GeneralParameters$period, tclvalue(rbffrmt), tclvalue(rbdtfrmt))
 					if(!is.null(donstn)){
 						# if(donstn$nbvar == 1) xval <- donstn$var$var
 						# else xval <- donstn$var$rr
@@ -384,17 +386,20 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 				}
 				paramsGAL <- list(inputPars = GeneralParameters, dataPars = AllOpenFilesData[[jfile]][3:4], data = donstn)
 				save(paramsGAL, file = fileparams)
-				return(list(paramsGAL, stn.choix, xycrds))				
+				return(list(paramsGAL, stn.choix, xycrds))
 			}
 
 			######
 			if(file.exists(fileparams)){
 				load(fileparams)
-				if(paramsGAL$inputPars$period == GeneralParameters$period & all(AllOpenFilesData[[jfile]][3:4]%in%paramsGAL$dataPars)){
+				if(paramsGAL$inputPars$period == GeneralParameters$period & all(AllOpenFilesData[[jfile]][3:4] %in% paramsGAL$dataPars)){
 					donstn <- paramsGAL$data
 					GeneralParameters$parameter[[2]] <<- paramsGAL$inputPars$parameter[[2]]
-					stn.choix <<- as.character(GeneralParameters$parameter[[2]][,1])
-					if(tclvalue(cb.1series.val) == "0") tclvalue(XYCoordinates) <<- paste(c(as.character(GeneralParameters$parameter[[2]][,3]), as.character(GeneralParameters$parameter[[2]][,4])), sep = '',collapse=' ')
+					stn.choix <<- as.character(GeneralParameters$parameter[[2]][, 1])
+					if(tclvalue(cb.1series.val) == "0"){
+						tclvalue(XYCoordinates) <<- paste(c(as.character(GeneralParameters$parameter[[2]][, 3]),
+									as.character(GeneralParameters$parameter[[2]][, 4])), sep = '', collapse = ' ')
+					}
 					rm(paramsGAL)
 				}else{
 					retDonPar <- getInitDataParams(GeneralParameters)
@@ -475,7 +480,7 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
 	#tkwm.geometry(tt, paste(tt.w, 'x', tt.h,'+',tt.x,'+',tt.y, sep = ''))
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Quality Control - Settings')
 	tkwm.deiconify(tt)
@@ -487,7 +492,6 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 	tkwait.window(tt)
 	return(GeneralParameters)
 }
-
 
 ################################################################################################################################
 ##Edit parameter rainfall
@@ -537,8 +541,6 @@ get.param.rainfall <- function(tt, GeneralParameters, state.parm){
 	tkconfigure(max.dist.v, width = 4, textvariable = max.dist, state = state.parm[1])
 	tkconfigure(elv.diff.v, width = 4, textvariable = elv.diff, state = state.parm[1])
 
-
-
 	###########
 	ispmax.l <- tklabel.h(fr.E, 'ispmax', TextOutputVar, 'Test for isolated precipitation:\nMaximum value of the neighbors stations\nis less than ispmax', 'Maximum value of the neighbors stations is less than ispmax')
 	ispobs.l <- tklabel.h(fr.E, 'ispobs', TextOutputVar, 'Test for isolated precipitation:\nValue of target station is greater ispobs', 'Value of target station is greater ispobs')
@@ -546,7 +548,6 @@ get.param.rainfall <- function(tt, GeneralParameters, state.parm){
 	isdobs.l <- tklabel.h(fr.E, 'isdobs', TextOutputVar, 'Test for isolated dryness:\nValue of target station is less than isdobs', 'Value of target station is less than isdobs')
 	isdq1.l <- tklabel.h(fr.E, 'isdq1', TextOutputVar, 'Test for isolated dryness:\nThe 1st quartile value of the neighbors stations\nis greater than isdq1', 'The 1st quartile value of the neighbors stations is greater than isdq1')
 	ftldev.l <- tklabel.h(fr.E, 'ftldev', TextOutputVar, 'Test for too large deviations:\nOutlier factor value between 2 and 4', 'Outlier factor value between 2 and 4, multiplier of IQR')
-
 
 	ispmax.v <- tkentry.h(fr.E, TextOutputVar, 'Test for isolated precipitation:\nMaximum value of the neighbors stations\nis less than ispmax', 'Maximum value of the neighbors stations is less than ispmax')
 	ispobs.v <- tkentry.h(fr.E, TextOutputVar, 'Test for isolated precipitation:\nValue of target station is greater ispobs', 'Value of target station is greater ispobs')
@@ -622,7 +623,7 @@ get.param.rainfall <- function(tt, GeneralParameters, state.parm){
 	tt.h <- as.integer(tkwinfo("reqheight", tt1))	
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt1, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt1, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt1)
 	tkwm.title(tt1, 'Options- Settings')
 	tkwm.deiconify(tt1)

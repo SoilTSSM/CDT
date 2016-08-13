@@ -57,7 +57,7 @@ ZeroCheckStn <- function(pos, rr.dat, dates, coords, Zparams){
 		if(!is.null(outzero)){
 			out.data <- cbind(coords$id[pos], outzero)
 			out.data <- data.frame(out.data, stringsAsFactors = FALSE)
-			out.data[,-(1:2)] <- apply(out.data[,-(1:2)], 2, as.numeric)
+			out.data[, -(1:2)] <- apply(out.data[, -(1:2)], 2, as.numeric)
 		}
 	}
 	names(out.data) <- c("ID", "YYYYMM", "val.stn", "nrst.val", "nrst.stn_km", "avg.nbrs", "max.nbrs")
@@ -77,7 +77,7 @@ QcOutZeroChkFormat <- function(){
 		IJstation <- ReturnExecResults$res[[ijstn]]$station
 	}
 
-	fileout <- file.path(outputdir, IJstation, paste(IJstation,'.txt', sep = ''), fsep = .Platform$file.sep)
+	fileout <- file.path(outputdir, IJstation, paste(IJstation, '.txt', sep = ''), fsep = .Platform$file.sep)
 	if(!file.exists(fileout)) return(NULL)
 	zcdat <- read.table(fileout, header = TRUE, colClasses = 'character')
 	retdata <- list(zcdat, fileout)
@@ -90,7 +90,7 @@ replaceZeroChkbyNA <- function(IJstation, retRes){
 	outputdir <- retRes$outputdir
 	datadir <- retRes$datadir
 
-	filein <- file.path(outputdir, IJstation, paste(IJstation,'.txt', sep = ''), fsep = .Platform$file.sep)
+	filein <- file.path(outputdir, IJstation, paste(IJstation, '.txt', sep = ''), fsep = .Platform$file.sep)
 	if(!file.exists(filein)){
 		InsertMessagesTxt(main.txt.out, paste(IJstation, 'not checked'), format = TRUE)
 		return(NULL)
@@ -105,17 +105,17 @@ replaceZeroChkbyNA <- function(IJstation, retRes){
 	zcdaty <- str_trim(zcdaty)
 	notmonth <- which(nchar(zcdaty) != 6)
 	if(length(notmonth) > 0){
-		InsertMessagesTxt(main.txt.out, paste(paste(zcdaty[notmonth], collapse=';'),'wrong date format'), format = TRUE)
+		InsertMessagesTxt(main.txt.out, paste(paste(zcdaty[notmonth], collapse = ';'),'wrong date format'), format = TRUE)
 		return(NULL)
 	}
-	filein1 <- file.path(datadir, IJstation, paste(IJstation,'.txt', sep = ''), fsep = .Platform$file.sep)
+	filein1 <- file.path(datadir, IJstation, paste(IJstation, '.txt', sep = ''), fsep = .Platform$file.sep)
 	if(!file.exists(filein1)){
 		InsertMessagesTxt(main.txt.out, paste(filein1, 'not found'), format = TRUE)
 		return(NULL)
 	}
 	datstn <- read.table(filein1)
-	irepl <- substr(as.character(datstn[,1]), 1,6)%in%zcdaty
-	datstn[irepl & (!is.na(datstn[,2]) & datstn[,2] == 0), 2] <- NA
+	irepl <- substr(as.character(datstn[, 1]), 1, 6) %in% zcdaty
+	datstn[irepl & (!is.na(datstn[, 2]) & datstn[, 2] == 0), 2] <- NA
 	write.table(datstn, filein1, col.names = FALSE, row.names = FALSE)
 	return(0)
 }
@@ -131,7 +131,7 @@ QcOutZeroChk_Neighbors <- function(IJstation, date_month){
 
 	##
 	pos <- which(idstn == IJstation)
-	imon <- substr(dates, 1,6) == date_month
+	imon <- substr(dates, 1, 6) == date_month
 
 	coordStn <- matrix(c(lon[pos], lat[pos]), ncol = 2)
 	coordNei <- matrix(c(lon, lat), ncol = 2)

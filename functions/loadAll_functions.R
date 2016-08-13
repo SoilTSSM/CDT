@@ -16,6 +16,7 @@ source(file.path(apps.dir, 'functions', 'preview_nc_function.R', fsep = .Platfor
 
 source(file.path(apps.dir, 'functions', 'clear_CDT_Data_functions.R', fsep = .Platform$file.sep))
 source(file.path(apps.dir, 'functions', 'Climato_Computation_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtClimato_functions.R', fsep = .Platform$file.sep))
 
 source(file.path(apps.dir, 'functions', 'cdtTables_functions.R', fsep = .Platform$file.sep))
 source(file.path(apps.dir, 'functions', 'cdtTabs_functions.R', fsep = .Platform$file.sep))

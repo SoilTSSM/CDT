@@ -290,6 +290,7 @@ cycleMonth <- function(start, n){
 	return(mois[im])
 }
 
+#cycleMonth1 -->  file: cdtClimato_functions.R
 ###############################################################################
 ## Add or substract months
 
@@ -300,6 +301,7 @@ addMonths <- function(daty, n = 1){
 	return(daty)
 }
 
+#add.months -->  file: cdtClimato_functions.R
 ###############################################################################
 ## Add or substract dekads
 
@@ -312,6 +314,7 @@ addDekads <- function(daty, n = 1){
 	return(daty)
 }
 
+#add.dekads -->  file: cdtClimato_functions.R
 ###############################################################################
 #File or directory to save result
 #filedirVar tclVar
@@ -354,9 +357,15 @@ openFile_ttkcomboList <- function(){
 ##return [[1]] name [[2]] shp [[3]] path
 
 getShpOpenData <- function(shp){
-	if(tclvalue(shp) != ""){
+	if(inherits(shp, "tclVar")){
+		fileio <- tclvalue(shp)
+	}else if(is.character(shp)){
+		fileio <- shp
+	}else return(NULL)
+
+	if(fileio != ""){
 		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-		jfile <- which(all.open.file == tclvalue(shp))
+		jfile <- which(all.open.file == fileio)
 		if(AllOpenFilesType[[jfile]] == "shp"){
 			shpf <- AllOpenFilesData[[jfile]]
 		}else shpf <- NULL
@@ -370,13 +379,92 @@ getShpOpenData <- function(shp){
 ## return CDT data format
 
 getStnOpenData <- function(file.stnfl){
-	if(tclvalue(file.stnfl) != ""){
+	if(inherits(file.stnfl, "tclVar")){
+		fileio <- tclvalue(file.stnfl)
+	}else if(is.character(file.stnfl)){
+		fileio <- file.stnfl
+	}else return(NULL)
+
+	if(fileio != ""){
 		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-		jfile <- which(all.open.file == tclvalue(file.stnfl))
+		jfile <- which(all.open.file == fileio)
 		if(AllOpenFilesType[[jfile]] == "ascii"){
 			donne <- AllOpenFilesData[[jfile]][[2]]
 		}else donne <- NULL
 	}else donne <- NULL
+	return(donne)
+}
+
+getStnOpenDataInfo <- function(file.stnfl){
+	if(inherits(file.stnfl,"tclVar")){
+		fileio <- tclvalue(file.stnfl)
+	}else if(is.character(file.stnfl)){
+		fileio <- file.stnfl
+	}else return(NULL)
+
+	if(fileio != ""){
+		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
+		jfile <- which(all.open.file == fileio)
+		if(AllOpenFilesType[[jfile]] == "ascii"){
+			info <- AllOpenFilesData[[jfile]][c(1, 3:4)]
+		}else info <- NULL
+	}else info <- NULL
+	return(info)
+}
+
+#################################################################################
+
+getCDTdataAndDisplayMsg <- function(donne, period){
+	if(is.null(donne)) return(NULL)
+	donne <- splitCDTData(donne, period)
+	if(is.null(donne)) return(NULL)
+	if(!is.null(donne$duplicated.coords)){
+		tmp <- as.matrix(donne$duplicated.coords)
+		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
+		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
+		InsertMessagesTxt(main.txt.out, 'Duplicated coordinates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, tmp0)
+	}
+	if(!is.null(donne$missing.coords)){
+		tmp <- as.matrix(donne$missing.coords)
+		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
+		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
+		InsertMessagesTxt(main.txt.out, 'Missing coordinates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, tmp0)
+	}
+	if(!is.null(donne$duplicated.dates)){
+		InsertMessagesTxt(main.txt.out, 'Duplicated dates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, paste(donne$duplicated.dates$date, collapse = ' '))
+	}
+	if(!is.null(donne$wrong.dates)){
+		InsertMessagesTxt(main.txt.out, 'Wrong dates format', format = TRUE)
+		InsertMessagesTxt(main.txt.out, paste(donne$wrong.dates$date, collapse = ' '))
+	}
+	if(!is.null(donne$missing.dates)){
+		InsertMessagesTxt(main.txt.out, 'Missing dates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, paste(donne$missing.dates$date, collapse = ' '))
+	}
+	return(donne)
+}
+
+#################################################################################
+
+getCDTTSdataAndDisplayMsg <- function(donne, period, filefrmt, datefrmt){
+	if(is.null(donne)) return(NULL)
+	donne <- splitTsData(donne, period, filefrmt, datefrmt)
+	if(is.null(donne)) return(NULL)
+	if(!is.null(donne$duplicated.dates)){
+		InsertMessagesTxt(main.txt.out, 'Duplicated dates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, paste(donne$duplicated.dates$date, collapse = ' '))
+	}
+	if(!is.null(donne$wrong.dates)){
+		InsertMessagesTxt(main.txt.out, 'Wrong dates format', format = TRUE)
+		InsertMessagesTxt(main.txt.out, paste(donne$wrong.dates$date, collapse = ' '))
+	}
+	if(!is.null(donne$missing.dates)){
+		InsertMessagesTxt(main.txt.out, 'Missing dates', format = TRUE)
+		InsertMessagesTxt(main.txt.out, paste(donne$missing.dates$date, collapse = ' '))
+	}
 	return(donne)
 }
 
@@ -430,34 +518,6 @@ getCDTdata1Date <- function(donne, yrs, mon, day){
 }	
 
 #################################################################################
-##
-
-getCDTdataAndDisplayMsg <- function(donne, period){
-	if(is.null(donne)) return(NULL)
-	donne <- splitCDTData(donne, period)
-	if(is.null(donne)) return(NULL)
-	if(nrow(donne$duplicated.coords) > 0){
-		tmp <- as.matrix(donne$duplicated.coords)
-		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
-		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
-		InsertMessagesTxt(main.txt.out, 'Duplicated coordinates', format = TRUE)
-		InsertMessagesTxt(main.txt.out, tmp0)
-	}
-	if(nrow(donne$missing.coords) > 0){
-		tmp <- as.matrix(donne$missing.coords)
-		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
-		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
-		InsertMessagesTxt(main.txt.out, 'Missing coordinates', format = TRUE)
-		InsertMessagesTxt(main.txt.out, tmp0)
-	}
-	if(length(donne$duplicated.dates) > 0){
-		InsertMessagesTxt(main.txt.out, 'Duplicated dates', format = TRUE)
-		InsertMessagesTxt(main.txt.out, paste(donne$duplicated.dates, collapse = ' '))
-	}
-	return(donne)
-}
-
-#################################################################################
 ## get DEM data  in the list (all open files)
 ## return $lon $lat $dem
 
@@ -475,6 +535,29 @@ getDemOpenData <- function(file.grddem){
 	return(dem)
 }
 
+#################################################################################
+## get DEM data  in the list (all open files)
+## return $lon $lat $demGrd $demMat
+
+getDemOpenDataSPDF <- function(file.grddem){
+	if(file.grddem != ""){
+		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
+		jncdf <- which(all.open.file == file.grddem)
+		if(AllOpenFilesType[[jncdf]] == "netcdf"){
+			fdem <- AllOpenFilesData[[jncdf]][[2]]
+			dem <- fdem$value
+			demMat <- dem
+			dem[dem < 0] <- 0
+			dem.coord <- data.frame(expand.grid(lon = fdem$x, lat = fdem$y))
+			coordinates(dem.coord) = ~lon+lat
+			demdf <- data.frame(dem = c(dem))
+			demdf <- SpatialPointsDataFrame(coords = dem.coord, data = demdf, proj4string = CRS(as.character(NA)))
+			demlist <- list(lon = fdem$x, lat = fdem$y, demGrd = demdf, demMat = demMat)
+		}else demlist <- NULL
+	}else demlist <- NULL
+	return(demlist)
+}
+
 
 #################################################################################
 ## get NetCDF data  in the list (all open files)
@@ -489,6 +572,26 @@ getNcdfOpenData <- function(file.netcdf){
 		}else nc <- NULL
 	}else nc <- NULL
 	return(nc)
+}
+
+
+#################################################################################
+## get RFE sample data  in the list (all open files)
+## return $lon $lat $val $rfeGrd $rfeVarid $rfeILon $rfeILat $irevlat
+
+getRFESampleData <- function(file.netcdf){
+	if(file.netcdf != ""){
+		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
+		jfile <- which(all.open.file == file.netcdf)
+		if(AllOpenFilesType[[jfile]] == "netcdf"){
+		ncrfe <- AllOpenFilesData[[jfile]][[2]]
+		rfe.coord <- data.frame(expand.grid(lon = ncrfe$x, lat = ncrfe$y))
+		coordinates(rfe.coord)  <-  ~lon+lat
+		rfelist <- list(lon = ncrfe$x, lat = ncrfe$y, rfeGrd = rfe.coord, rfeVarid = ncrfe$varid,
+						 rfeILon = ncrfe$ilon, rfeILat = ncrfe$ilat, irevlat = ncrfe$irevlat)
+		}else rfelist <- NULL
+	}else rfelist <- NULL
+	return(rfelist)
 }
 
 #################################################################################
@@ -555,6 +658,7 @@ getSatelliteData <- function(dir_ncdf, ff_ncdf, spchkQcDateVal){
 
 #################################################################################
 ##get DEM at stations locations (interpolation leftCmd)
+
 getDEMatStationsLoc <- function(donne, dem){
 	crdStn <- data.frame(lon = donne$lon, lat = donne$lat)
 	coordinates(crdStn) <- c('lon', 'lat')
@@ -569,7 +673,8 @@ getDEMatStationsLoc <- function(donne, dem){
 }
 
 #################################################################################
-##get DEM at stations locations (interpolation leftCmd)
+##get DEM at a new grid 
+
 getDEMatNewGrid <- function(newgrid, dem){
 	newgrid <- as.data.frame(newgrid)
 	crdPts <- data.frame(lon = newgrid$lon, lat = newgrid$lat)
@@ -664,3 +769,73 @@ reshapeXYZ2Matrix <- function(df){
 # 	}
 # 	return(list3)
 # }
+
+##################################################################################
+###get index of points at grid
+##pts_Coords = list(lon, lat)
+##grd_Coords  = list(lon, lat)
+
+grid2pointINDEX <- function(pts_Coords,grd_Coords){
+	newgrid <- expand.grid(lon = grd_Coords$lon, lat = grd_Coords$lat)
+	coordinates(newgrid) <- ~lon+lat
+	newgrid <- SpatialPixels(points = newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
+	pts.loc <- data.frame(lon = pts_Coords$lon, lat = pts_Coords$lat)
+	pts.loc <- SpatialPoints(pts.loc)
+	ijGrd <- unname(over(pts.loc, geometry(newgrid)))
+	return(ijGrd)
+}
+
+##################################################################################
+###define spatialPixels
+##grd_Coords  = list(lon, lat)
+
+defSpatialPixels <- function(grd_Coords){
+	newgrid <- expand.grid(lon = grd_Coords$lon, lat = grd_Coords$lat)
+	coordinates(newgrid) <- ~lon+lat
+	newgrid <- SpatialPixels(points = newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
+	return(newgrid)
+}	
+
+is.sameSpatialPixelsObj <- function(SP1, SP2, tol = 1e-07){
+	SP1CelldX <- SP1@grid@cellsize[1]
+	SP1CelldY <- SP1@grid@cellsize[2]
+	SP1CellSX <- SP1@grid@cells.dim[1]
+	SP1CellSY <- SP1@grid@cells.dim[2]
+	SP2CelldX <- SP2@grid@cellsize[1]
+	SP2CelldY <- SP2@grid@cellsize[2]
+	SP2CellSX <- SP2@grid@cells.dim[1]
+	SP2CellSY <- SP2@grid@cells.dim[2]
+	unname((abs(SP1CelldX-SP2CelldX) > tol & SP1CellSX  != SP2CellSX) | (abs(SP1CelldY-SP2CelldY) > tol & SP1CellSY  != SP2CellSY))
+}
+
+regridDEMFun <- function(demObj, newgrd, regrid = c('BLW', 'IDW', 'RASTER'), ...){
+	if(regrid[1] == 'BLW'){
+		zdem <- demObj$demMat
+		zdem[zdem < 0] <- 0
+		demObj <- list(x = demObj$lon, y = demObj$lat, z = zdem)
+		demNew <- list(x = newgrd$lon, y = newgrd$lat)
+		newObj <- interp.surface.grid(demObj, demNew)
+		dem <- newObj$z
+		dem[dem < 0] <- 0
+		dem <- c(dem)
+	}
+	if(regrid[1] == 'IDW'){
+		newgrid <- defSpatialPixels(newgrd)
+		dem.grd <- krige(formula = dem ~ 1, locations = demObj$demGrd, newdata = newgrid, ..., debug.level = 0)
+		dem <- ifelse(dem.grd@data$var1.pred < 0, 0, dem.grd@data$var1.pred)
+	}
+	if(regrid[1] == 'RASTER'){
+		require(raster)
+		zdem <- demObj$demMat
+		zdem[zdem < 0] <- 0
+		rasterdem <- raster(list(x = demObj$lon, y = demObj$lat, z = zdem))
+		newgrid <- raster(list(x = newgrd$lon, y = newgrd$lat, z = matrix(0, nrow = length(newgrd$lon), ncol = length(newgrd$lat))))
+		dem <- resample(rasterdem, newgrid, ...)
+		dem <- mask(dem, newgrid)
+		dem<-c(t(apply(as.matrix(dem), 2, rev)))
+		dem[dem < 0] <- 0
+		# dem <- t(as.matrix(dem))
+		# dem <- c(dem[, ncol(dem):1])
+	}	
+	return(dem)
+}

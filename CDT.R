@@ -52,6 +52,7 @@ library(compiler)
 library(parallel)
 library(foreach)
 library(doParallel)
+# library(raster)
 
 #compilePKGS(enable = TRUE)
 #enableJIT(3)

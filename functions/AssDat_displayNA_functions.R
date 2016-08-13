@@ -31,12 +31,12 @@ plotNASummary <- function(dates, xseries, jstn, period){
 
 plotAllNASummary <- function(donne, dates, period){
 	if(period == 'daily'){
-		xdates <- as.Date(dates, format='%Y%m%d')
+		xdates <- as.Date(dates, format = '%Y%m%d')
 	}else if(period == 'dekadal'){
-		xdates <- as.Date(paste(substr(dates, 1,6), ifelse(substr(dates, 7,7) == "1", "05",
-		ifelse(substr(dates, 7, 7) == "2", "15", "25")), sep = ''), format='%Y%m%d')
+		xdates <- as.Date(paste(substr(dates, 1, 6), ifelse(substr(dates, 7, 7) == "1", "05",
+					ifelse(substr(dates, 7, 7) == "2", "15", "25")), sep = ''), format = '%Y%m%d')
 	}else if(period == 'monthly'){
-		xdates <- as.Date(paste(dates, 16, sep = ''), format='%Y%m%d')
+		xdates <- as.Date(paste(dates, 16, sep = ''), format = '%Y%m%d')
 	}
 
 	stnTworking <- function(x){
@@ -297,11 +297,11 @@ DisplayAllStnNASum <- function(parent, donne, period){
 		ypos1<-(ypos-0)/((1/(0.1+1))-0)
 		ycoord <- minY+(ypos1-yplt1)*rangeY/(yplt2-yplt1)
 
-		if(period == 'daily') labdates <- format(as.Date(xcoord, origin = '1970-1-1'),'%d-%b-%Y')
+		if(period == 'daily') labdates <- format(as.Date(xcoord, origin = '1970-1-1'), '%d-%b-%Y')
 		if(period == 'dekadal'){
 			dtdk <- as.Date(xcoord, origin = '1970-1-1')
-			dek <- ifelse(as.numeric(format(dtdk,'%d')) <= 10,1, ifelse(as.numeric(format(dtdk,'%d'))>20,3,2))
-			moyr <- format(dtdk,'%b-%Y')
+			dek <- ifelse(as.numeric(format(dtdk, '%d')) <= 10, 1, ifelse(as.numeric(format(dtdk, '%d')) > 20, 3, 2))
+			moyr <- format(dtdk, '%b-%Y')
 			labdates <- paste(dek, moyr, sep = '-')
 		}
 		if(period == 'monthly') labdates <- format(as.Date(xcoord, origin = '1970-1-1'),'%b-%Y')

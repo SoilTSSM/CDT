@@ -31,10 +31,12 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 	tkgrid(fr.A02, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	file.period <- tclVar()
-	tclvalue(file.period) <- ifelse(as.character(GeneralParameters$period) == 'daily',
-	'Daily data', ifelse(as.character(GeneralParameters$period) == 'dekadal', 'Dekadal data', 'Monthly data'))
-
-	cb.period <- ttkcombobox(fr.A02, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(as.character(GeneralParameters$period), 
+									'daily' = cb.periodVAL[1], 
+									'dekadal' = cb.periodVAL[2],
+									'monthly' = cb.periodVAL[3])
+	cb.period <- ttkcombobox(fr.A02, values = cb.periodVAL, textvariable = file.period)
 	infobulle(cb.period, 'Choose the time step of the data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the time step of the data')
 	tkgrid(cb.period)
@@ -206,7 +208,7 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 	tkconfigure(bt.file.save, command = function(){
 		file2save1 <- tk_choose.dir(as.character(GeneralParameters$file.io$Values[4]), "")
 		if(!file.exists(file2save1)){
-			tkmessageBox(message = paste(file2save1, 'does not exist.\n It will be created.',sep = ' '), icon = "warning", type = "ok")
+			tkmessageBox(message = paste(file2save1, 'does not exist.\n It will be created.', sep = ' '), icon = "warning", type = "ok")
 			dir.create(file2save1, recursive = TRUE)
 			tclvalue(file.save1) <- file2save1
 		}else tclvalue(file.save1) <- file2save1
@@ -427,17 +429,19 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 			GeneralParameters$file.io$Values <<- c(tclvalue(file.choix1a), tclvalue(file.choix1b), tclvalue(file.choix2), tclvalue(file.save1))
 			GeneralParameters$file.date.format$Values <<- c(tclvalue(rbffrmt), tclvalue(rbdtfrmt))
 			GeneralParameters$use.method$Values <<- c(tclvalue(cb.1series.val), tclvalue(cb.const.val), tclvalue(cb.1uselv.val), tclvalue(uselv.ch))
-			GeneralParameters$period <<- ifelse(tclvalue(file.period) == 'Daily data', 'daily', ifelse(tclvalue(file.period) == 'Dekadal data', 'dekadal', 'monthly'))
 			GeneralParameters$test.tx <<- tclvalue(vartxtn)
-
+			GeneralParameters$period <<- switch(tclvalue(file.period), 
+			 									'Daily data' = 'daily',
+												'Dekadal data' =  'dekadal',
+												'Monthly data' = 'monthly')
 			######
 			getInitDataParams <- function(GeneralParameters){
 				if(tclvalue(cb.1series.val) == "0"){
-					donstn <- splitCDTData(AllOpenFilesData[[jfile]][[2]], GeneralParameters$period)
+					donstn <-  getCDTdataAndDisplayMsg(AllOpenFilesData[[jfile]][[2]], GeneralParameters$period)
 					donOut <- list(donstn)
 					parsFile <- list(AllOpenFilesData[[jfile]][3:4])
 					if(tclvalue(cb.const.val) == "1"){
-						donstn1 <- splitCDTData(AllOpenFilesData[[jfile1]][[2]], GeneralParameters$period)
+						donstn1 <-  getCDTdataAndDisplayMsg(AllOpenFilesData[[jfile1]][[2]], GeneralParameters$period)
 						donOut <- list(donstn, donstn1)
 						parsFile <- list(AllOpenFilesData[[jfile]][3:4], AllOpenFilesData[[jfile1]][3:4])
 					} 
@@ -455,7 +459,7 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 						# limUp <- as.vector(limUp)
 						# limControl <- data.frame(donstn$id, limLo, limUp, donstn$lon, donstn$lat)
 
-						limControl <- data.frame(donstn$id,-40,60, donstn$lon, donstn$lat)
+						limControl <- data.frame(donstn$id, -40, 60, donstn$lon, donstn$lat)
 						names(limControl) <- c('Station ID', 'Lower Bounds', 'Upper Bounds', 'Lon', 'Lat')
 						GeneralParameters$parameter[[2]] <- limControl
 						#GeneralParameters$parameter[[2]] <- getTempInitParams(donstn)
@@ -463,11 +467,11 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 						xycrds <- paste(c(as.character(donstn$lon), as.character(donstn$lat)), sep = '',collapse=' ')
 					}else tkwait.window(tt)
 				}else{
-					donstn <- splitTsData(AllOpenFilesData[[jfile]][[2]], GeneralParameters$period, tclvalue(rbffrmt), tclvalue(rbdtfrmt))
+					donstn <- getCDTTSdataAndDisplayMsg(AllOpenFilesData[[jfile]][[2]], GeneralParameters$period, tclvalue(rbffrmt), tclvalue(rbdtfrmt))
 					donOut <- list(donstn)
 					parsFile <- list(AllOpenFilesData[[jfile]][3:4])
 					if(tclvalue(cb.const.val) == "1" & tclvalue(rbffrmt) == "1"){
-						donstn1 <- splitTsData(AllOpenFilesData[[jfile1]][[2]], GeneralParameters$period, tclvalue(rbffrmt), tclvalue(rbdtfrmt))
+						donstn1 <- getCDTTSdataAndDisplayMsg(AllOpenFilesData[[jfile1]][[2]], GeneralParameters$period, tclvalue(rbffrmt), tclvalue(rbdtfrmt))
 						donOut <- list(donstn, donstn1)
 						parsFile <- list(AllOpenFilesData[[jfile]][3:4], AllOpenFilesData[[jfile1]][3:4])
 					} 
@@ -483,7 +487,7 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 						# limUp <- round(Q[4]+3*(Q[3]-Q[2]))
 
 						stn.choix <- getf.no.ext(tclvalue(file.choix1a))
-						limControl <- data.frame(stn.choix,-40,60)
+						limControl <- data.frame(stn.choix, -40, 60)
 						names(limControl) <- c('Station ID', 'Lower Bounds', 'Upper Bounds')
 						GeneralParameters$parameter[[2]] <- limControl
 					}else tkwait.window(tt)
@@ -496,9 +500,9 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 
 			#####
 			getConsistData <- function(){
-				if(tclvalue(cb.1series.val) == "0") donstn1 <- splitCDTData(AllOpenFilesData[[jfile1]][[2]], GeneralParameters$period)
+				if(tclvalue(cb.1series.val) == "0") donstn1 <- getCDTdataAndDisplayMsg(AllOpenFilesData[[jfile1]][[2]], GeneralParameters$period)
 				else{
-					donstn1 <- splitTsData(AllOpenFilesData[[jfile1]][[2]], GeneralParameters$period, tclvalue(rbffrmt), tclvalue(rbdtfrmt))
+					donstn1 <- getCDTTSdataAndDisplayMsg(AllOpenFilesData[[jfile1]][[2]], GeneralParameters$period, tclvalue(rbffrmt), tclvalue(rbdtfrmt))
 				} 
 				if(is.null(donstn1)){
 					tkmessageBox(message = "Data to be used for the consistency check not found or in the wrong format", icon = "warning", type = "ok")
@@ -616,7 +620,7 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Quality Control - Settings')
 	tkwm.deiconify(tt)
@@ -643,9 +647,10 @@ get.param.temperature <- function(tt, GeneralParameters, state.parm){
 	max.stn.l <- tklabel.h(fr.C, 'Max.stn', TextOutputVar, 'Maximum number of\n neighbor stations to use', 'Maximum number of neighbor stations to use')
 	
 	file.period <- get("file.period", parent.frame())
-	if(tclvalue(file.period) == 'Daily data') xper <- 'days'
-	if(tclvalue(file.period) == 'Dekadal data') xper <- 'dekad'
-	if(tclvalue(file.period) == 'Monthly data') xper <- 'months'
+	xper <- switch(tclvalue(file.period),
+					'Daily data' = 'days',
+					'Dekadal data' = 'dekad',
+					'Monthly data' = 'months')
 	xperHelp <- paste('Time window: number of', xper, 'applied to form a regression')
 	win.len.l <- tklabel.h(fr.C, 'Win.len', TextOutputVar, xperHelp, xperHelp)
 	
@@ -699,9 +704,9 @@ get.param.temperature <- function(tt, GeneralParameters, state.parm){
 	bt.prm.OK <- tkbutton(fr.F, text=" OK ") 
 	tkgrid(bt.prm.OK, row = 0, column = 0, sticky = 'w', padx = 25, pady = 1, ipadx = 1, ipady = 1)
 	tkconfigure(bt.prm.OK, command = function(){
-	GeneralParameters$parameter[[1]][,2] <<- c(as.character(tclvalue(min.stn)), as.character(tclvalue(max.stn)), as.character(tclvalue(win.len)),
-	as.character(tclvalue(CInt)), as.character(tclvalue(max.dist)), as.character(tclvalue(elv.diff)))
-	ret.param.temp1 <<- 0
+		GeneralParameters$parameter[[1]][, 2] <<- c(as.character(tclvalue(min.stn)), as.character(tclvalue(max.stn)), as.character(tclvalue(win.len)),
+													as.character(tclvalue(CInt)), as.character(tclvalue(max.dist)), as.character(tclvalue(elv.diff)))
+		ret.param.temp1 <<- 0
 		tkgrab.release(tt1)
 		tkdestroy(tt1)
 		tkfocus(tt)
@@ -721,7 +726,7 @@ get.param.temperature <- function(tt, GeneralParameters, state.parm){
 	tt.h <- as.integer(tkwinfo("reqheight", tt1))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt1, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt1, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt1)
 	tkwm.title(tt1, 'Options- Settings')
 	tkwm.deiconify(tt1)

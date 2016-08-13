@@ -30,13 +30,13 @@ repartCheck <- function(x0, y0, x, y){
 	id4 <- which(ang >= 3*pi/2 & ang <= 2*pi) #IV
 	#quadrant <- length(id1) > 0 & length(id2) > 0 & length(id3) > 0 & length(id4) > 0
 
-	comb <- t(combn(1:4,3))
-	strx <- paste("length(id", comb[,1], ")>0 & length(id", comb[,2], ")>0 & length(id", comb[,3], ")>0", sep = '')
+	comb <- t(combn(1:4, 3))
+	strx <- paste("length(id", comb[, 1], ")>0 & length(id", comb[, 2], ")>0 & length(id", comb[, 3], ")>0", sep = '')
 	is3by4 <- as.vector(sapply(strx, function(x) eval(parse(text = x))))
 	quadrant <- sum(is3by4) > 0
 
 	#ramener 1er points to 0
-	ang<-(ang-ang[1])%%(2*pi)
+	ang <- (ang-ang[1])%%(2*pi)
 
 	##Above
 	id1a <- which(ang >= 0 & ang < pi/3) #I
@@ -57,10 +57,10 @@ repartCheck <- function(x0, y0, x, y){
 ##Arrange Tx, Tn
 commonTxTn <- function(Tsdata){
 	#take the same dates
-	tx.dt <- Tsdata$tx.date%in%Tsdata$tn.date
+	tx.dt <- Tsdata$tx.date %in% Tsdata$tn.date
 	dates <- Tsdata$tx.date[tx.dt]
 	tx.com <- Tsdata$tx.data[tx.dt]
-	tn.dt <- Tsdata$tn.date%in%Tsdata$tx.date
+	tn.dt <- Tsdata$tn.date %in% Tsdata$tx.date
 	tn.com <- Tsdata$tn.data[tn.dt]
 	return(list(tx = tx.com, tn = tn.com, date = dates))
 }
@@ -71,9 +71,9 @@ RainTempLimBounds <- function(x, xup, xlow){
 	upp <- which(x > xup)
 	lop <- which(x < xlow)
 	y <- if(GeneralParameters$action == "qc.rain") x[x != 0] else x
-	Q <- quantile(y, prob = c(0.0027,0.25,0.75,0.9973), names = F, na.rm = T)
+	Q <- quantile(y, prob = c(0.0027, 0.25, 0.75, 0.9973), names = FALSE, na.rm = TRUE)
 	slop <- abs(x[lop]-Q[1])/(3*(Q[3]-Q[2]))
-	supp<-(x[upp]-Q[4])/(3*(Q[3]-Q[2]))
+	supp <- (x[upp]-Q[4])/(3*(Q[3]-Q[2]))
 	return(list(cbind(lop, slop), cbind(upp, supp)))
 }
 
@@ -81,19 +81,19 @@ RainTempLimBounds <- function(x, xup, xlow){
 limBoundsQc <- function(x, dates, xup, xlow){
 	idLimBd <- RainTempLimBounds(x, xup, xlow)
 	outQcLim <- matrix(NA, nrow = 0, ncol = 4)
-	if(nrow(idLimBd[[1]])>0){
-		datLimLow <- cbind(dates[idLimBd[[1]][,1]], x[idLimBd[[1]][,1]], 1, round(idLimBd[[1]][,2], 4))
+	if(nrow(idLimBd[[1]]) > 0){
+		datLimLow <- cbind(dates[idLimBd[[1]][, 1]], x[idLimBd[[1]][, 1]], 1, round(idLimBd[[1]][, 2], 4))
 		outQcLim <- rbind(outQcLim, datLimLow)
 	}
-	if(nrow(idLimBd[[2]])>0){
-		datLimUp <- cbind(dates[idLimBd[[2]][,1]], x[idLimBd[[2]][,1]], 2, round(idLimBd[[2]][,2], 4))
+	if(nrow(idLimBd[[2]]) > 0){
+		datLimUp <- cbind(dates[idLimBd[[2]][, 1]], x[idLimBd[[2]][, 1]], 2, round(idLimBd[[2]][, 2], 4))
 		outQcLim <- rbind(outQcLim, datLimUp)
 	}
-	if(nrow(outQcLim) > 0) outQcLim <- data.frame(as.character(outQcLim[,1]), as.numeric(as.character(outQcLim[,2])),
-	as.numeric(as.character(outQcLim[,3])), as.numeric(as.character(outQcLim[,4])))
+	if(nrow(outQcLim) > 0) outQcLim <- data.frame(as.character(outQcLim[, 1]), as.numeric(as.character(outQcLim[, 2])),
+											as.numeric(as.character(outQcLim[, 3])), as.numeric(as.character(outQcLim[, 4])))
 	else outQcLim <- data.frame(NA, NA, NA, NA)
 	names(outQcLim) <- c('dates', 'values', 'extreme.outlier', 'extreme.outlier.stat')
-	idLm <- c(idLimBd[[1]][,1], idLimBd[[2]][,1])
+	idLm <- c(idLimBd[[1]][, 1], idLimBd[[2]][, 1])
 	x[idLm] <- NA
 	return(list(outQcLim, x))
 }
@@ -121,7 +121,7 @@ quantilef1 <- function(x, prob, period){
 
 indepStationParams <- function(jst, donne, months, period){
 	#function(vstn, months, period) #apply(donne, 2, indepStationParams,...) comment vstn <- donne[,jst]
-	vstn <- donne[,jst]
+	vstn <- donne[, jst]
 	iusx <- which(!is.na(vstn) & vstn > 0.5)
 	mox <- months[iusx]
 	varx <- vstn[iusx]
@@ -137,7 +137,7 @@ indepStationParams <- function(jst, donne, months, period){
 	varq <- vstn[iusq]
 	isdmin <- isdq1 <- data.frame(1:12, NA)
 	if(length(varq) > 0){
-		Qnt1 <- tapply(varq, list(as.factor(moq)), quantilef1, prob = c(0.1,0.25), period = period)
+		Qnt1 <- tapply(varq, list(as.factor(moq)), quantilef1, prob = c(0.1, 0.25), period = period)
 		monN <- as.numeric(names(Qnt1))
 		isdmin <- data.frame(monN, sapply(Qnt1, function(x) x[1]))
 		isdq1 <- data.frame(monN, sapply(Qnt1, function(x) x[2]))
@@ -156,7 +156,7 @@ indepStationParams <- function(jst, donne, months, period){
 ######
 depStationParams <- function(jst, idst, donne, months){
 	donne <- as.matrix(donne)
-	Qlu <- apply(donne[,idst[[jst]]], 1, quantilef, prob = c(0.05,0.75))
+	Qlu <- apply(donne[,idst[[jst]]], 1, quantilef, prob = c(0.05, 0.75))
 	inul <- unlist(lapply(Qlu, function(x) !is.null(x)))
 	isdobs <- ispobs <- data.frame(1:12, NA)
 	if(any(inul)){
@@ -189,13 +189,13 @@ removeSomeNA <- function(inRes, idmety, dists){
 		wdist <- xdst[odst[2:6]]
 		Xres0 <- Xres[-1]
 		noNA <- lapply(Xres0, function(x) !is.na(x))
-		denom <- Reduce('+',lapply(seq_along(noNA), function(l) noNA[[l]]*wdist[l]))
+		denom <- Reduce('+', lapply(seq_along(noNA), function(l) noNA[[l]]*wdist[l]))
 		Xw0 <- lapply(seq_along(Xres0), function(l){
 			x <- Xres0[[l]]*wdist[l]
 			x[is.na(x)] <- 0
 			Xres0[[l]] <- x
 		})
-		Xw0 <- Reduce('+',Xw0)
+		Xw0 <- Reduce('+', Xw0)
 		Xwtd <- Xw0/denom
 		Xwtd[Xwtd == 0] <- NA
 		Xloc <- Xres[[1]]
@@ -241,11 +241,11 @@ removeSomeNA <- function(inRes, idmety, dists){
 ###IDW lon, lat, month
 getRainSpatInitCond <- function(xlon, xlat, xval, newgrid){
 	datz <- data.frame(x = rep(xlon, 12), y = rep(xlat, 12), m = rep(1:12, each = nrow(xval)), z = c(xval))
-	datz <- datz[!is.na(datz$z),]
+	datz <- datz[!is.na(datz$z), ]
 	coordinates(datz)<- ~x+y+m
 	res <- krige(z~1, locations = datz, newdata = newgrid, nmax = 3, debug.level = 0)
 	res <- res$var1.pred
-	res <- ifelse(res < 0.5,0.5, round(res, 1))
+	res <- ifelse(res < 0.5, 0.5, round(res, 1))
 	matrix(res, ncol = 12)
 }
 
@@ -257,7 +257,7 @@ getRainInitParams <- function(donne, period){
 	idStn <- donne$id
 	dates <- donne$dates
 	donne <- donne$data
-	months <- as.numeric(substr(dates, 5,6))
+	months <- as.numeric(substr(dates, 5, 6))
 
 	##distance matrix in km
 	coord <- matrix(c(lon, lat), ncol = 2)
@@ -293,13 +293,13 @@ getRainInitParams <- function(donne, period){
 
 	##############################
 	##prend tout ce qui sont complet i.e matrix of 4 column
-	indepID <- which(sapply(indepRes, function(x) sum(!is.na(x[,-1]))>0))
+	indepID <- which(sapply(indepRes, function(x) sum(!is.na(x[, -1])) > 0))
 	indepRes <- indepRes[indepID]
 
 	indepRes <- removeSomeNA(indepRes, indepID, dists)
 
 	###############
-	depID <- which(sapply(depRes, function(x) sum(!is.na(x[,-1]))>0))
+	depID <- which(sapply(depRes, function(x) sum(!is.na(x[, -1])) > 0))
 	depRes <- depRes[depID]
 	depID <- ijok[depID]
 
@@ -308,18 +308,18 @@ getRainInitParams <- function(donne, period){
 	########################################
 	deplon <- lon[depID]
 	deplat <- lat[depID]
-	ispobs <- t(sapply(depRes, function(x) x[,2]))
-	isdobs <- t(sapply(depRes, function(x) x[,3]))
+	ispobs <- t(sapply(depRes, function(x) x[, 2]))
+	isdobs <- t(sapply(depRes, function(x) x[, 3]))
 
 	indeplon <- lon[indepID]
 	indeplat <- lat[indepID]
-	ispmax <- t(sapply(indepRes, function(x) x[,2]))
-	isdmin <- t(sapply(indepRes, function(x) x[,3]))
-	isdq1 <- t(sapply(indepRes, function(x) x[,4]))
+	ispmax <- t(sapply(indepRes, function(x) x[, 2]))
+	isdmin <- t(sapply(indepRes, function(x) x[, 3]))
+	isdq1 <- t(sapply(indepRes, function(x) x[, 4]))
 
 	###
 	newgrid <- data.frame(x = rep(lon, 12), y = rep(lat, 12), m = rep(1:12, each = length(lon)))
-	coordinates(newgrid)<- ~x+y+m
+	coordinates(newgrid) <- ~x+y+m
 
 	ispmax <- getRainSpatInitCond(indeplon, indeplat, ispmax, newgrid)
 	isdmin <- getRainSpatInitCond(indeplon, indeplat, isdmin, newgrid)
@@ -327,7 +327,7 @@ getRainInitParams <- function(donne, period){
 	ispobs <- getRainSpatInitCond(deplon, deplat, ispobs, newgrid)
 	isdobs <- getRainSpatInitCond(deplon, deplat, isdobs, newgrid)
 
-	nom <- c('Station ID', format(ISOdate(2014,1:12,1), "%b"))
+	nom <- c('Station ID', format(ISOdate(2014, 1:12, 1), "%b"))
 	ispmax <- data.frame(idStn, ispmax)
 	names(ispmax) <- nom
 	isdmin <- data.frame(idStn, isdmin)
@@ -338,7 +338,7 @@ getRainInitParams <- function(donne, period){
 	names(ispobs) <- nom
 	isdobs <- data.frame(idStn, isdobs)
 	names(isdobs) <- nom
-	ftldev <- data.frame(Month = format(ISOdate(2014,1:12,1), "%B"), ftldev = rep(3.0,12))
+	ftldev <- data.frame(Month = format(ISOdate(2014, 1:12, 1), "%B"), ftldev = rep(3.0, 12))
 	spatparam <- list(ispmax = ispmax, ispobs = ispobs, isdmin = isdmin, isdobs = isdobs, isdq1 = isdq1, ftldev = ftldev)
 
 	return(spatparam)
@@ -391,7 +391,7 @@ getTempInitParams <- function(donne){
 	# limLo <- as.vector(limLo)
 	# limUp <- ifelse(is.na(limUL[,2]), max(limUL[,2], na.rm = T), limUL[,2])
 	# limUp <- as.vector(limUp)
-	limLo<- -40
+	limLo <- -40
 	limUp <- 60
 	limControl <- data.frame(idStn, limLo, limUp, lon, lat)
 	names(limControl) <- c('Station ID', 'Lower Bounds', 'Upper Bounds', 'Lon', 'Lat')

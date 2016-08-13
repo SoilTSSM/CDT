@@ -12,11 +12,10 @@ ChkCoordCmdBut <- function(){
 	tkgrid(cmd.outTable, row = 0, column = 0, padx = 1, pady = 1, sticky = "w")
 	tkgrid(cmd.correctCoord, row = 0, column = 1, padx = 1, pady = 1, sticky = "e")
 
-
-#############
+	#############
 	tkconfigure(cmd.outTable, command = function(){
 		if(!is.null(ReturnExecResults)){
-		retdata <- DisplayHomInfo(tknotes, ReturnExecResults$Stndoute, paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])),'_COORDS', sep = ''))
+		retdata <- DisplayHomInfo(tknotes, ReturnExecResults$Stndoute, paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), '_COORDS', sep = ''))
 		ntab <- length(AllOpenTabType)
 		AllOpenTabType[[ntab+1]] <<- 'StnInfo'
 		AllOpenTabData[[ntab+1]] <<- retdata
@@ -25,25 +24,25 @@ ChkCoordCmdBut <- function(){
 		}else InsertMessagesTxt(main.txt.out, 'There is no coordinates check performed yet', format = TRUE)
 	})
 
-#############
+	#############
 	tkconfigure(cmd.correctCoord, command = function(){
 		if(!is.null(ReturnExecResults)){
 			if(!is.na(ReturnExecResults$Stndoute[1,1])){
-				tkconfigure(main.win, cursor = 'watch');tcl('update')
+				tkconfigure(main.win, cursor = 'watch'); tcl('update')
 				chk2run <- try(ReturnExecResults <<- checkCDTcoords(ReturnExecResults, GeneralParameters), silent = TRUE)
 				is.ok.chk <- !inherits(chk2run, "try-error")
 				if(is.ok.chk){
 					InsertMessagesTxt(main.txt.out, "Coordinates were corrected successfully")
-					tkconfigure(main.win, cursor='')
+					tkconfigure(main.win, cursor = '')
 				}else{
 					InsertMessagesTxt(main.txt.out, 'Coordinates correction failed', format = TRUE)
-					InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',chk2run[1]), format = TRUE)
-					tkconfigure(main.win, cursor='')
+					InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', chk2run[1]), format = TRUE)
+					tkconfigure(main.win, cursor = '')
 				}
 			}
 		}else InsertMessagesTxt(main.txt.out, 'There is no coordinates check performed yet', format = TRUE)
 	})
-#############
+	#############
 
 	return(cmd.frame)
 }

@@ -62,7 +62,7 @@ excludeOutStn <- function(parent.win, GeneralParameters){
 	tkgrid(fr.B0, sticky = 'w')
 	tkgrid(fr.B1, sticky = 'w')
 
-	frB0.txt <- tklabel(fr.B0, text=" Country Boundaries Shapefiles")
+	frB0.txt <- tklabel(fr.B0, text = "Country Boundaries Shapefiles")
 	tkgrid(frB0.txt)
 
 	file.blkshp <- tclVar()
@@ -117,8 +117,7 @@ excludeOutStn <- function(parent.win, GeneralParameters){
 		}else tclvalue(file.save1) <- file2save1
 	})
 
-
-###
+	###
 	infobulle(fr.D, 'Distance in km, outside the country boudanries to considere')
 	status.bar.display(fr.D, TextOutputVar, 'Distance in km, outside the country boudanries to considere')
 
@@ -127,7 +126,7 @@ excludeOutStn <- function(parent.win, GeneralParameters){
 	en.buffw <- tkentry(fr.D, textvariable = buffw, width = 6)
 	tkgrid(bufftxt, en.buffw)
 
-###
+	###
 	bt.opt.OK <- tkbutton(frButt, text = "OK")
 	bt.opt.CA <- tkbutton(frButt, text = "Cancel")
 	tkgrid(bt.opt.OK, row = 0, column = 0, sticky = 'w', padx = 5, pady = 5, ipadx = 10, ipady = 1)
@@ -192,7 +191,7 @@ excludeOutStn <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Exclude Outside Stations')
 	tkwm.deiconify(tt)

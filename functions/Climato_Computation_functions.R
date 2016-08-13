@@ -1059,7 +1059,7 @@ daily2dekadal_nc <- function(file.pars, informat, dates, fun, minfrac, varid.out
 	jour[jour > 10 & jour <= 20] <- 2
 	jour[jour > 20] <- 3
 
-	nna <- as.data.frame(aggregate(rep(1, length(an)), by = list(as.factor(paste(an, mois, jour, sep = ''))),'sum', na.rm = FALSE))
+	nna <- as.data.frame(aggregate(rep(1, length(an)), by = list(as.factor(paste(an, mois, jour, sep = ''))), 'sum', na.rm = FALSE))
 	nna[1,2] <- nbs
 	nna[length(nna[,1]), 2] <- nbe
 

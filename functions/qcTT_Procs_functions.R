@@ -37,9 +37,9 @@ tempSigmaTest <- function(x, x0, alpha, limsup, period){
 	q50 <- quantile(x, prob = 0.5)
 	iqr <- IQR(x)
 	if(iqr > 0){
-		stats<-(x0-q50)/(f*iqr)
+		stats <- (x0-q50)/(f*iqr)
 		testup <- which(stats > 1)
-		testlow <- which(stats< -1)
+		testlow <- which(stats < -1)
 		ret <- list(cbind(testlow, abs(stats[testlow])), cbind(testup, stats[testup]))
 	}
 	return(ret)
@@ -51,20 +51,20 @@ confTxTnQc <- function(x, x0, dates, xparams, period){
 	alpha <- xparams$thres/100
 	limsup <- xparams$limsup
 
-	idTs<-!is.na(x0)
+	idTs <- !is.na(x0)
 	oId <- c(1:length(x0))[idTs]
 	x0 <- x0[idTs]
 	x <- x[idTs]
-	dt <- as.numeric(substr(dates[idTs], 5,6))
+	dt <- as.numeric(substr(dates[idTs], 5, 6))
 
 	outTest <- lapply(1:12, function(j){
 		ret <- tempSigmaTest(x[dt == j], x0[dt == j], alpha, limsup, period)
 		ret1 <- ret2 <- NULL
 		if(!is.null(ret)){
 			low <- ret[[1]]
-			if(nrow(low) > 0) ret1 <- cbind(oId[dt == j][low[,1]], low[,2])
+			if(nrow(low) > 0) ret1 <- cbind(oId[dt == j][low[, 1]], low[, 2])
 			upp <- ret[[2]]
-			if(nrow(upp) > 0) ret2 <- cbind(oId[dt == j][upp[,1]], upp[,2])
+			if(nrow(upp) > 0) ret2 <- cbind(oId[dt == j][upp[, 1]], upp[, 2])
 		}
 		list(low = ret1, upp = ret2)
 	})
@@ -89,13 +89,13 @@ outlierTxTnQc <- function(x, Tsdata, xparams, testpars){
 
 	idCI <- confTxTnQc(x, x0, dates, xparams, testpars$period)
 	outLow <- outUpp <- NULL
-	if(!is.null(idCI$low)) outLow <- cbind(dates[idCI$low[,1]], x0[idCI$low[,1]], 1, round(idCI$low[,2], 4)) #flag 1 low
-	if(!is.null(idCI$upp)) outUpp <- cbind(dates[idCI$upp[,1]], x0[idCI$upp[,1]], 2, round(idCI$upp[,2], 4)) #flag 2 upp
+	if(!is.null(idCI$low)) outLow <- cbind(dates[idCI$low[, 1]], x0[idCI$low[, 1]], 1, round(idCI$low[, 2], 4)) #flag 1 low
+	if(!is.null(idCI$upp)) outUpp <- cbind(dates[idCI$upp[, 1]], x0[idCI$upp[, 1]], 2, round(idCI$upp[, 2], 4)) #flag 2 upp
 	outQcCI <- rbind(outLow, outUpp)
 
 	if(!is.null(outQcCI)){
 		outQcCI <- data.frame(outQcCI)
-		outQcCI[,-1] <- apply(outQcCI[,-1], 2, as.numeric)
+		outQcCI[, -1] <- apply(outQcCI[, -1], 2, as.numeric)
 	}else outQcCI <- data.frame(NA, NA, NA, NA)
 	names(outQcCI) <- c('dates', 'values', 'outlier.check', 'outlier.check.stat')
 	return(outQcCI)
@@ -113,11 +113,11 @@ txtnQcSingleSeriesCalc <- function(idstn, Tsdata, xparams, testpars){
 	names(outQc0) <- c('dates', 'values', 'tx_LT_tn.check')
 
 	outQcCI <- outlierTxTnQc(x1, Tsdata, xparams, testpars)
-	outQc1 <- merge(outQc0, outQcCI, by.x = 'dates', by.y = 'dates', all = T)
-	outQc1 <- outQc1[!is.na(outQc1$dates),]
+	outQc1 <- merge(outQc0, outQcCI, by.x = 'dates', by.y = 'dates', all = TRUE)
+	outQc1 <- outQc1[!is.na(outQc1$dates), ]
 	if(nrow(outQc1) > 0){
-		outQc1 <- data.frame(idstn, outQc1[,1], mergeQcValues(outQc1[,2], outQc1[,4]), outQc1[,3], outQc1[,5], outQc1[,6])
-		ids <- order(as.character(outQc1[,2]))
+		outQc1 <- data.frame(idstn, outQc1[, 1], mergeQcValues(outQc1[, 2], outQc1[, 4]), outQc1[, 3], outQc1[, 5], outQc1[, 6])
+		ids <- order(as.character(outQc1[, 2]))
 		outQc1 <- outQc1[ids,]
 	}else outQc1 <- data.frame(NA, NA, NA, NA, NA, NA)
 	names(outQc1) <- c('stn', 'dates', 'values', 'tx_LT_tn.check', 'outlier.check', 'outlier.check.stat')
@@ -130,16 +130,16 @@ txtnChooseNeignbors <- function(xpos, XX, xparams){
 	idNA <- as.logical(apply(XX, 2, function(x) (length(x[!is.na(x)])/(2*xparams$win+1)) > 0.8))
 	##Distance
 	coordStn <- matrix(c(xparams$coords[xpos, 1], xparams$coords[xpos, 2]), ncol = 2)
-	coordNei <- matrix(c(xparams$coords[,1], xparams$coords[,2]), ncol = 2)
+	coordNei <- matrix(c(xparams$coords[, 1], xparams$coords[, 2]), ncol = 2)
 	dist <- as.numeric(rdist.earth(coordStn, coordNei, miles = FALSE))
 	idR <- dist < xparams$spthres[2]
 	id <- which(idNA & idR)
 	id <- id[id != xpos]
 	Y <- NULL
 	if(length(id) >= xparams$spthres[1]){
-		Y <- XX[,id]
+		Y <- XX[, id]
 		if(!is.null(xparams$elv)){
-			idELV <- which(abs(xparams$elv[xpos]-xparams$elv[id])<xparams$spthres[3])
+			idELV <- which(abs(xparams$elv[xpos]-xparams$elv[id]) < xparams$spthres[3])
 			if(length(idELV) >= xparams$spthres[1]) Y <- Y[,idELV]
 		}
 	}
@@ -169,20 +169,20 @@ txtnSpatReg <- function(xpos, upos, XX, xparams){
 		alpha <- xparams$spregpar[1]/100
 		max.stn <- xparams$spregpar[2]
 		f <- qnorm(1-((1-alpha)/2))
-		rY <- apply(Y, 2, txtnLinMod, XX[,xpos], upos)
-		rY <- rY[,round(rY[2,],5) != 0]
+		rY <- apply(Y, 2, txtnLinMod, XX[, xpos], upos)
+		rY <- rY[, round(rY[2, ], 5) != 0]
 		if(!is.null(dim(rY))){
 			if(ncol(rY) > max.stn){
-				rY <- rY[,order(rY[2,])]
-				rY <- rY[,1:max.stn]
+				rY <- rY[, order(rY[2, ])]
+				rY <- rY[, 1:max.stn]
 			}
 
 			if(ncol(rY) >= xparams$spthres[1]){
-				xe <- sum(rY[1,]/rY[2,])/sum(1/rY[2,])
-				se <- sqrt(ncol(rY)/sum(1/rY[2,]))
-				stats<-(XX[upos, xpos]-xe)/(f*se)
+				xe <- sum(rY[1, ]/rY[2, ])/sum(1/rY[2, ])
+				se <- sqrt(ncol(rY)/sum(1/rY[2, ]))
+				stats <- (XX[upos, xpos]-xe)/(f*se)
 				flag <- c(0, round(xe, 1), abs(stats)) #flag 0 value ok
-				if(stats< -1) flag <- c(1, round(xe, 1), abs(stats)) #flag 1 low value
+				if(stats < -1) flag <- c(1, round(xe, 1), abs(stats)) #flag 1 low value
 				if(stats > 1) flag <- c(2, round(xe, 1), abs(stats)) #flag 2 large value
 			}
 		}
@@ -195,12 +195,12 @@ txtnSpatReg <- function(xpos, upos, XX, xparams){
 txtnSpatialQc <- function(loopT, xpos, idstn, Tsdata, xparams){
 	ndt <- nrow(Tsdata$data)
 	xvar <- Tsdata$data[,xpos]
-	dt <- as.numeric(substr(Tsdata$date, 5,6))
+	dt <- as.numeric(substr(Tsdata$date, 5, 6))
 	out.qc1 <- data.frame(NA, NA, NA, NA, NA, NA)
 	if(sum(!is.na(xvar)) > 0 & var(xvar, na.rm = TRUE) > 0){
 		loops <- NULL
 		coordStn <- matrix(c(xparams$coords[xpos, 1], xparams$coords[xpos, 2]), ncol = 2)
-		coordNei <- matrix(c(xparams$coords[,1], xparams$coords[,2]), ncol = 2)
+		coordNei <- matrix(c(xparams$coords[, 1], xparams$coords[, 2]), ncol = 2)
 		dist <- as.numeric(rdist.earth(coordStn, coordNei, miles = FALSE))
 		idst <- which(dist < xparams$spthres[2])
 		idst <- idst[idst != xpos]
@@ -220,29 +220,28 @@ txtnSpatialQc <- function(loopT, xpos, idstn, Tsdata, xparams){
 
 			resLoop <- lapply(loops, function(i){
 				win <- xparams$win
-				if(i<(win+1)){
-					XX <- Tsdata$data[1:(2*win+1),]
+				if(i < (win+1)){
+					XX <- Tsdata$data[1:(2*win+1), ]
 					upos <- i
 				}else if((i >= (win+1)) & (i <= (ndt-win))){
-					XX <- Tsdata$data[(i-win):(i+win),]
+					XX <- Tsdata$data[(i-win):(i+win), ]
 					upos <- win+1
 				}else{
-					XX <- Tsdata$data[(ndt-2*win):ndt,]
+					XX <- Tsdata$data[(ndt-2*win):ndt, ]
 					upos <- i-ndt+2*win+1
 				}
 				if(is.na(XX[upos, xpos])) return(NULL)
 				#au moins 80% des donnees sont disponible pour la station cible pour le fenetre win --> 2*win+1
-				if(sum(!is.na(XX[,xpos]))/(2*win+1) > 0.8) res <- txtnSpatReg(xpos, upos, XX, xparams)
+				if(sum(!is.na(XX[, xpos]))/(2*win+1) > 0.8) res <- txtnSpatReg(xpos, upos, XX, xparams)
 				else res <- c(-1, NA, NA) #flag -1 no spatial check performed
 				return(c(i, res))
 			})
 
 			resLoop <- do.call('rbind', resLoop)
-			ii<-(resLoop[,1]%in%loopT) | (resLoop[,2] > 0)
+			ii <- (resLoop[, 1] %in% loopT) | (resLoop[, 2] > 0)
 			if(any(ii)){
-				resLoop <- resLoop[ii,]
-				if(is.null(dim(resLoop))) out.qc1 <- data.frame(idstn, Tsdata$date[resLoop[1]], xvar[resLoop[1]], resLoop[2], resLoop[3], resLoop[4])
-				else out.qc1 <- data.frame(idstn, Tsdata$date[resLoop[,1]], xvar[resLoop[,1]], resLoop[,2], resLoop[,3], resLoop[,4])
+				resLoop <- resLoop[ii, , drop = FALSE]
+				out.qc1 <- data.frame(idstn, Tsdata$date[resLoop[, 1]], xvar[resLoop[, 1]], resLoop[, 2], resLoop[, 3], resLoop[, 4])
 			}
 		}
 	}
@@ -256,7 +255,7 @@ txtnSpatialQc <- function(loopT, xpos, idstn, Tsdata, xparams){
 txtnQcSingleSeries <- function(idstn, Tsdata, xparams, testpars){
 	outQc <- txtnQcSingleSeriesCalc(idstn, Tsdata, xparams, testpars)
 	names(outQc) <- c('stn', 'dates', 'values', 'consistency.check', 'outlier.check', 'statistic')
-	if(!testpars$int.check) outQc <- outQc[,-4]
+	if(!testpars$int.check) outQc <- outQc[, -4]
 	return(outQc)
 }
 
@@ -269,7 +268,7 @@ txtnQcSpatialCheck <- function(xpos, idstn, Tsdata, xparams, testpars){
 	loopT <- NULL
 	if(length(outTs) > 0) loopT <- which(Tsdata$date%in%outTs)
 	outQc1 <- txtnSpatialQc(loopT, xpos, idstn, Tsdata, xparams)
-	outQc <- merge(outQc0, outQc1, by.x = 'dates', by.y = 'dates', all = T)
+	outQc <- merge(outQc0, outQc1, by.x = 'dates', by.y = 'dates', all = TRUE)
 	outQc <- outQc[!is.na(outQc$dates),]
 	if(nrow(outQc) > 0){
 
@@ -277,17 +276,18 @@ txtnQcSpatialCheck <- function(xpos, idstn, Tsdata, xparams, testpars){
 		stat1 <- ifelse(is.na(stat1), 0, stat1)
 		stat2 <- outQc$spatial.reg.stat
 		stat2 <- ifelse(is.na(stat2), 0, stat2)
-		stat<-(2*stat1+stat2)/3
+		stat <- (2*stat1+stat2)/3
 		stat <- 3*(stat-min(stat))/(max(stat)-min(stat))
 		stat <- ifelse(is.nan(stat), 3.0, stat)
 
-		outQc <- data.frame(idstn, outQc$dates, mergeQcValues(outQc$values.x, outQc$values.y), outQc$tx_LT_tn.check, outQc$outlier.check, outQc$spatial.reg.check, round(stat, 3), outQc$estimated.values)
-		ids <- order(as.character(outQc[,2]))
+		outQc <- data.frame(idstn, outQc$dates, mergeQcValues(outQc$values.x, outQc$values.y), outQc$tx_LT_tn.check,
+							outQc$outlier.check, outQc$spatial.reg.check, round(stat, 3), outQc$estimated.values)
+		ids <- order(as.character(outQc[, 2]))
 		outQc <- outQc[ids,]
 	}else{
 		outQc <- data.frame(NA, NA, NA, NA, NA, NA, NA, NA)
 	}
 	names(outQc) <- c('stn', 'dates', 'values', 'consistency.check', 'outlier.check',	'spatial.reg.check', 'statistic', 'estimated.values')
-	if(!testpars$int.check & testpars$omit) outQc <- outQc[,-4]
+	if(!testpars$int.check & testpars$omit) outQc <- outQc[, -4]
 	return(outQc)
 }

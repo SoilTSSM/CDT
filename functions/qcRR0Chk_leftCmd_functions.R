@@ -19,9 +19,9 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 	
 	dispNeighbors <- tclVar()
 	dispNbrsLab <- tklabel(pnddframe, text = 'Display neighbors stations', anchor = 'center', justify = 'center')
-	dispNbrsPrev <- tkbutton(pnddframe, text="<<")
-	dispNbrsCmb <- ttkcombobox(pnddframe, values='', textvariable = dispNeighbors)
-	dispNbrsNext <- tkbutton(pnddframe, text=">>")
+	dispNbrsPrev <- tkbutton(pnddframe, text = "<<")
+	dispNbrsCmb <- ttkcombobox(pnddframe, values = '', textvariable = dispNeighbors)
+	dispNbrsNext <- tkbutton(pnddframe, text = ">>")
 
 	infobulle(dispNbrsPrev, 'Display the neighbors values on a table for the same month')
 	status.bar.display(dispNbrsPrev, TextOutputVar, 'Display the neighbors values on a table for the same month')
@@ -57,7 +57,7 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 			}
 
 			if(ReturnExecResults$action == 'zero.check'){
-				retNBTab <- tableZeroCheckNotebookTab_unik(tknotes, paste(IJstation,'-Zero-Check'), pNddQcIdTab, AllOpenTabType, AllOpenTabData)
+				retNBTab <- tableZeroCheckNotebookTab_unik(tknotes, paste(IJstation, '-Zero-Check'), pNddQcIdTab, AllOpenTabType, AllOpenTabData)
 				pNddQcIdTab <<- retNBTab$notebookTab
 				AllOpenTabType <<- retNBTab$AllOpenTabType
 				AllOpenTabData <<- retNBTab$AllOpenTabData
@@ -85,7 +85,7 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 				}else  InsertMessagesTxt(main.txt.out, "Zeros replacement failed", format = TRUE)
 			}else{
 				InsertMessagesTxt(main.txt.out, "Zeros replacement failed", format = TRUE)
-				InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',repret[1]), format = TRUE)
+				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', repret[1]), format = TRUE)
 			}
 		}else InsertMessagesTxt(main.txt.out, 'There is no zeros check outputs', format = TRUE)
 	})
@@ -96,7 +96,7 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 	tkconfigure(replaceAllPndd, command = function(){
 		if(!is.null(ReturnExecResults)){
 			stns <- sapply(ReturnExecResults$res, function(x) x$station)
-			tkconfigure(main.win, cursor = 'watch');tcl("update", "idletasks")
+			tkconfigure(main.win, cursor = 'watch'); tcl("update", "idletasks")
 			lapply(stns, function(IJstation){
 				repret <- try(replaceZeroChkbyNA(IJstation, ReturnExecResults), silent = TRUE)
 				if(!inherits(repret, "try-error")){
@@ -106,11 +106,11 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 					}else  InsertMessagesTxt(main.txt.out, "Zeros replacement failed", format = TRUE)
 				}else{
 					InsertMessagesTxt(main.txt.out, "Zeros replacement failed", format = TRUE)
-					InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',repret[1]), format = TRUE)
+					InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', repret[1]), format = TRUE)
 				}
 				tcl("update")
 			})
-			tkconfigure(main.win, cursor='')
+			tkconfigure(main.win, cursor = '')
 		}else InsertMessagesTxt(main.txt.out, 'There is no zeros check outputs', format = TRUE)
 	})
 
@@ -153,13 +153,13 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 					neibMonData <- QcOutZeroChk_Neighbors(IJstation, YYYYMM[ijsp])
 					neibMonData <- list(neibMonData, NA)
 
-					retNBTab <- tableZeroCheckNotebookTab_unik1(tknotes, neibMonData, paste(IJstation,'-Neighbors'), neighborsIdTab, AllOpenTabType, AllOpenTabData)
+					retNBTab <- tableZeroCheckNotebookTab_unik1(tknotes, neibMonData, paste(IJstation, '-Neighbors'), neighborsIdTab, AllOpenTabType, AllOpenTabData)
 					neighborsIdTab <<- retNBTab$notebookTab
 					AllOpenTabType <<- retNBTab$AllOpenTabType
 					AllOpenTabData <<- retNBTab$AllOpenTabData
 				}else{
-					tkconfigure(dispNbrsCmb, values='')
-					tclvalue(dispNeighbors)<-''
+					tkconfigure(dispNbrsCmb, values = '')
+					tclvalue(dispNeighbors) <- ''
 					actualSTN <<- 'INITSTN'
 					InsertMessagesTxt(main.txt.out, 'No suspicious zeros found')
 				}
@@ -187,13 +187,13 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 					neibMonData <- QcOutZeroChk_Neighbors(IJstation, YYYYMM[ijsp])
 					neibMonData <- list(neibMonData, NA)
 
-					retNBTab <- tableZeroCheckNotebookTab_unik1(tknotes, neibMonData, paste(IJstation,'-Neighbors'), neighborsIdTab, AllOpenTabType, AllOpenTabData)
+					retNBTab <- tableZeroCheckNotebookTab_unik1(tknotes, neibMonData, paste(IJstation, '-Neighbors'), neighborsIdTab, AllOpenTabType, AllOpenTabData)
 					neighborsIdTab <<- retNBTab$notebookTab
 					AllOpenTabType <<- retNBTab$AllOpenTabType
 					AllOpenTabData <<- retNBTab$AllOpenTabData
 				}else{
-					tkconfigure(dispNbrsCmb, values='')
-					tclvalue(dispNeighbors)<-''
+					tkconfigure(dispNbrsCmb, values = '')
+					tclvalue(dispNeighbors) <- ''
 					actualSTN <<- 'INITSTN'
 					InsertMessagesTxt(main.txt.out, 'No suspicious zeros found')
 				}
@@ -213,13 +213,13 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 					neibMonData <- QcOutZeroChk_Neighbors(IJstation, YYYYMM[ijsp])
 					neibMonData <- list(neibMonData, NA)
 
-					retNBTab <- tableZeroCheckNotebookTab_unik1(tknotes, neibMonData, paste(IJstation,'-Neighbors'), neighborsIdTab, AllOpenTabType, AllOpenTabData)
+					retNBTab <- tableZeroCheckNotebookTab_unik1(tknotes, neibMonData, paste(IJstation, '-Neighbors'), neighborsIdTab, AllOpenTabType, AllOpenTabData)
 					neighborsIdTab <<- retNBTab$notebookTab
 					AllOpenTabType <<- retNBTab$AllOpenTabType
 					AllOpenTabData <<- retNBTab$AllOpenTabData
 				}else{
-					tkconfigure(dispNbrsCmb, values='')
-					tclvalue(dispNeighbors)<-''
+					tkconfigure(dispNbrsCmb, values = '')
+					tclvalue(dispNeighbors) <- ''
 					actualSTN <<- 'INITSTN'
 					InsertMessagesTxt(main.txt.out, 'No suspicious zeros found')
 				}

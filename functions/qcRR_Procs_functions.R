@@ -48,7 +48,7 @@ ConfIntGammaQc <- function(x, dates, thres, limsup, period){
 	if(period == 'monthly') nonzeroL <- 5
 
 	dates <- as.character(dates)
-	idTs<-!is.na(x) & x > 0
+	idTs <- !is.na(x) & x > 0
 	oId <- c(1:length(x))[idTs]
 	dates <- dates[idTs]
 	x <- x[idTs]
@@ -65,7 +65,7 @@ ConfIntGammaQc <- function(x, dates, thres, limsup, period){
 		mo <- rep(xMo, nMo)
 		ret <- do.call(rbind, upLim)
 		id <- as.numeric(sapply(seq_along(mo), function(j) oId[dt == mo[j]][ret[j, 1]]))
-		id.out <- cbind(id, ret[,2])
+		id.out <- cbind(id, ret[, 2])
 	}
 	return(id.out)
 }
@@ -75,7 +75,7 @@ ConfIntGammaQc <- function(x, dates, thres, limsup, period){
 UpperOutlierQc <- function(x, dates, thres, limsup, period){
 	idCI <- ConfIntGammaQc(x, dates, thres, limsup, period)
 	outQcCI <- data.frame(NA, NA, NA, NA)
-	if(!is.null(idCI))  if(nrow(idCI) > 0) outQcCI <- data.frame(dates[idCI[,1]], x[idCI[,1]], 2, round(idCI[,2], 4))
+	if(!is.null(idCI))  if(nrow(idCI) > 0) outQcCI <- data.frame(dates[idCI[, 1]], x[idCI[, 1]], 2, round(idCI[, 2], 4))
 	names(outQcCI) <- c('dates', 'values', 'upper.outlier', 'upper.outlier.stat')
 	return(outQcCI)
 }
@@ -93,13 +93,13 @@ rainQcSingleSeriesCalc <- function(x, idstn, dates, thres, limsup, period){
 
 	outQcCI <- UpperOutlierQc(x, dates, thres, limsup, period)
 	outQc0 <- merge(outQcLim, outQcCI, by.x = 'dates', by.y = 'dates', all = T)
-	outQc0 <- outQc0[!is.na(outQc0$dates),]
+	outQc0 <- outQc0[!is.na(outQc0$dates), ]
 
 	if(nrow(outQc0) > 0){
-		outQc0 <- data.frame(idstn, outQc0[,1], mergeQcValues(outQc0[,2], outQc0[,4]),
-		outQc0[,3], outQc0[,5], outQc0[,6])
-		ids <- order(as.character(outQc0[,2]))
-		outQc0 <- outQc0[ids,]
+		outQc0 <- data.frame(idstn, outQc0[, 1], mergeQcValues(outQc0[, 2], outQc0[, 4]),
+								outQc0[, 3], outQc0[, 5], outQc0[, 6])
+		ids <- order(as.character(outQc0[, 2]))
+		outQc0 <- outQc0[ids, ]
 	}else{
 		outQc0 <- data.frame(NA, NA, NA, NA, NA, NA)
 	}
@@ -121,8 +121,8 @@ rainSpatialCheck <- function(z0, z, spx, spthres, spatpar){
 	x0 <- spx[[1]][1]
 	y0 <- spx[[1]][2]
 	elv0 <- spx[[1]][3]
-	lon <- spx[[2]][,1]
-	lat <- spx[[2]][,2]
+	lon <- spx[[2]][, 1]
+	lat <- spx[[2]][, 2]
 
 	id <- which(!is.na(z))
 	flag <- c(-1, NA)
@@ -131,7 +131,7 @@ rainSpatialCheck <- function(z0, z, spx, spthres, spatpar){
 		lat <- lat[id]
 		zNei <- z[id]
 		if(!is.na(elv0)){
-			elv <- spx[[2]][,3]
+			elv <- spx[[2]][, 3]
 			elv <- elv[id]
 			idELV <- which(abs(elv0-elv) < spthres[3])
 			if(length(idELV) >= spthres[1]){
@@ -211,15 +211,13 @@ rainSpatialQc <- function(loopT, pos, var, dates, idstn, coords, elv, spthres, s
 				IDm <- which(mois)
 				#Inf
 				ixinf <- IDm[which(xvar[mois] < isdobs[j])]
-				tmpinf <- var[ixinf, idR]
-				if(is.null(dim(tmpinf))) q05s <- as.vector(quantile(tmpinf, prob = 0.05, na.rm = T, names = F))
-				else q05s <- as.vector(apply(tmpinf, 1, quantile, prob = 0.05, na.rm = T, names = F))
+				tmpinf <- var[ixinf, idR, drop = FALSE]
+				q05s <- as.vector(apply(tmpinf, 1, quantile, prob = 0.05, na.rm = TRUE, names = FALSE))
 				loopmoninf <- ixinf[which(xvar[ixinf] < q05s)]
 				##sup
 				ixsup <- IDm[which(xvar[mois] > quantile(xvar[mois], prob = 0.99, na.rm = TRUE, names = F) & xvar[mois] > ispobs[j])]
-				tmpsup <- var[ixsup, idR]
-				if(is.null(dim(tmpsup))) q95s <- as.vector(quantile(tmpsup, prob = 0.95, na.rm = T, names = F))
-				else q95s <- as.vector(apply(tmpsup, 1, quantile, prob = 0.95, na.rm = T, names = F))
+				tmpsup <- var[ixsup, idR, drop = FALSE]
+				q95s <- as.vector(apply(tmpsup, 1, quantile, prob = 0.95, na.rm = TRUE, names = FALSE))
 				loopmonsup <- ixsup[which(xvar[ixsup] > q95s)]
 				loops <- c(loops, c(loopmoninf, loopmonsup))
 			}
@@ -232,7 +230,7 @@ rainSpatialQc <- function(loopT, pos, var, dates, idstn, coords, elv, spthres, s
 			spx <- list(c(lon[pos], lat[pos], elv[pos]), cbind(lon[idR], lat[idR], elv[idR]))
 
 			ret <- lapply(loops, function(j){
-				z <- as.vector(var[j,])
+				z <- as.vector(var[j, ])
 				res <- c(-1, NA)
 				varz <- var(z[idR], na.rm = T)
 				if(!is.na(varz) & varz > 0){
@@ -246,11 +244,10 @@ rainSpatialQc <- function(loopT, pos, var, dates, idstn, coords, elv, spthres, s
 			ret <- do.call(rbind, ret)
 			ret <- cbind(loops, ret)
 
-			ii<-(ret[,1]%in%loopT) | (ret[,2] > 0)
+			ii <- (ret[, 1] %in% loopT) | (ret[, 2] > 0)
 			if(sum(ii) > 0){
-				ret <- ret[ii,]
-				if(is.null(dim(ret))) out.qc1 <- data.frame(idstn, dates[ret[1]], var[ret[1], pos], ret[2], ret[3])
-				else out.qc1 <- data.frame(idstn, dates[ret[,1]], var[ret[,1], pos], ret[,2], ret[,3])
+				ret <- ret[ii, , drop = FALSE]
+				out.qc1 <- data.frame(idstn, dates[ret[, 1]], var[ret[, 1], pos], ret[, 2], ret[, 3])
 			}
 		}
 	}

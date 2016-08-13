@@ -10,49 +10,48 @@ GlmCoefDownscaling <- function(paramsGlmCoef){
 	stn.dates <- coefdownTempdat$stnData$dates
 	stn.data <- coefdownTempdat$stnData$data
 
-	years <- as.numeric(substr(stn.dates, 1,4))
+	years <- as.numeric(substr(stn.dates, 1, 4))
 	iyrCoef <- years >= year1 & years <= year2
-	stn.data <- stn.data[iyrCoef,]
+	stn.data <- stn.data[iyrCoef, , drop = FALSE]
 	stn.dates <- stn.dates[iyrCoef]
-	months <- as.numeric(substr(stn.dates, 5,6))
-	coef <- array(NA, c(12,2))
+	months <- as.numeric(substr(stn.dates, 5, 6))
+	coef <- array(NA, c(12, 2))
 	for (m in 1:12){
 		ix <- which(months == m)
 		n <- length(ix)
-		tt <- as.vector(t(as.matrix(stn.data[ix,])))
+		tt <- as.vector(t(stn.data[ix, , drop = FALSE]))
 		z <- rep(dem.stn, n)
 		glm.dat <- data.frame(dem = z, tt = tt)
 		glm.dat <- na.omit(glm.dat)
-		if(length(glm.dat[,1]) == 0) next #skip if all data NA
+		if(length(glm.dat[, 1]) == 0) next #skip if all data NA
 		moy <- unname(apply(glm.dat, 2, mean))
 		ect <- unname(apply(glm.dat, 2, sd))
 		if(ect[1] == 0 | ect[2] == 0) next  #skip if variance null
 		glm.dat <- t((t(glm.dat)-moy)/ect)
-		glm.dat[glm.dat[,2]< -3,2]<- -3
+		glm.dat[glm.dat[, 2] < -3, 2] <- -3
 		glm.dat <- as.data.frame(glm.dat)
-		#glm.tt <- glm(tt~dem, data = glm.dat)
 		glm.tt <- lm(tt~dem, data = glm.dat)
 		coef[m, 1] <- glm.tt$coefficients[1]
 		coef[m, 2] <- glm.tt$coefficients[2]
 	}
 
 	##Take the next or previous month non-NA, loop until there are no more
-	ina <- which(is.na(coef[,1]))
+	ina <- which(is.na(coef[, 1]))
 	if(length(ina) > 0){
 		tmp <- coef
 		while(length(ina) > 0){
 			coef2 <- rbind(tmp, tmp)
-			shiftUp <- rbind(coef2[-1,],coef2[1,])
-			tmp[ina,] <- shiftUp[ina,]
-			tmp[-ina,] <- coef[-ina,]
-			ina <- which(is.na(tmp[,1]))
+			shiftUp <- rbind(coef2[-1, ], coef2[1, ])
+			tmp[ina, ] <- shiftUp[ina, ]
+			tmp[-ina, ] <- coef[-ina, ]
+			ina <- which(is.na(tmp[, 1]))
 			if(length(ina) > 0){
 				tmp1 <- tmp
-				shiftDown <- rbind(coef2[24,],coef2[-24,])
-				tmp1[ina,] <- shiftDown[ina,]
-				tmp1[-ina,] <- tmp[-ina,]
+				shiftDown <- rbind(coef2[24, ], coef2[-24, ])
+				tmp1[ina, ] <- shiftDown[ina, ]
+				tmp1[-ina, ] <- tmp[-ina, ]
 				tmp <- tmp1
-				ina <- which(is.na(tmp[,1]))
+				ina <- which(is.na(tmp[, 1]))
 			}
 		}
 		coef <- tmp
@@ -64,52 +63,35 @@ GlmCoefDownscaling <- function(paramsGlmCoef){
 }
 
 #################################################
+
 ReanalysisDownscaling <- function(paramsDownscl){
+	freqData <- GeneralParameters$period
 	istart <- paramsDownscl$istart
 	iend <- paramsDownscl$iend
-	dem.reanal <- paramsDownscl$dem.reanal
-	dem <- paramsDownscl$dem
-	reanalInfo <- paramsDownscl$reanalInfo
-	newlocation.merging <- paramsDownscl$newlocation.merging
-	xy.dim <- paramsDownscl$xy.dim
-	nlon0 <- paramsDownscl$nlon0
-	nlat0 <- paramsDownscl$nlat0
-	origdir <- paramsDownscl$origdir
-
-	freqData <- GeneralParameters$period
-	coef <- read.table(as.character(GeneralParameters$file.io$Values[1]))
-
 	dirJRA <- as.character(GeneralParameters$file.io$Values[4])
 	rfe.file.format <- as.character(GeneralParameters$IO.file.format$Values[1])
-	downPrefix <- as.character(GeneralParameters$IO.file.format$Values[2])
-
-	min.nbrs <- as.numeric(as.character(GeneralParameters$params.int$Values[1]))
-	max.nbrs <- as.numeric(as.character(GeneralParameters$params.int$Values[2]))
-	max.dst <- as.numeric(as.character(GeneralParameters$params.int$Values[3]))
-
-	#Defines netcdf output
-	out.tt <- ncvar_def("temp", "DegC", xy.dim, -99, longname = "Dwonscaled temperature from reanalysis data", prec = "float")
 
 	##Get all Reanalysis Files
 	if(freqData == 'daily'){
-		down.dates <- format(seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'day'),'%Y%m%d')
-		xx1 <- substr(down.dates, 1,4)
-		xx2 <- substr(down.dates, 5,6)
-		xx3 <- substr(down.dates, 7,8)
+		down.dates <- format(seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'day'), '%Y%m%d')
+		xx1 <- substr(down.dates, 1, 4)
+		xx2 <- substr(down.dates, 5, 6)
+		xx3 <- substr(down.dates, 7, 8)
 		testfile <- file.path(dirJRA, sprintf(rfe.file.format, xx1, xx2, xx3), fsep = .Platform$file.sep)
 	}
 	if(freqData == 'dekadal'){
-		down.dates <- seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'day')
-		down.dates <- paste(format(down.dates[which(as.numeric(format(down.dates,'%d')) <= 3)],'%Y%m'), as.numeric(format(down.dates[which(as.numeric(format(down.dates,'%d')) <= 3)],'%d')), sep = '')
-		xx1 <- substr(down.dates, 1,4)
-		xx2 <- substr(down.dates, 5,6)
-		xx3 <- substr(down.dates, 7,7)
+		down.dates <- seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'day')
+		down.dates <- paste(format(down.dates[which(as.numeric(format(down.dates, '%d')) <= 3)], '%Y%m'),
+						as.numeric(format(down.dates[which(as.numeric(format(down.dates, '%d')) <= 3)], '%d')), sep = '')
+		xx1 <- substr(down.dates, 1, 4)
+		xx2 <- substr(down.dates, 5, 6)
+		xx3 <- substr(down.dates, 7, 7)
 		testfile <- file.path(dirJRA, sprintf(rfe.file.format, xx1, xx2, xx3), fsep = .Platform$file.sep)
 	}
 	if(freqData == 'monthly'){
-		down.dates <- format(seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'month'),'%Y%m')
-		xx1 <- substr(down.dates, 1,4)
-		xx2 <- substr(down.dates, 5,6)
+		down.dates <- format(seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'month'), '%Y%m')
+		xx1 <- substr(down.dates, 1, 4)
+		xx2 <- substr(down.dates, 5, 6)
 		testfile <- file.path(dirJRA, sprintf(rfe.file.format, xx1, xx2), fsep = .Platform$file.sep)
 	}
 	existFl <- unlist(lapply(testfile, file.exists))
@@ -120,12 +102,44 @@ ReanalysisDownscaling <- function(paramsDownscl){
 	ReanalDataFl <- testfile[existFl]
 	down.dates <- down.dates[existFl]
 
+	# if(doparallel & length(ReanalDataFl) >= 20){
+	# 	klust <- makeCluster(nb_cores)
+	# 	registerDoParallel(klust)
+	# 	`%parLoop%` <- `%dopar%`
+	# 	closeklust <- TRUE
+	# }else{
+		`%parLoop%` <- `%do%`
+		closeklust <- FALSE
+	# }
+
+	dem.reanal <- paramsDownscl$dem.reanal
+	dem <- paramsDownscl$dem
+	reanalInfo <- paramsDownscl$reanalInfo
+	newlocation.merging <- paramsDownscl$newlocation.merging
+	xy.dim <- paramsDownscl$xy.dim
+	nlon0 <- paramsDownscl$nlon0
+	nlat0 <- paramsDownscl$nlat0
+	origdir <- paramsDownscl$origdir
+
+	coef <- read.table(as.character(GeneralParameters$file.io$Values[1]))
+	downPrefix <- as.character(GeneralParameters$IO.file.format$Values[2])
+
+	min.nbrs <- as.numeric(as.character(GeneralParameters$params.int$Values[1]))
+	max.nbrs <- as.numeric(as.character(GeneralParameters$params.int$Values[2]))
+	max.dst <- as.numeric(as.character(GeneralParameters$params.int$Values[3]))
+
+	#Defines netcdf output
+	out.tt <- ncvar_def("temp", "DegC", xy.dim, -99, longname = "Dwonscaled temperature from reanalysis data", prec = "float")
+
 	######
-	tcl("update", "idletasks")
-	##Use ParApply
-	ret <- lapply(seq_along(ReanalDataFl), function(jfl){
-		outfl <- file.path(origdir, paste(downPrefix, '_', down.dates[jfl],'.nc', sep = ''), fsep = .Platform$file.sep)
+	packages <- c('sp', 'gstat', 'ncdf4', 'tcltk')
+	toExports <- c('ReanalDataFl', 'down.dates',  'InsertMessagesTxt', 'main.txt.out')
+
+	# ret <- lapply(seq_along(ReanalDataFl), function(jfl)
+	ret <- foreach(jfl = seq_along(ReanalDataFl), .combine = 'c', .export = toExports, .packages = packages) %parLoop% {
+		outfl <- file.path(origdir, paste(downPrefix, '_', down.dates[jfl], '.nc', sep = ''), fsep = .Platform$file.sep)
 		rfefl <- ReanalDataFl[jfl]
+		
 		nc <- nc_open(rfefl)
 		tt.lon <- nc$dim[[reanalInfo$rfeILon]]$vals
 		tt.lat <- nc$dim[[reanalInfo$rfeILat]]$vals
@@ -142,44 +156,58 @@ ReanalysisDownscaling <- function(paramsDownscl){
 
 		#Downscale dekadl TT using elevation
 		tt <- as.vector(tt.val)
-		tt.mean <- mean(tt, na.rm = T)
-		tt.sd <- sd(tt, na.rm = T)
+		# standardized
+		tt.mean <- mean(tt, na.rm = TRUE)
+		tt.sd <- sd(tt, na.rm = TRUE)
 		tt <- (tt-tt.mean)/tt.sd
-		z.mean <- mean(dem.reanal, na.rm = T)
-		z.sd <- sd(dem.reanal, na.rm = T)
-		z <- (dem.reanal-z.mean)/z.sd
-		tt.xyz <- data.frame(expand.grid(lon = reanalInfo$lon, lat = reanalInfo$lat), z, tt)
+
+		z <- dem.reanal
+		# standardized
+		z.mean <- mean(dem.reanal, na.rm = TRUE)
+		z.sd <- sd(dem.reanal, na.rm = TRUE)
+		z <- (z-z.mean)/z.sd
+
+		tt.xyz <- data.frame(expand.grid(lon = reanalInfo$lon, lat = reanalInfo$lat), z = z, tt = tt)
 		coordinates(tt.xyz) = ~lon+lat
 		ix <- which(!is.na(tt.xyz$z))
-		tt.xyz <- tt.xyz[ix, ]
+		tt.xyz <- tt.xyz[ix, , drop = FALSE]
 
-		mon <- as.numeric(substr(down.dates[jfl], 5,6))
+		mon <- as.numeric(substr(down.dates[jfl], 5, 6))
 		a <- coef[mon, 2]
 		b <- coef[mon, 1]
-		tt.est <- a*tt.xyz$z + b
+		tt.est <- a * tt.xyz$z + b
 		tt.xyz$res <- tt.xyz$tt - tt.est
 
-		grd.loc1 <- newlocation.merging
-		demStdz <-(dem-mean(dem, na.rm = T))/sd(dem, na.rm = T)
-		grd.loc1 <- SpatialPointsDataFrame(coords = grd.loc1, data = data.frame(dem = demStdz))
-		tt.est.grd <- a*grd.loc1$dem + b
+		# dem <- dem
+		# standardized
+		dem.mean <- mean(dem, na.rm = TRUE)
+		dem.sd <- sd(dem, na.rm = TRUE)
+		dem <- (dem - dem.mean)/dem.sd
+
+		# grd.loc1 <- newlocation.merging
+		grd.loc1 <- SpatialPointsDataFrame(coords = newlocation.merging, data = data.frame(dem = dem))
+		tt.est.grd <- a * grd.loc1$dem + b
 
 		#Interpoate residuals at new grid
-		grd.temp <- idw(res~1, locations = tt.xyz, newdata = grd.loc1, nmin = min.nbrs, nmax = max.nbrs, maxdist = max.dst, idp = 2.0, debug.level = 0)
-		p <- grd.temp$var1.pred + tt.est.grd
-		p <- p*tt.sd + tt.mean
+		grd.temp <- krige(formula = res~1, locations = tt.xyz, newdata = grd.loc1, nmax = max.nbrs, nmin = min.nbrs, maxdist = max.dst, debug.level = 0)
+		# grd.temp <- idw(res~1, locations = tt.xyz, newdata = grd.loc1, nmin = min.nbrs, nmax = max.nbrs, maxdist = max.dst, idp = 2.0, debug.level = 0)
+
+		downTT <- tt.est.grd + grd.temp$var1.pred
+		## get values back
+		downTT <- downTT * tt.sd + tt.mean
 
 		#####
-		p[is.na(p)]<- -99
-		dim(p) <- c(nlon0, nlat0)
+		downTT[is.na(downTT)] <- -99
+		dim(downTT) <- c(nlon0, nlat0)
 
 		nc2 <- nc_create(outfl, out.tt)
-		ncvar_put(nc2, out.tt, p)
+		ncvar_put(nc2, out.tt, downTT)
 		nc_close(nc2)
+
 		InsertMessagesTxt(main.txt.out, paste("Downscaling  Reanalysis finished:", basename(rfefl)))
 		tcl("update")
-		return(0)
-	})
+	}
+	# if(closeklust) stopCluster(klust)
 	return(0)
 }
 
@@ -194,17 +222,20 @@ ExtractReanal2Stn <- function(ijGrd, nstn, coef.dates){
 	downPrefix <- as.character(GeneralParameters$prefix$Values[1])
 
 	if(freqData == 'daily'){
-		bias.dates <- format(seq(as.Date(paste(coef.dates[1],'0101', sep = ''), format='%Y%m%d'), as.Date(paste(coef.dates[2],'1231', sep = ''), format='%Y%m%d'),'day'),'%Y%m%d')
+		bias.dates <- format(seq(as.Date(paste(coef.dates[1], '0101', sep = ''), format = '%Y%m%d'),
+							as.Date(paste(coef.dates[2], '1231', sep = ''), format = '%Y%m%d'), 'day'), '%Y%m%d')
 	}
 	if(freqData == 'dekadal'){
-		bias.dates <- seq(as.Date(paste(coef.dates[1],'011', sep = ''), format='%Y%m%d'), as.Date(paste(coef.dates[2],'123', sep = ''), format='%Y%m%d'),'day')
-		bias.dates <- paste(format(bias.dates[which(as.numeric(format(bias.dates,'%d')) <= 3)],'%Y%m'), as.numeric(format(bias.dates[which(as.numeric(format(bias.dates,'%d')) <= 3)],'%d')), sep = '')
+		bias.dates <- seq(as.Date(paste(coef.dates[1], '011', sep = ''), format = '%Y%m%d'),
+						as.Date(paste(coef.dates[2], '123', sep = ''), format = '%Y%m%d'), 'day')
+		bias.dates <- paste(format(bias.dates[which(as.numeric(format(bias.dates, '%d')) <= 3)], '%Y%m'),
+						as.numeric(format(bias.dates[which(as.numeric(format(bias.dates, '%d')) <= 3)], '%d')), sep = '')
 	}
 	if(freqData == 'monthly'){
-		bias.dates <- format(seq(as.Date(paste(coef.dates[1],'011', sep = ''), format='%Y%m%d'), as.Date(paste(coef.dates[2],'1231', sep = ''), format='%Y%m%d'),'month'),'%Y%m')
+		bias.dates <- format(seq(as.Date(paste(coef.dates[1], '011', sep = ''), format = '%Y%m%d'),
+							as.Date(paste(coef.dates[2], '1231', sep = ''), format = '%Y%m%d'), 'month'), '%Y%m')
 	}
-	testfile <- file.path(downscaledDir, paste(downPrefix, '_', bias.dates,'.nc', sep = ''), fsep = .Platform$file.sep)
-	model_stn <- data.frame(matrix(NA, nrow = length(bias.dates), ncol = nstn))
+	testfile <- file.path(downscaledDir, paste(downPrefix, '_', bias.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
 
 	existFl <- unlist(lapply(testfile, file.exists))
 	if(length(which(existFl)) == 0){
@@ -214,12 +245,27 @@ ExtractReanal2Stn <- function(ijGrd, nstn, coef.dates){
 	downDataFl <- testfile[existFl]
 	bias.dates1 <- bias.dates[existFl]
 
-	for (jfl in seq_along(downDataFl)){
+	if(doparallel & length(downDataFl) >= 100){
+		klust <- makeCluster(nb_cores)
+		registerDoParallel(klust)
+		`%parLoop%` <- `%dopar%`
+		closeklust <- TRUE
+	}else{
+		`%parLoop%` <- `%do%`
+		closeklust <- FALSE
+	}
+
+	#for (jfl in seq_along(downDataFl))
+	ret <- foreach(jfl = seq_along(downDataFl), .combine = 'rbind', .packages = c('ncdf4'), 
+						.export = c('downDataFl', 'bias.dates1', 'ijGrd')) %parLoop% {
 		nc <- nc_open(downDataFl[jfl])
 		model <- ncvar_get(nc, varid = nc$var[[1]]$name)
 		nc_close(nc)
-		model_stn[which(bias.dates == bias.dates1[jfl]),] <- model[ijGrd]
+		c(as.numeric(bias.dates1[jfl]), model[ijGrd])
 	}
+	if(closeklust) stopCluster(klust)
+	model_stn <- matrix(NA, nrow = length(bias.dates), ncol = nstn)
+	model_stn[match(as.character(ret[, 1]), bias.dates), ] <- ret[, -1]
 	InsertMessagesTxt(main.txt.out, 'Done! ')
 	return(model_stn)
 }
@@ -230,7 +276,7 @@ calcBiasTemp <- function(i, ix1, stn.data, model_stn){
 	stn.mod <- as.numeric(model_stn[ix1, i])
 	ix <- which(!is.na(stn.val) & !is.na(stn.mod))
 	bs <- NA
-	if(length(ix) > 0){
+	if(length(ix) > 5){
 		bs <- sum(stn.val[ix])/sum(stn.mod[ix])
 		if(is.nan(bs)) bs <- 1    # 0/0
 		if(is.infinite(bs)) bs <- 1.5  # n/0
@@ -244,31 +290,58 @@ calcBiasTemp <- function(i, ix1, stn.data, model_stn){
 ###############
 Variogrm_modeling <- function(bias.df){
 	vgm1 <- variogram(bias~1, bias.df, width = 0.10)
-	# vgm1$gamma[1] <- 0
-	# vgm1$dist[1] <- ifelse(vgm1$dist[1] == 0,1E-6, vgm1$dist[1]) #remove zerodist
-	# lvgm <- length(vgm1$gamma)
-	# vgm1$gamma[lvgm] <- vgm1$gamma[lvgm-1] # To remove values computed from small np
-
 	psl0 <- mean(c(max(vgm1$gamma), median(vgm1$gamma)))
-	#nug = 0
-	#rng <- as.numeric(dist(t(bbox(bias.df)))/4)
-	rng <- (spDists(t(bbox(bias.df)), longlat = FALSE)[1,2])/4
-	null.vgm <- vgm(psl0, "Exp", rng) # initial parameters
+	rng <- (spDists(t(bbox(bias.df)), longlat = FALSE)[1, 2])/4
+	null.vgm <- vgm(psl0, "Exp", rng) 
 	vgm_model <- fit.variogram(vgm1, model = null.vgm)
-	#plot(vgm1, model = vgm_model)
 	return(vgm_model)
 }
 
-##########################################3
+##########################################
+
 ###Mean Bias calcul for Bias-kriging method
-ComputeMeanBias <- function(paramsBias){
-	stnDatas <- paramsBias$stnDatas
+ComputeMeanBias <- function(paramsBias, biastype = 1){
+	# freqData <- GeneralParameters$period
+	# if(doparallel & freqData != 'monthly'){
+	# 	klust <- makeCluster(nb_cores)
+	# 	registerDoParallel(klust)
+	# 	`%parLoop%` <- `%dopar%`
+	# 	closeklust <- TRUE
+	# }else{
+		`%parLoop%` <- `%do%`
+		closeklust <- FALSE
+	# }
+
+ 	coefBiasTempdat<- paramsBias$coefBiasTempdat
+	stn.lon <- coefBiasTempdat$stnData$lon
+	stn.lat <- coefBiasTempdat$stnData$lat
+	stn.dates <- coefBiasTempdat$stnData$dates
+	stn.data <- coefBiasTempdat$stnData$data
+	nstn <- length(stn.lon)
+
+	### dernier ajout
+	dem <- paramsBias$dem
+	dem.stn <- paramsBias$dem.stn
+
+	## without dem (1)
+	if(biastype == 1){
+		newlocation.merging <- paramsBias$newlocation.merging
+	}
+	## dem as 3rd coords (2)
+	if(biastype == 2){
+		newlocation.merging <- data.frame(coordinates(paramsBias$newlocation.merging), dem = dem)
+		coordinates(newlocation.merging)  <-  ~lon + lat + dem
+	}
+	## dem as auxiliary  vars (residual vario) (3)
+	if(biastype == 3){
+		newlocation.merging <- data.frame(coordinates(paramsBias$newlocation.merging), dem = dem)
+		coordinates(newlocation.merging)  <-  ~lon + lat
+	}
 	model_stn <- paramsBias$model_stn
 	coef.dates <- paramsBias$coef.dates
 	xy.dim <- paramsBias$xy.dim
 	nlon0 <- paramsBias$nlon0
 	nlat0 <- paramsBias$nlat0
-	newlocation.merging <- paramsBias$newlocation.merging
 	dirBias <- paramsBias$dirBias
 
 	min.nbrs <- as.numeric(as.character(GeneralParameters$params.int$Values[1]))
@@ -278,88 +351,58 @@ ComputeMeanBias <- function(paramsBias){
 	freqData <- GeneralParameters$period
 	meanBiasPrefix <- as.character(GeneralParameters$prefix$Values[2])
 
-	stn.lon <- stnDatas$lon
-	stn.lat <- stnDatas$lat
-	stn.dates <- stnDatas$dates
-	stn.data <- stnDatas$data
-	nstn <- length(stn.lon)
-
 	########
 	if(freqData == 'daily'){
 		ntimes <- 365
 		n2 <- 15
+		bias.dates <- format(seq(as.Date(paste(coef.dates[1], '0101', sep = ''), format = '%Y%m%d'),
+								as.Date(paste(coef.dates[2], '1231', sep = ''), format = '%Y%m%d'), 'day'), '%Y%m%d')
+		endmon <- c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+		bias <- array(data = NA, c(ntimes, nstn))
+		vtimes <- cbind(unlist(sapply(endmon, function(j) 1:j)), rep(1:12, endmon))
 	}
 	if(freqData == 'dekadal'){
 		ntimes <- 36
 		n2 <- 3
+		bias.dates <- seq(as.Date(paste(coef.dates[1], '011', sep = ''), format = '%Y%m%d'),
+							as.Date(paste(coef.dates[2], '123', sep = ''), format = '%Y%m%d'), 'day')
+		bias.dates <- paste(format(bias.dates[which(as.numeric(format(bias.dates, '%d')) <= 3)], '%Y%m'),
+						as.numeric(format(bias.dates[which(as.numeric(format(bias.dates, '%d')) <= 3)], '%d')), sep = '')
+		bias <- array(data = NA, c(ntimes, nstn))
+		vtimes <- expand.grid(1:3, 1:12)
 	}
 	if(freqData == 'monthly'){
 		ntimes <- 12
 		n2 <- 1
-	}
-
-	#####
-	if(freqData == 'daily'){
-		bias.dates <- format(seq(as.Date(paste(coef.dates[1],'0101', sep = ''), format='%Y%m%d'), as.Date(paste(coef.dates[2],'1231', sep = ''), format='%Y%m%d'),'day'),'%Y%m%d')
-		endmon <- c(31,28,31,30,31,30,31,31,30,31,30,31)
-		bias <- array(data = NA, c(ntimes, nstn))
-		vtimes <- cbind(unlist(sapply(endmon, function(j) 1:j)), rep(1:12, endmon))
-
-		ibsdt <- bias.dates%in%stn.dates
-		bsdates <- bias.dates[ibsdt]
-		model_stn <- model_stn[ibsdt,,drop = F]
-		istdt <- stn.dates%in%bias.dates
-		stn.data <- stn.data[istdt,,drop = F]
-		# Compute bias
-		if(length(bsdates) > 0){
-			for (i in 1:nstn){
-				for (nt in 1:ntimes){
-					ix1 <- which(as.numeric(substr(bsdates, 7,8)) == vtimes[nt, 1] & as.numeric(substr(bsdates, 5,6)) == vtimes[nt, 2])
-					bias[nt, i] <- calcBiasTemp(i, ix1, stn.data, model_stn)
-				}
-			}
-		}
-	}
-	#####
-	if(freqData == 'dekadal'){
-		bias.dates <- seq(as.Date(paste(coef.dates[1],'011', sep = ''), format='%Y%m%d'), as.Date(paste(coef.dates[2],'123', sep = ''), format='%Y%m%d'),'day')
-		bias.dates <- paste(format(bias.dates[which(as.numeric(format(bias.dates,'%d')) <= 3)],'%Y%m'), as.numeric(format(bias.dates[which(as.numeric(format(bias.dates,'%d')) <= 3)],'%d')), sep = '')
-		bias <- array(data = NA, c(ntimes, nstn))
-		vtimes <- expand.grid(1:3,1:12)
-
-		ibsdt <- bias.dates%in%stn.dates
-		bsdates <- bias.dates[ibsdt]
-		model_stn <- model_stn[ibsdt,,drop = F]
-		istdt <- stn.dates%in%bias.dates
-		stn.data <- stn.data[istdt,,drop = F]
-		# Compute bias
-		if(length(bsdates) > 0){
-			for (i in 1:nstn){
-				for (nt in 1:ntimes){
-					ix1 <- which(as.numeric(substr(bsdates, 7,7)) == vtimes[nt, 1] & as.numeric(substr(bsdates, 5,6)) == vtimes[nt, 2])
-					bias[nt, i] <- calcBiasTemp(i, ix1, stn.data, model_stn)
-				}
-			}
-		}
-	}
-	#####
-	if(freqData == 'monthly'){
-		bias.dates <- format(seq(as.Date(paste(coef.dates[1],'011', sep = ''), format='%Y%m%d'), as.Date(paste(coef.dates[2],'1231', sep = ''), format='%Y%m%d'),'month'),'%Y%m')
+		bias.dates <- format(seq(as.Date(paste(coef.dates[1], '011', sep = ''), format = '%Y%m%d'),
+								as.Date(paste(coef.dates[2], '1231', sep = ''), format = '%Y%m%d'), 'month'), '%Y%m')
 		bias <- array(data = NA, c(ntimes, nstn))
 		vtimes <- c(1:12)
+	}
 
-		ibsdt <- bias.dates%in%stn.dates
-		bsdates <- bias.dates[ibsdt]
-		model_stn <- model_stn[ibsdt,,drop = F]
-		istdt <- stn.dates%in%bias.dates
-		stn.data <- stn.data[istdt,,drop = F]
-		# Compute bias
-		if(length(bsdates) > 0){
-			for (i in 1:nstn){
-				for (nt in 1:ntimes){
-					ix1 <- which(as.numeric(substr(bsdates, 5,6)) == vtimes[nt])
-					bias[nt, i] <- calcBiasTemp(i, ix1, stn.data, model_stn)
-				}
+	ibsdt <- bias.dates%in%stn.dates
+	bsdates <- bias.dates[ibsdt]
+	model_stn <- model_stn[ibsdt, , drop = FALSE]
+	istdt <- stn.dates%in%bias.dates
+	stn.data <- stn.data[istdt, , drop = FALSE]
+
+	if(length(bsdates) > 0){
+		for (i in 1:nstn){
+			for (nt in 1:ntimes){
+				ix1 <- switch(freqData, 
+						'daily' = {
+							ix1 <- which(as.numeric(substr(bsdates, 7, 8)) == vtimes[nt, 1] & as.numeric(substr(bsdates, 5, 6)) == vtimes[nt, 2])
+							ix1 <- c(sapply(ix1, function(x) x+(-5:5)))
+							ix1[ix1 > 0 & ix1 <= length(bsdates)]
+						}, 
+						'dekadal' = {
+							which(as.numeric(substr(bsdates, 7, 7)) == vtimes[nt, 1] & as.numeric(substr(bsdates, 5, 6)) == vtimes[nt, 2])
+						},
+						'monthly' = {
+							which(as.numeric(substr(bsdates, 5, 6)) == vtimes[nt])
+						}
+					)
+				bias[nt, i] <- calcBiasTemp(i, ix1, stn.data, model_stn)
 			}
 		}
 	}
@@ -376,27 +419,74 @@ ComputeMeanBias <- function(paramsBias){
 	#Defines netcdf output
 	grd.bs <- ncvar_def("grid", "", xy.dim, NA, longname = "Gridded Station/Reanalysis Bias", prec = "float")
 
-	tcl("update", "idletasks")
-	for(ij in 1:ntimes){
-		bias.stn <- data.frame(bias = bias[ij,],lon = stn.lon, lat = stn.lat)
+	# for(ij in 1:ntimes)
+	ret <- foreach(ij = 1:ntimes, .combine = 'c', .export = c('Variogrm_modeling', 'InsertMessagesTxt', 'main.txt.out'),
+					.packages = c('sp', 'gstat', 'automap', 'ncdf4', 'fields', 'tcltk')) %parLoop% {
+
+		if(biastype == 1){
+			bias.stn <- data.frame(bias = bias[ij, ], lon = stn.lon, lat = stn.lat)
+		}else{
+			bias.stn <- data.frame(bias = bias[ij, ], lon = stn.lon, lat = stn.lat, dem = dem.stn)
+		}
+
 		ix <- which(!is.na(bias.stn$bias))
 		if(length(ix) > 8){
-			winl<-(ij-n2):(ij+n2)
+			
+			winl <- (ij-n2):(ij+n2)
 			rwin <- winl%%ntimes
 			rwin <- ifelse(rwin == 0, ntimes, rwin)
-			bias.vgm <- as.vector(t(bias[rwin,]))
-			bias.df <- data.frame(lon = rep(stn.lon, 2*n2+1), lat = rep(stn.lat, 2*n2+1), bias = bias.vgm)
-			bias.df <- bias.df[!is.na(bias.df$bias),]
-			coordinates(bias.df)<- ~lat + lon
-			vgm1 <- try(autofitVariogram(bias~1, input_data = bias.df, model = c("Sph", "Exp", "Gau")), silent = TRUE)
+			bias.vgm <- as.vector(t(bias[rwin, ]))
+
+			if(biastype == 1){
+				bias.df <- data.frame(lon = rep(stn.lon, 2*n2+1), lat = rep(stn.lat, 2*n2+1), bias = bias.vgm)
+			}else{
+				bias.df <- data.frame(lon = rep(stn.lon, 2*n2+1), lat = rep(stn.lat, 2*n2+1), dem = rep(dem.stn, 2*n2+1), bias = bias.vgm)
+			}	
+			
+			if(biastype == 1){
+				bias.df <- bias.df[!is.na(bias.df$bias), ]
+				coordinates(bias.df) <- ~lat + lon
+				vgm1 <- try(autofitVariogram(bias~1, input_data = bias.df, model = c("Sph", "Exp", "Gau")), silent = TRUE)
+			}
+			if(biastype == 2){
+				bias.df <- bias.df[!is.na(bias.df$bias) & !is.na(bias.df$dem), ]
+				coordinates(bias.df) <- ~lat + lon + dem
+				vgm1 <- try(autofitVariogram(bias~1, input_data = bias.df, model = c("Sph", "Exp", "Gau")), silent = TRUE)
+			}
+			if(biastype == 3){
+				bias.df <- bias.df[!is.na(bias.df$bias) & !is.na(bias.df$dem), ]
+				coordinates(bias.df) <- ~lat + lon
+				vgm1 <- try(autofitVariogram(bias~dem, input_data = bias.df, model = c("Sph", "Exp", "Gau")), silent = TRUE)
+			}
+				
 			if(!inherits(vgm1, "try-error")) vgm_model <- vgm1$var_model
 			else vgm_model <- NULL
-			# else vgm_model <- Variogrm_modeling(bias.df)
-			bias.stn <- bias.stn[ix,]
-			coordinates(bias.stn) =~lon + lat
-			gbias <- krige(bias~1, locations = bias.stn, newdata = newlocation.merging, model = vgm_model, block = bGrd, nmin = min.nbrs, nmax = max.nbrs, maxdist = max.dst, debug.level = 0)
+
+			#### Customized vgm
+			#### vgm_model <- Variogrm_modeling(bias.df)
+		
+			bias.stn <- bias.stn[ix, ]
+			if(biastype == 1){
+				coordinates(bias.stn) = ~lon + lat
+				gbias <- krige(bias~1, locations = bias.stn, newdata = newlocation.merging, model = vgm_model, block = bGrd,
+										nmin = min.nbrs, nmax = max.nbrs, maxdist = max.dst, debug.level = 0)
+			}
+			if(biastype == 2){
+				coordinates(bias.stn) = ~lon + lat + dem
+				gbias <- krige(bias~1, locations = bias.stn, newdata = newlocation.merging, model = vgm_model,
+										nmin = min.nbrs, nmax = max.nbrs, maxdist = sqrt(max.dst^2+500^2), debug.level = 0)
+			}
+			if(biastype == 3){
+				coordinates(bias.stn) = ~lon + lat
+				gbias <- krige(bias~1, locations = bias.stn, newdata = newlocation.merging, model = vgm_model,
+										nmin = min.nbrs, nmax = max.nbrs, maxdist = max.dst, debug.level = 0)
+			}
+				
+			###
 			grd.bias <- gbias$var1.pred
 			grd.bias[is.na(grd.bias)] <- 1
+			grd.bias[grd.bias > 3] <- 3
+
 			#smoothing
 			imgbs <- as.image( grd.bias, x = coordinates(gbias), nx = nlon0, ny = nlat0)
 			smbias <- image.smooth(imgbs, theta = 0.08)
@@ -406,38 +496,45 @@ ComputeMeanBias <- function(paramsBias){
 			dim(grd.bias) <- c(nlon0, nlat0)
 		}
 
-		outfl <- file.path(dirBias, paste(meanBiasPrefix, '_', ij,'.nc', sep = ''), fsep = .Platform$file.sep)
+		outfl <- file.path(dirBias, paste(meanBiasPrefix, '_', ij, '.nc', sep = ''), fsep = .Platform$file.sep)
 		nc2 <- nc_create(outfl, grd.bs)
 		ncvar_put(nc2, grd.bs, grd.bias)
 		nc_close(nc2)
-		InsertMessagesTxt(main.txt.out, paste("Computing mean bias finished:", paste(meanBiasPrefix, '_', ij,'.nc', sep = '')))
+		InsertMessagesTxt(main.txt.out, paste("Computing mean bias finished:", paste(meanBiasPrefix, '_', ij, '.nc', sep = '')))
 		tcl("update")
 	}
+	# if(closeklust) stopCluster(klust)
+	rm(coefBiasTempdat, newlocation.merging, dem, dem.stn, model_stn, stn.data, stn.dates, bias.dates, bias)
 	return(0)
 }
 
 #############################################
+
 #### Regession coefficients for Regression-QM method
 ComputeRegCoeff <- function(paramsRegQM){
-	stn.data <- paramsRegQM$stn.data
-	stn.dates <- paramsRegQM$stn.dates
+	coefBiasTempdat <- paramsRegQM$coefBiasTempdat
+	stn.data <- coefBiasTempdat$stnData$data
+	stn.dates <- coefBiasTempdat$stnData$dates
 	coef.dates <- paramsRegQM$coef.dates
-	dem.stn <- paramsRegQM$dem.stn
 	model_stn <- paramsRegQM$model_stn
 	origdir <- paramsRegQM$origdir
 
-	years <- as.numeric(substr(stn.dates, 1,4))
+	ijGrd <- paramsRegQM$ijGrd
+	dem.stn <- coefBiasTempdat$demData$demGrd@data[, 1]
+	dem.stn <- dem.stn[ijGrd]
+
+	years <- as.numeric(substr(stn.dates, 1, 4))
 	iyrCoef <- years >= coef.dates[1] & years <= coef.dates[2]
 	stn.data <- stn.data[iyrCoef,]
 	stn.dates <- stn.dates[iyrCoef]
-	months <- as.numeric(substr(stn.dates, 5,6))
+	months <- as.numeric(substr(stn.dates, 5, 6))
 
 	dem_stn <- matrix(dem.stn, nrow = nrow(model_stn), ncol = length(dem.stn), byrow = TRUE)
 	dem_stn <- jitter(dem_stn)
 	dem_stn[dem_stn<0] <- 1
 
 	# Compute coefficents
-	coef <- data.frame(array(data = NA, c(12,5)))
+	coef <- data.frame(array(data = NA, c(12, 5)))
 	for (m in 1:12){
 		ix <- which(m == months)
 		tt <- as.vector(t(as.matrix(stn.data[ix,])))
@@ -500,17 +597,18 @@ AjdReanalMeanBias <- function(paramsAdjBs){
 	##Get all downscaled Files
 
 	if(freqData == 'daily'){
-		adj.dates <- format(seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'day'),'%Y%m%d')
-		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates,'.nc', sep = ''), fsep = .Platform$file.sep)
+		adj.dates <- format(seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'day'), '%Y%m%d')
+		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
 	}
 	if(freqData == 'dekadal'){
-		adj.dates <- seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'day')
-		adj.dates <- paste(format(adj.dates[which(as.numeric(format(adj.dates,'%d')) <= 3)],'%Y%m'), as.numeric(format(adj.dates[which(as.numeric(format(adj.dates,'%d')) <= 3)],'%d')), sep = '')
-		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates,'.nc', sep = ''), fsep = .Platform$file.sep)
+		adj.dates <- seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'day')
+		adj.dates <- paste(format(adj.dates[which(as.numeric(format(adj.dates, '%d')) <= 3)], '%Y%m'),
+					as.numeric(format(adj.dates[which(as.numeric(format(adj.dates, '%d')) <= 3)], '%d')), sep = '')
+		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
 	}
 	if(freqData == 'monthly'){
-		adj.dates <- format(seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'month'),'%Y%m')
-		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates,'.nc', sep = ''), fsep = .Platform$file.sep)
+		adj.dates <- format(seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'month'), '%Y%m')
+		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
 	}
 
 	existFl <- unlist(lapply(testfile, file.exists))
@@ -521,27 +619,26 @@ AjdReanalMeanBias <- function(paramsAdjBs){
 	downDataFl <- testfile[existFl]
 	adj.dates <- adj.dates[existFl]
 
-	tcl("update", "idletasks")
 	ret <- lapply(seq_along(downDataFl), function(jfl){
 		if(freqData == 'daily'){
-			ann <- as.numeric(substr(adj.dates[jfl], 1,4))
-			iday <- as.numeric(strftime(as.Date(adj.dates[jfl], format='%Y%m%d'), format='%j'))
+			ann <- as.numeric(substr(adj.dates[jfl], 1, 4))
+			iday <- as.numeric(strftime(as.Date(adj.dates[jfl], format = '%Y%m%d'), format = '%j'))
 			ijt <- ifelse(ann%%4 == 0 & iday > 59, iday-1, iday)
 
 		}
 		if(freqData == 'dekadal'){
-			mon <- as.numeric(substr(adj.dates[jfl], 5,6))
-			dek <- as.numeric(substr(adj.dates[jfl], 7,7))
+			mon <- as.numeric(substr(adj.dates[jfl], 5, 6))
+			dek <- as.numeric(substr(adj.dates[jfl], 7, 7))
 			annual.dek <- expand.grid(dek = 1:3, mon = 1:12)
 			ijt <- which(annual.dek$dek == dek & annual.dek$mon == mon)
 		}
 		if(freqData == 'monthly'){
-			ijt <- as.numeric(substr(adj.dates[jfl], 5,6))
+			ijt <- as.numeric(substr(adj.dates[jfl], 5, 6))
 		}
 
 		downfl <- downDataFl[jfl]
-		bsfl <- file.path(biasDirORFile, paste(meanBiasPrefix, '_', ijt,'.nc', sep = ''), fsep = .Platform$file.sep)
-		outfl <- file.path(adjDir, paste(adjPrefix, '_', adj.dates[jfl],'.nc', sep = ''), fsep = .Platform$file.sep)
+		bsfl <- file.path(biasDirORFile, paste(meanBiasPrefix, '_', ijt, '.nc', sep = ''), fsep = .Platform$file.sep)
+		outfl <- file.path(adjDir, paste(adjPrefix, '_', adj.dates[jfl], '.nc', sep = ''), fsep = .Platform$file.sep)
 
 		nc <- nc_open(downfl)
 		temp <- ncvar_get(nc, varid = nc$var[[1]]$name)
@@ -591,25 +688,25 @@ AjdReanalpmm <- function(paramsAdjBs){
 	freqData <- GeneralParameters$period
 	stn.data <- stnDatas$data
 	stn.dates <- stnDatas$dates
-	years <- as.numeric(substr(stn.dates, 1,4))
-	months <- as.numeric(substr(stn.dates, 5,6))
+	years <- as.numeric(substr(stn.dates, 1, 4))
+	months <- as.numeric(substr(stn.dates, 5, 6))
 
 	grd.bsadj <- ncvar_def("temp", "DegC", xy.dim, -99, longname = "Regression-QM Adjusted Reanalysis", prec = "float")
 
 	##Get all downscaled Files
 	if(freqData == 'daily'){
-		adj.dates <- format(seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'day'),'%Y%m%d')
-		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates,'.nc', sep = ''), fsep = .Platform$file.sep)
+		adj.dates <- format(seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'day'), '%Y%m%d')
+		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
 	}
 	if(freqData == 'dekadal'){
-		adj.dates <- seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'day')
-		adj.dates <- paste(format(adj.dates[which(as.numeric(format(adj.dates,'%d')) <= 3)],'%Y%m'),
-		as.numeric(format(adj.dates[which(as.numeric(format(adj.dates,'%d')) <= 3)],'%d')), sep = '')
-		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates,'.nc', sep = ''), fsep = .Platform$file.sep)
+		adj.dates <- seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'day')
+		adj.dates <- paste(format(adj.dates[which(as.numeric(format(adj.dates, '%d')) <= 3)], '%Y%m'),
+		as.numeric(format(adj.dates[which(as.numeric(format(adj.dates, '%d')) <= 3)], '%d')), sep = '')
+		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
 	}
 	if(freqData == 'monthly'){
-		adj.dates <- format(seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'month'),'%Y%m')
-		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates,'.nc', sep = ''), fsep = .Platform$file.sep)
+		adj.dates <- format(seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'month'), '%Y%m')
+		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
 	}
 
 	existFl <- unlist(lapply(testfile, file.exists))
@@ -622,17 +719,17 @@ AjdReanalpmm <- function(paramsAdjBs){
 
 	tcl("update", "idletasks")
 	ret <- lapply(seq_along(downDataFl), function(jfl){
-		yrs <- as.numeric(substr(adj.dates[jfl], 1,4))
-		mon <- as.numeric(substr(adj.dates[jfl], 5,6))
+		yrs <- as.numeric(substr(adj.dates[jfl], 1, 4))
+		mon <- as.numeric(substr(adj.dates[jfl], 5, 6))
 
 		if(freqData == 'daily'){
-			dayss <- as.numeric(substr(stn.dates, 7,8))
-			day <- as.numeric(substr(adj.dates[jfl], 7,8))
+			dayss <- as.numeric(substr(stn.dates, 7, 8))
+			day <- as.numeric(substr(adj.dates[jfl], 7, 8))
 			ijt <- which(dayss == day & months == mon & years == yrs)
 		}
 		if(freqData == 'dekadal'){
-			dekads <- as.numeric(substr(stn.dates, 7,7))
-			dek <- as.numeric(substr(adj.dates[jfl], 7,7))
+			dekads <- as.numeric(substr(stn.dates, 7, 7))
+			dek <- as.numeric(substr(adj.dates[jfl], 7, 7))
 			ijt <- which(dekads == dek & months == mon & years == yrs)
 		}
 		if(freqData == 'monthly'){
@@ -645,31 +742,31 @@ AjdReanalpmm <- function(paramsAdjBs){
 		slop.model <- coefReg[mon, 4]
 		slop.dem <- coefReg[mon, 5]
 
-		stn.tt <- c(t(stn.data[ijt, ]))
+		stn.tt <- as.vector(stn.data[ijt, ])
 		# Remove extremes station values
-		q1 <- quantile(stn.tt, 0.005, na.rm = T)
-		q2 <- quantile(stn.tt, 0.999, na.rm = T)
+		q1 <- quantile(stn.tt, 0.005, na.rm = TRUE)
+		q2 <- quantile(stn.tt, 0.999, na.rm = TRUE)
 		stn.tt[(stn.tt < q1) | (stn.tt > q2)] <- NA
-		
-		ix <- which(!is.na(stn.tt))
-		tt <- stn.tt[ix]
+		tt <- stn.tt[!is.na(stn.tt)]
 
 		downfl <- downDataFl[jfl]
-		outfl <- file.path(adjDir, paste(adjPrefix, '_', adj.dates[jfl],'.nc', sep = ''), fsep = .Platform$file.sep)
+		outfl <- file.path(adjDir, paste(adjPrefix, '_', adj.dates[jfl], '.nc', sep = ''), fsep = .Platform$file.sep)
 		
 		nc <- nc_open(downfl)
 		temp <- ncvar_get(nc, varid = nc$var[[1]]$name)
 		nc_close(nc)
 
-		mn <- mean(temp, na.rm = T)
-		sd <- sd(temp, na.rm = T)
+		mn <- mean(temp, na.rm = TRUE)
+		sd <- sd(temp, na.rm = TRUE)
 		x1 <- c((temp-mn)/sd)
-		x2 <- (dem-mean(dem))/sd(dem)
+		x2 <- (dem-mean(dem, na.rm = TRUE))/sd(dem, TRUE)
 		temp.adj <- slop.model * x1  + slop.dem * x2 + intercept
 		temp.adj <- temp.adj*stn.sd + stn.mn
 		temp.adj <- round(temp.adj, digits = 2 )
 
 		temp.adj.stn <- temp.adj[ijGrd]
+		temp.adj.stn <- temp.adj.stn[!is.na(temp.adj.stn)]
+
 		Fy <- ecdf(temp.adj.stn)
 		prob <- Fy(temp.adj)
 		temp.adj2 <- quantile(tt, prob)
@@ -687,7 +784,7 @@ AjdReanalpmm <- function(paramsAdjBs){
 		ncvar_put(nc2, grd.bsadj, temp.adj)
 		nc_close(nc2)
 
-		InsertMessagesTxt(main.txt.out, paste("Downscaled data adjusted successfully:", paste(downPrefix, '_', adj.dates[jfl],'.nc', sep = '')))
+		InsertMessagesTxt(main.txt.out, paste("Downscaled data adjusted successfully:", paste(downPrefix, '_', adj.dates[jfl], '.nc', sep = '')))
 		tcl("update")
 		return(0)
 	})
@@ -697,6 +794,46 @@ AjdReanalpmm <- function(paramsAdjBs){
 #######################################################################################
 
 MergeTemp <- function(mrgParam){
+	freqData <- mrgParam$dates[1]
+	istart <- mrgParam$dates[2]
+	iend <- mrgParam$dates[3]
+
+	adjDir <- mrgParam$dirs[1]
+	adjPrefix <- mrgParam$prefix[1]
+
+	if(freqData == 'daily'){
+		mrg.dates <- format(seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'day'), '%Y%m%d')
+		testfile <- file.path(adjDir, paste(adjPrefix, '_', mrg.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
+	}
+	if(freqData == 'dekadal'){
+		mrg.dates <- seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'day')
+		mrg.dates <- paste(format(mrg.dates[which(as.numeric(format(mrg.dates, '%d')) <= 3)], '%Y%m'),
+						as.numeric(format(mrg.dates[which(as.numeric(format(mrg.dates, '%d')) <= 3)], '%d')), sep = '')
+		testfile <- file.path(adjDir, paste(adjPrefix, '_', mrg.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
+	}
+	if(freqData == 'monthly'){
+		mrg.dates <- format(seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'month'), '%Y%m')
+		testfile <- file.path(adjDir, paste(adjPrefix, '_', mrg.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
+	}
+
+	existFl <- unlist(lapply(testfile, file.exists))
+	if(length(which(existFl)) == 0){
+		InsertMessagesTxt(main.txt.out, "Adjusted data not found", format = TRUE)
+		return(NULL)
+	}
+	adjDataFl <- testfile[existFl]
+	mrg.dates <- mrg.dates[existFl]
+
+	# if(doparallel & length(adjDataFl) >= 20){
+	# 	klust <- makeCluster(nb_cores)
+	# 	registerDoParallel(klust)
+	# 	`%parLoop%` <- `%dopar%`
+	# 	closeklust <- TRUE
+	# }else{
+		`%parLoop%` <- `%do%`
+		closeklust <- FALSE
+	# }
+
 	stn.lon <- mrgParam$mrgData$stnData$lon
 	stn.lat <- mrgParam$mrgData$stnData$lat
 	stn.dates <- mrgParam$mrgData$stnData$dates
@@ -711,15 +848,9 @@ MergeTemp <- function(mrgParam){
 	xy.dim <- mrgParam$mrgInfo$xy.dim
 	VarioModel <- mrgParam$mrgInfo$VarioModel
 
-	adjDir <- mrgParam$dirs[1]
 	mrgDir <- mrgParam$dirs[2]
-	adjPrefix <- mrgParam$prefix[1]
 	mrgPrefix <- mrgParam$prefix[2]
 	mrgSuffix <- mrgParam$prefix[3]
-
-	freqData <- mrgParam$dates[1]
-	istart <- mrgParam$dates[2]
-	iend <- mrgParam$dates[3]
 
 	params.mrg <- as.character(GeneralParameters$params.mrg$Values)
 	nmin <- as.numeric(params.mrg[1])
@@ -730,32 +861,13 @@ MergeTemp <- function(mrgParam){
 
 	mrgd.tt <- ncvar_def('temp', "DegC", xy.dim, -99, longname = 'Reanalysis merged with station', prec = "float")
 
-	if(freqData == 'daily'){
-		mrg.dates <- format(seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'day'),'%Y%m%d')
-		testfile <- file.path(adjDir, paste(adjPrefix, '_', mrg.dates,'.nc', sep = ''), fsep = .Platform$file.sep)
-	}
-	if(freqData == 'dekadal'){
-		mrg.dates <- seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'day')
-		mrg.dates <- paste(format(mrg.dates[which(as.numeric(format(mrg.dates,'%d')) <= 3)],'%Y%m'), as.numeric(format(mrg.dates[which(as.numeric(format(mrg.dates,'%d')) <= 3)],'%d')), sep = '')
-		testfile <- file.path(adjDir, paste(adjPrefix, '_', mrg.dates,'.nc', sep = ''), fsep = .Platform$file.sep)
-	}
-	if(freqData == 'monthly'){
-		mrg.dates <- format(seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'month'),'%Y%m')
-		testfile <- file.path(adjDir, paste(adjPrefix, '_', mrg.dates,'.nc', sep = ''), fsep = .Platform$file.sep)
-	}
+	# ret <- lapply(seq_along(adjDataFl), function(jfl)
+	packages <- c('sp', 'gstat', 'automap', 'ncdf4', 'fields', 'tcltk')
+	toExports <- c('adjDataFl', 'mrg.dates', 'GeneralParameters', 'InsertMessagesTxt', 'main.txt.out')
+	ret <- foreach(jfl = seq_along(adjDataFl), .combine = 'c', .export = toExports, .packages = packages) %parLoop% {
 
-	existFl <- unlist(lapply(testfile, file.exists))
-	if(length(which(existFl)) == 0){
-		InsertMessagesTxt(main.txt.out, "Adjusted data not found", format = TRUE)
-		return(NULL)
-	}
-	adjDataFl <- testfile[existFl]
-	mrg.dates <- mrg.dates[existFl]
-
-	tcl("update", "idletasks")
-	ret <- lapply(seq_along(adjDataFl), function(jfl){
 		adjfl <- adjDataFl[jfl]
-		outfl <- file.path(mrgDir, paste(mrgPrefix, '_', mrg.dates[jfl],'_', mrgSuffix,'.nc', sep = ''), fsep = .Platform$file.sep)
+		outfl <- file.path(mrgDir, paste(mrgPrefix, '_', mrg.dates[jfl],'_', mrgSuffix, '.nc', sep = ''), fsep = .Platform$file.sep)
 
 		nc <- nc_open(adjfl)
 		tt.mod <- ncvar_get(nc, varid = nc$var[[1]]$name)
@@ -806,10 +918,12 @@ MergeTemp <- function(mrgParam){
 		ncvar_put(nc2, mrgd.tt, out.tt)
 		nc_close(nc2)
 
-		InsertMessagesTxt(main.txt.out, paste("Merging finished successfully:", paste(mrgPrefix, '_', mrg.dates[jfl],'_', mrgSuffix,'.nc', sep = '')))
+		InsertMessagesTxt(main.txt.out, paste("Merging finished successfully:", paste(mrgPrefix, '_', mrg.dates[jfl], '_', mrgSuffix, '.nc', sep = '')))
 		tcl("update")
 		return(0)
-	})
+	}
+	# if(closeklust) stopCluster(klust)
+
 	return(0)
 }
 

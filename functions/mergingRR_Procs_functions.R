@@ -1,8 +1,12 @@
 
-
-ExtractRFE2Stn <- function(ijGrd, GeneralParameters, mrgRaindat){
+ExtractRFE2Stn <- function(extractRFEparms){
 	InsertMessagesTxt(main.txt.out, 'Extract RFE at guage locations ')
 	tcl("update")
+	
+	ijGrd <- extractRFEparms$ijGrd
+	GeneralParameters <- extractRFEparms$GeneralParameters
+	mrgRaindat <- extractRFEparms$mrgRaindat
+
 	freqData <- GeneralParameters$period
 	year1 <- as.numeric(as.character(GeneralParameters$dates.coef$Values[1]))
 	year2 <- as.numeric(as.character(GeneralParameters$dates.coef$Values[2]))
@@ -11,20 +15,24 @@ ExtractRFE2Stn <- function(ijGrd, GeneralParameters, mrgRaindat){
 	nstn <- length(mrgRaindat$stnData$lon)
 
 	if(freqData == 'daily'){
-		bias.dates <- format(seq(as.Date(paste(year1, '0101', sep = ''), format='%Y%m%d'), as.Date(paste(year2, '1231', sep = ''), format='%Y%m%d'),'day'),'%Y%m%d')
-		testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(bias.dates, 1,4), substr(bias.dates, 5,6), substr(bias.dates, 7,8)), fsep = .Platform$file.sep)
+		bias.dates <- format(seq(as.Date(paste(year1, '0101', sep = ''), format = '%Y%m%d'),
+								as.Date(paste(year2, '1231', sep = ''), format = '%Y%m%d'), 'day'), '%Y%m%d')
+		testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(bias.dates, 1, 4), substr(bias.dates, 5, 6),
+															substr(bias.dates, 7, 8)), fsep = .Platform$file.sep)
 	}
 	if(freqData == 'dekadal'){
-		bias.dates <- seq(as.Date(paste(year1, '011', sep = ''), format='%Y%m%d'), as.Date(paste(year2, '123', sep = ''), format='%Y%m%d'),'day')
-		bias.dates <- paste(format(bias.dates[which(as.numeric(format(bias.dates,'%d')) <= 3)],'%Y%m'), as.numeric(format(bias.dates[which(as.numeric(format(bias.dates,'%d')) <= 3)],'%d')), sep = '')
-		testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(bias.dates, 1,4), substr(bias.dates, 5,6), substr(bias.dates, 7,7)), fsep = .Platform$file.sep)
+		bias.dates <- seq(as.Date(paste(year1, '011', sep = ''), format = '%Y%m%d'),
+							as.Date(paste(year2, '123', sep = ''), format = '%Y%m%d'), 'day')
+		bias.dates <- paste(format(bias.dates[which(as.numeric(format(bias.dates, '%d')) <= 3)], '%Y%m'),
+						as.numeric(format(bias.dates[which(as.numeric(format(bias.dates, '%d')) <= 3)], '%d')), sep = '')
+		testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(bias.dates, 1, 4), substr(bias.dates, 5, 6),
+															substr(bias.dates, 7, 7)), fsep = .Platform$file.sep)
 	}
 	if(freqData == 'monthly'){
-		bias.dates <- format(seq(as.Date(paste(year1, '011', sep = ''), format='%Y%m%d'), as.Date(paste(year2, '1231', sep = ''), format='%Y%m%d'),'month'),'%Y%m')
-		testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(bias.dates, 1,4), substr(bias.dates, 5,6)), fsep = .Platform$file.sep)
+		bias.dates <- format(seq(as.Date(paste(year1, '011', sep = ''), format = '%Y%m%d'),
+								as.Date(paste(year2, '1231', sep = ''), format = '%Y%m%d'), 'month'), '%Y%m')
+		testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(bias.dates, 1, 4), substr(bias.dates, 5, 6)), fsep = .Platform$file.sep)
 	}
-
-	# rfe_stn <- matrix(NA, nrow = length(bias.dates), ncol = nstn)
 
 	existFl <- unlist(lapply(testfile, file.exists))
 	if(length(which(existFl)) == 0){
@@ -45,7 +53,8 @@ ExtractRFE2Stn <- function(ijGrd, GeneralParameters, mrgRaindat){
 	}
 
 	# for (jfl in seq_along(rfeDataFl))
-	ret <- foreach(jfl = seq_along(rfeDataFl),.combine = 'rbind',.export = c('rfeDataFl', 'bias.dates1', 'mrgRaindat', 'ijGrd'),.packages = c('ncdf4')) %parLoop% {
+	ret <- foreach(jfl = seq_along(rfeDataFl), .combine = 'rbind', .packages = c('ncdf4'), 
+						.export = c('rfeDataFl', 'bias.dates1', 'mrgRaindat', 'ijGrd')) %parLoop% {
 		nc <- nc_open(rfeDataFl[jfl])
 		rfe.lon <- nc$dim[[mrgRaindat$rfeData$rfeILon]]$vals
 		rfe.lat <- nc$dim[[mrgRaindat$rfeData$rfeILat]]$vals
@@ -62,13 +71,13 @@ ExtractRFE2Stn <- function(ijGrd, GeneralParameters, mrgRaindat){
 			rfe.val <- matrix(c(rfe.val), nrow = length(rfe.lon), ncol = length(rfe.lat), byrow = T)
 		}
 		c(as.numeric(bias.dates1[jfl]), rfe.val[ijGrd])
-		# rfe_stn[which(bias.dates == bias.dates1[jfl]),] <- rfe.val[ijGrd]
 	}
 	if(closeklust) stopCluster(klust)
 
 	rfe_stn <- matrix(NA, nrow = length(bias.dates), ncol = nstn)
-	rfe_stn[match(as.character(ret[,1]), bias.dates),] <- ret[,-1]
+	rfe_stn[match(as.character(ret[, 1]), bias.dates), ] <- ret[, -1]
 	InsertMessagesTxt(main.txt.out, 'Done! ')
+	rm(mrgRaindat, bias.dates1, rfeDataFl)
 	return(rfe_stn)
 }
 
@@ -77,30 +86,23 @@ ExtractRFE2Stn <- function(ijGrd, GeneralParameters, mrgRaindat){
 calcBiasRain <- function(i, ix1, stn.data, rfe_stn){
 	stn.val <- as.numeric(stn.data[ix1, i])
 	stn.rfe <- as.numeric(rfe_stn[ix1, i])
-	ix0 <- !is.na(stn.val) & !is.na(stn.rfe)
-	# ix1 <- stn.val > 0  & stn.rfe > 0
-	# ix <- which(ix0 & ix1)
+	ix0 <- which(!is.na(stn.val) & !is.na(stn.rfe))
 	bs <- NA
-	 if(length(ix0) > 5){
+	## 5 years for dek&mon
+	 if(length(ix0) > 5){ 
 	 	sum_stn <- sum(stn.val[ix0])
 	 	sum_rfe <- sum(stn.rfe[ix0])
 	 	if(sum_rfe>0){
 	 		bs <- sum_stn/sum_rfe
-	 		if(bs > 5) bs <- 5
+	 		if(bs > 3) bs <- 3
 	 	} 
-		# bs <- sum(stn.val[ix])/sum(stn.rfe[ix])
-		# if(bs > 5) bs <- 5
-		# if(is.nan(bs)) bs <- 1    # 0/0
-		# if(is.infinite(bs)) bs <- 1.5  # n/0
-		# if(bs == 0) bs <- 0.5  # 0/n
 	 }
 	return(bs)
 }
 
-
 ########################################################################################################
 
-ComputeMeanBiasRain <- function(rfe_stn, GeneralParameters, mrgRaindat, paramGrd, origdir){
+ComputeMeanBiasRain <- function(comptMBiasparms){
 	# freqData <- GeneralParameters$period
 	# if(doparallel & freqData != 'monthly'){
 	# 	klust <- makeCluster(nb_cores)
@@ -108,10 +110,15 @@ ComputeMeanBiasRain <- function(rfe_stn, GeneralParameters, mrgRaindat, paramGrd
 	# 	`%parLoop%` <- `%dopar%`
 	# 	closeklust <- TRUE
 	# }else{
-	# 	`%parLoop%` <- `%do%`
-	# 	closeklust <- FALSE
+		`%parLoop%` <- `%do%`
+		closeklust <- FALSE
 	# }
-	`%parLoop%` <- `%do%`
+
+	rfe_stn <- comptMBiasparms$rfe_stn
+	GeneralParameters <- comptMBiasparms$GeneralParameters
+	mrgRaindat <- comptMBiasparms$mrgRaindat
+	paramGrd <- comptMBiasparms$paramGrd
+	origdir <- comptMBiasparms$origdir
 
 	freqData <- GeneralParameters$period
 	stn.lon <- mrgRaindat$stnData$lon
@@ -133,48 +140,51 @@ ComputeMeanBiasRain <- function(rfe_stn, GeneralParameters, mrgRaindat, paramGrd
 	max.dst <- as.numeric(as.character(GeneralParameters$params.int$Values[3]))
 
 	meanBiasPrefix <- as.character(GeneralParameters$prefix$Values[2])
-	# dirBias <- file.path(origdir, 'Mean_Bias', fsep = .Platform$file.sep)
-	# dir.create(dirBias, showWarnings = FALSE)
 
 	if(freqData == 'daily'){
 		ntimes <- 365
-		bias.dates <- format(seq(as.Date(paste(year1, '0101', sep = ''), format='%Y%m%d'), as.Date(paste(year2, '1231', sep = ''), format='%Y%m%d'),'day'),'%Y%m%d')
-		endmon <- c(31,28,31,30,31,30,31,31,30,31,30,31)
-		bias <- array(data = NA, c(365, nstn))
+		bias.dates <- format(seq(as.Date(paste(year1, '0101', sep = ''), format = '%Y%m%d'),
+								as.Date(paste(year2, '1231', sep = ''), format = '%Y%m%d'), 'day'), '%Y%m%d')
+		endmon <- c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+		bias <- array(data = NA, c(ntimes, nstn))
 		vtimes <- cbind(unlist(sapply(endmon, function(j) 1:j)), rep(1:12, endmon))
 	}
 	if(freqData == 'dekadal'){
 		ntimes <- 36
-		bias.dates <- seq(as.Date(paste(year1, '011', sep = ''), format='%Y%m%d'), as.Date(paste(year2, '123', sep = ''), format='%Y%m%d'),'day')
-		bias.dates <- paste(format(bias.dates[which(as.numeric(format(bias.dates,'%d')) <= 3)],'%Y%m'), as.numeric(format(bias.dates[which(as.numeric(format(bias.dates,'%d')) <= 3)],'%d')), sep = '')
-		bias <- array(data = NA, c(36, nstn))
-		vtimes <- expand.grid(1:3,1:12)
+		bias.dates <- seq(as.Date(paste(year1, '011', sep = ''), format = '%Y%m%d'), as.Date(paste(year2, '123', sep = ''), format = '%Y%m%d'), 'day')
+		bias.dates <- paste(format(bias.dates[which(as.numeric(format(bias.dates,'%d')) <= 3)], '%Y%m'),
+							as.numeric(format(bias.dates[which(as.numeric(format(bias.dates, '%d')) <= 3)], '%d')), sep = '')
+		bias <- array(data = NA, c(ntimes, nstn))
+		vtimes <- expand.grid(1:3, 1:12)
 	}
 	if(freqData == 'monthly'){
 		ntimes <- 12
-		bias.dates <- format(seq(as.Date(paste(year1, '011', sep = ''), format='%Y%m%d'), as.Date(paste(year2, '1231', sep = ''), format='%Y%m%d'),'month'),'%Y%m')
-		bias <- array(data = NA, c(12, nstn))
+		bias.dates <- format(seq(as.Date(paste(year1, '011', sep = ''), format = '%Y%m%d'),
+								as.Date(paste(year2, '1231', sep = ''), format = '%Y%m%d'), 'month'), '%Y%m')
+		bias <- array(data = NA, c(ntimes, nstn))
 		vtimes <- c(1:12)
 	}	
 	ibsdt <- bias.dates%in%stn.dates
 	bsdates <- bias.dates[ibsdt]
-	rfe_stn <- rfe_stn[ibsdt,,drop = F]
+	rfe_stn <- rfe_stn[ibsdt, , drop = FALSE]
 	istdt <- stn.dates%in%bias.dates
-	stn.data <- stn.data[istdt,,drop = F]
+	stn.data <- stn.data[istdt, , drop = FALSE]
 	if(length(bsdates) > 0){
 		for (i in 1:nstn){
 			for (nt in 1:ntimes){
-				if(freqData == 'daily'){
-					ix1 <- which(as.numeric(substr(bsdates, 7,8)) == vtimes[nt, 1] & as.numeric(substr(bsdates, 5,6)) == vtimes[nt, 2])
-					ix1 <- c(sapply(ix1, function(x) x+(-5:5)))
-					ix1 <- ix1[ix1 > 0 & ix1 <= length(bsdates)]
-				}
-				if(freqData == 'dekadal'){	
-					ix1 <- which(as.numeric(substr(bsdates, 7,7)) == vtimes[nt, 1] & as.numeric(substr(bsdates, 5,6)) == vtimes[nt, 2])
-				}
-				if(freqData == 'monthly'){
-					ix1 <- which(as.numeric(substr(bsdates, 5,6)) == vtimes[nt])
-				}
+				ix1 <- switch(freqData, 
+						'daily' = {
+							ix1 <- which(as.numeric(substr(bsdates, 7, 8)) == vtimes[nt, 1] & as.numeric(substr(bsdates, 5, 6)) == vtimes[nt, 2])
+							ix1 <- c(sapply(ix1, function(x) x+(-5:5)))
+							ix1[ix1 > 0 & ix1 <= length(bsdates)]
+						}, 
+						'dekadal' = {
+							which(as.numeric(substr(bsdates, 7, 7)) == vtimes[nt, 1] & as.numeric(substr(bsdates, 5, 6)) == vtimes[nt, 2])
+						},
+						'monthly' = {
+							which(as.numeric(substr(bsdates, 5, 6)) == vtimes[nt])
+						}
+					)
 				bias[nt, i] <- calcBiasRain(i, ix1, stn.data, rfe_stn)
 			}
 		}
@@ -192,17 +202,19 @@ ComputeMeanBiasRain <- function(rfe_stn, GeneralParameters, mrgRaindat, paramGrd
 	#Defines netcdf output
 	grd.bs <- ncvar_def("grid", "", xy.dim, NA, longname= " Gridded GG/RFE Bias", prec = "float")
 	
-	tcl("update", "idletasks")
 	# for(ij in 1:ntimes)
-	ret <- foreach(ij = 1:ntimes,.combine = 'c',.export = c('InsertMessagesTxt', 'main.txt.out'),.packages = c('sp', 'gstat', 'ncdf4', 'fields', 'tcltk')) %parLoop% {	
-		bias.stn <- data.frame(bias = bias[ij,],lon = stn.lon, lat = stn.lat)
+	ret <- foreach(ij = 1:ntimes, .combine = 'c', .export = c('InsertMessagesTxt', 'main.txt.out'),
+					.packages = c('sp', 'gstat', 'ncdf4', 'fields', 'tcltk')) %parLoop% {
+		bias.stn <- data.frame(bias = bias[ij, ], lon = stn.lon, lat = stn.lat)
 		ix <- which(!is.na(bias.stn$bias))
+		## at least 10 stations to interpolate
 		if(length(ix) > 10){
-			bias.stn <- bias.stn[ix,]
+			bias.stn <- bias.stn[ix, ]
 			coordinates(bias.stn) =~lon + lat
 			gbias <- krige(bias~1, locations = bias.stn, newdata = newlocation.grid, block = bGrd, nmin = min.nbrs, nmax = max.nbrs, maxdist = max.dst, debug.level = 0)
 			grd.bias <- gbias$var1.pred
 			grd.bias[is.na(grd.bias)] <- 1
+			
 			#smoothing
 			imgbs <- as.image( grd.bias, x = coordinates(gbias), nx = nlon0, ny = nlat0)
 			smbias <- image.smooth(imgbs, theta = 0.08)  #decrease theta's value
@@ -212,15 +224,16 @@ ComputeMeanBiasRain <- function(rfe_stn, GeneralParameters, mrgRaindat, paramGrd
 			dim(grd.bias) <- c(nlon0, nlat0)
 		}
 
-		#outfl <- file.path(dirBias, paste(meanBiasPrefix, '_', ij,'.nc', sep = ''), fsep = .Platform$file.sep)
-		outfl <- file.path(origdir, paste(meanBiasPrefix, '_', ij,'.nc', sep = ''), fsep = .Platform$file.sep)
+		outfl <- file.path(origdir, paste(meanBiasPrefix, '_', ij, '.nc', sep = ''), fsep = .Platform$file.sep)
 		nc2 <- nc_create(outfl, grd.bs)
 		ncvar_put(nc2, grd.bs, grd.bias)
 		nc_close(nc2)
-		InsertMessagesTxt(main.txt.out, paste("Computing mean bias finished:", paste(meanBiasPrefix, '_', ij,'.nc', sep = '')))
+		InsertMessagesTxt(main.txt.out, paste("Computing mean bias finished:", paste(meanBiasPrefix, '_', ij, '.nc', sep = '')))
 		tcl("update")
 	}
 	# if(closeklust) stopCluster(klust)
+	rm(rfe_stn, mrgRaindat, stn.lon, stn.lat, stn.dates, stn.data, paramGrd,
+		newlocation.grid, bias, bias.dates)
 	return(0)
 }
 
@@ -228,12 +241,17 @@ ComputeMeanBiasRain <- function(rfe_stn, GeneralParameters, mrgRaindat, paramGrd
 
 ##Adjust downscaled data
 
-AjdMeanBiasRain <- function(freqData, istart, iend, rfeData, paramGrd, GeneralParameters, origdir){
+AjdMeanBiasRain <- function(adjMeanBiasparms){
+	freqData <- adjMeanBiasparms$freqData
+	istart <- adjMeanBiasparms$istart
+	iend <- adjMeanBiasparms$iend
+	rfeData <- adjMeanBiasparms$rfeData
+	paramGrd <- adjMeanBiasparms$paramGrd   
+	GeneralParameters <- adjMeanBiasparms$GeneralParameters
+	origdir <- adjMeanBiasparms$origdir
 
 	rfeDir <- as.character(GeneralParameters$file.io$Values[2])
 	biasDir <- as.character(GeneralParameters$file.io$Values[3])
-	#adjDir <- file.path(origdir, 'Adjusted_data', fsep = .Platform$file.sep)
-	#dir.create(adjDir, showWarnings = FALSE)
 
 	rfeFileFormat <- as.character(GeneralParameters$prefix$Values[1])
 	meanBiasPrefix <- as.character(GeneralParameters$prefix$Values[2])
@@ -249,17 +267,18 @@ AjdMeanBiasRain <- function(freqData, istart, iend, rfeData, paramGrd, GeneralPa
 	grd.bsadj <- ncvar_def("precip", "mm", xy.dim, -99, longname= " Mean Bias Adjusted RFE", prec = "short")
 
 	if(freqData == 'daily'){
-		adj.dates <- format(seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'day'),'%Y%m%d')
-		testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(adj.dates, 1,4), substr(adj.dates, 5,6), substr(adj.dates, 7,8)), fsep = .Platform$file.sep)
+		adj.dates <- format(seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'day'), '%Y%m%d')
+		testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(adj.dates, 1, 4), substr(adj.dates, 5, 6), substr(adj.dates, 7, 8)), fsep = .Platform$file.sep)
 	}
 	if(freqData == 'dekadal'){
-		adj.dates <- seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'day')
-		adj.dates <- paste(format(adj.dates[which(as.numeric(format(adj.dates,'%d')) <= 3)],'%Y%m'), as.numeric(format(adj.dates[which(as.numeric(format(adj.dates,'%d')) <= 3)],'%d')), sep = '')
-		testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(adj.dates, 1,4), substr(adj.dates, 5,6), substr(adj.dates, 7,7)), fsep = .Platform$file.sep)
+		adj.dates <- seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'day')
+		adj.dates <- paste(format(adj.dates[which(as.numeric(format(adj.dates, '%d')) <= 3)], '%Y%m'),
+						as.numeric(format(adj.dates[which(as.numeric(format(adj.dates, '%d')) <= 3)], '%d')), sep = '')
+		testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(adj.dates, 1, 4), substr(adj.dates, 5, 6), substr(adj.dates, 7, 7)), fsep = .Platform$file.sep)
 	}
 	if(freqData == 'monthly'){
-		adj.dates <- format(seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'month'),'%Y%m')
-		testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(adj.dates, 1,4), substr(adj.dates, 5,6)), fsep = .Platform$file.sep)
+		adj.dates <- format(seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'month'), '%Y%m')
+		testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(adj.dates, 1, 4), substr(adj.dates, 5, 6)), fsep = .Platform$file.sep)
 	}
 
 	existFl <- unlist(lapply(testfile, file.exists))
@@ -271,33 +290,32 @@ AjdMeanBiasRain <- function(freqData, istart, iend, rfeData, paramGrd, GeneralPa
 	rfeDataFl <- testfile[existFl]
 	adj.dates <- adj.dates[existFl]
 
-	tcl("update", "idletasks")
 	for (jfl in seq_along(rfeDataFl)){
 		if(freqData == 'daily'){
-			ann <- as.numeric(substr(adj.dates[jfl], 1,4))
-			iday <- as.numeric(strftime(as.Date(adj.dates[jfl], format='%Y%m%d'), format='%j'))
+			ann <- as.numeric(substr(adj.dates[jfl], 1, 4))
+			iday <- as.numeric(strftime(as.Date(adj.dates[jfl], format = '%Y%m%d'), format = '%j'))
 			ijt <- ifelse(ann%%4 == 0 & iday > 59, iday-1, iday)
 		}
 		if(freqData == 'dekadal'){
-			mon <- as.numeric(substr(adj.dates[jfl], 5,6))
-			dek <- as.numeric(substr(adj.dates[jfl], 7,7))
+			mon <- as.numeric(substr(adj.dates[jfl], 5, 6))
+			dek <- as.numeric(substr(adj.dates[jfl], 7, 7))
 			annual.dek <- expand.grid(dek = 1:3, mon = 1:12)
 			ijt <- which(annual.dek$dek == dek & annual.dek$mon == mon)
 		}
 		if(freqData == 'monthly'){
-			ijt <- as.numeric(substr(adj.dates[jfl], 5,6))
+			ijt <- as.numeric(substr(adj.dates[jfl], 5, 6))
 		}
 
 		rfefl <- rfeDataFl[jfl]
-		bsfl <- file.path(biasDir, paste(meanBiasPrefix, '_', ijt,'.nc', sep = ''), fsep = .Platform$file.sep)
-		#outfl <- file.path(adjDir, paste(adjPrefix, '_', adj.dates[jfl],'.nc', sep = ''), fsep = .Platform$file.sep)
-		outfl <- file.path(origdir, paste(adjPrefix, '_', adj.dates[jfl],'.nc', sep = ''), fsep = .Platform$file.sep)
+		bsfl <- file.path(biasDir, paste(meanBiasPrefix, '_', ijt, '.nc', sep = ''), fsep = .Platform$file.sep)
+		outfl <- file.path(origdir, paste(adjPrefix, '_', adj.dates[jfl], '.nc', sep = ''), fsep = .Platform$file.sep)
 
 		nc <- nc_open(rfefl)
 		rfe.lon <- nc$dim[[rfeData$rfeILon]]$vals
 		rfe.lat <- nc$dim[[rfeData$rfeILat]]$vals
 		rfe <- ncvar_get(nc, varid = rfeData$rfeVarid)
 		nc_close(nc)
+
 		xo <- order(rfe.lon)
 		yo <- order(rfe.lat)
 		rfe.lon <- rfe.lon[xo]
@@ -337,7 +355,8 @@ AjdMeanBiasRain <- function(freqData, istart, iend, rfeData, paramGrd, GeneralPa
 ########################################################################################################
 ###Merging
 
-MergingFunction <- function(mrgRaindat, VarioModel, paramsMRG, origdir){
+MergingFunction <- function(paramsMRG){
+	GeneralParameters <- paramsMRG$GeneralParameters
 	freqData <- GeneralParameters$period
 	istart <- paramsMRG$istart
 	iend <- paramsMRG$iend
@@ -345,32 +364,30 @@ MergingFunction <- function(mrgRaindat, VarioModel, paramsMRG, origdir){
 	rfeDir <- as.character(GeneralParameters$file.io$Values[4])
 	rfeFileFormat <- as.character(GeneralParameters$prefix$Values[1])
 
-	# outmrgdir <- file.path(origdir, 'Merged_RR', fsep = .Platform$file.sep)
-	# dir.create(outmrgdir, showWarnings = FALSE)
-
 	if(freqData == 'daily'){
-		mrg.dates <- format(seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'day'),'%Y%m%d')
+		mrg.dates <- format(seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'day'), '%Y%m%d')
 		if(GeneralParameters$NewGrd == '1'){
-			testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(mrg.dates, 1,4), substr(mrg.dates, 5,6), substr(mrg.dates, 7,8)), fsep = .Platform$file.sep)
+			testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(mrg.dates, 1, 4), substr(mrg.dates, 5, 6), substr(mrg.dates, 7, 8)), fsep = .Platform$file.sep)
 		}else{
-			testfile <- file.path(rfeDir, paste(rfeFileFormat, '_', mrg.dates,'.nc', sep = ''), fsep = .Platform$file.sep)
+			testfile <- file.path(rfeDir, paste(rfeFileFormat, '_', mrg.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
 		}
 	}
 	if(freqData == 'dekadal'){
-		mrg.dates <- seq(as.Date(istart, format='%Y%m%d'), as.Date(iend, format='%Y%m%d'),'day')
-		mrg.dates <- paste(format(mrg.dates[which(as.numeric(format(mrg.dates,'%d')) <= 3)],'%Y%m'), as.numeric(format(mrg.dates[which(as.numeric(format(mrg.dates,'%d')) <= 3)],'%d')), sep = '')
+		mrg.dates <- seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'day')
+		mrg.dates <- paste(format(mrg.dates[which(as.numeric(format(mrg.dates, '%d')) <= 3)], '%Y%m'),
+						as.numeric(format(mrg.dates[which(as.numeric(format(mrg.dates, '%d')) <= 3)], '%d')), sep = '')
 		if(GeneralParameters$NewGrd == '1'){
-			testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(mrg.dates, 1,4), substr(mrg.dates, 5,6), substr(mrg.dates, 7,7)), fsep = .Platform$file.sep)
+			testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(mrg.dates, 1, 4), substr(mrg.dates, 5, 6), substr(mrg.dates, 7, 7)), fsep = .Platform$file.sep)
 		}else{
-			testfile <- file.path(rfeDir, paste(rfeFileFormat, '_', mrg.dates,'.nc', sep = ''), fsep = .Platform$file.sep)
+			testfile <- file.path(rfeDir, paste(rfeFileFormat, '_', mrg.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
 		}
 	}
 	if(freqData == 'monthly'){
-		mrg.dates <- format(seq(as.Date(paste(istart, '1', sep = ''), format='%Y%m%d'), as.Date(paste(iend, '1', sep = ''), format='%Y%m%d'),'month'),'%Y%m')
+		mrg.dates <- format(seq(as.Date(paste(istart, '1', sep = ''), format = '%Y%m%d'), as.Date(paste(iend, '1', sep = ''), format = '%Y%m%d'), 'month'), '%Y%m')
 		if(GeneralParameters$NewGrd == '1'){
-			testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(mrg.dates, 1,4), substr(mrg.dates, 5,6)), fsep = .Platform$file.sep)
+			testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(mrg.dates, 1, 4), substr(mrg.dates, 5, 6)), fsep = .Platform$file.sep)
 		}else{
-			testfile <- file.path(rfeDir, paste(rfeFileFormat, '_', mrg.dates,'.nc', sep = ''), fsep = .Platform$file.sep)
+			testfile <- file.path(rfeDir, paste(rfeFileFormat, '_', mrg.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
 		}
 	}
 
@@ -388,12 +405,15 @@ MergingFunction <- function(mrgRaindat, VarioModel, paramsMRG, origdir){
 	# 	`%parLoop%` <- `%dopar%`
 	# 	closeklust <- TRUE
 	# }else{
-	# 	`%parLoop%` <- `%do%`
-	# 	closeklust <- FALSE
+		`%parLoop%` <- `%do%`
+		closeklust <- FALSE
 	# }
-	`%parLoop%` <- `%do%`
 
 	####
+	mrgRaindat <- paramsMRG$mrgRaindat
+	VarioModel <- paramsMRG$VarioModel
+	origdir <- paramsMRG$origdir
+
 	ijGrd <- paramsMRG$ijGrd
 	nlon0 <- paramsMRG$nlon0
 	nlat0 <- paramsMRG$nlat0
@@ -422,8 +442,8 @@ MergingFunction <- function(mrgRaindat, VarioModel, paramsMRG, origdir){
 
 	####
 	# for (jfl in seq_along(rfeDataFl))
-	packages <- c('sp', 'gstat', 'automap', 'ncdf4', 'fields')
-	toExports <- c('rfeDataFl', 'mrg.dates1', 'mergingProcs', 'GeneralParameters', 'mrgRaindat', 'origdir', 'outMask', 'InsertMessagesTxt', 'main.txt.out')
+	packages <- c('sp', 'gstat', 'automap', 'ncdf4', 'fields', 'tcltk')
+	toExports <- c('rfeDataFl', 'mrg.dates1', 'mergingProcs', 'GeneralParameters', 'InsertMessagesTxt', 'main.txt.out')
 	ret <- foreach(jfl = seq_along(rfeDataFl), .combine = 'c', .export = toExports, .packages = packages) %parLoop% {
 		if(GeneralParameters$NewGrd == '1'){
 			nc <- nc_open(rfeDataFl[jfl])
@@ -465,30 +485,45 @@ MergingFunction <- function(mrgRaindat, VarioModel, paramsMRG, origdir){
 
 		mrg.dates2 <- mrg.dates1[jfl]
 		#####Merging
-		out.mrg <- mergingProcs(stn.lon, stn.lat, stn.data, stn.dates, ijGrd, rfe.val, rfe.vec, mrg.dates2, newlocation.merging, bGrd)
+		mrgParms <- list(stn.lon = stn.lon, stn.lat = stn.lat, stn.data = stn.data, stn.dates = stn.dates,
+						ijGrd = ijGrd, rfe.val = rfe.val, rfe.vec = rfe.vec, mrg.dates2 = mrg.dates2, bGrd = bGrd,
+						newlocation.merging = newlocation.merging, GeneralParameters = GeneralParameters)
+		out.mrg <- mergingProcs(mrgParms)
 		dim(out.mrg) <- c(nlon0, nlat0)
 		out.mrg[is.na(out.mrg)] <- -99
 
 		#Apply mask for area of interest
 		if(!is.null(outMask)) out.mrg[is.na(outMask)] <- -99
-		outfl <- file.path(origdir, paste(mrgPrefix, '_', mrg.dates1[jfl],'_', mrgSuffix,'.nc', sep = ''), fsep = .Platform$file.sep)
-		#outfl <- file.path(outmrgdir, paste(mrgPrefix, '_', mrg.dates1[jfl],'_', mrgSuffix,'.nc', sep = ''), fsep = .Platform$file.sep)
+		outfl <- file.path(origdir, paste(mrgPrefix, '_', mrg.dates1[jfl], '_', mrgSuffix, '.nc', sep = ''), fsep = .Platform$file.sep)
 		nc2 <- nc_create(outfl, grd.out)
 		ncvar_put(nc2, grd.out, out.mrg)
 		nc_close(nc2)
 
 		#####
-		InsertMessagesTxt(main.txt.out, paste("Rainfall merging finished successfully:", paste(mrgPrefix, '_', mrg.dates1[jfl],'_', mrgSuffix,'.nc', sep = '')))
+		InsertMessagesTxt(main.txt.out, paste("Rainfall merging finished successfully:", paste(mrgPrefix, '_', mrg.dates1[jfl], '_', mrgSuffix, '.nc', sep = '')))
 		tcl("update")
 	}
 	# if(closeklust) stopCluster(klust)
-
+	rm(rfeDataFl, mrg.dates1, mergingProcs, GeneralParameters, mrgRaindat, outMask, rfeDataFl, testfile, testfile, 
+		stn.dates, stn.data)
 	return(0)
 }
 
 ########################################################################################################
 
-mergingProcs <- function(stn.lon, stn.lat, stn.data, stn.dates, ijGrd, rfe.val, rfe.vec, mrg.dates2, newlocation.merging, bGrd){
+mergingProcs <- function(mrgParms){
+	stn.lon <- mrgParms$stn.lon
+	stn.lat <- mrgParms$stn.lat
+	stn.data <- mrgParms$stn.data
+	stn.dates <- mrgParms$stn.dates
+	ijGrd <- mrgParms$ijGrd
+	rfe.val <- mrgParms$rfe.val
+	rfe.vec <- mrgParms$rfe.vec
+	mrg.dates2 <- mrgParms$mrg.dates2
+	newlocation.merging <- mrgParms$newlocation.merging
+	bGrd <- mrgParms$bGrd
+	GeneralParameters <- mrgParms$GeneralParameters
+
 	nmin <- as.numeric(as.character(GeneralParameters$params.int$Values[1]))
 	nozero <- as.numeric(as.character(GeneralParameters$params.int$Values[2]))
 	max.RnR.dist <- as.numeric(as.character(GeneralParameters$params.int$Values[3]))
@@ -514,9 +549,7 @@ mergingProcs <- function(stn.lon, stn.lat, stn.data, stn.dates, ijGrd, rfe.val, 
 	out.mrg <- rfe.vec
 
 	if(sum(gg, na.rm = TRUE) > 0 & length(ix) >= nmin){
-
-		rr.stn <- data.frame(cbind(stn.lon, jitter(stn.lat), gg, rfe_gg, dff))
-		#rr.stn <- data.frame(cbind(stn.lon, stn.lat, gg, rfe_gg, dff))
+		rr.stn <- data.frame(cbind(stn.lon, stn.lat, gg, rfe_gg, dff))
 		rr.stn <- rr.stn[ix,]
 		names(rr.stn) <- c("lon", "lat", "gg", "rfe", "dff")
 		coordinates(rr.stn) = ~lon+lat
@@ -524,7 +557,9 @@ mergingProcs <- function(stn.lon, stn.lat, stn.data, stn.dates, ijGrd, rfe.val, 
 		#ijx1 <- which(rr.stn$gg > 0 & rr.stn$rfe > 0)
 		ijx1 <- which(rr.stn$gg > 0)
 		if(length(ijx1) >= nozero){
+			
 			grd.newloc <- SpatialPointsDataFrame(coords = newlocation.merging, data = data.frame(rfe = rfe.vec))
+			
 			rr.glm <- glm(gg~rfe, rr.stn, family = gaussian)
 			rr.stn$res <- residuals(rr.glm)
 			pred.rr <- predict(rr.glm, newdata = grd.newloc, se.fit = T)
