@@ -74,6 +74,14 @@ tkgrid.columnconfigure(frame_img, 0, weight = 1)
 tkgrid.rowconfigure(frame_iri, 0, weight = 1)
 tkgrid.columnconfigure(frame_iri, 0, weight = 1)
 
+if (Sys.info()["sysname"] == "Windows"){
+	tkconfigure(cdtname, background = 'white')
+	tkconfigure(cdtver, background = 'white')
+	tkconfigure(cdtauth1, background = 'white')
+	tkconfigure(imgcdtoutput, background = 'white')
+	tkconfigure(imgirilogo, background = 'white')
+}
+
 tcl("update", "idletasks")
 tkinsert(txta.cdtAcc, "1.0", paste(rdL.cdtAcc[1], "\n"), "welcome")
 for(i in 2:length(rdL.cdtAcc)) tkinsert(txta.cdtAcc, "end", paste(rdL.cdtAcc[i], "\n"), "cdtfont4f")
