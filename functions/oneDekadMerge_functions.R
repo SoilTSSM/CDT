@@ -1,275 +1,365 @@
 
-Treat1DekRain <- function(){
-
-	file.pars <- as.character(GeneralParameters$file.io$Values)
-	all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-	jfile <- which(all.open.file == file.pars[1])
-	donne <- AllOpenFilesData[[jfile]][[2]]
-
-	#######get data
-	stn.lon <- as.numeric(donne[2,-1])
-	stn.lat <- as.numeric(donne[3,-1])
-	dates <- as.character(donne[nrow(donne), 1])
-	if(nchar(as.character(dates)) != 7){
-		InsertMessagesTxt(main.txt.out, 'Station data: not a dekadal data', format = TRUE)
-		return(NULL)
-	}
-
-	donne <- donne[nrow(donne),-1, drop = F]
-
-	daty <- as.character(GeneralParameters$dates.mrg$Values)
-	yrs <- as.numeric(daty[1])
-	mon <- as.numeric(daty[2])
-	dek <- as.numeric(daty[3])
-	daty1 <- paste(format(as.Date(paste(yrs, mon, dek, sep = '-')),'%Y%m'), dek, sep = '')
-
-	ix <- which(dates%in%daty1)
-	if(length(ix) == 0){
-		InsertMessagesTxt(main.txt.out, "The input date does not match the date in the station data file", format = TRUE)
-		return(NULL)
-	}
-	donne1 <- as.numeric(donne[ix,])
-	stnlist <- list(lon = stn.lon, lat = stn.lat, dates = daty1, data = donne1)
-
-	###get elevation data
-	if(GeneralParameters$blankGrd == "2"){
-		jncdf <- which(all.open.file == file.pars[5])
-		fdem <- AllOpenFilesData[[jncdf]][[2]]
-		dem <- fdem$value
-		dem[dem < 0] <- 0
-		dem.coord <- data.frame(expand.grid(lon = fdem$x, lat = fdem$y))
-		coordinates(dem.coord) = ~lon+lat
-		demdf <- data.frame(dem = c(dem))
-		demdf <- SpatialPointsDataFrame(coords = dem.coord, data = demdf, proj4string = CRS(as.character(NA)))
-		demlist <- list(lon = fdem$x, lat = fdem$y, demGrd = demdf)
-	}else demlist <- NULL
-
-	##Shapefile
-	if(GeneralParameters$blankGrd == "3"){
-		jshp <- which(all.open.file == file.pars[6])
-		shpd <- AllOpenFilesData[[jshp]][[2]]
-	}else shpd <- NULL
-
-	mrgRaindat <- list(stnData = stnlist, demData = demlist, shpData = shpd)
-	return(mrgRaindat)
-}
-
-
-#################################################
-
 mergeOneDekadRain <- function(){
-	mrgRaindat <- Treat1DekRain()
-	if(is.null(mrgRaindat)) return(NULL)
-	VarioModel <- c("Sph", "Exp", "Gau")
 
-	origdir <- as.character(GeneralParameters$file.io$Values[4])
-	nmin <- as.numeric(as.character(GeneralParameters$params.int$Values[1]))
-	nozero <- as.numeric(as.character(GeneralParameters$params.int$Values[2]))
-	max.RnR.dist <- as.numeric(as.character(GeneralParameters$params.int$Values[3]))
-	maxdist <- as.numeric(as.character(GeneralParameters$params.int$Values[4]))
-	min.nbrs <- as.numeric(as.character(GeneralParameters$params.int$Values[5]))
-	max.nbrs <- as.numeric(as.character(GeneralParameters$params.int$Values[6]))
+	noStn <- GeneralParameters$No.Stn.Data
+	downRFE <- GeneralParameters$Downloaded.RFE
+	useAdj <- GeneralParameters$Adjust.Bias
+	usemask <- GeneralParameters$Blank.Grid
 
-	interpMethod <- as.character(GeneralParameters$params.mrg$Values[1])
-	RainNoRain <- as.character(GeneralParameters$params.mrg$Values[2])
+	VarioModel <- GeneralParameters$model
+	min.Stn <- as.numeric(GeneralParameters$Merging.pars$min.Stn)
+	min.Stn.non0 <- as.numeric(GeneralParameters$Merging.pars$min.Stn.non0)
+	max.RnR.dist <- as.numeric(GeneralParameters$Merging.pars$max.RnR.dist)
+	maxdist <- as.numeric(GeneralParameters$Interpolation.pars$maxdist)
+	nmin <- as.numeric(GeneralParameters$Interpolation.pars$nmin)
+	nmax <- as.numeric(GeneralParameters$Interpolation.pars$nmax)
+	interpMethod <- GeneralParameters$Interpolation.pars$Interp.Method
+	RainNoRain <- GeneralParameters$Merging.pars$Rain.no.Rain
 
-	####bias adj
-	rfeDir <- as.character(GeneralParameters$file.io$Values[2])
-	biasDir <- as.character(GeneralParameters$file.io$Values[3])
+	savedir <- GeneralParameters$IO.files$dir2save
+	rfeDir <- GeneralParameters$IO.files$RFE.dir
+	biasDir <- GeneralParameters$IO.files$BIAS.dir
+	rfeFileFormat <- GeneralParameters$Prefix$RFE.File.Format
+	meanBiasPrefix <- GeneralParameters$Prefix$Mean.Bias.Prefix
 
-	rfeFileFormat <- as.character(GeneralParameters$prefix$Values[1])
-	meanBiasPrefix <- as.character(GeneralParameters$prefix$Values[2])
-
-	biasFile <- file.path(biasDir, paste(meanBiasPrefix, '_1.nc', sep = ''), fsep = .Platform$file.sep)
-	if(!file.exists(biasFile)){
-		InsertMessagesTxt(main.txt.out, "Mean bias coefficients not found", format = TRUE)
+	###################################################
+	## check date
+	daty <- try(as.Date(paste(as.numeric(GeneralParameters$Merging.Date$year),
+				as.numeric(GeneralParameters$Merging.Date$month),
+				as.numeric(GeneralParameters$Merging.Date$dekad), sep = '-')), silent = TRUE)
+	if(inherits(daty, "try-error") | !inherits(daty, "Date")){
+		InsertMessagesTxt(main.txt.out, "Wrong date", format = TRUE)
 		return(NULL)
 	}
-
-	####
-	daty <- as.character(GeneralParameters$dates.mrg$Values)
-	yrs <- as.numeric(daty[1])
-	mon <- as.numeric(daty[2])
-	dek <- as.numeric(daty[3])
-	daty1 <- paste(format(as.Date(paste(yrs, mon, dek, sep = '-')),'%Y%m'), dek, sep = '')
-
-	annual.dek <- expand.grid(dek = 1:3, mon = 1:12)
-	ijt <- which(annual.dek$dek == dek & annual.dek$mon == mon)
-
-	rfefl <- file.path(rfeDir, sprintf(rfeFileFormat, yrs, substr(daty1, 5,6), dek))
-	bsfl <- file.path(biasDir, paste(meanBiasPrefix, '_', ijt,'.nc', sep = ''), fsep = .Platform$file.sep)
-	outfl <- file.path(origdir, paste('rr_adj', '_', daty1,'.nc', sep = ''), fsep = .Platform$file.sep)
-
-	nc <- nc_open(rfefl)
-	rfe.lon <- nc$dim[[1]]$vals
-	rfe.lat <- nc$dim[[2]]$vals
-	rfe <- ncvar_get(nc, varid = nc$var[[1]]$name)
-	nc_close(nc)
-	xo <- order(rfe.lon)
-	yo <- order(rfe.lat)
-	rfe.lon <- rfe.lon[xo]
-	rfe.lat <- rfe.lat[yo]
-	rfe <- rfe[xo, yo]
-	rfeObj <- list(x = rfe.lon, y = rfe.lat, z = rfe)
-
-	nc <- nc_open(bsfl)
-	bisa.lon <- nc$dim[[1]]$vals
-	bisa.lat <- nc$dim[[2]]$vals
-	bias <- ncvar_get(nc, varid = nc$var[[1]]$name)
-	nc_close(nc)
-	grdnew <- list(x = bisa.lon, y = bisa.lat)
-	newObj <- interp.surface.grid(rfeObj, grdnew)
-	rfe <- newObj$z
-	rfe.adj <- round(rfe * bias, 2)
+	daty <- paste(format(daty, '%Y%m'), as.numeric(format(daty, '%d')), sep = '')
+	yrs <- substr(daty, 1, 4)
+	mon <- substr(daty, 5, 6)
+	dek <- substr(daty, 7, 7)
+	if(as.numeric(dek) > 3){
+		InsertMessagesTxt(main.txt.out, 'Dekad must be between 1 and 3', format = TRUE)
+		return(NULL)
+	}
+	yeardekad <- expand.grid(1:3, 1:12)
 
 	###################################################
-	dx <- ncdim_def("Lon", "degreeE", bisa.lon)
-	dy <- ncdim_def("Lat", "degreeN", bisa.lat)
-	xy.dim <- list(dx, dy)
-	grd.bsadj <- ncvar_def("precip", "mm", xy.dim, -99, longname= " Mean Bias Adjusted RFE", prec = "short")
-	grd.out <- ncvar_def("precip", "mm", xy.dim,-99, longname=" Merged Station-Satellite Rainfall", prec = "short")
+	## RFE data
+	if(downRFE == '1'){
+		rfeFile <- file.path(rfeDir, sprintf(rfeFileFormat, yrs, mon, dek))
+		if(!file.exists(rfeFile)){
+			InsertMessagesTxt(main.txt.out, "RFE data not found", format = TRUE)
+			return(NULL)
+		}
 
-	######################Save adjusted data
-	rfe.adj1 <- rfe.adj
-	rfe.adj1[is.na(rfe.adj1)] <- -99
+		nc <- nc_open(rfeFile)
+		rfe.lon <- nc$dim[[1]]$vals
+		rfe.lat <- nc$dim[[2]]$vals
+		rfe <- ncvar_get(nc, varid = nc$var[[1]]$name)
+		xo <- order(rfe.lon)
+		yo <- order(rfe.lat)
+		rfe.lon <- rfe.lon[xo]
+		rfe.lat <- rfe.lat[yo]
+		rfe <- rfe[xo, yo]
+		nc_close(nc)
+	}else{
+		if(!testConnection()){
+			InsertMessagesTxt(main.txt.out, 'No internet connection', format = TRUE)
+			return(NULL)
+		}
+		dataRFE <- GeneralParameters$RFE.data
+		minlon <- as.numeric(GeneralParameters$RFE.bbox$minlon)
+		maxlon <- as.numeric(GeneralParameters$RFE.bbox$maxlon)
+		minlat <- as.numeric(GeneralParameters$RFE.bbox$minlat)
+		maxlat <- as.numeric(GeneralParameters$RFE.bbox$maxlat)
 
-	nc2 <- nc_create(outfl, grd.bsadj)
-	ncvar_put(nc2, grd.bsadj, rfe.adj1)
-	nc_close(nc2)
+		downrfeDir <- file.path(savedir, 'downloaded_RFE')
+		dir.create(downrfeDir, showWarnings = FALSE, recursive = TRUE)
+		
+		if(dataRFE == 'TAMSAT'){
+			url <- 'http://tamsat.org.uk/public_data'
+			file0 <- paste('rfe', yrs, '_', mon,'-dk', dek,'.nc', sep = '')
+			url <- paste(url, yrs, mon, file0, sep = '/')
+		}
+		if(dataRFE == 'CHIRP'){
+			url <- 'ftp://ftp.chg.ucsb.edu/pub/org/chg/products/CHIRP/dekads/africa'
+			file0 <- paste('chirp.', yrs, '.', mon,'.', dek,'.tif', sep = '')
+			url <- paste(url, file0, sep = '/')
+		}
 
-	###################################################
-	nlon0 <- length(bisa.lon)
-	nlat0 <- length(bisa.lat)
-	newlocation.merging <- expand.grid(lon = bisa.lon, lat = bisa.lat)
-	coordinates(newlocation.merging)<- ~lon+lat
-	grid.loc <- newlocation.merging
-	grid.loc <- SpatialPixels(points = grid.loc, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
-
-	########Blank mask
-	usemask <- as.character(GeneralParameters$blankGrd)
-	if(usemask == "1") outMask <- NULL
-	if(usemask == "2"){
-		dem.grd <- krige(formula = dem ~ 1, locations = mrgRaindat$demData$demGrd, newdata = newlocation.merging, nmax = 8, nmin = 3, debug.level = 0)
-		dem <- ifelse(dem.grd@data$var1.pred < 0,0, dem.grd@data$var1.pred)
-		outMask <- matrix(dem, nrow = nlon0, ncol = nlat0)
-		outMask[outMask == 0] <- NA
-	}
-	if(usemask == "3"){
-		shpd <- mrgRaindat$shpData
-		shpd[['vtmp']] <- 1
-		shpMask <- over(newlocation.merging, shpd)[,'vtmp']
-		outMask <- matrix(shpMask, nrow = nlon0, ncol = nlat0)
-	}
-
-	#########
-	##Gauge data
-	stn.lon <- mrgRaindat$stnData$lon
-	stn.lat <- mrgRaindat$stnData$lat
-	stn.data <- mrgRaindat$stnData$data
-
-	#Index of new grid over stations
-	stn.loc <- data.frame(lon = stn.lon, lat = stn.lat)
-	stn.loc <- SpatialPoints(stn.loc)
-	ijGrd <- unname(over(stn.loc, geometry(grid.loc)))
-
-	#rfe over stn location
-	rfe_gg <- rfe.adj[ijGrd]
-	dff <- stn.data - rfe_gg
-
-	# Remove extremes differences between gauge and satellite
-	q1 <- quantile(dff, 0.0001, na.rm = T)
-	q2 <- quantile(dff, 0.9999, na.rm = T)
-	dff[dff < q1] <- NA
-	dff[dff > q2] <- NA
-	ix <- which(!is.na(dff))
-	rfe.vec <- c(rfe.adj )
-	out.mrg <- rfe.vec  ##Initial rfe
-
-	if(sum(stn.data, na.rm = TRUE) > 0 & length(ix) >= nmin){
-
-		rr.stn <- data.frame(cbind(stn.lon, jitter(stn.lat), stn.data, rfe_gg, dff))
-		rr.stn <- rr.stn[ix,]
-		names(rr.stn) <- c("lon", "lat", "gg", "rfe", "dff")
-		coordinates(rr.stn) = ~lon+lat
-
-		#ijx1 <- which(rr.stn$gg > 0 & rr.stn$rfe > 0)
-		ijx1 <- which(rr.stn$gg > 0)
-		if(length(ijx1) >= nozero){
-			#grd.newloc <- newlocation.merging
-			#grd.newloc$rfe <- rfe.vec
-			grd.newloc <- SpatialPointsDataFrame(coords = newlocation.merging, data = data.frame(rfe = rfe.vec))
-			rr.glm <- glm(gg~rfe, rr.stn, family = gaussian)
-			rr.stn$res <- residuals(rr.glm)
-			pred.rr <- predict(rr.glm, newdata = grd.newloc, se.fit = T)
-
-			if(interpMethod == "IDW"){
-				grd.rr <- krige(res~1, locations = rr.stn, newdata = newlocation.merging, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0)
-				res.pred <- grd.rr$var1.pred
-			}else if(interpMethod == "Kriging"){
-				grd.rr <- try(autoKrige(res~1, input_data = rr.stn, new_data = newlocation.merging, model = VarioModel, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0), silent = TRUE)
-				if(!inherits(grd.rr, "try-error")){
-					res.pred <- grd.rr$krige_output$var1.pred
-				}else{
-					grd.rr <- krige(res~1, locations = rr.stn, newdata = newlocation.merging, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0)
-					res.pred <- grd.rr$var1.pred
-				}
-			}
-			out.mrg <- as.numeric(res.pred+pred.rr$fit)
-			out.mrg <- ifelse(out.mrg < 0,0, out.mrg)
+		destfile0 <- file.path(downrfeDir, paste('Africa_', file0, sep = ''))
+		# url.exists(url) #RCurl
+		# testURL <- try(suppressWarnings(readLines(url, n = 1)), silent = TRUE)
+		testURL <- try(suppressWarnings(url(url, open='rb')), silent = TRUE)
+		if(inherits(testURL, "try-error")){
+			InsertMessagesTxt(main.txt.out, paste('Cannot open URL or file does not exist:',file0),
+			format = TRUE)
+			close(testURL)
+			return(NULL)
+		}else close(testURL)
+		ret <- try(download.file(url, destfile0, mode = "wb", quiet = TRUE), silent = TRUE)
+		if(ret  != 0){
+			InsertMessagesTxt(main.txt.out, paste('Download failed:',file0), format = TRUE)
+			return(NULL)
 		}else{
-			grd.rr <- idw(dff~1, locations = rr.stn, newdata = newlocation.merging, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0)
-			out.mrg <- grd.rr$var1.pred + rfe.vec
-			out.mrg <- ifelse(out.mrg < 0,0, out.mrg)
+			InsertMessagesTxt(main.txt.out, paste('Download:',file0, 'done!'))
 		}
-		# Take RFE for areas where interpolation/merging was not possible
-		ix <- which(is.na(out.mrg))
-		out.mrg[ix] <- rfe.vec[ix]
-
-		cells <- as(newlocation.merging, 'SpatialPixels')@grid
-
-		##smoothing???
-		img.mrg <- as.image(out.mrg, x = coordinates(newlocation.merging), nx = cells@cells.dim[1], ny = cells@cells.dim[2])
-		smooth.mrg <- image.smooth(img.mrg, theta = 0.075)
-		out.mrg <- round(c(smooth.mrg$z), 1)
-
-		#Rain-non-Rain Mask
-		if(RainNoRain != 'None') {
-			rr.stn$rnr <- ifelse(rr.stn$gg >= 1,1,0)
-			if (RainNoRain == 'Gauge') {#Gauge only
-				rnr.grd <- krige(rnr~1, locations = rr.stn, newdata = newlocation.merging, nmin = min.nbrs, nmax = max.nbrs, maxdist = max.RnR.dist, debug.level = 0)
-				rnr.pred <- ifelse(is.na(rnr.grd$var1.pred), 1, rnr.grd$var1.pred)
-				RnoR <- round(rnr.pred)
-				RnoR[is.na(RnoR)] <- 1
-			} else if(RainNoRain == 'Satellite') {#Satellite only
-				RnoR <- ifelse(rfe.vec >= 1, 1, 0)
-				RnoR[is.na(RnoR)] <- 1
-			} else if(RainNoRain == 'GaugeSatellite') {
-				rfe.rnr <- ifelse(rfe.vec >= 1, 1, 0)
-				rnr.grd <- krige(rnr~1, locations = rr.stn, newdata = newlocation.merging, nmin = min.nbrs, nmax = max.nbrs, maxdist = max.RnR.dist, debug.level = 0)
-				RnoR <- rnr.grd$var1.pred
-				RnoR <- round(RnoR)
-				ix <- which(is.na(RnoR))
-				RnoR[ix] <- rfe.rnr[ix]
-				RnoR[is.na(RnoR)] <- 1
-				##smoothing???
-				img.RnoR <- as.image(RnoR, x = coordinates(newlocation.merging), nx = cells@cells.dim[1], ny = cells@cells.dim[2])
-				smooth.RnoR <- image.smooth(img.RnoR, theta = 0.075)
-				RnoR <- round(c(smooth.RnoR$z))
-			}
-			out.mrg <- out.mrg * RnoR
+		if(dataRFE == 'TAMSAT'){
+			nc <- nc_open(destfile0)
+			xm <- nc$dim[[2]]$vals
+			ym <- nc$dim[[1]]$vals
+			rfe <- ncvar_get(nc, varid = nc$var[[1]]$name)
+			nc_close(nc)
+			xo <- order(xm)
+			yo <- order(ym)
+			xm <- xm[xo]
+			ym <- ym[yo]
+			rfe <- rfe[xo, yo]
+			idx <- which(xm >= minlon & xm <= maxlon)
+			idy <- which(ym >= minlat & ym <= maxlat)
+			rfe.lon <- xm[idx]
+			rfe.lat <- ym[idy]
+			rfe <- rfe[idx, idy]
+			rfe[is.na(rfe)] <- -99
+			longname <- "TAMSAT 10-days rainfall estimate"
 		}
+		if(dataRFE == 'CHIRP'){
+			tif <- readGDAL(destfile0, silent = TRUE)
+			rfe <- tif@data[, 1]
+			xy <- coordinates(tif)
+			ix <- (xy[, 1] >= minlon & xy[, 1] <= maxlon) & (xy[, 2] >= minlat & xy[, 2] <= maxlat)
+			rfe <- rfe[ix]
+			xy <- xy[ix, ]
+			rfe <- reshapeXYZ2Matrix(cbind(xy, rfe))
+			rfe.lon <- rfe$x
+			rfe.lat <- rfe$y
+			rfe <- rfe$z
+			rfe[rfe < 0 | is.na(rfe)] <- -99
+			longname <- "CHIRP 10-days rainfall estimate"
+			file0 <- paste(getf.no.ext(file0), '.nc', sep = '')
+		}
+		dx <- ncdim_def("Lon", "degreeE", rfe.lon)
+		dy <- ncdim_def("Lat", "degreeN", rfe.lat)
+		rfeout <- ncvar_def('precip', "mm", list(dx, dy), -99, longname = longname, prec = "short")
+		outfl <- file.path(downrfeDir, file0)
+		nc2 <- nc_create(outfl, rfeout)
+		ncvar_put(nc2, rfeout, rfe)
+		nc_close(nc2)
 	}
 
-	dim(out.mrg) <- c(nlon0, nlat0)
-	out.mrg[is.na(out.mrg)] <- -99
+	###################################################
+	## Bias data
+	if(useAdj == '1'){
+		idek <- which(yeardekad[, 2] == as.numeric(mon) & yeardekad[, 1] == as.numeric(dek))
+		biasFile <- file.path(biasDir, paste(meanBiasPrefix, '_', idek, '.nc', sep = ''))
+		if(!file.exists(biasFile)){
+			InsertMessagesTxt(main.txt.out, "Mean bias coefficients not found", format = TRUE)
+			return(NULL)
+		}
 
-	#Apply mask for area of interest
-	if(!is.null(outMask)) out.mrg[is.na(outMask)] <- -99
+		nc <- nc_open(biasFile)
+		bias.lon <- nc$dim[[1]]$vals
+		bias.lat <- nc$dim[[2]]$vals
+		bias <- ncvar_get(nc, varid = nc$var[[1]]$name)
+		nc_close(nc)
+	}
 
-	outfl <- file.path(origdir, paste('rr_mrg', '_', daty1, '_MON.nc', sep = ''), fsep = .Platform$file.sep)
-	nc2 <- nc_create(outfl, grd.out)
-	ncvar_put(nc2, grd.out, out.mrg)
-	nc_close(nc2)
+	###################################################
+	## define grid,  from RFE or Bias
+	if(useAdj == '1'){
+		grd.lon <- bias.lon 
+		grd.lat <- bias.lat
+	}else{
+		grd.lon <- rfe.lon
+		grd.lat <- rfe.lat
+	}
+	nlon0 <- length(grd.lon)
+	nlat0 <- length(grd.lat)
+	newlocation.merging <- defSpatialPixels(list(lon = grd.lon, lat = grd.lat))
+
+	###################################################
+	dx <- ncdim_def("Lon", "degreeE", grd.lon)
+	dy <- ncdim_def("Lat", "degreeN", grd.lat)
+	xy.dim <- list(dx, dy)
+
+	###################################################
+	## BIAS ADJUSTMENT
+	if(useAdj == '1'){
+		rfeObj <- list(x = rfe.lon, y = rfe.lat, z = rfe)
+		grdnew <- list(x = grd.lon, y = grd.lat)
+		newObj <- interp.surface.grid(rfeObj, grdnew)
+		rfe <- round(newObj$z * bias, 2)
+
+		rfe.adj <- rfe
+		rfe.adj[is.na(rfe.adj)] <- -99
+		grd.bsadj <- ncvar_def("precip", "mm", xy.dim, -99, longname= " Mean Bias Adjusted RFE", prec = "short")
+		bias.outfl <- file.path(savedir, paste('rr_adj', '_', daty,'.nc', sep = ''), fsep = .Platform$file.sep)
+		nc2 <- nc_create(bias.outfl, grd.bsadj)
+		ncvar_put(nc2, grd.bsadj, rfe.adj)
+		nc_close(nc2)
+	}
+
+	###################################################
+	## merging with station data
+	if(noStn == '0'){
+		## Blank mask
+		### get elevation data
+		if(usemask == "2") demData <- getDemOpenDataSPDF(GeneralParameters$IO.files$DEM.file)
+		else demData <- NULL
+
+		## Shapefile
+		if(usemask == "3") shpd <- getShpOpenData(GeneralParameters$IO.files$SHP.file)[[2]]
+		else shpd <- NULL
+
+		if(usemask == "1") outMask <- NULL
+		if(usemask == "2"){
+			grid.loc <- defSpatialPixels(list(lon = grd.lon, lat = grd.lat))
+			demGrid <- defSpatialPixels(list(lon = demData$lon, lat = demData$lat))
+			is.regridDEM <- is.sameSpatialPixelsObj(grid.loc, demGrid, tol = 1e-07)
+			if(is.regridDEM){
+				dem <- regridDEMFun(demData, list(lon = grd.lon, lat = grd.lat), regrid = 'BLW')
+			}else{
+				dem <- demData$demGrd@data[, 1]
+			}
+			outMask <- matrix(dem, nrow = nlon0, ncol = nlat0)
+			outMask[outMask == 0] <- NA
+			rm(dem.grd, dem)
+		}
+		if(usemask == "3"){
+			shpd[['vtmp']] <- 1
+			shpMask <- over(newlocation.merging, shpd)[, 'vtmp']
+			outMask <- matrix(shpMask, nrow = nlon0, ncol = nlat0)
+		}
+
+		###################################################
+		## block grid
+		if(as.logical(GeneralParameters$use.block)){
+			sDX <- newlocation.merging@grid@cellsize[1]/2
+			dBX <- seq(-sDX, sDX, length.out = 4)
+			sDY <- newlocation.merging@grid@cellsize[2]/2
+			dBY <- seq(-sDY, sDY, length.out = 4)
+			bGrd <- expand.grid(x = dBX, y = dBY)
+		}
+
+		###################################################
+		### get data
+		donne <- getStnOpenData(GeneralParameters$IO.files$STN.file)
+		donne <- getCDTdataAndDisplayMsg(donne, 'dekadal')
+		if(is.null(donne)) return(NULL)
+		ix <- which(donne$dates%in%daty)
+		if(length(ix) != 1){
+			InsertMessagesTxt(main.txt.out, "The input date does not match the date in the station data file", format = TRUE)
+			return(NULL)
+		}
+		donne$data <- as.numeric(donne$data[ix,])
+		donne$dates <- donne$dates[ix]
+
+		stn.lon <- donne$lon
+		stn.lat <- donne$lat
+		stn.data <- donne$data
+
+		## RFE over stn location
+		ijGrd <- grid2pointINDEX(list(lon = stn.lon, lat = stn.lat), list(lon = grd.lon, lat = grd.lat))
+		rfe_gg <- rfe[ijGrd]
+		dff <- stn.data - rfe_gg
+
+		# Remove extremes differences between gauge and satellite
+		q1 <- quantile(dff, 0.0001, na.rm = T)
+		q2 <- quantile(dff, 0.9999, na.rm = T)
+		dff[dff < q1] <- NA
+		dff[dff > q2] <- NA
+		ix <- which(!is.na(dff))
+
+		##Initial rfe
+		rfe.vec <- c(rfe)
+		out.mrg <- rfe.vec  
+
+		if(sum(stn.data, na.rm = TRUE) > 0 & length(ix) >= min.Stn){
+			rr.stn <- data.frame(lon = stn.lon, lat = jitter(stn.lat), gg = stn.data, rfe = rfe_gg, dff = dff)
+			rr.stn <- rr.stn[ix,]
+			coordinates(rr.stn) <- ~lon+lat
+
+			ijx1 <- which(rr.stn$gg > 0)
+			if(length(ijx1) >= min.Stn.non0){
+				grd.newloc <- SpatialPointsDataFrame(coords = newlocation.merging, data = data.frame(rfe = rfe.vec))
+				rr.glm <- glm(gg~rfe, rr.stn, family = gaussian)
+				rr.stn$res <- residuals(rr.glm)
+				pred.rr <- predict(rr.glm, newdata = grd.newloc, se.fit = T)
+
+				if(interpMethod == "IDW"){
+					grd.rr <- krige(res~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd,
+										nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+					res.pred <- grd.rr$var1.pred
+				}else if(interpMethod == "Kriging"){
+					grd.rr <- try(autoKrige(res~1, input_data = rr.stn, new_data = newlocation.merging, block = bGrd,
+									model = VarioModel, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0), silent = TRUE)
+					if(!inherits(grd.rr, "try-error")){
+						res.pred <- grd.rr$krige_output$var1.pred
+					}else{
+						grd.rr <- krige(res~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd,
+											nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+						res.pred <- grd.rr$var1.pred
+					}
+				}
+				out.mrg <- as.numeric(res.pred+pred.rr$fit)
+				out.mrg <- ifelse(out.mrg < 0,0, out.mrg)
+			}else{
+				grd.rr <- idw(dff~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd,
+								nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+				out.mrg <- grd.rr$var1.pred + rfe.vec
+				out.mrg <- ifelse(out.mrg < 0,0, out.mrg)
+			}
+			# Take RFE for areas where interpolation/merging was not possible
+			ix <- which(is.na(out.mrg))
+			out.mrg[ix] <- rfe.vec[ix]
+
+			cells <- as(newlocation.merging, 'SpatialPixels')@grid
+			##smoothing???
+			# img.mrg <- as.image(out.mrg, x = coordinates(newlocation.merging), nx = cells@cells.dim[1], ny = cells@cells.dim[2])
+			# smooth.mrg <- image.smooth(img.mrg, theta = 0.075)
+			# out.mrg <- round(c(smooth.mrg$z), 1)
+
+			#Rain-non-Rain Mask
+			if(RainNoRain != 'None') {
+				rr.stn$rnr <- ifelse(rr.stn$gg >= 1,1,0)
+				if (RainNoRain == 'Gauge') {#Gauge only
+					rnr.grd <- krige(rnr~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd,
+									nmin = nmin, nmax = nmax, maxdist = max.RnR.dist, debug.level = 0)
+					rnr.pred <- ifelse(is.na(rnr.grd$var1.pred), 1, rnr.grd$var1.pred)
+					RnoR <- round(rnr.pred)
+					RnoR[is.na(RnoR)] <- 1
+				} else if(RainNoRain == 'Satellite') {#Satellite only
+					RnoR <- ifelse(rfe.vec >= 1, 1, 0)
+					RnoR[is.na(RnoR)] <- 1
+				} else if(RainNoRain == 'GaugeSatellite') {
+					rfe.rnr <- ifelse(rfe.vec >= 1, 1, 0)
+					rnr.grd <- krige(rnr~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd,
+									nmin = nmin, nmax = nmax, maxdist = max.RnR.dist, debug.level = 0)
+					RnoR <- rnr.grd$var1.pred
+					RnoR <- round(RnoR)
+					ix <- which(is.na(RnoR))
+					RnoR[ix] <- rfe.rnr[ix]
+					RnoR[is.na(RnoR)] <- 1
+					##smoothing???
+					img.RnoR <- as.image(RnoR, x = coordinates(newlocation.merging), nx = cells@cells.dim[1], ny = cells@cells.dim[2])
+					smooth.RnoR <- image.smooth(img.RnoR, theta = 0.075)
+					RnoR <- round(c(smooth.RnoR$z))
+				}
+				out.mrg <- out.mrg * RnoR
+			}
+		}
+
+		dim(out.mrg) <- c(nlon0, nlat0)
+		out.mrg[is.na(out.mrg)] <- -99
+
+		#Apply mask for area of interest
+		if(!is.null(outMask)) out.mrg[is.na(outMask)] <- -99
+
+		grd.out <- ncvar_def("precip", "mm", xy.dim,-99, longname=" Merged Station-Satellite Rainfall", prec = "short")
+		mrg.outfl <- file.path(savedir, paste('rr_mrg', '_', daty, '_MON.nc', sep = ''), fsep = .Platform$file.sep)
+		nc2 <- nc_create(mrg.outfl, grd.out)
+		ncvar_put(nc2, grd.out, out.mrg)
+		nc_close(nc2)
+	}
+
 	return(0)
 }
 

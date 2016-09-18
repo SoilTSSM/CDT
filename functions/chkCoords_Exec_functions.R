@@ -5,8 +5,100 @@ excludeOutStnFun <- function(GeneralParameters){
 	dir2save <- file.pars[3]
 	buff <- as.numeric(as.character(GeneralParameters$buffer))/111
 	outdir <- file.path(dir2save, paste('ChkCoord', getf.no.ext(stnf), sep = '_'), fsep = .Platform$file.sep)
-	if(!file.exists(outdir)) dir.create(outdir)
+	if(!file.exists(outdir)) dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
+# ###############
+# 	shpd <- getShpOpenData(shpf)[[2]]
+# 	if(is.null(shpd)){
+# 		InsertMessagesTxt(main.txt.out, paste('Unable to open', shpf, 'or it is not an ESRI shapefile'), format = TRUE)
+# 		return(NULL)
+# 	}
+
+# 	shpd <- as(shpd, "SpatialPolygons")
+# 	shpd <- gUnaryUnion(shpd)
+# 	shpd <- gSimplify(shpd, tol = 0.05, topologyPreserve = TRUE)
+# 	shpd <- gBuffer(shpd, width = buff)
+
+# 	infos <- getStnOpenDataInfo(stnf)
+# 	missval <- infos[[3]]$miss.val
+# 	donne <- getStnOpenData(stnf)
+# 	if(is.null(donne)){
+# 		InsertMessagesTxt(main.txt.out, paste('Unable to open', stnf), format = TRUE)
+# 		return(NULL)
+# 	} 
+
+# 	##############
+# 	id <- as.character(donne[1, -1])
+# 	lon <- round(as.numeric(donne[2, -1]), 6)
+# 	lat <- round(as.numeric(donne[3, -1]), 6)
+
+# 	##missing coordinates
+# 	imiss <- which((is.na(lon) | lon< -180 | lon > 360 |is.na(lat) | lat< -90 | lat > 90))
+
+# 	##ducpicates coordinates
+# 	idup0 <- which(duplicated(cbind(lon, lat)))
+# 	idup1 <- which(duplicated(cbind(lon, lat), fromLast = T))
+# 	idup <- sort(union(idup0, idup1))
+
+# 	#coordinates outside country boundaries
+# 	infodon <- data.frame(lon = lon, lat = lat, ID = id)
+# 	idout <- 1:nrow(infodon)
+# 	infodon <- na.omit(infodon)
+# 	coordinates(infodon)<- ~lon+lat
+
+# 	ioutc <- is.na(over(infodon, geometry(shpd)))
+# 	ioutc <- idout[ioutc]
+
+# 	####
+# 	exclus <- NULL
+# 	if(length(imiss) > 0) exclus <- rbind(exclus, cbind('Missing Coordinates', cbind(id[imiss], lon[imiss], lat[imiss], imiss)))
+# 	if(length(idup) > 0)	exclus <- rbind(exclus, cbind('Duplicate Coordinates', cbind(id[idup], lon[idup], lat[idup], idup)))
+# 	if(length(ioutc) > 0) exclus <- rbind(exclus, cbind('Coordinates Outside', cbind(id[ioutc], lon[ioutc], lat[ioutc], ioutc)))
+# 	if(!is.null(exclus)){
+# 		exclus <- as.data.frame(exclus)
+# 		exclus <- exclus[!duplicated(exclus[, c(2, 5)]), ]
+# 		exclus <- exclus[order(exclus[, 3, 4]), ]
+# 	}else{
+# 		exclus <- data.frame(NA, NA, NA, NA, NA)
+# 	}
+# 	names(exclus) <- c('Info', 'ID.Station', 'Longitude', 'Latitude', 'ID.Col')
+# 	fexcl <- file.path(outdir, paste(getf.no.ext(stnf), '_2CORRECT_STATIONS.txt', sep = ''), fsep = .Platform$file.sep)
+# 	write.table(exclus, fexcl, row.names = FALSE, col.names = TRUE)
+
+
+# 	####
+# 	if(nchar(as.character(donne[5, 1])) == 8){
+# 		period <- 'daily'
+# 	}else if(nchar(as.character(donne[5, 1])) == 7){
+# 		period <- 'dekadal'
+# 	}else if(nchar(as.character(donne[5,1])) == 6){
+# 		period <- 'monthly'
+# 	}else{
+# 		InsertMessagesTxt(main.txt.out, 'Date has wrong format.', format = TRUE)
+# 		return(NULL)
+# 	}
+
+# 	donne1 <- getCDTdataAndDisplayMsg(donne, period)
+# 	if(is.null(donne1)) return(NULL)
+# 	if(is.null(donne1$elv)){
+# 		HeadInfo <- donne[1:3, ]
+# 		donne <- donne[-c(1:3), -1]
+# 	}else{
+# 		HeadInfo <- donne[1:4, ]
+# 		donne <- donne[-c(1:4), -1]
+# 	}
+# 	##voir dates pour donne et donne1
+# 	dates1 <- donne1$dates
+
+# 	don <- cbind(dates, donne)
+# 	names(don) <- names(HeadInfo)
+# 	donne1 <- rbind(HeadInfo, don)
+# 	donne1[is.na(donne1)] <- missval
+# 	fsave <- file.path(outdir, paste(getf.no.ext(stnf), '_CHECKED_STATIONS.txt', sep = ''), fsep = .Platform$file.sep)
+# 	# write.table(donne1, fsave, row.names = FALSE, col.names = FALSE)
+# 	writeFiles(donne1, fsave)
+
+##############
 	all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
 
 	jshp <- which(all.open.file == shpf)
@@ -150,7 +242,8 @@ excludeOutStnFun <- function(GeneralParameters){
 	donne1 <- rbind(HeadInfo, don)
 	donne1[is.na(donne1)] <- missval
 	fsave <- file.path(outdir, paste(getf.no.ext(stnf), '_CHECKED_STATIONS.txt', sep = ''), fsep = .Platform$file.sep)
-	write.table(donne1, fsave, row.names = FALSE, col.names = FALSE)
+	# write.table(donne1, fsave, row.names = FALSE, col.names = FALSE)
+	writeFiles(donne1, fsave)
 
 	res <- list(action = 'chk.coords', period = period, Stndoute = exclus, data = donne, dates = dates,
 				HeadInfo = HeadInfo, missval = missval, outdir = outdir)

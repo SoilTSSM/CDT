@@ -181,8 +181,8 @@ execCoefBiasCompute <- function(origdir){
 		InsertMessagesTxt(main.txt.out, "Downscaled data not found", format = TRUE)
 		return(NULL)
 	}
-	downfl <- file.path(downscaledDir, downFile, fsep = .Platform$file.sep)
-	nc <- nc_open(downfl)
+	downFile <- file.path(downscaledDir, downFile, fsep = .Platform$file.sep)
+	nc <- nc_open(downFile)
 	grd.lon <- nc$dim[[1]]$vals
 	grd.lat <- nc$dim[[2]]$vals
 	nc_close(nc)
@@ -266,29 +266,41 @@ execAjdBiasDownTemp <- function(origdir){
 	downscaledDir <- as.character(GeneralParameters$file.io$Values[3])
 	biasDirORFile <- as.character(GeneralParameters$file.io$Values[4])
 	biasRemoval <- as.character(GeneralParameters$bias.method)
-	datesSE <- as.numeric(as.character(GeneralParameters$dates.adj$Values))
-
-	istart <- as.Date(paste(datesSE[1], datesSE[2], datesSE[3], sep = '-'))
-	iend <- as.Date(paste(datesSE[4], datesSE[5], datesSE[6], sep = '-'))
-	if(freqData == 'dekadal'){
-		istart <- paste(format(istart, '%Y%m'), as.numeric(format(istart, '%d')), sep = '')
-		iend <- paste(format(iend, '%Y%m'), as.numeric(format(iend, '%d')), sep = '')
-	}else{
-		istart <- format(istart, '%Y%m%d')
-		iend <- format(iend, '%Y%m%d')
-	}
 
 	downPrefix <- as.character(GeneralParameters$prefix$Values[1])
 	meanBiasPrefix <- as.character(GeneralParameters$prefix$Values[2])
 	adjPrefix <- as.character(GeneralParameters$prefix$Values[3])
 
-	#########
-	fstdate <- ifelse(freqData == 'monthly', substr(istart, 1, 6), istart)
-	downFile <- file.path(downscaledDir, paste(downPrefix, '_', fstdate, '.nc', sep = ''), fsep = .Platform$file.sep)
-	if(!file.exists(downFile)){
+	datesSE <- as.numeric(as.character(GeneralParameters$dates.adj$Values))
+
+	##Get all downscaled Files
+	if(freqData == 'daily'){
+		adj.dates <- format(seq(as.Date(paste(datesSE[1], datesSE[2], datesSE[3], sep = '-')),
+					as.Date(paste(datesSE[4], datesSE[5], datesSE[6], sep = '-')), 'day'), '%Y%m%d')
+		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
+	}
+	if(freqData == 'dekadal'){
+		adj.dates <- seq(as.Date(paste(datesSE[1], datesSE[2], datesSE[3], sep = '-')),
+					as.Date(paste(datesSE[4], datesSE[5], datesSE[6], sep = '-')), 'day')
+		adj.dates <- paste(format(adj.dates[which(as.numeric(format(adj.dates, '%d')) <= 3)], '%Y%m'),
+					as.numeric(format(adj.dates[which(as.numeric(format(adj.dates, '%d')) <= 3)], '%d')), sep = '')
+		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
+	}
+	if(freqData == 'monthly'){
+		adj.dates <- format(seq(as.Date(paste(datesSE[1], datesSE[2], 1, sep = '-')),
+					as.Date(paste(datesSE[4], datesSE[5], 1, sep = '-')), 'month'), '%Y%m')
+		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
+	}
+
+	existFl <- unlist(lapply(testfile, file.exists))
+	if(!any(existFl)){
 		InsertMessagesTxt(main.txt.out, "Downscaled data not found", format = TRUE)
 		return(NULL)
 	}
+	downDataFl <- testfile[existFl]
+	adj.dates <- adj.dates[existFl]
+
+	#########
 	if(biasRemoval == 'Bias-kriging'){
 		biasFile <- file.path(biasDirORFile, paste(meanBiasPrefix, '_1.nc', sep = ''), fsep = .Platform$file.sep)
 		if(!file.exists(biasFile)){
@@ -307,7 +319,7 @@ execAjdBiasDownTemp <- function(origdir){
 		}
 	}
 
-	nc <- nc_open(downFile)
+	nc <- nc_open(downDataFl[1])
 	grd.lon <- nc$dim[[1]]$vals
 	grd.lat <- nc$dim[[2]]$vals
 	nc_close(nc)
@@ -337,8 +349,8 @@ execAjdBiasDownTemp <- function(origdir){
 	if(biasRemoval == 'Bias-kriging'){
 		adjDir <- paste(origdir, '_BiasKR', sep = '')
 		dir.create(adjDir, showWarnings = FALSE, recursive = TRUE)
-		paramsAdjBs <- list(istart = istart, iend = iend, dem = dem, xy.dim = xy.dim, nlon0 = nlon0, nlat0 = nlat0,
-							downscaledDir = downscaledDir, biasDirORFile = biasDirORFile, adjDir = adjDir,
+		paramsAdjBs <- list(downDataFl = downDataFl, adj.dates = adj.dates, dem = dem, xy.dim = xy.dim,
+							nlon0 = nlon0, nlat0 = nlat0, biasDirORFile = biasDirORFile, adjDir = adjDir,
 							downPrefix = downPrefix, meanBiasPrefix = meanBiasPrefix, adjPrefix = adjPrefix)
 		ret <- AjdReanalMeanBias(paramsAdjBs)
 	}
@@ -351,9 +363,9 @@ execAjdBiasDownTemp <- function(origdir){
 
 		adjDir <- paste(origdir, '_RegQM', sep = '')
 		dir.create(adjDir, showWarnings = FALSE, recursive = TRUE)
-		paramsAdjBs <- list(istart = istart, iend = iend, stnDatas = adjdownTempdat$stnData, ijGrd = ijGrd,
-							dem = dem, xy.dim = xy.dim, nlon0 = nlon0, nlat0 = nlat0, coefReg = coefReg,
-							downscaledDir = downscaledDir, adjDir = adjDir, downPrefix = downPrefix, adjPrefix = adjPrefix)
+		paramsAdjBs <- list(downDataFl = downDataFl, adj.dates = adj.dates, stnDatas = adjdownTempdat$stnData,
+							ijGrd = ijGrd, dem = dem, xy.dim = xy.dim, nlon0 = nlon0, nlat0 = nlat0,
+							coefReg = coefReg, adjDir = adjDir, downPrefix = downPrefix, adjPrefix = adjPrefix)
 		ret <- AjdReanalpmm(paramsAdjBs)
 	}
 	rm(adjdownTempdat, paramsAdjBs, grid.loc, demGrid, dem)
@@ -394,31 +406,39 @@ execMergeTemp <- function(origdir){
 	freqData <- GeneralParameters$period
 	mrgTempdat <- TreatmergeTemp(origdir)
 
-	datesSE <- as.numeric(as.character(GeneralParameters$dates.mrg$Values))
-	istart <- as.Date(paste(datesSE[1], datesSE[2], datesSE[3], sep = '-'))
-	iend <- as.Date(paste(datesSE[4], datesSE[5], datesSE[6], sep = '-'))
-	if(freqData == 'dekadal'){
-		istart <- paste(format(istart, '%Y%m'), as.numeric(format(istart, '%d')), sep = '')
-		iend <- paste(format(iend, '%Y%m'), as.numeric(format(iend, '%d')), sep = '')
-	}else{
-		istart <- format(istart, '%Y%m%d')
-		iend <- format(iend, '%Y%m%d')
-	}
-
 	adjDir <- as.character(GeneralParameters$file.io$Values[4])
 	adjPrefix <- as.character(GeneralParameters$prefix$Values[1])
 	mrgPrefix <- as.character(GeneralParameters$prefix$Values[2])
 	mrgSuffix <- as.character(GeneralParameters$prefix$Values[3])
 	usemask <- as.character(GeneralParameters$blankGrd)
 
-	fstdate <- ifelse(freqData == 'monthly', substr(istart, 1, 6), istart)
-	downFile <- file.path(adjDir, paste(adjPrefix, '_', fstdate, '.nc', sep = ''), fsep = .Platform$file.sep)
-	if(!file.exists(downFile)){
-		InsertMessagesTxt(main.txt.out, "Downscaled or adjusted data not found", format = TRUE)
+	datesSE <- as.numeric(as.character(GeneralParameters$dates.mrg$Values))
+	if(freqData == 'daily'){
+		mrg.dates <- format(seq(as.Date(paste(datesSE[1], datesSE[2], datesSE[3], sep = '-')),
+						as.Date(paste(datesSE[4], datesSE[5], datesSE[6], sep = '-')), 'day'), '%Y%m%d')
+		testfile <- file.path(adjDir, paste(adjPrefix, '_', mrg.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
+	}
+	if(freqData == 'dekadal'){
+		mrg.dates <- seq(as.Date(paste(datesSE[1], datesSE[2], datesSE[3], sep = '-')),
+						as.Date(paste(datesSE[4], datesSE[5], datesSE[6], sep = '-')), 'day')
+		mrg.dates <- paste(format(mrg.dates[which(as.numeric(format(mrg.dates, '%d')) <= 3)], '%Y%m'),
+						as.numeric(format(mrg.dates[which(as.numeric(format(mrg.dates, '%d')) <= 3)], '%d')), sep = '')
+		testfile <- file.path(adjDir, paste(adjPrefix, '_', mrg.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
+	}
+	if(freqData == 'monthly'){
+		mrg.dates <- format(seq(as.Date(paste(datesSE[1], datesSE[2], 1, sep = '-')),
+							as.Date(paste(datesSE[4], datesSE[5], 1, sep = '-')), 'month'), '%Y%m')
+		testfile <- file.path(adjDir, paste(adjPrefix, '_', mrg.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
+	}
+	existFl <- unlist(lapply(testfile, file.exists))
+	if(!any(existFl)){
+		InsertMessagesTxt(main.txt.out, "Adjusted data not found", format = TRUE)
 		return(NULL)
 	}
+	adjDataFl <- testfile[existFl]
+	mrg.dates <- mrg.dates[existFl]
 
-	nc <- nc_open(downFile)
+	nc <- nc_open(adjDataFl[1])
 	grd.lon <- nc$dim[[1]]$vals
 	grd.lat <- nc$dim[[2]]$vals
 	nc_close(nc)
@@ -459,7 +479,7 @@ execMergeTemp <- function(origdir){
 	xy.dim <- list(dx, dy)
 
 	VarioModel <- c("Sph", "Exp", "Gau")
-	mrgParam <- list(dates = c(freqData, istart, iend), prefix = c(adjPrefix, mrgPrefix, mrgSuffix), dirs = c(adjDir, origdir),
+	mrgParam <- list(adjDataFl = adjDataFl, mrg.dates = mrg.dates, mrgDir = origdir, prefix = c(mrgPrefix, mrgSuffix),
 	mrgInfo = list(nlon0 = nlon0, nlat0 = nlat0, ijGrd = ijGrd, xy.dim = xy.dim, VarioModel = VarioModel),
 	mrgData = list(stnData = mrgTempdat$stnData, outMask = outMask, newlocation.merging = newlocation.merging))
 	ret <- MergeTemp(mrgParam)

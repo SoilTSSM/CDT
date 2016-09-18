@@ -258,11 +258,11 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			}else{
 				ret <- try(download.file(link, destfile0, mode = "wb", quiet = TRUE), silent = TRUE)
 				if(ret != 0){
-					InsertMessagesTxt(main.txt.out, paste('Échec du téléchargement pour:',file0), format = TRUE)
+					InsertMessagesTxt(main.txt.out, paste('Download failed:',file0), format = TRUE)
 					outRet<- -1
 					next
 				}else{
-					InsertMessagesTxt(main.txt.out, paste('Téléchargement pour:',file0, 'terminé'))
+					InsertMessagesTxt(main.txt.out, paste('Download:',file0, 'done!'))
 					nc <- nc_open(destfile0)
 					xm <- nc$dim[[2]]$vals
 					ym <- nc$dim[[1]]$vals
@@ -286,7 +286,7 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 					nc2 <- nc_create(outfl, rfeout)
 					ncvar_put(nc2, rfeout, xdat)
 					nc_close(nc2)
-					InsertMessagesTxt(main.txt.out, paste('Extraction de:',file0, 'sur', paste('bbox', minlon, minlat, maxlon, maxlat, sep = ':'),'terminée'))
+					InsertMessagesTxt(main.txt.out, paste('Extraction:',file0, 'over', paste('bbox', minlon, minlat, maxlon, maxlat, sep = ':'),'done!'))
 				}
 			}
 			tcl("update")

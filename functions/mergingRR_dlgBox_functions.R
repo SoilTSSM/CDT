@@ -552,7 +552,7 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	tkgrid.configure(bt.dir.bias, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.dir.bias, command = function(){
 		dir4bias <- tk_choose.dir(as.character(GeneralParameters$file.io$Values[3]), "")
-		if(is.na(dir4bias)) tclvalue(dir.bias)<-""
+		if(is.na(dir4bias)) tclvalue(dir.bias) <- ""
 		else tclvalue(dir.bias) <- dir4bias
 	})
 

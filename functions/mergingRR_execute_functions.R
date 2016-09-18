@@ -147,17 +147,6 @@ execMergeRain <- function(origdir){
 	freqData <- GeneralParameters$period
 	mrgRaindat <- TreatMergeRain(origdir, freqData)
 
-	datesSE <- as.numeric(as.character(GeneralParameters$dates.mrg$Values))
-	istart <- as.Date(paste(datesSE[1], datesSE[2], datesSE[3], sep = '-'))
-	iend <- as.Date(paste(datesSE[4], datesSE[5], datesSE[6], sep = '-'))
-	if(freqData == 'dekadal'){
-		istart <- paste(format(istart, '%Y%m'), as.numeric(format(istart, '%d')), sep = '')
-		iend <- paste(format(iend, '%Y%m'), as.numeric(format(iend, '%d')), sep = '')
-	}else{
-		istart <- format(istart, '%Y%m%d')
-		iend <- format(iend, '%Y%m%d')
-	}
-
 	####Create grid
 	if(GeneralParameters$NewGrd == '1'){
 		create.grd <- as.character(GeneralParameters$CreateGrd)
@@ -181,12 +170,12 @@ execMergeRain <- function(origdir){
 	}else{
 		adjDir <- as.character(GeneralParameters$file.io$Values[4])
 		adjPrefix <- as.character(GeneralParameters$prefix$Values[1])
-		fstdate <- ifelse(freqData == 'monthly', substr(istart, 1, 6), istart)
-		adjFile <- file.path(adjDir, paste(adjPrefix, '_', fstdate, '.nc', sep = ''), fsep = .Platform$file.sep)
-		if(!file.exists(adjFile)){
+		adjFile <- list.files(adjDir, adjPrefix)[1]
+		if(is.na(adjFile)){
 			InsertMessagesTxt(main.txt.out, "Adjusted RFE data not found", format = TRUE)
 			return(NULL)
 		}
+		adjFile <- file.path(adjDir, adjFile, fsep = .Platform$file.sep)
 		nc <- nc_open(adjFile)
 		grd.lon <- nc$dim[[1]]$vals
 		grd.lat <- nc$dim[[2]]$vals
@@ -233,8 +222,9 @@ execMergeRain <- function(origdir){
 	xy.dim <- list(dx, dy)
 
 	VarioModel <- c("Sph", "Exp", "Gau")
-	paramsMRG <- list(mrgRaindat = mrgRaindat, VarioModel = VarioModel, origdir = origdir, GeneralParameters = GeneralParameters, 
-						istart = istart, iend = iend, ijGrd = ijGrd, nlon0 = nlon0, nlat0 = nlat0, xy.dim = xy.dim,
+	paramsMRG <- list(mrgRaindat = mrgRaindat, VarioModel = VarioModel, origdir = origdir,
+						GeneralParameters = GeneralParameters, 
+						ijGrd = ijGrd, nlon0 = nlon0, nlat0 = nlat0, xy.dim = xy.dim,
 						outMask = outMask, newlocation.merging = newlocation.merging)
 	ret <- MergingFunction(paramsMRG)
 	rm(paramsMRG, mrgRaindat, outMask, newlocation.merging)

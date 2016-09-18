@@ -1,0 +1,31 @@
+{
+    // CDT version
+    "CDT_Version": 2.4,
+    // Use  other TCL/TK: 1,  use R tcltk package: 0
+    "UseOtherTclTk": 1,
+    "Windows": [{
+        // Path to TCL bin
+        "Tclbin": "C:/Tcl/bin",
+        // Path to TCL lib
+        "Tcllib": "C:/Tcl/lib/tcl8.5",
+        // Tktable path for win 32-bit or 64-bit, change  where appropriate
+        "Tktable_Win32_bit": "C:/Tcl/lib/teapot/package/win32-ix86/lib/Tktable2.11",
+        "Tktable_Win64_bit": "C:/Tcl/lib/teapot/package/win32-x86_64/lib/Tktable2.11",
+        // Bwidget path for win 32-bit or 64-bit, change  where appropriate
+        "Bwidget_Win32_bit": "C:/Tcl/lib/teapot/package/tcl/lib/BWidget1.9.6",
+        "Bwidget_Win64_bit": "C:/Tcl/lib/teapot/package/tcl/lib/BWidget1.9.8"
+    }],
+    "MacOS": [{
+        "Tclbin": "/usr/local/bin",
+        "Tcllib": "/usr/local/lib/tcl8.6",
+        "Tktable": "/usr/local/lib/tcl8.6/Tktable2.10",
+        "Bwidget": "/usr/local/lib/tcl8.6/bwidget-1.9.6"
+    }],
+    "Linux": [{
+        "Tclbin": "/usr/local/bin",
+        "Tcllib": "/usr/local/lib/tcl8.6",
+        // Tktable path for 32-bit or 64-bit, change according to
+        "Tktable": "/usr/local/lib/teapot/package/linux-glibc2.3-x86_64/lib/Tktable2.11",
+        "Bwidget": "/usr/local/lib/teapot/package/tcl/lib/BWidget1.9.7"
+    }]
+}

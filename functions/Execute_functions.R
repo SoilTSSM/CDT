@@ -183,15 +183,15 @@ Execute_All_Functions <- function(get.stn){
 		merging_end_msg(mrg2run, main.txt.out, "Rainfall merging finished successfully", "Rainfall merging failed")
 	}
 
-	###############################
-	####Merging Mali 1 dekad
-	if(GeneralParameters$action == 'mali.dekrain'){
-		daty <- str_trim(as.character(GeneralParameters$dates.mrg$Values))
-		daty <- paste(daty[3], format(ISOdate(2014, daty[2], 1), "%b"), daty[1], sep = '')
-		origdir <- file.path(as.character(GeneralParameters$file.io$Values[3]), paste('MALI_DEK', daty, sep = '_'), fsep = .Platform$file.sep)
-		mrg2run <- try(update1DekProc_Mali(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Rainfall merging finished successfully", "Rainfall merging failed")
-	}
+	# ###############################
+	# ####Merging Mali 1 dekad
+	# if(GeneralParameters$action == 'mali.dekrain'){
+	# 	daty <- str_trim(as.character(GeneralParameters$dates.mrg$Values))
+	# 	daty <- paste(daty[3], format(ISOdate(2014, daty[2], 1), "%b"), daty[1], sep = '')
+	# 	origdir <- file.path(as.character(GeneralParameters$file.io$Values[3]), paste('MALI_DEK', daty, sep = '_'), fsep = .Platform$file.sep)
+	# 	mrg2run <- try(update1DekProc_Mali(origdir), silent = TRUE)
+	# 	merging_end_msg(mrg2run, main.txt.out, "Rainfall merging finished successfully", "Rainfall merging failed")
+	# }
 
 	#########################################################################
 	#Merge  temperature using reanalysis
@@ -222,10 +222,13 @@ Execute_All_Functions <- function(get.stn){
 	##############################
 	##compute mean bias coef
 	if(GeneralParameters$action == 'coefbias.temp'){
-		origdir <- file.path(as.character(GeneralParameters$file.io$Values[4]), paste('CoefBiasAdjTemp', as.character(GeneralParameters$bias.method),
-		getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), sep = '_'), fsep = .Platform$file.sep)
+		origdir <- file.path(as.character(GeneralParameters$file.io$Values[4]),
+			paste('CoefBiasAdjTemp', as.character(GeneralParameters$bias.method),
+			getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), sep = '_'),
+			fsep = .Platform$file.sep)
 		mrg2run <- try(execCoefBiasCompute(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Computing bias coefficients finished successfully", "Computing bias coefficients failed")
+		merging_end_msg(mrg2run, main.txt.out, "Computing bias coefficients finished successfully",
+			"Computing bias coefficients failed")
 	}
 
 	##############################

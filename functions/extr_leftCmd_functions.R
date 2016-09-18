@@ -247,24 +247,15 @@ ExtractDataPanelCmd <- function(){
 	calc.stanomaly <- tclVar(0)
 	calcStAnomaly.tab2 <- tkcheckbutton(subfr2, variable = calc.stanomaly, text = "Compute Standardized Anomalies", anchor = 'w', justify = 'left')
 
+	calc.climato <- tclVar(0)
+	calcClimato.tab2 <- tkcheckbutton(subfr2, variable = calc.climato, text = "Compute Climatologies", anchor = 'w', justify = 'left')
+
 	infobulle(calcAnomaly.tab2, 'Compute Anomalies from the climatology')
 	status.bar.display(calcAnomaly.tab2, TextOutputVar, 'Compute Anomalies from the climatology')
 	infobulle(calcStAnomaly.tab2, 'Compute Standardize Anomalies from the climatology')
 	status.bar.display(calcStAnomaly.tab2, TextOutputVar, 'Compute Standardize Anomalies from the climatology')
-
-	##########
-	# sep5.tab2 <- ttkseparator(subfr2)
-
-	calc.climato <- tclVar(0)
-	calcClimato.tab2 <- tkcheckbutton(subfr2, variable = calc.climato, text = "Compute Climatologies", anchor = 'w', justify = 'left')
-
-	# period.climato <- tclVar('Dekadal')
-	# periodClimato.tab2 <- ttkcombobox(subfr2,state = 'disabled' , values = c('Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'), textvariable = period.climato, width = largeur)
-
 	infobulle(calcClimato.tab2, 'Calculate Climatologies')
 	status.bar.display(calcClimato.tab2, TextOutputVar, 'Calculate Climatologies')
-	# infobulle(periodClimato.tab2, 'Select the time range')
-	# status.bar.display(periodClimato.tab2, TextOutputVar, 'Select the time range')
 
 	######
 	tkgrid(lab1.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -295,10 +286,7 @@ ExtractDataPanelCmd <- function(){
 	tkgrid(sep4.tab2, row = 11, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 5)
 	tkgrid(calcAnomaly.tab2, row = 12, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(calcStAnomaly.tab2, row = 13, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	# tkgrid(sep5.tab2, row = 14, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 5)
 	tkgrid(calcClimato.tab2, row = 14, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	# tkgrid(periodClimato.tab2, row = 16, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	######################################################################################################
 
@@ -677,9 +665,8 @@ ExtractDataPanelCmd <- function(){
 		tclvalue(minlatRect), tclvalue(maxlatRect), tclvalue(namePoly), tclvalue(spatAverage), tclvalue(file.save1),
 		tclvalue(ChoixOutType), if(is.null(EnvMultiPP$multiptspoly)) NA else EnvMultiPP$multiptspoly, 
 		tclvalue(calc.anomaly), tclvalue(calc.stanomaly), tclvalue(calc.climato),  tclvalue(pmLon), tclvalue(pmLat)) 
-		# tclvalue(period.climato),
 
-# assign('retExtractParams', retExtractParams, envir = .GlobalEnv)
+ #assign('retExtractParams', retExtractParams, envir = .GlobalEnv)
 
 		tkconfigure(main.win, cursor = 'watch');tcl('update')
 		InsertMessagesTxt(main.txt.out, "Extraction.................")
@@ -722,8 +709,6 @@ ExtractDataPanelCmd <- function(){
 			tkconfigure(cbOutTS.tab2, values = c('Daily', 'Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'))
 			tclvalue(output_TSformat) <-'Daily'
 			tclvalue(iend_day)<-'31'
-			# tkconfigure(periodClimato.tab2, values = c('Daily', 'Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'))
-			# tclvalue(period.climato) <-'Daily'
 		}
 		if(tclvalue(file.period) == 'Dekadal data'){
 			tclvalue(netCDFff) <- "rr_mrg_%s%s%s.nc"
@@ -735,8 +720,6 @@ ExtractDataPanelCmd <- function(){
 			tkconfigure(cbOutTS.tab2, values = c('Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'))
 			tclvalue(output_TSformat) <-'Dekadal'
 			tclvalue(iend_day)<-'3'
-			# tkconfigure(periodClimato.tab2, values = c('Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'))
-			# tclvalue(period.climato) <-'Dekadal'
 		}
 		if(tclvalue(file.period) == 'Monthly data'){
 			tclvalue(netCDFff) <- "rr_mrg_%s%s.nc"
@@ -746,16 +729,9 @@ ExtractDataPanelCmd <- function(){
 			tkconfigure(day2.tab2, state = 'disabled')
 			tkconfigure(cbOutTS.tab2, values = c('Monthly', '3-Months', '6-Months', 'Yearly'))
 			tclvalue(output_TSformat) <-'Monthly'
-			# tkconfigure(periodClimato.tab2, values = c('Monthly', '3-Months', '6-Months', 'Yearly'))
-			# tclvalue(period.climato) <-'Monthly'
 		}
 	})
 
-	#######################
-	# tkbind(calcClimato.tab2,"<Button-1>", function(){
-	# 	if(tclvalue(calc.climato) == '0') tkconfigure(periodClimato.tab2, state = 'normal')
-	# 	else tkconfigure(periodClimato.tab2, state = 'disabled')
-	# })
 
 	#######################
 	tkbind(cbSHP.tab1,"<<ComboboxSelected>>", function(){

@@ -1,12 +1,11 @@
 ###test internet connection
 #http://stackoverflow.com/questions/5076593/how-to-determine-if-you-have-an-internet-connection-in-r
-testConnection <- function(url = "http://www.google.com") {
+testConnection <- function(url = "https://www.google.com") {
     # test the http capabilities of the current R build
-    http <- as.logical(capabilities(what = "http/ftp"))
-    if (!http) return(FALSE)
-
+    if (!as.logical(capabilities(what = "http/ftp"))) return(FALSE)
     # test connection by trying to read first line at url
-    test <- try(suppressWarnings(readLines(url, n = 1)), silent = TRUE)  # silent errors
+    test <- try(suppressWarnings(readLines(url, n = 1)), silent = TRUE)
+    # test <- try(suppressWarnings(url(url, open='rb')), silent = TRUE) #use close(test)
 
     # return FALSE if test is class 'try-error'
     ifelse(inherits(test, "try-error"), FALSE, TRUE)

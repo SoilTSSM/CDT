@@ -35,7 +35,7 @@ ExtractRFE2Stn <- function(extractRFEparms){
 	}
 
 	existFl <- unlist(lapply(testfile, file.exists))
-	if(length(which(existFl)) == 0){
+	if(!any(existFl)){
 		InsertMessagesTxt(main.txt.out, "RFE data not found", format = TRUE)
 		return(NULL)
 	}
@@ -52,9 +52,10 @@ ExtractRFE2Stn <- function(extractRFEparms){
 		closeklust <- FALSE
 	}
 
-	# for (jfl in seq_along(rfeDataFl))
-	ret <- foreach(jfl = seq_along(rfeDataFl), .combine = 'rbind', .packages = c('ncdf4'), 
-						.export = c('rfeDataFl', 'bias.dates1', 'mrgRaindat', 'ijGrd')) %parLoop% {
+	packages <- c('ncdf4')
+	toExports <- c('rfeDataFl', 'bias.dates1', 'mrgRaindat', 'ijGrd')
+	ret <- foreach(jfl = seq_along(rfeDataFl), .combine = 'rbind', .packages = packages, 
+						.export = toExports) %parLoop% {
 		nc <- nc_open(rfeDataFl[jfl])
 		rfe.lon <- nc$dim[[mrgRaindat$rfeData$rfeILon]]$vals
 		rfe.lat <- nc$dim[[mrgRaindat$rfeData$rfeILat]]$vals
@@ -163,12 +164,15 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 								as.Date(paste(year2, '1231', sep = ''), format = '%Y%m%d'), 'month'), '%Y%m')
 		bias <- array(data = NA, c(ntimes, nstn))
 		vtimes <- c(1:12)
-	}	
+	}
+
+	# dates already cleaned and ordered
 	ibsdt <- bias.dates%in%stn.dates
 	bsdates <- bias.dates[ibsdt]
 	rfe_stn <- rfe_stn[ibsdt, , drop = FALSE]
 	istdt <- stn.dates%in%bias.dates
 	stn.data <- stn.data[istdt, , drop = FALSE]
+
 	if(length(bsdates) > 0){
 		for (i in 1:nstn){
 			for (nt in 1:ntimes){
@@ -202,9 +206,9 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 	#Defines netcdf output
 	grd.bs <- ncvar_def("grid", "", xy.dim, NA, longname= " Gridded GG/RFE Bias", prec = "float")
 	
-	# for(ij in 1:ntimes)
-	ret <- foreach(ij = 1:ntimes, .combine = 'c', .export = c('InsertMessagesTxt', 'main.txt.out'),
-					.packages = c('sp', 'gstat', 'ncdf4', 'fields', 'tcltk')) %parLoop% {
+	packages <- c('sp', 'gstat', 'ncdf4', 'fields', 'tcltk')
+	toExports <- c('InsertMessagesTxt', 'main.txt.out')
+	ret <- foreach(ij = 1:ntimes, .combine = 'c', .export = toExports, .packages = packages) %parLoop% {
 		bias.stn <- data.frame(bias = bias[ij, ], lon = stn.lon, lat = stn.lat)
 		ix <- which(!is.na(bias.stn$bias))
 		## at least 10 stations to interpolate
@@ -358,14 +362,13 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 MergingFunction <- function(paramsMRG){
 	GeneralParameters <- paramsMRG$GeneralParameters
 	freqData <- GeneralParameters$period
-	istart <- paramsMRG$istart
-	iend <- paramsMRG$iend
 
 	rfeDir <- as.character(GeneralParameters$file.io$Values[4])
 	rfeFileFormat <- as.character(GeneralParameters$prefix$Values[1])
-
+	datesSE <- as.numeric(as.character(GeneralParameters$dates.mrg$Values))
 	if(freqData == 'daily'){
-		mrg.dates <- format(seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'day'), '%Y%m%d')
+		mrg.dates <- format(seq(as.Date(paste(datesSE[1], datesSE[2], datesSE[3], sep = '-')),
+						as.Date(paste(datesSE[4], datesSE[5], datesSE[6], sep = '-')), 'day'), '%Y%m%d')
 		if(GeneralParameters$NewGrd == '1'){
 			testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(mrg.dates, 1, 4), substr(mrg.dates, 5, 6), substr(mrg.dates, 7, 8)), fsep = .Platform$file.sep)
 		}else{
@@ -373,7 +376,8 @@ MergingFunction <- function(paramsMRG){
 		}
 	}
 	if(freqData == 'dekadal'){
-		mrg.dates <- seq(as.Date(istart, format = '%Y%m%d'), as.Date(iend, format = '%Y%m%d'), 'day')
+		mrg.dates <- seq(as.Date(paste(datesSE[1], datesSE[2], datesSE[3], sep = '-')),
+		 				as.Date(paste(datesSE[4], datesSE[5], datesSE[6], sep = '-')), 'day')
 		mrg.dates <- paste(format(mrg.dates[which(as.numeric(format(mrg.dates, '%d')) <= 3)], '%Y%m'),
 						as.numeric(format(mrg.dates[which(as.numeric(format(mrg.dates, '%d')) <= 3)], '%d')), sep = '')
 		if(GeneralParameters$NewGrd == '1'){
@@ -383,7 +387,8 @@ MergingFunction <- function(paramsMRG){
 		}
 	}
 	if(freqData == 'monthly'){
-		mrg.dates <- format(seq(as.Date(paste(istart, '1', sep = ''), format = '%Y%m%d'), as.Date(paste(iend, '1', sep = ''), format = '%Y%m%d'), 'month'), '%Y%m')
+		mrg.dates <- format(seq(as.Date(paste(datesSE[1], datesSE[2], 1, sep = '-')),
+						as.Date(paste(datesSE[4], datesSE[5], 1, sep = '-')), 'month'), '%Y%m')
 		if(GeneralParameters$NewGrd == '1'){
 			testfile <- file.path(rfeDir, sprintf(rfeFileFormat, substr(mrg.dates, 1, 4), substr(mrg.dates, 5, 6)), fsep = .Platform$file.sep)
 		}else{
@@ -392,7 +397,7 @@ MergingFunction <- function(paramsMRG){
 	}
 
 	existFl <- unlist(lapply(testfile, file.exists))
-	if(length(which(existFl)) == 0){
+	if(!any(existFl)){
 		InsertMessagesTxt(main.txt.out, "RFE data not found", format = TRUE)
 		return(NULL)
 	}
@@ -441,7 +446,6 @@ MergingFunction <- function(paramsMRG){
 	mrgSuffix <- as.character(GeneralParameters$prefix$Values[3])
 
 	####
-	# for (jfl in seq_along(rfeDataFl))
 	packages <- c('sp', 'gstat', 'automap', 'ncdf4', 'fields', 'tcltk')
 	toExports <- c('rfeDataFl', 'mrg.dates1', 'mergingProcs', 'GeneralParameters', 'InsertMessagesTxt', 'main.txt.out')
 	ret <- foreach(jfl = seq_along(rfeDataFl), .combine = 'c', .export = toExports, .packages = packages) %parLoop% {
@@ -557,30 +561,32 @@ mergingProcs <- function(mrgParms){
 		#ijx1 <- which(rr.stn$gg > 0 & rr.stn$rfe > 0)
 		ijx1 <- which(rr.stn$gg > 0)
 		if(length(ijx1) >= nozero){
-			
 			grd.newloc <- SpatialPointsDataFrame(coords = newlocation.merging, data = data.frame(rfe = rfe.vec))
-			
 			rr.glm <- glm(gg~rfe, rr.stn, family = gaussian)
 			rr.stn$res <- residuals(rr.glm)
 			pred.rr <- predict(rr.glm, newdata = grd.newloc, se.fit = T)
 
 			if(interpMethod == "IDW"){
-				grd.rr <- krige(res~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0)
+				grd.rr <- krige(res~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd,
+									nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0)
 				res.pred <- grd.rr$var1.pred
 			}else if(interpMethod == "Kriging"){
-				grd.rr <- try(autoKrige(res~1, input_data = rr.stn, new_data = newlocation.merging, model = VarioModel, block = bGrd, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0), silent = TRUE)
+				grd.rr <- try(autoKrige(res~1, input_data = rr.stn, new_data = newlocation.merging, model = VarioModel,
+								block = bGrd, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0), silent = TRUE)
 				is.okKR <- !inherits(grd.rr, "try-error")
 				if(is.okKR){
 					res.pred <- grd.rr$krige_output$var1.pred
 				}else{
-					grd.rr <- krige(res~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0)
+					grd.rr <- krige(res~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd,
+											nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0)
 					res.pred <- grd.rr$var1.pred
 				}
 			}
 			out.mrg <- as.numeric(res.pred+pred.rr$fit)
 			out.mrg <- ifelse(out.mrg < 0,0, out.mrg)
 		}else{
-			grd.rr <- idw(dff~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd, nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0)
+			grd.rr <- idw(dff~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd,
+								nmin = min.nbrs, nmax = max.nbrs, maxdist = maxdist, debug.level = 0)
 			out.mrg <- grd.rr$var1.pred + rfe.vec
 			out.mrg <- ifelse(out.mrg < 0,0, out.mrg)
 		}
@@ -598,7 +604,8 @@ mergingProcs <- function(mrgParms){
 		if(RainNoRain != 'None') {
 			rr.stn$rnr <- ifelse(rr.stn$gg >= 1,1,0)
 			if (RainNoRain == 'Gauge') {#Gauge only
-				rnr.grd <- krige(rnr~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd, nmin = min.nbrs, nmax = max.nbrs, maxdist = max.RnR.dist, debug.level = 0)
+				rnr.grd <- krige(rnr~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd,
+									nmin = min.nbrs, nmax = max.nbrs, maxdist = max.RnR.dist, debug.level = 0)
 				rnr.pred <- ifelse(is.na(rnr.grd$var1.pred), 1, rnr.grd$var1.pred)
 				RnoR <- round(rnr.pred)
 			} else if(RainNoRain == 'Satellite') {#Satellite only
@@ -606,7 +613,8 @@ mergingProcs <- function(mrgParms){
 				RnoR[is.na(RnoR)] <- 1
 			} else if(RainNoRain == 'GaugeSatellite') {
 				rfe.rnr <- ifelse(rfe.vec >= 1, 1, 0)
-				rnr.grd <- krige(rnr~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd, nmin = min.nbrs, nmax = max.nbrs, maxdist = max.RnR.dist, debug.level = 0)
+				rnr.grd <- krige(rnr~1, locations = rr.stn, newdata = newlocation.merging, block = bGrd,
+									nmin = min.nbrs, nmax = max.nbrs, maxdist = max.RnR.dist, debug.level = 0)
 				RnoR <- rnr.grd$var1.pred
 				RnoR <- round(RnoR)
 				ix <- which(is.na(RnoR))

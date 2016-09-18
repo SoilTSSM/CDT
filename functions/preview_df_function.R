@@ -15,7 +15,7 @@ preview.data <- function(parent.win, fileopen, title.pop){
 	tkgrid(fr.head, row = 0, column = 2, padx = 5, pady = 2, ipadx = 2, ipady = 2, sticky = 'e')
 
 	delim1 <- tkradiobutton(fr.delim, text = "Tab")
-	delim2 <- tkradiobutton(fr.delim, text = "Sapce")
+	delim2 <- tkradiobutton(fr.delim, text = "Space")
 	delim3 <- tkradiobutton(fr.delim, text = "Semicolon")
 	delim4 <- tkradiobutton(fr.delim, text = "Comma")
 	delim5 <- tkradiobutton(fr.delim, text = "Other:")

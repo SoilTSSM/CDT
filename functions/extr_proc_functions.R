@@ -33,6 +33,7 @@ getExtractDataFun <- function(retExtractParams){
 	pmLon <- abs(as.numeric(retExtractParams[30]))
 	pmLat <- abs(as.numeric(retExtractParams[31]))
 
+
 	####
 	outTsTable <- cbind(c('Daily', 'Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'), c('daily', 'dekadal', 'monthly', 'season3', 'season6', 'yearly'))
 	period1 <- outTsTable[outTsTable[,1] == outTS, 2]
@@ -71,7 +72,7 @@ getExtractDataFun <- function(retExtractParams){
 
 	ncpath <- file.path(ncdir, ncfiles, fsep = .Platform$file.sep)
 	existFl <- unlist(lapply(ncpath, file.exists))
-	if(length(which(existFl)) == 0){
+	if(!any(existFl)){
 		InsertMessagesTxt(main.txt.out, "Invalid filename format or date outside the range", format = TRUE)
 		return(NULL)
 	}
@@ -453,12 +454,22 @@ getExtractDataFun <- function(retExtractParams){
 			RVAL[[fl]] <- rval
 		}else if(extType == 'Multiple Points'){
 			ilo <- xlon >= (min(multiptspoly[,1], na.rm = TRUE)-pmLon) & xlon <= (max(multiptspoly[,1], na.rm = TRUE)+pmLon)
+			if(!any(ilo)){
+				InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
+				return(NULL)
+			}
+
 			iloL <- which(ilo)
 			if(iloL[1] > 1) ilo[iloL[1]-1] <- TRUE
 			if(iloL[length(iloL)] < length(ilo)) ilo[iloL[length(iloL)]+1] <- TRUE
 			rlon <- xlon[ilo]
 
 			ila <- xlat >= (min(multiptspoly[,2], na.rm = TRUE)-pmLat) & xlat <= (max(multiptspoly[,2], na.rm = TRUE)+pmLat)
+			if(!any(ila)){
+				InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
+				return(NULL)
+			}
+
 			ilaL <- which(ila)
 			if(ilaL[1] > 1) ila[ilaL[1]-1] <- TRUE
 			if(ilaL[length(ilaL)] < length(ila)) ila[ilaL[length(ilaL)]+1] <- TRUE
@@ -495,6 +506,11 @@ getExtractDataFun <- function(retExtractParams){
 		}else if(extType == 'Multiple Polygons'){
 			ilo <- xlon >= bbxregOI[1,1] & xlon <= bbxregOI[1,2]
 			ila <- xlat >= bbxregOI[2,1] & xlat <= bbxregOI[2,2]
+			if(!any(ilo) | !any(ila)){
+				InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
+				return(NULL)
+			}
+
 			rval <- xval[ilo, ila]
 			rlon <- xlon[ilo]
 			rlat <- xlat[ila]
@@ -507,6 +523,11 @@ getExtractDataFun <- function(retExtractParams){
 			if(extType == 'Rectangle'){
 				ilo <- xlon >= xminLon & xlon <= xmaxLon
 				ila <- xlat >= xminLat & xlat <= xmaxLat
+				if(!any(ilo) | !any(ila)){
+					InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
+					return(NULL)
+				}
+
 				rlon <- xlon[ilo]
 				rlat <- xlat[ila]
 				rval <- xval[ilo, ila]
@@ -514,6 +535,11 @@ getExtractDataFun <- function(retExtractParams){
 			if(extType == 'Polygon'){
 				ilo <- xlon >= bbxregOI[1,1] & xlon <= bbxregOI[1,2]
 				ila <- xlat >= bbxregOI[2,1] & xlat <= bbxregOI[2,2]
+				if(!any(ilo) | !any(ila)){
+					InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
+					return(NULL)
+				}
+
 				rlon <- xlon[ilo]
 				rlat <- xlat[ila]
 				rval <- xval[ilo, ila]
@@ -677,6 +703,8 @@ getExtractDataFun <- function(retExtractParams){
 
 		}
 	}
+
+	tcl('update')
 	return(0)
 }
 

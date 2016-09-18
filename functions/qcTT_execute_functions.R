@@ -18,8 +18,8 @@ getElevationData1 <- function(){
 				if(interp.dem == "0"){
 					if(file.pars[3] == "") msg <- 'There is no elevation data in format NetCDF'
 					else{
-						demData <- getDemOpenDataSPDF(file.pars[2])
-						ijGrd <- grid2pointINDEX(list(lon = EnvQcOutlierData$donnees$lon, lat = EnvQcOutlierData$donnees$lat),
+						demData <- getDemOpenDataSPDF(file.pars[3])
+						ijGrd <- grid2pointINDEX(list(lon = EnvQcOutlierData$donnees1$lon, lat = EnvQcOutlierData$donnees1$lat),
 							list(lon = demData$lon, lat = demData$lat))
 						elv_dem <- demData$demGrd@data[ijGrd, 1]
 

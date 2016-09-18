@@ -618,25 +618,32 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 			tkwait.window(tt)
 		}else{
 			if(tclvalue(file.period) == 'Daily data'){
-				sampledate <- format(as.Date(paste(as.numeric(as.character(GeneralParameters$dates.down$Values[1])),
-				as.numeric(as.character(GeneralParameters$dates.down$Values[2])),
-				as.numeric(as.character(GeneralParameters$dates.down$Values[3])), sep = '-')),'%Y%m%d')
-				rfefl <- file.path(tclvalue(dir.rfe), sprintf(tclvalue(inrfeff), substr(sampledate, 1,4), substr(sampledate, 5,6),
-				substr(sampledate, 7,8)), fsep = .Platform$file.sep)
+				dates <- format(seq(as.Date(paste(as.numeric(as.character(GeneralParameters$dates.down$Values[1])),
+							as.numeric(as.character(GeneralParameters$dates.down$Values[2])),
+							as.numeric(as.character(GeneralParameters$dates.down$Values[3])), sep = '-')), 
+							as.Date(paste(as.numeric(as.character(GeneralParameters$dates.down$Values[4])),
+							as.numeric(as.character(GeneralParameters$dates.down$Values[5])),
+							as.numeric(as.character(GeneralParameters$dates.down$Values[6])), sep = '-')), 'day'),'%Y%m%d')
+				ncfiles <- sprintf(tclvalue(inrfeff), substr(dates, 1,4), substr(dates, 5,6), substr(dates, 7,8))
 			}else if(tclvalue(file.period) == 'Dekadal data'){
-				sampledate <- paste(format(as.Date(paste(as.numeric(as.character(GeneralParameters$dates.down$Values[1])),
-				as.numeric(as.character(GeneralParameters$dates.down$Values[2])),'1', sep = '-')),'%Y%m'),
-				as.numeric(as.character(GeneralParameters$dates.down$Values[3])), sep = '')
-				rfefl <- file.path(tclvalue(dir.rfe), sprintf(tclvalue(inrfeff), substr(sampledate, 1,4), substr(sampledate, 5,6),
-				substr(sampledate, 7,7)), fsep = .Platform$file.sep)
+				dates <- seq(as.Date(paste(as.numeric(as.character(GeneralParameters$dates.down$Values[1])),
+							as.numeric(as.character(GeneralParameters$dates.down$Values[2])),
+							as.numeric(as.character(GeneralParameters$dates.down$Values[3])), sep = '-')), 
+							as.Date(paste(as.numeric(as.character(GeneralParameters$dates.down$Values[4])),
+							as.numeric(as.character(GeneralParameters$dates.down$Values[5])),
+							as.numeric(as.character(GeneralParameters$dates.down$Values[6])), sep = '-')), 'day')
+				dates <- paste(format(dates[which(as.numeric(format(dates,'%d')) <= 3)],'%Y%m'), as.numeric(format(dates[which(as.numeric(format(dates,'%d')) <= 3)],'%d')), sep = '')
+				ncfiles <- sprintf(tclvalue(inrfeff), substr(dates, 1,4), substr(dates, 5,6), substr(dates, 7,7))				
 			}else{
-				sampledate <- format(as.Date(paste(as.numeric(as.character(GeneralParameters$dates.down$Values[1])),
-				as.numeric(as.character(GeneralParameters$dates.down$Values[2])),
-				as.numeric(as.character(GeneralParameters$dates.down$Values[3])), sep = '-')),'%Y%m')
-				rfefl <- file.path(tclvalue(dir.rfe), sprintf(tclvalue(inrfeff), substr(sampledate, 1,4), substr(sampledate, 5,6)),
-				fsep = .Platform$file.sep)
+				dates <- format(seq(as.Date(paste(as.numeric(as.character(GeneralParameters$dates.down$Values[1])),
+							as.numeric(as.character(GeneralParameters$dates.down$Values[2])), 1, sep = '-')), 
+							as.Date(paste(as.numeric(as.character(GeneralParameters$dates.down$Values[4])),
+							as.numeric(as.character(GeneralParameters$dates.down$Values[5])), 1, sep = '-')), 'month'),'%Y%m')
+				ncfiles <- sprintf(tclvalue(inrfeff), substr(dates, 1,4), substr(dates, 5,6))
 			}
-			if(!file.exists(rfefl)){
+			ncpath <- file.path(tclvalue(dir.rfe), ncfiles, fsep = .Platform$file.sep)
+			existFl <- unlist(lapply(ncpath, file.exists))
+			if(!any(existFl)){
 				tkmessageBox(message = "The Reanalysis file format or the Reanalysis directory are wrong", icon = "warning", type = "ok")
 				tkwait.window(tt)
 			}
@@ -700,7 +707,6 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 
 	frMRG0 <- tkframe(tt, relief = 'raised', borderwidth = 2)
 	frMRG1 <- tkframe(tt)
-
 
 	fr.A <- tkframe(frMRG0, relief = "groove", borderwidth = 2)
 	fr.B <- tkframe(frMRG0, relief = "groove", borderwidth = 2)

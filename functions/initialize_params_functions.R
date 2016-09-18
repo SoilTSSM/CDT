@@ -115,7 +115,7 @@ init.params <- function(action, period){
 		CreateGrd <- '1'
 		dates.coef <- data.frame(c('year1', 'year2'), c('1983', '2010'))
 		names(dates.coef) <- c('Parameters', 'Values')
-		params.int <- data.frame(c('min.nbrs', 'max.nbrs', 'max.dist'), c('3', '5', '1.0'))
+		params.int <- data.frame(c('min.nbrs', 'max.nbrs', 'max.dist'), c('1', '5', '0.25'))
 		names(params.int) <- c('Parameters', 'Values')
 		new.grid <- data.frame(c('minLon', 'maxLon', 'resLon', 'minLat', 'maxLat', 'resLat'),
 								c('42', '52', '0.1', '-26', '-12', '0.1'))
@@ -153,7 +153,7 @@ init.params <- function(action, period){
 								c('1983', '1', '1', '2014', '12', '3'))
 		names(dates.mrg) <- c('Parameters', 'Values')
 		params.int <- data.frame(c('nmin.stn', 'min.non0', 'max.RnR.dist', 'max.dist', 'min.nbrs', 'max.nbrs'),
-								c('10', '7', '0.75', '1.0', '3', '5'))
+								c('10', '7', '0.25', '0.25', '1', '5'))
 		names(params.int) <- c('Parameters', 'Values')
 		new.grid <- data.frame(c('minLon', 'maxLon', 'resLon', 'minLat', 'maxLat', 'resLat'),
 								c('42', '52', '0.1', '-26', '-12', '0.1'))
@@ -167,21 +167,31 @@ init.params <- function(action, period){
 	####dekadal update
 
 	if(action == 'merge.dekrain'){
-		file.io <- data.frame(c('stn.file', 'RFE.dir', 'Bias.dir', 'dir2save', 'DEM.file', 'shp.file'),
-								c('', '', '', getwd(), '', ''))
-		names(file.io) <- c('Parameters', 'Values')
-		prefix <- data.frame(c('rfeFileFormat', 'meanBiasPrefix'),	c("rfe%s_%s-dk%s.nc", "Gauge-rfe_mean.bias"))
-		names(prefix) <- c('Parameters', 'Values')
-		blankGrd <- '1'
-		dates.mrg <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek'), c('2016', '4', '1'))
-		names(dates.mrg) <- c('Parameters', 'Values')
-		params.int <- data.frame(c('nmin.stn', 'min.non0', 'max.RnR.dist', 'max.dist', 'min.nbrs', 'max.nbrs'),
-									c('10', '7', '0.75', '1.0', '3', '5'))
-		names(params.int) <- c('Parameters', 'Values')
-		params.mrg <- data.frame(c('interpMethod', 'RainNoRain'), c('IDW', 'GaugeSatellite'))
-		names(params.mrg) <- c('Parameters', 'Values')
-		ret.params <- list(action = action, period = period, file.io = file.io, prefix = prefix, dates.mrg = dates.mrg,
-							blankGrd = blankGrd, params.int = params.int, params.mrg = params.mrg)
+		# file.io <- data.frame(c('stn.file', 'RFE.dir', 'Bias.dir', 'dir2save', 'DEM.file', 'shp.file'),
+		# 						c('', '', '', getwd(), '', ''))
+		# names(file.io) <- c('Parameters', 'Values')
+		# prefix <- data.frame(c('rfeFileFormat', 'meanBiasPrefix'),	c("rfe%s_%s-dk%s.nc", "Gauge-rfe_mean.bias"))
+		# names(prefix) <- c('Parameters', 'Values')
+		# blankGrd <- '1'
+		# dates.mrg <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek'), c('2016', '4', '1'))
+		# names(dates.mrg) <- c('Parameters', 'Values')
+		# params.int <- data.frame(c('nmin.stn', 'min.non0', 'max.RnR.dist', 'max.dist', 'min.nbrs', 'max.nbrs'),
+		# 							c('10', '7', '0.25', '0.25', '1', '5'))
+		# names(params.int) <- c('Parameters', 'Values')
+		# params.mrg <- data.frame(c('interpMethod', 'RainNoRain'), c('IDW', 'GaugeSatellite'))
+		# names(params.mrg) <- c('Parameters', 'Values')
+		# NoStn <- '0'
+		# downRFE <- '1'
+		# AdjBias <- '1'
+		# dataRFE <- 'TAMSAT'
+		# aoiRFE <- data.frame(c('minlon', 'maxlon', 'minlat', 'maxlat'), c(42, 52, -26, -12))
+		# names(aoiRFE) <- c('Parameters', 'Values')
+		# ret.params <- list(action = action, period = period, file.io = file.io, prefix = prefix, dates.mrg = dates.mrg,
+		# 					blankGrd = blankGrd, params.int = params.int, params.mrg = params.mrg, NoStn = NoStn, 
+		# 					downRFE = downRFE, AdjBias = AdjBias, dataRFE = dataRFE, aoiRFE = aoiRFE)
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Update_RR_dekadal.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
+		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
 
 	#################################################################
@@ -208,7 +218,7 @@ init.params <- function(action, period){
 		dates.down <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek', 'iend.yrs', 'iend.mon', 'iend.dek'),
 									c('1961', '1', '1', '2014', '12', '3'))
 		names(dates.down) <- c('Parameters', 'Values')
-		params.int <- data.frame(c('min.nbrs', 'max.nbrs', 'max.dist'), c('3', '7', '1.5'))
+		params.int <- data.frame(c('min.nbrs', 'max.nbrs', 'max.dist'), c('1', '7', '0.5'))
 		names(params.int) <- c('Parameters', 'Values')
 		ret.params <- list(action = action, period = period, file.io = file.io, IO.file.format = IO.file.format,
 							CreateGrd = CreateGrd, new.grid = new.grid, dates.down = dates.down, params.int = params.int)
@@ -223,7 +233,7 @@ init.params <- function(action, period){
 		bias.method <- 'Bias-kriging'
 		prefix <- data.frame(c('downPrefix', 'meanBiasPrefix'), c("tmax_down", "tmax_JRAMeanBias_KR"))
 		names(prefix) <- c('Parameters', 'Values')
-		params.int <- data.frame(c('min.nbrs', 'max.nbrs', 'max.dist'), c('3', '7', '2.0'))
+		params.int <- data.frame(c('min.nbrs', 'max.nbrs', 'max.dist'), c('1', '7', '0.5'))
 		names(params.int) <- c('Parameters', 'Values')
 		ret.params <- list(action = action, period = period, file.io = file.io, params.int = params.int,
 							dates.coef = dates.coef, bias.method = bias.method, prefix = prefix)
@@ -253,7 +263,7 @@ init.params <- function(action, period){
 								c('1961', '1', '1', '2014', '12', '3'))
 		names(dates.mrg) <- c('Parameters', 'Values')
 		params.mrg <- data.frame(c('nmin', 'min.nbrs', 'max.nbrs', 'max.dist', 'interpMethod'),
-									c('10', '3', '5', '2.0', 'IDW'))
+									c('10', '1', '5', '0.5', 'IDW'))
 		names(params.mrg) <- c('Parameters', 'Values')
 		ret.params <- list(action = action, period = period, file.io = file.io, blankGrd = blankGrd,
 							prefix = prefix, dates.mrg = dates.mrg, params.mrg = params.mrg)
@@ -332,17 +342,17 @@ init.params <- function(action, period){
 
 	###########################################
 
-	###Mali one dekad
-	if(action == 'mali.dekrain'){
-		file.io <- data.frame(c('stn.file', 'RFE.file', 'dir2save'), c('', '', getwd()))
-		names(file.io) <- c('Parameters', 'Values')
-		dates.mrg <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek'), c('2016', '5', '1'))
-		names(dates.mrg) <- c('Parameters', 'Values')
-		rfeDownSep <- '0'
-		stnDataDispo <- '1'
-		ret.params <- list(action = action, period = period, file.io = file.io, dates.mrg = dates.mrg,
-							rfeDownSep = rfeDownSep, stnDataDispo = stnDataDispo)
-	}
+	# ###Mali one dekad
+	# if(action == 'mali.dekrain'){
+	# 	file.io <- data.frame(c('stn.file', 'RFE.file', 'dir2save'), c('', '', getwd()))
+	# 	names(file.io) <- c('Parameters', 'Values')
+	# 	dates.mrg <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek'), c('2016', '5', '1'))
+	# 	names(dates.mrg) <- c('Parameters', 'Values')
+	# 	rfeDownSep <- '0'
+	# 	stnDataDispo <- '1'
+	# 	ret.params <- list(action = action, period = period, file.io = file.io, dates.mrg = dates.mrg,
+	# 						rfeDownSep = rfeDownSep, stnDataDispo = stnDataDispo)
+	# }
 
 	#############
 	return(ret.params)

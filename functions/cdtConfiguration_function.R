@@ -6,7 +6,7 @@ configCDT <- function(){
 	tkgrab.set(config.win)
 	tkfocus(config.win)
 
-	if(Sys.info()["sysname"] == "Windows") width.entry <- 61	
+	if(Sys.info()["sysname"] == "Windows") width.entry <- 61
 	else width.entry <- 43	
 
 	font0.conf <- tkfont.create(family = "courier", size = 11)
@@ -44,28 +44,28 @@ configCDT <- function(){
 	for(i in 0:3) tkgrid(get(paste('fr2', i,'.conf', sep = '')))
 	for(i in 0:3) tkgrid.configure(get(paste('fr2', i,'.conf', sep = '')), row = i, column = 0, sticky = 'we', padx = 1, pady = 0, ipadx = 1, ipady = 0)
 
-
 	confpath <- file.path(apps.dir, 'configure', 'configure0', fsep = .Platform$file.sep)
 	if(file.exists(confpath)){
 		conffile <- as.character(read.table(confpath, colClasses = 'character')[,1])
 		tktablepath <- tclVar(conffile[2])
 		bwidgetpath <- tclVar(conffile[3])
 	}else{
-		#if (.Platform$OS.type == 'unix')
+		tclpathF <- file.path(apps.dir, 'configure', 'configure.json', fsep = .Platform$file.sep)
+		tclPath <- fromJSON(tclpathF)
 		if(Sys.info()["sysname"] == "Windows") {
 			if(.Machine$sizeof.pointer == 8){
-					tktablepath <- tclVar("C:/Tcl/lib/teapot/package/win32-x86_64/lib/Tktable2.11")
-					bwidgetpath <- tclVar("C:/Tcl/lib/teapot/package/tcl/lib/BWidget1.9.8")
+					tktablepath <- tclVar(str_trim(tclPath$Windows$Tktable_Win64_bit))
+					bwidgetpath <- tclVar(str_trim(tclPath$Windows$Bwidget_Win64_bit))
 			}else{
-				tktablepath <- tclVar("C:/Tcl/lib/teapot/package/win32-ix86/lib/Tktable2.11")
-				bwidgetpath <- tclVar("C:/Tcl/lib/teapot/package/tcl/lib/BWidget1.9.6")		
-			}			
+				tktablepath <- tclVar(str_trim(tclPath$Windows$Tktable_Win32_bit))
+				bwidgetpath <- tclVar(str_trim(tclPath$Windows$Bwidget_Win32_bit))
+			}
 		}else if(Sys.info()["sysname"] == "Darwin"){
-			tktablepath <- tclVar("/usr/local/lib/tcl8.6/Tktable2.10")
-			bwidgetpath <- tclVar("/usr/local/lib/tcl8.6/bwidget-1.9.6")		
+			tktablepath <- tclVar(str_trim(tclPath$MacOS$Tktable))
+			bwidgetpath <- tclVar(str_trim(tclPath$MacOS$Bwidget))
 		}else if(Sys.info()["sysname"] == "Linux"){
-			tktablepath <- tclVar("/usr/local/lib/teapot/package/linux-glibc2.3-x86_64/lib/Tktable2.11")
-			bwidgetpath <- tclVar("/usr/local/lib/teapot/package/tcl/lib/BWidget1.9.7")	
+			tktablepath <- tclVar(str_trim(tclPath$Linux$Tktable))
+			bwidgetpath <- tclVar(str_trim(tclPath$Linux$Bwidget))
 		}
 	}
 
@@ -74,13 +74,13 @@ configCDT <- function(){
 
 	en.tktable <- tkentry(fr21.conf, textvariable = tktablepath, width = width.entry) #try dynamic width
 	bt.tktable <- tkbutton(fr21.conf, text = "...")
-	tkgrid(en.tktable, bt.tktable) 
+	tkgrid(en.tktable, bt.tktable)
 	tkgrid.configure(en.tktable, row = 0, column = 0, sticky = 'w')
 	tkgrid.configure(bt.tktable, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.tktable, command = function(){
 		tktablepath1 <- tk_choose.dir(default = "", caption = "")
 		tclvalue(tktablepath) <- tktablepath1
-	})		
+	})
 
 	bwidgettxt <- tklabel(fr22.conf, text = 'BWidget library path')
 	tkgrid(bwidgettxt)
@@ -93,7 +93,7 @@ configCDT <- function(){
 	tkconfigure(bt.bwidget, command = function(){
 		bwidgetpath1 <- tk_choose.dir(default = "", caption = "")
 		tclvalue(bwidgetpath) <- bwidgetpath1
-	})		
+	})
 
 	####
 	fr3a.conf <- tkframe(fr3.conf, relief = 'groove', borderwidth = 2)
@@ -102,7 +102,7 @@ configCDT <- function(){
 	yscr.conf <- tkscrollbar(fr3a.conf, repeatinterval = 5, command = function(...)tkyview(txta.conf,...))
 	txta.conf <- tktext(fr3a.conf, bg = "white", font = "courier", xscrollcommand = function(...)tkset(xscr.conf,...),
 	yscrollcommand = function(...)tkset(yscr.conf,...), wrap = "word", height = 5, width = 37)
-		 
+ 
 	tkgrid(txta.conf, yscr.conf)
 	tkgrid.configure(txta.conf, sticky = "nsew")
 	tkgrid.configure(yscr.conf, sticky = "ns")
@@ -111,8 +111,8 @@ configCDT <- function(){
 	rdL.conf <- readLines(infofl.conf, warn = FALSE)
 
 	tcl("update", "idletasks")
-	for(i in 1:length(rdL.conf))	tkinsert(txta.conf, "end", paste(rdL.conf[i], "\n"), "font0f.conf")
-	
+	for(i in 1:length(rdL.conf)) tkinsert(txta.conf, "end", paste(rdL.conf[i], "\n"), "font0f.conf")
+
 	bt.close.conf <- tkbutton(fr4.conf, text=" OK ") 
 	tkgrid(bt.close.conf, ipadx = 10)
 	tkconfigure(bt.close.conf, command = function(){
@@ -120,7 +120,7 @@ configCDT <- function(){
 		if(!file.exists(workdir)) dir.create(workdir, recursive = TRUE, showWarnings = FALSE)
 		setwd(workdir)
 		addTclPath(path = tclvalue(tktablepath))
-		addTclPath(path = tclvalue(bwidgetpath))			
+		addTclPath(path = tclvalue(bwidgetpath))
 		is.notkt <- tclRequire("Tktable")
 		is.nobw <- tclRequire("BWidget") 
 		if(is.logical(is.notkt)){
@@ -130,13 +130,13 @@ configCDT <- function(){
 		if(is.logical(is.nobw)){
 			tkmessageBox(message = "Tcl package 'BWidget' not found", icon = "error", type = "ok")
 			tkwait.window(config.win)
-		}			
+		}
 
 		params <- c(tclvalue(dirpath), tclvalue(tktablepath), tclvalue(bwidgetpath))
-		write.table(params, file.path(apps.dir, 'configure', 'configure0', fsep = .Platform$file.sep), col.names = F, row.names = F)
+		write.table(params, file.path(apps.dir, 'configure', 'configure0'), col.names = FALSE, row.names = FALSE)
 		tkgrab.release(config.win)
 		tkdestroy(config.win)
-	})	
+	})
 	
 	tkwm.withdraw(config.win)
 	tcl('update')

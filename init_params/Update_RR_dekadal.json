@@ -1,0 +1,59 @@
+{
+    "Merging.Date": [{
+        "year": 2016,
+        "month": 8,
+        "dekad": 1
+    }],
+    // If there is no station data: "1" 
+    "No.Stn.Data": "0",
+    // Input and Output files/directory
+    "IO.files": [{
+        "STN.file": "",
+        "RFE.dir": "",
+        "BIAS.dir": "",
+        "dir2save": "",
+        "DEM.file": "",
+        "SHP.file": ""
+    }],
+    // If RFE data is already downloaded : "1" ifelse "0"
+    "Downloaded.RFE": "1",
+    // RFE data source: "TAMSAT" or "CHIRP"
+    "RFE.data": "TAMSAT",
+    "Prefix": [{
+        // RFE filename format 
+        "RFE.File.Format": "rfe%s_%s-dk%s.nc",
+        // Mean Bias prefix
+        "Mean.Bias.Prefix": "Gauge-rfe_mean.bias"
+    }],
+    //Bounding box to extract RFE data
+    "RFE.bbox": [{
+        "minlon": 42,
+        "maxlon": 52,
+        "minlat": -26,
+        "maxlat": -12
+    }],
+    // Correct Bias: "1", if there is no mean bias factors: "0"
+    "Adjust.Bias": "1",
+    // Merging Parameters
+    "Merging.pars": [{
+        "min.Stn": 10,
+        "min.Stn.non0": 7,
+        // Rain-no-Rain mask: "None", "Gauge", "Satellite" or "GaugeSatellite"
+        "Rain.no.Rain": "GaugeSatellite",
+        "max.RnR.dist": 0.25
+    }],
+    // Interpolation Parameters
+    "Interpolation.pars": [{
+        // interpolation method: "IDW" or "Kriging"
+        "Interp.Method": "IDW",
+        "nmin": 1,
+        "nmax": 5,
+        "maxdist": 0.25
+    }],
+    // variogram model of dependent variable
+    "model": ["Sph", "Exp", "Gau"],
+    // using kriging of block mean values
+    "use.block": "TRUE",
+    // Blanking grid outside boundaries: "1" = None, "2" = "Use DEM", "3" = "Use ESRI shapefile"
+    "Blank.Grid": "1"
+}
