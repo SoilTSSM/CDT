@@ -2,18 +2,13 @@
 InterpolationPanelCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
 
-	##tkcombo& tkentry width
-	#largeur <- 27
 	largeur <- as.integer(w.scale(20)/sfont0)
-	##tkentry nc filename format tkentry wdth
-	#wncdf_ff <- 19
 	wncdf_ff <- as.integer(w.scale(14)/sfont0)
-	#scrollable frame width
 	if(Sys.info()["sysname"] == "Windows"){
-		wscrlwin <- w.scale(17.7) #18
+		wscrlwin <- w.scale(17.7)
 		hscrlwin <- h.scale(31.5)
 	}else{
-		wscrlwin <- w.scale(21)  #20.7
+		wscrlwin <- w.scale(21)
 		hscrlwin <- h.scale(37)
 	}
 
@@ -202,7 +197,7 @@ InterpolationPanelCmd <- function(){
 	#######################################################################################################
 
 	#Tab2
-	frTab2 <- tkframe(cmd.tab2) #,relief = 'sunken', bd = 2
+	frTab2 <- tkframe(cmd.tab2)
 	tkgrid(frTab2, padx = 5, pady = 5, ipadx = 2, ipady = 2)
 	tkgrid.columnconfigure(frTab2, 0, weight = 1)
 

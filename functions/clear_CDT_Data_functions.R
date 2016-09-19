@@ -1,6 +1,5 @@
 
 splitCDTData <- function(donne, period){
-	# ideb <- grep('[[:digit:]]',donne[1:5,1])[1]
 	ideb <- nrow(donne)
 	if(period == 'daily'){
 		if(nchar(as.character(donne[ideb, 1])) != 8){

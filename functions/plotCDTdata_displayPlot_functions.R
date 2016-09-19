@@ -108,32 +108,8 @@ displayCDTdata <- function(parent, notebookTab, donne, atLev, listCol, shpf, uni
 
 	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitle = paste('Map -',donne$date), AllOpenTabType, AllOpenTabData)
 
-	# area_plot_horiz <- as.numeric(tclvalue(tkget(spinH)))
-	# area_plot_verti <- as.numeric(tclvalue(tkget(spinV)))
-	# par_usr_horiz <- getParUsrPlot(c(donne$lon, ocrds[,1]))
-	# par_usr_verti <- getParUsrPlot(c(donne$lat, ocrds[,2]))
-	# ratio_plot_horiz <- diff(par_usr_horiz)/diff(par_usr_verti)
-	# ratio_plot_verti <- diff(par_usr_verti)/diff(par_usr_horiz)
-	# if(ratio_plot_horiz <= 1){
-		# hscale <- round(area_plot_horiz*ratio_plot_horiz, 1)
-		# vscale <- round(area_plot_verti, 1)
-	# }else{
-		# if(ratio_plot_verti >= 1){
-			# hscale <- round(area_plot_horiz, 1)
-			# vscale <- round(area_plot_verti*ratio_plot_verti, 1)
-		# }else{
-			# hscale <- round(area_plot_horiz, 1)
-			# vscale <- round(area_plot_verti, 1)
-		# }
-	# }
-	# tkset(spinH, hscale)
-	# tkset(spinV, vscale)
-
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
-	
-	# hscrFrame <- as.integer(tclvalue(tkwinfo("height", onglet[[1]])))
-	# wscrFrame <- as.integer(tclvalue(tkwinfo("width", onglet[[1]])))
 	hscrFrame <- as.integer(tclvalue(tkwinfo("height", panel.right)))
 	wscrFrame <- as.integer(tclvalue(tkwinfo("width", panel.right)))
 	

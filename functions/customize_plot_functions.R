@@ -1,24 +1,6 @@
 
 ##get boundaries from shapefile
-#getBoundaries <- function(map){
-#	if(!is.null(map)){
-#		lxx <- as(map, "SpatialLines")
-#		lns <- slot(lxx, "lines")
-#		olns <- lapply(lns, slot, "Lines")
-#		ocrds <- matrix(nrow = 0, ncol = 2)
-#		for (i in seq(along = olns)) {
-#		   for (j in seq(along = olns[[i]])) {
-#			 crds <- rbind(slot(olns[[i]][[j]], "coords"), c(NA, NA))
-#			 ocrds <- rbind(ocrds, crds)
-#		   }
-#		}
-#	}else{
-#		ocrds <- matrix(NA, nrow = 1, ncol = 2)
-#	}
-#	return(ocrds)
-#}
 
-###########The same
 getBoundaries <- function(shpf){
 	if(!is.null(shpf)){
 		retPolygon <- lapply(slot(shpf, "polygons"), function(i) slot(i, "Polygons"))
@@ -37,26 +19,6 @@ getBoundaries <- function(shpf){
 	}
 	return(ocrds)
 }
-
-#######The same
-#getBoundaries <- function(shpf){
-#	if(!is.null(shpf)){
-	#	retPolygon <- lapply(shpf@polygons, function(i) i@Polygons)
-	#	polys <- lapply(retPolygon, function(x){
-	#		ret <- NULL
-	#		for(i in seq_along(x)){
-	#			poly <- rbind(x[[i]]@coords, cbind(NA, NA) )
-	#			ret <- rbind(ret, poly)
-	#		}
-	#		ret
-	#	})
-	#
-	#	ocrds <- do.call('rbind', polys)
-#	}else{
-#		ocrds <- matrix(NA, nrow = 1, ncol = 2)
-#	}
-#	return(ocrds)
-#}
 
 ######################################
 ##format lat-lon axis label

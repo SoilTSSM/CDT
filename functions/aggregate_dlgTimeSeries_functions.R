@@ -1,11 +1,8 @@
 mainDialogAggTs <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	###tkentry width
 	if (Sys.info()["sysname"] == "Windows") largeur <- 34
 	else largeur <- 32
-	##tkcombo width, list.file
 	wtkcombo <- 30
-	##tkcombo width, freq, data source
 	wtkcombo1 <- 15
 
 	###################

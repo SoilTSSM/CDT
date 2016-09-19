@@ -14,7 +14,6 @@ tkadd(popup.opfiles, "command", label = "Open in table", command = function(){
 			AllOpenTabType[[ntab+1]] <<- 'arr'
 			AllOpenTabData[[ntab+1]] <<- tab.array
 			tkselect(tknotes, ntab)
-			#getTableInChange(tknotes)
 		}else InsertMessagesTxt(main.txt.out, 'This data type can not be displayed on a table', format = TRUE)
 	}else return(NULL)
 })
@@ -27,7 +26,6 @@ defile.popup <- function(x, y) {
 	tkselection.clear(all.opfiles, "0", as.character(length(AllOpenFilesData)-1))
 	idsel <- tclvalue(tkindex(all.opfiles, paste("@", x,",", y, sep = "")))
 	tkselection.set(all.opfiles, idsel)
-	#tkitemconfigure(all.opfiles, idsel, selectbackground = "yellow", selectforeground = "blue")
 	.Tcl(paste("tk_popup", .Tcl.args(popup.opfiles, xTxt, yTxt)))
 }
 
@@ -42,8 +40,6 @@ removeList <- function(){
 	tkdelete(all.opfiles, id.act-1)
 	AllOpenFilesType[id.act] <<- NULL
 	AllOpenFilesData[id.act] <<- NULL
-	#AllOpenFilesType <<- AllOpenFilesType[-id.act]
-	#AllOpenFilesData <<- AllOpenFilesData[-id.act]
 }
 
 ###Display in a table

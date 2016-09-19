@@ -155,8 +155,6 @@ displayPlotMerging <- function(parent, notebookTab, allDATA, atLev, listCol, shp
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
 	
-	# hscrFrame <- as.integer(tclvalue(tkwinfo("height", onglet[[1]])))
-	# wscrFrame <- as.integer(tclvalue(tkwinfo("width", onglet[[1]])))
 	hscrFrame <- as.integer(tclvalue(tkwinfo("height", panel.right)))
 	wscrFrame <- as.integer(tclvalue(tkwinfo("width", panel.right)))
 	
@@ -173,62 +171,3 @@ displayPlotMerging <- function(parent, notebookTab, allDATA, atLev, listCol, shp
 }
 
 
-
-
-#########################################################################################################################
-# displayPlotMerging <- function(parent, notebookTab){
-	
-	# plotIt <- function(){
-		# op <- par(bg = 'white')
-		# plot(1:20)
-		# par(op)
-	# }
-	
-	# ###################################################################	
-
-	# onglet <- imageNotebookTab_open(parent, notebookTab, tabTitle=' Map ',AllOpenTabType, AllOpenTabData)
-
-	# # hscrCan <- as.integer(tclvalue(tkwinfo("height", onglet[[1]])))
-	# # wscrCan <- as.integer(tclvalue(tkwinfo("width", onglet[[1]])))
-
-	# hscrCan <- as.integer(tclvalue(tkwinfo("height", panel.right)))
-	# wscrCan <- as.integer(tclvalue(tkwinfo("width", panel.right)))
-
-	# # hscale <- as.numeric(tclvalue(tkget(spinH)))
-	# # vscale <- as.numeric(tclvalue(tkget(spinV)))
-	# hscale <- 1
-	# vscale <- 1
-	# scrollwin <- bwScrolledWindow(onglet[[2]])
-	# tkgrid(scrollwin)
-	# tkgrid.rowconfigure(scrollwin, 0, weight = 1)
-	# tkgrid.columnconfigure(scrollwin, 0, weight = 1)
-
-	# canvas <- ScrollCanvas(scrollwin, width = wscrCan, height = hscrCan)
-	# tkgrid(canvas)
-
-	# img <- tkrplot1(canvas, fun = plotIt, hscale = hscale, vscale = vscale)
-	# img_w <- as.double(tcl('image', 'width', img$image))
-	# img_h <- as.double(tcl('image', 'height', img$image))
-
-	# xcan<-(wscrCan-img_w)/2
-	# ycan<-(hscrCan-img_h)/2
-
-	# tkcreate(canvas, "image", xcan, ycan, anchor = 'nw', image = img$image, tag = 'aho')
-	# #tkaddtag(canvas, "image", "withtag", img)
-	# setScrollCanvas(canvas, width = wscrCan, height = hscrCan)
-	# #setScrollCanvas1(canvas)
-	
-	# ######
-	# tkbind(canvas,"<Enter>", function(){
-		# tkconfigure(canvas, cursor = 'crosshair')
-	# })
-
-	# tkbind(canvas,"<Leave>", function() tkconfigure(canvas, cursor=''))
-	# ####
-	
-	# #tkitembind(canvas, "image", "<Any-Enter>", function() tkitemconfigure(canvas, "current", fill = "red"))
-	# #tkitembind(canvas, "image", "<Any-Leave>", function() tkitemconfigure(canvas, "current", fill = "blue"))
-
-	# ############
-	# return(list(onglet, list(canvas, img)))
-# }

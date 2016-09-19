@@ -1,7 +1,6 @@
 
 qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	##tkentry width, directory path
 	if (Sys.info()["sysname"] == "Windows") largeur <- 30
 	else largeur <- 28
 

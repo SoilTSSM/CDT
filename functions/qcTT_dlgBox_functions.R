@@ -12,12 +12,9 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 	frButt <- tkframe(tt)
 	fr.A <- tkframe(frDialog, relief = "groove", borderwidth = 2)
 	fr.B <- tkframe(frDialog, relief = "groove", borderwidth = 2)
-	#fr.C <- tkframe(tt, relief = "flat", borderwidth = 2)
-	#tkgrid(fr.A, fr.B, fr.C)
 	tkgrid(fr.A, fr.B)
 	tkgrid.configure(fr.A, row = 0, column = 0, sticky = 'news', padx = 5, pady = 5, ipadx = 1, ipady = 1)
 	tkgrid.configure(fr.B, row = 0, column = 1, sticky = 'news', padx = 5, pady = 5, ipadx = 1, ipady = 1)
-	#tkgrid.configure(fr.C, row = 0, column = 2, sticky = 'news', padx = 5, pady = 5, ipadx = 1, ipady = 1)
 	
 	pr.relief.set <- c('sunken', 'sunken', 'sunken', 'sunken', 'sunken')
 	for(i in 0:4) assign(paste('fr.A', i, sep = ''), tkframe(fr.A, relief = pr.relief.set[i+1], borderwidth = 2))

@@ -125,8 +125,6 @@ displayNetCDFdata <- function(parent, notebookTab, donne, atLev, listCol, shpf, 
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
 	
-	# hscrFrame <- as.integer(tclvalue(tkwinfo("height", onglet[[1]])))
-	# wscrFrame <- as.integer(tclvalue(tkwinfo("width", onglet[[1]])))
 	hscrFrame <- as.integer(tclvalue(tkwinfo("height", panel.right)))
 	wscrFrame <- as.integer(tclvalue(tkwinfo("width", panel.right)))
 	

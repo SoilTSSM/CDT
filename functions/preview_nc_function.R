@@ -1,9 +1,6 @@
 ###preview netcdf
 preview.data.nc <- function(parent.win, openncf, title.pop){
-	#tktext width
-	#fixed to 38
 	txta.w <- 38
-	#tktext height
 	txta.h <- 7
 
 	tt <- tktoplevel()
@@ -11,7 +8,6 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 	tkfocus(tt)
 
 	####################################
-	# is.rdble <- !inherits(try(nc <- open.ncdf(openncf), silent = TRUE), "try-error")
 	is.rdble <- !inherits(try(nc <- nc_open(openncf), silent = TRUE), "try-error")
 	if(!is.rdble){
 		InsertMessagesTxt(main.txt.out, paste("Unable to open file ", openncf), format = TRUE)
@@ -138,7 +134,6 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 	tkgrid.configure(xscr, sticky = "ew")
 	tkconfigure(txta, width = txta.w, height = txta.h)
 
-	#tcl("update", "idletasks")
 	for(i in 1:length(print.nc)) tkinsert(txta, "end", paste(print.nc[i], "\n"))
 	tcl("update")
 	#####
@@ -164,11 +159,7 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 			d.units <- d.units[c(idx, idy)]
 			dat <- ncvar_get(nc, varid = as.character(var.info[ivar, 1]))
 
-			#test if lat is increasing (bottomleft corner) or decreasing (topleft corner)
-			#all(diff(lat) > 0) #increasing
-			#all(lat == cummin(lat))	#decreasing
-			irevlat <- all(lat == cummax(lat))  #test increasing ##omit
-			
+			irevlat <- all(lat == cummax(lat))
 			xo <- order(lon)
 			lon <- lon[xo]
 			yo <- order(lat)
@@ -176,25 +167,9 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 		
 			if(idx == 1){
 				dat <- dat[xo, yo]
-				# if(irevlat){
-				# 	dat <- dat
-				# 	#dat <- matrix(c(dat), nrow = v.size[idx], ncol = v.size[idy])
-				# }else{
-				# 	lat <- rev(lat)
-				# 	dat <- dat[,rev(1:length(lat))]
-				# }
 			}else{
-				# dat <- c(dat)
-				# dim(dat) <- c(v.size[idx], v.size[idy])
 				dat <- matrix(c(dat), nrow = v.size[idx], ncol = v.size[idy], byrow = T)
 				dat <- dat[xo, yo]
-				# if(irevlat){
-				# 	dat <- matrix(c(dat), nrow = v.size[idx], ncol = v.size[idy], byrow = T)
-				# }else{
-				# 	lat <- rev(lat)
-				# 	dat <- dat[rev(1:length(lat)),]
-				# 	dat <- matrix(c(dat), nrow = v.size[idx], ncol = v.size[idy], byrow = T)
-				# }
 			}
 			retval <<- list(x = lon, y = lat, value = dat, var.unit = v.unit, dim.units = d.units, varid = as.character(var.info[ivar, 1]),
 			ilon = idx, ilat = idy, irevlat = irevlat)

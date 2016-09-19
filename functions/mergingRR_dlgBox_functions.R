@@ -1,9 +1,7 @@
 coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	##tkentry width, directory path
 	if (Sys.info()["sysname"] == "Windows") largeur <- 23
 	else largeur <- 21
-	##tkentry width, rfe filename format
 	if (Sys.info()["sysname"] == "Windows") largeur1 <- 23
 	else largeur1 <- 21
 

@@ -397,22 +397,3 @@ getTempInitParams <- function(donne){
 	names(limControl) <- c('Station ID', 'Lower Bounds', 'Upper Bounds', 'Lon', 'Lat')
 	return(limControl)
 }
-
-
-
-########
-#enableJIT(3)
-#merge.qc.val <- cmpfun(merge.qc.val)
-#repartCheck <- cmpfun(repartCheck)
-#common.txtn <- cmpfun(common.txtn)
-#limit.bounds <- cmpfun(limit.bounds)
-#limit.bounds.qc <- cmpfun(limit.bounds.qc)
-#quantilef <- cmpfun(quantilef)
-#quantilef1 <- cmpfun(quantilef1)
-#indepStationParams <- cmpfun(indepStationParams)
-#depStationParams <- cmpfun(depStationParams)
-#removeSomeNA <- cmpfun(removeSomeNA)
-#getRainSpatInitCond <- cmpfun(getRainSpatInitCond)
-#getRainInitParams <- cmpfun(getRainInitParams)
-#getTempInitParams <- cmpfun(getTempInitParams)
-

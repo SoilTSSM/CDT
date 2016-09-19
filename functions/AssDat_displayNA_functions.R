@@ -19,7 +19,6 @@ plotNASummary <- function(dates, xseries, jstn, period){
 	axis(side = 2)
 	axis(side = 1, at = at_tick - 1, labels = FALSE)
 	axis(side = 1, at = at_lab , tick = FALSE, labels = taxis)
-	#if(length(yval) > 0) text(at_val, yval, labels = yval, pos = 3)
 	abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 	box()
 	plt <- par("plt")

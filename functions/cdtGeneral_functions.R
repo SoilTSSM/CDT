@@ -1,13 +1,7 @@
 ###test internet connection
-#http://stackoverflow.com/questions/5076593/how-to-determine-if-you-have-an-internet-connection-in-r
 testConnection <- function(url = "https://www.google.com") {
-    # test the http capabilities of the current R build
     if (!as.logical(capabilities(what = "http/ftp"))) return(FALSE)
-    # test connection by trying to read first line at url
     test <- try(suppressWarnings(readLines(url, n = 1)), silent = TRUE)
-    # test <- try(suppressWarnings(url(url, open='rb')), silent = TRUE) #use close(test)
-
-    # return FALSE if test is class 'try-error'
     ifelse(inherits(test, "try-error"), FALSE, TRUE)
 }
 
@@ -23,18 +17,9 @@ getf.no.ext <- function(flname){
 	}
 	return(fret)
 }
-#ou
-#getf.no.ext <- function(flname){
-#	require(tools)
-#	extf <- file_ext(flname)
-#	if(extf == "") fret <- flname
-#	else fret <- sub(paste('.',extf, sep = ''),'',flname)
-#	return(fret)
-#}
 
 
 ####################################################################
-##voir http://docs.activestate.com/activetcl/8.4/bwidget/DynamicHelp.html
 #BWidget info-bulle(ballon, tooltip) help
 infobulle <- function(tclobj, text){
 	tcl("interp", "alias", "", "help", "", "DynamicHelp::register") 
@@ -97,7 +82,6 @@ ttkspinbox <- function(parent, ...) tkwidget(parent, "ttk::spinbox", ...)
 ####################################################################
 ### Insert text 
 InsertMessagesTxt <- function(wdgt, texta, format = FALSE, fgcolor = 'red', bgcolor = 'yellow'){
-	#tktag.add(wdgt, "formated", "end -1 lines linestart", "end -1 lines lineend")
 	font1 <- tkfont.create(family = "times", weight = "bold", slant = "roman", size = 11)
 	font2 <- tkfont.create(family = "times", weight = "normal", slant = "italic", size = 11)
 	tktag.configure(wdgt, "formated1", foreground = fgcolor, background = bgcolor, font = font1)
@@ -106,60 +90,10 @@ InsertMessagesTxt <- function(wdgt, texta, format = FALSE, fgcolor = 'red', bgco
 	chn <- tclvalue(tkget(wdgt, "0.0", "end"))
 	vectxt <- unlist(strsplit(chn,"\n"))
 	lnt <- length(vectxt)
-#	if(lnt == 50){
-#		tkdelete(wdgt, "0.0", "2.0") 
-#		if(format) tkinsert(wdgt, "end", paste(texta,"\n"), txtformated)
-#		else tkinsert(wdgt, "end", paste(texta,"\n"))
-#	}else{
-		if(format) tkinsert(wdgt, "end", paste(texta,"\n"), txtformated)
-		else tkinsert(wdgt, "end", paste(texta,"\n"))
-#	}
+	if(format) tkinsert(wdgt, "end", paste(texta,"\n"), txtformated)
+	else tkinsert(wdgt, "end", paste(texta,"\n"))
 	tcl(wdgt, 'yview', 'moveto', '1.0')
 }
-
-###############################################################################
-###To remplace the tooltip and statusbar widget
-## generic
-# tkwidget.x <- function (parent, type, txtVar, txtSatus, txtTooltip,...){
-# 	win <- .Tk.subwin(parent)
-# 	tcl(type, win, ...)
-# 	infobulle(win, txtTooltip)
-# 	status.bar.display(win, txtVar, txtSatus)
-# 	return(win)
-# }
-
-##############Redefine widget
-# tkbutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "button", txtVar, txtSatus, txtTooltip,...)
-# tkcanvas.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "canvas", txtVar, txtSatus, txtTooltip,...)
-# tkcheckbutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "checkbutton", txtVar, txtSatus, txtTooltip,...)
-# tkentry.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "entry", txtVar, txtSatus, txtTooltip,...)
-# tkframe.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "frame", txtVar, txtSatus, txtTooltip,...)
-# tklabel.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "label", txtVar, txtSatus, txtTooltip,...)
-# tklistbox.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "listbox", txtVar, txtSatus, txtTooltip,...)
-# tkmenu.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "menu", txtVar, txtSatus, txtTooltip,...)
-# tkmenubutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "menubutton", txtVar, txtSatus, txtTooltip,...)
-# tkmessage.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "message", txtVar, txtSatus, txtTooltip,...)
-# tkradiobutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "radiobutton", txtVar, txtSatus, txtTooltip,...)
-# tkscale.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "scale", txtVar, txtSatus, txtTooltip,...)
-# tkscrollbar.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "scrollbar", txtVar, txtSatus, txtTooltip,...)
-# tktext.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "text", txtVar, txtSatus, txtTooltip,...)
-# ttkbutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::button", txtVar, txtSatus, txtTooltip,...)
-# ttkcheckbutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::checkbutton", txtVar, txtSatus, txtTooltip,...)
-# ttkcombobox.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::combobox", txtVar, txtSatus, txtTooltip,...)
-# ttkentry.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::entry", txtVar, txtSatus, txtTooltip,...)
-# ttkframe.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::frame", txtVar, txtSatus, txtTooltip,...)
-# ttkimage.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::image", txtVar, txtSatus, txtTooltip,...)
-# ttklabel.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::label", txtVar, txtSatus, txtTooltip,...)
-# ttklabelframe.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::labelframe", txtVar, txtSatus, txtTooltip,...)
-# ttkmenubutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::menubutton", txtVar, txtSatus, txtTooltip,...)
-# ttknotebook.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::notebook", txtVar, txtSatus, txtTooltip,...)
-# ttkpanedwindow.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::panedwindow", txtVar, txtSatus, txtTooltip,...)
-# ttkprogressbar.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::progressbar", txtVar, txtSatus, txtTooltip,...)
-# ttkradiobutton.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::radiobutton", txtVar, txtSatus, txtTooltip,...)
-# ttkscrollbar.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::scrollbar", txtVar, txtSatus, txtTooltip,...)
-# ttkseparator.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::separator", txtVar, txtSatus, txtTooltip,...)
-# ttksizegrip.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::sizegrip", txtVar, txtSatus, txtTooltip,...)
-# ttktreeview.x <- function(parent, txtVar, txtSatus, txtTooltip,...) tkwidget.x(parent, "ttk::treeview", txtVar, txtSatus, txtTooltip,...)
 
 ###############################################################################
 #BWidget NoteBook
@@ -181,7 +115,6 @@ bwNoteBook <- function(parent, side = 'top',...){
 bwAddTab <- function(parent, text = "Tab",...){
 	IDtab <- paste('_BwNb', isaTabBwNb(), sep = '')
 	tab <- tkinsert(parent, 'end', IDtab, text = text,...)
-	#win <- .Tk.newwin(tclvalue(tcl(parent, "getframe", IDtab))) #mitovy
 	win <- .Tk.newwin(tclvalue(tab))
 	win$IDtab <- IDtab
 	return(win)
@@ -619,14 +552,6 @@ getNcdfData2Plot <- function(dataNCDF, freqData, yrs, mon, day, ncOrder = c(1,2)
 	lat <- nc$dim[[ilat]]$vals
 	val <- ncvar_get(nc, varid = nc$var[[1]]$name)
 	nc_close(nc)
-	# xo <- order(lon)
-	# lon <- rfe.lon[xo]
-	# yo <- order(lat)
-	# lat <- lat[yo]
-	# val <- val[xo, yo]
-	# if(ilat == 1){
-	# 	val <- matrix(c(val), nrow = length(lon), ncol = length(lat), byrow = T)
-	# }
 	return(list(x = lon, y = lat, value = val))
 }
 
@@ -691,7 +616,6 @@ getDEMatNewGrid <- function(newgrid, dem){
 ##################################################################################
 #Reshape data.frame XYZ to matrix list(x, y, z = matrix)
 
-## 8.5 times faster
 reshapeXYZ2Matrix <- function(df){
 	#require(reshape2)
 	df <- as.data.frame(df)
@@ -703,71 +627,6 @@ reshapeXYZ2Matrix <- function(df){
 	return(list(x = x, y = y, z = z))
 }
 
-
-# ## 4 times faster
-# reshapeXYZ2Matrix1 <- function(df){
-# 	df <- as.data.frame(df)
-# 	names(df) <- c('x', 'y', 'z')
-# 	x <- sort(unique(df$x))
-# 	y <- sort(unique(df$y))
-# 	dxy <- expand.grid(x = x, y = y)
-# 	ix <- match(paste(df$x, df$y, sep = '_'), paste(dxy$x, dxy$y, sep = '_'))
-# 	z <- matrix(NA, nrow = length(x), ncol = length(y))
-# 	z[ix] <- df$z
-# 	rm(dxy, ix)
-# 	return(list(x = x, y = y, z = z))
-# }
-
-
-# ## 1.2 times faster
-# reshapeXYZ2Matrix2 <- function(df){
-# 	df <- as.data.frame(df)
-# 	names(df) <- c('x', 'y', 'z')
-# 	x <- sort(unique(df$x))
-# 	y <- sort(unique(df$y))
-# 	dxy <- data.frame(expand.grid(x = x, y = y), z = 1:(length(x)*length(y)))
-# 	dat <- merge(df, dxy, by = c('y', 'x'), all = T, sort = FALSE)
-# 	dat <- dat[order(dat[,4]),]
-# 	z <- matrix(dat[,3], nrow = length(x), ncol = length(y))
-# 	rm(dxy, dat)
-# 	return(list(x = x, y = y, z = z))
-# }
-
-# ## slow
-# reshapeXYZ2Matrix3 <- function(df){
-# 	df <- as.data.frame(df)
-# 	names(df) <- c('x', 'y', 'z')
-# 	tmp <- attributes(xtabs(z~x+y, data = df, sparse = TRUE))
-# 	x <- as.numeric(tmp$Dimnames[[1]])
-# 	y <- as.numeric(tmp$Dimnames[[2]])
-# 	xz <- matrix(NA, nrow = tmp$Dim[1], ncol = tmp$Dim[2])
-# 	end <- tmp$p[-1]
-# 	start <- c(1,(end+1)[-length(end)])
-# 	z <- sapply(seq_along(start), function(j){
-# 		ic<-(tmp$i+1)[start[j]:end[j]]
-# 		xz[ic, j] <- tmp$x[start[j]:end[j]]
-# 		xz[,j]
-# 	})
-# 	rm(tmp, xz, end, start)
-# 	return(list(x = x, y = y, z = z))
-# }
-
-##################################################################################
-###List exchange (dialog qc, hom, merging)
-
-# listExchange <- function(list1, list2, list3){
-# 	#retList <- list2[sapply(1:length(list2), function(x) !identical(list2[[x]], list1[[x]]))]  	#index list
-# 	retList <- list2[sapply(names(list2), function(x) !identical(list2[[x]], list1[[x]]))]        #named list
-# 	if(length(retList) > 0){
-# 		#id <- which(!list2%in%list1) #index list
-# 		id <- names(retList)    #named list
-# 		for(i in id){
-# 			diffElement <- list2[[i]] != list1[[i]]
-# 			list3[[i]][diffElement] <- list2[[i]][diffElement]
-# 		}
-# 	}
-# 	return(list3)
-# }
 
 ##################################################################################
 ###get index of points at grid
@@ -833,8 +692,6 @@ regridDEMFun <- function(demObj, newgrd, regrid = c('BLW', 'IDW', 'RASTER'), ...
 		dem <- mask(dem, newgrid)
 		dem<-c(t(apply(as.matrix(dem), 2, rev)))
 		dem[dem < 0] <- 0
-		# dem <- t(as.matrix(dem))
-		# dem <- c(dem[, ncol(dem):1])
 	}	
 	return(dem)
 }

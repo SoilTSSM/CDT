@@ -48,8 +48,6 @@ tb.separator0 <- ttkseparator(tools.frame, orient = 'vertical')
 tb.separator1 <- ttkseparator(tools.frame, orient = 'vertical')
 tb.separator2 <- ttkseparator(tools.frame, orient = 'vertical')
 tb.separator3 <- ttkseparator(tools.frame, orient = 'vertical')
-# tb.separator4 <- ttkseparator(tools.frame, orient = 'vertical')
-# tb.separator5 <- ttkseparator(tools.frame, orient = 'vertical')
 
 ########
 tkgrid(tb.open.file, tb.save.image, tb.separator0, tb.open.table, tb.save.table, tb.separator1, tb.run, tb.separator2, lspinH, spinH, lspinV, spinV, plotRedraw, tb.separator3, tb.close.tab, tb.exit.win)
@@ -59,8 +57,6 @@ tkgrid.configure(tb.separator0, sticky = 'ns')
 tkgrid.configure(tb.separator1, sticky = 'ns')
 tkgrid.configure(tb.separator2, sticky = 'ns', padx = 20)
 tkgrid.configure(tb.separator3, sticky = 'ns', padx = 20)
-# tkgrid.configure(tb.separator4, sticky = 'ns', padx = 10)
-# tkgrid.configure(tb.separator5, sticky = 'ns', padx = 10)
 
 tkgrid.configure(tb.open.file, padx = 5)
 tkgrid.configure(tb.save.image, padx = 5)
@@ -86,7 +82,6 @@ tkconfigure(plotRedraw, relief = 'raised', command = function(){
 		if(AllOpenTabType[[tabid]] == "img"){
 
 			if(class(AllOpenTabData[[tabid]][[2]]) == "tkwin"){
-				#W <- tkwinfo('children', AllOpenTabData[[tabid]][[1]][[2]])
 				W <- AllOpenTabData[[tabid]][[2]]
 				img <- AllOpenTabData[[tabid]][[2]]
 				refreshPlot1(W = W, img = img, hscale = as.numeric(tclvalue(tkget(spinH))), vscale = as.numeric(tclvalue(tkget(spinV))))
@@ -96,12 +91,9 @@ tkconfigure(plotRedraw, relief = 'raised', command = function(){
 				img <- AllOpenTabData[[tabid]][[2]][[2]]
 				refreshPlot1(W = W, img = img, hscale = as.numeric(tclvalue(tkget(spinH))), vscale = as.numeric(tclvalue(tkget(spinV))))
 				if(tclvalue(tkwinfo('class', tkwinfo('children', AllOpenTabData[[tabid]][[1]][[2]]))) == "Frame"){
-					# w <- as.double(tkwinfo("width", AllOpenTabData[[tabid]][[1]][[1]]))
-					# h <- as.double(tkwinfo("height", AllOpenTabData[[tabid]][[1]][[1]]))
 					w <- as.double(tkwinfo("width", panel.right))
 					h <- as.double(tkwinfo("height", panel.right))
 					setScrollCanvas(W, w, h)
-					#setScrollCanvas1(W)
 				}
 			}
 			tkconfigure(plotRedraw, image = hRedraw)
@@ -157,7 +149,6 @@ tkconfigure(tb.open.table, state = 'normal', command = function() {
 		AllOpenTabType[[ntab+1]] <<- 'arr'
 		AllOpenTabData[[ntab+1]] <<- tab.array
 		tkselect(tknotes, ntab)
-		#getTableInChange(tknotes)
 	}else{
 		return(NULL)
 	}

@@ -1,15 +1,8 @@
 ###Onglets manupilation
-#Based on http://svn.python.org/projects/stackless/trunk/Demo/tkinter/ttk/notebook_closebtn.py
 
 .Tcl(paste("image create photo img_close -file ",'"',file.path(imgdir, "closeTabButton0.gif", fsep = .Platform$file.sep),'"',sep = ""))
 .Tcl(paste("image create photo img_closeactive  -file ",'"',file.path(imgdir, "closeTabButton1.gif", fsep = .Platform$file.sep),'"',sep = ""))
 .Tcl(paste("image create photo img_closepressed -file ",'"',file.path(imgdir, "closeTabButton2.gif", fsep = .Platform$file.sep),'"',sep = ""))
-
-#tcl('image', 'create', 'photo', 'img_close','-file', file.path(imgdir, "closeTabButton0.gif", fsep = .Platform$file.sep))
-#img_close <- tcl('image', 'create', 'photo','-file', file.path(imgdir, "closeTabButton0.gif", fsep = .Platform$file.sep))
-#img_close <- tkimage.create('photo','-file', file.path(imgdir, "closeTabButton0.gif", fsep = .Platform$file.sep))
-
-#tcl('ttk::style', 'element', 'create', 'Fermer', 'image', tcl(tcl('list', 'img_close'.......
 
 try(.Tcl('ttk::style element create Fermer image [list img_close {active pressed !disabled} img_closepressed {active  !disabled} img_closeactive ] -border 4 -sticky e'), silent = TRUE)
 
@@ -26,14 +19,6 @@ try(.Tcl('ttk::style element create Fermer image [list img_close {active pressed
 	}
 }", sep = '\n')
 
-#tcl("ttk::style", "configure", "TNotebook", background = "blue")
-#tcl("ttk::style", "configure", "TNotebook.Tab", background = "blue")
-#tcl("ttk::style", "configure", "TNotebook.Tab", padding = c(6,2,6,2), expand = c(0,0,2))
-#tcl("ttk::style", "map", "TNotebook.Tab", background = c("active", "green"))
-#tcl("ttk::style", "map", "TNotebook.Tab", background = c("selected", "skyblue"))
-#
-
-
 btn_press <- function(x, y, W){
 	elem <- tclvalue(tcl(W, 'identify', 'element', x, y))
 	index <- tclvalue(tcl(W, 'identify', 'tab', x, y))
@@ -49,7 +34,6 @@ btn_releases <- function(x, y, W){
 		elem <- tclvalue(tcl(W, 'identify', 'element', x, y))
 		index <- tclvalue(tcl(W, 'identify', 'tab', x, y))
 		if(elem == 'Fermer' &  tclvalue(pressed_index) == index){
-			#cat('vonoy','\n')
 			CloseNotebookTab(index)
 		}
 		.Tcl(paste(W, 'state !pressed'))
@@ -169,86 +153,26 @@ CloseNotebookTab <- function(index){
 	if(is.na(tabid)){
 		return(NULL)
 	}else{
-		if(AllOpenTabType[[tabid]] == "arr"){
-			##message (yes/no/cancel)
-#			retval <- tkmessageBox(message = "Do you want to save before quitting?", icon = "question", type = "yesnocancel", default = "yes")
-#			if(tclvalue(retval) != "cancel"){
-#				#sauver
-#				if(tclvalue(retval) == "yes"){
-#					file.to.save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "",
-#					filetypes="{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}"))
-#					Objarray <- AllOpenTabData[[tabid]][[2]]
-#					tkconfigure(main.win, cursor = 'watch');tcl('update')
-#					dat2sav <- tclArray2dataframe(Objarray)
-#					write.table(dat2sav, file.to.save, row.names = F, col.names = T)
-#					tkconfigure(main.win, cursor='')
-#				}
-				tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
-				AllOpenTabData[tabid] <<- NULL
-				AllOpenTabType[tabid] <<- NULL
-				#AllOpenTabData <<- AllOpenTabData[-tabid]
-				#AllOpenTabType <<- AllOpenTabType[-tabid]
-#			}
-#			if(tclvalue(retval) == "cancel") return(NULL)
+		arrTypes <- c("arr", "arrhom", "arrRHtest", "arrqc", "arrzc", "arrInterp", "homInfo",
+						"StnInfo", "arrValid")
+		if(AllOpenTabType[[tabid]]%in%arrTypes){
+			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
 		}else if(AllOpenTabType[[tabid]] == "ctxt"){
 			tkdestroy(AllOpenTabData[[tabid]][[1]])
-			AllOpenTabData[tabid] <<- NULL
-			AllOpenTabType[tabid] <<- NULL
-			#AllOpenTabData <<- AllOpenTabData[-tabid]
-			#AllOpenTabType <<- AllOpenTabType[-tabid]
 		}else if(AllOpenTabType[[tabid]] == "img"){
-			#.Tcl(paste("image delete", AllOpenTabData[[tabid]][[2]]$image))
-			#tkdestroy(AllOpenTabData[[tabid]][[2]])
 			tkdestroy(AllOpenTabData[[tabid]][[1]][[2]])
 			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
-			AllOpenTabData[tabid] <<- NULL
-			AllOpenTabType[tabid] <<- NULL
-			#AllOpenTabData <<- AllOpenTabData[-tabid]
-			#AllOpenTabType <<- AllOpenTabType[-tabid]
-		}else if(AllOpenTabType[[tabid]] == "arrhom"){
-			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
-			AllOpenTabData[tabid] <<- NULL
-			AllOpenTabType[tabid] <<- NULL
-			#AllOpenTabData <<- AllOpenTabData[-tabid]
-			#AllOpenTabType <<- AllOpenTabType[-tabid]
-		}else if(AllOpenTabType[[tabid]] == "arrRHtest"){
-			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
-			AllOpenTabData[tabid] <<- NULL
-			AllOpenTabType[tabid] <<- NULL
-		}else if(AllOpenTabType[[tabid]] == "arrqc"){
-			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
-			AllOpenTabData[tabid] <<- NULL
-			AllOpenTabType[tabid] <<- NULL
-		}else if(AllOpenTabType[[tabid]] == "arrzc"){
-			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
-			AllOpenTabData[tabid] <<- NULL
-			AllOpenTabType[tabid] <<- NULL
-		}else if(AllOpenTabType[[tabid]] == "arrInterp"){
-			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
-			AllOpenTabData[tabid] <<- NULL
-			AllOpenTabType[tabid] <<- NULL
-		}else if(AllOpenTabType[[tabid]] == "homInfo"){
-			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
-			AllOpenTabData[tabid] <<- NULL
-			AllOpenTabType[tabid] <<- NULL
-		}else if(AllOpenTabType[[tabid]] == "StnInfo"){
-			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
-			AllOpenTabData[tabid] <<- NULL
-			AllOpenTabType[tabid] <<- NULL
-		}else if(AllOpenTabType[[tabid]] == "arrValid"){
-			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
-			AllOpenTabData[tabid] <<- NULL
-			AllOpenTabType[tabid] <<- NULL
 		}else{
 			return(NULL)
 		}
+		AllOpenTabData[tabid] <<- NULL
+		AllOpenTabType[tabid] <<- NULL
 	}
 }
 
 ########################################################################
 SaveNotebookTabArray <- function(parent){
 	tabid <- as.numeric(tclvalue(tkindex(parent, 'current')))+1
-	#tkconfigure(main.win, cursor = 'watch');tcl('update')
 	if(length(AllOpenTabType) > 0){
 		if(AllOpenTabType[[tabid]] == "arr"){
 			filetosave <- AllOpenTabData[[tabid]][[3]]
@@ -263,32 +187,26 @@ SaveNotebookTabArray <- function(parent){
 				f2smon <- filetosave[[3]]
 				Objarray <- AllOpenTabData[[tabid]][[2]]
 				dat2format <- tclArray2dataframe(Objarray)
-				# if(!is.null(dat2format)){
-					dat2sav <- reHomOutFormat(dat2format)
-					write.table(dat2sav[[1]], f2sdly, row.names = F, col.names = T)
-					write.table(dat2sav[[2]], f2sdek, row.names = F, col.names = T)
-					write.table(dat2sav[[3]], f2smon, row.names = F, col.names = T)
-				# }
+				dat2sav <- reHomOutFormat(dat2format)
+				write.table(dat2sav[[1]], f2sdly, row.names = F, col.names = T)
+				write.table(dat2sav[[2]], f2sdek, row.names = F, col.names = T)
+				write.table(dat2sav[[3]], f2smon, row.names = F, col.names = T)
 			}else if(ReturnExecResults$action == 'homog' & ReturnExecResults$period == 'dekadal'){
 				filetosave <- AllOpenTabData[[tabid]][[3]]
 				f2sdek <- filetosave[[1]]
 				f2smon <- filetosave[[2]]
 				Objarray <- AllOpenTabData[[tabid]][[2]]
 				dat2format <- tclArray2dataframe(Objarray)
-				# if(!is.null(dat2format)){
-					dat2sav <- reHomOutFormat(dat2format)
-					write.table(dat2sav[[1]], f2sdek, row.names = F, col.names = T)
-					write.table(dat2sav[[2]], f2smon, row.names = F, col.names = T)
-				# }
+				dat2sav <- reHomOutFormat(dat2format)
+				write.table(dat2sav[[1]], f2sdek, row.names = F, col.names = T)
+				write.table(dat2sav[[2]], f2smon, row.names = F, col.names = T)
 			}else if(ReturnExecResults$action == 'homog' & ReturnExecResults$period == 'monthly'){
 				filetosave <- AllOpenTabData[[tabid]][[3]]
 				f2smon <- filetosave[[1]]
 				Objarray <- AllOpenTabData[[tabid]][[2]]
 				dat2format <- tclArray2dataframe(Objarray)
-				# if(!is.null(dat2format)){
-					dat2sav <- reHomOutFormat(dat2format)
-					write.table(dat2sav[[1]], f2smon, row.names = F, col.names = T)
-				# }
+				dat2sav <- reHomOutFormat(dat2format)
+				write.table(dat2sav[[1]], f2smon, row.names = F, col.names = T)
 			}else{
 				InsertMessagesTxt(main.txt.out, 'The table could not be saved correctly', format = TRUE)
 			}
@@ -307,8 +225,6 @@ SaveNotebookTabArray <- function(parent){
 					tmp7 <- strsplit(str_trim(gsub("[()-]", " ", dat2sav[,7])),' ')
 					tmp7 <- lapply(tmp7, function(x) if(length(x) == 0) c(NA, NA) else x)
 					tmp <- cbind(dat2sav[,1:3], do.call('rbind', tmp4), dat2sav[,5:6], do.call('rbind', tmp7))
-#					tmp <- cbind(dat2sav[,1:3], do.call('rbind', strsplit(str_trim(gsub("[()-]", " ", dat2sav[,4])),' ')), dat2sav[,5:6],
-#					do.call('rbind', strsplit(str_trim(gsub("[()-]", " ", dat2sav[,7])),' ')))
 					tmp <- apply(tmp, 2, as.character)
 					if(is.null(dim(tmp))) tmp <- matrix(tmp, nrow = 1)
 					colClasses <- c('numeric', 'character', rep('numeric', 7))
@@ -365,8 +281,6 @@ SaveNotebookTabArray <- function(parent){
 	}else{
 		return(NULL)
 	}
-
-	#tkconfigure(main.win, cursor='')
 }
 
 
@@ -389,7 +303,6 @@ SavePlot <- function(){
 				else AllOpenTabData[[tabid]][[2]][[2]]$fun()
 				dev.off()
 			}
-			#else tkmessageBox(title="", message = "No file name provided", icon = "error", type = "ok")
 		}
 	}else{
 		return(NULL)

@@ -129,7 +129,6 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 		##get coordinates or polygon id
 		if(tclvalue(pressGetCoords) == "1" & !ret$oin){
 			if(tclvalue(area_type) == "Point"){
-				#cat(paste(ret$xc, ret$yc),'\n')
 				tclvalue(minlonRect) <<- round(ret$xc, 4)
 				tclvalue(maxlonRect) <<- ''
 				tclvalue(minlatRect) <<- round(ret$yc, 4)
@@ -155,9 +154,6 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 
 				ids <- as.numeric(tclvalue(tcl(adminVar.tab1, 'current')))+1
 				admin_name <- admin_name[ids]
-				#labAdmin_name <- ifelse(is.na(admin_name), tclvalue(namePoly), as.character(admin_name))
-				#cat(paste(ids, labAdmin_name),'\n')
-				#tclvalue(namePoly) <<- labAdmin_name
 				if(!is.na(admin_name)){
 					tclvalue(namePoly) <<- as.character(admin_name)
 					selectedPolygon <<- getBoundaries(shpf[shpf@data[,ids] == tclvalue(namePoly),])
@@ -307,8 +303,6 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 		##get coordinates rect
 		if(tclvalue(pressGetCoords) == "1"){
 			if(tclvalue(area_type) == "Rectangle"){
-				#cat(paste('fin', ret$xc, ret$yc),'\n')
-				#if(ret$oin) si deb dans cadre et fin dehors prends la bordure
 				xpr <- c(as.numeric(tclvalue(minlonRect)), round(ret$xc, 4), as.numeric(tclvalue(minlatRect)), round(ret$yc, 4))
 				if(xpr[1] > xpr[2]) xpr <- xpr[c(2,1,3,4)]
 				if(xpr[3] > xpr[4]) xpr <- xpr[c(1,2,4,3)]

@@ -29,7 +29,6 @@ getExtractDataFun <- function(retExtractParams){
 	calc.anomaly <- retExtractParams[27]
 	calc.stanomaly <- retExtractParams[28]
 	calc.climato <- retExtractParams[29]
-	# period.climato <- retExtractParams[30]
 	pmLon <- abs(as.numeric(retExtractParams[30]))
 	pmLat <- abs(as.numeric(retExtractParams[31]))
 
@@ -37,7 +36,6 @@ getExtractDataFun <- function(retExtractParams){
 	####
 	outTsTable <- cbind(c('Daily', 'Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'), c('daily', 'dekadal', 'monthly', 'season3', 'season6', 'yearly'))
 	period1 <- outTsTable[outTsTable[,1] == outTS, 2]
-	# period.clim <- outTsTable[outTsTable[,1] == period.climato, 2]
 
 	####
 	if(is.na(yrs1) | is.na(mon1) | is.na(day1) | is.na(yrs2) | is.na(mon2) | is.na(day2)){

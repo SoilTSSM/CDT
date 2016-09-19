@@ -2,12 +2,9 @@
 ExtractDataPanelCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
 
-	##tkcombo& tkentry width
-	#largeur <- 27
 	largeur <- as.integer(w.scale(21)/sfont0)
-	##tkentry nc filename format tkentry wdth
-	#wncdf_ff <- 19
 	wncdf_ff <- as.integer(w.scale(14)/sfont0)
+
 	#scrollable frame width
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(18)
@@ -666,7 +663,7 @@ ExtractDataPanelCmd <- function(){
 		tclvalue(ChoixOutType), if(is.null(EnvMultiPP$multiptspoly)) NA else EnvMultiPP$multiptspoly, 
 		tclvalue(calc.anomaly), tclvalue(calc.stanomaly), tclvalue(calc.climato),  tclvalue(pmLon), tclvalue(pmLat)) 
 
- #assign('retExtractParams', retExtractParams, envir = .GlobalEnv)
+ 		#assign('retExtractParams', retExtractParams, envir = .GlobalEnv)
 
 		tkconfigure(main.win, cursor = 'watch');tcl('update')
 		InsertMessagesTxt(main.txt.out, "Extraction.................")
@@ -757,15 +754,12 @@ ExtractDataPanelCmd <- function(){
 
 		if(tclvalue(output_TSformat) == '3-Months'){
 			tkconfigure(cbChoixM1.tab2, state = 'normal')
-			#tkconfigure(cbChoixM2.tab2, state = 'normal')
 			tclvalue(end_mois)<-cycleMonth(tclvalue(start_mois), 3)
 		}else if(tclvalue(output_TSformat) == '6-Months'){
 			tkconfigure(cbChoixM1.tab2, state = 'normal')
-			#tkconfigure(cbChoixM2.tab2, state = 'normal')
 			tclvalue(end_mois)<-cycleMonth(tclvalue(start_mois), 6)
 		}else{
 			tkconfigure(cbChoixM1.tab2, state = 'disabled')
-			#tkconfigure(cbChoixM2.tab2, state = 'disabled')
 		}
 
 	})
@@ -1110,7 +1104,6 @@ previewWin <- function(parent.win, states, shpL){
 		tkfocus(parent.win)
 		ret.params <<- NULL
 	})
-	#tkraise(tt, parent.win)
 	return(ret.params)
 }
 

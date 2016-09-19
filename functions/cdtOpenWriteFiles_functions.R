@@ -8,22 +8,6 @@ writeFiles <- function(dat2save, file2save, row.names = FALSE, col.names = FALSE
 	write.table(dat2save, file = file2save, row.names = row.names, col.names = col.names, quote = quote, sep = sep, append = append,...)
 }
 
-###
-#writeFiles <- function(dat2save, file2save, row.names = FALSE, col.names = FALSE, quote = FALSE, append = FALSE,...){
-#	require(tools)
-#	extFl <- file_ext(basename(file2save))
-#	if(extFl == "csv" | extFl == "CSV"){
-#		if(append) writeFun <- 'write.table'
-#		else writeFun <- 'write.csv'
-#		sep=','
-#	}else{
-#		writeFun <- 'write.table'
-#		sep=' '
-#	}
-#	writeFun <- match.fun(writeFun)
-#	writeFun(dat2save, file = file2save, row.names = row.names, col.names = col.names, quote = quote, sep = sep, append = append,...)
-#}
-
 ########################
 
 ###open files (data.frame)

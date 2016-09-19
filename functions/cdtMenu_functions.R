@@ -196,7 +196,6 @@ tkadd(menu.dataprep, "command", label = "Download RFE data", command = function(
 	DownloadRFE(main.win)
 })
 
-
 ##########xxxxxxxxxxxxxxxxxx Menu Quality Control xxxxxxxxxxxxxxxxxx##########
 
 menu.qchom <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
@@ -623,26 +622,6 @@ tkadd(menu.mrg, "command", label = "Updating dekadal Rainfall", command = functi
 	}
 	GeneralParameters <<- mergeDekadInfoRain(main.win, initpars)
 })
-
-# ########## MALI DEKADAL UPDATE
-# tkadd(menu.mrg, "separator")
-
-# ##########
-# tkadd(menu.mrg, "command", label = "Mali - Mise à jour décadaire", command = function(){
-# 	source(file.path(apps.dir, 'functions', 'initialize', fsep = .Platform$file.sep))
-
-# 	if(!is.null(GeneralParameters)){
-# 		if(GeneralParameters$action == 'mali.dekrain') initpars <- GeneralParameters
-# 		else{
-# 			source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
-# 			initpars <- init.params('mali.dekrain', 'dekadal')
-# 		}
-# 	}else{
-# 		source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
-# 		initpars <- init.params('mali.dekrain', 'dekadal')
-# 	}
-# 	GeneralParameters <<- update1DekInfo_Mali(main.win, initpars)
-# })
 
 ##########xxxxxxxxxxxxxxxxxx Menu Data Processing xxxxxxxxxxxxxxxxxx##########
 

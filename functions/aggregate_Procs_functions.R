@@ -64,7 +64,6 @@ AggregateQcData <- function(){
 	if(paramsGAL$inputPars$action == "qc.temp") aggData[is.na(aggData)] <- paramsGAL$dataPars[[1]][[2]]$miss.val
 
 	fileout <- file.path(datfin, paste('Checked', paramsGAL$inputPars$file.io$Values[1], sep = '_'), fsep = .Platform$file.sep)
-	# write.table(aggData, fileout, col.names = FALSE, row.names = FALSE, quote = FALSE)
 	writeFiles(aggData, fileout)
 	return(0)	
 }
@@ -125,9 +124,6 @@ AggregateHomData0 <- function(){
 		donne1[is.na(donne1)] <- paramsGAL$dataPars[[1]][[2]]$miss.val
 		donne2[is.na(donne2)] <- paramsGAL$dataPars[[1]][[2]]$miss.val
 		donne3[is.na(donne3)] <- paramsGAL$dataPars[[1]][[2]]$miss.val
-		# write.table(donne1, file.path(datfin, paste('AdjMean_', suffix[xfl], '_', paramsGAL$inputPars$file.io$Values[1], sep = ''), fsep = .Platform$file.sep), col.names = FALSE, row.names = FALSE, quote = FALSE)
-		# write.table(donne2, file.path(datfin, paste('AdjQM_', suffix[xfl], '_', paramsGAL$inputPars$file.io$Values[1], sep = ''), fsep = .Platform$file.sep), col.names = FALSE, row.names = FALSE, quote = FALSE)
-		# write.table(donne3, file.path(datfin, paste('Combined-Adj_', suffix[xfl], '_', paramsGAL$inputPars$file.io$Values[1], sep = ''), fsep = .Platform$file.sep), col.names = FALSE, row.names = FALSE, quote = FALSE)
 		writeFiles(donne1, file.path(datfin, paste('AdjMean_', suffix[xfl], '_', paramsGAL$inputPars$file.io$Values[1], sep = ''), fsep = .Platform$file.sep))
 		writeFiles(donne2, file.path(datfin, paste('AdjQM_', suffix[xfl], '_', paramsGAL$inputPars$file.io$Values[1], sep = ''), fsep = .Platform$file.sep))
 		writeFiles(donne3, file.path(datfin, paste('Combined-Adj_', suffix[xfl], '_', paramsGAL$inputPars$file.io$Values[1], sep = ''), fsep = .Platform$file.sep))
@@ -223,9 +219,6 @@ AggregateHomData <- function(){
 		donne1[is.na(donne1)]<- -99
 		donne2[is.na(donne2)]<- -99
 		donne3[is.na(donne3)]<- -99
-		# write.table(donne1, file.path(datfin, paste('AdjMean', xfl, sep = '-'), fsep = .Platform$file.sep), col.names = F, row.names = F, quote = F)
-		# write.table(donne2, file.path(datfin, paste('AdjQM', xfl, sep = '-'), fsep = .Platform$file.sep), col.names = F, row.names = F, quote = F)
-		# write.table(donne3, file.path(datfin, paste('Combined-Adj', xfl, sep = '-'), fsep = .Platform$file.sep), col.names = F, row.names = F, quote = F)
 		writeFiles(donne1, file.path(datfin, paste('AdjMean', xfl, sep = '-'), fsep = .Platform$file.sep))
 		writeFiles(donne2, file.path(datfin, paste('AdjQM', xfl, sep = '-'), fsep = .Platform$file.sep))
 		writeFiles(donne3, file.path(datfin, paste('Combined-Adj', xfl, sep = '-'), fsep = .Platform$file.sep))
@@ -504,7 +497,6 @@ AggregateZeroChkData <- function(){
 	aggData[is.na(aggData)] <- paramsGAL$dataPars[[2]]$miss.val
 
 	fileout <- file.path(datfin, paste('ZeroChecked', paramsGAL$inputPars$file.io$Values[1], sep = '_'), fsep = .Platform$file.sep)
-	# write.table(aggData, fileout, col.names = F, row.names = F, quote = F)
 	writeFiles(aggData, fileout)
 	return(0)
 }

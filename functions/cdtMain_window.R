@@ -25,7 +25,6 @@ source(file.path(apps.dir, 'functions', 'cdtGeneral_functions.R', fsep = .Platfo
 main.win <- tktoplevel()
 tkwm.resizable(main.win, TRUE, TRUE)
 tkgrid.columnconfigure(main.win, 0, weight = 1)  
-#for(i in 1:2) tkgrid.rowconfigure(main.win, i, weight = 1) 
 tkgrid.rowconfigure(main.win, 1, weight = 1)
 
 ##Window geometry
@@ -141,15 +140,9 @@ tkgrid(grip.right, row = 2, column = 1, sticky = "se")
 tkwm.withdraw(main.win)
 tcl('update')
 tkwm.geometry(main.win, paste(width.scr, 'x', height.scr,'+',0,'+',0, sep = ''))
-#posxMain <- as.integer(width.scr*0.5-as.integer(tkwinfo("width", main.win))*0.5)
-#posyMain <- as.integer(height.scr*0.5-as.integer(tkwinfo("height", main.win))*0.5)
-#tkwm.geometry(main.win, paste(width.scr, 'x', height.scr,'+',posxMain,'+',posyMain, sep = ''))
-
 tkwm.transient(main.win)
 tkwm.title(main.win, paste("Climate Data Tools, v", cdtVersion, sep = ''))
 tkwm.deiconify(main.win)
-#tkwm.iconify(main.win)
-
 
 #####**************************** fullscreen option ************************######
 
@@ -166,16 +159,10 @@ if(Sys.info()["sysname"] == "Linux") {
 
 tcl("wm", "protocol", main.win, "WM_DELETE_WINDOW", function() {
 	on.exit({
-		#sink(type = "message")
-		#close(msgOUT)
 		options(warn = 0)
 	})
 	tkdestroy(main.win)
 })
-
-# tkbind(main.win,"<Control-C>", function(){
-# return(NULL)
-# })
 
 #####**************************** LOAD Functions ************************######
 

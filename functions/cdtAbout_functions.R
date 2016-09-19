@@ -7,8 +7,6 @@ aboutCDT <- function(){
 	font2 <- tkfont.create(family = "times", size = 12, weight = "bold")
 	font3 <- tkfont.create(family = "times", size = 12, underline = TRUE)
 	font4 <- tkfont.create(family = "courier", size = 11)
-	#font4 <- tkfont.create(family = "times", size = 14, slant = "italic", weight = "bold")
-	#font5 <- tkfont.create(family = "courier", size = 10)
 
 	fr1 <- tkframe(tt)
 	fr2 <- tkframe(tt)
@@ -60,7 +58,6 @@ aboutCDT <- function(){
 	tkgrid.configure(yscr, sticky = "ns")
 	
 	tktag.configure(txta, "font2f", font = font2, foreground = 'blue')
-	#tktag.configure(txta, "font3f", font = font3, foreground = 'blue')
 	tktag.configure(txta, "font4f", font = font4)
 
 	infofl <- file.path(apps.dir, 'text', 'cdt_info.txt', fsep = .Platform$file.sep)

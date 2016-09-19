@@ -1,14 +1,8 @@
 
 ValidationPanelCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
-
-	##tkcombo& tkentry width
-	#largeur <- 27
 	largeur <- as.integer(w.scale(21)/sfont0)
-	##tkentry nc filename format tkentry wdth
-	#wncdf_ff <- 19
 	wncdf_ff <- as.integer(w.scale(14)/sfont0)
-	#scrollable frame width
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(18)
 		hscrlwin <- h.scale(31.5)

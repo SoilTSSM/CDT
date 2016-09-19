@@ -10,8 +10,6 @@ getElevationData1 <- function(){
 		msg <- NULL
 		elv_dem <- NULL
 		if(single.series == "0"){
-			# lon <- EnvQcOutlierData$donnees1$lon
-			# lat <- EnvQcOutlierData$donnees1$lat
 			elv_stn <- EnvQcOutlierData$donnees1$elv
 
 			if(uselv == "1"){
@@ -22,16 +20,6 @@ getElevationData1 <- function(){
 						ijGrd <- grid2pointINDEX(list(lon = EnvQcOutlierData$donnees1$lon, lat = EnvQcOutlierData$donnees1$lat),
 							list(lon = demData$lon, lat = demData$lat))
 						elv_dem <- demData$demGrd@data[ijGrd, 1]
-
-						# all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-						# jncdf <- which(all.open.file == file.pars[3])
-						# fdem <- AllOpenFilesData[[jncdf]][[2]]
-						# dem <- fdem$value
-						# dem[dem < 0] <- NA
-						# dem <- data.frame(expand.grid(x = fdem$x, y = fdem$y), z = c(dem))
-						# dem <- dem[!is.na(dem$z),]
-						# xy0 <- data.frame(x = lon, y = lat)
-						# elv_dem <- idw(formula = z ~ 1, locations= ~x+y, data = dem, newdata = xy0, nmax = 4, debug.level = 0)[,3]
 					}
 				}else{
 					if(is.null(elv_stn)) msg <- 'There is no elevation data in your file'
@@ -243,10 +231,6 @@ ExecQcTemp <- function(get.stn){
 				if(!file.exists(outsdir)) dir.create(outsdir, showWarnings = FALSE, recursive = TRUE)
 				fileoutRdata <- file.path(outsdir, paste(jlstn, '.Rdata', sep = ''), fsep = .Platform$file.sep)
 				fileoutTXT <- file.path(outsdir, paste(jlstn, '.txt', sep = ''), fsep = .Platform$file.sep)
-				##
-				# dirPlot <- file.path(outsdir, paste(jlstn, 'OUTLIERS_PLOT', sep = '_'), fsep = .Platform$file.sep)
-				# if(!file.exists(dirPlot)) dir.create(dirPlot, showWarnings = FALSE, recursive = TRUE)
-				##
 				if(GeneralParameters$AllOrOne == 'all') ret.qcout <- qcout
 				ret.res <- list(action = GeneralParameters$action, period = GeneralParameters$period, station = jlstn, res = qcout, outputdir = outsdir, AllOrOne = GeneralParameters$AllOrOne)
 				save(ret.res, file = fileoutRdata)
@@ -259,15 +243,6 @@ ExecQcTemp <- function(get.stn){
 
 				qcout <- data.frame(qcout, not.replace = lenNoRepl, change.values = NA)
 				write.table(qcout, fileoutTXT, col.names = TRUE, row.names = FALSE)
-				##
-				# for(jmo in 1:12){
-				# 	jmo <- ifelse(jmo < 10, paste('0', jmo, sep = ''), as.character(jmo))
-				# 	flplot <- file.path(dirPlot, paste(format(ISOdate(2014, jmo, 1), "%B"),'.jpg', sep = ''), fsep = .Platform$file.sep)
-				# 	if (Sys.info()["sysname"] == "Windows") jpeg(filename = flplot, width = 960, height = 620, quality = 100, restoreConsole = FALSE)
-				# 	else jpeg(filename = flplot, width = 960, height = 620, quality = 100)
-				# 	plotOutliers0(jmo, qcout, dates, xdat)
-				# 	dev.off()
-				# }
 
 				##Default: replace by NA (uncomment line below)
 				

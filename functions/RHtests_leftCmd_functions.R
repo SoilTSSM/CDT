@@ -12,21 +12,14 @@ RHtestsV4Cmd <- function(){
 
 	###################
 
-	##tkcombo& tkentry width
-	#largeur <- 27
 	largeur <- as.integer(w.scale(21)/sfont0)
-	##tkentry nc filename format tkentry wdth
-	#wncdf_ff <- 19
 	wncdf_ff <- as.integer(w.scale(14)/sfont0)
-	#scrollable frame width
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(18)
 		hscrlwin <- h.scale(30)
-		#hscrlwin <- h.scale(27)
 	}else{
 		wscrlwin <- w.scale(21.7)
 		hscrlwin <- h.scale(37)
-		#hscrlwin <- h.scale(34)
 	}
 
 	###################
@@ -73,8 +66,6 @@ RHtestsV4Cmd <- function(){
 	stepsizep.tab1 <- tkbutton(subfr1, text = "StepSize.dlyPrcp")
 	qmadjp.tab1 <- tkbutton(subfr1, text = "getAdjusted Data")
 
-#	sep2.tab1 <- ttkseparator(subfr1)
-#	sep3.tab1 <- ttkseparator(subfr1)
 
 	#############################################
 	tkgrid(findU.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -98,8 +89,6 @@ RHtestsV4Cmd <- function(){
 	tkgrid(stepsizep.tab1, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(qmadjp.tab1, row = 7, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-#	tkgrid(sep2.tab1, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 5)
-#	tkgrid(sep3.tab1, row = 9, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 5)
 
 #######################################################################################################
 
@@ -112,7 +101,6 @@ RHtestsV4Cmd <- function(){
 	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
 
 	getData.tab2 <- tkbutton(subfr2, text = "Input Data", bg = 'lightgreen')
-	#txtsep.tab2 <- tklabel(subfr2, text='',width = as.integer(wscrlwin/sfont0))
 
 	sep1.tab2 <- ttkseparator(subfr2)
 	framePrcp.tab2 <- ttklabelframe(subfr2, text = 'Precipitation Data', relief = 'groove', borderwidth = 2)

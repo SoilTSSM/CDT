@@ -242,7 +242,6 @@ excludeOutStnFun <- function(GeneralParameters){
 	donne1 <- rbind(HeadInfo, don)
 	donne1[is.na(donne1)] <- missval
 	fsave <- file.path(outdir, paste(getf.no.ext(stnf), '_CHECKED_STATIONS.txt', sep = ''), fsep = .Platform$file.sep)
-	# write.table(donne1, fsave, row.names = FALSE, col.names = FALSE)
 	writeFiles(donne1, fsave)
 
 	res <- list(action = 'chk.coords', period = period, Stndoute = exclus, data = donne, dates = dates,

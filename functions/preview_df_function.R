@@ -125,7 +125,6 @@ preview.data <- function(parent.win, fileopen, title.pop){
 		tkfocus(parent.win)
 	})
 
-	#but.space <- tklabel(fr.but, text='',width = 4)
 	tkgrid(OK.but, CA.but)
 	tkgrid.configure(OK.but, row = 0, column = 0, padx = 5, ipadx = 10, sticky = 'w')
 	tkgrid.configure(CA.but, row = 0, column = 1, padx = 5, ipadx = 5, sticky = 'e')
@@ -134,10 +133,6 @@ preview.data <- function(parent.win, fileopen, title.pop){
 	tkgrid(fr0, row = 0, column = 0, sticky = 'snwe', padx = 5, pady = 5)
 	tkgrid(fr1, row = 1, column = 0, columnspan = 3, padx = 5, pady = 5)
 	tkgrid(fr2, row = 2, column = 0, sticky = 'snwe', padx = 5, pady = 5)
-	#tcl('update')
-	#tkconfigure(fr0, width = as.integer(tkwinfo("reqwidth", fr1)))
-	#tkconfigure(fr2, width = as.integer(tkwinfo("reqwidth", fr1)))
-	#tcl('update')
 
 	tkwm.withdraw(tt)
 	tcl('update')

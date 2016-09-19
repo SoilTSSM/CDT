@@ -167,28 +167,6 @@ init.params <- function(action, period){
 	####dekadal update
 
 	if(action == 'merge.dekrain'){
-		# file.io <- data.frame(c('stn.file', 'RFE.dir', 'Bias.dir', 'dir2save', 'DEM.file', 'shp.file'),
-		# 						c('', '', '', getwd(), '', ''))
-		# names(file.io) <- c('Parameters', 'Values')
-		# prefix <- data.frame(c('rfeFileFormat', 'meanBiasPrefix'),	c("rfe%s_%s-dk%s.nc", "Gauge-rfe_mean.bias"))
-		# names(prefix) <- c('Parameters', 'Values')
-		# blankGrd <- '1'
-		# dates.mrg <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek'), c('2016', '4', '1'))
-		# names(dates.mrg) <- c('Parameters', 'Values')
-		# params.int <- data.frame(c('nmin.stn', 'min.non0', 'max.RnR.dist', 'max.dist', 'min.nbrs', 'max.nbrs'),
-		# 							c('10', '7', '0.25', '0.25', '1', '5'))
-		# names(params.int) <- c('Parameters', 'Values')
-		# params.mrg <- data.frame(c('interpMethod', 'RainNoRain'), c('IDW', 'GaugeSatellite'))
-		# names(params.mrg) <- c('Parameters', 'Values')
-		# NoStn <- '0'
-		# downRFE <- '1'
-		# AdjBias <- '1'
-		# dataRFE <- 'TAMSAT'
-		# aoiRFE <- data.frame(c('minlon', 'maxlon', 'minlat', 'maxlat'), c(42, 52, -26, -12))
-		# names(aoiRFE) <- c('Parameters', 'Values')
-		# ret.params <- list(action = action, period = period, file.io = file.io, prefix = prefix, dates.mrg = dates.mrg,
-		# 					blankGrd = blankGrd, params.int = params.int, params.mrg = params.mrg, NoStn = NoStn, 
-		# 					downRFE = downRFE, AdjBias = AdjBias, dataRFE = dataRFE, aoiRFE = aoiRFE)
 		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Update_RR_dekadal.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
 		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
@@ -339,20 +317,6 @@ init.params <- function(action, period){
 
 		ret.params <- list(action = action, period = period, file.io = file.io, prefix = prefix, dates.ts = dates.ts)
 	}
-
-	###########################################
-
-	# ###Mali one dekad
-	# if(action == 'mali.dekrain'){
-	# 	file.io <- data.frame(c('stn.file', 'RFE.file', 'dir2save'), c('', '', getwd()))
-	# 	names(file.io) <- c('Parameters', 'Values')
-	# 	dates.mrg <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek'), c('2016', '5', '1'))
-	# 	names(dates.mrg) <- c('Parameters', 'Values')
-	# 	rfeDownSep <- '0'
-	# 	stnDataDispo <- '1'
-	# 	ret.params <- list(action = action, period = period, file.io = file.io, dates.mrg = dates.mrg,
-	# 						rfeDownSep = rfeDownSep, stnDataDispo = stnDataDispo)
-	# }
 
 	#############
 	return(ret.params)
