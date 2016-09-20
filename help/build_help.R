@@ -4,9 +4,8 @@ library(knitr)
 library(markdown)
 library(rmarkdown)
 
-help_dir <- '/Volumes/ECHANGE/github/CDT/help/html'
-mathjax_dir <- '/Users/rija/markdown/MathJax-master/unpacked'
-#mathjax_dir <- '/Users/rija/markdown/MathJax-JS'
+help_dir <- '/Users/rijaf/Desktop/ECHANGE/github/CDT/help/html'
+mathjax_dir <- '/Users/rijaf/Desktop/ECHANGE/MathJax'
 sources_dir <- '../sources'
 r_images <- 'images/R_images'
 
@@ -34,17 +33,17 @@ figure_files <- list.files(r_images,recursive = TRUE,full.names = TRUE)
 
 ## replace parent_dir, rmd_files, all_files, html_files and figure_dir to the new changed files
 
-# all_files <- c("index","cdt_data_input","cdt_file_menu")
-# parent_dir <- c("index","cdt_file","cdt_file")
-# rmd_files <- paste(all_files,'.Rmd',sep='')
-# html_files <- paste(all_files,'.html',sep='')
-# figure_dir <- paste(all_files,'_files',sep='')
+all_files <- c("index","cdt_data_input","cdt_file_menu")
+parent_dir <- c("index","cdt_file","cdt_file")
+rmd_files <- paste(all_files,'.Rmd',sep='')
+html_files <- paste(all_files,'.html',sep='')
+figure_dir <- paste(all_files,'_files',sep='')
 
-all_files <- "cdt_file_menu"
-rmd_files <- "cdt_file_menu.Rmd"
-parent_dir <- "cdt_file"
-html_files <- "cdt_file_menu.html"
-figure_dir <- "cdt_file_menu_files"
+# all_files <- "cdt_file_menu"
+# rmd_files <- "cdt_file_menu.Rmd"
+# parent_dir <- "cdt_file"
+# html_files <- "cdt_file_menu.html"
+# figure_dir <- "cdt_file_menu_files"
 
 ######
 

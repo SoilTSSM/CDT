@@ -1,6 +1,9 @@
 {
     // CDT version
     "CDT_Version": 2.4,
+    // Missing value code
+    "missing.value": -99,
+
     // Use  other TCL/TK: 1,  use R tcltk package: 0
     "UseOtherTclTk": 1,
     "Windows": [{

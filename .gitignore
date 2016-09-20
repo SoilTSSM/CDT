@@ -21,7 +21,7 @@ vignettes/*.pdf
 
 # Init config
 configure/RHtestsV4_User_Agreement
-configure/configure0
+configure/configure_user.json
 country/Mali/Climatological_MeanBias_RainDek
 R_Data
 

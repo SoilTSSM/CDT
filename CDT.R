@@ -58,7 +58,7 @@ if(length(new.pkgs) > 0){
 library(stringr)
 library(jsonlite)
 
-tclpathF <- file.path(apps.dir, 'configure', 'configure.json', fsep = .Platform$file.sep)
+tclpathF <- file.path(apps.dir, 'configure', 'configure_default.json')
 tclPath <- fromJSON(tclpathF)
 cdtVersion <<- str_trim(tclPath$CDT_Version)
 if(tclPath$UseOtherTclTk == 1){
@@ -119,24 +119,24 @@ if (Sys.info()["sysname"] == "Windows"){
 	}
 }
 
-source(file.path(apps.dir, 'functions', 'cdtConfiguration_function.R', fsep = .Platform$file.sep))
-confpath <- file.path(apps.dir, 'configure', 'configure0')
+source(file.path(apps.dir, 'functions', 'cdtConfiguration_function.R'))
+confpath <- file.path(apps.dir, 'configure', 'configure_user.json')
 
 if(file.exists(confpath)){
-	conffile <- as.character(read.table(confpath, colClasses = 'character')[, 1])
-	workdir <- conffile[1]
+	conffile <- fromJSON(confpath)
+	workdir <- str_trim(conffile$working.directory)
 	if(file.exists(workdir)) setwd(workdir)
 	else{
 		workdir <- path.expand('~')
 		setwd(workdir)
-		conffile[1] <- workdir
-		write.table(conffile, file.path(apps.dir, 'configure', 'configure0'), col.names = FALSE, row.names = FALSE)
+		conffile$working.directory <- workdir
+		write_json(conffile, confpath)
 	}
-	if(!file.exists(conffile[2]) | !file.exists(conffile[3])){
+	if(!file.exists(str_trim(conffile$Tktable.path)) | !file.exists(str_trim(conffile$Bwidget.path))){
 		configCDT()
 	}else{
-		addTclPath(path = conffile[2])
-		addTclPath(path = conffile[3])
+		addTclPath(path = str_trim(conffile$Tktable.path))
+		addTclPath(path = str_trim(conffile$Bwidget.path))
 		tclRequire("Tktable")
 		tclRequire("BWidget")
 	}

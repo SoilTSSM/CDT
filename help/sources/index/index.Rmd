@@ -22,7 +22,7 @@ Climate Data Tools (CDT) is a  set of utility functions for meteorological data 
 Open an `R` console and type:
 
 ```{r installpackage, eval=FALSE}
-packages <- c('stringr','tkrplot','gmt','fields','latticeExtra','sp','maptools','gstat','automap','rgeos','reshape2','ncdf4','rgdal','foreach','doParallel')
+packages <- c('R.utils', 'stringr', 'jsonlite', 'tkrplot', 'gmt', 'fields', 'latticeExtra', 'sp', 'maptools', 'gstat', 'automap', 'reshape2', 'ncdf4', 'foreach', 'doParallel', 'raster', 'rgdal', 'rgeos', 'RCurl')
 install.packages(packages)
 ```
 You are asked which repository `R` should use. Select your nearest site from the list of CRAN Mirrors.

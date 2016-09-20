@@ -1,3 +1,14 @@
+
+write_json <- function(Robj, file, ...){
+	require(jsonlite)
+	json <- toJSON(Robj, pretty = TRUE, ...)
+	sink(file)
+	cat(json, '\n')
+	sink()
+}
+
+######################################################
+
 configCDT <- function(){
 	config.win <- tktoplevel()
 	width.conf <- as.integer(tkwinfo("screenwidth", config.win))
@@ -9,49 +20,25 @@ configCDT <- function(){
 	if(Sys.info()["sysname"] == "Windows") width.entry <- 61
 	else width.entry <- 43	
 
-	font0.conf <- tkfont.create(family = "courier", size = 11)
-
 	fr1.conf <- tkframe(config.win, relief = 'sunken', borderwidth = 2)
 	fr2.conf <- tkframe(config.win, relief = 'sunken', borderwidth = 2)
 	fr3.conf <- tkframe(config.win)
-	fr4.conf <- tkframe(config.win)
-	tkgrid(fr1.conf, sticky = 'ew', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(fr2.conf, sticky = 'ew', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(fr3.conf)
-	tkgrid(fr4.conf)
-
-	fr1a.conf <- tkframe(fr1.conf)
-	fr1b.conf <- tkframe(fr1.conf)
-	tkgrid(fr1a.conf, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(fr1b.conf, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	wdtxt <- tklabel(fr1a.conf, text = 'Set working directory')
-	tkgrid(wdtxt)
-
-	dirpath <- tclVar(getwd())
-	en.dirpath <- tkentry(fr1b.conf, textvariable = dirpath, width = width.entry) #try dynamic width
-	bt.dirpath <- tkbutton(fr1b.conf, text = "...")
-	tkgrid(en.dirpath, bt.dirpath) 
-	tkgrid.configure(en.dirpath, row = 0, column = 0, sticky = 'w')
-	tkgrid.configure(bt.dirpath, row = 0, column = 1, sticky = 'e')
-	tkconfigure(bt.dirpath, command = function(){
-		dirpath1 <- tk_choose.dir(getwd(), "")
-		tclvalue(dirpath) <- dirpath1
-	})	
 
 	########
-	for(i in 0:3) assign(paste('fr2', i,'.conf', sep = ''), tkframe(fr2.conf))
-	for(i in 0:3) tkgrid(get(paste('fr2', i,'.conf', sep = '')))
-	for(i in 0:3) tkgrid.configure(get(paste('fr2', i,'.conf', sep = '')), row = i, column = 0, sticky = 'we', padx = 1, pady = 0, ipadx = 1, ipady = 0)
 
-	confpath <- file.path(apps.dir, 'configure', 'configure0', fsep = .Platform$file.sep)
+	confpath <- file.path(apps.dir, 'configure', 'configure_user.json')
+	tclpathF <- file.path(apps.dir, 'configure', 'configure_default.json')
+
 	if(file.exists(confpath)){
-		conffile <- as.character(read.table(confpath, colClasses = 'character')[,1])
-		tktablepath <- tclVar(conffile[2])
-		bwidgetpath <- tclVar(conffile[3])
+		conffile <- fromJSON(confpath)
+		dirpath <- tclVar(str_trim(conffile$working.directory))
+		misscode <- tclVar(str_trim(conffile$missing.value))
+		tktablepath <- tclVar(str_trim(conffile$Tktable.path))
+		bwidgetpath <- tclVar(str_trim(conffile$Bwidget.path))
 	}else{
-		tclpathF <- file.path(apps.dir, 'configure', 'configure.json', fsep = .Platform$file.sep)
 		tclPath <- fromJSON(tclpathF)
+		dirpath <- tclVar(getwd())
+		misscode <- tclVar(str_trim(tclPath$missing.value))
 		if(Sys.info()["sysname"] == "Windows") {
 			if(.Machine$sizeof.pointer == 8){
 					tktablepath <- tclVar(str_trim(tclPath$Windows$Tktable_Win64_bit))
@@ -69,52 +56,55 @@ configCDT <- function(){
 		}
 	}
 
-	tktabletxt <- tklabel(fr20.conf, text = 'Tktable library path')
-	tkgrid(tktabletxt)
+	########
 
-	en.tktable <- tkentry(fr21.conf, textvariable = tktablepath, width = width.entry) #try dynamic width
-	bt.tktable <- tkbutton(fr21.conf, text = "...")
-	tkgrid(en.tktable, bt.tktable)
-	tkgrid.configure(en.tktable, row = 0, column = 0, sticky = 'w')
-	tkgrid.configure(bt.tktable, row = 0, column = 1, sticky = 'e')
+	txt.wd <- tklabel(fr1.conf, text = 'Set working directory', anchor = 'w', justify = 'left')
+	en.dirpath <- tkentry(fr1.conf, textvariable = dirpath, width = width.entry)
+	bt.dirpath <- tkbutton(fr1.conf, text = "...")
+	txt.missval <- tklabel(fr1.conf, text = 'Missing value code', anchor = 'w', justify = 'left')
+	en.missval <- tkentry(fr1.conf, textvariable = misscode, width = 8, justify = 'right')
+
+	tkconfigure(bt.dirpath, command = function(){
+		dirpath1 <- tk_choose.dir(getwd(), "")
+		tclvalue(dirpath) <- dirpath1
+	})
+
+	tkgrid(txt.wd, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 14, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.dirpath, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 13, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.dirpath, row = 1, column = 13, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.missval, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.missval, row = 2, column = 4, sticky = 'w', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	########
+
+	txt.tktable <- tklabel(fr2.conf, text = 'Tktable library path', anchor = 'w', justify = 'left')
+	en.tktable <- tkentry(fr2.conf, textvariable = tktablepath, width = width.entry)
+	bt.tktable <- tkbutton(fr2.conf, text = "...")
+	txt.bwidget <- tklabel(fr2.conf, text = 'BWidget library path', anchor = 'w', justify = 'left')
+	en.bwidget <- tkentry(fr2.conf, textvariable = bwidgetpath, width = width.entry)
+	bt.bwidget <- tkbutton(fr2.conf, text = "...")
+
 	tkconfigure(bt.tktable, command = function(){
 		tktablepath1 <- tk_choose.dir(default = "", caption = "")
 		tclvalue(tktablepath) <- tktablepath1
 	})
 
-	bwidgettxt <- tklabel(fr22.conf, text = 'BWidget library path')
-	tkgrid(bwidgettxt)
-
-	en.bwidget <- tkentry(fr23.conf, textvariable = bwidgetpath, width = width.entry) #try dynamic width
-	bt.bwidget <- tkbutton(fr23.conf, text = "...")
-	tkgrid(en.bwidget, bt.bwidget) 
-	tkgrid.configure(en.bwidget, row = 0, column = 0, sticky = 'w')
-	tkgrid.configure(bt.bwidget, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.bwidget, command = function(){
 		bwidgetpath1 <- tk_choose.dir(default = "", caption = "")
 		tclvalue(bwidgetpath) <- bwidgetpath1
 	})
 
-	####
-	fr3a.conf <- tkframe(fr3.conf, relief = 'groove', borderwidth = 2)
-	tkgrid(fr3a.conf, sticky = 'ew')
-	xscr.conf <- tkscrollbar(fr3a.conf, repeatinterval = 5, orient = "horizontal", command = function(...)tkxview(txta.conf,...))
-	yscr.conf <- tkscrollbar(fr3a.conf, repeatinterval = 5, command = function(...)tkyview(txta.conf,...))
-	txta.conf <- tktext(fr3a.conf, bg = "white", font = "courier", xscrollcommand = function(...)tkset(xscr.conf,...),
-	yscrollcommand = function(...)tkset(yscr.conf,...), wrap = "word", height = 5, width = 37)
- 
-	tkgrid(txta.conf, yscr.conf)
-	tkgrid.configure(txta.conf, sticky = "nsew")
-	tkgrid.configure(yscr.conf, sticky = "ns")
-	tktag.configure(txta.conf, "font0f.conf", font = font0.conf)
-	infofl.conf <- file.path(apps.dir, 'text', 'pref_info.txt', fsep = .Platform$file.sep)
-	rdL.conf <- readLines(infofl.conf, warn = FALSE)
+	tkgrid(txt.tktable, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 14, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.tktable, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 13, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.tktable, row = 1, column = 13, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.bwidget, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 14, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.bwidget, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 13, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.bwidget, row = 3, column = 13, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
-	tcl("update", "idletasks")
-	for(i in 1:length(rdL.conf)) tkinsert(txta.conf, "end", paste(rdL.conf[i], "\n"), "font0f.conf")
+	########
 
-	bt.close.conf <- tkbutton(fr4.conf, text=" OK ") 
-	tkgrid(bt.close.conf, ipadx = 10)
+	bt.close.conf <- tkbutton(fr3.conf, text=" OK ") 
+
 	tkconfigure(bt.close.conf, command = function(){
 		workdir <- tclvalue(dirpath)
 		if(!file.exists(workdir)) dir.create(workdir, recursive = TRUE, showWarnings = FALSE)
@@ -132,11 +122,21 @@ configCDT <- function(){
 			tkwait.window(config.win)
 		}
 
-		params <- c(tclvalue(dirpath), tclvalue(tktablepath), tclvalue(bwidgetpath))
-		write.table(params, file.path(apps.dir, 'configure', 'configure0'), col.names = FALSE, row.names = FALSE)
+		params <- list(working.directory = tclvalue(dirpath), missing.value = tclvalue(misscode),
+						Tktable.path = tclvalue(tktablepath), Bwidget.path = tclvalue(bwidgetpath))
+		write_json(params, file.path(apps.dir, 'configure', 'configure_user.json'))
 		tkgrab.release(config.win)
 		tkdestroy(config.win)
 	})
+
+	tkgrid(bt.close.conf, ipadx = 10, pady = 5)
+
+	########
+	tkgrid(fr1.conf, sticky = 'ew', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(fr2.conf, sticky = 'ew', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(fr3.conf)
+
+	########
 	
 	tkwm.withdraw(config.win)
 	tcl('update')
@@ -144,7 +144,7 @@ configCDT <- function(){
 	tt.h <- as.integer(tkwinfo("reqheight", config.win))
 	tt.x <- as.integer(width.conf*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.conf*0.5-tt.h*0.5)
-	tkwm.geometry(config.win, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(config.win, paste('+', tt.x, '+',tt.y, sep = ''))
 	tkwm.transient(config.win)
 	tkwm.title(config.win, 'CDT configuration')
 	tkwm.deiconify(config.win)
