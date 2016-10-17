@@ -37,10 +37,10 @@
     // Merging Parameters
     "Merging.pars": [{
         "min.Stn": 10,
-        "min.Stn.non0": 7,
+        "min.Stn.non0": 5,
         // Rain-no-Rain mask: "None", "Gauge", "Satellite" or "GaugeSatellite"
         "Rain.no.Rain": "GaugeSatellite",
-        "max.RnR.dist": 0.25
+        "max.RnR.dist": 0.5
     }],
     // Interpolation Parameters
     "Interpolation.pars": [{

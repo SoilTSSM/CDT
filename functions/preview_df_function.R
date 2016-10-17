@@ -8,19 +8,29 @@ preview.data <- function(parent.win, fileopen, title.pop){
 	fr1 <- tkframe(tt)
  	fr2 <- tkframe(tt)
 
+ 	##############
 	fr.delim <- ttklabelframe(fr0, text = "Delimiters", labelanchor = "nw", relief = "sunken", borderwidth = 2)
 	fr.head <- ttklabelframe(fr0, text = "Header", labelanchor = "nw", relief = "sunken", borderwidth = 2)
 
 	tkgrid(fr.delim, row = 0, column = 0, padx = 5, pady = 2, ipadx = 2, ipady = 2, sticky = 'w')
 	tkgrid(fr.head, row = 0, column = 2, padx = 5, pady = 2, ipadx = 2, ipady = 2, sticky = 'e')
 
+	##############
+	etrval <- tclVar("")
+	rbval <- tclVar("tb")
+
 	delim1 <- tkradiobutton(fr.delim, text = "Tab")
 	delim2 <- tkradiobutton(fr.delim, text = "Space")
 	delim3 <- tkradiobutton(fr.delim, text = "Semicolon")
 	delim4 <- tkradiobutton(fr.delim, text = "Comma")
 	delim5 <- tkradiobutton(fr.delim, text = "Other:")
-	etrval <- tclVar("")
 	vdelim5 <- tkentry(fr.delim, width = 6, textvariable = etrval)
+
+	tkconfigure(delim1, variable = rbval, value = "tb")
+	tkconfigure(delim2, variable = rbval, value = "sp")
+	tkconfigure(delim3, variable = rbval, value = "sc")
+	tkconfigure(delim4, variable = rbval, value = "cm")
+	tkconfigure(delim5, variable = rbval, value = "ot")
 
 	tkgrid(delim1, row = 0, column = 0, sticky = "w")
 	tkgrid(delim3, row = 0, column = 1, sticky = "w")
@@ -29,51 +39,43 @@ preview.data <- function(parent.win, fileopen, title.pop){
 	tkgrid(delim4, row = 1, column = 1, sticky = "w")
 	tkgrid(vdelim5, row = 1, column = 2, sticky = "e")
 
-	rbval <- tclVar("tb")
-	tkconfigure(delim1, variable = rbval, value = "tb")
-	tkconfigure(delim2, variable = rbval, value = "sp")
-	tkconfigure(delim3, variable = rbval, value = "sc")
-	tkconfigure(delim4, variable = rbval, value = "cm")
-	tkconfigure(delim5, variable = rbval, value = "ot")
+	##############
+	etrval1 <- tclVar("1")
+	vhead <- tclVar("FALSE")
+	ishead <- c("TRUE", "FALSE")
 
 	lb1 <- tklabel(fr.head, text = 'Start import at row')
 	lb2 <- tklabel(fr.head, text = 'First row as header')
-	etrval1 <- tclVar("1")
 	skp <- tkentry(fr.head, width = 4, textvariable = etrval1, justify = "center")
-	vhead <- tclVar("FALSE")
-	ishead <- c("TRUE", "FALSE")
 	head <- ttkcombobox(fr.head, values = ishead, textvariable = vhead, state = "readonly", width = 6, justify = "center")
+
 	tkgrid(lb1, row = 0, column = 0)
 	tkgrid(skp, row = 0, column = 1)
 	tkgrid(lb2, row = 1, column = 0)
 	tkgrid(head, row = 1, column = 1)
 
-#######
+	#######
  	fr1a <- tkframe(fr1, relief = "groove", borderwidth = 2)
 	tkgrid(fr1a, padx = 5)
 
-#	labprvw <- as.integer(tt.w/9)
-#fixed to 51
 	labprvw <- 51
 	labtxt <- tklabel(fr1a, text = paste("Preview of ", fileopen), width = labprvw, anchor = 'w')
+	xscr <- tkscrollbar(fr1a, repeatinterval = 5, orient = "horizontal", command = function(...) tkxview(txta, ...))
+	yscr <- tkscrollbar(fr1a, repeatinterval = 5, command = function(...) tkyview(txta, ...))
+	txta <- tktext(fr1a, bg = "white", font = "courier", xscrollcommand = function(...) tkset(xscr, ...),
+					yscrollcommand = function(...) tkset(yscr, ...), wrap = "none")
+
 	tkgrid(labtxt, row = 0, column = 0, sticky = 'w')
-
-	xscr <- tkscrollbar(fr1a, repeatinterval = 5, orient = "horizontal", command = function(...)tkxview(txta,...))
-	yscr <- tkscrollbar(fr1a, repeatinterval = 5, command = function(...)tkyview(txta,...))
-	txta <- tktext(fr1a, bg = "white", font = "courier", xscrollcommand = function(...)tkset(xscr,...),
-	yscrollcommand = function(...)tkset(yscr,...), wrap = "none")
-
 	tkgrid(txta, yscr)
 	tkgrid(xscr)
 	tkgrid.configure(txta, row = 1, column = 0, sticky = "nsew")
 	tkgrid.configure(yscr, sticky = "ns")
 	tkgrid.configure(xscr, sticky = "ew")
-#	txta.w <- as.integer(tt.w/11)
-# fixed to 42
+
 	txta.w <- 42
 	tkconfigure(txta, width = txta.w, height = 9)
 
-	is.rdble <- !inherits(try(rdL <- readLines(fileopen, n = 10, warn = F), silent = TRUE), "try-error")
+	is.rdble <- !inherits(try(rdL <- readLines(fileopen, n = 10, warn = FALSE), silent = TRUE), "try-error")
 	if(!is.rdble){
 		InsertMessagesTxt(main.txt.out, paste("Unable to open file ", fileopen), format = TRUE)
 		tkgrab.release(tt)
@@ -81,30 +83,32 @@ preview.data <- function(parent.win, fileopen, title.pop){
 		tkfocus(parent.win)
 		return(NULL)
 	}else{
-		#tcl("update", "idletasks")
 		for(i in 1:length(rdL))	tkinsert(txta, "end", paste(rdL[i], "\n"))
-		tcl("update")  #omit if not work and uncomment tcl("update", "idletasks")
+		tcl("update")
 	}
 
-######
+	######
 	fr.miss <- tkframe(fr2, relief = "groove", borderwidth = 2)
 	fr.but <- tkframe(fr2)
 	tkgrid(fr.miss, row = 0, column = 0, padx = 5, ipadx = 5, sticky = 'w')
 	tkgrid(fr.but, row = 0, column = 2, padx = 5, ipadx = 5, sticky = 'e')
 
+	confpath <- file.path(apps.dir, 'configure', 'configure_user.json')
+	conffile <- fromJSON(confpath)
+	etrmiss <- tclVar(str_trim(conffile$missing.value))
+
 	lbmiss <- tklabel(fr.miss, text = 'Missing Value')
-	etrmiss <- tclVar("-99")
 	missvl <- tkentry(fr.miss, width = 5, textvariable = etrmiss, justify = "center")
 	tkgrid(lbmiss, row = 0, column = 0)
 	tkgrid(missvl, row = 0, column = 1)
-#####
+	#####
 	separator <- NULL
 	OK.but <- tkbutton(fr.but, text = "OK", width = 4, command = function() {
 		delim <- as.character(tclvalue(rbval))
-		if(delim == 'tb') sepr<-""
-		if(delim == 'sp') sepr<-""
-		if(delim == 'sc') sepr<-";"
-		if(delim == 'cm') sepr<-","
+		if(delim == 'tb') sepr <- ""
+		if(delim == 'sp') sepr <- ""
+		if(delim == 'sc') sepr <- ";"
+		if(delim == 'cm') sepr <- ","
 		if(delim == 'ot'){
 			tclvalue(etrval) <- tclvalue(tkget(vdelim5))
 			sepr <- tclvalue(etrval)
@@ -129,7 +133,7 @@ preview.data <- function(parent.win, fileopen, title.pop){
 	tkgrid.configure(OK.but, row = 0, column = 0, padx = 5, ipadx = 10, sticky = 'w')
 	tkgrid.configure(CA.but, row = 0, column = 1, padx = 5, ipadx = 5, sticky = 'e')
 
-#####################
+	#####################
 	tkgrid(fr0, row = 0, column = 0, sticky = 'snwe', padx = 5, pady = 5)
 	tkgrid(fr1, row = 1, column = 0, columnspan = 3, padx = 5, pady = 5)
 	tkgrid(fr2, row = 2, column = 0, sticky = 'snwe', padx = 5, pady = 5)
@@ -140,7 +144,7 @@ preview.data <- function(parent.win, fileopen, title.pop){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, paste("Data Import Options - ", title.pop))
 	tkwm.deiconify(tt)

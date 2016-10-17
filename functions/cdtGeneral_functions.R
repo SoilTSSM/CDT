@@ -212,10 +212,13 @@ resizeTclImage <- function(file, factor = 2, zoom = TRUE){
 
 ###############################################################################
 #Cycle month, start month, n: number of month (DJF, start = 'December', n = 3)
+# full = TRUE (July),  FALSE (Jul)
 # return end month
 
-cycleMonth <- function(start, n){
-	mois <- format(ISOdate(2014,1:12,1), "%B")
+cycleMonth <- function(start, n, full = FALSE){
+	if(full)  frmt <- "%B"
+	else frmt <- "%b"
+	mois <- format(ISOdate(2014,1:12,1), frmt)
 	ix <- which(mois == start)
 	im<-(ix+(n-1))%%12
 	if(im == 0) im <- 12
@@ -247,6 +250,31 @@ addDekads <- function(daty, n = 1){
 }
 
 #add.dekads -->  file: cdtClimato_functions.R
+###############################################################################
+## get month in numeric format for a season
+## getMonthsInSeason('November','February') #donne 11 12  1  2
+
+getMonthsInSeason <- function(start.mois, end.mois, full = FALSE){
+	if(full)  frmt <- "%B"
+	else frmt <- "%b"
+	tmois <- format(ISOdate(2014, 1:12, 1), frmt)
+	smois <- which(tmois == start.mois)
+	emois <- which(tmois == end.mois)
+	im <- (smois:(smois+((emois-smois)%%12)))%%12
+	im[im == 0] <- 12
+	return(im)
+}
+
+getMonthsInSeason1 <- function(start.mois, len.mois, full = FALSE){
+	if(full)  frmt <- "%B"
+	else frmt <- "%b"
+	tmois <- format(ISOdate(2014, 1:12, 1), frmt)
+	ix <- which(tmois == start.mois)
+	im <- (ix:(ix+(len.mois-1)))%%12
+	im[im == 0] <- 12
+	return(im)
+}
+
 ###############################################################################
 #File or directory to save result
 #filedirVar tclVar

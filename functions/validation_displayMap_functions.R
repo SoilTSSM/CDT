@@ -1,4 +1,7 @@
-plotMap4Extraction <- function(ocrds, ZoomXYval, selectedPolygon){
+
+plotMap4Validation <- function(donne, shpf, ZoomXYval, selectedPolygon){
+
+	ocrds <- getBoundaries(shpf)
 
 	xmin <- ZoomXYval[1]
 	xmax <- ZoomXYval[2]
@@ -22,10 +25,15 @@ plotMap4Extraction <- function(ocrds, ZoomXYval, selectedPolygon){
 		return(NULL)
 	}
 
+	idStn <- as.character(donne[1, ])
+	lon <- as.numeric(donne[2, ])
+	lat <- as.numeric(donne[3, ])
+
 	#######
 	opar <- par(mar = c(4,4,2,2))
 	plot(1, xlim = c(xmin, xmax), ylim = c(ymin, ymax), xlab = "", ylab = "", type = "n", xaxt = 'n', yaxt = 'n')
-	lines(ocrds)
+	if(!is.null(shpf)) lines(ocrds)
+	points(lon, lat, pch = 19, col = 'darkred', cex = 0.5)
 	if(!is.null(selectedPolygon)) lines(selectedPolygon, col = 'red')
 
 	abline(h = axTicks(2), v = axTicks(1) , col = "lightgray", lty = 3)
@@ -37,15 +45,12 @@ plotMap4Extraction <- function(ocrds, ZoomXYval, selectedPolygon){
 	usr <- par("usr")
 	par(opar)
 
-	return(list(plt = plt, usr = usr))
+	return(list(plt = plt, usr = usr, lon = lon, lat = lat, idStn = idStn))
 }
 
+############################################################################
+displayMap4Validation <- function(parent, donne, shpf, ZoomXYval, notebookTab){
 
-#################################################################
-
-displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
-
-	ocrds <- getBoundaries(shpf)
 	selectedPolygon <- NULL
 	pltusr <- NULL
 	parPlotSize1 <- tclVar()
@@ -58,7 +63,7 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 	usrCoords4 <- tclVar()
 	plotIt <- function(){
 		op <- par(bg = 'white')
-		pltusr <<- plotMap4Extraction(ocrds, ZoomXYval, selectedPolygon)
+		pltusr <<- plotMap4Validation(donne, shpf, ZoomXYval, selectedPolygon)
 		tclvalue(parPlotSize1) <<- pltusr$plt[1]
 		tclvalue(parPlotSize2) <<- pltusr$plt[2]
 		tclvalue(parPlotSize3) <<- pltusr$plt[3]
@@ -77,7 +82,7 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 
 	###################################################################
 
-	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitle = 'Extraction Map', AllOpenTabType, AllOpenTabData)
+	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitle = 'Validation Map', AllOpenTabType, AllOpenTabData)
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
 
@@ -93,7 +98,7 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 	tcl('raise', canvas)
 	tcl('update')
 
-	if(is.null(lcmd.frame_extrdata)) return(NULL)
+	if(is.null(lcmd.frame_valid)) return(NULL)
 
 	tkbind(canvas, "<Enter>", function(){
 		if(tclvalue(pressButP) == "1") tkconfigure(canvas, cursor = 'sizing')
@@ -129,16 +134,8 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 
 		##get coordinates or polygon id
 		if(tclvalue(pressGetCoords) == "1" & !ret$oin){
-			if(tclvalue(area_type) == "Point"){
-				tclvalue(minlonRect) <<- round(ret$xc, 4)
-				tclvalue(maxlonRect) <<- ''
-				tclvalue(minlatRect) <<- round(ret$yc, 4)
-				tclvalue(maxlatRect) <<- ''
-				selectedPolygon <<- NULL
-			}
-
 			##
-			if(tclvalue(area_type) == "Rectangle"){
+			if(tclvalue(select_type) == "Rectangle"){
 				pPressRect(W, x, y, width = 1, outline = "red")
 				tclvalue(minlonRect) <<- round(ret$xc, 4)
 				tclvalue(minlatRect) <<- round(ret$yc, 4)
@@ -146,13 +143,13 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 			}
 
 			##
-			if(tclvalue(area_type) == "Polygon"){
+			if(tclvalue(select_type) == "Polygons"){
 				xypts <- data.frame(x = ret$xc, y = ret$yc)
 				coordinates(xypts)=~x+y
 				admin_name <- over(xypts, shpf)
 				admin_name <- c(t(admin_name[1,]))
 
-				ids <- as.numeric(tclvalue(tcl(adminVar.tab1, 'current')))+1
+				ids <- as.numeric(tclvalue(tcl(adminVar.tab2, 'current')))+1
 				admin_name <- admin_name[ids]
 				if(!is.na(admin_name)){
 					tclvalue(namePoly) <<- as.character(admin_name)
@@ -161,33 +158,6 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 					selectedPolygon <<- NULL
 				}
 			}
-
-			##
-			if(tclvalue(area_type) == 'Multiple Points'){
-				tclvalue(minlonRect) <<- round(ret$xc, 4)
-				tclvalue(maxlonRect) <<- ''
-				tclvalue(minlatRect) <<- round(ret$yc, 4)
-				tclvalue(maxlatRect) <<- ''
-				selectedPolygon <<- NULL
-			}
-
-			##
-			if(tclvalue(area_type) == 'Multiple Polygons'){
-				xypts <- data.frame(x = ret$xc, y = ret$yc)
-				coordinates(xypts)=~x+y
-				admin_name <- over(xypts, shpf)
-				admin_name <- c(t(admin_name[1, ]))
-
-				ids <- as.numeric(tclvalue(tcl(adminVar.tab1, 'current')))+1
-				admin_name <- admin_name[ids]
-				if(!is.na(admin_name)){
-					tclvalue(namePoly) <<- as.character(admin_name)
-					selectedPolygon <<- getBoundaries(shpf[shpf@data[, ids] == tclvalue(namePoly), ])
-				}else{
-					selectedPolygon <<- NULL
-				}
-			}
-
 			refreshPlot1(W, img, hscale = as.numeric(tclvalue(tkget(spinH))), vscale = as.numeric(tclvalue(tkget(spinV))))
 		}
 
@@ -225,10 +195,10 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 				tclvalue(pressButM) <<- 0
 				tclvalue(pressButRect) <<- 0
 				tclvalue(pressButDrag) <<- 0
-				tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-				tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-				tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-				tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+				tkconfigure(btZoomP.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
+				tkconfigure(btZoomM.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
+				tkconfigure(btZoomRect.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
+				tkconfigure(btPanImg.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
 				tkconfigure(W, cursor = 'crosshair')
 			}else{
 				ZoomXYval <<- c(xmin1, xmax1, ymin1, ymax1)
@@ -262,16 +232,24 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 
 	##########
 	tkbind(canvas, "<Motion>", function(W, x, y){
-		displayCursorPosition3Var(W, x, y, parPltCrd, xpcoord, ypcoord, zpcoord, getAdminLabel, shp = shpf, idField = adminVar.tab1)
+		# if(tclvalue(select_type) == "Rectangle"){
+		# 	ret <- getXYCoords(W, x, y, parPltCrd)
+		# 	displayCursorPosition3Var(W, x, y, parPltCrd, xpcoord, ypcoord, zpcoord, getStnIDLabel, pltusr = pltusr, inout = ret$oin)
+		# }
+		if(tclvalue(select_type) == "Polygons" & !is.null(shpf)){
+			displayCursorPosition3Var(W, x, y, parPltCrd, xpcoord, ypcoord, zpcoord, getAdminLabel, shp = shpf, idField = adminVar.tab2)
+		}else{
+			ret <- getXYCoords(W, x, y, parPltCrd)
+			displayCursorPosition3Var(W, x, y, parPltCrd, xpcoord, ypcoord, zpcoord, getStnIDLabel, pltusr = pltusr, inout = ret$oin)
+		}
 	})
-
 
 	#########
 	tkbind(canvas, "<B1-Motion>", function(W, x, y){
 		ret <- getXYCoords(W, x, y, parPltCrd)
 
 		##get coordinates rect
-		if(tclvalue(pressGetCoords) == "1"  & tclvalue(area_type) == "Rectangle"){
+		if(tclvalue(pressGetCoords) == "1" & tclvalue(select_type) == "Rectangle"){
 			pMoveRect(W, x, y)
 			tclvalue(maxlonRect) <<- round(ret$xc, 4)
 			tclvalue(maxlatRect) <<- round(ret$yc, 4)
@@ -301,7 +279,7 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 
 		##get coordinates rect
 		if(tclvalue(pressGetCoords) == "1"){
-			if(tclvalue(area_type) == "Rectangle"){
+			if(tclvalue(select_type) == "Rectangle"){
 				xpr <- c(as.numeric(tclvalue(minlonRect)), round(ret$xc, 4), as.numeric(tclvalue(minlatRect)), round(ret$yc, 4))
 				if(xpr[1] > xpr[2]) xpr <- xpr[c(2, 1, 3, 4)]
 				if(xpr[3] > xpr[4]) xpr <- xpr[c(1, 2, 4, 3)]
@@ -311,7 +289,7 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 				tclvalue(maxlatRect) <<- xpr[4]
 			}
 			tclvalue(pressGetCoords) <<- 0
-			tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+			tkconfigure(bselect.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
 			tkconfigure(W, cursor = 'crosshair')
 		}
 
@@ -343,21 +321,18 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 		tclvalue(pressButM) <<- 0
 		tclvalue(pressButRect) <<- 0
 		tclvalue(pressButDrag) <<- 0
-		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomP.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomM.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomRect.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btPanImg.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
 
 		tkconfigure(canvas, cursor = 'crosshair')
-
 		tkdelete(W, 'rect')
 
-		selectedPolygon <<- NULL
 		refreshPlot1(W, img, hscale = as.numeric(tclvalue(tkget(spinH))), vscale = as.numeric(tclvalue(tkget(spinV))))
 	})
 
 	###
 	return(list(onglet, list(canvas, img)))
 }
-
 

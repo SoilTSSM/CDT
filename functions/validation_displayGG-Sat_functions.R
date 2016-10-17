@@ -7,7 +7,9 @@ plotGGvsSatellite <- function(outValiddata, dataType){
 		y <- outValiddata$ys
 	}
 	grphlim <- c(0, max(x, y))
-	plot(x, y, xlab = "Gauge", ylab = "RFE", xlim = grphlim, ylim = grphlim)
+	if(outValiddata$clim.var == 'RR') ylab <- 'RFE'
+	if(outValiddata$clim.var == 'TT') ylab <- 'Estimate'
+	plot(x, y, xlab = "Gauge", ylab = ylab, xlim = grphlim, ylim = grphlim)
 	abline(a = 0, b = 1, lwd = 2, col = 'red')
 }
 
@@ -18,7 +20,7 @@ displayGGvsSatFun <- function(parent, notebookTab, outValiddata, dataType){
 		plotGGvsSatellite(outValiddata, dataType)
 	}
 
-	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitle = 'Gauge-RFE', AllOpenTabType, AllOpenTabData)
+	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitle = 'Scatter Plot', AllOpenTabType, AllOpenTabData)
 
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
@@ -47,9 +49,17 @@ cdfGGvsSatellite <- function(outValiddata, dataType){
 		x <- outValiddata$xs
 		y <- outValiddata$ys
 	}
-	plot(ecdf(x), xlab = "Rainfall [mm]", main = 'CDF', col = 'blue', lwd = 2, cex = 0.4, ylim = c(0,1))
-	plot(ecdf(y), add = T, col = "red", lwd = 2, cex = 0.4)
-	legend('bottomright', c('Gauge', 'RFE'), col = c('blue', 'red'), lwd = 3, bg = 'lightgray')
+	if(outValiddata$clim.var == 'RR'){
+		xlab <- "Rainfall [mm]"
+		lgtxt <- c('Gauge', 'RFE')
+	}
+	if(outValiddata$clim.var == 'TT'){
+		xlab <- "Temperature"
+		lgtxt <- c('Gauge', 'Estimate')
+	}
+	plot(ecdf(x), xlab = xlab, main = 'Empirical CDF', col = 'blue', lwd = 2, cex = 0.4, ylim = c(0,1))
+	plot(ecdf(y), add = TRUE, col = "red", lwd = 2, cex = 0.4)
+	legend('bottomright', lgtxt, col = c('blue', 'red'), lwd = 3, bg = 'lightgray')
 }
 
 ###############################
@@ -59,7 +69,7 @@ displayCDFGGvsSatFun <- function(parent, notebookTab, outValiddata, dataType){
 		cdfGGvsSatellite(outValiddata, dataType)
 	}
 
-	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitle = 'CDF Gauge-RFE', AllOpenTabType, AllOpenTabData)
+	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitle = 'Empirical CDF - Plot', AllOpenTabType, AllOpenTabData)
 
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))

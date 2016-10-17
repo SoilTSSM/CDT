@@ -135,6 +135,7 @@ source(file.path(apps.dir, 'functions', 'interpol_Proc_functions.R', fsep = .Pla
 source(file.path(apps.dir, 'functions', 'validation_leftCmd_functions.R', fsep = .Platform$file.sep))
 source(file.path(apps.dir, 'functions', 'validation_Proc_functions.R', fsep = .Platform$file.sep))
 source(file.path(apps.dir, 'functions', 'validation_displayGG-Sat_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'validation_displayMap_functions.R', fsep = .Platform$file.sep))
 
 #####
 source(file.path(apps.dir, 'functions', 'mergingMali1dek_dlgBox_functions.R', fsep = .Platform$file.sep))

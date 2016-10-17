@@ -141,11 +141,11 @@ Climatologies <- function(xvar, dates, fun = 'mean', ..., time.step = 'daily', t
 							clim.range = NULL, clim.nbyear.min = NA)
 {
 	if(time.step == 'daily'){
-		dates <- paste('Day', 1:365, sep = '-')
+		odates <- paste('Day', 1:365, sep = '-')
 	}else if(time.step == 'dekadal'){
-		dates <- paste('Dekad', 1:36, sep = '-')
+		odates <- paste('Dekad', 1:36, sep = '-')
 	}else if(time.step == 'monthly'){
-		dates <- format(ISOdate(2014,1:12,1), "%b")
+		odates <- format(ISOdate(2014,1:12,1), "%b")
 	}else{
 		stop('Unknown time step input')
 	}
@@ -153,7 +153,7 @@ Climatologies <- function(xvar, dates, fun = 'mean', ..., time.step = 'daily', t
 	funClim <- paste('Climatologies.', time.step, '_', type, sep = '')
 	funClim <- match.fun(funClim)
 	xout <- funClim(xvar, dates, fun = fun, ..., clim.range = clim.range, clim.nbyear.min = clim.nbyear.min)
-	return(list(date = dates, data = xout))
+	return(list(date = odates, data = xout))
 }
 
 Anomalies <- function(xvar, dates, time.step = 'daily', type ='vector',

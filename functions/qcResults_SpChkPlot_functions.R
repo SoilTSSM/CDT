@@ -88,11 +88,11 @@ plotSpatialCheck <- function(ijsp, dem, rfedat, shpf, ZoomXYval, showval){
 		}
 
 		#######
-		opar <- par(mar = c(4,4,2.5,5))
-		plot(1, xlim = c(xmin, xmax), ylim = c(ymin, ymax), xlab="", ylab="", type = "n", xaxt = 'n', yaxt = 'n')
+		opar <- par(mar = c(4, 4, 2.5, 5))
+		plot(1, xlim = c(xmin, xmax), ylim = c(ymin, ymax), xlab = "", ylab = "", type = "n", xaxt = 'n', yaxt = 'n')
 
-		if(!is.null(dem)) image.plot(dem.lon, dem.lat, dem.val, col = gray(seq(0.9,0.1, length = 64)), add = TRUE, legend.mar = 5)
-		if(!is.null(rfedat)) image.plot(rfe.lon, rfe.lat, rfe.val, col = colorRampPalette(colors()[c(1:4,8:11)])(100), add = TRUE, legend.mar = 5)
+		if(!is.null(dem)) image.plot(dem.lon, dem.lat, dem.val, col = gray(seq(0.9, 0.1, length = 64)), add = TRUE, legend.mar = 5)
+		if(!is.null(rfedat)) image.plot(rfe.lon, rfe.lat, rfe.val, col = colorRampPalette(colors()[c(1:4, 8:11)])(100), add = TRUE, legend.mar = 5)
 		if(!is.null(shpf)) lines(ocrds)
 
 		points(lon[-ijStn], lat[-ijStn], pch = 19, col = 'darkred', cex = 0.5)
@@ -111,9 +111,9 @@ plotSpatialCheck <- function(ijsp, dem, rfedat, shpf, ZoomXYval, showval){
 		}
 		if(Sys.info()["sysname"] == "Windows") axlabs <- LatLonAxisLabels(axTicks(1), axTicks(2))
 		else axlabs <- LatLonAxisLabels1(axTicks(1), axTicks(2))
-		axis(side = 1, at = axTicks(1), labels = axlabs$xaxl, tck=-0.01, cex.axis = 0.8)
-		axis(side = 2, at = axTicks(2), labels = axlabs$yaxl, tck=-0.01, las = 1, cex.axis = 0.8)
-		title(main = paste('STN:',idStn[ijStn],'Date:',ijDate), cex.main = 1, font.main = 1)
+		axis(side = 1, at = axTicks(1), labels = axlabs$xaxl, tck = -0.01, cex.axis = 0.8)
+		axis(side = 2, at = axTicks(2), labels = axlabs$yaxl, tck = -0.01, las = 1, cex.axis = 0.8)
+		title(main = paste('STN:', idStn[ijStn], 'Date:', ijDate), cex.main = 1, font.main = 1)
 		box()
 		plt <- par("plt")
 		usr <- par("usr")
@@ -135,7 +135,7 @@ DisplaySpatialCheck <- function(parent, ijsp, ZoomXYval, dem, rfedat, shpf, show
 		IJstation <- ReturnExecResults$station
 	}
 	if(GeneralParameters$AllOrOne == 'all'){
-		ijstn <- which(as.character(GeneralParameters$parameter[[2]][,1]) == tclvalue(stn.choix.val))
+		ijstn <- which(as.character(GeneralParameters$parameter[[2]][, 1]) == tclvalue(stn.choix.val))
 		IJstation <- ReturnExecResults$station[[ijstn]]
 	}
 
@@ -164,8 +164,9 @@ DisplaySpatialCheck <- function(parent, ijsp, ZoomXYval, dem, rfedat, shpf, show
 	}
 
 	parPltCrd <- list(parPlotSize1 = parPlotSize1, parPlotSize2 = parPlotSize2,
-	parPlotSize3 = parPlotSize3, parPlotSize4 = parPlotSize4,
-	usrCoords1 = usrCoords1, usrCoords2 = usrCoords2, usrCoords3 = usrCoords3, usrCoords4 = usrCoords4)
+						parPlotSize3 = parPlotSize3, parPlotSize4 = parPlotSize4,
+						usrCoords1 = usrCoords1, usrCoords2 = usrCoords2,
+						usrCoords3 = usrCoords3, usrCoords4 = usrCoords4)
 
 	###################################################################
 	onglet <- imageNotebookTab_open(parent, noteQcSpatCheck, tabTitle = paste(IJstation, 'Spatial Check', sep = '-'), AllOpenTabType, AllOpenTabData)
@@ -185,16 +186,16 @@ DisplaySpatialCheck <- function(parent, ijsp, ZoomXYval, dem, rfedat, shpf, show
 	tcl('update')
 
 	######
-	tkbind(canvas,"<Enter>", function(){
+	tkbind(canvas, "<Enter>", function(){
 		if(tclvalue(pressButP) == "1") tkconfigure(canvas, cursor = 'sizing')
 		else if(tclvalue(pressButM) == "1") tkconfigure(canvas, cursor = 'sizing')
 		else if(tclvalue(pressButRect) == "1") tkconfigure(canvas, cursor = 'sizing')
 		else if(tclvalue(pressButDrag) == "1") tkconfigure(canvas, cursor = 'hand1')
-		else if(tclvalue(pressGetCoords) == "1") tkconfigure(canvas, cursor='draped_box')
+		else if(tclvalue(pressGetCoords) == "1") tkconfigure(canvas, cursor = 'draped_box')
 		else tkconfigure(canvas, cursor = 'crosshair')
 	})
 
-	tkbind(canvas,"<Leave>", function() tkconfigure(canvas, cursor=''))
+	tkbind(canvas, "<Leave>", function() tkconfigure(canvas, cursor = ''))
 
 
 	#####
@@ -209,7 +210,7 @@ DisplaySpatialCheck <- function(parent, ijsp, ZoomXYval, dem, rfedat, shpf, show
 	rectZoomInit <- ZoomXYval
 
 	##Pan Image
-	panZoomInit <- c(0,0,0,0,0,0)
+	panZoomInit <- c(0, 0, 0, 0, 0, 0)
 	factPan <- 0.2
 
 	############
@@ -324,8 +325,8 @@ DisplaySpatialCheck <- function(parent, ijsp, ZoomXYval, dem, rfedat, shpf, show
 		if(tclvalue(pressButRect) == "1"){
 			rectZoomInit[2] <<- ret$xc
 			rectZoomInit[4] <<- ret$yc
-			if(rectZoomInit[1] > rectZoomInit[2]) rectZoomInit <- rectZoomInit[c(2,1,3,4)]
-			if(rectZoomInit[3] > rectZoomInit[4]) rectZoomInit <- rectZoomInit[c(1,2,4,3)]
+			if(rectZoomInit[1] > rectZoomInit[2]) rectZoomInit <- rectZoomInit[c(2, 1, 3, 4)]
+			if(rectZoomInit[3] > rectZoomInit[4]) rectZoomInit <- rectZoomInit[c(1, 2, 4, 3)]
 			ZoomXYval <<- rectZoomInit
 			tclvalue(xx1) <<- round(rectZoomInit[1], 4)
 			tclvalue(xx2) <<- round(rectZoomInit[2], 4)

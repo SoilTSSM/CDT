@@ -1,37 +1,47 @@
 getExtractDataFun <- function(retExtractParams){
-	period <- retExtractParams[1]
-	ncdir <- retExtractParams[2]
-	ncfformat <- retExtractParams[3]
-	shpfl <- retExtractParams[4]
-	shpId <- retExtractParams[5]
-	yrs1 <- as.numeric(retExtractParams[6])
-	mon1 <- as.numeric(retExtractParams[7])
-	day1 <- as.numeric(retExtractParams[8])
-	yrs2 <- as.numeric(retExtractParams[9])
-	mon2 <- as.numeric(retExtractParams[10])
-	day2 <- as.numeric(retExtractParams[11])
-	outTS <- retExtractParams[12]
-	season1 <- retExtractParams[13]
-	season2 <- retExtractParams[14]
-	aggfun <- retExtractParams[15]
-	missfrac <- as.numeric(retExtractParams[16])
-	extType <- retExtractParams[17]
-	xminLon <- as.numeric(retExtractParams[18])
-	xmaxLon <- as.numeric(retExtractParams[19])
-	xminLat <- as.numeric(retExtractParams[20])
-	xmaxLat <- as.numeric(retExtractParams[21])
-	polyName <- retExtractParams[22]
-	spAvrg <- retExtractParams[23]
-	out2sav <- retExtractParams[24]
-	ChoixOutType <- retExtractParams[25]
-	multiptspoly <- retExtractParams[26]
+	period <- retExtractParams$freq
+	ncdir <- retExtractParams$ncdat$dir
+	ncfformat <- retExtractParams$ncdat$format
 
-	calc.anomaly <- retExtractParams[27]
-	calc.stanomaly <- retExtractParams[28]
-	calc.climato <- retExtractParams[29]
-	pmLon <- abs(as.numeric(retExtractParams[30]))
-	pmLat <- abs(as.numeric(retExtractParams[31]))
+	range.date <- as.numeric(retExtractParams$dates)
+	yrs1 <- range.date[1]
+	mon1 <- range.date[2]
+	day1 <- range.date[3]
+	yrs2 <- range.date[4]
+	mon2 <- range.date[5]
+	day2 <- range.date[6]
+	usemon1 <- retExtractParams$usemon$start
+	usemon2 <- retExtractParams$usemon$end
 
+	outTS <- retExtractParams$out.ts
+	season1 <- retExtractParams$seasmon$start
+	season2 <- retExtractParams$seasmon$end
+
+	aggfun <- retExtractParams$aggre$fun
+	missfrac <- as.numeric(retExtractParams$aggre$missfrac)
+
+	extType <- retExtractParams$area.type
+	xyrect <- as.numeric(retExtractParams$rect)
+	xminLon <- xyrect[1]
+	xmaxLon <- xyrect[2]
+	xminLat <- xyrect[3]
+	xmaxLat <- xyrect[4]
+
+	shpfl <- retExtractParams$shpdat$shpf
+	shpId <- retExtractParams$shpdat$attr
+	polyName <- retExtractParams$shpdat$id
+
+	spAvrg <- retExtractParams$sp.ave
+	out2sav <- retExtractParams$outdir
+	ChoixOutType <- retExtractParams$out.type
+	multiptspoly <- retExtractParams$polyg
+
+	calc.anomaly <- retExtractParams$climato$anom
+	calc.stanomaly <- retExtractParams$climato$stanom
+	calc.climato <- retExtractParams$climato$clim
+	pts.int <- abs(as.numeric(retExtractParams$pts.int))
+	pmLon <- pts.int[1]
+	pmLat <- pts.int[2]
 
 	####
 	outTsTable <- cbind(c('Daily', 'Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'), c('daily', 'dekadal', 'monthly', 'season3', 'season6', 'yearly'))
@@ -44,6 +54,7 @@ getExtractDataFun <- function(retExtractParams){
 	}
 
 	####
+
 	if(period == 'Daily data'){
 		period0 <- 'daily'
 		dates <- format(seq(as.Date(paste(yrs1, mon1, day1, sep = '-')), as.Date(paste(yrs2, mon2, day2, sep = '-')),'day'),'%Y%m%d')
@@ -67,6 +78,13 @@ getExtractDataFun <- function(retExtractParams){
 		InsertMessagesTxt(main.txt.out, "Directory containing NetCDF files does not exist", format = TRUE)
 		return(NULL)
 	}
+
+	###
+	dates0 <- dates
+	imois <- getMonthsInSeason(usemon1, usemon2)
+	imois <- as.numeric(substr(dates, 5, 6))%in%imois
+	dates <- dates[imois]
+	ncfiles <- ncfiles[imois]
 
 	ncpath <- file.path(ncdir, ncfiles, fsep = .Platform$file.sep)
 	existFl <- unlist(lapply(ncpath, file.exists))
@@ -95,7 +113,7 @@ getExtractDataFun <- function(retExtractParams){
 		jfile <- which(all.open.file == shpfl)
 		if(AllOpenFilesType[[jfile]] == "shp"){
 			shpf <- AllOpenFilesData[[jfile]][[2]]
-			regOI <- shpf[as.character(shpf@data[,shpId]) == polyName,]
+			regOI <- shpf[as.character(shpf@data[, shpId]) == polyName, ]
 			bbxregOI <- bbox(regOI)
 		}else{
 			InsertMessagesTxt(main.txt.out, "Ceci ne devrait pas se produire", format = TRUE)
@@ -406,7 +424,6 @@ getExtractDataFun <- function(retExtractParams){
 		}
 	}
 
-
 	###########################################################################################
 
 	RVAL <- vector(mode = 'list', length = length(ncpath))
@@ -558,6 +575,7 @@ getExtractDataFun <- function(retExtractParams){
 
 	######################################################################################################
 
+	complete.mon <- match(dates0, dates)
 	if(extType == 'Point'){
 		
 		RVAL[sapply(RVAL, is.null)] <- NA
@@ -565,23 +583,23 @@ getExtractDataFun <- function(retExtractParams){
 		
 		if(period0 == period1){
 			xtmp <- round(xval, 1)
-			xtmp[is.na(xtmp)]<- -99
+			xtmp[is.na(xtmp)] <- -99
 			xtmp <- cbind(dates, xtmp)
 		}else{
 			if(period1 == 'season3'){
 				xtmp <- seasonal_fun(period0, xval, dates, smon = season1, lmon = 3, fun = aggfun, frac = missfrac)
-				xtmp[,3] <- round(xtmp[,3], 1)
-				xtmp[is.na(xtmp[,3]), 3]<- -99
+				xtmp[, 3] <- round(xtmp[, 3], 1)
+				xtmp[is.na(xtmp[, 3]), 3]<- -99
 			}else if(period1 == 'season6'){
 				xtmp <- seasonal_fun(period0, xval, dates, smon = season1, lmon = 6, fun = aggfun, frac = missfrac)
-				xtmp[,3] <- round(xtmp[,3], 1)
-				xtmp[is.na(xtmp[,3]), 3]<- -99
+				xtmp[, 3] <- round(xtmp[, 3], 1)
+				xtmp[is.na(xtmp[, 3]), 3] <- -99
 			}else{
 				comp.fun <- paste(period0, 2, period1, sep = '')
 				comp.fun <- match.fun(comp.fun)
 				xtmp <- comp.fun(xval, dates, fun = aggfun, frac = missfrac)
-				xtmp[,2] <- round(xtmp[,2], 1)
-				xtmp[is.na(xtmp[,2]), 2]<- -99
+				xtmp[, 2] <- round(xtmp[, 2], 1)
+				xtmp[is.na(xtmp[, 2]), 2] <- -99
 			}
 		}
 
@@ -597,26 +615,26 @@ getExtractDataFun <- function(retExtractParams){
 
 		if(period0 == period1){
 			xtmp <- round(xval, 1)
-			xtmp[is.na(xtmp)]<- -99
+			xtmp[is.na(xtmp)] <- -99
 			xtmp <- cbind(dates, xtmp)
 		}else{
 			if(period1 == 'season3'){
 				xtmp <- seasonal_funMat(period0, xval, dates, smon = season1, lmon = 3, fun = aggfun, frac = missfrac)
-				xtmp0 <- round(xtmp[,-1], 1)
-				xtmp0[is.na(xtmp0)]<- -99
-				xtmp[,-1] <- xtmp0
+				xtmp0 <- round(xtmp[, -1], 1)
+				xtmp0[is.na(xtmp0)] <- -99
+				xtmp[, -1] <- xtmp0
 			}else if(period1 == 'season6'){
 				xtmp <- seasonal_funMat(period0, xval, dates, smon = season1, lmon = 6, fun = aggfun, frac = missfrac)
-				xtmp0 <- round(xtmp[,-1], 1)
-				xtmp0[is.na(xtmp0)]<- -99
-				xtmp[,-1] <- xtmp0
+				xtmp0 <- round(xtmp[, -1], 1)
+				xtmp0[is.na(xtmp0)] <- -99
+				xtmp[, -1] <- xtmp0
 			}else{
 				comp.fun <- paste(period0, 2, period1, sep = '')
 				comp.fun <- match.fun(comp.fun)
 				xtmp <- apply(xval, 2, comp.fun, dates = dates, fun = aggfun, frac = missfrac)
-				xtmp0 <- as.character(xtmp[[1]][,1])
-				xtmp <- round(sapply(xtmp, function(x)x[,2]), 1)
-				xtmp[is.na(xtmp)]<- -99
+				xtmp0 <- as.character(xtmp[[1]][, 1])
+				xtmp <- round(sapply(xtmp, function(x) x[, 2]), 1)
+				xtmp[is.na(xtmp)] <- -99
 				xtmp <- cbind(xtmp0, xtmp)
 			}
 		}
@@ -633,23 +651,23 @@ getExtractDataFun <- function(retExtractParams){
 			xval <- unlist(RVAL)
 			
 			if(period0 == period1){
-				xval[is.na(xval)]<- -99
+				xval[is.na(xval)] <- -99
 				xtmp <- cbind(dates, xval)
 			}else{
 				if(period1 == 'season3'){
 					xtmp <- seasonal_fun(period0, xval, dates, smon = season1, lmon = 3, fun = aggfun, frac = missfrac)
-					xtmp[,3] <- round(xtmp[,3], 1)
-					xtmp[is.na(xtmp[,3]), 3]<- -99
+					xtmp[, 3] <- round(xtmp[, 3], 1)
+					xtmp[is.na(xtmp[, 3]), 3] <- -99
 				}else if(period1 == 'season6'){
 					xtmp <- seasonal_fun(period0, xval, dates, smon = season1, lmon = 6, fun = aggfun, frac = missfrac)
-					xtmp[,3] <- round(xtmp[,3], 1)
-					xtmp[is.na(xtmp[,3]), 3]<- -99
+					xtmp[, 3] <- round(xtmp[, 3], 1)
+					xtmp[is.na(xtmp[, 3]), 3] <- -99
 				}else{
 					comp.fun <- paste(period0, 2, period1, sep = '')
 					comp.fun <- match.fun(comp.fun)
 					xtmp <- comp.fun(xval, dates, fun = aggfun, frac = missfrac)
-					xtmp[,2] <- round(xtmp[,2], 1)
-					xtmp[is.na(xtmp[,2]), 2]<- -99
+					xtmp[, 2] <- round(xtmp[, 2], 1)
+					xtmp[is.na(xtmp[, 2]), 2] <- -99
 				}
 			}
 			

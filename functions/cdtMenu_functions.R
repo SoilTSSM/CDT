@@ -655,7 +655,7 @@ tkadd(menu.valid, "command", label = "Precipitation", command = function(){
 	tkconfigure(spinH, state = 'normal')
 	tkconfigure(spinV, state = 'normal')
 	if(is.null(lcmd.frame_valid)){
-		lcmd.frame <<- ValidationPanelCmd()
+		lcmd.frame <<- ValidationPanelCmd('RR')
 		lcmd.frame_valid <<- 1
 	}
 })
@@ -665,8 +665,15 @@ tkadd(menu.valid, "separator")
 
 #########
 # Temperature validation
-tkadd(menu.valid, "command", label = "Temperature", state = 'disabled', command = function(){
-return(NULL)
+tkadd(menu.valid, "command", label = "Temperature", command = function(){
+	source(file.path(apps.dir, 'functions', 'initialize_stn_button', fsep = .Platform$file.sep))
+	source(file.path(apps.dir, 'functions', 'initialize', fsep = .Platform$file.sep))
+	tkconfigure(spinH, state = 'normal')
+	tkconfigure(spinV, state = 'normal')
+	if(is.null(lcmd.frame_valid)){
+		lcmd.frame <<- ValidationPanelCmd('TT')
+		lcmd.frame_valid <<- 1
+	}
 })
 
 ##########
@@ -684,27 +691,27 @@ tkadd(menu.dataproc, "command", label = "Data Extraction", command = function(){
 	}
 })
 
-##########
-tkadd(menu.dataproc, "separator")
+# ##########
+# tkadd(menu.dataproc, "separator")
 
-##########
-menu.stats <- tkmenu(top.menu, tearoff = FALSE)
-tkadd(menu.dataproc, "cascade", label = "Statistical Analysis", state = 'disabled', menu = menu.stats)
+# ##########
+# menu.stats <- tkmenu(top.menu, tearoff = FALSE)
+# tkadd(menu.dataproc, "cascade", label = "Statistical Analysis", state = 'disabled', menu = menu.stats)
 
-########
-# Time series analysis
-tkadd(menu.stats, "command", label = "Time Series", command = function(){
-return(NULL)
-})
+# ########
+# # Time series analysis
+# tkadd(menu.stats, "command", label = "Time Series", command = function(){
+# return(NULL)
+# })
 
-##########
-tkadd(menu.stats, "separator")
+# ##########
+# tkadd(menu.stats, "separator")
 
-#########
-# spatial 
-tkadd(menu.stats, "command", label = "Spatial Statistics", state = 'disabled', command = function(){
-return(NULL)
-})
+# #########
+# # spatial 
+# tkadd(menu.stats, "command", label = "Spatial Statistics", state = 'disabled', command = function(){
+# return(NULL)
+# })
 
 
 ##########xxxxxxxxxxxxxxxxxx Menu Plot Data xxxxxxxxxxxxxxxxxx##########

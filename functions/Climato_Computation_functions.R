@@ -627,12 +627,12 @@ dekadal2yearly <- function(var, dates, fun, frac = 1){
 monthly2yearly <- function(var, dates, fun, frac = 1){
 	dates <- as.character(dates)
 	fun <- match.fun(fun)
-	an <- as.character(substr(dates, 1,4))
+	an <- as.character(substr(dates, 1, 4))
 	nbd <- rle(an)$lengths
 	nbd[1] <- 12
 	nbd[length(nbd)] <- 12
-	w <- ifelse(is.na(var), 0,1)
-	nna <- aggregate(w, by = list(as.factor(an)), sum, na.rm = T)[,2]
+	w <- ifelse(is.na(var), 0, 1)
+	nna <- aggregate(w, by = list(as.factor(an)), sum, na.rm = T)[, 2]
 	rval <- as.data.frame(aggregate(var, by = list(as.factor(an)), fun, na.rm = FALSE))
 	names(rval) <- c('Date', 'Values')
 	rval[which((nna/nbd) < frac), 2] <- NA
@@ -644,15 +644,16 @@ monthly2yearly <- function(var, dates, fun, frac = 1){
 seasonal_fun <- function(freq, var, dates, smon, lmon, fun, frac = 1){
 	dates <- as.character(dates)
 	fun <- match.fun(fun)
-	an <- as.character(substr(dates, 1,4))
-	mois <- as.character(substr(dates, 5,6))
+	an <- as.character(substr(dates, 1, 4))
+	mois <- as.character(substr(dates, 5, 6))
 
-	tmois <- format(ISOdate(2014,1:12,1), "%B")
+	# im <- getMonthsInSeason1(smon, lmon)
+	tmois <- format(ISOdate(2014, 1:12, 1), "%b")
 	ix <- which(tmois == smon)
-	im<-(ix:(ix+(lmon-1)))%%12
+	im <- (ix:(ix+(lmon-1)))%%12
 	im[im == 0] <- 12
 
-	seas <- paste(substr(tmois, 1,1)[im], collapse='')
+	seas <- paste(substr(tmois, 1, 1)[im], collapse='')
 	im <- ifelse(im < 10, paste(0, im, sep = ''), im)
 	seasL <- mois%in%im
 	rrL <- rle(seasL)
@@ -662,7 +663,7 @@ seasonal_fun <- function(freq, var, dates, smon, lmon, fun, frac = 1){
 
 	var <- var[seasL]
 	an <- sort(as.numeric(levels(as.factor(an[seasL]))))
-	xtmp <- aggregate(var, by = list(as.factor(dtseas)), fun, na.rm = FALSE)[,2]
+	xtmp <- aggregate(var, by = list(as.factor(dtseas)), fun, na.rm = FALSE)[, 2]
 	if(length(an) != length(xtmp)) an <- c(an[1]-1, an)
 	rval <- data.frame(Season = seas, Start_Year = an, Values = xtmp)
 
@@ -681,12 +682,10 @@ seasonal_fun <- function(freq, var, dates, smon, lmon, fun, frac = 1){
 	}
 
 	w <- ifelse(is.na(var), 0,1)
-	nna <- aggregate(w, by = list(as.factor(dtseas)), sum, na.rm = T)[,2]
+	nna <- aggregate(w, by = list(as.factor(dtseas)), sum, na.rm = T)[, 2]
 	rval[which((nna/nbd) < frac), 3] <- NA
 	return(rval)
 }
-
-##############
 
 ########################################################
 
@@ -696,9 +695,10 @@ seasonal_funMat <- function(freq, var, dates, smon, lmon, fun, frac = 1){
 	an <- as.character(substr(dates, 1,4))
 	mois <- as.character(substr(dates, 5,6))
 
-	tmois <- format(ISOdate(2014,1:12,1), "%B")
+	# im <- getMonthsInSeason1(smon, lmon)
+	tmois <- format(ISOdate(2014, 1:12, 1), "%b")
 	ix <- which(tmois == smon)
-	im<-(ix:(ix+(lmon-1)))%%12
+	im <- (ix:(ix+(lmon-1)))%%12
 	im[im == 0] <- 12
 
 	seas <- paste(substr(tmois, 1,1)[im], collapse='')
@@ -712,7 +712,6 @@ seasonal_funMat <- function(freq, var, dates, smon, lmon, fun, frac = 1){
 	an <- sort(as.numeric(levels(as.factor(an[seasL]))))
 	var <- var[seasL,]
 	xtmp <- aggregate(var, by = list(as.factor(dtseas)), fun, na.rm = FALSE)[,-1]
-
 
 	if(length(an) != nrow(xtmp)) an <- c(an[1]-1, an)
 	rval <- data.frame(paste(seas, an, sep = '-'), xtmp)
@@ -731,11 +730,11 @@ seasonal_funMat <- function(freq, var, dates, smon, lmon, fun, frac = 1){
 		nbd[length(nbd)] <- lmon
 	}
 
-	w <- ifelse(is.na(var), 0,1)
-	nna <- aggregate(w, by = list(as.factor(dtseas)), sum, na.rm = T)[,-1]
-	rval0 <- rval[,-1]
+	w <- ifelse(is.na(var), 0, 1)
+	nna <- aggregate(w, by = list(as.factor(dtseas)), sum, na.rm = T)[, -1]
+	rval0 <- rval[, -1]
 	rval0[(nna/nbd) < frac] <- NA
-	rval[,-1] <- rval0
+	rval[, -1] <- rval0
 	return(rval)
 }
 
@@ -747,9 +746,9 @@ daily2dekadal_lstOmat <- function(ListOfMatrix, dates, fun, minfrac){
 	nx <- nrow(ListOfMatrix[[1]])
 	ny <- ncol(ListOfMatrix[[1]])
 
-	an <- as.character(substr(dates, 1,4))
-	mois <- as.character(substr(dates, 5,6))
-	day <- as.character(substr(dates, 7,8))
+	an <- as.character(substr(dates, 1, 4))
+	mois <- as.character(substr(dates, 5, 6))
+	day <- as.character(substr(dates, 7, 8))
 	jour <- as.numeric(day)
 
 	jour[jour <= 10] <- 1
@@ -757,15 +756,15 @@ daily2dekadal_lstOmat <- function(ListOfMatrix, dates, fun, minfrac){
 	jour[jour > 20] <- 3
 
 	nna <- as.data.frame(aggregate(rep(1, length(an)), by = list(as.factor(paste(an, mois, jour, sep = ''))),'sum', na.rm = FALSE))
-	nbd <- nna[,2]
+	nbd <- nna[, 2]
 
-	nbs <- ifelse(jour[1] <= 10,10, ifelse(jour[1] > 10 & jour[1] <= 20,10, rev((28:31)[which(!is.na(as.Date(paste(an[1], mois[1], 28:31, sep = '-'))))])[1]-20))
-	nbe <- ifelse(jour[length(an)] <= 10,10, ifelse(jour[length(an)] > 10 & jour[length(an)] <= 20,10, rev((28:31)[which(!is.na(as.Date(paste(an[length(an)], mois[length(an)], 28:31, sep = '-'))))])[1]-20))
+	nbs <- ifelse(jour[1] <= 10, 10, ifelse(jour[1] > 10 & jour[1] <= 20, 10, rev((28:31)[which(!is.na(as.Date(paste(an[1], mois[1], 28:31, sep = '-'))))])[1]-20))
+	nbe <- ifelse(jour[length(an)] <= 10, 10, ifelse(jour[length(an)] > 10 & jour[length(an)] <= 20, 10, rev((28:31)[which(!is.na(as.Date(paste(an[length(an)], mois[length(an)], 28:31, sep = '-'))))])[1]-20))
 	nbd[1] <- nbs
 	nbd[length(nbd)] <- nbe
 
-	ret_lstOmat <- vector(mode = 'list', length = length(nna[,1]))
-	for(j in seq_along(nna[,1])){
+	ret_lstOmat <- vector(mode = 'list', length = length(nna[, 1]))
+	for(j in seq_along(nna[, 1])){
 		if(nna[j, 2]/nbd[j] < minfrac){
 			don <- matrix(NA, nrow = nx, ncol = ny)
 		}else{
@@ -777,13 +776,13 @@ daily2dekadal_lstOmat <- function(ListOfMatrix, dates, fun, minfrac){
 			w <- vartmp
 			w[!is.na(w)] <- 1
 			w[is.na(w)] <- 0
-			Nonmiss <- apply(w, c(1,2), sum)
-			don <- apply(vartmp, c(1,2), fun, na.rm = T)
+			Nonmiss <- apply(w, c(1, 2), sum)
+			don <- apply(vartmp, c(1, 2), fun, na.rm = T)
 			don[Nonmiss/nbd[j] < minfrac] <- NA
 		}
 		ret_lstOmat[[j]] <- don
 	}
-	return(list(as.character(nna[,1]), ret_lstOmat))
+	return(list(as.character(nna[, 1]), ret_lstOmat))
 }
 
 ####################
@@ -794,11 +793,11 @@ daily2monthly_lstOmat <- function(ListOfMatrix, dates, fun, minfrac){
 	nx <- nrow(ListOfMatrix[[1]])
 	ny <- ncol(ListOfMatrix[[1]])
 
-	an <- as.character(substr(dates, 1,4))
-	mois <- as.character(substr(dates, 5,6))
+	an <- as.character(substr(dates, 1, 4))
+	mois <- as.character(substr(dates, 5, 6))
 
 	nna <- as.data.frame(aggregate(rep(1, length(an)), by = list(as.factor(paste(an, mois, sep = ''))),'sum', na.rm = FALSE))
-	nbd <- nna[,2]
+	nbd <- nna[, 2]
 
 	nbs <- rev((28:31)[which(!is.na(as.Date(paste(an[1], mois[1], 28:31, sep = '-'))))])[1]
 	nbe <- rev((28:31)[which(!is.na(as.Date(paste(an[length(an)], mois[length(an)], 28:31, sep = '-'))))])[1]
@@ -984,15 +983,16 @@ seasonal_lstOmat <- function(freq, ListOfMatrix, dates, smon, lmon, fun, minfrac
 	nx <- nrow(ListOfMatrix[[1]])
 	ny <- ncol(ListOfMatrix[[1]])
 
-	an <- as.character(substr(dates, 1,4))
-	mois <- as.character(substr(dates, 5,6))
+	an <- as.character(substr(dates, 1, 4))
+	mois <- as.character(substr(dates, 5, 6))
 
-	tmois <- format(ISOdate(2014,1:12,1), "%B")
+	# im <- getMonthsInSeason1(smon, lmon)
+	tmois <- format(ISOdate(2014, 1:12, 1), "%b")
 	ix <- which(tmois == smon)
-	im<-(ix:(ix+(lmon-1)))%%12
+	im <- (ix:(ix+(lmon-1)))%%12
 	im[im == 0] <- 12
 
-	seas <- paste(substr(tmois, 1,1)[im], collapse='')
+	seas <- paste(substr(tmois, 1, 1)[im], collapse = '')
 	im <- ifelse(im < 10, paste(0, im, sep = ''), im)
 	seasL <- mois%in%im
 	rrL <- rle(seasL)
@@ -1020,8 +1020,8 @@ seasonal_lstOmat <- function(freq, ListOfMatrix, dates, smon, lmon, fun, minfrac
 		nbd[length(nbd)] <- lmon
 	}
 
-	ret_lstOmat <- vector(mode = 'list', length = length(nna[,1]))
-	for(j in seq_along(nna[,1])){
+	ret_lstOmat <- vector(mode = 'list', length = length(nna[, 1]))
+	for(j in seq_along(nna[, 1])){
 		if(nna[j, 2]/nbd[j] < minfrac){
 			don <- matrix(NA, nrow = nx, ncol = ny)
 		}else{
@@ -1032,13 +1032,13 @@ seasonal_lstOmat <- function(freq, ListOfMatrix, dates, smon, lmon, fun, minfrac
 			w <- vartmp
 			w[!is.na(w)] <- 1
 			w[is.na(w)] <- 0
-			Nonmiss <- apply(w, c(1,2), sum)
-			don <- apply(vartmp, c(1,2), fun, na.rm = T)
+			Nonmiss <- apply(w, c(1, 2), sum)
+			don <- apply(vartmp, c(1, 2), fun, na.rm = T)
 			don[Nonmiss/nbd[j] < minfrac] <- NA
 		}
 		ret_lstOmat[[j]] <- don
 	}
-	return(list(seas, as.character(nna[,3]), ret_lstOmat))
+	return(list(seas, as.character(nna[, 3]), ret_lstOmat))
 }
 
 
@@ -1121,16 +1121,16 @@ daily2monthly_nc <- function(file.pars, informat, dates, fun, minfrac, varid.out
 	dates <- as.character(dates)
 	fun <- match.fun(fun)
 
-	an <- as.character(substr(dates, 1,4))
-	mois <- as.character(substr(dates, 5,6))
-	day <- as.character(substr(dates, 7,8))
+	an <- as.character(substr(dates, 1, 4))
+	mois <- as.character(substr(dates, 5, 6))
+	day <- as.character(substr(dates, 7, 8))
 
 	nbs <- rev((28:31)[which(!is.na(as.Date(paste(an[1], mois[1], 28:31, sep = '-'))))])[1]
 	nbe <- rev((28:31)[which(!is.na(as.Date(paste(an[length(an)], mois[length(an)], 28:31, sep = '-'))))])[1]
 
 	nna <- as.data.frame(aggregate(rep(1, length(an)), by = list(as.factor(paste(an, mois, sep = ''))),'sum', na.rm = FALSE))
-	nna[1,2] <- nbs
-	nna[length(nna[,1]), 2] <- nbe
+	nna[1, 2] <- nbs
+	nna[length(nna[, 1]), 2] <- nbe
 
 	filein0 <- file.path(file.pars[1], sprintf(informat, an, mois, day), fsep = .Platform$file.sep)
 	filein0 <- filein0[file.exists(filein0)][1]

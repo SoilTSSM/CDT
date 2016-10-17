@@ -301,8 +301,10 @@ QcCmdBut <- function(stateReplaceAll){
 				assign("shpf", shpf, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
 				assign("dem", dem, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
 				assign("rfedat", rfedat, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
-				refreshPlot1(W = AllOpenTabData[[tabid]][[2]][[1]], img = AllOpenTabData[[tabid]][[2]][[2]],
-				hscale = as.numeric(tclvalue(tkget(spinH))), vscale = as.numeric(tclvalue(tkget(spinV))))
+				refreshPlot1(W = AllOpenTabData[[tabid]][[2]][[1]],
+							img = AllOpenTabData[[tabid]][[2]][[2]],
+							hscale = as.numeric(tclvalue(tkget(spinH))),
+							vscale = as.numeric(tclvalue(tkget(spinV))))
 				tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
 			}
 		}
@@ -327,9 +329,10 @@ QcCmdBut <- function(stateReplaceAll){
 				assign("shpf", shpf, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
 				assign("dem", dem, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
 				assign("rfedat", rfedat, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
-				refreshPlot1(W = AllOpenTabData[[tabid]][[2]][[1]], img = AllOpenTabData[[tabid]][[2]][[2]],
-				hscale = as.numeric(tclvalue(tkget(spinH))), vscale = as.numeric(tclvalue(tkget(spinV))))
-
+				refreshPlot1(W = AllOpenTabData[[tabid]][[2]][[1]],
+							img = AllOpenTabData[[tabid]][[2]][[2]],
+							hscale = as.numeric(tclvalue(tkget(spinH))),
+							vscale = as.numeric(tclvalue(tkget(spinV))))
 				tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
 			}
 		}
@@ -353,8 +356,10 @@ QcCmdBut <- function(stateReplaceAll){
 				assign("shpf", shpf, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
 				assign("dem", dem, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
 				assign("rfedat", rfedat, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
-				refreshPlot1(W = AllOpenTabData[[tabid]][[2]][[1]], img = AllOpenTabData[[tabid]][[2]][[2]],
-				hscale = as.numeric(tclvalue(tkget(spinH))), vscale = as.numeric(tclvalue(tkget(spinV))))
+				refreshPlot1(W = AllOpenTabData[[tabid]][[2]][[1]],
+							img = AllOpenTabData[[tabid]][[2]][[2]],
+							hscale = as.numeric(tclvalue(tkget(spinH))),
+							vscale = as.numeric(tclvalue(tkget(spinV))))
 				tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
 			}
 		}
@@ -382,8 +387,10 @@ QcCmdBut <- function(stateReplaceAll){
 					assign("shpf", shpf, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
 					assign("dem", dem, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
 					assign("rfedat", rfedat, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
-					refreshPlot1(W = AllOpenTabData[[tabid]][[2]][[1]], img = AllOpenTabData[[tabid]][[2]][[2]],
-					hscale = as.numeric(tclvalue(tkget(spinH))), vscale = as.numeric(tclvalue(tkget(spinV))))
+					refreshPlot1(W = AllOpenTabData[[tabid]][[2]][[1]],
+								img = AllOpenTabData[[tabid]][[2]][[2]],
+								hscale = as.numeric(tclvalue(tkget(spinH))),
+								vscale = as.numeric(tclvalue(tkget(spinV))))
 					tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
 				}
 			}
@@ -411,8 +418,10 @@ QcCmdBut <- function(stateReplaceAll){
 					assign("shpf", shpf, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
 					assign("dem", dem, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
 					assign("rfedat", rfedat, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
-					refreshPlot1(W = AllOpenTabData[[tabid]][[2]][[1]], img = AllOpenTabData[[tabid]][[2]][[2]],
-					hscale = as.numeric(tclvalue(tkget(spinH))), vscale = as.numeric(tclvalue(tkget(spinV))))
+					refreshPlot1(W = AllOpenTabData[[tabid]][[2]][[1]],
+								img = AllOpenTabData[[tabid]][[2]][[2]],
+								hscale = as.numeric(tclvalue(tkget(spinH))),
+								vscale = as.numeric(tclvalue(tkget(spinV))))
 					tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
 				}
 			}
@@ -440,8 +449,10 @@ QcCmdBut <- function(stateReplaceAll){
 					assign("shpf", shpf, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
 					assign("dem", dem, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
 					assign("rfedat", rfedat, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
-					refreshPlot1(W = AllOpenTabData[[tabid]][[2]][[1]], img = AllOpenTabData[[tabid]][[2]][[2]],
-					hscale = as.numeric(tclvalue(tkget(spinH))), vscale = as.numeric(tclvalue(tkget(spinV))))
+					refreshPlot1(W = AllOpenTabData[[tabid]][[2]][[1]],
+								img = AllOpenTabData[[tabid]][[2]][[2]],
+								hscale = as.numeric(tclvalue(tkget(spinH))),
+								vscale = as.numeric(tclvalue(tkget(spinV))))
 					tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
 				}
 			}
