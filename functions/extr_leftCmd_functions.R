@@ -670,14 +670,6 @@ ExtractDataPanelCmd <- function(){
 
 	tkconfigure(excute.tab4, command = function(){
 		# #si utiliser avec Run toolbar button ( <<- ) and initialize
-		# retExtractParams <- c(tclvalue(file.period), tclvalue(dirNetCDF), tclvalue(netCDFff), tclvalue(Admin_shp),
-		# tclvalue(Admin_var),	tclvalue(istart_yrs), tclvalue(istart_mon), tclvalue(istart_day), tclvalue(iend_yrs),
-		# tclvalue(iend_mon), tclvalue(iend_day), tclvalue(output_TSformat), tclvalue(start_mois), tclvalue(end_mois),
-		# tclvalue(aggrFun), tclvalue(MissFrac), tclvalue(area_type), tclvalue(minlonRect), tclvalue(maxlonRect),
-		# tclvalue(minlatRect), tclvalue(maxlatRect), tclvalue(namePoly), tclvalue(spatAverage), tclvalue(file.save1),
-		# tclvalue(ChoixOutType), if(is.null(EnvMultiPP$multiptspoly)) NA else EnvMultiPP$multiptspoly, 
-		# tclvalue(calc.anomaly), tclvalue(calc.stanomaly), tclvalue(calc.climato),  tclvalue(pmLon), tclvalue(pmLat)) 
-
  		retExtractParams <- list(freq = tclvalue(file.period),
 					out.ts = tclvalue(output_TSformat),
 					ncdat = list(dir = tclvalue(dirNetCDF), format = tclvalue(netCDFff)),
@@ -696,12 +688,11 @@ ExtractDataPanelCmd <- function(){
 					out.type = tclvalue(ChoixOutType),
 					outdir = tclvalue(file.save1))
 
-assign('retExtractParams', retExtractParams, envir = .GlobalEnv)
-
+# assign('retExtractParams', retExtractParams, envir = .GlobalEnv)
 
 		tkconfigure(main.win, cursor = 'watch')
-		tcl('update')
 		InsertMessagesTxt(main.txt.out, "Extraction.................")
+		tcl('update')
 		ret <- tryCatch(getExtractDataFun(retExtractParams),
 		#warning = function(w) warningFun(w),
 		error = function(e) errorFun(e),
