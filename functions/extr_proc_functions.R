@@ -11,16 +11,16 @@ getExtractDataFun <- function(retExtractParams){
 				xanom <- round(comp.fun(xanom[,2], xadaty), 1)
 				xanom <- data.frame(Date = xadaty, Values = xanom)
 				xanom <- xanom[as.numeric(substr(xadaty, 5, 6))%in%id.mois, , drop = FALSE]
-				xanom[is.na(xanom[, 2]), 2] <- -9999
+				xanom[is.na(xanom[, 2]) | is.nan(xanom[, 2]), 2] <- -9999
 			}else{
 				if(period1 == 'yearly'){
 					xanom[, 2] <- as.numeric(xanom[, 2])
 					xanom[, 2] <- round(xanom[, 2]-mean(xanom[, 2], na.rm = TRUE), 1)
-					xanom[is.na(xanom[, 2]), 2] <- -9999		
+					xanom[is.na(xanom[, 2]) | is.nan(xanom[, 2]), 2] <- -9999
 				}else{
 					xanom[, 3] <- as.numeric(xanom[, 3])
 					xanom[, 3] <- round(xanom[, 3]-mean(xanom[, 3], na.rm = TRUE), 1)
-					xanom[is.na(xanom[, 3]), 3] <- -9999
+					xanom[is.na(xanom[, 3]) | is.nan(xanom[, 3]), 3] <- -9999
 				}
 			}
 			writeFiles(xanom, out2sav.anom)
@@ -36,18 +36,18 @@ getExtractDataFun <- function(retExtractParams){
 				xstanom <- comp.fun(xstanom[,2], xadaty)
 				xstanom <- data.frame(Date = xadaty, Values = round(xstanom, 2))
 				xstanom <- xstanom[as.numeric(substr(xadaty, 5, 6))%in%id.mois, , drop = FALSE]
-				xstanom[is.na(xstanom[, 2]), 2] <- -9999
+				xstanom[is.na(xstanom[, 2]) | is.nan(xstanom[, 2]), 2] <- -9999
 			}else{
 				if(period1 == 'yearly'){
 					xstanom[, 2] <- as.numeric(xstanom[, 2])
 					xstanom[, 2] <- (xstanom[, 2]-mean(xstanom[, 2], na.rm = TRUE))/sd(xstanom[, 2], na.rm = TRUE)
 					xstanom[, 2] <- round(xstanom[, 2], 2)
-					xstanom[is.na(xstanom[, 2]), 2] <- -9999
+					xstanom[is.na(xstanom[, 2]) | is.nan(xstanom[, 2]), 2] <- -9999
 				}else{
 					xstanom[, 3] <- as.numeric(xstanom[, 3])
 					xstanom[, 3] <- (xstanom[, 3]-mean(xstanom[, 3], na.rm = TRUE))/sd(xstanom[, 3], na.rm = TRUE)
 					xstanom[, 3] <- round(xstanom[, 3], 2)
-					xstanom[is.na(xstanom[, 3]), 3] <- -9999
+					xstanom[is.na(xstanom[, 3]) | is.nan(xstanom[, 3]), 3] <- -9999
 				}
 			}
 			writeFiles(xstanom, out2sav.stanom)
@@ -76,7 +76,7 @@ getExtractDataFun <- function(retExtractParams){
 					xclim <- data.frame(Season = as.character(xclim[1, 1]), Values = round(xclimv, 1))
 				}
 			}
-			xclim[is.na(xclim[, 2]), 2] <- -99
+			xclim[is.na(xclim[, 2]) | is.nan(xclim[, 2]), 2] <- -99
 			writeFiles(xclim, out2sav.clim)
 		}
 	}
@@ -98,7 +98,7 @@ getExtractDataFun <- function(retExtractParams){
 				xanom <- t(t(xanom)-apply(xanom, 2, mean, na.rm = TRUE))
 				xtmp[-(1:3), -1] <- round(xanom, 1)
 			}
-			xtmp[is.na(xtmp)] <- -9999
+			xtmp[is.na(xtmp) | is.nan(xtmp)] <- -9999
 			writeFiles(xtmp, out2sav.anom)
 		}
 
@@ -116,7 +116,7 @@ getExtractDataFun <- function(retExtractParams){
 				xstanom <- t((t(xstanom)-apply(xstanom, 2, mean, na.rm = TRUE))/apply(xstanom, 2, sd, na.rm = TRUE))
 				xtmp[-(1:3), -1] <- round(xstanom, 2)
 			}
-			xtmp[is.na(xtmp)] <- -9999
+			xtmp[is.na(xtmp) | is.nan(xtmp)] <- -9999
 			writeFiles(xstanom, out2sav.stanom)
 		}
 
@@ -141,7 +141,7 @@ getExtractDataFun <- function(retExtractParams){
 				if(period1 == 'yearly') xclim[4, 1] <- 'Yearly.mean'
 				else xclim[4, 1] <- strsplit(xclim[4, 1],'-')[[1]][1]
 			}
-			xclim[is.na(xclim)] <- -99
+			xclim[is.na(xclim) | is.nan(xclim)] <- -99
 			writeFiles(xclim, out2sav.clim)
 		}
 	}
@@ -163,7 +163,7 @@ getExtractDataFun <- function(retExtractParams){
 				rm(cmoy)
 			}
 			xRVAL <- lapply(xRVAL, function(x){
-				x[is.na(x)] <- -9999
+				x[is.na(x) | is.nan(x)] <- -9999
 				x
 			})
 			fileout.anom <- file.path(dirname(fileout), paste('Anomalies_', basename(fileout), sep = ''))
@@ -185,7 +185,7 @@ getExtractDataFun <- function(retExtractParams){
 					rm(cmoy, csd)
 			}
 			xRVAL <- lapply(xRVAL, function(x){
-				x[is.na(x)] <- -9999
+				x[is.na(x) | is.nan(x)] <- -9999
 				x
 			})
 			fileout.stanom <- file.path(dirname(fileout), paste('StandardizedAnomalies_', basename(fileout), sep = ''))
@@ -219,11 +219,11 @@ getExtractDataFun <- function(retExtractParams){
 			}
 			if(is.list(xRVAL)){
 				xRVAL <- lapply(xRVAL, function(x){
-					x[is.na(x)] <- -99
+					x[is.na(x) | is.nan(x)] <- -99
 					x
 				})
 			}else{
-				xRVAL[is.na(xRVAL)] <- -99
+				xRVAL[is.na(xRVAL) | is.nan(xRVAL)] <- -99
 			}
 			writeFilesListData(xRVAL, daty, capdate, fileout.clim, out2sav.clim)
 		}
