@@ -8,11 +8,12 @@ cmd.frame <- tkframe(panel.left, relief = 'groove', bd = 2)
 lcmd.frame <- cmd.frame
 
 ##### List open files 
-scr.opfiles <- tkscrollbar(frame.opfiles, repeatinterval = 5, command = function(...)tkyview(all.opfiles,...))
-all.opfiles <- tklistbox(frame.opfiles, selectmode = "single", height = 5, width = w.opfiles, selectbackground = "yellow", selectforeground = "blue", background = "white",
-						 yscrollcommand = function(...)tkset(scr.opfiles,...))
+scr.opfiles <- tkscrollbar(frame.opfiles, repeatinterval = 5, command = function(...) tkyview(all.opfiles, ...))
+all.opfiles <- tklistbox(frame.opfiles, selectmode = "single", height = 5, width = w.opfiles,
+						 selectbackground = "yellow", selectforeground = "blue", background = "white",
+						 yscrollcommand = function(...) tkset(scr.opfiles, ...))
 ###
-tkgrid(all.opfiles, row = 0, column = 0, sticky = "n")
+tkgrid(all.opfiles, row = 0, column = 0, sticky = "nwe")
 tkgrid(scr.opfiles, row = 0, column = 1, rowspan = 4, sticky = "ns")
 tkgrid.columnconfigure(all.opfiles, 0, weight = 1)
 
@@ -61,7 +62,7 @@ tkgrid.columnconfigure(stn.choix.cb, 0, weight = 1)
 tkgrid(frame.opfiles, sticky = 'nwe')
 tkgrid(choixStn.frame, sticky = 'nwe', pady = 5)
 tkgrid.columnconfigure(frame.opfiles, 0, weight = 1)
-for(i in 0:3)  tkgrid.columnconfigure(choixStn.frame, i, weight = 1)
+for(i in 0:3) tkgrid.columnconfigure(choixStn.frame, i, weight = 1)
 
 #####**************************** RIGHT ************************######
 ##Onglet right panel
