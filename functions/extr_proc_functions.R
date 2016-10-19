@@ -33,7 +33,7 @@ getExtractDataFun <- function(retExtractParams){
 				comp.fun <- paste('standard', period1, sep = '.')
 				comp.fun <- match.fun(comp.fun)
 				xadaty <- as.character(xstanom[, 1])
-				xstanom <- comp.fun(xstanom[,2], xadaty)
+				xstanom <- comp.fun(xstanom[, 2], xadaty)
 				xstanom <- data.frame(Date = xadaty, Values = round(xstanom, 2))
 				xstanom <- xstanom[as.numeric(substr(xadaty, 5, 6))%in%id.mois, , drop = FALSE]
 				xstanom[is.na(xstanom[, 2]) | is.nan(xstanom[, 2]), 2] <- -9999
@@ -407,12 +407,17 @@ getExtractDataFun <- function(retExtractParams){
 	}
 
 	if(extType == 'Polygon'){
-		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-		jfile <- which(all.open.file == shpfl)
-		if(AllOpenFilesType[[jfile]] == "shp"){
-			shpf <- AllOpenFilesData[[jfile]][[2]]
-			regOI <- shpf[as.character(shpf@data[, shpId]) == polyName, ]
+		shpf <- getShpOpenData(shpfl)[[2]]
+		if(!is.null(shpf)){
+			shpf.union <- unionSpatialPolygons(shpf, as.character(shpf@data[, shpId]))
+			shpf.df <- aggregate(as(shpf, "data.frame")[, 1], list(as.character(shpf@data[, shpId])), identity)
+			shpf.df$x <- seq(shpf.union)
+			row.names(shpf.df) <- sapply(slot(shpf.union, "polygons"), function(x) slot(x, "ID"))
+			shpf.union <- SpatialPolygonsDataFrame(shpf.union, shpf.df)
+			regOI <- shpf.union[as.character(shpf.union@data$Group.1) == polyName, ]
 			bbxregOI <- bbox(regOI)
+			# regOI <- shpf[as.character(shpf@data[, shpId]) == polyName, ]
+			# bbxregOI <- bbox(regOI)
 		}else{
 			InsertMessagesTxt(main.txt.out, "Ceci ne devrait pas se produire", format = TRUE)
 			return(NULL)
@@ -432,15 +437,24 @@ getExtractDataFun <- function(retExtractParams){
 		}
 
 		if(extType == 'Multiple Polygons'){
-			all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-			jfile <- which(all.open.file == shpfl)
-			if(AllOpenFilesType[[jfile]] == "shp"){
-				shpf <- AllOpenFilesData[[jfile]][[2]]
+			shpf <- getShpOpenData(shpfl)[[2]]
+			if(!is.null(shpf)){
 				multiptspoly <- str_trim(multiptspoly)
-				regOI <- shpf[as.character(shpf@data[,shpId])%in%multiptspoly, ]
+				##
+				shpf.union <- unionSpatialPolygons(shpf, as.character(shpf@data[, shpId]))
+				# shpf.union <- gUnaryUnion(shpf, as.character(shpf@data[, shpId]))
+				shpf.df <- aggregate(as(shpf, "data.frame")[, 1], list(as.character(shpf@data[, shpId])), identity)
+				shpf.df$x <- seq(shpf.union)
+				row.names(shpf.df) <- sapply(slot(shpf.union, "polygons"), function(x) slot(x, "ID"))
+				shpf.union <- SpatialPolygonsDataFrame(shpf.union, shpf.df)
+				regOI <- shpf.union[as.character(shpf.union@data$Group.1)%in%multiptspoly, ]
 				bbxregOI <- bbox(regOI)
-				headinfo <- cbind(as.character(regOI@data[, shpId]), round(coordinates(regOI), 5))
-				headinfo[, 1] <- gsub(' ', '.', headinfo[, 1])
+				headinfo <- cbind(as.character(regOI@data$Group.1), round(coordinates(regOI), 5))
+				headinfo[, 1] <- str_replace_all(headinfo[, 1], "[^[:alnum:]]", ".")
+				# regOI <- shpf[as.character(shpf@data[, shpId])%in%multiptspoly, ]
+				# bbxregOI <- bbox(regOI)
+				# headinfo <- cbind(as.character(regOI@data[, shpId]), round(coordinates(regOI), 5))
+				# headinfo[, 1] <- str_replace_all(headinfo[, 1], "[^[:alnum:]]", ".")
 			}else{
 				InsertMessagesTxt(main.txt.out, "Ceci ne devrait pas se produire", format = TRUE)
 				return(NULL)
@@ -463,6 +477,7 @@ getExtractDataFun <- function(retExtractParams){
 	nc <- nc_open(ncpath[existFl][1])
 	xlon <- nc$dim[[1]]$vals
 	xlat <- nc$dim[[2]]$vals
+	xval <- ncvar_get(nc, varid = nc$var[[1]]$name)
 	nc_close(nc)
 
 	if(extType == 'Point'){
@@ -498,7 +513,6 @@ getExtractDataFun <- function(retExtractParams){
 			InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
 			return(NULL)
 		}
-
 		ilaL <- which(ila)
 		if(ilaL[1] > 1) ila[ilaL[1]-1] <- TRUE
 		if(ilaL[length(ilaL)] < length(ila)) ila[ilaL[length(ilaL)]+1] <- TRUE
@@ -534,12 +548,21 @@ getExtractDataFun <- function(retExtractParams){
 			InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
 			return(NULL)
 		}
-
 		rlon <- xlon[ilo]
 		rlat <- xlat[ila]
+
+		# sptNC <- expand.grid(x = rlon, y = rlat)
+		# coordinates(sptNC) <- ~x+y
+		# idmat <- lapply(seq_along(regOI), function(j) matrix(over(sptNC, geometry(regOI[j,])), nrow = length(rlon), ncol = length(rlat)))
+
+		rval <- xval[ilo, ila]
+		rval[] <- 1:prod(dim(rval))
 		sptNC <- expand.grid(x = rlon, y = rlat)
 		coordinates(sptNC) <- ~x+y
-		idmat <- lapply(seq_along(regOI), function(j) matrix(over(sptNC, geometry(regOI[j,])), nrow = length(rlon), ncol = length(rlat)))
+		sptNC <- SpatialPixels(points = sptNC, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
+		sptNC$z <- c(rval)
+		sptNC <- raster(sptNC)
+		idmat <- extract(sptNC, regOI, weights = TRUE, normalizeWeights = TRUE, cellnumbers = TRUE)
 	}else{
 		if(extType == 'Rectangle'){
 			ilo <- xlon >= xminLon & xlon <= xmaxLon
@@ -548,7 +571,6 @@ getExtractDataFun <- function(retExtractParams){
 				InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
 				return(NULL)
 			}
-
 			rlon <- xlon[ilo]
 			rlat <- xlat[ila]
 		}
@@ -559,55 +581,125 @@ getExtractDataFun <- function(retExtractParams){
 				InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
 				return(NULL)
 			}
-
 			rlon <- xlon[ilo]
 			rlat <- xlat[ila]
+
+			# sptNC <- expand.grid(x = rlon, y = rlat)
+			# coordinates(sptNC) <- ~x+y
+			# idmat <- matrix(over(sptNC, geometry(regOI)), nrow = length(rlon), ncol = length(rlat))
+
+			rval <- xval[ilo, ila]
+			rval[] <- 1:prod(dim(rval))
+			w.pix <- id.pix <- rval
+			w.pix[] <- id.pix[] <- NA
 			sptNC <- expand.grid(x = rlon, y = rlat)
 			coordinates(sptNC) <- ~x+y
-			idmat <- matrix(over(sptNC, geometry(regOI)), nrow = length(rlon), ncol = length(rlat))
+			sptNC <- SpatialPixels(points = sptNC, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
+			sptNC$z <- c(rval)
+			sptNC <- raster(sptNC)
+			idmat <- extract(sptNC, regOI, weights = TRUE, normalizeWeights = TRUE, cellnumbers = TRUE)
+			id.pix[idmat[[1]][, 2]] <- idmat[[1]][, 2]
+			w.pix[idmat[[1]][, 2]] <- idmat[[1]][, 3]
+			idmat <- list(id = id.pix, weight = w.pix)
 		}
 	}
 
 	######################
 
-	RVAL <- vector(mode = 'list', length = length(ncpath))
+	# RVAL <- vector(mode = 'list', length = length(ncpath))
+	# for(fl in seq_along(ncpath)){
+	# 	if(!existFl[fl]) next
+	# 	nc <- nc_open(ncpath[fl])
+	# 	xval <- ncvar_get(nc, varid = nc$var[[1]]$name)
+	# 	nc_close(nc)
+	# 	rval <- xval[ilo, ila]
 
-	for(fl in seq_along(ncpath)){
-		if(!existFl[fl]) next
+	# 	if(extType == 'Point'){
+	# 		if(!any(ilola)) rval <- NA
+	# 		else{
+	# 			if(length(ilo) > 1) rval <- mean(diag(rval), na.rm = TRUE)
+	# 		}
+	# 		RVAL[[fl]] <- rval
+	# 	}else if(extType == 'Multiple Points'){
+	# 		if(pmLon > 0 | pmLat > 0){
+	# 			RVAL[[fl]] <- tapply(rval[pts.w.voisin$ijv], pts.w.voisin$j, mean, na.rm = TRUE)
+	# 		}else{
+	# 			RVAL[[fl]] <- rval[unname(over(pts.loc, geometry(sptNC)))]
+	# 		}
+	# 	}else if(extType == 'Multiple Polygons'){
+	# 		# RVAL[[fl]] <- sapply(seq_along(idmat), function(j) round(mean(rval[!is.na(idmat[[j]])], na.rm = TRUE), 1))
+	# 		RVAL[[fl]] <- sapply(idmat, function(x) if(!is.null(x)) round(sum(rval[x[, 2]]*x[, 3], na.rm = TRUE), 1) else NA)
+	# 	}else{
+	# 		if(extType == 'Rectangle'){
+	# 			if(spAvrg == '1'){
+	# 				rval <- round(mean(rval, na.rm = TRUE), 1)
+	# 				rval <- if(is.nan(rval)) NA else rval
+	# 			}
+	# 		}
+	# 		if(extType == 'Polygon'){
+	# 			# rval[is.na(idmat)] <- NA
+	# 			rval[is.na(idmat$id)] <- NA
+	# 			if(spAvrg == '1'){
+	# 				# rval <- round(mean(rval, na.rm = TRUE), 1)
+	# 				rval <- round(sum(rval*idmat$weight, na.rm = TRUE))
+	# 				rval <- if(is.nan(rval)) NA else rval
+	# 			}	
+	# 		}
+	# 		RVAL[[fl]] <- rval
+	# 	}
+	# }
+
+	if(doparallel & length(ncpath[existFl]) >= 90){
+		klust <- makeCluster(nb_cores)
+		registerDoParallel(klust)
+		`%parLoop%` <- `%dopar%`
+		closeklust <- TRUE
+	}else{
+		`%parLoop%` <- `%do%`
+		closeklust <- FALSE
+	}
+	NCDATA <- foreach(fl = seq_along(ncpath), .packages = 'ncdf4',
+					.export = c('ncpath', 'existFl')) %parLoop% {
+		if(!existFl[fl]) return(NULL)
 		nc <- nc_open(ncpath[fl])
 		xval <- ncvar_get(nc, varid = nc$var[[1]]$name)
 		nc_close(nc)
+		return(xval)
+	}
+	if(closeklust) stopCluster(klust)
 
+	######################
+
+	RVAL <- lapply(NCDATA, function(xval){
+		if(is.null(xval)) return(NULL)
+		rval <- xval[ilo, ila]
 		if(extType == 'Point'){
 			if(!any(ilola)) rval <- NA
 			else{
-				if(length(ilo) > 1) rval <- mean(diag(xval[ilo, ila]), na.rm = TRUE)
-				else rval <- xval[ilo, ila]
+				if(length(ilo) > 1) rval <- mean(diag(rval), na.rm = TRUE)
 			}
-			RVAL[[fl]] <- rval
 		}else if(extType == 'Multiple Points'){
-			rval <- xval[ilo, ila]
-			if(pmLon > 0 | pmLat > 0){
-				RVAL[[fl]] <- tapply(rval[pts.w.voisin$ijv], pts.w.voisin$j, mean, na.rm = TRUE)
-			}else{
-				RVAL[[fl]] <- rval[unname(over(pts.loc, geometry(sptNC)))]
-			}
+			if(pmLon > 0 | pmLat > 0) rval <- tapply(rval[pts.w.voisin$ijv], pts.w.voisin$j, mean, na.rm = TRUE)
+			else rval <- rval[unname(over(pts.loc, geometry(sptNC)))]
 		}else if(extType == 'Multiple Polygons'){
-			rval <- xval[ilo, ila]
-			RVAL[[fl]] <- sapply(seq_along(idmat), function(j) round(mean(rval[!is.na(idmat[[j]])], na.rm = TRUE), 1))
+			rval <- sapply(idmat, function(x) if(!is.null(x)) round(sum(rval[x[, 2]]*x[, 3], na.rm = TRUE), 1) else NA)
 		}else{
-			if(extType == 'Rectangle') rval <- xval[ilo, ila]
+			if(extType == 'Rectangle'){
+				if(spAvrg == '1'){
+					rval <- round(mean(rval, na.rm = TRUE), 1)
+					rval <- if(is.nan(rval)) NA else rval
+				}
+			}
 			if(extType == 'Polygon'){
-				rval <- xval[ilo, ila]
-				rval[is.na(idmat)] <- NA
+				rval[is.na(idmat$id)] <- NA
+				if(spAvrg == '1'){
+					rval <- round(sum(rval*idmat$weight, na.rm = TRUE))
+					rval <- if(is.nan(rval)) NA else rval
+				}	
 			}
-			if(spAvrg == '1'){
-				rval <- round(mean(rval, na.rm = TRUE), 1)
-				rval <- if(is.nan(rval)) NA else rval
-			}
-			RVAL[[fl]] <- rval
 		}
-	}
+		return(rval)
+	})
 
 	######################################################################################################
 

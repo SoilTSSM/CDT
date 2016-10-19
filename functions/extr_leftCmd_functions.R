@@ -69,7 +69,7 @@ ExtractDataPanelCmd <- function(){
 	cbSHP.tab1 <- ttkcombobox(subfr1, values = unlist(listOpenFiles), textvariable = Admin_shp, width = largeur)
 	btSHP.tab1 <- tkbutton(subfr1, text = "...")
 	lab3.tab1 <- tklabel(subfr1, text = "Attribute field to be used and displayed", anchor = 'w', justify = 'left')
-	adminVar.tab1 <<- ttkcombobox(subfr1, values='', textvariable = Admin_var)
+	adminVar.tab1 <<- ttkcombobox(subfr1, values = '', textvariable = Admin_var)
 	
 	sep3.tab1 <- ttkseparator(subfr1)
 	open.tab1 <- tkbutton(subfr1, text = "Open Attribute Table")

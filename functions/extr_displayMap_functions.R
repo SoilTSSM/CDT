@@ -183,6 +183,7 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 				if(!is.na(admin_name)){
 					tclvalue(namePoly) <<- as.character(admin_name)
 					selectedPolygon <<- getBoundaries(shpf[shpf@data[, ids] == tclvalue(namePoly), ])
+					# selectedPolygon <<- rbind(selectedPolygon, rbind(getBoundaries(shpf[shpf@data[, ids] == tclvalue(namePoly), ]), c(NA, NA)))	
 				}else{
 					selectedPolygon <<- NULL
 				}

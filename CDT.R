@@ -80,27 +80,11 @@ if(tclPath$UseOtherTclTk == 1){
 }
 
 #########Load library
-library(tcltk)
-library(tkrplot)
-library(grid)
-library(lattice)
-library(latticeExtra)
-library(sp)
-library(ncdf4)
-library(gmt)
-library(fields)
-library(gstat)
-library(automap)
-library(reshape2)
-library(compiler)
-library(parallel)
-library(foreach)
-library(doParallel)
-library(raster)
-library(rgeos)
-library(rgdal)
-library(maptools)
-library(RCurl)
+
+packages <- list('tcltk', 'tkrplot', 'grid', 'lattice', 'latticeExtra', 'sp', 'ncdf4', 'gmt', 'fields',
+	'gstat', 'automap', 'reshape2', 'compiler', 'parallel', 'foreach', 'doParallel',
+	'raster', 'rgeos', 'rgdal', 'maptools', 'RCurl')
+ret.pkgs <- sapply(packages, library, character.only = TRUE, logical.return = TRUE)
 #compilePKGS(enable = TRUE)
 #enableJIT(3)
 
@@ -108,8 +92,6 @@ nb_cores <- detectCores()-1
 doparallel <- if(nb_cores < 2) FALSE else TRUE
 # `%parLoop%` <- if(nb_cores<2) `%do%` else `%dopar%`
 options(warn = -1)
-
-#######################
 
 if (Sys.info()["sysname"] == "Windows"){
 	is.noImg <- tclRequire("Img")
@@ -119,30 +101,40 @@ if (Sys.info()["sysname"] == "Windows"){
 	}
 }
 
-source(file.path(apps.dir, 'functions', 'cdtConfiguration_function.R'))
-confpath <- file.path(apps.dir, 'configure', 'configure_user.json')
+############
 
-if(file.exists(confpath)){
-	conffile <- fromJSON(confpath)
-	workdir <- str_trim(conffile$working.directory)
-	if(file.exists(workdir)) setwd(workdir)
-	else{
-		workdir <- path.expand('~')
-		setwd(workdir)
-		conffile$working.directory <- workdir
-		write_json(conffile, confpath)
-	}
-	if(!file.exists(str_trim(conffile$Tktable.path)) | !file.exists(str_trim(conffile$Bwidget.path))){
-		configCDT()
+
+# Start.CDT.GUI <- function(){
+
+	source(file.path(apps.dir, 'functions', 'cdtConfiguration_function.R'))
+	confpath <- file.path(apps.dir, 'configure', 'configure_user.json')
+
+	if(file.exists(confpath)){
+		conffile <- fromJSON(confpath)
+		workdir <- str_trim(conffile$working.directory)
+		if(file.exists(workdir)) setwd(workdir)
+		else{
+			workdir <- path.expand('~')
+			setwd(workdir)
+			conffile$working.directory <- workdir
+			write_json(conffile, confpath)
+		}
+		if(!file.exists(str_trim(conffile$Tktable.path)) | !file.exists(str_trim(conffile$Bwidget.path))){
+			configCDT()
+		}else{
+			addTclPath(path = str_trim(conffile$Tktable.path))
+			addTclPath(path = str_trim(conffile$Bwidget.path))
+			tclRequire("Tktable")
+			tclRequire("BWidget")
+		}
 	}else{
-		addTclPath(path = str_trim(conffile$Tktable.path))
-		addTclPath(path = str_trim(conffile$Bwidget.path))
-		tclRequire("Tktable")
-		tclRequire("BWidget")
+		configCDT()
 	}
-}else{
-	configCDT()
-}
-source(file.path(apps.dir, 'functions', 'cdtMain_window.R', fsep = .Platform$file.sep))
+	source(file.path(apps.dir, 'functions', 'cdtMain_window.R', fsep = .Platform$file.sep))
+
+
+# }
+# ############
+# retCDT <- Start.CDT.GUI()
 
 
