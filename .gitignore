@@ -22,7 +22,7 @@ vignettes/*.pdf
 # Init config
 configure/RHtestsV4_User_Agreement
 configure/configure_user.json
-country/Mali/Climatological_MeanBias_RainDek
+country/Mali
 R_Data
 
 # OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
