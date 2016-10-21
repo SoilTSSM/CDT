@@ -363,7 +363,7 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 						names(limControl) <- c('Station ID', 'Upper Bounds', 'Lon', 'Lat')
 						GeneralParameters$parameter[[2]] <- limControl
 						#GeneralParameters$parameter[[2]] <- getRainInitParams0(donstn, GeneralParameters$period)
-						stn.choix <- as.character(donstn$id)
+						lchoixStnFr$env$stn.choix <- as.character(donstn$id)
 						xycrds <- paste(c(as.character(donstn$lon), as.character(donstn$lat)), sep = '', collapse = ' ')
 					}else tkwait.window(tt)
 				}else{
@@ -377,8 +377,8 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 						if(GeneralParameters$period == "daily") valup <- 300
 						if(GeneralParameters$period == "dekadal") valup <- 1000
 						if(GeneralParameters$period == "monthly") valup <- 3000
-						stn.choix <- getf.no.ext(tclvalue(file.choix1))
-						limControl <- data.frame(stn.choix, valup)
+						lchoixStnFr$env$stn.choix <- getf.no.ext(tclvalue(file.choix1))
+						limControl <- data.frame(lchoixStnFr$env$stn.choix, valup)
 						names(limControl) <- c('Station ID', 'Upper Bounds')
 						GeneralParameters$parameter[[2]] <- limControl
 					}else tkwait.window(tt)
@@ -386,7 +386,7 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 				}
 				paramsGAL <- list(inputPars = GeneralParameters, dataPars = AllOpenFilesData[[jfile]][3:4], data = donstn)
 				save(paramsGAL, file = fileparams)
-				return(list(paramsGAL, stn.choix, xycrds))
+				return(list(paramsGAL, lchoixStnFr$env$stn.choix, xycrds))
 			}
 
 			######
@@ -395,7 +395,7 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 				if(paramsGAL$inputPars$period == GeneralParameters$period & all(AllOpenFilesData[[jfile]][3:4] %in% paramsGAL$dataPars)){
 					donstn <- paramsGAL$data
 					GeneralParameters$parameter[[2]] <<- paramsGAL$inputPars$parameter[[2]]
-					stn.choix <<- as.character(GeneralParameters$parameter[[2]][, 1])
+					lchoixStnFr$env$stn.choix <<- as.character(GeneralParameters$parameter[[2]][, 1])
 					if(tclvalue(cb.1series.val) == "0"){
 						tclvalue(XYCoordinates) <<- paste(c(as.character(GeneralParameters$parameter[[2]][, 3]),
 									as.character(GeneralParameters$parameter[[2]][, 4])), sep = '', collapse = ' ')
@@ -405,7 +405,7 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 					retDonPar <- getInitDataParams(GeneralParameters)
 					donstn <- retDonPar[[1]]$data
 					GeneralParameters <<- retDonPar[[1]]$inputPars
-					stn.choix <<- retDonPar[[2]]
+					lchoixStnFr$env$stn.choix <<- retDonPar[[2]]
 					if(tclvalue(cb.1series.val) == "0") tclvalue(XYCoordinates) <<- retDonPar[[3]]
 					rm(retDonPar)
 				}
@@ -413,7 +413,7 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 				retDonPar <- getInitDataParams(GeneralParameters)
 				donstn <- retDonPar[[1]]$data
 				GeneralParameters <<- retDonPar[[1]]$inputPars
-				stn.choix <<- retDonPar[[2]]
+				lchoixStnFr$env$stn.choix <<- retDonPar[[2]]
 				if(tclvalue(cb.1series.val) == "0") tclvalue(XYCoordinates) <<- retDonPar[[3]]
 				rm(retDonPar)
 			} 
@@ -424,27 +424,27 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 			##set choix stn
 
 			if(GeneralParameters$retpar == 0){
-				if(stn.choix[1] != '') tclvalue(stn.choix.val) <- stn.choix[1]
-				else tclvalue(stn.choix.val) <- stn.choix[2]
+				if(lchoixStnFr$env$stn.choix[1] != '') tclvalue(lchoixStnFr$env$stn.choix.val) <- lchoixStnFr$env$stn.choix[1]
+				else tclvalue(lchoixStnFr$env$stn.choix.val) <- lchoixStnFr$env$stn.choix[2]
 			}else{
-				istn <- as.numeric(tclvalue(tcl(stn.choix.cb, "current")))+1
+				istn <- as.numeric(tclvalue(tcl(lchoixStnFr$env$stn.choix.cb, "current")))+1
 				if(istn > 0) istn <- istn
 				else istn <- 1
-				tclvalue(stn.choix.val) <- stn.choix[istn]
+				tclvalue(lchoixStnFr$env$stn.choix.val) <- lchoixStnFr$env$stn.choix[istn]
 			}
 			
-			tkconfigure(stn.choix.cb, values = stn.choix, textvariable = stn.choix.val)
+			tkconfigure(lchoixStnFr$env$stn.choix.cb, values = lchoixStnFr$env$stn.choix, textvariable = lchoixStnFr$env$stn.choix.val)
 			if(GeneralParameters$AllOrOne == 'one'){
-				tkconfigure(setting.button, state = 'normal')
+				tkconfigure(lchoixStnFr$env$setting.button, state = 'normal')
 				stateReplaceAll <- 'disabled'
 			} 
 			if(GeneralParameters$AllOrOne == 'all'){
-				tkconfigure(setting.button, state = 'disabled')
+				tkconfigure(lchoixStnFr$env$setting.button, state = 'disabled')
 				stateReplaceAll <- 'normal'
 			} 
 			if(tclvalue(cb.1series.val) == '0'){
-				tkconfigure(stn.choix.prev, state = 'normal')
-				tkconfigure(stn.choix.next, state = 'normal')
+				tkconfigure(lchoixStnFr$env$stn.choix.prev, state = 'normal')
+				tkconfigure(lchoixStnFr$env$stn.choix.next, state = 'normal')
 			}
 			tkconfigure(spinH, state = 'normal')
 			tkconfigure(spinV, state = 'normal')

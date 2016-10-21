@@ -143,24 +143,13 @@ excludeOutStn <- function(parent.win, GeneralParameters){
 			tkmessageBox(message = "Enter the file to save result", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{
-			idsstn <- which(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])) == tclvalue(file.stnfl))
+			idsstn <- getIndex.AllOpenFiles(tclvalue(file.stnfl))
 			if(length(idsstn) == 0){
 				tkmessageBox(message = "File not found or in the wrong format", icon = "warning", type = "ok")
 				tkwait.window(tt)
 			}else{
 				GeneralParameters$file.io$Values <<- c(tclvalue(file.stnfl), tclvalue(file.blkshp), tclvalue(file.save1))
 				GeneralParameters$buffer <<- tclvalue(buffw)
-
-				##set choix stn
-				donstn <- AllOpenFilesData[[idsstn]][[2]]
-				stn.choix <<- as.character(donstn[1,-1])
-
-				tkconfigure(stn.choix.cb, state = 'disabled')
-				tkconfigure(setting.button, state = 'disabled')
-				tkconfigure(stn.choix.prev, state = 'disabled')
-				tkconfigure(stn.choix.next, state = 'disabled')
-				tkconfigure(spinH, state = 'normal')
-				tkconfigure(spinV, state = 'normal')
 
 				####button command
 				if(is.null(lcmd.frame_chk)){

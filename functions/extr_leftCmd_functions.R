@@ -20,6 +20,7 @@ ExtractDataPanelCmd <- function(){
 
 	tknote.cmd <- bwNoteBook(cmd.frame)
 	tkgrid(tknote.cmd, sticky = 'nwes')
+	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "Input")
 	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Time series")
@@ -27,15 +28,24 @@ ExtractDataPanelCmd <- function(){
 	cmd.tab4 <- bwAddTab(tknote.cmd, text = "Output")
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 
+	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab4, 0, weight = 1)
+
+
 	#######################################################################################################
 
 	#Tab1
 	frTab1 <- tkframe(cmd.tab1)
 	tkgrid(frTab1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab1, 0, weight = 1)
 
 	scrw1 <- bwScrolledWindow(frTab1)
 	tkgrid(scrw1)
+	tkgrid.columnconfigure(scrw1, 0, weight = 1)
 	subfr1 <- bwScrollableFrame(scrw1, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr1, 0, weight = 1)
 
 	##############
 	file.period <- tclVar()
@@ -172,10 +182,13 @@ ExtractDataPanelCmd <- function(){
 	#Tab2
 	frTab2 <- tkframe(cmd.tab2) 
 	tkgrid(frTab2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab2, 0, weight = 1)
 
 	scrw2 <- bwScrolledWindow(frTab2)
 	tkgrid(scrw2)
+	tkgrid.columnconfigure(scrw2, 0, weight = 1)
 	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr2, 0, weight = 1)
 
 	##############
 	dayLabTab2_Var <- tclVar('Dek')
@@ -300,10 +313,13 @@ ExtractDataPanelCmd <- function(){
 	#Tab3
 	frTab3 <- tkframe(cmd.tab3)
 	tkgrid(frTab3, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab3, 0, weight = 1)
 
 	scrw3 <- bwScrolledWindow(frTab3)
 	tkgrid(scrw3)
+	tkgrid.columnconfigure(scrw3, 0, weight = 1)
 	subfr3 <- bwScrollableFrame(scrw3, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr3, 0, weight = 1)
 
 	##########################
 	area_type <<- tclVar('Point')
@@ -606,26 +622,29 @@ ExtractDataPanelCmd <- function(){
 	}
 
 	####
-	tkbind(xentr1.tab3,"<FocusIn>", initializeButZoom)
-	tkbind(xentr1.tab3,"<FocusOut>", activateButRedraw)
+	tkbind(xentr1.tab3, "<FocusIn>", initializeButZoom)
+	tkbind(xentr1.tab3, "<FocusOut>", activateButRedraw)
 
-	tkbind(xentr2.tab3,"<FocusIn>", initializeButZoom)
-	tkbind(xentr2.tab3,"<FocusOut>", activateButRedraw)
+	tkbind(xentr2.tab3, "<FocusIn>", initializeButZoom)
+	tkbind(xentr2.tab3, "<FocusOut>", activateButRedraw)
 
-	tkbind(yentr1.tab3,"<FocusIn>", initializeButZoom)
-	tkbind(yentr1.tab3,"<FocusOut>", activateButRedraw)
+	tkbind(yentr1.tab3, "<FocusIn>", initializeButZoom)
+	tkbind(yentr1.tab3, "<FocusOut>", activateButRedraw)
 
-	tkbind(yentr2.tab3,"<FocusIn>", initializeButZoom)
-	tkbind(yentr2.tab3,"<FocusOut>", activateButRedraw)
+	tkbind(yentr2.tab3, "<FocusIn>", initializeButZoom)
+	tkbind(yentr2.tab3, "<FocusOut>", activateButRedraw)
 
 	######################################################################################################
 	#Tab4
 	frTab4 <- tkframe(cmd.tab4)
 	tkgrid(frTab4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab4, 0, weight = 1)
 
 	scrw4 <- bwScrolledWindow(frTab4)
 	tkgrid(scrw4)
+	tkgrid.columnconfigure(scrw4, 0, weight = 1)
 	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr4, 0, weight = 1)
 
 	##########################
 
@@ -1033,6 +1052,8 @@ ExtractDataPanelCmd <- function(){
 	#######################################################################################################
 	tcl('update')
 	tkgrid(cmd.frame, sticky = 'nswe', pady = 5)
+	tkgrid.columnconfigure(cmd.frame, 0, weight = 1)
+
 	######
 	return(cmd.frame)
 }

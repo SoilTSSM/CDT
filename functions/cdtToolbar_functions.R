@@ -179,7 +179,7 @@ tkconfigure(tb.run, state = 'normal', command = function(){
 		return(NULL)
 	}else{
 		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(Execute_All_Functions(tclvalue(stn.choix.val)),
+		ReturnExecResults <<- tryCatch(Execute_All_Functions(tclvalue(lchoixStnFr$env$stn.choix.val)),
 			#warning = function(w) warningFun(w),
 			error = function(e) errorFun(e), finally={
 			tkconfigure(main.win, cursor='')

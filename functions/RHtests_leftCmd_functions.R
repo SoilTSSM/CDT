@@ -1,13 +1,6 @@
 
 RHtestsV4Cmd <- function(){
 
-	if(!is.null(GeneralParameters)){
-		if(GeneralParameters$action == 'rhtests') GeneralParameters <<- GeneralParameters
-		else GeneralParameters <<- init.params('rhtests', 'dekadal')
-	}else GeneralParameters <<- init.params('rhtests', 'dekadal')
-
-	###################
-
 	listOpenFiles <- openFile_ttkcomboList()
 
 	###################
@@ -15,10 +8,10 @@ RHtestsV4Cmd <- function(){
 	largeur <- as.integer(w.scale(21)/sfont0)
 	wncdf_ff <- as.integer(w.scale(14)/sfont0)
 	if(Sys.info()["sysname"] == "Windows"){
-		wscrlwin <- w.scale(18)
+		wscrlwin <- w.scale(20)
 		hscrlwin <- h.scale(30)
 	}else{
-		wscrlwin <- w.scale(21.7)
+		wscrlwin <- w.scale(24)
 		hscrlwin <- h.scale(37)
 	}
 
@@ -27,9 +20,8 @@ RHtestsV4Cmd <- function(){
 	cmd.frame <- tkframe(panel.left)
 
 	tknote.cmd <- bwNoteBook(cmd.frame)
-	plotBut.cmd <- tkframe(cmd.frame)
-	tkgrid(tknote.cmd, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 2)
-	tkgrid(plotBut.cmd, row = 1, column = 1, sticky = 'se', rowspan = 1, columnspan = 1)
+	tkgrid(tknote.cmd, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 1)
+	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "RHtestsV4")
 	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Parameters")
@@ -38,15 +30,23 @@ RHtestsV4Cmd <- function(){
 
 	bwRaiseTab(tknote.cmd, cmd.tab2)
 
+	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab4, 0, weight = 1)
+
 #######################################################################################################
 
 	#Tab1
 	frTab1 <- tkframe(cmd.tab1)
 	tkgrid(frTab1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab1, 0, weight = 1)
 
 	scrw1 <- bwScrolledWindow(frTab1)
 	tkgrid(scrw1)
+	tkgrid.columnconfigure(scrw1, 0, weight = 1)
 	subfr1 <- bwScrollableFrame(scrw1, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr1, 0, weight = 1)
 
 	findU.tab1 <- tkbutton(subfr1, text = "FindU")
 	findUD.tab1 <- tkbutton(subfr1, text = "FindUD")
@@ -95,10 +95,13 @@ RHtestsV4Cmd <- function(){
 	#Tab2
 	frTab2 <- tkframe(cmd.tab2) #,relief = 'sunken', bd = 2
 	tkgrid(frTab2, padx = 5, pady = 5, ipadx = 2, ipady = 2)
+	tkgrid.columnconfigure(frTab2, 0, weight = 1)
 
 	scrw2 <- bwScrolledWindow(frTab2)
 	tkgrid(scrw2)
+	tkgrid.columnconfigure(scrw2, 0, weight = 1)
 	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr2, 0, weight = 1)
 
 	getData.tab2 <- tkbutton(subfr2, text = "Input Data", bg = 'lightgreen')
 
@@ -182,10 +185,13 @@ RHtestsV4Cmd <- function(){
 	#Tab3
 	frTab3 <- tkframe(cmd.tab3) #,relief = 'sunken', bd = 2
 	tkgrid(frTab3, padx = 5, pady = 5, ipadx = 2, ipady = 2)
+	tkgrid.columnconfigure(frTab3, 0, weight = 1)
 
 	scrw3 <- bwScrolledWindow(frTab3)
 	tkgrid(scrw3)
+	tkgrid.columnconfigure(scrw3, 0, weight = 1)
 	subfr3 <- bwScrollableFrame(scrw3, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr3, 0, weight = 1)
 
 	use.rfseries.val <- tclVar(as.character(GeneralParameters$use.ref.series))
 	userefS.tab3 <- tkcheckbutton(subfr3, variable = use.rfseries.val, text = 'Use reference series', anchor = 'w', justify = 'left', bg = 'lightgreen') #,width = largeur1-1
@@ -310,10 +316,13 @@ RHtestsV4Cmd <- function(){
 	#Tab4
 	frTab4 <- tkframe(cmd.tab4) #,relief = 'sunken', bd = 2
 	tkgrid(frTab4, padx = 5, pady = 5, ipadx = 2, ipady = 2)
+	tkgrid.columnconfigure(frTab4, 0, weight = 1)
 
 	scrw4 <- bwScrolledWindow(frTab4)
 	tkgrid(scrw4)
+	tkgrid.columnconfigure(scrw4, 0, weight = 1)
 	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr4, 0, weight = 1)
 
 	preview.tab4 <- tkbutton(subfr4, text = "Output Preview")
 	infobulle(preview.tab4, 'View results <_*Cs.txt > and <_*stat.txt > files')
@@ -639,6 +648,7 @@ tkconfigure(undo.tab4, command = function(){
 
 	tcl('update')
 	tkgrid(cmd.frame, sticky = 'nswe', pady = 5)
+	tkgrid.columnconfigure(cmd.frame, 0, weight = 1)
 	######
 	return(cmd.frame)
 }

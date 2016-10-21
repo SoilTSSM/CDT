@@ -5,7 +5,7 @@ QcOutFormat <- function(){
 			IJstation <- ReturnExecResults$station
 		}
 		if(GeneralParameters$AllOrOne == 'all'){
-			ijstn <- which(as.character(GeneralParameters$parameter[[2]][,1]) == tclvalue(stn.choix.val))
+			ijstn <- which(as.character(GeneralParameters$parameter[[2]][,1]) == tclvalue(lchoixStnFr$env$stn.choix.val))
 			IJoutputdir <- ReturnExecResults$outputdir[[ijstn]]
 			IJstation <- ReturnExecResults$station[[ijstn]]
 		}
@@ -114,7 +114,7 @@ isSpatialCheckOk <- function(){
 		IJstation <- ReturnExecResults$station
 	}
 	if(GeneralParameters$AllOrOne == 'all'){
-		ijstn <- which(as.character(GeneralParameters$parameter[[2]][,1]) == tclvalue(stn.choix.val))
+		ijstn <- which(as.character(GeneralParameters$parameter[[2]][,1]) == tclvalue(lchoixStnFr$env$stn.choix.val))
 		IJoutputdir <- ReturnExecResults$outputdir[[ijstn]]
 		IJstation <- ReturnExecResults$station[[ijstn]]
 	}

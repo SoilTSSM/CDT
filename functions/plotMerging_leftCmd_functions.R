@@ -3,10 +3,10 @@ PlotMergingOutputCmd <- function(){
 	largeur <- as.integer(w.scale(21)/sfont0)
 	wncdf_ff <- as.integer(w.scale(14)/sfont0) 
 	if(Sys.info()["sysname"] == "Windows"){
-		wscrlwin <- w.scale(18)
+		wscrlwin <- w.scale(20)
 		hscrlwin <- h.scale(27)
 	}else{
-		wscrlwin <- w.scale(21.7)  
+		wscrlwin <- w.scale(24)  
 		hscrlwin <- h.scale(34) 
 	}
 
@@ -18,21 +18,29 @@ PlotMergingOutputCmd <- function(){
 	plotBut.cmd <- tkframe(cmd.frame)
 	tkgrid(tknote.cmd, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 3)
 	tkgrid(plotBut.cmd, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 3)
+	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "General")
 	cmd.tab2 <- bwAddTab(tknote.cmd, text = "NetCDF data")
 	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Options")
 	bwRaiseTab(tknote.cmd, cmd.tab1)
+
+	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
 	
 	#######################################################################################################
 
 	#Tab1
 	frTab1 <- tkframe(cmd.tab1)
 	tkgrid(frTab1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab1, 0, weight = 1)
 
 	scrw1 <- bwScrolledWindow(frTab1)
 	tkgrid(scrw1)
+	tkgrid.columnconfigure(scrw1, 0, weight = 1)
 	subfr1 <- bwScrollableFrame(scrw1, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr1, 0, weight = 1)
 
 	##############
 	frameStn <- ttklabelframe(subfr1, text = "Station data file", relief = 'groove')
@@ -194,10 +202,13 @@ PlotMergingOutputCmd <- function(){
 	#Tab2	
 	frTab2 <- tkframe(cmd.tab2)
 	tkgrid(frTab2, padx = 5, pady = 5, ipadx = 2, ipady = 2)
+	tkgrid.columnconfigure(frTab2, 0, weight = 1)
 
 	scrw2 <- bwScrolledWindow(frTab2)
 	tkgrid(scrw2)
+	tkgrid.columnconfigure(scrw2, 0, weight = 1)
 	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr2, 0, weight = 1)
 
 	dataNCDF <- list()
 	#########################
@@ -217,12 +228,15 @@ PlotMergingOutputCmd <- function(){
 	#Tab3	
 	frTab3 <- tkframe(cmd.tab3)
 	tkgrid(frTab3, padx = 5, pady = 5, ipadx = 2, ipady = 2)
+	tkgrid.columnconfigure(frTab3, 0, weight = 1)
 
 	scrw3 <- bwScrolledWindow(frTab3)
 	tkgrid(scrw3)
+	tkgrid.columnconfigure(scrw3, 0, weight = 1)
 	subfr3 <- bwScrollableFrame(scrw3, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr3, 0, weight = 1)
 
-	wPreview <- wscrlwin-10
+	wPreview <- wscrlwin-20
 	nb.color <- tclVar('10')
 	preset.color <- tclVar()
 	tclvalue(preset.color) <- 'tim.colors'

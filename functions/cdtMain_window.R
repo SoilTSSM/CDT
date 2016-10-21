@@ -2,19 +2,45 @@
 
 warningFun <- function(w){
 	txt <- as.character(w)
-	retW <- gsub('[\r\n]','',txt)
+	retW <- gsub('[\r\n]', '', txt)
 	InsertMessagesTxt(main.txt.out, retW, format = TRUE)
 }
 
 errorFun <- function(e){
 	txt <- as.character(e)
-	retE <- gsub('[\r\n]','',txt)
+	retE <- gsub('[\r\n]', '', txt)
 	InsertMessagesTxt(main.txt.out, retE, format = TRUE)
 }
 
 #####**************************** Initialize variables ************************######
 
-source(file.path(apps.dir, 'functions', 'initialize0', fsep = .Platform$file.sep))
+##Onglet and table display
+assign('AllOpenTabData', vector(mode = 'list', length = 0), envir = .GlobalEnv)
+assign('AllOpenTabType', vector(mode = 'list', length = 0), envir = .GlobalEnv)
+
+##Open data
+assign('AllOpenFilesData', vector(mode = 'list', length = 0), envir = .GlobalEnv)
+assign('AllOpenFilesType', vector(mode = 'list', length = 0), envir = .GlobalEnv)
+
+###Input params / return results
+assign('GeneralParameters', NULL, envir = .GlobalEnv)
+assign('ReturnExecResults', NULL, envir = .GlobalEnv)
+
+##Initialization status bars 1
+assign('TextOutputVar', tclVar(), envir = .GlobalEnv)
+
+###coordinates from cdt data on qc (use to initialize bbox of plot spatial check)
+assign('XYCoordinates', tclVar(), envir = .GlobalEnv)
+
+####Homog adj initialization (a changer en envir)
+adjDon <- NULL
+
+###Left panel initialization
+assign('lcmd.frame', NULL, envir = .GlobalEnv)
+lcmd.container <- list('lcmd.frame_homo', 'lcmd.frame_qc', 'lcmd.frame_chk', 'lcmd.frame_extrdata', 'lcmd.frame_assdata',
+						'lcmd.frame_mergePlot', 'lcmd.frame_CDTffrtPlot', 'lcmd.frame_grdNcdfPlot', 'lcmd.frame_rhtests',
+						'lcmd.frame_interpol', 'lcmd.frame_valid', 'lcmd.frame_qc0Chck')
+lcmd.ret <- lapply(lcmd.container, assign, NULL, envir = .GlobalEnv)
 
 #####**************************** General&Generic functions ************************######
 
@@ -38,7 +64,8 @@ h.scale <- function(per) as.integer(per*height.scr/100)
 #######################################################################
 ###dim
 ##font width
-sfont0 <- as.numeric(tclvalue(tkfont.measure(main.win, paste("0123456789", paste(letters[1:26], LETTERS[1:26], collapse='',sep = ''), sep = ''))))/(10+2*26)
+sfont0 <- as.numeric(tclvalue(tkfont.measure(main.win, paste("0123456789",
+			paste(letters[1:26], LETTERS[1:26], collapse = '', sep = ''), sep = ''))))/(10+2*26)
 ##left panel width
 wpanel.left <- w.scale(30)
 hpanel.left <- h.scale(70)
@@ -99,6 +126,9 @@ tkadd(main.frame, panel.right)
 
 #left panel
 tkgrid.columnconfigure(panel.left, 0, weight = 1)
+# tkgrid.rowconfigure(panel.left, 0, weight = 1)
+# tkgrid.rowconfigure(panel.left, 1, weight = 1)
+# tkgrid.rowconfigure(panel.left, 2, weight = 1)
 
 #right panel
 tkgrid.columnconfigure(panel.right, 0, weight = 1)
@@ -139,7 +169,7 @@ tkgrid(grip.right, row = 2, column = 1, sticky = "se")
 
 tkwm.withdraw(main.win)
 tcl('update')
-tkwm.geometry(main.win, paste(width.scr, 'x', height.scr,'+',0,'+',0, sep = ''))
+tkwm.geometry(main.win, paste(width.scr, 'x', height.scr, '+', 0, '+', 0, sep = ''))
 tkwm.transient(main.win)
 tkwm.title(main.win, paste("Climate Data Tools, v", cdtVersion, sep = ''))
 tkwm.deiconify(main.win)

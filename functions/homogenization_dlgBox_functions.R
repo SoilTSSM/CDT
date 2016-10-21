@@ -308,7 +308,7 @@ homogen.get.info <- function(parent.win, GeneralParameters){
 					donstn <- splitCDTData(AllOpenFilesData[[jfile]][[2]], GeneralParameters$period)
 					donOut <- list(donstn)
 					parsFile <- list(AllOpenFilesData[[jfile]][3:4])
-					if(!is.null(donstn)) stn.choix <- as.character(donstn$id)
+					if(!is.null(donstn)) lchoixStnFr$env$stn.choix <- as.character(donstn$id)
 					else tkwait.window(tt)
 				}else{
 					donstn <- splitTsData(AllOpenFilesData[[jfile]][[2]], GeneralParameters$period, as.character(GeneralParameters$file.date.format$Values[1]), as.character(GeneralParameters$file.date.format$Values[2]))
@@ -319,12 +319,12 @@ homogen.get.info <- function(parent.win, GeneralParameters){
 						donOut <- list(donstn, donstn1)
 						parsFile <- list(AllOpenFilesData[[jfile]][3:4], AllOpenFilesData[[jfile1]][3:4])
 					}
-					if(!is.null(donstn)) stn.choix <- getf.no.ext(tclvalue(file.choix1a))
+					if(!is.null(donstn)) lchoixStnFr$env$stn.choix <- getf.no.ext(tclvalue(file.choix1a))
 					else tkwait.window(tt)
 				}
 				paramsGAL <- list(inputPars = GeneralParameters, dataPars = parsFile, data = donOut)
 				save(paramsGAL, file = fileparams)
-				return(list(paramsGAL, stn.choix))
+				return(list(paramsGAL, lchoixStnFr$env$stn.choix))
 			}
 
 			#####
@@ -370,8 +370,8 @@ homogen.get.info <- function(parent.win, GeneralParameters){
 							}
 						}
 					}
-					if(tclvalue(cb.1series.val) == "0") stn.choix <<- as.character(paramsGAL$data[[1]]$id)
-					else stn.choix <<- getf.no.ext(tclvalue(file.choix1a))
+					if(tclvalue(cb.1series.val) == "0") lchoixStnFr$env$stn.choix <<- as.character(paramsGAL$data[[1]]$id)
+					else lchoixStnFr$env$stn.choix <<- getf.no.ext(tclvalue(file.choix1a))
 					paramsGAL$inputPars <- GeneralParameters
 					save(paramsGAL, file = fileparams)
 					rm(paramsGAL)
@@ -381,7 +381,7 @@ homogen.get.info <- function(parent.win, GeneralParameters){
 					assign('donnees1', retDonPar[[1]]$data[[1]], envir = EnvHomogzData)
 					if(xtest) assign('donnees2', retDonPar[[1]]$data[[2]], envir = EnvHomogzData)
 					GeneralParameters <<- retDonPar[[1]]$inputPars
-					stn.choix <<- retDonPar[[2]]
+					lchoixStnFr$env$stn.choix <<- retDonPar[[2]]
 					#calculate mon/dek
 					computeHomogData(GeneralParameters)
 					paramsGAL <- retDonPar[[1]]
@@ -394,7 +394,7 @@ homogen.get.info <- function(parent.win, GeneralParameters){
 				assign('donnees1', retDonPar[[1]]$data[[1]], envir = EnvHomogzData)
 				if(xtest) assign('donnees2', retDonPar[[1]]$data[[2]], envir = EnvHomogzData)
 				GeneralParameters <<- retDonPar[[1]]$inputPars
-				stn.choix <<- retDonPar[[2]]
+				lchoixStnFr$env$stn.choix <<- retDonPar[[2]]
 				#calculate mon/dek
 				computeHomogData(GeneralParameters)
 				paramsGAL <- retDonPar[[1]]
@@ -407,20 +407,20 @@ homogen.get.info <- function(parent.win, GeneralParameters){
 			##set choix stn
 
 			if(GeneralParameters$retpar == 0){
-				if(stn.choix[1] != '') tclvalue(stn.choix.val) <- stn.choix[1]
-				else tclvalue(stn.choix.val) <- stn.choix[2]
+				if(lchoixStnFr$env$stn.choix[1] != '') tclvalue(lchoixStnFr$env$stn.choix.val) <- lchoixStnFr$env$stn.choix[1]
+				else tclvalue(lchoixStnFr$env$stn.choix.val) <- lchoixStnFr$env$stn.choix[2]
 			}else{
-				istn <- as.numeric(tclvalue(tcl(stn.choix.cb, "current")))+1
+				istn <- as.numeric(tclvalue(tcl(lchoixStnFr$env$stn.choix.cb, "current")))+1
 				if(istn > 0) istn <- istn
 				else istn <- 1
-				tclvalue(stn.choix.val) <- stn.choix[istn]
+				tclvalue(lchoixStnFr$env$stn.choix.val) <- lchoixStnFr$env$stn.choix[istn]
 			}
 
-			tkconfigure(stn.choix.cb, values = stn.choix, textvariable = stn.choix.val)
-			tkconfigure(setting.button, state = 'normal')
+			tkconfigure(lchoixStnFr$env$stn.choix.cb, values = lchoixStnFr$env$stn.choix, textvariable = lchoixStnFr$env$stn.choix.val)
+			tkconfigure(lchoixStnFr$env$setting.button, state = 'normal')
 			if(tclvalue(cb.1series.val) == '0'){
-				tkconfigure(stn.choix.prev, state = 'normal')
-				tkconfigure(stn.choix.next, state = 'normal')
+				tkconfigure(lchoixStnFr$env$stn.choix.prev, state = 'normal')
+				tkconfigure(lchoixStnFr$env$stn.choix.next, state = 'normal')
 			}
 			tkconfigure(spinH, state = 'normal')
 			tkconfigure(spinV, state = 'normal')

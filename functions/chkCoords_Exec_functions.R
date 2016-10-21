@@ -241,7 +241,7 @@ excludeOutStnFun <- function(GeneralParameters){
 	names(don) <- names(HeadInfo)
 	donne1 <- rbind(HeadInfo, don)
 	donne1[is.na(donne1)] <- missval
-	fsave <- file.path(outdir, paste(getf.no.ext(stnf), '_CHECKED_STATIONS.txt', sep = ''), fsep = .Platform$file.sep)
+	fsave <- file.path(outdir, paste(getf.no.ext(stnf), '_CHECKED_STATIONS.', file_ext(stnf), sep = ''))
 	writeFiles(donne1, fsave)
 
 	res <- list(action = 'chk.coords', period = period, Stndoute = exclus, data = donne, dates = dates,
@@ -254,10 +254,10 @@ excludeOutStnFun <- function(GeneralParameters){
 #########################
 
 checkCDTcoords <- function(ReturnExecResults, GeneralParameters){
-	fexcl <- file.path(ReturnExecResults$outdir, paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])),
-													'_2CORRECT_STATIONS.txt', sep = ''), fsep = .Platform$file.sep)
-	fsave <- file.path(ReturnExecResults$outdir, paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])),
-													'_CHECKED_STATIONS.txt', sep = ''), fsep = .Platform$file.sep)
+	file.no.ext <- getf.no.ext(as.character(GeneralParameters$file.io$Values[1]))
+	file.extens <- file_ext(as.character(GeneralParameters$file.io$Values[1]))
+	fexcl <- file.path(ReturnExecResults$outdir, paste(file.no.ext, '_2CORRECT_STATIONS.txt', sep = ''))
+	fsave <- file.path(ReturnExecResults$outdir, paste(file.no.ext, '_CHECKED_STATIONS.', file.extens, sep = ''))
 
 	exclus <- ReturnExecResults$Stndoute
 	retenus <- read.table(fexcl, header = TRUE)
@@ -286,7 +286,7 @@ checkCDTcoords <- function(ReturnExecResults, GeneralParameters){
 		ReturnExecResults$data <- ReturnExecResults$data[, -stn.omit]
 	}
 
-	write.table(donne, fsave, row.names = FALSE, col.names = FALSE)
+	writeFiles(donne, fsave)
 	rm(don, donne)
 	return(ReturnExecResults)
 }

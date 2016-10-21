@@ -73,7 +73,7 @@ QcOutZeroChkFormat <- function(){
 	}
 	if(ReturnExecResults$AllOrOne == 'all'){
 		stns <- sapply(ReturnExecResults$res, function(x) x$station)
-		ijstn <- which(stns == tclvalue(stn.choix.val))
+		ijstn <- which(stns == tclvalue(lchoixStnFr$env$stn.choix.val))
 		IJstation <- ReturnExecResults$res[[ijstn]]$station
 	}
 
@@ -157,7 +157,7 @@ QcOutZeroChk_Neighbors <- function(IJstation, date_month){
 	rr.nei <- rr.nei[,1:nmax.nei]
 	id.nei <- id.nei[1:nmax.nei]
 
-	xdon <- cbind(c('Stations', 'Distance', dates[imon]), t(cbind(cbind(c(tclvalue(stn.choix.val), id.nei), c(0, round(dst.nei, 1))), t(cbind(rr.stn, rr.nei)))))
+	xdon <- cbind(c('Stations', 'Distance', dates[imon]), t(cbind(cbind(c(tclvalue(lchoixStnFr$env$stn.choix.val), id.nei), c(0, round(dst.nei, 1))), t(cbind(rr.stn, rr.nei)))))
 	xdon <- data.frame(xdon)
 	names(xdon) <- NULL
 	return(xdon)

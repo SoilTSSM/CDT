@@ -4,6 +4,7 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 
 	pnddframe <- tkframe(cmd.frame)
 	tkgrid(pnddframe, sticky = 'nwes')
+	for(i in 0:7) tkgrid.columnconfigure(pnddframe, i, weight = 1)
 
 	dispPnddTab <- tkbutton(pnddframe, text = "View & Edit Result")
 	replacePndd <- tkbutton(pnddframe, text = "Replace false zeros")
@@ -52,7 +53,7 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 			}
 			if(ReturnExecResults$AllOrOne == 'all'){
 				stns <- sapply(ReturnExecResults$res, function(x) x$station)
-				ijstn <- which(stns == tclvalue(stn.choix.val))
+				ijstn <- which(stns == tclvalue(lchoixStnFr$env$stn.choix.val))
 				IJstation <- ReturnExecResults$res[[ijstn]]$station
 			}
 
@@ -74,7 +75,7 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 			}
 			if(ReturnExecResults$AllOrOne == 'all'){
 				stns <- sapply(ReturnExecResults$res, function(x) x$station)
-				ijstn <- which(stns == tclvalue(stn.choix.val))
+				ijstn <- which(stns == tclvalue(lchoixStnFr$env$stn.choix.val))
 				IJstation <- ReturnExecResults$res[[ijstn]]$station
 			}
 			repret <- try(replaceZeroChkbyNA(IJstation, ReturnExecResults), silent = TRUE)
@@ -125,7 +126,7 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 		}
 		if(ReturnExecResults$AllOrOne == 'all'){
 			stns <- sapply(ReturnExecResults$res, function(x) x$station)
-			ijstn <- which(stns == tclvalue(stn.choix.val))
+			ijstn <- which(stns == tclvalue(lchoixStnFr$env$stn.choix.val))
 			IJstation <- ReturnExecResults$res[[ijstn]]$station
 			YYYYMM <- ReturnExecResults$res[[ijstn]]$res$YYYYMM
 		}
@@ -231,6 +232,7 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 
 	tcl('update')
 	tkgrid(cmd.frame, sticky = 'nswe', pady = 5)
+	tkgrid.columnconfigure(cmd.frame, 0, weight = 1)
 	######
 	return(cmd.frame)
 }

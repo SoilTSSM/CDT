@@ -1,16 +1,16 @@
 
 ChkCoordCmdBut <- function(){
 	cmd.frame <- tkframe(panel.left)
-	tkgrid(cmd.frame, sticky = 'nswe', pady = 5)
 
 	chkframe <- tkframe(cmd.frame, relief = 'groove', bd = 2)
 	tkgrid(chkframe, sticky = 'we', ipadx = 5, ipady = 10)
+	for(i in 0:1) tkgrid.columnconfigure(chkframe, i, weight = 1)
 
 	cmd.outTable <- tkbutton(chkframe, text = "View/Edit Results")
 	cmd.correctCoord <- tkbutton(chkframe, text = "Correct Coordinates")
 
-	tkgrid(cmd.outTable, row = 0, column = 0, padx = 1, pady = 1, sticky = "w")
-	tkgrid(cmd.correctCoord, row = 0, column = 1, padx = 1, pady = 1, sticky = "e")
+	tkgrid(cmd.outTable, row = 0, column = 0, padx = 1, pady = 1, sticky = "we")
+	tkgrid(cmd.correctCoord, row = 0, column = 1, padx = 1, pady = 1, sticky = "we")
 
 	#############
 	tkconfigure(cmd.outTable, command = function(){
@@ -43,6 +43,9 @@ ChkCoordCmdBut <- function(){
 		}else InsertMessagesTxt(main.txt.out, 'There is no coordinates check performed yet', format = TRUE)
 	})
 	#############
+	tcl('update')
+	tkgrid(cmd.frame, sticky = 'nswe', pady = 5)
+	tkgrid.columnconfigure(cmd.frame, 0, weight = 1)
 
 	return(cmd.frame)
 }

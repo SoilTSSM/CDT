@@ -3,6 +3,9 @@
 #initialize parameters
 
 init.params <- function(action, period){
+	
+	spinbox.state()
+
 	#homogenization CDT
 	if(action == 'homog'){
 		hom.opts <- data.frame(c("crop.bounds", "h", "conf.lev", "Kmax", "min.int"), c("0", "0.025", "95.0", "10", "24"))

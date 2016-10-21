@@ -7,7 +7,7 @@ executeOnFindU <- function(donnees, GeneralParameters){
 	outdir <- file.path(as.character(GeneralParameters$file.io$Values[4]), paste('RHtests_Output', getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), sep = '_'),'Outputs', fsep = .Platform$file.sep)
 	pars <- as.numeric(as.character(GeneralParameters$rhtests.pars$Values))
 
-	sel.stn <- tclvalue(stn.choix.val)
+	sel.stn <- tclvalue(lchoixStnFr$env$stn.choix.val)
 	if(GeneralParameters$single.series == "0"){
 		xpos <- which(as.character(donnees$IDs) == sel.stn)
 		xval <- donnees$datmon[,xpos]
@@ -42,7 +42,7 @@ executeOnFindUD <- function(donnees, GeneralParameters){
 	outdir <- file.path(as.character(GeneralParameters$file.io$Values[4]), paste('RHtests_Output', getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), sep = '_'),'Outputs', fsep = .Platform$file.sep)
 	pars <- as.numeric(as.character(GeneralParameters$rhtests.pars$Values))
 
-	sel.stn <- tclvalue(stn.choix.val)
+	sel.stn <- tclvalue(lchoixStnFr$env$stn.choix.val)
 	if(GeneralParameters$single.series == "0"){
 		xpos <- which(as.character(donnees$IDs) == sel.stn)
 		xval <- donnees$datmon[,xpos]
@@ -82,7 +82,7 @@ executeOnStepSize <- function(donnees, GeneralParameters){
 	outdir <- file.path(as.character(GeneralParameters$file.io$Values[4]), paste('RHtests_Output', getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), sep = '_'),'Outputs', fsep = .Platform$file.sep)
 	pars <- as.numeric(as.character(GeneralParameters$rhtests.pars$Values))
 
-	sel.stn <- tclvalue(stn.choix.val)
+	sel.stn <- tclvalue(lchoixStnFr$env$stn.choix.val)
 	if(GeneralParameters$single.series == "0"){
 		xpos <- which(as.character(donnees$IDs) == sel.stn)
 		xval <- donnees$datmon[,xpos]
@@ -125,7 +125,7 @@ executeOnQMadj <- function(donnees, GeneralParameters, choix){
 
 
 	pars <- as.numeric(as.character(GeneralParameters$rhtests.pars$Values))
-	sel.stn <- tclvalue(stn.choix.val)
+	sel.stn <- tclvalue(lchoixStnFr$env$stn.choix.val)
 	if(GeneralParameters$single.series == "0")  xpos <- which(as.character(donnees$IDs) == sel.stn)
 
 
@@ -216,7 +216,7 @@ executeOnFindU.wRef <- function(donnees, dem_data, GeneralParameters){
 
 	pars <- as.numeric(as.character(GeneralParameters$rhtests.pars$Values))
 
-	sel.stn <- tclvalue(stn.choix.val)
+	sel.stn <- tclvalue(lchoixStnFr$env$stn.choix.val)
 	if(GeneralParameters$single.series == "0"){
 		xpos <- which(as.character(donnees$IDs) == sel.stn)
 		xval <- donnees$datmon[,xpos]
@@ -283,7 +283,7 @@ executeOnFindUD.wRef <- function(donnees, dem_data, GeneralParameters){
 
 	pars <- as.numeric(as.character(GeneralParameters$rhtests.pars$Values))
 
-	sel.stn <- tclvalue(stn.choix.val)
+	sel.stn <- tclvalue(lchoixStnFr$env$stn.choix.val)
 	if(GeneralParameters$single.series == "0"){
 		xpos <- which(as.character(donnees$IDs) == sel.stn)
 		xval <- donnees$datmon[,xpos]
@@ -357,7 +357,7 @@ executeOnStepSize.wRef <- function(donnees, dem_data, GeneralParameters){
 
 	pars <- as.numeric(as.character(GeneralParameters$rhtests.pars$Values))
 
-	sel.stn <- tclvalue(stn.choix.val)
+	sel.stn <- tclvalue(lchoixStnFr$env$stn.choix.val)
 	if(GeneralParameters$single.series == "0"){
 		xpos <- which(as.character(donnees$IDs) == sel.stn)
 		xval <- donnees$datmon[,xpos]
@@ -430,7 +430,7 @@ executeOnQMadj.wRef <- function(donnees, dem_data, GeneralParameters, choix){
 	adjdir <- file.path(rootdir, 'AdjustedData', fsep = .Platform$file.sep)
 
 	pars <- as.numeric(as.character(GeneralParameters$rhtests.pars$Values))
-	sel.stn <- tclvalue(stn.choix.val)
+	sel.stn <- tclvalue(lchoixStnFr$env$stn.choix.val)
 	if(GeneralParameters$single.series == "0")  xpos <- which(as.character(donnees$IDs) == sel.stn)
 
 	dirSelectStn <- file.path(outdir, sel.stn, fsep = .Platform$file.sep)
@@ -561,7 +561,7 @@ executeOnFindU.dlyPrcp <- function(donnees, GeneralParameters){
 	outdir <- file.path(as.character(GeneralParameters$file.io$Values[4]), paste('RHtests_Output', getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), sep = '_'),'Outputs', fsep = .Platform$file.sep)
 	pars <- as.numeric(as.character(GeneralParameters$rhtests.pars$Values))
 
-	sel.stn <- tclvalue(stn.choix.val)
+	sel.stn <- tclvalue(lchoixStnFr$env$stn.choix.val)
 	if(GeneralParameters$single.series == "0"){
 		xpos <- which(as.character(donnees$IDs) == sel.stn)
 		xval <- donnees$datdly[,xpos]
@@ -591,7 +591,7 @@ executeOnFindUD.dlyPrcp <- function(donnees, GeneralParameters){
 	outdir <- file.path(as.character(GeneralParameters$file.io$Values[4]), paste('RHtests_Output', getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), sep = '_'),'Outputs', fsep = .Platform$file.sep)
 	pars <- as.numeric(as.character(GeneralParameters$rhtests.pars$Values))
 
-	sel.stn <- tclvalue(stn.choix.val)
+	sel.stn <- tclvalue(lchoixStnFr$env$stn.choix.val)
 	if(GeneralParameters$single.series == "0"){
 		xpos <- which(as.character(donnees$IDs) == sel.stn)
 		xval <- donnees$datdly[,xpos]
@@ -626,7 +626,7 @@ executeOnStepSize.dlyPrcp <- function(donnees, GeneralParameters){
 	outdir <- file.path(as.character(GeneralParameters$file.io$Values[4]), paste('RHtests_Output', getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), sep = '_'),'Outputs', fsep = .Platform$file.sep)
 	pars <- as.numeric(as.character(GeneralParameters$rhtests.pars$Values))
 
-	sel.stn <- tclvalue(stn.choix.val)
+	sel.stn <- tclvalue(lchoixStnFr$env$stn.choix.val)
 	if(GeneralParameters$single.series == "0"){
 		xpos <- which(as.character(donnees$IDs) == sel.stn)
 		xval <- donnees$datdly[,xpos]
@@ -660,7 +660,7 @@ executeOnadjDLY.dlyPrcp <- function(donnees, GeneralParameters, choix){
 	outdir <- file.path(rootdir, 'Outputs', fsep = .Platform$file.sep)
 	adjdir <- file.path(rootdir, 'AdjustedData', fsep = .Platform$file.sep)
 
-	sel.stn <- tclvalue(stn.choix.val)
+	sel.stn <- tclvalue(lchoixStnFr$env$stn.choix.val)
 
 	dirSelectStn <- file.path(outdir, sel.stn, fsep = .Platform$file.sep)
 	fileout <- file.path(dirSelectStn, sel.stn, fsep = .Platform$file.sep)

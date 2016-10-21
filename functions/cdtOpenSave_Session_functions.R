@@ -3,10 +3,11 @@ saveCurrentCDTtask <- function(){
 	if(Sys.info()["sysname"] == "Windows")  filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes, defaultextension = TRUE))
 	else filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes))
 	if (filename != "" | filename != 'NA' | !is.na(filename)){
-		lastStnChoix <- tclvalue(stn.choix.val)
+		lastStnChoix <- tclvalue(lchoixStnFr$env$stn.choix.val)
+		listStnChoix <- lchoixStnFr$env$stn.choix
 		save(AllOpenFilesType, AllOpenFilesData,
 		GeneralParameters, ReturnExecResults,
-		stn.choix, lastStnChoix,
+		listStnChoix, lastStnChoix,
 		EnvQcOutlierData, EnvQcZeroChkData,
 		EnvHomogzData, adjDon,
 		file = filename)
@@ -25,30 +26,35 @@ OpenOldCDTtask <- function(){
 	fileOpenCDT <- tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = "{{CDT Files} {.cdt}} {{All files} {*.*}}")
 	if(tclvalue(fileOpenCDT) != '' | !is.na(tclvalue(fileOpenCDT))) load(tclvalue(fileOpenCDT))
 	if(GeneralParameters$action == 'qc.rain'	| GeneralParameters$action == 'qc.temp' | GeneralParameters$action == 'homog' | GeneralParameters$action == 'zero.check'){
+		
+		lchoixStnFr <<- selectStationCmd()
+
 		if(GeneralParameters$action == 'qc.rain'	| GeneralParameters$action == 'qc.temp'){
 			EnvQcOutlierData <<- EnvQcOutlierData
 			if(GeneralParameters$AllOrOne == 'one'){
-				tkconfigure(setting.button, state = 'normal')
+				tkconfigure(lchoixStnFr$env$setting.button, state = 'normal')
 				stateReplaceAll <- 'disabled'
 			} 
 			if(GeneralParameters$AllOrOne == 'all'){
-				tkconfigure(setting.button, state = 'disabled')
+				tkconfigure(lchoixStnFr$env$setting.button, state = 'disabled')
 				stateReplaceAll <- 'normal'
 			} 
 			if(as.character(GeneralParameters$use.method$Values[1]) == '0'){
-				tkconfigure(stn.choix.prev, state = 'normal')
-				tkconfigure(stn.choix.next, state = 'normal')
+				tkconfigure(lchoixStnFr$env$stn.choix.prev, state = 'normal')
+				tkconfigure(lchoixStnFr$env$stn.choix.next, state = 'normal')
 			}
-			if(GeneralParameters$action == 'qc.temp') tclvalue(XYCoordinates) <<- paste(c(as.character(GeneralParameters$parameter[[2]][,4]), as.character(GeneralParameters$parameter[[2]][,5])), sep = '',collapse=' ')
-			if(GeneralParameters$action == 'qc.rain') tclvalue(XYCoordinates) <<- paste(c(as.character(GeneralParameters$parameter[[2]][,3]), as.character(GeneralParameters$parameter[[2]][,4])), sep = '',collapse=' ')
+			if(GeneralParameters$action == 'qc.temp') tclvalue(XYCoordinates) <<- paste(c(as.character(GeneralParameters$parameter[[2]][, 4]),
+																				as.character(GeneralParameters$parameter[[2]][, 5])), sep = '', collapse = ' ')
+			if(GeneralParameters$action == 'qc.rain') tclvalue(XYCoordinates) <<- paste(c(as.character(GeneralParameters$parameter[[2]][, 3]),
+																				as.character(GeneralParameters$parameter[[2]][, 4])), sep = '', collapse = ' ')
 			lcmd.frame <<- QcCmdBut(stateReplaceAll)
 			lcmd.frame_qc <<- 1
 		}else if(GeneralParameters$action == 'homog'){
 			EnvHomogzData <<- EnvHomogzData
-			tkconfigure(setting.button, state = 'normal')
+			tkconfigure(lchoixStnFr$env$setting.button, state = 'normal')
 			if(as.character(GeneralParameters$use.method$Values[2]) == '0'){
-				tkconfigure(stn.choix.prev, state = 'normal')
-				tkconfigure(stn.choix.next, state = 'normal')
+				tkconfigure(lchoixStnFr$env$stn.choix.prev, state = 'normal')
+				tkconfigure(lchoixStnFr$env$stn.choix.next, state = 'normal')
 			}
 			retcmdpars <- HomogCmdBut(GeneralParameters)
 			lcmd.frame <<- retcmdpars[[1]]
@@ -58,21 +64,21 @@ OpenOldCDTtask <- function(){
 		}else if(GeneralParameters$action == 'zero.check'){
 			EnvQcZeroChkData <<- EnvQcZeroChkData
 			if(GeneralParameters$AllOrOne == 'one'){
-				tkconfigure(setting.button, state = 'normal')
+				tkconfigure(lchoixStnFr$env$setting.button, state = 'normal')
 				stateReplaceAll <- 'disabled'
 			}
 			if(GeneralParameters$AllOrOne == 'all'){
-				tkconfigure(setting.button, state = 'disabled')
+				tkconfigure(lchoixStnFr$env$setting.button, state = 'disabled')
 				stateReplaceAll <- 'normal'
 			}
-			tkconfigure(stn.choix.prev, state = 'normal')
-			tkconfigure(stn.choix.next, state = 'normal')
+			tkconfigure(lchoixStnFr$env$stn.choix.prev, state = 'normal')
+			tkconfigure(lchoixStnFr$env$stn.choix.next, state = 'normal')
 			lcmd.frame <<- QcZeroCheckCmd(stateReplaceAll)
 			lcmd.frame_qc0Chck <<- 1
 		}
 		#####
-		tclvalue(stn.choix.val) <- lastStnChoix
-		tkconfigure(stn.choix.cb, values = stn.choix, textvariable = stn.choix.val)
+		tclvalue(lchoixStnFr$env$stn.choix.val) <- lastStnChoix
+		tkconfigure(lchoixStnFr$env$stn.choix.cb, values = listStnChoix, textvariable = lchoixStnFr$env$stn.choix.val)
 
 		tkconfigure(spinH, state = 'normal')
 		tkconfigure(spinV, state = 'normal')
@@ -82,7 +88,7 @@ OpenOldCDTtask <- function(){
 
 		GeneralParameters <<- GeneralParameters
 		ReturnExecResults <<- ReturnExecResults
-		stn.choix <<- stn.choix
+		lchoixStnFr$env$stn.choix <<- listStnChoix
 		AllOpenFilesType <<- AllOpenFilesType
 		AllOpenFilesData <<- AllOpenFilesData
 	}else InsertMessagesTxt(main.txt.out, 'Not QC or Homogenization', format = TRUE)

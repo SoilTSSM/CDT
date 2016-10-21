@@ -4,23 +4,32 @@ AssessDataPanelCmd <- function(){
 	largeur <- as.integer(as.numeric(w.scale(23)*0.95)/9)
 
 	###################
-
 	cmd.frame <- tkframe(panel.left)
 
+	###################
 	chkframe <- tkframe(cmd.frame, relief = 'groove', bd = 2)
 	chkframe1 <- ttklabelframe(cmd.frame, text = "Missing Data Summary for each Station", labelanchor = "nw", relief = 'groove', borderwidth = 2)
-	tkgrid(chkframe, sticky = 'we')
-	tkgrid(chkframe1, sticky = 'we', pady = 10)
+
+	###################
 
 	file.period <- tclVar('Dekadal data')
-	cbperiod <- ttkcombobox(chkframe, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
+	file.stnfl <- tclVar()
+	stnSumNA.val <- tclVar()
 
+	cbperiod <- ttkcombobox(chkframe, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
 	sep1 <- ttkseparator(chkframe)
 	labStn1 <- tklabel(chkframe, text = 'Station data file', anchor = 'w', justify = 'left')
-
-	file.stnfl <- tclVar()
 	cb.stnfl <- ttkcombobox(chkframe, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur)
 	bt.stnfl <- tkbutton(chkframe, text = "...")
+	sep2 <- ttkseparator(chkframe)
+	cmd.DistCor <- tkbutton(chkframe, text = "Distance-Correlation")
+	cmd.AllNA <- tkbutton(chkframe, text = "Miss.Data Summary")
+	stnSumNA.cb <- ttkcombobox(chkframe1, values = '', textvariable = stnSumNA.val, state = 'normal')
+	stnSumNA.prev <- tkbutton(chkframe1, text = "<<-")
+	stnSumNA.next <- tkbutton(chkframe1, text = "->>")
+
+	###################
+
 	tkconfigure(bt.stnfl, command = function(){
 		dat.opfiles <- getOpenFiles(main.win, all.opfiles)
 		if(!is.null(dat.opfiles)){
@@ -38,15 +47,8 @@ AssessDataPanelCmd <- function(){
 			return(NULL)
 		}
 	})
-	infobulle(cb.stnfl, 'Choose the station data in the list')
-	status.bar.display(cb.stnfl, TextOutputVar, 'Choose the file containing the station data')
-	infobulle(bt.stnfl, 'Browse file if not listed')
-	status.bar.display(bt.stnfl, TextOutputVar, 'Browse file if not listed')
 
-	sep2 <- ttkseparator(chkframe)
-
-	cmd.DistCor <- tkbutton(chkframe, text = "Distance-Correlation")
-	cmd.AllNA <- tkbutton(chkframe, text = "Miss.Data Summary")
+	###################
 
 	tkgrid(cbperiod, row = 0, column = 0, rowspan = 1, columnspan = 6, padx = 1, pady = 1, sticky = "we")
 	tkgrid(sep1, row = 1, column = 0, rowspan = 1, columnspan = 6, pady = 5, sticky = 'we')
@@ -58,14 +60,25 @@ AssessDataPanelCmd <- function(){
 	tkgrid(cmd.DistCor, row = 5, column = 0, rowspan = 1, columnspan = 3, padx = 1, pady = 2, sticky = "we")
 	tkgrid(cmd.AllNA, row = 5, column = 3, rowspan = 1, columnspan = 3, padx = 1, pady = 2, sticky = "we")
 
-	stnSumNA.val <- tclVar()
-	stnSumNA.cb <- ttkcombobox(chkframe1, values = '', textvariable = stnSumNA.val, state = 'normal')
-	stnSumNA.prev <- tkbutton(chkframe1, text = "<<-")
-	stnSumNA.next <- tkbutton(chkframe1, text = "->>")
+	tkgrid(stnSumNA.prev, row = 0, column = 0, padx = 1, pady = 3, sticky = "w")
+	tkgrid(stnSumNA.cb, row = 0, column = 1, padx = 1, pady = 3, sticky = "we")
+	tkgrid(stnSumNA.next, row = 0, column = 2, padx = 1, pady = 3, sticky = "e")
 
-	tkgrid(stnSumNA.prev, row = 0, column = 0, padx = 1, pady = 3)
-	tkgrid(stnSumNA.cb, row = 0, column = 1, padx = 1, pady = 3)
-	tkgrid(stnSumNA.next, row = 0, column = 2, padx = 1, pady = 3)
+	#######################
+
+	infobulle(cb.stnfl, 'Choose the station data in the list')
+	status.bar.display(cb.stnfl, TextOutputVar, 'Choose the file containing the station data')
+	infobulle(bt.stnfl, 'Browse file if not listed')
+	status.bar.display(bt.stnfl, TextOutputVar, 'Browse file if not listed')
+
+
+	#######################
+
+	tkgrid(chkframe, sticky = 'we', pady = 10)
+	tkgrid(chkframe1, sticky = 'we', pady = 10)
+	tkgrid.columnconfigure(chkframe, 0, weight = 1)
+	tkgrid.columnconfigure(chkframe, 3, weight = 1)
+	tkgrid.columnconfigure(chkframe1, 1, weight = 1)
 
 	#######################
 
@@ -235,10 +248,11 @@ AssessDataPanelCmd <- function(){
 		}else InsertMessagesTxt(main.txt.out, 'No station data found', format = TRUE)
 	})
 
-	###
+	#######################
 	tcl('update')
 	tkgrid(cmd.frame, sticky = 'we', pady = 5)
-	###
+	tkgrid.columnconfigure(cmd.frame, 0, weight = 1)
+
 	return(cmd.frame)
 }
 

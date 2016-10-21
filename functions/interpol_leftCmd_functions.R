@@ -5,11 +5,11 @@ InterpolationPanelCmd <- function(){
 	largeur <- as.integer(w.scale(20)/sfont0)
 	wncdf_ff <- as.integer(w.scale(14)/sfont0)
 	if(Sys.info()["sysname"] == "Windows"){
-		wscrlwin <- w.scale(17.7)
-		hscrlwin <- h.scale(31.5)
+		wscrlwin <- w.scale(20)
+		hscrlwin <- h.scale(35)
 	}else{
-		wscrlwin <- w.scale(21)
-		hscrlwin <- h.scale(37)
+		wscrlwin <- w.scale(24)
+		hscrlwin <- h.scale(40)
 	}
 
 	###################
@@ -26,6 +26,11 @@ InterpolationPanelCmd <- function(){
 	cmd.tab4 <- bwAddTab(tknote.cmd, text = "Colors Options")
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 
+	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab4, 0, weight = 1)
+
 	#######################################################################################################
 
 	#Tab1
@@ -35,8 +40,9 @@ InterpolationPanelCmd <- function(){
 
 	scrw1 <- bwScrolledWindow(frTab1)
 	tkgrid(scrw1)
+	tkgrid.columnconfigure(scrw1, 0, weight = 1)
 	subfr1 <- bwScrollableFrame(scrw1, width = wscrlwin, height = hscrlwin)
-
+	tkgrid.columnconfigure(subfr1, 0, weight = 1)
 
 	##############
 	frameStn <- ttklabelframe(subfr1, text = "Station data file", relief = 'groove')
@@ -203,7 +209,9 @@ InterpolationPanelCmd <- function(){
 
 	scrw2 <- bwScrolledWindow(frTab2)
 	tkgrid(scrw2)
+	tkgrid.columnconfigure(scrw2, 0, weight = 1)
 	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr2, 0, weight = 1)
 
 	##############
 	frameOpt1 <- ttklabelframe(subfr2, text = "General Options", relief = 'groove')
@@ -411,7 +419,9 @@ InterpolationPanelCmd <- function(){
 
 	scrw3 <- bwScrolledWindow(frTab3)
 	tkgrid(scrw3)
+	tkgrid.columnconfigure(scrw3, 0, weight = 1)
 	subfr3 <- bwScrollableFrame(scrw3, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr3, 0, weight = 1)
 
 	plotData.tab3 <- tkbutton(subfr3, text = "Plot Data")
 	plotVgm.tab3 <- tkbutton(subfr3, text = "Plot Variogram", state = 'disabled')
@@ -699,9 +709,11 @@ InterpolationPanelCmd <- function(){
 
 	scrw4 <- bwScrolledWindow(frTab4)
 	tkgrid(scrw4)
+	tkgrid.columnconfigure(scrw4, 0, weight = 1)
 	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr4, 0, weight = 1)
 
-	wPreview <- wscrlwin-10
+	wPreview <- wscrlwin-20
 	nb.color <- tclVar('10')
 	preset.color <- tclVar()
 	tclvalue(preset.color) <- 'tim.colors'

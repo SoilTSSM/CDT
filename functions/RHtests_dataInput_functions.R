@@ -321,16 +321,16 @@ rhtests_inputData <- function(parent.win, GeneralParameters){
 			if(tclvalue(cb.1series.val) == '0'){
 				donne <- getCDTdata(file.choix1a, file.period)
 				if(!is.null(donne)){
-					stn.choix <<- donne$id
-					tclvalue(stn.choix.val) <- stn.choix[1]
-					tkconfigure(stn.choix.prev, state = 'normal')
-					tkconfigure(stn.choix.next, state = 'normal')
+					lchoixStnFr$env$stn.choix <<- donne$id
+					tclvalue(lchoixStnFr$env$stn.choix.val) <- lchoixStnFr$env$stn.choix[1]
+					tkconfigure(lchoixStnFr$env$stn.choix.prev, state = 'normal')
+					tkconfigure(lchoixStnFr$env$stn.choix.next, state = 'normal')
 				}else InsertMessagesTxt(main.txt.out, 'Error loading station data', format = TRUE)
 			}else{
-				stn.choix <<- getf.no.ext(tclvalue(file.choix1a))
-				tclvalue(stn.choix.val) <- stn.choix
+				lchoixStnFr$env$stn.choix <<- getf.no.ext(tclvalue(file.choix1a))
+				tclvalue(lchoixStnFr$env$stn.choix.val) <- lchoixStnFr$env$stn.choix
 			}
-			tkconfigure(stn.choix.cb, values = stn.choix, textvariable = stn.choix.val)
+			tkconfigure(lchoixStnFr$env$stn.choix.cb, values = lchoixStnFr$env$stn.choix, textvariable = lchoixStnFr$env$stn.choix.val)
 
 			tkgrab.release(tt)
 			tkdestroy(tt)

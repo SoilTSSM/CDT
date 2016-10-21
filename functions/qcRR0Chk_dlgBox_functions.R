@@ -165,9 +165,7 @@ qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 			tkmessageBox(message = "Choose or enter the path to directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{
-
-			all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-			jfile <- which(all.open.file == tclvalue(file.stnfl))
+			jfile <- getIndex.AllOpenFiles(tclvalue(file.stnfl))
 			if(length(jfile) == 0){
 				tkmessageBox(message = "Station data not found or in the wrong format", icon = "warning", type = "ok")
 				tkwait.window(tt)
@@ -186,11 +184,11 @@ qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 				donstn <- getCDTdataAndDisplayMsg(AllOpenFilesData[[jfile]][[2]], 'daily')
 
 				if(!is.null(donstn)){
-					stn.choix <- as.character(donstn$id)
+					lchoixStnFr$env$stn.choix <- as.character(donstn$id)
 				}else tkwait.window(tt)
 				paramsGAL <- list(inputPars = GeneralParameters, dataPars = AllOpenFilesData[[jfile]][3:4], data = donstn)
 				save(paramsGAL, file = fileparams)
-				return(list(paramsGAL, stn.choix))
+				return(list(paramsGAL, lchoixStnFr$env$stn.choix))
 			}
 
 			###
@@ -198,18 +196,18 @@ qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 				load(fileparams)
 				if(all(AllOpenFilesData[[jfile]][3:4]%in%paramsGAL$dataPars)){
 					donstn <- paramsGAL$data
-					stn.choix <<- as.character(donstn$id)
+					lchoixStnFr$env$stn.choix <<- as.character(donstn$id)
 					rm(paramsGAL)
 				}else{
 					retDonPar <- getInitDataParams(GeneralParameters)
 					donstn <- retDonPar[[1]]$data
-					stn.choix <<- retDonPar[[2]]
+					lchoixStnFr$env$stn.choix <<- retDonPar[[2]]
 					rm(retDonPar)
 				}
 			}else{
 				retDonPar <- getInitDataParams(GeneralParameters)
 				donstn <- retDonPar[[1]]$data
-				stn.choix <<- retDonPar[[2]]
+				lchoixStnFr$env$stn.choix <<- retDonPar[[2]]
 				rm(retDonPar)
 			}
 
@@ -218,26 +216,26 @@ qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 
 			####set choix stn
 			if(GeneralParameters$retpar == 0){
-				if(stn.choix[1] != '') tclvalue(stn.choix.val) <- stn.choix[1]
-				else tclvalue(stn.choix.val) <- stn.choix[2]
+				if(lchoixStnFr$env$stn.choix[1] != '') tclvalue(lchoixStnFr$env$stn.choix.val) <- lchoixStnFr$env$stn.choix[1]
+				else tclvalue(lchoixStnFr$env$stn.choix.val) <- lchoixStnFr$env$stn.choix[2]
 			}else{
-				istn <- as.numeric(tclvalue(tcl(stn.choix.cb, "current")))+1
+				istn <- as.numeric(tclvalue(tcl(lchoixStnFr$env$stn.choix.cb, "current")))+1
 				if(istn > 0) istn <- istn
 				else istn <- 1
-				tclvalue(stn.choix.val) <- stn.choix[istn]
+				tclvalue(lchoixStnFr$env$stn.choix.val) <- lchoixStnFr$env$stn.choix[istn]
 			}
 
-			tkconfigure(stn.choix.cb, values = stn.choix, textvariable = stn.choix.val)
+			tkconfigure(lchoixStnFr$env$stn.choix.cb, values = lchoixStnFr$env$stn.choix, textvariable = lchoixStnFr$env$stn.choix.val)
 			if(GeneralParameters$AllOrOne == 'one'){
-				tkconfigure(setting.button, state = 'normal')
+				tkconfigure(lchoixStnFr$env$setting.button, state = 'normal')
 				stateReplaceAll <- 'disabled'
 			}
 			if(GeneralParameters$AllOrOne == 'all'){
-				tkconfigure(setting.button, state = 'disabled')
+				tkconfigure(lchoixStnFr$env$setting.button, state = 'disabled')
 				stateReplaceAll <- 'normal'
 			}
-			tkconfigure(stn.choix.prev, state = 'normal')
-			tkconfigure(stn.choix.next, state = 'normal')
+			tkconfigure(lchoixStnFr$env$stn.choix.prev, state = 'normal')
+			tkconfigure(lchoixStnFr$env$stn.choix.next, state = 'normal')
 
 			####button command
 			if(is.null(lcmd.frame_qc0Chck)){

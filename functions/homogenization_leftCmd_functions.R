@@ -1,10 +1,12 @@
 
 HomogCmdBut <- function(GeneralParameters){
 	cmd.frame <- tkframe(panel.left, relief = 'groove', bd = 2)
-#	tkgrid(cmd.frame, sticky = 'we', pady = 5)
 
 	homogframe <- tkframe(cmd.frame)
 	tkgrid(homogframe, sticky = 'we')
+	tkgrid.columnconfigure(homogframe, 0, weight = 1)
+	tkgrid.columnconfigure(homogframe, 1, weight = 1)
+
 	cmd.preview <- tkbutton(homogframe, text = "Output Preview")
 	cmd.plot <- tkbutton(homogframe, text = "Display Output")
 	cmd.chgcpt <- tkbutton(homogframe, text = "Change Breakpoints")
@@ -12,9 +14,9 @@ HomogCmdBut <- function(GeneralParameters){
 	cmd.reset <- tkbutton(homogframe, text = "Undo Change")
 	cmd.adjust <- tkbutton(homogframe, text = "Adjust")
 	cmd.ltbx <- tklistbox(homogframe, height = 3, selectbackground = "yellow", selectforeground = "blue", selectmode = "multiple", background = "white")
+
 	fr.adjplot <- tkframe(homogframe)
 	cmd.adjplot <- tkbutton(fr.adjplot, text = "Display Adjusted")
-	#cmd.readjplot <- tkbutton(fr.adjplot, text = "Replot")
 
 	tkgrid(cmd.preview, row = 0, column = 0, padx = 1, pady = 1, sticky = "ew")
 	tkgrid(cmd.plot, row = 0, column = 1, padx = 1, pady = 1, sticky = "ew")
@@ -23,20 +25,22 @@ HomogCmdBut <- function(GeneralParameters){
 	tkgrid(cmd.reset, row = 2, column = 0, padx = 1, pady = 1, sticky = "ew")
 	tkgrid(cmd.adjust, row = 2, column = 1, padx = 1, pady = 1, sticky = "ew")
 	tkgrid(cmd.ltbx, row = 3, column = 0, padx = 1, pady = 1, sticky = "ew")
+
 	tkgrid(fr.adjplot, row = 3, column = 1, padx = 1, pady = 1, sticky = "ew")
 	tkgrid(cmd.adjplot, row = 0, column = 0, padx = 1, pady = 1, sticky = "ew")
-	#tkgrid(cmd.readjplot, row = 1, column = 0, padx = 1, pady = 1, sticky = "ew")
+	tkgrid.columnconfigure(fr.adjplot, 0, weight = 1)
+
 
 	xseries <- c("Base series", "Adjusted by mean", "Adjusted by QM")
 	for (i in 1:3)  tkinsert(cmd.ltbx, "end", xseries[i])
 	tkselection.set(cmd.ltbx, 0)
 
-	#homAdjframe <- tkframe(cmd.frame)
 	homAdjframe <- ttklabelframe(cmd.frame, text = "Adjusted series selection", labelanchor = "nw", relief = "groove", borderwidth = 2)
 	tkgrid(homAdjframe, padx = 2, pady = 5, sticky = 'we')
+	tkgrid.columnconfigure(homAdjframe, 0, weight = 1)
+
 	infobulle(homAdjframe, 'Select the adjusted series to be retained')
 	status.bar.display(homAdjframe, TextOutputVar, 'Select the adjusted series to be retained')
-
 
 	AdjMthdRadio1 <- tkradiobutton(homAdjframe, text = "By Mean", anchor = 'w', justify = 'left')
 	AdjMthdRadio2 <- tkradiobutton(homAdjframe, text = "By Quantile Matching", anchor = 'w', justify = 'left')
@@ -44,6 +48,7 @@ HomogCmdBut <- function(GeneralParameters){
 	tkgrid(AdjMthdRadio1, row = 0, column = 0, sticky = 'ew', padx = 1, pady = 1)
 	tkgrid(AdjMthdRadio2, row = 1, column = 0, sticky = 'ew', padx = 1, pady = 1)
 	tkgrid(AdjMthdRadio3, row = 2, column = 0, sticky = 'ew', padx = 1, pady = 1)
+
 	ChoixAjustment <- tclVar('1')
 	tkconfigure(AdjMthdRadio1, variable = ChoixAjustment, value = "1")
 	tkconfigure(AdjMthdRadio2, variable = ChoixAjustment, value = "2")
@@ -140,6 +145,8 @@ HomogCmdBut <- function(GeneralParameters){
 	######
 	tcl('update')
 	tkgrid(cmd.frame, sticky = 'nswe', pady = 5)
+	tkgrid.columnconfigure(cmd.frame, 0, weight = 1)
+
 	######
 
 	return(list(cmd.frame, GeneralParameters))

@@ -8,16 +8,46 @@ testConnection <- function(url = "https://www.google.com") {
 ####################################################################
 #get the file name without extension
 getf.no.ext <- function(flname){
-	ig <- grep('\\.',flname)
+	ig <- grep('\\.', flname)
 	if(length(ig) == 0){
 		fret <- flname
 	}else{
-		fsplit <- unlist(strsplit(flname,'\\.'))
-		fret <- sub(paste('.',fsplit[length(fsplit)], sep = ''),'',flname)
+		fsplit <- unlist(strsplit(flname, '\\.'))
+		fret <- sub(paste('.', fsplit[length(fsplit)], sep = ''), '', flname)
 	}
 	return(fret)
 }
 
+####################################################################
+## Setting Initialization Parameters
+initialize.parameters <- function(action, freqData, previous = FALSE,
+								gal.params = GeneralParameters){
+	if(!is.null(gal.params)){
+		if(gal.params$action == action) initpars <- gal.params
+		else{
+			if(previous) initpars <- init.params(action, as.character(gal.params$period))
+			else initpars <- init.params(action, freqData)
+		}
+	}else initpars <- init.params(action, freqData)
+	return(initpars)
+}
+
+####################################################################
+## Refresh all environment, destroy left panel widgets
+refreshCDT.lcmd.env <- function(lcmdf = lcmd.frame, choixStn = lchoixStnFr){
+	tkdestroy(lcmdf)
+	tkdestroy(choixStn)
+	choixStn$env$stn.choix <- c('')
+	tclvalue(choixStn$env$stn.choix.val) <- choixStn$env$stn.choix[1]
+
+	lcmd.container <- list('lcmd.frame_homo', 'lcmd.frame_qc', 'lcmd.frame_chk', 'lcmd.frame_extrdata', 'lcmd.frame_assdata',
+						'lcmd.frame_mergePlot', 'lcmd.frame_CDTffrtPlot', 'lcmd.frame_grdNcdfPlot', 'lcmd.frame_rhtests',
+						'lcmd.frame_interpol', 'lcmd.frame_valid', 'lcmd.frame_qc0Chck')
+	all.cdt.env <- list(EnvQcOutlierData, EnvQcZeroChkData, EnvInterpolation, EnvMultiPP,
+					EnvHomogzData, EnvRainValidation)
+	ret <- lapply(lcmd.container, assign, NULL, envir = .GlobalEnv)
+	ret <- lapply(all.cdt.env, function(x) rm(list = ls(envir = x), envir = x))
+}
 
 ####################################################################
 #BWidget info-bulle(ballon, tooltip) help
@@ -29,14 +59,14 @@ infobulle <- function(tclobj, text){
 ##Binding event in toolbar and display on status bar
 status.bar.display <- function(tclobj, tclvar, text){
 	tkbind(tclobj,"<Enter>", function() tclvalue(tclvar) <- text)
-	tkbind(tclobj,"<Leave>", function() tclvalue(tclvar)<-"")
+	tkbind(tclobj,"<Leave>", function() tclvalue(tclvar) <- "")
 }
 
 
 ###########################################
 helpWidget <- function(tclobj, statusbar_tclvar, text_ballon, text_statusbar){
 	tkbind(tclobj,"<Enter>", function() tclvalue(statusbar_tclvar)<-text_statusbar)
-	tkbind(tclobj,"<Leave>", function() tclvalue(statusbar_tclvar)<-"")
+	tkbind(tclobj,"<Leave>", function() tclvalue(statusbar_tclvar) <- "")
 	tcl("DynamicHelp::register", tclobj, 'balloon', text_ballon)
 }
 
@@ -44,7 +74,7 @@ helpWidget <- function(tclobj, statusbar_tclvar, text_ballon, text_statusbar){
 ####################################################################
 ##Create button on toolbar
 tkbutton.toolbar <- function(frame, img.dir, img.file, txtvar.status, txt.tooltip, txt.status){
-	picture <- tkimage.create('photo','-file', file.path(img.dir, img.file, fsep = .Platform$file.sep))
+	picture <- tkimage.create('photo', '-file', file.path(img.dir, img.file, fsep = .Platform$file.sep))
 	button <- tkbutton(frame, image = picture, relief = 'flat')
 	infobulle(button, txt.tooltip)
 	status.bar.display(button, txtvar.status, txt.status)
@@ -79,6 +109,12 @@ tklabel.h <- function(frame, text, txtvar.status, txt.tooltip, txt.status){
 ##spinbox
 ttkspinbox <- function(parent, ...) tkwidget(parent, "ttk::spinbox", ...)
 
+### deactivate spinbox
+spinbox.state <- function(horiz = spinH, vert = spinV, state = 'disabled'){
+	tkconfigure(horiz, state = state)
+	tkconfigure(vert, state = state)
+}
+
 ####################################################################
 ### Insert text 
 InsertMessagesTxt <- function(wdgt, texta, format = FALSE, fgcolor = 'red', bgcolor = 'yellow'){
@@ -88,10 +124,10 @@ InsertMessagesTxt <- function(wdgt, texta, format = FALSE, fgcolor = 'red', bgco
 	tktag.configure(wdgt, "formated2", foreground = fgcolor, background = bgcolor, font = font2)
 	txtformated <- if(fgcolor == 'red' & bgcolor == 'yellow') "formated1" else "formated2"
 	chn <- tclvalue(tkget(wdgt, "0.0", "end"))
-	vectxt <- unlist(strsplit(chn,"\n"))
+	vectxt <- unlist(strsplit(chn, "\n"))
 	lnt <- length(vectxt)
-	if(format) tkinsert(wdgt, "end", paste(texta,"\n"), txtformated)
-	else tkinsert(wdgt, "end", paste(texta,"\n"))
+	if(format) tkinsert(wdgt, "end", paste(texta, "\n"), txtformated)
+	else tkinsert(wdgt, "end", paste(texta, "\n"))
 	tcl(wdgt, 'yview', 'moveto', '1.0')
 }
 
@@ -106,15 +142,15 @@ isaTabBwNb <- local({
 })
 
 ###
-bwNoteBook <- function(parent, side = 'top',...){
-	tn <- tkwidget(parent, "NoteBook", side = side,...)
+bwNoteBook <- function(parent, side = 'top', ...){
+	tn <- tkwidget(parent, "NoteBook", side = side, ...)
 	return(tn)
 }
 
 ##arg ... pass to insert
-bwAddTab <- function(parent, text = "Tab",...){
+bwAddTab <- function(parent, text = "Tab", ...){
 	IDtab <- paste('_BwNb', isaTabBwNb(), sep = '')
-	tab <- tkinsert(parent, 'end', IDtab, text = text,...)
+	tab <- tkinsert(parent, 'end', IDtab, text = text, ...)
 	win <- .Tk.newwin(tclvalue(tab))
 	win$IDtab <- IDtab
 	return(win)
@@ -126,13 +162,13 @@ bwRaiseTab <- function(parent, tab) tcl(parent, 'raise', tab$IDtab)
 ###############################################################################
 
 ##BWidget PanedWindow
-bwPanedWindow <- function(parent,...){
-	panewin <- tkwidget(parent, 'PanedWindow',...)
+bwPanedWindow <- function(parent, ...){
+	panewin <- tkwidget(parent, 'PanedWindow', ...)
 	return(panewin)
 }
 
-bwAddPanedWindow <- function(parent,...){
-	panWidget <- tkadd(parent,...)
+bwAddPanedWindow <- function(parent, ...){
+	panWidget <- tkadd(parent, ...)
 	win <- .Tk.newwin(panWidget)
 	return(win)
 }
@@ -145,13 +181,13 @@ bwAddPanedWindow <- function(parent,...){
 # tkgrid(fr1)
 ###############################################################################
 ##BWidget ScrolledWindow ScrollableFrame
-bwScrolledWindow <- function(parent,...){
-	scrwin <- tkwidget(parent, "ScrolledWindow",...)
+bwScrolledWindow <- function(parent, ...){
+	scrwin <- tkwidget(parent, "ScrolledWindow", ...)
 	return(scrwin)
 }
 
-bwScrollableFrame <- function(parent,...){
-	scrfrm <- tkwidget(parent, "ScrollableFrame",...)
+bwScrollableFrame <- function(parent, ...){
+	scrfrm <- tkwidget(parent, "ScrollableFrame", ...)
 	tcl(parent, "setwidget", scrfrm)
 	##new 
 	#return(scrfrm)
@@ -171,8 +207,8 @@ bwScrollableFrame <- function(parent,...){
 ###############################################################################
 ##ScrollableCanvas
 
-ScrollCanvas <- function(parent,...){
-	canvas <- tkcanvas(parent,...)
+ScrollCanvas <- function(parent, ...){
+	canvas <- tkcanvas(parent, ...)
 	tcl(parent, "setwidget", canvas)
 	return(canvas)
 }
@@ -218,9 +254,9 @@ resizeTclImage <- function(file, factor = 2, zoom = TRUE){
 cycleMonth <- function(start, n, full = FALSE){
 	if(full)  frmt <- "%B"
 	else frmt <- "%b"
-	mois <- format(ISOdate(2014,1:12,1), frmt)
+	mois <- format(ISOdate(2014, 1:12, 1), frmt)
 	ix <- which(mois == start)
-	im<-(ix+(n-1))%%12
+	im <- (ix+(n-1))%%12
 	if(im == 0) im <- 12
 	return(mois[im])
 }
@@ -241,10 +277,10 @@ addMonths <- function(daty, n = 1){
 ## Add or substract dekads
 
 addDekads <- function(daty, n = 1){
-	idek <- as.numeric(substr(format(daty,'%Y%m%d'), 8,8))+n
+	idek <- as.numeric(substr(format(daty,'%Y%m%d'), 8, 8))+n
 	dek <- idek%%3
 	if(dek == 0) dek <- 3
-	daty <- format(addMonths(daty, floor((idek-1)/3)),'%Y-%m')
+	daty <- format(addMonths(daty, floor((idek-1)/3)), '%Y-%m')
 	daty <- as.Date(paste(daty, dek, sep = '-'))
 	return(daty)
 }
@@ -303,7 +339,7 @@ fileORdir2Save <- function(filedirVar, isFile = TRUE){
 openFile_ttkcomboList <- function(){
 	nopfs <- length(AllOpenFilesType)
 	if(nopfs != 0){
-		listOpenFiles <- c('',lapply(1:nopfs, function(j) AllOpenFilesData[[j]][[1]]))
+		listOpenFiles <- c('', lapply(1:nopfs, function(j) AllOpenFilesData[[j]][[1]]))
 	}else{
 		listOpenFiles <- list()
 		listOpenFiles[[1]] <- c('')
@@ -311,24 +347,31 @@ openFile_ttkcomboList <- function(){
 	return(listOpenFiles)
 }
 
+###############################################################################
+##get index of selected file from AllOpenFilesData
+
+getIndex.AllOpenFiles <- function(nomfile){
+	if(inherits(nomfile, "tclVar")){
+		fileio <- tclvalue(nomfile)
+	}else if(is.character(nomfile)){
+		fileio <- nomfile
+	}else return(NULL)
+	if(fileio != ""){
+		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
+		jfile <- which(all.open.file == fileio)
+		return(jfile)
+	}else return(NULL)
+}
 
 #################################################################################
 ## get shp file  in the list (all open files)
 ##return [[1]] name [[2]] shp [[3]] path
 
 getShpOpenData <- function(shp){
-	if(inherits(shp, "tclVar")){
-		fileio <- tclvalue(shp)
-	}else if(is.character(shp)){
-		fileio <- shp
-	}else return(NULL)
-
-	if(fileio != ""){
-		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-		jfile <- which(all.open.file == fileio)
-		if(AllOpenFilesType[[jfile]] == "shp"){
-			shpf <- AllOpenFilesData[[jfile]]
-		}else shpf <- NULL
+	jfile <- getIndex.AllOpenFiles(shp)
+	if(length(jfile) > 0){
+		if(AllOpenFilesType[[jfile]] == "shp") shpf <- AllOpenFilesData[[jfile]]
+		else shpf <- NULL
 	}else shpf <- NULL
 	return(shpf)
 }
@@ -339,35 +382,19 @@ getShpOpenData <- function(shp){
 ## return CDT data format
 
 getStnOpenData <- function(file.stnfl){
-	if(inherits(file.stnfl, "tclVar")){
-		fileio <- tclvalue(file.stnfl)
-	}else if(is.character(file.stnfl)){
-		fileio <- file.stnfl
-	}else return(NULL)
-
-	if(fileio != ""){
-		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-		jfile <- which(all.open.file == fileio)
-		if(AllOpenFilesType[[jfile]] == "ascii"){
-			donne <- AllOpenFilesData[[jfile]][[2]]
-		}else donne <- NULL
+	jfile <- getIndex.AllOpenFiles(file.stnfl)
+	if(length(jfile) > 0){
+		if(AllOpenFilesType[[jfile]] == "ascii") donne <- AllOpenFilesData[[jfile]][[2]]
+		else donne <- NULL
 	}else donne <- NULL
 	return(donne)
 }
 
 getStnOpenDataInfo <- function(file.stnfl){
-	if(inherits(file.stnfl,"tclVar")){
-		fileio <- tclvalue(file.stnfl)
-	}else if(is.character(file.stnfl)){
-		fileio <- file.stnfl
-	}else return(NULL)
-
-	if(fileio != ""){
-		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-		jfile <- which(all.open.file == fileio)
-		if(AllOpenFilesType[[jfile]] == "ascii"){
-			info <- AllOpenFilesData[[jfile]][c(1, 3:4)]
-		}else info <- NULL
+	jfile <- getIndex.AllOpenFiles(file.stnfl)
+	if(length(jfile) > 0){
+		if(AllOpenFilesType[[jfile]] == "ascii") info <- AllOpenFilesData[[jfile]][c(1, 3:4)]
+		else info <- NULL
 	}else info <- NULL
 	return(info)
 }
@@ -381,14 +408,14 @@ getCDTdataAndDisplayMsg <- function(donne, period){
 	if(!is.null(donne$duplicated.coords)){
 		tmp <- as.matrix(donne$duplicated.coords)
 		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
-		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
+		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i, ], collapse = '\t'), sep = '\n')
 		InsertMessagesTxt(main.txt.out, 'Duplicated coordinates', format = TRUE)
 		InsertMessagesTxt(main.txt.out, tmp0)
 	}
 	if(!is.null(donne$missing.coords)){
 		tmp <- as.matrix(donne$missing.coords)
 		tmp0 <- paste(dimnames(tmp)[[2]], collapse = '\t')
-		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i,], collapse = '\t'), sep = '\n')
+		for(i in 1:nrow(tmp)) tmp0 <- paste(tmp0, paste(tmp[i, ], collapse = '\t'), sep = '\n')
 		InsertMessagesTxt(main.txt.out, 'Missing coordinates', format = TRUE)
 		InsertMessagesTxt(main.txt.out, tmp0)
 	}
@@ -468,9 +495,9 @@ getCDTdata1Date <- function(donne, yrs, mon, day){
 		InsertMessagesTxt(main.txt.out, "Date format invalid", format = TRUE)
 		return(NULL)
 	}
-	if(freqData == 'daily') daty <- format(daty,'%Y%m%d')
-	if(freqData == 'dekadal') daty <- paste(format(daty,'%Y%m'), as.numeric(format(daty,'%d')), sep = '')
-	if(freqData == 'monthly') daty <- format(daty,'%Y%m')
+	if(freqData == 'daily') daty <- format(daty, '%Y%m%d')
+	if(freqData == 'dekadal') daty <- paste(format(daty, '%Y%m'), as.numeric(format(daty, '%d')), sep = '')
+	if(freqData == 'monthly') daty <- format(daty, '%Y%m')
 	idate <- match(daty, dates)
 	if(is.na(idate)) return(NULL)
 	zval <- as.numeric(donne[idate,])
@@ -482,9 +509,8 @@ getCDTdata1Date <- function(donne, yrs, mon, day){
 ## return $lon $lat $dem
 
 getDemOpenData <- function(file.grddem){
-	if(tclvalue(file.grddem) != ""){
-		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-		jfile <- which(all.open.file == tclvalue(file.grddem))
+	jfile <- getIndex.AllOpenFiles(file.grddem)
+	if(length(jfile) > 0){
 		if(AllOpenFilesType[[jfile]] == "netcdf"){
 			fdem <- AllOpenFilesData[[jfile]][[2]]
 			demv <- fdem$value
@@ -500,16 +526,15 @@ getDemOpenData <- function(file.grddem){
 ## return $lon $lat $demGrd $demMat
 
 getDemOpenDataSPDF <- function(file.grddem){
-	if(file.grddem != ""){
-		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-		jncdf <- which(all.open.file == file.grddem)
+	jncdf <- getIndex.AllOpenFiles(file.grddem)
+	if(length(jncdf) > 0){
 		if(AllOpenFilesType[[jncdf]] == "netcdf"){
 			fdem <- AllOpenFilesData[[jncdf]][[2]]
 			dem <- fdem$value
 			demMat <- dem
 			dem[dem < 0] <- 0
 			dem.coord <- data.frame(expand.grid(lon = fdem$x, lat = fdem$y))
-			coordinates(dem.coord) = ~lon+lat
+			coordinates(dem.coord) <- ~lon+lat
 			demdf <- data.frame(dem = c(dem))
 			demdf <- SpatialPointsDataFrame(coords = dem.coord, data = demdf, proj4string = CRS(as.character(NA)))
 			demlist <- list(lon = fdem$x, lat = fdem$y, demGrd = demdf, demMat = demMat)
@@ -524,12 +549,10 @@ getDemOpenDataSPDF <- function(file.grddem){
 ## return $lon $lat $val
 
 getNcdfOpenData <- function(file.netcdf){
-	if(tclvalue(file.netcdf) != ""){
-		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-		jfile <- which(all.open.file == tclvalue(file.netcdf))
-		if(AllOpenFilesType[[jfile]] == "netcdf"){
-			nc <- AllOpenFilesData[[jfile]]
-		}else nc <- NULL
+	jfile <- getIndex.AllOpenFiles(file.netcdf)
+	if(length(jfile) > 0){
+		if(AllOpenFilesType[[jfile]] == "netcdf") nc <- AllOpenFilesData[[jfile]]
+		else nc <- NULL
 	}else nc <- NULL
 	return(nc)
 }
@@ -540,15 +563,14 @@ getNcdfOpenData <- function(file.netcdf){
 ## return $lon $lat $val $rfeGrd $rfeVarid $rfeILon $rfeILat $irevlat
 
 getRFESampleData <- function(file.netcdf){
-	if(file.netcdf != ""){
-		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-		jfile <- which(all.open.file == file.netcdf)
+	jfile <- getIndex.AllOpenFiles(file.netcdf)
+	if(length(jfile) > 0){
 		if(AllOpenFilesType[[jfile]] == "netcdf"){
-		ncrfe <- AllOpenFilesData[[jfile]][[2]]
-		rfe.coord <- data.frame(expand.grid(lon = ncrfe$x, lat = ncrfe$y))
-		coordinates(rfe.coord)  <-  ~lon+lat
-		rfelist <- list(lon = ncrfe$x, lat = ncrfe$y, rfeGrd = rfe.coord, rfeVarid = ncrfe$varid,
-						 rfeILon = ncrfe$ilon, rfeILat = ncrfe$ilat, irevlat = ncrfe$irevlat)
+			ncrfe <- AllOpenFilesData[[jfile]][[2]]
+			rfe.coord <- data.frame(expand.grid(lon = ncrfe$x, lat = ncrfe$y))
+			coordinates(rfe.coord) <- ~lon+lat
+			rfelist <- list(lon = ncrfe$x, lat = ncrfe$y, rfeGrd = rfe.coord, rfeVarid = ncrfe$varid,
+							 rfeILon = ncrfe$ilon, rfeILat = ncrfe$ilat, irevlat = ncrfe$irevlat)
 		}else rfelist <- NULL
 	}else rfelist <- NULL
 	return(rfelist)
@@ -560,16 +582,16 @@ getRFESampleData <- function(file.netcdf){
 getNcdfData2Plot <- function(dataNCDF, freqData, yrs, mon, day, ncOrder = c(1,2)){
 	ilon <- ncOrder[1]
 	ilat <- ncOrder[2]
-	if(freqData == 'Monthly data') daty <- try(format(as.Date(paste(as.numeric(yrs), as.numeric(mon), 15, sep = '-')),'%Y%m%d'), silent = TRUE)
-	else daty <- try(format(as.Date(paste(as.numeric(yrs), as.numeric(mon), as.numeric(day), sep = '-')),'%Y%m%d'), silent = TRUE)
+	if(freqData == 'Monthly data') daty <- try(format(as.Date(paste(as.numeric(yrs), as.numeric(mon), 15, sep = '-')), '%Y%m%d'), silent = TRUE)
+	else daty <- try(format(as.Date(paste(as.numeric(yrs), as.numeric(mon), as.numeric(day), sep = '-')), '%Y%m%d'), silent = TRUE)
 	if(inherits(daty, "try-error") | is.na(daty)){
 		InsertMessagesTxt(main.txt.out, paste("Date format invalid", tclvalue(dataNCDF[[2]])), format = TRUE)
 		return(NULL)
 	}
 
-	if(freqData == 'Daily data') filelpath <- file.path(tclvalue(dataNCDF[[1]]), sprintf(tclvalue(dataNCDF[[2]]), substr(daty, 1,4), substr(daty, 5,6), substr(daty, 7,8)))
-	if(freqData == 'Dekadal data') filelpath <- file.path(tclvalue(dataNCDF[[1]]), sprintf(tclvalue(dataNCDF[[2]]), substr(daty, 1,4), substr(daty, 5,6), substr(daty, 8,8)))
-	if(freqData == 'Monthly data') filelpath <- file.path(tclvalue(dataNCDF[[1]]), sprintf(tclvalue(dataNCDF[[2]]), substr(daty, 1,4), substr(daty, 5,6)))
+	if(freqData == 'Daily data') filelpath <- file.path(tclvalue(dataNCDF[[1]]), sprintf(tclvalue(dataNCDF[[2]]), substr(daty, 1, 4), substr(daty, 5, 6), substr(daty, 7, 8)))
+	if(freqData == 'Dekadal data') filelpath <- file.path(tclvalue(dataNCDF[[1]]), sprintf(tclvalue(dataNCDF[[2]]), substr(daty, 1, 4), substr(daty, 5, 6), substr(daty, 8, 8)))
+	if(freqData == 'Monthly data') filelpath <- file.path(tclvalue(dataNCDF[[1]]), sprintf(tclvalue(dataNCDF[[2]]), substr(daty, 1, 4), substr(daty, 5, 6)))
 	if(!file.exists(filelpath)){
 		InsertMessagesTxt(main.txt.out, paste(filelpath, "doesn't exist"), format = TRUE)
 		return(NULL)

@@ -3,11 +3,11 @@ PlotGriddedNcdfCmd <- function(){
 	largeur <- as.integer(w.scale(21)/sfont0)
 	wncdf_ff <- as.integer(w.scale(14)/sfont0) 
 	if(Sys.info()["sysname"] == "Windows"){
-		wscrlwin <- w.scale(18)
-		hscrlwin <- h.scale(27)
+		wscrlwin <- w.scale(20)
+		hscrlwin <- h.scale(28)
 	}else{
-		wscrlwin <- w.scale(21.7)  
-		hscrlwin <- h.scale(34) 
+		wscrlwin <- w.scale(24)
+		hscrlwin <- h.scale(35)
 	}
 
 	###################
@@ -18,21 +18,33 @@ PlotGriddedNcdfCmd <- function(){
 	plotBut.cmd <- tkframe(cmd.frame)
 	tkgrid(tknote.cmd, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 2)
 	tkgrid(plotBut.cmd, row = 1, column = 1, sticky = 'se', rowspan = 1, columnspan = 1)
+	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
+	tkgrid.rowconfigure(tknote.cmd, 0, weight = 1)
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "General")
 	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Options")
 	bwRaiseTab(tknote.cmd, cmd.tab1)
+
+	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
+
+	tkgrid.rowconfigure(cmd.tab1, 0, weight = 1)
 	
 	#######################################################################################################
 
 	#Tab1
 	frTab1 <- tkframe(cmd.tab1)
 	tkgrid(frTab1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab1, 0, weight = 1)
 
 	scrw1 <- bwScrolledWindow(frTab1)
 	tkgrid(scrw1)
+	tkgrid.columnconfigure(scrw1, 0, weight = 1)
+
 	subfr1 <- bwScrollableFrame(scrw1, width = wscrlwin, height = hscrlwin)
-	
+	# tkgrid.columnconfigure(subfr1, 0, weight = 1)
+	# otra? taille fixe ny wscrlwin sy hscrlwin ts mety resizable 
+
 	##############
 	frameNcdf <- ttklabelframe(subfr1, text = "NetCDF data file", relief = 'groove')
 
@@ -103,18 +115,25 @@ PlotGriddedNcdfCmd <- function(){
 	tkgrid(frameNcdf, row = 0, column = 0, sticky = 'we', pady = 2)
 	tkgrid(frameShp, row = 1, column = 0, sticky = 'we', pady = 2)
 	tkgrid(cbBlank.tab1, row = 3, column = 0, sticky = 'we', ipady = 2)
+	tkgrid.columnconfigure(frameNcdf, 0, weight = 1)
+	tkgrid.columnconfigure(frameShp, 0, weight = 1)
+	tkgrid.columnconfigure(cbBlank.tab1, 0, weight = 1)
 
 	#######################################################################################################
 
 	#Tab2	
 	frTab2 <- tkframe(cmd.tab2)
 	tkgrid(frTab2, padx = 5, pady = 5, ipadx = 2, ipady = 2)
+	tkgrid.columnconfigure(frTab2, 0, weight = 1)
 
 	scrw2 <- bwScrolledWindow(frTab2)
 	tkgrid(scrw2)
-	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(scrw2, 0, weight = 1)
 
-	wPreview <- wscrlwin-10
+	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
+	# tkgrid.columnconfigure(subfr2, 0, weight = 1)
+
+	wPreview <- wscrlwin-20
 	nb.color <- tclVar('10')
 	preset.color <- tclVar()
 	tclvalue(preset.color) <- 'tim.colors'
@@ -268,6 +287,8 @@ PlotGriddedNcdfCmd <- function(){
 	tcl('update')
 	tkgrid(cmd.frame, sticky = 'nswe', pady = 5)
 	tkgrid.columnconfigure(cmd.frame, 0, weight = 1)
+	tkgrid.rowconfigure(cmd.frame, 0, weight = 1)
+
 	######
 	return(cmd.frame)
 }
