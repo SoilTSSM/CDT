@@ -139,39 +139,61 @@ Execute_All_Functions <- function(get.stn){
 
 	##compute mean Gauge-RFE bias
 	if(GeneralParameters$action == 'coefbias.rain'){
-		origdir <- file.path(as.character(GeneralParameters$file.io$Values[5]), paste('MeanBiasGGRFE', getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), sep = '_'), fsep = .Platform$file.sep)
+		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('STN_RFE_Bias', getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'), fsep = .Platform$file.sep)
 		mrg2run <- try(execBiasRain(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Computing mean Gauge-RFE bias finished successfully", "Computing mean Gauge-RFE bias failed")
+		merging_end_msg(mrg2run, main.txt.out, "Computing Gauge-RFE bias finished successfully", "Computing Gauge-RFE bias failed")
 	}
 
 	###############################
 	##Adjust bias
 	if(GeneralParameters$action == 'rmbias.rain'){
-		daty <- as.character(GeneralParameters$dates.adj$Values)
-		if(GeneralParameters$period == 'monthly'){
-			xdeb <- paste(format(ISOdate(2014, daty[2], 1), "%b"), daty[1], sep = '')
-			xfin <- paste(format(ISOdate(2014, daty[5], 1), "%b"), daty[4], sep = '')
-		}else{
-			xdeb <- paste(daty[3], format(ISOdate(2014, daty[2], 1), "%b"), daty[1], sep = '')
-			xfin <- paste(daty[6], format(ISOdate(2014, daty[5], 1), "%b"), daty[4], sep = '')
-		}
-		origdir <- file.path(as.character(GeneralParameters$file.io$Values[4]), paste('Adjusted_RFE_Data', xdeb, xfin, sep = '_'), fsep = .Platform$file.sep)
+		months <- sort(as.numeric(GeneralParameters$Adjust.Months))
+		start.year <- GeneralParameters$Adjust.Date.Range$start.year
+		end.year <- GeneralParameters$Adjust.Date.Range$end.year
+		mois <- format(ISOdate(2014, months, 1), "%b")
+		if(length(mois) > 6) xmo <- paste(mois[1], mois[length(mois)], sep = '-')
+		else if(length(mois) == 1) xmo <- mois
+		else xmo <- paste(substr(mois, 1, 1), collapse = '')
+		origdir <- file.path(GeneralParameters$IO.files$dir2save,
+					paste('Adjusted_RFE_Data', xmo, paste(start.year, end.year, sep = '-'), sep = '_'))
 		mrg2run <- try(execAdjBiasRain(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Adjusting mean Gauge-RFE bias finished successfully", "Adjusting mean Gauge-RFE bias failed")
+		merging_end_msg(mrg2run, main.txt.out, "Adjusting Gauge-RFE bias finished successfully", "Adjusting Gauge-RFE bias failed")
+	}
+
+	###############################
+	##compute spatio-temporal LM coeff
+	if(GeneralParameters$action == 'coefLM.rain'){
+		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('LMCoef', getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'))
+		mrg2run <- try(execLMCoefRain(origdir), silent = TRUE)
+		merging_end_msg(mrg2run, main.txt.out, "Computing LM Coefficients finished successfully", "Computing LM Coefficients failed")
 	}
 
 	###############################
 	##Merging
 	if(GeneralParameters$action == 'merge.rain'){
-		daty <- as.character(GeneralParameters$dates.mrg$Values)
-		if(GeneralParameters$period == 'monthly'){
-			xdeb <- paste(format(ISOdate(2014, daty[2], 1), "%b"), daty[1], sep = '')
-			xfin <- paste(format(ISOdate(2014, daty[5], 1), "%b"), daty[4], sep = '')
-		}else{
-			xdeb <- paste(daty[3], format(ISOdate(2014, daty[2], 1), "%b"), daty[1], sep = '')
-			xfin <- paste(daty[6], format(ISOdate(2014, daty[5], 1), "%b"), daty[4], sep = '')
+		daty <- GeneralParameters$Mrg.Date.Range
+		xdeb <- as.Date(paste(daty$start.year, daty$start.mon, daty$start.dek, sep = '-'))
+		xfin <- as.Date(paste(daty$end.year, daty$end.mon, daty$end.dek, sep = '-'))
+		if(GeneralParameters$period == 'daily') daty <- seq(xdeb, xfin, 'day')
+		if(GeneralParameters$period == 'monthly') daty <- seq(xdeb, xfin, 'month')
+		if(GeneralParameters$period == 'dekadal'){
+			daty <- seq(xdeb, xfin, 'day')
+			daty <- daty[as.numeric(format(daty, '%d')) <= 3]
 		}
-		origdir <- file.path(as.character(GeneralParameters$file.io$Values[5]), paste('Merged_RR_Data', xdeb, xfin, sep = '_'), fsep = .Platform$file.sep)
+		daty <- daty[as.numeric(format(daty, '%m'))%in%GeneralParameters$Mrg.Months]
+		if(GeneralParameters$period == 'daily'){
+			xdeb <- format(daty[1], '%Y%m%d')
+			xfin <- format(daty[length(daty)], '%Y%m%d')
+		}
+		if(GeneralParameters$period == 'dekadal'){
+			xdeb <- paste(format(daty[1], '%Y%m'), as.numeric(format(daty[1], '%d')), sep = '')
+			xfin <- paste(format(daty[length(daty)], '%Y%m'), as.numeric(format(daty[length(daty)], '%d')), sep = '')
+		}
+		if(GeneralParameters$period == 'monthly'){
+			xdeb <- format(daty[1], '%Y%m')
+			xfin <- format(daty[length(daty)], '%Y%m')
+		}
+		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('Merged_RR_Data', xdeb, xfin, sep = '_'))
 		mrg2run <- try(execMergeRain(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Rainfall merging finished successfully", "Rainfall merging failed")
 	}
@@ -188,7 +210,7 @@ Execute_All_Functions <- function(get.stn){
 
 	##compute regression coef
 	if(GeneralParameters$action == 'coefdown.temp'){
-		origdir <- file.path(as.character(GeneralParameters$file.io$Values[3]), paste('CoefDownTemp', getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), sep = '_'), fsep = .Platform$file.sep)
+		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('CoefDownTemp', getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'))
 		mrg2run <- try(execCoefDownTemp(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Computing regression parameters finished successfully", "Computing regression parameters failed")
 	}
@@ -196,15 +218,15 @@ Execute_All_Functions <- function(get.stn){
 	##############################
 	#downscaling
 	if(GeneralParameters$action == 'down.temp'){
-		daty <- as.character(GeneralParameters$dates.down$Values)
+		daty <- GeneralParameters$Down.Date.Range
 		if(GeneralParameters$period == 'monthly'){
-			xdeb <- paste(format(ISOdate(2014, daty[2], 1), "%b"), daty[1], sep = '')
-			xfin <- paste(format(ISOdate(2014, daty[5], 1), "%b"), daty[4], sep = '')
+			xdeb <- paste(format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year, sep = '')
+			xfin <- paste(format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year, sep = '')
 		}else{
-			xdeb <- paste(daty[3], format(ISOdate(2014, daty[2], 1), "%b"), daty[1], sep = '')
-			xfin <- paste(daty[6], format(ISOdate(2014, daty[5], 1), "%b"), daty[4], sep = '')
+			xdeb <- paste(daty$start.dek, format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year, sep = '')
+			xfin <- paste(daty$end.dek, format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year, sep = '')
 		}
-		origdir <- file.path(as.character(GeneralParameters$file.io$Values[5]), paste('Downscaled_Reanalysis_Data', xdeb, xfin, sep = '_'), fsep = .Platform$file.sep)
+		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('Downscaled_Reanalysis', xdeb, xfin, sep = '_'))
 		mrg2run <- try(execDownscalingTemp(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Downscaling finished successfully", "Downscaling failed")
 	}
@@ -212,43 +234,47 @@ Execute_All_Functions <- function(get.stn){
 	##############################
 	##compute mean bias coef
 	if(GeneralParameters$action == 'coefbias.temp'){
-		origdir <- file.path(as.character(GeneralParameters$file.io$Values[4]),
-			paste('CoefBiasAdjTemp', as.character(GeneralParameters$bias.method),
-			getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), sep = '_'),
-			fsep = .Platform$file.sep)
-		mrg2run <- try(execCoefBiasCompute(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Computing bias coefficients finished successfully",
-			"Computing bias coefficients failed")
+		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('STN_REANAL_Bias', getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'))
+		mrg2run <- try(execBiasTemp(origdir), silent = TRUE)
+		merging_end_msg(mrg2run, main.txt.out, "Computing bias coefficients finished successfully", "Computing bias coefficients failed")
 	}
 
 	##############################
 	##bias correction
 	if(GeneralParameters$action == 'adjust.temp'){
-		daty <- as.character(GeneralParameters$dates.adj$Values)
+		daty <- GeneralParameters$Adjust.Date.Range
 		if(GeneralParameters$period == 'monthly'){
-			xdeb <- paste(format(ISOdate(2014, daty[2], 1), "%b"), daty[1], sep = '')
-			xfin <- paste(format(ISOdate(2014, daty[5], 1), "%b"), daty[4], sep = '')
+			xdeb <- paste(format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year, sep = '')
+			xfin <- paste(format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year, sep = '')
 		}else{
-			xdeb <- paste(daty[3], format(ISOdate(2014, daty[2], 1), "%b"), daty[1], sep = '')
-			xfin <- paste(daty[6], format(ISOdate(2014, daty[5], 1), "%b"), daty[4], sep = '')
+			xdeb <- paste(daty$start.dek, format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year, sep = '')
+			xfin <- paste(daty$end.dek, format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year, sep = '')
 		}
-		origdir <- file.path(as.character(GeneralParameters$file.io$Values[5]), paste('Adjusted_Temp_Data', xdeb, xfin, sep = '_'), fsep = .Platform$file.sep)
+		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('Adjusted_Temp_Data', xdeb, xfin, sep = '_'))
 		mrg2run <- try(execAjdBiasDownTemp(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Adjustment of downscaled data finished successfully", "Adjustment of downscaled data failed")
+	}
+
+	###############################
+	##compute spatio-temporal LM coeff
+	if(GeneralParameters$action == 'coefLM.temp'){
+		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('LMCoef', getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'))
+		mrg2run <- try(execLMCoefTemp(origdir), silent = TRUE)
+		merging_end_msg(mrg2run, main.txt.out, "Computing LM Coefficients finished successfully", "Computing LM Coefficients failed")
 	}
 
 	##############################
 	##Merging
 	if(GeneralParameters$action == 'merge.temp'){
-		daty <- as.character(GeneralParameters$dates.mrg$Values)
+		daty <- GeneralParameters$Mrg.Date.Range
 		if(GeneralParameters$period == 'monthly'){
-			xdeb <- paste(format(ISOdate(2014, daty[2], 1), "%b"), daty[1], sep = '')
-			xfin <- paste(format(ISOdate(2014, daty[5], 1), "%b"), daty[4], sep = '')
+			xdeb <- paste(format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year, sep = '')
+			xfin <- paste(format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year, sep = '')
 		}else{
-			xdeb <- paste(daty[3], format(ISOdate(2014, daty[2], 1), "%b"), daty[1], sep = '')
-			xfin <- paste(daty[6], format(ISOdate(2014, daty[5], 1), "%b"), daty[4], sep = '')
+			xdeb <- paste(daty$start.dek, format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year, sep = '')
+			xfin <- paste(daty$end.dek, format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year, sep = '')
 		}
-		origdir <- file.path(as.character(GeneralParameters$file.io$Values[5]), paste('Merged_Temp_Data', xdeb, xfin, sep = '_'), fsep = .Platform$file.sep)
+		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('Merged_Temp_Data', xdeb, xfin, sep = '_'))
 		mrg2run <- try(execMergeTemp(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Temperature merging finished successfully", "Temperature merging failed")
 	}

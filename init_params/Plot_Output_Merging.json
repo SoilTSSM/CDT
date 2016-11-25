@@ -1,0 +1,27 @@
+{
+    "Obs": [{
+        "Obs.freq": "Dekadal data",
+        "Obs.file": "",
+        "Obs.unit": "mm",
+        "Obs.name": "Observation"
+    }],
+    "date": [{
+        "year": 1983,
+        "mon": 1,
+        "day": 1,
+        "day.label": "Dek"
+    }],
+    "shp": "",
+    "ncdata": [{
+        "dir": "",
+        "format": "rfe%s_%s_%s.nc",
+        "name": "NetCDF 1"
+    }],
+    "color.opt": [{
+        "nb.color": 10,
+        "preset.color": "tim.colors",
+        "reverse.color": false,
+        "custom.color": false,
+        "custom.level": false
+    }]
+}

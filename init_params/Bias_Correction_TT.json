@@ -1,0 +1,36 @@
+{
+    //Bias correction method
+    // "Multiplicative.Bias.Var": multiplicative bias correction according to the time step of data
+    //              daily: 365 days bias factors, dekadal: 36 bias factors, monthly: 12 bias factors 
+    // "Multiplicative.Bias.Mon": multiplicative bias correction using one factor for each month
+    // "Quantile.Mapping": Fitting Bernoulli-Gamma distribution
+    "Bias.Method": "Quantile.Mapping",
+    // Input and Output files/directory
+    "IO.files": [{
+        // Full path to the directory containing the bias factors or distr pars
+        "Bias.dir": "",
+        // Full path to the directory of downscaled data
+        "Down.dir": "",
+        // Full path to the directory to save results
+        "dir2save": ""
+    }],
+    "Format": [{
+        // Downscaled filename format
+        "Down.File.Format": "tmax_down_%s%s%s.nc",
+        // Mean Bias prefix
+        "Mean.Bias.Prefix": "tmax_JRA_MeanBias",
+        // Bias corrected file prefix
+        "Adj.File.Format": "tmax_adj_%s%s%s.nc"
+    }],
+    // Months to correct the downscaled bias
+    "Adjust.Months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    // Date range to be used to correct Bias
+    "Adjust.Date.Range": [{
+        "start.year": 1961,
+        "start.mon": 1,
+        "start.dek": 1,
+        "end.year": 2015,
+        "end.mon": 12,
+        "end.dek": 3
+    }]
+}

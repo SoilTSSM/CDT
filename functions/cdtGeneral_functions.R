@@ -363,20 +363,211 @@ getIndex.AllOpenFiles <- function(nomfile){
 	}else return(NULL)
 }
 
-#################################################################################
-## get shp file  in the list (all open files)
-##return [[1]] name [[2]] shp [[3]] path
+##################################################################################
+#Reshape data.frame XYZ to matrix list(x, y, z = matrix)
 
-getShpOpenData <- function(shp){
-	jfile <- getIndex.AllOpenFiles(shp)
-	if(length(jfile) > 0){
-		if(AllOpenFilesType[[jfile]] == "shp") shpf <- AllOpenFilesData[[jfile]]
-		else shpf <- NULL
-	}else shpf <- NULL
-	return(shpf)
+reshapeXYZ2Matrix <- function(df){
+	#require(reshape2)
+	df <- as.data.frame(df)
+	names(df) <- c('x', 'y', 'z')
+	x <- sort(unique(df$x))
+	y <- sort(unique(df$y))
+	z <- acast(df, x~y, value.var = "z")
+	dimnames(z) <- NULL
+	return(list(x = x, y = y, z = z))
+}
+
+##################################################################################
+###get index of points at grid
+##pts_Coords = list(lon, lat)
+##grd_Coords  = list(lon, lat)
+
+grid2pointINDEX <- function(pts_Coords,grd_Coords){
+	newgrid <- expand.grid(lon = grd_Coords$lon, lat = grd_Coords$lat)
+	coordinates(newgrid) <- ~lon+lat
+	newgrid <- SpatialPixels(points = newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
+	pts.loc <- data.frame(lon = pts_Coords$lon, lat = pts_Coords$lat)
+	pts.loc <- SpatialPoints(pts.loc)
+	ijGrd <- unname(over(pts.loc, geometry(newgrid)))
+	return(ijGrd)
+}
+
+##################################################################################
+###define spatialPixels
+##grd_Coords  = list(lon, lat)
+
+defSpatialPixels <- function(grd_Coords){
+	newgrid <- expand.grid(lon = grd_Coords$lon, lat = grd_Coords$lat)
+	coordinates(newgrid) <- ~lon+lat
+	newgrid <- SpatialPixels(points = newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
+	return(newgrid)
+}	
+
+##################################################################################
+## Compare if 2 SpatialPixelsObjare have the same resolution
+
+is.diffSpatialPixelsObj <- function(SP1, SP2, tol = 1e-07){
+	SP1CelldX <- SP1@grid@cellsize[1]
+	SP1CelldY <- SP1@grid@cellsize[2]
+	SP1CellSX <- SP1@grid@cells.dim[1]
+	SP1CellSY <- SP1@grid@cells.dim[2]
+	SP2CelldX <- SP2@grid@cellsize[1]
+	SP2CelldY <- SP2@grid@cellsize[2]
+	SP2CellSX <- SP2@grid@cells.dim[1]
+	SP2CellSY <- SP2@grid@cells.dim[2]
+	unname(abs(SP1CelldX-SP2CelldX) > tol | (SP1CellSX != SP2CellSX) | abs(SP1CelldY-SP2CelldY) > tol | SP1CellSY != SP2CellSY)
+}
+
+##################################################################################
+### get Coarse grid from matrix data with dim lon/lat
+
+indexCoarseGrid <- function(lon, lat, res = 0.25){
+	res <- if(length(res) > 1) res[1:2] else c(res, res)
+	nlon <- length(lon)
+	nlat <- length(lat)
+	ilon <- diff(range(lon))/(nlon-1)
+	ilat <- diff(range(lat))/(nlat-1)
+	ix <- round(res[1]/ilon)-1
+	iy <- round(res[2]/ilat)-1
+	ix <- seq(1, nlon, ifelse(ix < 1, 1, ix))
+	iy <- seq(1, nlat, ifelse(iy < 1, 1, iy))
+	return(list(ix = ix, iy = iy))
+}
+
+##################################################################################
+### create grid for interpolation 
+
+createGrid <- function(ObjStn, ObjGrd, ObjRfe = NULL, as.dim.elv = TRUE, latlong = 'km',
+						normalize = FALSE, coarse.grid = TRUE, res.coarse = 0.25){
+	lon2UTM <- function(lon) (floor((lon + 180)/6) %% 60) + 1
+	lonO <- ObjStn$x
+	latO <- ObjStn$y
+	lonS <- ObjGrd$x
+	latS <- ObjGrd$y
+	demS <- c(ObjGrd$z)
+	gridO <- data.frame(lon = lonO, lat = latO, elv = ObjStn$z)
+	gridS <- data.frame(expand.grid(lon = lonS, lat = latS), elv = demS)
+
+	ixOa <- is.na(gridO$elv)
+	if(any(ixOa)){
+		gridOa <- gridO[ixOa, c('lon', 'lat'), drop = FALSE]
+		gridOa <- krige(formula = elv~1, locations = ~lon+lat, data = na.omit(gridS),
+						newdata = gridOa, nmin = 3, nmax = 10, debug.level = 0)
+		gridO$elv[ixOa] <- round(gridOa$var1.pred)
+	}
+	
+	ixSa <- is.na(gridS$elv)
+	if(any(ixSa)){
+		gridSa <- gridS[ixSa, c('lon', 'lat'), drop = FALSE]
+		gridSa <- krige(formula = elv~1, locations = ~lon+lat, data = na.omit(gridS),
+						newdata = gridSa, nmin = 3, nmax = 10, debug.level = 0)
+		gridS$elv[ixSa] <- round(gridSa$var1.pred)
+		ObjGrd$z[ixSa] <- round(gridSa$var1.pred)
+	}
+	
+	coordinates(gridO) <- ~lon+lat
+	coordinates(gridS) <- ~lon+lat
+
+	gridS1 <- NULL
+	gridS2 <- NULL
+	idcoarse <- NULL
+	idcoarse1 <- NULL
+	if(coarse.grid){
+		idcoarse <- indexCoarseGrid(ObjGrd$x, ObjGrd$y, res.coarse)
+		lonS1 <- ObjGrd$x[idcoarse$ix]
+		latS1 <- ObjGrd$y[idcoarse$iy]
+		demS1 <- c(ObjGrd$z[idcoarse$ix, idcoarse$iy])
+		gridS1 <- data.frame(expand.grid(lon = lonS1, lat = latS1), elv = demS1)
+		coordinates(gridS1) <- ~lon+lat
+		if(!is.null(ObjRfe)){
+			idcoarse1 <- indexCoarseGrid(ObjRfe$x, ObjRfe$y, res.coarse)
+			lonS2 <- ObjRfe$x[idcoarse1$ix]
+			latS2 <- ObjRfe$y[idcoarse1$iy]
+			demS2 <- c(ObjRfe$z[idcoarse1$ix, idcoarse1$iy])
+			gridS2 <- data.frame(expand.grid(lon = lonS2, lat = latS2), elv = demS2)
+			coordinates(gridS2) <- ~lon+lat
+		}
+	}
+
+	if(as.dim.elv){
+		proj4string(gridO) <- CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0")
+		proj4string(gridS) <- CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0")
+
+		zone <- lon2UTM(sum(range(lonS))/2)
+		orient <- if((sum(range(latS))/2) >= 0) 'north' else 'south'
+		proj <- paste("+proj=utm +zone=", zone, " +", orient, " +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0", sep = "")
+
+		gridO.utm <- spTransform(gridO, CRS(proj))
+		gridS.utm <- spTransform(gridS, CRS(proj))
+
+		gridO <- as(gridO.utm, 'data.frame')
+		gridS <- as(gridS.utm, 'data.frame')
+
+		origin <- rbind(apply(gridS[, c('lon', 'lat')],2,min), apply(gridO[, c('lon', 'lat')],2,min))
+		origin <- apply(origin, 2, min)
+		gridO[, c('lon', 'lat')] <- t(t(gridO[, c('lon', 'lat')])-origin)
+		gridS[, c('lon', 'lat')] <- t(t(gridS[, c('lon', 'lat')])-origin)
+		if(tolower(latlong) == 'km'){
+			gridO[, c('lon', 'lat')] <- gridO[, c('lon', 'lat')]/1000
+			gridS[, c('lon', 'lat')] <- gridS[, c('lon', 'lat')]/1000
+		}
+		if(normalize){
+			mgrd <- apply(rbind(gridO, gridS), 2, mean)
+			sgrd <- apply(rbind(gridO, gridS), 2, sd)
+			gridO <- as.data.frame(t((t(gridO)-mgrd)/sgrd))
+			gridS <- as.data.frame(t((t(gridS)-mgrd)/sgrd))
+		}
+		coordinates(gridO) <- ~lon+lat+elv
+		coordinates(gridS) <- ~lon+lat+elv
+
+		if(coarse.grid){
+			proj4string(gridS1) <- CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0")
+			gridS1.utm <- spTransform(gridS1, CRS(proj))
+			gridS1 <- as(gridS1.utm, 'data.frame')
+			gridS1[, c('lon', 'lat')] <- t(t(gridS1[, c('lon', 'lat')])-origin)
+			if(tolower(latlong) == 'km') gridS1[, c('lon', 'lat')] <- gridS1[, c('lon', 'lat')]/1000
+			if(normalize){
+				# mgrd1 <- apply(gridS1, 2, mean)
+				# sgrd1 <- apply(gridS1, 2, sd)
+				gridS1 <- as.data.frame(t((t(gridS1)-mgrd)/sgrd))
+			}
+			coordinates(gridS1) <- ~lon+lat+elv
+			
+			if(!is.null(ObjRfe)){
+				proj4string(gridS2) <- CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0")
+				gridS2.utm <- spTransform(gridS2, CRS(proj))
+				gridS2 <- as(gridS2.utm, 'data.frame')
+				gridS2[, c('lon', 'lat')] <- t(t(gridS2[, c('lon', 'lat')])-origin)
+				if(tolower(latlong) == 'km') gridS2[, c('lon', 'lat')] <- gridS2[, c('lon', 'lat')]/1000
+				if(normalize){
+					# mgrd2 <- apply(gridS2, 2, mean)
+					# sgrd2 <- apply(gridS2, 2, sd)
+					gridS2 <- as.data.frame(t((t(gridS2)-mgrd)/sgrd))
+				}
+				coordinates(gridS2) <- ~lon+lat+elv
+			}
+		}
+	}
+	return(list(coords.stn = gridO, coords.grd = gridS1, coords.rfe = gridS2,
+				newgrid = gridS, idxy = idcoarse, idxy.rfe = idcoarse1))
+}
+
+##################################################################################
+
+### gstat block size
+createBlock <- function(cellsize, fac = 0.5, len = 4){
+	sDX <- cellsize[1]*fac
+	dBX <- seq(-sDX, sDX, length.out = len)
+	sDY <- cellsize[2]*fac
+	dBY <- seq(-sDY, sDY, length.out = len)
+	bGrd <- expand.grid(x = dBX, y = dBY)
+	return(bGrd)
 }
 
 
+
+#################################################################################
+######################          STATIONS DATA          ##########################
 #################################################################################
 ## get stn data  in the list (all open files)
 ## return CDT data format
@@ -468,7 +659,7 @@ getCDTdata <- function(file.stnfl, file.period){
 	donne <- splitCDTData(donne, freqData)
 	if(is.null(donne)) return(NULL)
 	lon <- donne$lon
-	lat <- donne$lat		
+	lat <- donne$lat
 	id <- donne$id
 	elv <- donne$elv
 	dates <- donne$dates
@@ -502,19 +693,22 @@ getCDTdata1Date <- function(donne, yrs, mon, day){
 	if(is.na(idate)) return(NULL)
 	zval <- as.numeric(donne[idate,])
 	return(list(date = daty, lon = lon, lat = lat, id = id, z = zval, elv = elv))
-}	
+}
 
+
+#################################################################################
+########################          DEM DATA          #############################
 #################################################################################
 ## get DEM data  in the list (all open files)
 ## return $lon $lat $dem
 
-getDemOpenData <- function(file.grddem){
+getDemOpenData <- function(file.grddem, convertNeg2NA = TRUE){
 	jfile <- getIndex.AllOpenFiles(file.grddem)
 	if(length(jfile) > 0){
 		if(AllOpenFilesType[[jfile]] == "netcdf"){
 			fdem <- AllOpenFilesData[[jfile]][[2]]
 			demv <- fdem$value
-			demv[demv < 0] <- NA
+			if(convertNeg2NA) demv[demv < 0] <- NA
 			dem <- list(lon = fdem$x, lat = fdem$y, dem = demv)
 		}else dem <- NULL
 	}else dem <- NULL
@@ -543,7 +737,91 @@ getDemOpenDataSPDF <- function(file.grddem){
 	return(demlist)
 }
 
+#################################################################################
+##get DEM at stations locations (interpolation leftCmd)
 
+getDEMatStationsLoc <- function(donne, dem){
+	crdStn <- data.frame(lon = donne$lon, lat = donne$lat)
+	coordinates(crdStn) <- c('lon', 'lat')
+	demgrd <- expand.grid(lon = dem$x, lat = dem$y)
+	coordinates(demgrd) <- c('lon', 'lat')
+	demgrd <- SpatialPixels(points = demgrd, tolerance = sqrt(sqrt(.Machine$double.eps)))
+	ijGrd <- unname(over(crdStn, geometry(demgrd)))
+	sdem <- rep(NA, length(crdStn))
+	inNA <- which(!is.na(ijGrd))
+	sdem[inNA] <- dem$value[ijGrd[inNA]]
+	return(sdem)
+}
+
+#################################################################################
+##get DEM at a new grid 
+
+getDEMatNewGrid <- function(newgrid, dem){
+	newgrid <- as.data.frame(newgrid)
+	crdPts <- data.frame(lon = newgrid$lon, lat = newgrid$lat)
+	coordinates(crdPts) <- c('lon', 'lat')
+	demgrd <- expand.grid(lon = dem$x, lat = dem$y)
+	coordinates(demgrd) <- c('lon', 'lat')
+	demgrd <- SpatialPixels(points = demgrd, tolerance = sqrt(sqrt(.Machine$double.eps)))
+	ijGrd <- unname(over(crdPts, geometry(demgrd)))
+	sdem <- rep(NA, length(crdPts))
+	inNA <- which(!is.na(ijGrd))
+	sdem[inNA] <- dem$value[ijGrd[inNA]]
+	return(sdem)
+}
+
+#################################################################################
+##regrid DEM 
+
+regridDEMFun <- function(demObj, newgrd, regrid = c('BLW', 'IDW', 'RASTER'), ...){
+	if(regrid[1] == 'BLW'){
+		zdem <- demObj$demMat
+		zdem[zdem < 0] <- 0
+		demObj <- list(x = demObj$lon, y = demObj$lat, z = zdem)
+		demNew <- list(x = newgrd$lon, y = newgrd$lat)
+		newObj <- interp.surface.grid(demObj, demNew)
+		dem <- newObj$z
+		dem[dem < 0] <- 0
+		dem <- c(dem)
+	}
+	if(regrid[1] == 'IDW'){
+		newgrid <- defSpatialPixels(newgrd)
+		dem.grd <- krige(formula = dem ~ 1, locations = demObj$demGrd, newdata = newgrid, ..., debug.level = 0)
+		dem <- ifelse(dem.grd@data$var1.pred < 0, 0, dem.grd@data$var1.pred)
+	}
+	if(regrid[1] == 'RASTER'){
+		require(raster)
+		zdem <- demObj$demMat
+		zdem[zdem < 0] <- 0
+		rasterdem <- raster(list(x = demObj$lon, y = demObj$lat, z = zdem))
+		newgrid <- raster(list(x = newgrd$lon, y = newgrd$lat, z = matrix(0, nrow = length(newgrd$lon), ncol = length(newgrd$lat))))
+		dem <- resample(rasterdem, newgrid, ...)
+		dem <- mask(dem, newgrid)
+		dem<-c(t(apply(as.matrix(dem), 2, rev)))
+		dem[dem < 0] <- 0
+	}	
+	return(dem)
+}
+
+
+#################################################################################
+########################          SHP DATA          #############################
+#################################################################################
+## get shp file  in the list (all open files)
+##return [[1]] name [[2]] shp [[3]] path
+
+getShpOpenData <- function(shp){
+	jfile <- getIndex.AllOpenFiles(shp)
+	if(length(jfile) > 0){
+		if(AllOpenFilesType[[jfile]] == "shp") shpf <- AllOpenFilesData[[jfile]]
+		else shpf <- NULL
+	}else shpf <- NULL
+	return(shpf)
+}
+
+
+#################################################################################
+########################          NetCDF DATA          ##########################
 #################################################################################
 ## get NetCDF data  in the list (all open files)
 ## return $lon $lat $val
@@ -556,7 +834,6 @@ getNcdfOpenData <- function(file.netcdf){
 	}else nc <- NULL
 	return(nc)
 }
-
 
 #################################################################################
 ## get RFE sample data  in the list (all open files)
@@ -631,117 +908,160 @@ getSatelliteData <- function(dir_ncdf, ff_ncdf, spchkQcDateVal){
 }
 
 #################################################################################
-##get DEM at stations locations (interpolation leftCmd)
+## list of available ncdf files
 
-getDEMatStationsLoc <- function(donne, dem){
-	crdStn <- data.frame(lon = donne$lon, lat = donne$lat)
-	coordinates(crdStn) <- c('lon', 'lat')
-	demgrd <- expand.grid(lon = dem$x, lat = dem$y)
-	coordinates(demgrd) <- c('lon', 'lat')
-	demgrd <- SpatialPixels(points = demgrd, tolerance = sqrt(sqrt(.Machine$double.eps)))
-	ijGrd <- unname(over(crdStn, geometry(demgrd)))
-	sdem <- rep(NA, length(crdStn))
-	inNA <- which(!is.na(ijGrd))
-	sdem[inNA] <- dem$value[ijGrd[inNA]]
-	return(sdem)
+ncFilesInfo <- function(freqData, start.date, end.date, months, ncDir, ncFileFormat, error.msg){
+	if(freqData == 'daily'){
+		dates <- format(seq(start.date, end.date, 'day'), '%Y%m%d')
+		ncDataFiles <- file.path(ncDir, sprintf(ncFileFormat, substr(dates, 1, 4),
+						substr(dates, 5, 6), substr(dates, 7, 8)), fsep = .Platform$file.sep)
+	}
+	if(freqData == 'dekadal'){
+		dates <- seq(start.date,  end.date, 'day')
+		dates <- paste(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%Y%m'),
+						as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%d')), sep = '')
+		ncDataFiles <- file.path(ncDir, sprintf(ncFileFormat, substr(dates, 1, 4),
+						substr(dates, 5, 6), substr(dates, 7, 7)), fsep = .Platform$file.sep)
+	}
+	if(freqData == 'monthly'){
+		dates <- format(seq(start.date, end.date, 'month'), '%Y%m')
+		ncDataFiles <- file.path(rfeDir, sprintf(ncFileFormat, substr(dates, 1, 4),
+						substr(dates, 5, 6)), fsep = .Platform$file.sep)
+	}
+	months.dates <- as(substr(dates, 5, 6), 'numeric')
+	imo <- months.dates%in%months
+	dates <- dates[imo]
+	ncDataFiles <- ncDataFiles[imo]
+
+	existFl <- unlist(lapply(ncDataFiles, file.exists))
+	if(!any(existFl)){
+		InsertMessagesTxt(main.txt.out, error.msg, format = TRUE)
+		tcl("update")
+		return(NULL)
+	}
+	return(list(dates = dates, nc.files = ncDataFiles, exist = existFl))
 }
 
 #################################################################################
-##get DEM at a new grid 
+## read ncdf files
+## input arguments 
+## read.ncdf.parms <- list(
+## ncfiles = list(freqData , start.date, end.date, ncDir, ncFileFormat),
+## ncinfo = list(xo, yo, varid), msg = list(start, end), errmsg = errmsg)
 
-getDEMatNewGrid <- function(newgrid, dem){
-	newgrid <- as.data.frame(newgrid)
-	crdPts <- data.frame(lon = newgrid$lon, lat = newgrid$lat)
-	coordinates(crdPts) <- c('lon', 'lat')
-	demgrd <- expand.grid(lon = dem$x, lat = dem$y)
-	coordinates(demgrd) <- c('lon', 'lat')
-	demgrd <- SpatialPixels(points = demgrd, tolerance = sqrt(sqrt(.Machine$double.eps)))
-	ijGrd <- unname(over(crdPts, geometry(demgrd)))
-	sdem <- rep(NA, length(crdPts))
-	inNA <- which(!is.na(ijGrd))
-	sdem[inNA] <- dem$value[ijGrd[inNA]]
-	return(sdem)
-}
+read.NetCDF.Data <- function(read.ncdf.parms){
+	InsertMessagesTxt(main.txt.out, read.ncdf.parms$msg$start)
+	tcl("update")
 
-##################################################################################
-#Reshape data.frame XYZ to matrix list(x, y, z = matrix)
+	ncInfo <- ncFilesInfo(read.ncdf.parms$ncfiles$freqData, read.ncdf.parms$ncfiles$start.date,
+							read.ncdf.parms$ncfiles$end.date, read.ncdf.parms$ncfiles$months,
+							read.ncdf.parms$ncfiles$ncDir, read.ncdf.parms$ncfiles$ncFileFormat,
+							read.ncdf.parms$errmsg)
+	if(is.null(ncInfo)) return(NULL)
 
-reshapeXYZ2Matrix <- function(df){
-	#require(reshape2)
-	df <- as.data.frame(df)
-	names(df) <- c('x', 'y', 'z')
-	x <- sort(unique(df$x))
-	y <- sort(unique(df$y))
-	z <- acast(df, x~y, value.var = "z")
-	dimnames(z) <- NULL
-	return(list(x = x, y = y, z = z))
-}
-
-
-##################################################################################
-###get index of points at grid
-##pts_Coords = list(lon, lat)
-##grd_Coords  = list(lon, lat)
-
-grid2pointINDEX <- function(pts_Coords,grd_Coords){
-	newgrid <- expand.grid(lon = grd_Coords$lon, lat = grd_Coords$lat)
-	coordinates(newgrid) <- ~lon+lat
-	newgrid <- SpatialPixels(points = newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
-	pts.loc <- data.frame(lon = pts_Coords$lon, lat = pts_Coords$lat)
-	pts.loc <- SpatialPoints(pts.loc)
-	ijGrd <- unname(over(pts.loc, geometry(newgrid)))
-	return(ijGrd)
-}
-
-##################################################################################
-###define spatialPixels
-##grd_Coords  = list(lon, lat)
-
-defSpatialPixels <- function(grd_Coords){
-	newgrid <- expand.grid(lon = grd_Coords$lon, lat = grd_Coords$lat)
-	coordinates(newgrid) <- ~lon+lat
-	newgrid <- SpatialPixels(points = newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
-	return(newgrid)
-}	
-
-is.sameSpatialPixelsObj <- function(SP1, SP2, tol = 1e-07){
-	SP1CelldX <- SP1@grid@cellsize[1]
-	SP1CelldY <- SP1@grid@cellsize[2]
-	SP1CellSX <- SP1@grid@cells.dim[1]
-	SP1CellSY <- SP1@grid@cells.dim[2]
-	SP2CelldX <- SP2@grid@cellsize[1]
-	SP2CelldY <- SP2@grid@cellsize[2]
-	SP2CellSX <- SP2@grid@cells.dim[1]
-	SP2CellSY <- SP2@grid@cells.dim[2]
-	unname((abs(SP1CelldX-SP2CelldX) > tol & SP1CellSX  != SP2CellSX) | (abs(SP1CelldY-SP2CelldY) > tol & SP1CellSY  != SP2CellSY))
-}
-
-regridDEMFun <- function(demObj, newgrd, regrid = c('BLW', 'IDW', 'RASTER'), ...){
-	if(regrid[1] == 'BLW'){
-		zdem <- demObj$demMat
-		zdem[zdem < 0] <- 0
-		demObj <- list(x = demObj$lon, y = demObj$lat, z = zdem)
-		demNew <- list(x = newgrd$lon, y = newgrd$lat)
-		newObj <- interp.surface.grid(demObj, demNew)
-		dem <- newObj$z
-		dem[dem < 0] <- 0
-		dem <- c(dem)
+	if(doparallel & length(which(ncInfo$exist)) >= 180){
+		klust <- makeCluster(nb_cores)
+		registerDoParallel(klust)
+		`%parLoop%` <- `%dopar%`
+		closeklust <- TRUE
+	}else{
+		`%parLoop%` <- `%do%`
+		closeklust <- FALSE
 	}
-	if(regrid[1] == 'IDW'){
-		newgrid <- defSpatialPixels(newgrd)
-		dem.grd <- krige(formula = dem ~ 1, locations = demObj$demGrd, newdata = newgrid, ..., debug.level = 0)
-		dem <- ifelse(dem.grd@data$var1.pred < 0, 0, dem.grd@data$var1.pred)
+
+	nc <- nc_open(ncInfo$nc.files[which(ncInfo$exist)[1]])
+	lon <- nc$dim[[read.ncdf.parms$ncinfo$xo]]$vals
+	lat <- nc$dim[[read.ncdf.parms$ncinfo$yo]]$vals
+	nc_close(nc)
+
+	xo <- order(lon)
+	lon <- lon[xo]
+	yo <- order(lat)
+	lat <- lat[yo]
+
+	packages <- c('ncdf4')
+	toExports <- c('ncInfo', 'read.ncdf.parms')
+	ncdata <- foreach(jj = seq_along(ncInfo$nc.files), .packages = packages, .export = toExports) %parLoop% {
+		if(ncInfo$exist[jj]){
+			nc <- nc_open(ncInfo$nc.files[jj])
+			xvar <- ncvar_get(nc, varid = read.ncdf.parms$ncinfo$varid)
+			nc_close(nc)
+			xvar <- xvar[xo, yo]
+			if(read.ncdf.parms$ncinfo$yo == 1){
+				xvar <- matrix(c(xvar), nrow = length(lon), ncol = length(lat), byrow = TRUE)
+			}
+		}else xvar <- NULL
+		#list(ncInfo$dates[jj], xvar)
+		xvar
 	}
-	if(regrid[1] == 'RASTER'){
-		require(raster)
-		zdem <- demObj$demMat
-		zdem[zdem < 0] <- 0
-		rasterdem <- raster(list(x = demObj$lon, y = demObj$lat, z = zdem))
-		newgrid <- raster(list(x = newgrd$lon, y = newgrd$lat, z = matrix(0, nrow = length(newgrd$lon), ncol = length(newgrd$lat))))
-		dem <- resample(rasterdem, newgrid, ...)
-		dem <- mask(dem, newgrid)
-		dem<-c(t(apply(as.matrix(dem), 2, rev)))
-		dem[dem < 0] <- 0
-	}	
-	return(dem)
+	if(closeklust) stopCluster(klust)
+	# dates <- sapply(ncdata, '[[', 1)
+	# ncdata <- lapply(ncdata, '[[', 2)
+	ret <- list(lon = lon, lat = lat, dates = ncInfo$dates, data = ncdata)
+	InsertMessagesTxt(main.txt.out, read.ncdf.parms$msg$end)
+	tcl("update")
+	return(ret)
 }
+
+#################################################################################
+
+smooth.matrix <- function(mat, ns){
+	matrix.shift <- function(n, shift){
+		mshift <- matrix(NA, ncol = n, nrow = 2*shift+1)
+		mshift[shift+1, ] <- seq(n)
+		for(j in 1:shift){
+			is <- shift-(j-1)
+			mshift[j, ] <- c(tail(seq(n), -is), rep(NA, is))
+			mshift[2*(shift+1)-j, ] <- c(rep(NA, is), head(seq(n), -is))
+		}
+		mshift
+	}
+	icol <- matrix.shift(ncol(mat), ns)
+	matCol <- lapply(1:nrow(icol), function(j) mat[, icol[j, ]])
+	irow <- matrix.shift(nrow(mat), ns)
+	matRow <- lapply(1:nrow(irow), function(j) mat[irow[j, ], ])
+	matEns <- c(matCol, matRow)
+	matEns <- simplify2array(matEns)
+	res <- apply(matEns, 1:2, mean, na.rm = TRUE)
+	res[is.nan(res)] <- NA
+	return(res)
+}
+
+#################################################################################
+
+
+slope.aspect <- function(mat, xres, yres, smoothing = 1){
+	sobel <- (c(1, 2, 1)%*%t(c(-1, 0, 1)))/8
+	xkernel <- matrix(sobel, 3)
+	ykernel <- t(matrix(sobel, 3))[3:1, ]
+	x.mov <- movingwindow(mat, xkernel)/xres
+	y.mov <- movingwindow(mat, ykernel)/yres
+	slope <- atan(sqrt(x.mov^2 + y.mov^2)/smoothing)
+	slope <- (180/pi) * slope
+	aspect <- 180 - (180/pi) * atan(y.mov/x.mov) + 90 * (x.mov/abs(x.mov))
+	aspect[slope == 0] <- 0
+	return(list(slope = slope, aspect = aspect))
+}
+
+movingwindow <- function(mat, kernel) { 
+ 	x <- mat
+ 	x[] <- NA
+    mwoffset <- (nrow(kernel)-1)/2
+    for(i in (1+mwoffset):(nrow(mat)-mwoffset)) {
+        for(j in (1+mwoffset):(ncol(mat)-mwoffset)) {
+            x[i, j] <- sum(kernel * mat[(i-mwoffset):(i+mwoffset), (j-mwoffset):(j+mwoffset)])
+        }
+    }
+    dim(x) <- dim(mat)
+    return(x)
+}
+
+# mat <- demGrid$z
+# xres <- 0.03750001
+# yres <- 0.03750001
+
+# slopeasp <- slope.aspect(mat, xres, yres)
+# x <- slopeasp$slope
+
+# x[x < 89.9] <- NA
+# image(x, col = rainbow(64))

@@ -1,41 +1,21 @@
-TreatCoefDownTemp <- function(origdir){
+execCoefDownTemp <- function(origdir){
 	freqData <- GeneralParameters$period
-	file.pars <- as.character(GeneralParameters$file.io$Values)
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
 	#######get data
-	donne <- getStnOpenData(file.pars[1])
-	donne <- getCDTdataAndDisplayMsg(donne, freqData)
-	if(is.null(donne)) return(NULL)
+	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
+	stnData <- getCDTdataAndDisplayMsg(stnData, freqData)
+	if(is.null(stnData)) return(NULL)
 
 	###get elevation data
-	demlist <- getDemOpenDataSPDF(file.pars[2])
-
-	coefdownTempdat <- list(stnData = donne, demData = demlist)
-	outfile <- file.path(origdir, 'DataUsed2Compute_Coef.RData', fsep = .Platform$file.sep)
-	save(coefdownTempdat, file = outfile)
-
-	return(coefdownTempdat)
-}
-
-####################################################################
-
-execCoefDownTemp <- function(origdir){
-	coefdownTempdat <- TreatCoefDownTemp(origdir)
-	##DEM data
-	dem <- coefdownTempdat$demData$demGrd@data$dem
-	grid.loc <- SpatialPixels(points = coefdownTempdat$demData$demGrd)
-
-	#DEM over stations
-	stn.loc <- data.frame(lon = coefdownTempdat$stnData$lon, lat = coefdownTempdat$stnData$lat)
-	stn.loc <- SpatialPoints(stn.loc)
-	ijGrd <- over(stn.loc, grid.loc)
-	dem.stn <- dem[ijGrd]
+	demData <- getDemOpenDataSPDF(GeneralParameters$IO.files$DEM.file)
+	if(is.null(demData)) return(NULL)
 
 	#Compute regression parameters between station temperature and elevation
-	paramsGlmCoef <- list(coefdownTempdat = coefdownTempdat, dem.stn = dem.stn, origdir = origdir)
+	paramsGlmCoef <- list(GeneralParameters = GeneralParameters, stnData = stnData,
+							demData = demData, origdir = origdir)
 	ret <- GlmCoefDownscaling(paramsGlmCoef)
-	rm(coefdownTempdat, dem, grid.loc, paramsGlmCoef, dem.stn)
+	rm(stnData, demData)
 	gc()
 	if(!is.null(ret)){
 		if(ret == 0) return(0)
@@ -45,330 +25,87 @@ execCoefDownTemp <- function(origdir){
 
 #######################################################################################
 
-TreatDownscalingTemp <- function(origdir){
-	file.pars <- as.character(GeneralParameters$file.io$Values)
+execDownscalingTemp <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
-	###get elevation data
-	demlist <- getDemOpenDataSPDF(file.pars[2])
-
-	##RFE sample file
-	rfelist <- getRFESampleData(file.pars[3])
-
-	downTempdat <- list(demData = demlist, rfeData = rfelist)
-	return(downTempdat)
-}
-
-#####################################################
-
-execDownscalingTemp <- function(origdir){
 	freqData <- GeneralParameters$period
-	downTempdat <- TreatDownscalingTemp(origdir)
+	start.year <- GeneralParameters$Down.Date.Range$start.year
+	start.mon <- GeneralParameters$Down.Date.Range$start.mon
+	start.dek <- GeneralParameters$Down.Date.Range$start.dek
+	end.year <- GeneralParameters$Down.Date.Range$end.year
+	end.mon <- GeneralParameters$Down.Date.Range$end.mon
+	end.dek <- GeneralParameters$Down.Date.Range$end.dek
+	months <- GeneralParameters$Down.Months
 
-	create.grd <- as.character(GeneralParameters$CreateGrd)
-	datesSE <- as.numeric(as.character(GeneralParameters$dates.down$Values))
+	reanalDir <- GeneralParameters$IO.files$Reanal.dir
+	reanalfilefrmt <- GeneralParameters$Format$Reanal.File.Format
 
-	istart <- as.Date(paste(datesSE[1], datesSE[2], datesSE[3], sep = '-'))
-	iend <- as.Date(paste(datesSE[4], datesSE[5], datesSE[6], sep = '-'))
-	if(freqData == 'dekadal'){
-		istart <- paste(format(istart, '%Y%m'), as.numeric(format(istart, '%d')), sep = '')
-		iend <- paste(format(iend, '%Y%m'), as.numeric(format(iend, '%d')), sep = '')
-	}else{
-		istart <- format(istart, '%Y%m%d')
-		iend <- format(iend, '%Y%m%d')
+	################
+	start.date <- as.Date(paste(start.year, start.mon, start.dek, sep = '/'), format = '%Y/%m/%d')
+	end.date <- as.Date(paste(end.year, end.mon, end.dek, sep = '/'), format = '%Y/%m/%d')
+
+	##Reanalysis sample file
+	reanalInfo <- getRFESampleData(GeneralParameters$IO.files$Reanal.file)
+
+	################
+	downCoef <- try(read.table(GeneralParameters$IO.files$Coef.file), silent = TRUE)
+	if(inherits(downCoef, "try-error")){
+		InsertMessagesTxt(main.txt.out, 'Error reading downscaling coefficients', format = TRUE)
+		return(NULL)
 	}
+		
+	################
+	###get elevation data
+	demData <- getDemOpenDataSPDF(GeneralParameters$IO.files$DEM.file)
+	if(is.null(demData)) return(NULL)
+	demGrid <- demData$demMat
+	demGrid[demGrid < 0] <- 0
 
-	############################################
 	##Create grid for interpolation
+	create.grd <- GeneralParameters$Grid.From
 	if(create.grd == '1'){
-		grd.lon <- downTempdat$demData$lon
-		grd.lat <- downTempdat$demData$lat
+		grd.lon <- demData$lon
+		grd.lat <- demData$lat
 	}else if(create.grd == '2'){
-		X0 <- as.numeric(as.character(GeneralParameters$new.grid$Values[1]))
-		X1 <- as.numeric(as.character(GeneralParameters$new.grid$Values[2]))
-		pX <- as.numeric(as.character(GeneralParameters$new.grid$Values[3]))
-		Y0 <- as.numeric(as.character(GeneralParameters$new.grid$Values[4]))
-		Y1 <- as.numeric(as.character(GeneralParameters$new.grid$Values[5]))
-		pY <- as.numeric(as.character(GeneralParameters$new.grid$Values[6]))
+		X0 <- GeneralParameters$New.Grid.Def$minlon
+		X1 <- GeneralParameters$New.Grid.Def$maxlon
+		pX <- GeneralParameters$New.Grid.Def$reslon
+		Y0 <- GeneralParameters$New.Grid.Def$minlat
+		Y1 <- GeneralParameters$New.Grid.Def$maxlat
+		pY <- GeneralParameters$New.Grid.Def$reslat
 		grd.lon <- seq(X0, X1, pX)
 		grd.lat <- seq(Y0, Y1, pY)
 	}
 	nlon0 <- length(grd.lon)
 	nlat0 <- length(grd.lat)
-	newlocation.merging <- expand.grid(lon = grd.lon, lat = grd.lat)
- 	coordinates(newlocation.merging)<- ~lon+lat
-	grid.loc <- defSpatialPixels(list(lon = grd.lon, lat = grd.lat))
-	
+	xy.grid <- list(lon = grd.lon, lat = grd.lat)
+
 	##interpolate dem in new grid
 	if(create.grd == '2'){
-		demGrid <- defSpatialPixels(list(lon = downTempdat$demData$lon, lat = downTempdat$demData$lat))
-		is.regridDEM <- is.sameSpatialPixelsObj(grid.loc, demGrid, tol = 1e-07)
+		is.regridDEM <- is.diffSpatialPixelsObj(defSpatialPixels(xy.grid),
+						defSpatialPixels(list(lon = demData$lon, lat = demData$lat)), tol = 1e-07)
 		if(is.regridDEM){
-			dem <- regridDEMFun(downTempdat$demData, list(lon = grd.lon, lat = grd.lat), regrid = 'BLW')
-			# dem <- regridDEMFun(downTempdat$demData, list(lon = grd.lon, lat = grd.lat), regrid = 'RASTER', method = "bilinear")
-			# dem <- regridDEMFun(downTempdat$demData, list(lon = grd.lon, lat = grd.lat), regrid = 'IDW', nmax = 4, nmin = 2)
-		}else{
-			dem <- downTempdat$demData$demGrd@data[, 1]
+			demGrid <- list(x = demData$lon, y = demData$lat, z = demGrid)
+			demGrid <- interp.surface.grid(demGrid, list(x = xy.grid$lon, y = xy.grid$lat))
+			demGrid <- demGrid$z
 		}
-		demMask <- matrix(dem, nrow = nlon0, ncol = nlat0)
-		demMask[demMask == 0] <- NA
-	}else if(create.grd == '1'){
-		dem <- c(downTempdat$demData$demMat)
-		demMask <- downTempdat$demData$demMat
-		demMask[demMask == 0] <- NA
 	}
 
-	##Reanalysis over new grid
-	rfegrd <- downTempdat$rfeData$rfeGrd
-	ijreanal <- over(rfegrd, grid.loc)
+	################
+	msg <- list(start = 'Read Reanalysis data ...', end = 'Reading Reanalysis data finished')
+	errmsg <- "Reanalysis data not found"
+	ncfiles <- list(freqData = freqData, start.date = start.date, end.date = end.date,
+					months = months, ncDir = reanalDir, ncFileFormat = reanalfilefrmt)
+	ncinfo <- list(xo = reanalInfo$rfeILon, yo = reanalInfo$rfeILat, varid = reanalInfo$rfeVarid)
+	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 
-	#dem at reanalysis grid
-	dem.reanal <- dem[ijreanal]
+	reanalData <- read.NetCDF.Data(read.ncdf.parms)
+	if(is.null(reanalData)) return(NULL)
 
-	#Defines netcdf output dims
-	dx <- ncdim_def("Lon", "degreeE", grd.lon)
-	dy <- ncdim_def("Lat", "degreeN", grd.lat)
-	xy.dim <- list(dx, dy)
-
-	paramsDownscl <- list(istart = istart, iend = iend, dem.reanal = dem.reanal, dem = dem,
-							reanalInfo = downTempdat$rfeData, newlocation.merging = newlocation.merging, xy.dim = xy.dim,
-							nlon0 = nlon0, nlat0 = nlat0, origdir = origdir)
+	paramsDownscl <- list(GeneralParameters = GeneralParameters, demGrid = demGrid, downCoef = downCoef, 
+							reanalData = reanalData, xy.grid = xy.grid, origdir = origdir)
 	ret <- ReanalysisDownscaling(paramsDownscl)
-	rm(paramsDownscl, downTempdat, newlocation.merging, grid.loc, rfegrd, dem.reanal)
-	gc()
-	if(!is.null(ret)){
-		if(ret == 0) return(0)
-		else return(ret)
-	}else return(NULL)	
-}
-
-#####################################################
-
-###Compute Mean Bias Coef
-TreatBiasCoefTemp <- function(origdir){
-	freqData <- GeneralParameters$period
-	file.pars <- as.character(GeneralParameters$file.io$Values)
-	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
-
-	#######get data
-	donne <- getStnOpenData(file.pars[1])
-	donne <- getCDTdataAndDisplayMsg(donne, freqData)
-	if(is.null(donne)) return(NULL)
-
-	###get elevation data
-	demlist <- getDemOpenDataSPDF(file.pars[2])
-
-	coefBiasTempdat <- list(stnData = donne, demData = demlist)
-	return(coefBiasTempdat)
-}
-
-#################################
-
-execCoefBiasCompute <- function(origdir){
-	coefBiasTempdat <- TreatBiasCoefTemp(origdir)
-
-	downscaledDir <- as.character(GeneralParameters$file.io$Values[3])
-	biasRemoval <- as.character(GeneralParameters$bias.method)
-
-	year1 <- as.numeric(as.character(GeneralParameters$dates.coef$Values[1]))
-	year2 <- as.numeric(as.character(GeneralParameters$dates.coef$Values[2]))
-	coef.dates <- c(year1, year2)
-
-	downPrefix <- as.character(GeneralParameters$prefix$Values[1])
-	#########
-	downFile <- list.files(downscaledDir, downPrefix)[1]
-	if(is.na(downFile)){
-		InsertMessagesTxt(main.txt.out, "Downscaled data not found", format = TRUE)
-		return(NULL)
-	}
-	downFile <- file.path(downscaledDir, downFile, fsep = .Platform$file.sep)
-	nc <- nc_open(downFile)
-	grd.lon <- nc$dim[[1]]$vals
-	grd.lat <- nc$dim[[2]]$vals
-	nc_close(nc)
-	nlon0 <- length(grd.lon)
-	nlat0 <- length(grd.lat)
-
-	newlocation.merging <- defSpatialPixels(list(lon = grd.lon, lat = grd.lat))
-
-	ijGrd <- grid2pointINDEX(list(lon = coefBiasTempdat$stnData$lon, lat = coefBiasTempdat$stnData$lat),
-							list(lon = grd.lon, lat = grd.lat))
-
-	demGrid <- defSpatialPixels(list(lon = coefBiasTempdat$demData$lon, lat = coefBiasTempdat$demData$lat))
-	is.regridDEM <- is.sameSpatialPixelsObj(newlocation.merging, demGrid, tol = 1e-07)
-	if(is.regridDEM){
-		dem <- regridDEMFun(coefBiasTempdat$demData, list(lon = grd.lon, lat = grd.lat), regrid = 'BLW')
-		# dem <- regridDEMFun(coefBiasTempdat$demData, list(lon = grd.lon, lat = grd.lat), regrid = 'RASTER', method = "bilinear")
-		# dem <- regridDEMFun(coefBiasTempdat$demData, list(lon = grd.lon, lat = grd.lat), regrid = 'IDW', nmax = 4, nmin = 2)
-	}else{
-		dem <- coefBiasTempdat$demData$demGrd@data[, 1]
-	}
-	dem[is.na(dem)] <- 0
-	dem.stn <- dem[ijGrd]
-
-	#Defines netcdf output dims
-	dx <- ncdim_def("Lon", "degreeE", grd.lon)
-	dy <- ncdim_def("Lat", "degreeN", grd.lat)
-	xy.dim <- list(dx, dy)
-
-	#############
-	# Extract model values at all station locations
-	nstn <- length(coefBiasTempdat$stnData$lon)
-	model_stn <- ExtractReanal2Stn(ijGrd, nstn, coef.dates)
-	if(is.null(model_stn)) return(NULL)
-
-	#method 1
-	if(biasRemoval == 'Bias-kriging'){
-		paramsBias <- list(coefBiasTempdat = coefBiasTempdat, model_stn = model_stn, coef.dates = coef.dates,
-							xy.dim = xy.dim, nlon0 = nlon0, nlat0 = nlat0, newlocation.merging = newlocation.merging,
-							dirBias = origdir, dem = dem, dem.stn = dem.stn)
-		ret <- ComputeMeanBias(paramsBias)
-	}
-
-	#method 2
-	if(biasRemoval == 'Regression-QM'){
-		paramsRegQM <- list(coefBiasTempdat = coefBiasTempdat, coef.dates = coef.dates, ijGrd = ijGrd,
-							model_stn = model_stn, origdir = origdir)
-		ret <- ComputeRegCoeff(paramsRegQM)
-	}
-	rm(coefBiasTempdat, paramsBias, paramsRegQM, model_stn, dem, dem.stn, demGrid)
-	if(!is.null(ret)){
-		if(ret == 0) return(0)
-		else return(ret)
-	}else return(NULL)	
-}
-
-#################################################
-
-##Adjust downscaled data
-TreatAjdBiasDownTemp <- function(){
-	freqData <- GeneralParameters$period
-	file.pars <- as.character(GeneralParameters$file.io$Values)
-
-	#######get data
-	donne <- getStnOpenData(file.pars[1])
-	donne <- getCDTdataAndDisplayMsg(donne, freqData)
-	if(is.null(donne)) return(NULL)
-
-	###get elevation data
-	demlist <- getDemOpenDataSPDF(file.pars[2])
-
-	adjdownTempdat <- list(stnData = donne, demData = demlist)
-	return(adjdownTempdat)
-}
-
-#################################################
-
-execAjdBiasDownTemp <- function(origdir){
-	freqData <- GeneralParameters$period
-	adjdownTempdat <- TreatAjdBiasDownTemp()
-
-	downscaledDir <- as.character(GeneralParameters$file.io$Values[3])
-	biasDirORFile <- as.character(GeneralParameters$file.io$Values[4])
-	biasRemoval <- as.character(GeneralParameters$bias.method)
-
-	downPrefix <- as.character(GeneralParameters$prefix$Values[1])
-	meanBiasPrefix <- as.character(GeneralParameters$prefix$Values[2])
-	adjPrefix <- as.character(GeneralParameters$prefix$Values[3])
-
-	datesSE <- as.numeric(as.character(GeneralParameters$dates.adj$Values))
-
-	##Get all downscaled Files
-	if(freqData == 'daily'){
-		adj.dates <- format(seq(as.Date(paste(datesSE[1], datesSE[2], datesSE[3], sep = '-')),
-					as.Date(paste(datesSE[4], datesSE[5], datesSE[6], sep = '-')), 'day'), '%Y%m%d')
-		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
-	}
-	if(freqData == 'dekadal'){
-		adj.dates <- seq(as.Date(paste(datesSE[1], datesSE[2], datesSE[3], sep = '-')),
-					as.Date(paste(datesSE[4], datesSE[5], datesSE[6], sep = '-')), 'day')
-		adj.dates <- paste(format(adj.dates[which(as.numeric(format(adj.dates, '%d')) <= 3)], '%Y%m'),
-					as.numeric(format(adj.dates[which(as.numeric(format(adj.dates, '%d')) <= 3)], '%d')), sep = '')
-		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
-	}
-	if(freqData == 'monthly'){
-		adj.dates <- format(seq(as.Date(paste(datesSE[1], datesSE[2], 1, sep = '-')),
-					as.Date(paste(datesSE[4], datesSE[5], 1, sep = '-')), 'month'), '%Y%m')
-		testfile <- file.path(downscaledDir, paste(downPrefix, '_', adj.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
-	}
-
-	existFl <- unlist(lapply(testfile, file.exists))
-	if(!any(existFl)){
-		InsertMessagesTxt(main.txt.out, "Downscaled data not found", format = TRUE)
-		return(NULL)
-	}
-	downDataFl <- testfile[existFl]
-	adj.dates <- adj.dates[existFl]
-
-	#########
-	if(biasRemoval == 'Bias-kriging'){
-		biasFile <- file.path(biasDirORFile, paste(meanBiasPrefix, '_1.nc', sep = ''), fsep = .Platform$file.sep)
-		if(!file.exists(biasFile)){
-			InsertMessagesTxt(main.txt.out, "Mean bias coefficients not found", format = TRUE)
-			return(NULL)
-		}
-	}else{
-		if(!file.exists(biasDirORFile)){
-			InsertMessagesTxt(main.txt.out, "Regression coefficients not found", format = TRUE)
-			return(NULL)
-		}
-		is.rdble<-!inherits(try(coefReg <- read.table(biasDirORFile, header = TRUE), silent = TRUE), "try-error")
-		if(!is.rdble){
-			InsertMessagesTxt(main.txt.out, paste("Unable to open file", biasDirORFile), format = TRUE)
-			return(NULL)
-		}
-	}
-
-	nc <- nc_open(downDataFl[1])
-	grd.lon <- nc$dim[[1]]$vals
-	grd.lat <- nc$dim[[2]]$vals
-	nc_close(nc)
-	nlon0 <- length(grd.lon)
-	nlat0 <- length(grd.lat)
-
-	grid.loc <- defSpatialPixels(list(lon = grd.lon, lat = grd.lat))
-
-	##DEM data
-	demGrid <- defSpatialPixels(list(lon = adjdownTempdat$demData$lon, lat = adjdownTempdat$demData$lat))
-	is.regridDEM <- is.sameSpatialPixelsObj(grid.loc, demGrid, tol = 1e-07)
-	if(is.regridDEM){
-		dem <- regridDEMFun(adjdownTempdat$demData, list(lon = grd.lon, lat = grd.lat), regrid = 'BLW')
-		# dem <- regridDEMFun(adjdownTempdat$demData, list(lon = grd.lon, lat = grd.lat), regrid = 'RASTER', method = "bilinear")
-		# dem <- regridDEMFun(adjdownTempdat$demData, list(lon = grd.lon, lat = grd.lat), regrid = 'IDW', nmax = 4, nmin = 2)
-	}else{
-		dem <- adjdownTempdat$demData$demGrd@data[, 1]
-	}
-
-	#Defines netcdf output dims
-	dx <- ncdim_def("Lon", "degreeE", grd.lon)
-	dy <- ncdim_def("Lat", "degreeN", grd.lat)
-	xy.dim <- list(dx, dy)
-
-	#############
-	#method 1
-	if(biasRemoval == 'Bias-kriging'){
-		adjDir <- paste(origdir, '_BiasKR', sep = '')
-		dir.create(adjDir, showWarnings = FALSE, recursive = TRUE)
-		paramsAdjBs <- list(downDataFl = downDataFl, adj.dates = adj.dates, dem = dem, xy.dim = xy.dim,
-							nlon0 = nlon0, nlat0 = nlat0, biasDirORFile = biasDirORFile, adjDir = adjDir,
-							downPrefix = downPrefix, meanBiasPrefix = meanBiasPrefix, adjPrefix = adjPrefix)
-		ret <- AjdReanalMeanBias(paramsAdjBs)
-	}
-
-	#method 2
-	if(biasRemoval == 'Regression-QM'){
-		#Index of new grid over stations
-		ijGrd <- grid2pointINDEX(list(lon = adjdownTempdat$stnData$lon, lat = adjdownTempdat$stnData$lat),
-								list(lon = grd.lon, lat = grd.lat))
-
-		adjDir <- paste(origdir, '_RegQM', sep = '')
-		dir.create(adjDir, showWarnings = FALSE, recursive = TRUE)
-		paramsAdjBs <- list(downDataFl = downDataFl, adj.dates = adj.dates, stnDatas = adjdownTempdat$stnData,
-							ijGrd = ijGrd, dem = dem, xy.dim = xy.dim, nlon0 = nlon0, nlat0 = nlat0,
-							coefReg = coefReg, adjDir = adjDir, downPrefix = downPrefix, adjPrefix = adjPrefix)
-		ret <- AjdReanalpmm(paramsAdjBs)
-	}
-	rm(adjdownTempdat, paramsAdjBs, grid.loc, demGrid, dem)
+	rm(paramsDownscl, demData, demGrid, reanalInfo, reanalData)
 	gc()
 	if(!is.null(ret)){
 		if(ret == 0) return(0)
@@ -378,117 +115,254 @@ execAjdBiasDownTemp <- function(origdir){
 
 #######################################################################################
 
-TreatmergeTemp <- function(origdir){
+execBiasTemp <- function(origdir){
 	freqData <- GeneralParameters$period
-	file.pars <- as.character(GeneralParameters$file.io$Values)
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
+	year1 <- as.numeric(GeneralParameters$Bias.Date.Range$start.year)
+	year2 <- as.numeric(GeneralParameters$Bias.Date.Range$end.year)
+	months <- as.numeric(GeneralParameters$Bias.Months)
+
+	reanalDir <- GeneralParameters$IO.files$Down.dir
+	reanalfilefrmt <- GeneralParameters$Format$Down.File.Format
+
 	#######get data
-	donne <- getStnOpenData(file.pars[1])
-	donne <- getCDTdataAndDisplayMsg(donne, freqData)
-	if(is.null(donne)) return(NULL)
+	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
+	stnData <- getCDTdataAndDisplayMsg(stnData, freqData)
+	if(is.null(stnData)) return(NULL)
+	
+	###get elevation data
+	demData <- getDemOpenDataSPDF(GeneralParameters$IO.files$DEM.file)
+	if(is.null(demData)) return(NULL)
 
-	##get elevation data	
-	if(GeneralParameters$blankGrd == "2") demlist <- getDemOpenDataSPDF(file.pars[2])
-	else demlist <- NULL
+	########
+	start.date <- as.Date(paste(year1, '0101', sep = ''), format = '%Y%m%d')
+	end.date <- as.Date(paste(year2, '1231', sep = ''), format = '%Y%m%d')
 
-	##Shapefile
-	if(GeneralParameters$blankGrd == "3") shpd <- getShpOpenData(file.pars[3])[[2]]
-	else shpd <- NULL
+	msg <- list(start = 'Read Downscaled data ...', end = 'Reading Downscaled data finished')
+	errmsg <- "Downscaled data not found"
+	ncfiles <- list(freqData = freqData, start.date = start.date, end.date = end.date,
+					months = months, ncDir = reanalDir, ncFileFormat = reanalfilefrmt)
+	ncinfo <- list(xo = 1, yo = 2, varid = "temp")
+	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 
-	mrgTempdat <- list(stnData = donne, demData = demlist, shpData = shpd)
-	return(mrgTempdat)
-}
+	downData <- read.NetCDF.Data(read.ncdf.parms)
+	if(is.null(downData)) return(NULL)
+	nlon0 <- length(downData$lon)
+	nlat0 <- length(downData$lat)
+	xy.grid <- list(lon = downData$lon, lat = downData$lat)
 
-###########################
+	interp.method <- GeneralParameters$Interpolation.pars$interp.method
+	rad.lon <- as.numeric(GeneralParameters$Interpolation.pars$rad.lon)
+	rad.lat <- as.numeric(GeneralParameters$Interpolation.pars$rad.lat)
+	maxdist <- as.numeric(GeneralParameters$Interpolation.pars$maxdist)
 
-execMergeTemp <- function(origdir){
-	freqData <- GeneralParameters$period
-	mrgTempdat <- TreatmergeTemp(origdir)
+	if(interp.method == 'NN') res.coarse <- sqrt((rad.lon*mean(downData$lon[-1]-downData$lon[-nlon0]))^2 + (rad.lat*mean(downData$lat[-1]-downData$lat[-nlat0]))^2)/2
+	else res.coarse <- maxdist/2
+	res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
 
-	adjDir <- as.character(GeneralParameters$file.io$Values[4])
-	adjPrefix <- as.character(GeneralParameters$prefix$Values[1])
-	mrgPrefix <- as.character(GeneralParameters$prefix$Values[2])
-	mrgSuffix <- as.character(GeneralParameters$prefix$Values[3])
-	usemask <- as.character(GeneralParameters$blankGrd)
+	comptMBiasparms <- list(GeneralParameters = GeneralParameters, stnData = stnData, downData = downData, res.coarse = res.coarse)
+	bias.pars <- ComputeMeanBiasTemp(comptMBiasparms)
 
-	datesSE <- as.numeric(as.character(GeneralParameters$dates.mrg$Values))
-	if(freqData == 'daily'){
-		mrg.dates <- format(seq(as.Date(paste(datesSE[1], datesSE[2], datesSE[3], sep = '-')),
-						as.Date(paste(datesSE[4], datesSE[5], datesSE[6], sep = '-')), 'day'), '%Y%m%d')
-		testfile <- file.path(adjDir, paste(adjPrefix, '_', mrg.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
-	}
-	if(freqData == 'dekadal'){
-		mrg.dates <- seq(as.Date(paste(datesSE[1], datesSE[2], datesSE[3], sep = '-')),
-						as.Date(paste(datesSE[4], datesSE[5], datesSE[6], sep = '-')), 'day')
-		mrg.dates <- paste(format(mrg.dates[which(as.numeric(format(mrg.dates, '%d')) <= 3)], '%Y%m'),
-						as.numeric(format(mrg.dates[which(as.numeric(format(mrg.dates, '%d')) <= 3)], '%d')), sep = '')
-		testfile <- file.path(adjDir, paste(adjPrefix, '_', mrg.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
-	}
-	if(freqData == 'monthly'){
-		mrg.dates <- format(seq(as.Date(paste(datesSE[1], datesSE[2], 1, sep = '-')),
-							as.Date(paste(datesSE[4], datesSE[5], 1, sep = '-')), 'month'), '%Y%m')
-		testfile <- file.path(adjDir, paste(adjPrefix, '_', mrg.dates, '.nc', sep = ''), fsep = .Platform$file.sep)
-	}
-	existFl <- unlist(lapply(testfile, file.exists))
-	if(!any(existFl)){
-		InsertMessagesTxt(main.txt.out, "Adjusted data not found", format = TRUE)
-		return(NULL)
-	}
-	adjDataFl <- testfile[existFl]
-	mrg.dates <- mrg.dates[existFl]
 
-	nc <- nc_open(adjDataFl[1])
-	grd.lon <- nc$dim[[1]]$vals
-	grd.lat <- nc$dim[[2]]$vals
-	nc_close(nc)
-	nlon0 <- length(grd.lon)
-	nlat0 <- length(grd.lat)
-	newlocation.merging <- expand.grid(lon = grd.lon, lat = grd.lat)
-	coordinates(newlocation.merging)<- ~lon+lat
+	interpBiasparams <- list(GeneralParameters = GeneralParameters, bias.pars = bias.pars, stnData = stnData,
+							demData = demData, xy.grid = xy.grid, res.coarse = res.coarse, origdir = origdir)
+	ret <- InterpolateMeanBiasTemp(interpBiasparams)
 
-	if(usemask == "1") outMask <- NULL
-	if(usemask == "2"){
-		grid.loc <- defSpatialPixels(list(lon = grd.lon, lat = grd.lat))
-		demGrid <- defSpatialPixels(list(lon = mrgTempdat$demData$lon, lat = mrgTempdat$demData$lat))
-		is.regridDEM <- is.sameSpatialPixelsObj(grid.loc, demGrid, tol = 1e-07)
-		if(is.regridDEM){
-			dem <- regridDEMFun(mrgTempdat$demData, list(lon = grd.lon, lat = grd.lat), regrid = 'BLW')
-			# dem <- regridDEMFun(mrgTempdat$demData, list(lon = grd.lon, lat = grd.lat), regrid = 'RASTER', method = "bilinear")
-			# dem <- regridDEMFun(mrgTempdat$demData, list(lon = grd.lon, lat = grd.lat), regrid = 'IDW', nmax = 4, nmin = 2)
-		}else{
-			dem <- mrgTempdat$demData$demGrd@data[, 1]
-		}
-		outMask <- matrix(dem, nrow = nlon0, ncol = nlat0)
-		outMask[outMask == 0] <- NA
-	}
-	if(usemask == "3"){
-		shpd <- mrgTempdat$shpData
-		shpd[['vtmp']] <- 1
-		shpMask <- over(newlocation.merging, shpd)[,'vtmp']
-		outMask <- matrix(shpMask, nrow = nlon0, ncol = nlat0)
-	}
-
-	#Index of new grid over stations
-	ijGrd <- grid2pointINDEX(list(lon = mrgTempdat$stnData$lon, lat = mrgTempdat$stnData$lat),
-							list(lon = grd.lon, lat = grd.lat))
-
-	#Defines netcdf output dims
-	dx <- ncdim_def("Lon", "degreeE", grd.lon)
-	dy <- ncdim_def("Lat", "degreeN", grd.lat)
-	xy.dim <- list(dx, dy)
-
-	VarioModel <- c("Sph", "Exp", "Gau")
-	mrgParam <- list(adjDataFl = adjDataFl, mrg.dates = mrg.dates, mrgDir = origdir, prefix = c(mrgPrefix, mrgSuffix),
-	mrgInfo = list(nlon0 = nlon0, nlat0 = nlat0, ijGrd = ijGrd, xy.dim = xy.dim, VarioModel = VarioModel),
-	mrgData = list(stnData = mrgTempdat$stnData, outMask = outMask, newlocation.merging = newlocation.merging))
-	ret <- MergeTemp(mrgParam)
-	rm(mrgTempdat, mrgParam, outMask, newlocation.merging)
+	rm(comptMBiasparms, stnData, demData, downData, bias.pars, interpBiasparams)
 	gc()
 	if(!is.null(ret)){
 		if(ret == 0) return(0)
 		else return(ret)
-	}else return(NULL)
+	} else return(NULL)
+}
+
+
+#######################################################################################
+
+execAjdBiasDownTemp <- function(origdir){
+	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
+
+	freqData <- GeneralParameters$period
+	start.year <- GeneralParameters$Adjust.Date.Range$start.year
+	start.mon <- GeneralParameters$Adjust.Date.Range$start.mon
+	start.dek <- GeneralParameters$Adjust.Date.Range$start.dek
+	end.year <- GeneralParameters$Adjust.Date.Range$end.year
+	end.mon <- GeneralParameters$Adjust.Date.Range$end.mon
+	end.dek <- GeneralParameters$Adjust.Date.Range$end.dek
+	months <- sort(as.numeric(GeneralParameters$Adjust.Months))
+
+	downDir <- GeneralParameters$IO.files$Down.dir
+	downfilefrmt <- GeneralParameters$Format$Down.File.Format
+
+	################
+
+	start.date <- as.Date(paste(start.year, start.mon, start.dek, sep = '/'), format = '%Y/%m/%d')
+	end.date <- as.Date(paste(end.year, end.mon, end.dek, sep = '/'), format = '%Y/%m/%d')
+
+	################
+	## Downscaled DATA
+	msg <- list(start = 'Read Downscaled data ...', end = 'Reading Downscaled data finished')
+	errmsg <- "Downscaled data not found"
+	ncfiles <- list(freqData = freqData, start.date = start.date, end.date = end.date,
+					months = months, ncDir = downDir, ncFileFormat = downfilefrmt)
+	ncinfo <- list(xo = 1, yo = 2, varid = "temp")
+	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
+
+	downData <- read.NetCDF.Data(read.ncdf.parms)
+	if(is.null(downData)) return(NULL)
+
+	adjMeanBiasparms <- list(downData = downData, GeneralParameters = GeneralParameters, origdir = origdir)
+	ret <- AjdMeanBiasTemp(adjMeanBiasparms)
+	rm(adjMeanBiasparms, downData)
+	gc()
+	if(!is.null(ret)){
+		if(ret == 0) return(0)
+		else return(ret)
+	} else return(NULL)
+}
+
+#######################################################################################
+
+#### Compute LM coef
+
+execLMCoefTemp <- function(origdir){
+	freqData <- GeneralParameters$period
+	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
+
+	year1 <- as.numeric(GeneralParameters$LM.Date.Range$start.year)
+	year2 <- as.numeric(GeneralParameters$LM.Date.Range$end.year)
+	months <- as.numeric(GeneralParameters$LM.Months)
+	adjDir <- GeneralParameters$IO.files$Down.dir
+	adjfilefrmt <- GeneralParameters$Format$Adj.File.Format
+
+	#######get data
+	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
+	stnData <- getCDTdataAndDisplayMsg(stnData, freqData)
+	if(is.null(stnData)) return(NULL)
+
+	###get elevation data
+	demData <- getDemOpenDataSPDF(GeneralParameters$IO.files$DEM.file)
+	if(is.null(demData)) return(NULL)
+
+	########
+	start.date <- as.Date(paste(year1, '0101', sep = ''), format = '%Y%m%d')
+	end.date <- as.Date(paste(year2, '1231', sep = ''), format = '%Y%m%d')
+
+	msg <- list(start = 'Read bias corrected reanalysis data ...', end = 'Reading bias corrected reanalysis data finished')
+	errmsg <- "Adjusted Reanalysis data not found"
+	ncfiles <- list(freqData = freqData, start.date = start.date, end.date = end.date,
+					months = months, ncDir = adjDir, ncFileFormat = adjfilefrmt)
+	ncinfo <- list(xo = 1, yo = 2, varid = "temp")
+	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
+
+	adjData <- read.NetCDF.Data(read.ncdf.parms)
+	if(is.null(adjData)) return(NULL)
+	nlon0 <- length(adjData$lon)
+	nlat0 <- length(adjData$lat)
+	xy.grid <- list(lon = adjData$lon, lat = adjData$lat)
+
+	interp.method <- GeneralParameters$Interpolation.pars$interp.method
+	rad.lon <- as.numeric(GeneralParameters$Interpolation.pars$rad.lon)
+	rad.lat <- as.numeric(GeneralParameters$Interpolation.pars$rad.lat)
+	maxdist <- as.numeric(GeneralParameters$Interpolation.pars$maxdist)
+
+	if(interp.method == 'NN') res.coarse <- sqrt((rad.lon*mean(adjData$lon[-1]-adjData$lon[-nlon0]))^2 + (rad.lat*mean(adjData$lat[-1]-adjData$lat[-nlat0]))^2)/2
+	else res.coarse <- maxdist/2
+	res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
+
+	################
+	comptLMparams <- list(GeneralParameters = GeneralParameters, stnData = stnData, demData = demData,
+						adjData = adjData, xy.grid = xy.grid, res.coarse = res.coarse, origdir = origdir)
+	ret <- ComputeLMCoefTemp(comptLMparams)
+	
+	rm(comptLMparams, stnData, demData, adjData)
+	gc()
+	if(!is.null(ret)){
+		if(ret == 0) return(0)
+		else return(ret)
+	} else return(NULL)
+}
+
+#######################################################################################
+
+execMergeTemp <- function(origdir){
+	freqData <- GeneralParameters$period
+	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
+
+	#######get data
+	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
+	stnData <- getCDTdataAndDisplayMsg(stnData, freqData)
+	if(is.null(stnData)) return(NULL)
+
+	blank.grid <- GeneralParameters$Blank.Grid
+	
+	## DEM data
+	demData <- NULL
+	if(blank.grid == '2'){
+		demData <- getDemOpenDataSPDF(GeneralParameters$IO.files$DEM.file)
+		if(is.null(demData)) return(NULL)
+	}
+
+	adjDir <- GeneralParameters$IO.files$ADJ.dir
+	adjfilefrmt <- GeneralParameters$FileFormat$Adj.File.Format
+	months <- GeneralParameters$Mrg.Months
+	daty <- GeneralParameters$Mrg.Date.Range
+	start.date <- as.Date(paste(daty$start.year, daty$start.mon, daty$start.dek, sep = '-'))
+	end.date <- as.Date(paste(daty$end.year, daty$end.mon, daty$end.dek, sep = '-'))
+	error.msg <- "Reanalysis bias corrected data not found"
+	ncInfo <- ncFilesInfo(freqData, start.date, end.date, months, adjDir, adjfilefrmt, error.msg)
+	if(is.null(ncInfo)) return(NULL)
+
+	##Create grid for interpolation
+	if(GeneralParameters$Mrg.Method == "Spatio-Temporal LM"){
+		LMCoef.file <- file.path(GeneralParameters$IO.files$LMCoef.dir, paste('LM_Coefficient_', GeneralParameters$Mrg.Months[1], '.nc', sep = ''))
+		if(!file.exists(LMCoef.file)){
+			InsertMessagesTxt(main.txt.out, "LM coefficients files not found", format = TRUE)
+			return(NULL)
+		}
+		nc <- nc_open(LMCoef.file)
+		grd.lon <- nc$dim[[1]]$vals
+		grd.lat <- nc$dim[[2]]$vals
+		nc_close(nc)
+	}else{
+		nc <- nc_open(ncInfo$nc.files[ncInfo$exist][1])
+		grd.lon <- nc$dim[[1]]$vals
+		grd.lat <- nc$dim[[2]]$vals
+		nc_close(nc)
+	}
+	nlon0 <- length(grd.lon)
+	nlat0 <- length(grd.lat)
+	xy.grid <- list(lon = grd.lon, lat = grd.lat)
+	newGrid <- defSpatialPixels(xy.grid)
+
+	if(blank.grid == "1") outMask <- NULL
+	if(blank.grid == "2"){
+		demGrid <- defSpatialPixels(list(lon = demData$lon, lat = demData$lat))
+		is.regridDEM <- is.diffSpatialPixelsObj(newGrid, demGrid, tol = 1e-07)
+		if(is.regridDEM){
+			outMask <- interp.surface.grid(list(x = demData$lon, y = demData$lat, z = demData$demMat),
+					list(x = grd.lon, y = grd.lat))
+			outMask <- outMask$z
+		}else outMask <- demData$demMat
+		outMask[outMask <= 0] <- NA
+	}
+	if(blank.grid == "3"){
+		shpd <- getShpOpenData(GeneralParameters$IO.files$SHP.file)[[2]]
+		shpd[['vtmp']] <- 1
+		outMask <- over(newGrid, shpd)[, 'vtmp']
+		dim(outMask) <- c(nlon0, nlat0)
+	}
+
+	paramsMRG <- list(GeneralParameters = GeneralParameters, stnData = stnData, ncInfo = ncInfo,
+						demData = demData, xy.grid = xy.grid, outMask = outMask, origdir = origdir)
+	ret <- MergingFunctionTemp(paramsMRG)
+	rm(mrgparams, stnData, outMask, ncInfo, demData)
+	gc()
+	if(!is.null(ret)){
+		if(ret == 0) return(0)
+		else return(ret)
+	} else return(NULL)
 }
 
 

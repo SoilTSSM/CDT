@@ -498,21 +498,21 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	bt.prm.CA <- tkbutton(frMRG1, text = "Cancel")
 
 	tkconfigure(bt.prm.OK, command = function(){
-		if(tclvalue(file.stnfl) == "" & tclvalue(no.stnfl) == "0"){
+		if(str_trim(tclvalue(file.stnfl)) == "" & str_trim(tclvalue(no.stnfl)) == "0"){
 			tkmessageBox(message = "Choose the file containing the gauge data", icon = "warning", type = "ok")
-		}else if((tclvalue(dir.rfe) == "" | tclvalue(dir.rfe) == "NA") & (tclvalue(down.rfe) == "1")){
+		}else if((str_trim(tclvalue(dir.rfe)) == "" | str_trim(tclvalue(dir.rfe)) == "NA") & (str_trim(tclvalue(down.rfe)) == "1")){
 			tkmessageBox(message = "Choose or enter the  directory containing the RFE files", icon = "warning", type = "ok")
 			tkwait.window(tt)
-		}else if((tclvalue(dir.bias) == "" | tclvalue(dir.bias) == "NA") & (tclvalue(adj.bias) == "1")){
+		}else if((str_trim(tclvalue(dir.bias)) == "" | str_trim(tclvalue(dir.bias)) == "NA") & (str_trim(tclvalue(adj.bias)) == "1")){
 			tkmessageBox(message = "Choose or enter the  directory containing the Mean Bias files", icon = "warning", type = "ok")
 			tkwait.window(tt)
-		}else if(tclvalue(blankGrd) == "Use DEM" & tclvalue(file.grddem) == ""){
+		}else if(str_trim(tclvalue(blankGrd)) == "Use DEM" & str_trim(tclvalue(file.grddem)) == ""){
 			tkmessageBox(message = "You have to provide DEM data in NetCDF format", icon = "warning", type = "ok")
 			tkwait.window(tt)
-		}else if(tclvalue(blankGrd) == "Use ESRI shapefile" & tclvalue(file.blkshp) == ""){
+		}else if(str_trim(tclvalue(blankGrd)) == "Use ESRI shapefile" & str_trim(tclvalue(file.blkshp)) == ""){
 			tkmessageBox(message = "You have to provide the shapefile", icon = "warning", type = "ok")
 			tkwait.window(tt)
-		}else if(tclvalue(file.save1) == "" | tclvalue(file.save1) == "NA"){
+		}else if(str_trim(tclvalue(file.save1)) == "" | str_trim(tclvalue(file.save1)) == "NA"){
 			tkmessageBox(message = "Choose or enter the path to directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{

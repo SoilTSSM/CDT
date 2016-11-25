@@ -1,0 +1,99 @@
+{
+    // Merging Method
+    // "Regression Kriging"
+    // "Spatio-Temporal LM"
+    "Mrg.Method": "Regression Kriging",
+    // Input and Output files/directory
+    "IO.files": [{
+        // Station data filename
+        "STN.file": "",
+        // Directory of LM coeff
+        "LMCoef.dir": "",
+        // Elevation data filename
+        "DEM.file": "",
+        // Full path to the directory of RFE or Adj-RFE data
+        "RFE.dir": "",
+        // RFE sample filename
+        "RFE.file": "",
+        // ESRI shapefile
+        "SHP.file": "",
+        // Full path to the directory to save results
+        "dir2save": ""
+    }],
+    "FileFormat": [{
+        // Adj-RFE or RFE filename format 
+        "RFE.File.Format": "rr_adj_%s%s%s.nc",
+        // Merged filename format
+        "Mrg.file.format": "rr_mrg_%s%s%s_ALL.nc"
+    }],
+    // Merging Date range
+    "Mrg.Date.Range": [{
+        "start.year": 1983,
+        "start.mon": 1,
+        "start.dek": 1,
+        "end.year": 2015,
+        "end.mon": 12,
+        "end.dek": 3
+    }],
+    // Months on which merging will be performed
+    "Mrg.Months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+
+    // Minimum number of stations to perform merging
+    "Mrg.set": [{
+        // Minimum number of stations with data to be used to do the merging
+        "min.stn": 10,
+        // Minimum number of non-zero station values to perform the merging
+        "min.non.zero": 7,
+        // use Rain-no-Rain mask (true or false)
+        "use.RnoR": true,
+        // Smooth Rain-no-Rain mask (true or false)
+        "smooth.RnoR": true,
+        // wet day definition, rainfall >= wet.day
+        "wet.day": 1.0,
+
+        // Maximum distance (in decimal degrees) for interpolating Rain-no-Rain mask
+        "maxdist.RnoR": 0.5
+    }],
+    // Interpolation Parameters,  gstat arguments
+    "Interpolation.pars": [{
+        // Interpolation method: Kriging/IDW
+        // Kriging: Ordinary Kriging
+        // IDW: Inverse Distance Weighted
+        "interp.method": "IDW",
+        // nmin for gstat
+        "nmin": 3,
+        // nmax for gstat
+        "nmax": 10,
+        // maxdist for gstat (in decimal degree)
+        "maxdist": 1.0,
+        // variogram model, see gstat package for list of available model
+        "vgm.model": ["Sph", "Exp", "Gau"],
+        // using kriging of block mean values (true or false)
+        "use.block": true,
+
+        // Coarse resolution from gridded data to  complete points data
+        // when interpolate (in decimal degree)
+        "res.coarse": 0.5
+    }],
+    // Blank grid outside the country boundaries or over ocean
+    // "1" : None
+    // "2" : Use DEM
+    // "3" : Use ESRI shapefile
+    "Blank.Grid": "1",
+    // Create new grid to interpolate (true or false)
+    "Create.Grid": false,
+    //Create grid from
+    // "1": from RFE
+    // "2": from DEM
+    // "3": create a new grid
+    "Grid.From": "1",
+    // New grid definition min/max/res
+    "New.Grid.Def": [{
+        "minlon": 42,
+        "maxlon": 52,
+        "reslon": 0.1,
+        "minlat": -26,
+        "maxlat": -12,
+        "reslat": 0.1
+    }]
+}

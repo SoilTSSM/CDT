@@ -2,7 +2,11 @@ saveCurrentCDTtask <- function(){
 	filetypes <- "{{CDT Files} {.cdt}} {{All files} {*.*}}"
 	if(Sys.info()["sysname"] == "Windows")  filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes, defaultextension = TRUE))
 	else filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes))
-	if (filename != "" | filename != 'NA' | !is.na(filename)){
+	if(filename == "") return(NULL)
+	else if(filename == 'NA' | is.na(filename)){
+		InsertMessagesTxt(main.txt.out, 'Current session could not be saved correctly', format = TRUE)
+		return(NULL)
+	}else{
 		lastStnChoix <- tclvalue(lchoixStnFr$env$stn.choix.val)
 		listStnChoix <- lchoixStnFr$env$stn.choix
 		save(AllOpenFilesType, AllOpenFilesData,
@@ -11,9 +15,6 @@ saveCurrentCDTtask <- function(){
 		EnvQcOutlierData, EnvQcZeroChkData,
 		EnvHomogzData, adjDon,
 		file = filename)
-	}else{
-		InsertMessagesTxt(main.txt.out, 'Current session could not be saved correctly', format = TRUE)
-		return(NULL)
 	}
 }
 

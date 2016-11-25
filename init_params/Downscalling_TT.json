@@ -1,0 +1,66 @@
+{
+    // Input and Output files/directory
+    "IO.files": [{
+        // downscaling coefficients filename
+        "Coef.file": "",
+        // Elevation data filename
+        "DEM.file": "",
+        // Full path to the directory of Reanalysis data
+        "Reanal.dir": "",
+        // Reanalysis sample filename
+        "Reanal.file": "",
+        // Full path to the directory to save results
+        "dir2save": ""
+    }],
+    "Format": [{
+        // Reanalysis filename format 
+        "Reanal.File.Format": "tmax_%s%s%s.nc",
+        // Downscaled filename format
+        "Down.File.Format": "tmax_down_%s%s%s.nc"
+    }],
+    // Downscaling Date range
+    "Down.Date.Range": [{
+        "start.year": 1961,
+        "start.mon": 1,
+        "start.dek": 1,
+        "end.year": 2015,
+        "end.mon": 12,
+        "end.dek": 3
+    }],
+    // Months on which downscaling will be performed
+    "Down.Months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    // Interpolation Parameters,  gstat arguments
+    "Interpolation.pars": [{
+        // Interpolation method: Kriging/IDW
+        // Kriging: Ordinary Kriging
+        // IDW: Inverse Distance Weighted
+        "interp.method": "IDW",
+        // nmin for gstat
+        "nmin": 3,
+        // nmax for gstat
+        "nmax": 10,
+        // maxdist for gstat (in decimal degree)
+        "maxdist": 1.5,
+        // variogram model, see gstat package for list of available model
+        "vgm.model": ["Sph", "Exp", "Gau"],
+        // using kriging of block mean values (true or false)
+        "use.block": true,
+
+        // Coarse resolution from gridded data to  complete points data
+        // when interpolate (in decimal degree) [not set]
+        "res.coarse": 0.5
+    }],
+    //Create grid from
+    // "1": from DEM
+    // "2": create a new grid
+    "Grid.From": "1",
+    // New grid definition min/max/res
+    "New.Grid.Def": [{
+        "minlon": 42,
+        "maxlon": 52,
+        "reslon": 0.1,
+        "minlat": -26,
+        "maxlat": -12,
+        "reslat": 0.1
+    }]
+}

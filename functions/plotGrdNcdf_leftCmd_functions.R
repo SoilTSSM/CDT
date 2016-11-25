@@ -20,6 +20,7 @@ PlotGriddedNcdfCmd <- function(){
 	tkgrid(plotBut.cmd, row = 1, column = 1, sticky = 'se', rowspan = 1, columnspan = 1)
 	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
 	tkgrid.rowconfigure(tknote.cmd, 0, weight = 1)
+	tkgrid.columnconfigure(plotBut.cmd, 0, weight = 1)
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "General")
 	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Options")
@@ -27,8 +28,6 @@ PlotGriddedNcdfCmd <- function(){
 
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
-
-	tkgrid.rowconfigure(cmd.tab1, 0, weight = 1)
 	
 	#######################################################################################################
 
@@ -135,14 +134,15 @@ PlotGriddedNcdfCmd <- function(){
 
 	wPreview <- wscrlwin-20
 	nb.color <- tclVar('10')
-	preset.color <- tclVar()
-	tclvalue(preset.color) <- 'tim.colors'
+	preset.color <- tclVar('tim.colors')
+	reverse.color <- tclVar(0)
+	custom.color <- tclVar(0)
+	custom.level <- tclVar(0)
 
 	labPresetCol.tab2 <- tklabel(subfr2, text = 'Presets colorkey', anchor = 'w', justify = 'left')
 	combPresetCol.tab2 <- ttkcombobox(subfr2, values = c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors'), textvariable = preset.color, width = 13)
 	nbPresetCol.tab2 <- tkentry(subfr2, width = 3, textvariable = nb.color, justify = "left")
 
-	reverse.color <- tclVar(0)
 	labRevCol.tab2 <- tklabel(subfr2, text = 'Reverse', anchor = 'e', justify = 'right')
 	chkRevCol.tab2 <- tkcheckbutton(subfr2, variable = reverse.color, anchor = 'w', justify = 'left')
 
@@ -150,23 +150,14 @@ PlotGriddedNcdfCmd <- function(){
 	previewPresetCol.tab2 <- tkcanvas(subfr2, width = wPreview, height = 20, bg = 'white')
 
 	sep2.tab2 <- ttkseparator(subfr2)
-	custom.color <- tclVar(0)
 	chkCustoCol.tab2 <- tkcheckbutton(subfr2, variable = custom.color, text = 'User customized  colorkey', anchor = 'w', justify = 'left')
 	butCustoCol.tab2 <- tkbutton(subfr2, text = "Custom", state = 'disabled')
 
 	sep3.tab2 <- ttkseparator(subfr2)
-	custom.level <- tclVar(0)
 	chkCustoLev.tab2 <- tkcheckbutton(subfr2, variable = custom.level, text = 'User customized  levels', anchor = 'w', justify = 'left')
 	butCustoLev.tab2 <- tkbutton(subfr2, text = "Custom", state = 'disabled')
 
-	infobulle(combPresetCol.tab2, 'Predefined color palettes')
-	status.bar.display(combPresetCol.tab2, TextOutputVar, 'Predefined color palettes')
-	infobulle(nbPresetCol.tab2, 'Number of color levels to be in the palette')
-	status.bar.display(nbPresetCol.tab2, TextOutputVar, 'Number of color levels to be in the palette')
-	infobulle(chkRevCol.tab2, 'Reverse the color palettes')
-	status.bar.display(chkRevCol.tab2, TextOutputVar, 'Reverse the color palettes')
-
-	#####
+	########################
 	tkgrid(labPresetCol.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(combPresetCol.tab2, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(nbPresetCol.tab2, row = 0, column = 5, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -181,6 +172,13 @@ PlotGriddedNcdfCmd <- function(){
 	tkgrid(sep3.tab2, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, pady = 5)
 	tkgrid(chkCustoLev.tab2, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(butCustoLev.tab2, row = 7, column = 4, sticky = 'w', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(combPresetCol.tab2, 'Predefined color palettes')
+	status.bar.display(combPresetCol.tab2, TextOutputVar, 'Predefined color palettes')
+	infobulle(nbPresetCol.tab2, 'Number of color levels to be in the palette')
+	status.bar.display(nbPresetCol.tab2, TextOutputVar, 'Number of color levels to be in the palette')
+	infobulle(chkRevCol.tab2, 'Reverse the color palettes')
+	status.bar.display(chkRevCol.tab2, TextOutputVar, 'Reverse the color palettes')
 
 	########################
 	##Preview Color
@@ -287,6 +285,7 @@ PlotGriddedNcdfCmd <- function(){
 	tcl('update')
 	tkgrid(cmd.frame, sticky = 'nswe', pady = 5)
 	tkgrid.columnconfigure(cmd.frame, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.frame, 1, weight = 1)
 	tkgrid.rowconfigure(cmd.frame, 0, weight = 1)
 
 	######

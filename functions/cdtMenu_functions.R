@@ -371,6 +371,19 @@ tkadd(menu.mrg.rain, "command", label = "Apply bias correction", command = funct
 })
 
 ##########
+tkadd(menu.mrg.rain, "separator")
+
+##########
+tkadd(menu.mrg.rain, "command", label = "Compute Spatio-temporal Trend Coefficients", background = 'lightblue', command = function(){
+	refreshCDT.lcmd.env()
+	initpars <- initialize.parameters('coefLM.rain', 'dekadal')
+	GeneralParameters <<- coefLMGetInfoRain(main.win, initpars)
+})
+
+##########
+tkadd(menu.mrg.rain, "separator")
+
+##########
 tkadd(menu.mrg.rain, "command", label = "Merging Data", command = function(){
 	refreshCDT.lcmd.env()
 	initpars <- initialize.parameters('merge.rain', 'dekadal')
@@ -413,11 +426,24 @@ tkadd(menu.mrg.temp, "command", label = "Compute Bias Coefficients", background 
 tkadd(menu.mrg.temp, "separator")
 
 ##########
-tkadd(menu.mrg.temp, "command", label = "Bias Adjustment", command = function(){
+tkadd(menu.mrg.temp, "command", label = "Apply bias correction", command = function(){
 	refreshCDT.lcmd.env()
 	initpars <- initialize.parameters('adjust.temp', 'dekadal')
 	GeneralParameters <<- adjGetInfoTempDownReanal(main.win, initpars)
 })
+
+##########
+tkadd(menu.mrg.temp, "separator")
+
+##########
+tkadd(menu.mrg.temp, "command", label = "Compute Spatio-temporal Trend Coefficients", background = 'lightblue', command = function(){
+	refreshCDT.lcmd.env()
+	initpars <- initialize.parameters('coefLM.temp', 'dekadal')
+	GeneralParameters <<- coefLMGetInfoTemp(main.win, initpars)
+})
+
+##########
+tkadd(menu.mrg.temp, "separator")
 
 ##########
 tkadd(menu.mrg.temp, "command", label = "Merging Data", command = function(){

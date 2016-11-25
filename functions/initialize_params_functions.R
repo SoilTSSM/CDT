@@ -4,8 +4,10 @@
 
 init.params <- function(action, period){
 	
+	## initialize spinbox
 	spinbox.state()
 
+	#############
 	#homogenization CDT
 	if(action == 'homog'){
 		hom.opts <- data.frame(c("crop.bounds", "h", "conf.lev", "Kmax", "min.int"), c("0", "0.025", "95.0", "10", "24"))
@@ -111,66 +113,35 @@ init.params <- function(action, period){
 	#########################################################################
 	###Mean bias rainfall
 	if(action == 'coefbias.rain'){
-		file.io <- data.frame(c('stn.file', 'DEM.file', 'RFE.file', 'RFE.dir', 'dir2save'), c('', '', '', '', getwd()))
-		names(file.io) <- c('Parameters', 'Values')
-		prefix <- data.frame(c('rfeFileFormat', 'meanBiasPrefix'), c("rfe%s_%s-dk%s.nc", "Gauge-rfe_mean.bias"))
-		names(prefix) <- c('Parameters', 'Values')
-		CreateGrd <- '1'
-		dates.coef <- data.frame(c('year1', 'year2'), c('1983', '2010'))
-		names(dates.coef) <- c('Parameters', 'Values')
-		params.int <- data.frame(c('min.nbrs', 'max.nbrs', 'max.dist'), c('1', '5', '0.25'))
-		names(params.int) <- c('Parameters', 'Values')
-		new.grid <- data.frame(c('minLon', 'maxLon', 'resLon', 'minLat', 'maxLat', 'resLat'),
-								c('42', '52', '0.1', '-26', '-12', '0.1'))
-		names(new.grid) <- c('Parameters', 'Values')
-		ret.params <- list(action = action, period = period, file.io = file.io, prefix = prefix,
-							dates.coef = dates.coef, CreateGrd = CreateGrd, params.int = params.int, new.grid = new.grid)
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Mean_Bias_Factor_RR.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
+		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
 
 	###Remove bias
 	if(action == 'rmbias.rain'){
-		file.io <- data.frame(c('RFE.file', 'RFE.dir', 'Bias.dir', 'dir2save'),
-		c('','','',getwd()))
-		names(file.io) <- c('Parameters', 'Values')
-		prefix <- data.frame(c('rfeFileFormat', 'meanBiasPrefix', 'adjPrefix'),
-		c("rfe%s_%s-dk%s.nc", "Gauge-rfe_mean.bias", "rr_adj"))
-		names(prefix) <- c('Parameters', 'Values')
-		dates.adj <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek',
-		'iend.yrs', 'iend.mon', 'iend.dek'), c('1983', '1', '1', '2014', '12', '3'))
-		names(dates.adj) <- c('Parameters', 'Values')
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Bias_Correction_RR.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
+		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
+	}
 
-		ret.params <- list(action = action, period = period, file.io = file.io, prefix = prefix, dates.adj = dates.adj)
+	### Compute LM coef
+	if(action == 'coefLM.rain'){
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Compute_LM_Coef_RR.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
+		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
 
 	###Merging rainfall
 	if(action == 'merge.rain'){
-		file.io <- data.frame(c('stn.file', 'DEM.file', 'RFE.file', 'RFE.dir', 'dir2save', 'shp.file', 'DEM.file'),
-							c('', '', '', '', getwd(), '', ''))
-		names(file.io) <- c('Parameters', 'Values')
-		prefix <- data.frame(c('adjPrefix', 'mrgPrefix', 'mrgSuffix'),	c("rr_adj", "rr_mrg", "ALL"))
-		names(prefix) <- c('Parameters', 'Values')
-		CreateGrd <- '1'
-		NewGrd <- '0'
-		blankGrd <- '1'
-		dates.mrg <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek', 'iend.yrs', 'iend.mon', 'iend.dek'),
-								c('1983', '1', '1', '2014', '12', '3'))
-		names(dates.mrg) <- c('Parameters', 'Values')
-		params.int <- data.frame(c('nmin.stn', 'min.non0', 'max.RnR.dist', 'max.dist', 'min.nbrs', 'max.nbrs'),
-								c('10', '7', '0.25', '0.25', '1', '5'))
-		names(params.int) <- c('Parameters', 'Values')
-		new.grid <- data.frame(c('minLon', 'maxLon', 'resLon', 'minLat', 'maxLat', 'resLat'),
-								c('42', '52', '0.1', '-26', '-12', '0.1'))
-		names(new.grid) <- c('Parameters', 'Values')
-		params.mrg <- data.frame(c('interpMethod', 'RainNoRain'), c('IDW', 'GaugeSatellite'))
-		names(params.mrg) <- c('Parameters', 'Values')
-		ret.params <- list(action = action, period = period, file.io = file.io, prefix = prefix, dates.mrg = dates.mrg,
-							NewGrd = NewGrd, CreateGrd = CreateGrd, blankGrd = blankGrd, params.int = params.int,
-							new.grid = new.grid, params.mrg = params.mrg)
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Merging_RR.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
+		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
-	####dekadal update
 
+	####dekadal update
 	if(action == 'merge.dekrain'){
-		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Update_RR_dekadal.json'))
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Update_dekadal_RR.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
 		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
@@ -178,76 +149,44 @@ init.params <- function(action, period){
 	#################################################################
 	##compute regression parameters for downscaling
 	if(action == 'coefdown.temp'){
-		file.io <- data.frame(c('stn.file', 'DEM.file', 'dir2save'), c('', '', getwd()))
-		names(file.io) <- c('Parameters', 'Values')
-		dates.coef <- data.frame(c('year1', 'year2'), c('1961', '2010'))
-		names(dates.coef) <- c('Parameters', 'Values')
-		ret.params <- list(action = action, period = period, file.io = file.io, dates.coef = dates.coef)
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Downscalling_Coef_TT.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
+		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
 
 	######downscaling
 	if(action == 'down.temp'){
-		file.io <- data.frame(c('stn.file', 'DEM.file', 'sampleReanalysis.file', 'dirReanalysis', 'dir2save'),
-								c('', '', '', '', getwd()))
-		names(file.io) <- c('Parameters', 'Values')
-		IO.file.format <- data.frame(c('Reanalysis.file.format', 'downPrefix'), c("tmax_%s%s%s.nc", "tmax_down"))
-		names(IO.file.format) <- c('Parameters', 'Values')
-		CreateGrd <- '1'
-		new.grid <- data.frame(c('minLon', 'maxLon', 'resLon', 'minLat', 'maxLat', 'resLat'),
-								c('42', '52', '0.1', '-26', '-12', '0.1'))
-		names(new.grid) <- c('Parameters', 'Values')
-		dates.down <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek', 'iend.yrs', 'iend.mon', 'iend.dek'),
-									c('1961', '1', '1', '2014', '12', '3'))
-		names(dates.down) <- c('Parameters', 'Values')
-		params.int <- data.frame(c('min.nbrs', 'max.nbrs', 'max.dist'), c('1', '7', '0.5'))
-		names(params.int) <- c('Parameters', 'Values')
-		ret.params <- list(action = action, period = period, file.io = file.io, IO.file.format = IO.file.format,
-							CreateGrd = CreateGrd, new.grid = new.grid, dates.down = dates.down, params.int = params.int)
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Downscalling_TT.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
+		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
 
 	##Bias coeff
 	if(action == 'coefbias.temp'){
-		file.io <- data.frame(c('stn.file', 'DEM.file', 'dirDown', 'dir2save'), c('', '', '', getwd()))
-		names(file.io) <- c('Parameters', 'Values')
-		dates.coef <- data.frame(c('year1', 'year2'), c('1961', '2010'))
-		names(dates.coef) <- c('Parameters', 'Values')
-		bias.method <- 'Bias-kriging'
-		prefix <- data.frame(c('downPrefix', 'meanBiasPrefix'), c("tmax_down", "tmax_JRAMeanBias_KR"))
-		names(prefix) <- c('Parameters', 'Values')
-		params.int <- data.frame(c('min.nbrs', 'max.nbrs', 'max.dist'), c('1', '7', '0.5'))
-		names(params.int) <- c('Parameters', 'Values')
-		ret.params <- list(action = action, period = period, file.io = file.io, params.int = params.int,
-							dates.coef = dates.coef, bias.method = bias.method, prefix = prefix)
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Mean_Bias_Factor_TT.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
+		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
 
 	##Adjustment
 	if(action == 'adjust.temp'){
-		file.io <- data.frame(c('stn.file', 'DEM.file', 'Down.dir', 'Bias.dir', 'dir2save'), c('', '', '', '', getwd()))
-		names(file.io) <- c('Parameters', 'Values')
-		bias.method <- 'Bias-kriging'
-		prefix <- data.frame(c('downPrefix', 'meanBiasPrefix', 'adjPrefix'), c("tmax_down", "tmax_JRAMeanBias_KR", "tmax_adj"))
-		names(prefix) <- c('Parameters', 'Values')
-		dates.adj <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek', 'iend.yrs', 'iend.mon', 'iend.dek'),
-								c('1961', '1', '1', '2014', '12', '3'))
-		names(dates.adj) <- c('Parameters', 'Values')
-		ret.params <- list(action = action, period = period, file.io = file.io, bias.method = bias.method, prefix = prefix, dates.adj = dates.adj)
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Bias_Correction_TT.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
+		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
+	}
+
+	### Compute LM coef
+	if(action == 'coefLM.temp'){
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Compute_LM_Coef_TT.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
+		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
 
 	##Merging
 	if(action == 'merge.temp'){
-		file.io <- data.frame(c('stn.file', 'DEM.file', 'shp.file', 'Adj.dir', 'dir2save'), c('', '', '', '', getwd()))
-		names(file.io) <- c('Parameters', 'Values')
-		blankGrd <- '1'
-		prefix <- data.frame(c('adjPrefix', 'mrgPrefix', 'mrgSuffix'), c("tmax_adj", "tmax_mrg", "ALL"))
-		names(prefix) <- c('Parameters', 'Values')
-		dates.mrg <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek', 'iend.yrs', 'iend.mon', 'iend.dek'),
-								c('1961', '1', '1', '2014', '12', '3'))
-		names(dates.mrg) <- c('Parameters', 'Values')
-		params.mrg <- data.frame(c('nmin', 'min.nbrs', 'max.nbrs', 'max.dist', 'interpMethod'),
-									c('10', '1', '5', '0.5', 'IDW'))
-		names(params.mrg) <- c('Parameters', 'Values')
-		ret.params <- list(action = action, period = period, file.io = file.io, blankGrd = blankGrd,
-							prefix = prefix, dates.mrg = dates.mrg, params.mrg = params.mrg)
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Merging_TT.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
+		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
 
 	#############################################################################################3

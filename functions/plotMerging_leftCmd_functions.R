@@ -1,24 +1,29 @@
+
 PlotMergingOutputCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
 	largeur <- as.integer(w.scale(21)/sfont0)
 	wncdf_ff <- as.integer(w.scale(14)/sfont0) 
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(20)
-		hscrlwin <- h.scale(27)
+		hscrlwin <- h.scale(28)
 	}else{
 		wscrlwin <- w.scale(24)  
-		hscrlwin <- h.scale(34) 
+		hscrlwin <- h.scale(35)
 	}
 
-	###################
+	PlotOutMrg <- fromJSON(file.path(apps.dir, 'init_params', 'Plot_Output_Merging.json'))
+
+	##############################
 
 	cmd.frame <- tkframe(panel.left)
 
 	tknote.cmd <- bwNoteBook(cmd.frame)
 	plotBut.cmd <- tkframe(cmd.frame)
-	tkgrid(tknote.cmd, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 3)
+	tkgrid(tknote.cmd, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 4)
 	tkgrid(plotBut.cmd, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 3)
 	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
+	tkgrid.rowconfigure(tknote.cmd, 0, weight = 1)
+	tkgrid.columnconfigure(plotBut.cmd, 0, weight = 1)
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "General")
 	cmd.tab2 <- bwAddTab(tknote.cmd, text = "NetCDF data")
@@ -28,7 +33,7 @@ PlotMergingOutputCmd <- function(){
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
-	
+
 	#######################################################################################################
 
 	#Tab1
@@ -36,66 +41,65 @@ PlotMergingOutputCmd <- function(){
 	tkgrid(frTab1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid.columnconfigure(frTab1, 0, weight = 1)
 
+	##############################
 	scrw1 <- bwScrolledWindow(frTab1)
-	tkgrid(scrw1)
+	saveload.frame <- tkframe(frTab1)
+
+	tkgrid(scrw1, row = 0, column = 0, sticky = 'snwe', rowspan = 1, columnspan = 1)
+	tkgrid(saveload.frame, row = 1, column = 0, sticky = 'swe', rowspan = 1, columnspan = 1)
 	tkgrid.columnconfigure(scrw1, 0, weight = 1)
+	tkgrid.columnconfigure(saveload.frame, 0, weight = 1)
+	tkgrid.columnconfigure(saveload.frame, 1, weight = 1)
+
 	subfr1 <- bwScrollableFrame(scrw1, width = wscrlwin, height = hscrlwin)
-	tkgrid.columnconfigure(subfr1, 0, weight = 1)
 
-	##############
+	##############################
+	file.period <- tclVar(PlotOutMrg$Obs$Obs.freq)
+	file.stnfl <- tclVar(PlotOutMrg$Obs$Obs.file)
+	dayLabTab1_Var <- tclVar(PlotOutMrg$date$day.label)
+	idate_yrs <- tclVar(PlotOutMrg$date$year)
+	idate_mon <- tclVar(PlotOutMrg$date$mon)
+	idate_day <- tclVar(PlotOutMrg$date$day)
+	unit_sym <- tclVar(PlotOutMrg$Obs$Obs.unit)
+	obs_name <- tclVar(PlotOutMrg$Obs$Obs.name)
+	file.plotShp <- tclVar(PlotOutMrg$shp)
+
+	##############################
 	frameStn <- ttklabelframe(subfr1, text = "Station data file", relief = 'groove')
+	frameShp <- ttklabelframe(subfr1, text = "Shapefiles for boundary", relief = 'groove')
 
-	file.period <- tclVar()
-	tclvalue(file.period) <- 'Dekadal data'
+	##############################
 	combPrd.tab1 <- ttkcombobox(frameStn, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
-
-	file.stnfl <- tclVar()
 	combStnfl.tab1 <- ttkcombobox(frameStn, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur)
 	btStnfl.tab1 <- tkbutton(frameStn, text = "...") 
+	labDate.tab1 <- tklabel(frameStn, text = "Date", anchor = 'e', justify = 'right')
+	yrsLab.tab1 <- tklabel(frameStn, text = 'Year', anchor = 'w', justify = 'left')
+	monLab.tab1 <- tklabel(frameStn, text = 'Month', anchor = 'w', justify = 'left')
+	dayLab.tab1 <- tklabel(frameStn, text = tclvalue(dayLabTab1_Var), textvariable = dayLabTab1_Var, anchor = 'w', justify = 'left')
+	yrs1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_yrs, justify = "left")
+	mon1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_mon, justify = "left")
+	day1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_day, justify = "left")
+	obsLab.tab1 <- tklabel(frameStn, text = 'Title', anchor = 'e', justify = 'right')
+	obsEd.tab1 <- tkentry(frameStn, width = 14, textvariable = obs_name, justify = "left")
+	unitLab.tab1 <- tklabel(frameStn, text = 'Units', anchor = 'e', justify = 'right')
+	unitEd.tab1 <- tkentry(frameStn, width = 8, textvariable = unit_sym, justify = "left")
+
+	##############################
+
 	tkconfigure(btStnfl.tab1, command = function(){
 		dat.opfiles <- getOpenFiles(main.win, all.opfiles)
 		if(!is.null(dat.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'ascii'
 			AllOpenFilesData[[nopf+1]] <<- dat.opfiles
-			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]] 
+			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
 			tclvalue(file.stnfl) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(combStnfl.tab1, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(combShp.tab1, values = unlist(listOpenFiles), textvariable = file.plotShp)
 		}else return(NULL)
 	})
-	infobulle(combStnfl.tab1, 'Choose the station data in the list')
-	status.bar.display(combStnfl.tab1, TextOutputVar, 'Choose the file containing the station data')
-	infobulle(btStnfl.tab1, 'Browse file if not listed')
-	status.bar.display(btStnfl.tab1, TextOutputVar, 'Browse file if not listed')
-	#######################
-	labDate.tab1 <- tklabel(frameStn, text = "Date", anchor = 'e', justify = 'right')
-	yrsLab.tab1 <- tklabel(frameStn, text = 'Year', anchor = 'w', justify = 'left')
-	monLab.tab1 <- tklabel(frameStn, text = 'Month', anchor = 'w', justify = 'left')
-	dayLabTab1_Var <- tclVar('Dek')
-	dayLab.tab1 <- tklabel(frameStn, text = tclvalue(dayLabTab1_Var), textvariable = dayLabTab1_Var, anchor = 'w', justify = 'left')
-	
-	idate_yrs <- tclVar('1983')
-	idate_mon <- tclVar('1')
-	idate_day <- tclVar('1')
-	
-	yrs1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_yrs, justify = "left")
-	mon1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_mon, justify = "left")
-	day1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_day, justify = "left")
 
-	obs_name <- tclVar('Observation')	
-	obsLab.tab1 <- tklabel(frameStn, text = 'Title', anchor = 'e', justify = 'right')
-	obsEd.tab1 <- tkentry(frameStn, width = 14, textvariable = obs_name, justify = "left")
-	infobulle(obsEd.tab1, 'Title of the panel')
-	status.bar.display(obsEd.tab1, TextOutputVar, 'Title of the panel')
-
-	unit_sym <- tclVar('mm')	
-	unitLab.tab1 <- tklabel(frameStn, text = 'Units', anchor = 'e', justify = 'right')
-	unitEd.tab1 <- tkentry(frameStn, width = 8, textvariable = unit_sym, justify = "left")
-	infobulle(unitEd.tab1, 'Display unit on colorscale')
-	status.bar.display(unitEd.tab1, TextOutputVar, 'Display unit on colorscale')
-
-	####################
+	##############################
 	tkgrid(combPrd.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(combStnfl.tab1, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(btStnfl.tab1, row = 1, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
@@ -111,81 +115,219 @@ PlotMergingOutputCmd <- function(){
 	tkgrid(obsLab.tab1, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(obsEd.tab1, row = 5, column = 1, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
+	infobulle(combStnfl.tab1, 'Choose the station data in the list')
+	status.bar.display(combStnfl.tab1, TextOutputVar, 'Choose the file containing the station data')
+	infobulle(btStnfl.tab1, 'Browse file if not listed')
+	status.bar.display(btStnfl.tab1, TextOutputVar, 'Browse file if not listed')
+	infobulle(obsEd.tab1, 'Title of the panel')
+	status.bar.display(obsEd.tab1, TextOutputVar, 'Title of the panel')
+	infobulle(unitEd.tab1, 'Display unit on colorscale')
+	status.bar.display(unitEd.tab1, TextOutputVar, 'Display unit on colorscale')
+
 	##############################
-	frameShp <- ttklabelframe(subfr1, text = "Shapefiles for boundary", relief = 'groove')
+	tkbind(combPrd.tab1,"<<ComboboxSelected>>", function(){
+		if(tclvalue(file.period) == 'Daily data'){
+			tclvalue(dayLabTab1_Var) <- 'Day'
+			tkconfigure(day1.tab1, state = 'normal')
+		}
+		if(tclvalue(file.period) == 'Dekadal data'){
+			tclvalue(dayLabTab1_Var) <- 'Dek'
+			tkconfigure(day1.tab1, state = 'normal')
+		}
+		if(tclvalue(file.period) == 'Monthly data'){
+			tkconfigure(day1.tab1, state = 'disabled')
+		}
+	})
+
+	##############################
 	
-	file.plotShp <- tclVar()
 	combShp.tab1 <- ttkcombobox(frameShp, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur) 
 	btShp.tab1 <- tkbutton(frameShp, text = "...") 
+
+	##############################
+
 	tkconfigure(btShp.tab1, command = function(){
 		shp.opfiles <- getOpenShp(main.win, all.opfiles)
 		if(!is.null(shp.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'shp'
 			AllOpenFilesData[[nopf+1]] <<- shp.opfiles
-			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]		
+			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
 			tclvalue(file.plotShp) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(combStnfl.tab1, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(combShp.tab1, values = unlist(listOpenFiles), textvariable = file.plotShp)
 		}
 	})
 	
-	###################
+	##############################
 	tkgrid(combShp.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(btShp.tab1, row = 0, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
-	#############################
+	##############################
 	tkgrid(frameStn, row = 0, column = 0, sticky = 'we')
 	tkgrid(frameShp, row = 1, column = 0, sticky = 'we')
 
-	#######################################################################################################
-	tkbind(combPrd.tab1,"<<ComboboxSelected>>", function(){
-		if(tclvalue(file.period) == 'Daily data'){
-			tclvalue(dayLabTab1_Var)<-'Day'
-			tkconfigure(day1.tab1, state = 'normal')
+	############################################################
+
+	save.tab1 <- tkbutton(saveload.frame, text = 'Save')
+	load.tab1 <- tkbutton(saveload.frame, text = 'Load')
+
+	##############################
+	tkconfigure(save.tab1, command = function(){
+		PlotOutMrg <- list(
+			Obs = list(Obs.freq = tclvalue(file.period),
+						Obs.file = tclvalue(file.stnfl),
+						Obs.unit = tclvalue(unit_sym),
+						Obs.name = tclvalue(obs_name)),
+			date = list(year = tclvalue(idate_yrs),
+						mon = tclvalue(idate_mon),
+						day = tclvalue(idate_day),
+						day.label = tclvalue(dayLabTab1_Var)),
+			shp = tclvalue(file.plotShp),
+			color.opt = list(nb.color = tclvalue(nb.color),
+							preset.color = tclvalue(preset.color),
+							reverse.color = tclvalue(reverse.color),
+							custom.color = tclvalue(custom.color),
+							custom.level = tclvalue(custom.level)))
+
+		dataNCDF0 <- dataNCDF
+		jfile <- getIndex.AllOpenFiles(file.stnfl)
+		if(length(jfile) > 0){
+			openStnData <- list(stnFileType = AllOpenFilesType[[jfile]], stnDataFile = AllOpenFilesData[[jfile]])
+		}else openStnData <- NULL
+
+		jshp <- getIndex.AllOpenFiles(file.plotShp)
+		if(length(jshp) > 0){
+			openShpData <- list(stnFileType = AllOpenFilesType[[jshp]], stnDataFile = AllOpenFilesData[[jshp]])
+		}else openShpData <- NULL
+
+		filetypes <- "{{CDT Files} {.cdt}} {{All files} {*.*}}"
+		if(Sys.info()["sysname"] == "Windows"){
+			filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes, defaultextension = TRUE))
+		}else filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes))
+
+		if(filename == "") return(NULL)
+		else if((filename == 'NA') | is.na(filename)){
+			InsertMessagesTxt(main.txt.out, 'Current plot parameters could not be saved correctly', format = TRUE)
+			return(NULL)
+		}else save(dataNCDF0, PlotOutMrg, openStnData, openShpData, listCol, atLev, file = filename)
+	})
+
+	tkconfigure(load.tab1, command = function(){
+		filetypes <- "{{CDT Files} {.cdt}} {{All files} {*.*}}"
+		fileopen <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
+		if(fileopen == "") return(NULL)
+		load(fileopen)
+
+		ret <- lapply(list(openStnData, openShpData), function(x){
+				if(!is.null(x)){
+					jfile <- if(length(AllOpenFilesType) > 0) getIndex.AllOpenFiles(x$stnDataFile[[1]]) else 0
+					if(jfile == 0){
+						nopfs <- length(AllOpenFilesType)
+						AllOpenFilesType[[nopfs+1]] <<- x$stnFileType
+						AllOpenFilesData[[nopfs+1]] <<- x$stnDataFile
+						tkinsert(all.opfiles, "end", x$stnDataFile[[1]])
+					}
+				}
+				return(0)
+			})
+		#
+		atLev <<- atLev
+		listCol <<- listCol
+
+		tclvalue(file.period) <- PlotOutMrg$Obs$Obs.freq
+		tclvalue(file.stnfl) <- PlotOutMrg$Obs$Obs.file
+		tclvalue(unit_sym) <- PlotOutMrg$Obs$Obs.unit
+		tclvalue(obs_name) <- PlotOutMrg$Obs$Obs.name
+		tclvalue(idate_yrs) <- PlotOutMrg$date$year
+		tclvalue(idate_mon) <- PlotOutMrg$date$mon
+		tclvalue(idate_day) <- PlotOutMrg$date$day
+		tclvalue(dayLabTab1_Var) <- PlotOutMrg$date$day.label
+		tclvalue(file.plotShp) <- PlotOutMrg$shp
+		tclvalue(nb.color) <- PlotOutMrg$color.opt$nb.color
+		tclvalue(preset.color) <- PlotOutMrg$color.opt$preset.color
+		tclvalue(reverse.color) <- PlotOutMrg$color.opt$reverse.color
+		tclvalue(custom.color) <- PlotOutMrg$color.opt$custom.color
+		tclvalue(custom.level) <- PlotOutMrg$color.opt$custom.level
+
+		statecol <- if(tclvalue(custom.color) == '0') 'disabled' else 'normal'
+		statelev <- if(tclvalue(custom.level) == '0') 'disabled' else 'normal'
+		tkconfigure(butCustoLev.tab3, state = statelev)
+		tkconfigure(butCustoCol.tab3, state = statecol)
+
+		nclen <- length(dataNCDF0)
+		if(nclen > 0){
+			tclvalue(dataNCDF[[1]][[1]]) <- tclvalue(dataNCDF0[[1]][[1]])
+			tclvalue(dataNCDF[[1]][[2]]) <- tclvalue(dataNCDF0[[1]][[2]])
+			tclvalue(dataNCDF[[1]][[3]]) <- tclvalue(dataNCDF0[[1]][[3]])
+			if(nclen > 1){
+				pos <<- 1
+				jCDF <<- 2
+				for(j in 2:nclen){
+					tcl.var <- list(dir = tclvalue(dataNCDF0[[j]][[1]]),
+									format = tclvalue(dataNCDF0[[j]][[2]]),
+									name = tclvalue(dataNCDF0[[j]][[3]]))
+					dataNCDF[[j]] <<- addNcdfFun(j, pos, subfr2, tcl.var)
+					jCDF <<- jCDF+1
+					pos <<- pos+1
+				}
+			}
 		}
-		if(tclvalue(file.period) == 'Dekadal data'){
-			tclvalue(dayLabTab1_Var)<-'Dek'
-			tkconfigure(day1.tab1, state = 'normal')
-		}
-		if(tclvalue(file.period) == 'Monthly data'){
-			tkconfigure(day1.tab1, state = 'disabled')
-		}
-	})		
+	})
+
+	##############################
+	tkgrid(save.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(load.tab1, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	infobulle(save.tab1, 'Save plot parameters')
+	status.bar.display(save.tab1, TextOutputVar, 'Save plot parameters')
+	infobulle(load.tab1, 'Load plot parameters')
+	status.bar.display(load.tab1, TextOutputVar, 'Load plot parameters')
 
 	#######################################################################################################
-
-	addNcdfFun <- function(nfr, contFrame){
+	## ADD NetCDF data
+	addNcdfFun <- function(nfr, pos, contFrame, tcl.var){
 		frameNcdf <- ttklabelframe(contFrame, text = paste("NetCDF data", nfr), relief = 'groove')
 		
-		dir_ncdf <- tclVar()
+		dir_ncdf <- tclVar(tcl.var$dir)
+		ff_ncdf <- tclVar(tcl.var$format)
+		title_ncdf <- tclVar(tcl.var$name)
+
+		if(nfr == 1){
+			statebt <- 'disabled'
+			colorbt <- 'lightgray'
+		}else{
+			statebt <- 'normal'
+			colorbt <- 'red'
+		}
+
 		dir_ncdfLab.tab2 <- tklabel(frameNcdf, text = 'Directory of NetCDF files', anchor = 'w', justify = 'left')
+		deleteFrame.tab2 <- tkbutton(frameNcdf, text = "-", bg = colorbt, state =  statebt) 
+
 		dir_ncdfEd.tab2 <- tkentry(frameNcdf, textvariable = dir_ncdf, width = largeur)
 		dir_ncdfBt.tab2 <- tkbutton(frameNcdf, text = "...") 
-		tkconfigure(dir_ncdfBt.tab2, command = function(){
-			dir4ncdf <- tk_choose.dir(getwd(), "")
-			if(is.na(dir4ncdf)) tclvalue(dir_ncdf)<-""
-			else tclvalue(dir_ncdf)<-dir4ncdf
-		})
-		infobulle(dir_ncdfEd.tab2, 'Enter the full path to\ndirectory containing the NetCDF files')
-		status.bar.display(dir_ncdfEd.tab2, TextOutputVar, 'Enter the full path to directory containing the NetCDF files')
-		infobulle(dir_ncdfBt.tab2, 'Select directory here')
-		status.bar.display(dir_ncdfBt.tab2, TextOutputVar, 'Select directory here')
-
-		ff_ncdf <- tclVar("rfe%s_%s_%s.nc")
 		ff_ncdfLab.tab2 <- tklabel(frameNcdf, text = 'NetCDF filename format', anchor = 'w', justify = 'left')
 		ff_ncdfEd.tab2 <- tkentry(frameNcdf, width = 14, textvariable = ff_ncdf, justify = "left")
-		infobulle(ff_ncdfEd.tab2, 'Enter the format of the NetCDF files names,\nexample: rfe1983_01_01.nc')
-		status.bar.display(ff_ncdfEd.tab2, TextOutputVar, 'Enter the format of the NetCDF files names, example: rfe1983_01_01.nc')
-
-		title_ncdf <- tclVar(paste('NetCDF', nfr))	
 		ttl_ncdfLab.tab2 <- tklabel(frameNcdf, text = 'Plot Title', anchor = 'w', justify = 'left')
 		ttl_ncdfEd.tab2 <- tkentry(frameNcdf, width = 14, textvariable = title_ncdf, justify = "left")
-		infobulle(ttl_ncdfEd.tab2, 'Title of the plot')
-		status.bar.display(ttl_ncdfEd.tab2, TextOutputVar, 'Title of the plot')
 
 		#######################
-		tkgrid(dir_ncdfLab.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkconfigure(dir_ncdfBt.tab2, command = function(){
+			dir4ncdf <- tk_choose.dir(getwd(), "")
+			tclvalue(dir_ncdf) <- if(!is.na(dir4ncdf)) dir4ncdf else ""
+		})
+
+		tkconfigure(deleteFrame.tab2, command = function(){
+			tkdestroy(frameNcdf)
+			del <- if(jCDF == 2) 2 else nfr
+			dataNCDF <<- dataNCDF[-del]
+			jCDF <<- jCDF-1
+			tcl('update')
+		})
+
+		#######################
+		tkgrid(dir_ncdfLab.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(deleteFrame.tab2, row = 0, column = 5, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
 		tkgrid(dir_ncdfEd.tab2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(dir_ncdfBt.tab2, row = 1, column = 5, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(ff_ncdfLab.tab2, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -193,35 +335,60 @@ PlotMergingOutputCmd <- function(){
 		tkgrid(ttl_ncdfLab.tab2, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(ttl_ncdfEd.tab2, row = 5, column = 1, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-		######
-		tkgrid(frameNcdf, row = nfr, column = 0, sticky = 'we')
+		infobulle(dir_ncdfEd.tab2, 'Enter the full path to directory containing the NetCDF files')
+		status.bar.display(dir_ncdfEd.tab2, TextOutputVar, 'Enter the full path to directory containing the NetCDF files')
+		infobulle(dir_ncdfBt.tab2, 'Select directory here')
+		status.bar.display(dir_ncdfBt.tab2, TextOutputVar, 'Select directory here')
+		infobulle(ff_ncdfEd.tab2, 'Enter the format of the NetCDF files names,\nexample: rfe1983_01_01.nc')
+		status.bar.display(ff_ncdfEd.tab2, TextOutputVar, 'Enter the format of the NetCDF files names, example: rfe1983_01_01.nc')
+		infobulle(ttl_ncdfEd.tab2, 'Title of the plot')
+		status.bar.display(ttl_ncdfEd.tab2, TextOutputVar, 'Title of the plot')
+		infobulle(deleteFrame.tab2, 'Remove')
+		status.bar.display(deleteFrame.tab2, TextOutputVar, 'Remove')
+
+		#######################
+		tkgrid(frameNcdf, row = pos, column = 0, sticky = 'we')
+		tcl('update')
 		return(list(dir_ncdf, ff_ncdf, title_ncdf))
 	}
 	
 	#######################################################################################################
-	#Tab2	
+
+	#Tab2
 	frTab2 <- tkframe(cmd.tab2)
-	tkgrid(frTab2, padx = 5, pady = 5, ipadx = 2, ipady = 2)
+	tkgrid(frTab2, sticky = 'snwe', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid.columnconfigure(frTab2, 0, weight = 1)
 
+	##############################
 	scrw2 <- bwScrolledWindow(frTab2)
-	tkgrid(scrw2)
+	addNCdata.frame <- tkframe(frTab2)
+
+	tkgrid(scrw2, row = 0, column = 0, sticky = 'snwe', rowspan = 1, columnspan = 1)
+	tkgrid(addNCdata.frame, row = 1, column = 0, sticky = 'swe', rowspan = 1, columnspan = 1)
 	tkgrid.columnconfigure(scrw2, 0, weight = 1)
+	tkgrid.columnconfigure(addNCdata.frame, 0, weight = 1)
+
 	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
-	tkgrid.columnconfigure(subfr2, 0, weight = 1)
+
+	##############################
 
 	dataNCDF <- list()
-	#########################
-	addNcdfData.tab2 <- tkbutton(subfr2, text = 'Add Other NetCDF data')
-	dataNCDF[[1]] <- addNcdfFun(1, subfr2)
 	jCDF <- 2
+	pos <- 1
+	tcl.var <- list(dir = PlotOutMrg$ncdata$dir, format = PlotOutMrg$ncdata$format, name = PlotOutMrg$ncdata$name)
+
+	dataNCDF[[1]] <- addNcdfFun(nfr = 1, pos = 0, subfr2, tcl.var)
+	addNcdfData.tab2 <- tkbutton(addNCdata.frame, text = 'Add Other NetCDF data', bg = 'lightgreen')
+
 	tkconfigure(addNcdfData.tab2, command = function(){
-		dataNCDF[[jCDF]] <<- addNcdfFun(jCDF, subfr2)
+		tcl.var <- list(dir = PlotOutMrg$ncdata$dir, format = PlotOutMrg$ncdata$format, name = paste('NetCDF', jCDF))
+		dataNCDF[[jCDF]] <<- addNcdfFun(jCDF, pos, subfr2, tcl.var)
 		jCDF <<- jCDF+1
+		pos <<- pos+1
 	})
-	
-	##########
-	tkgrid(addNcdfData.tab2, row = 0, column = 0, sticky = 'we', pady = 2)
+
+	tkgrid(addNcdfData.tab2, row = 0, column = 0, sticky = 'we', pady = 1)
+	tkgrid.columnconfigure(addNcdfData.tab2, 0, weight = 1)
 	
 	#######################################################################################################
 
@@ -233,19 +400,23 @@ PlotMergingOutputCmd <- function(){
 	scrw3 <- bwScrolledWindow(frTab3)
 	tkgrid(scrw3)
 	tkgrid.columnconfigure(scrw3, 0, weight = 1)
+	
 	subfr3 <- bwScrollableFrame(scrw3, width = wscrlwin, height = hscrlwin)
-	tkgrid.columnconfigure(subfr3, 0, weight = 1)
+
+	##############################
 
 	wPreview <- wscrlwin-20
-	nb.color <- tclVar('10')
-	preset.color <- tclVar()
-	tclvalue(preset.color) <- 'tim.colors'
+
+	nb.color <- tclVar(PlotOutMrg$color.opt$nb.color)
+	preset.color <- tclVar(PlotOutMrg$color.opt$preset.color)
+	reverse.color <- tclVar(PlotOutMrg$color.opt$reverse.color)
+	custom.color <- tclVar(PlotOutMrg$color.opt$custom.color)
+	custom.level <- tclVar(PlotOutMrg$color.opt$custom.level)
 
 	labPresetCol.tab3 <- tklabel(subfr3, text = 'Presets colorkey', anchor = 'w', justify = 'left')
 	combPresetCol.tab3 <- ttkcombobox(subfr3, values = c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors'), textvariable = preset.color, width = 13)
 	nbPresetCol.tab3 <- tkentry(subfr3, width = 3, textvariable = nb.color, justify = "left")
 
-	reverse.color <- tclVar(0)
 	labRevCol.tab3 <- tklabel(subfr3, text = 'Reverse', anchor = 'e', justify = 'right')
 	chkRevCol.tab3 <- tkcheckbutton(subfr3, variable = reverse.color, anchor = 'w', justify = 'left')
 
@@ -253,23 +424,14 @@ PlotMergingOutputCmd <- function(){
 	previewPresetCol.tab3 <- tkcanvas(subfr3, width = wPreview, height = 20, bg = 'white')
 
 	sep2.tab3 <- ttkseparator(subfr3)
-	custom.color <- tclVar(0)
 	chkCustoCol.tab3 <- tkcheckbutton(subfr3, variable = custom.color, text = 'User customized  colorkey', anchor = 'w', justify = 'left')
 	butCustoCol.tab3 <- tkbutton(subfr3, text = "Custom", state = 'disabled')
 
 	sep3.tab3 <- ttkseparator(subfr3)
-	custom.level <- tclVar(0)
 	chkCustoLev.tab3 <- tkcheckbutton(subfr3, variable = custom.level, text = 'User customized  levels', anchor = 'w', justify = 'left')
 	butCustoLev.tab3 <- tkbutton(subfr3, text = "Custom", state = 'disabled')
 
-	infobulle(combPresetCol.tab3, 'Predefined color palettes')
-	status.bar.display(combPresetCol.tab3, TextOutputVar, 'Predefined color palettes')
-	infobulle(nbPresetCol.tab3, 'Number of color levels to be in the palette')
-	status.bar.display(nbPresetCol.tab3, TextOutputVar, 'Number of color levels to be in the palette')
-	infobulle(chkRevCol.tab3, 'Reverse the color palettes')
-	status.bar.display(chkRevCol.tab3, TextOutputVar, 'Reverse the color palettes')
-
-	#####
+	########################
 	tkgrid(labPresetCol.tab3, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(combPresetCol.tab3, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(nbPresetCol.tab3, row = 0, column = 5, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -284,6 +446,13 @@ PlotMergingOutputCmd <- function(){
 	tkgrid(sep3.tab3, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, pady = 5)
 	tkgrid(chkCustoLev.tab3, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(butCustoLev.tab3, row = 7, column = 4, sticky = 'w', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(combPresetCol.tab3, 'Predefined color palettes')
+	status.bar.display(combPresetCol.tab3, TextOutputVar, 'Predefined color palettes')
+	infobulle(nbPresetCol.tab3, 'Number of color levels to be in the palette')
+	status.bar.display(nbPresetCol.tab3, TextOutputVar, 'Number of color levels to be in the palette')
+	infobulle(chkRevCol.tab3, 'Reverse the color palettes')
+	status.bar.display(chkRevCol.tab3, TextOutputVar, 'Reverse the color palettes')
 
 	########################
 	##Preview Color
@@ -358,7 +527,6 @@ PlotMergingOutputCmd <- function(){
 	
 	#######################################################################################################
 
-
 	plot_prev <- tkbutton(plotBut.cmd, text=" <<- Prev")
 	plotDataBut <- tkbutton(plotBut.cmd, text = "Plot Data")
 	plot_next <- tkbutton(plotBut.cmd, text = "Next->>")
@@ -367,7 +535,8 @@ PlotMergingOutputCmd <- function(){
 	tkgrid(plotDataBut, row = 0, column = 1, sticky = 'we', padx = 5, pady = 5)
 	tkgrid(plot_next, row = 0, column = 2, sticky = 'e', padx = 5, pady = 5)
 
-	#################	
+	#################
+
 	notebookTab <- NULL
 	#######
 
@@ -531,6 +700,8 @@ PlotMergingOutputCmd <- function(){
 	tcl('update')
 	tkgrid(cmd.frame, sticky = 'nswe', pady = 5)
 	tkgrid.columnconfigure(cmd.frame, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.frame, 1, weight = 1)
+	tkgrid.rowconfigure(cmd.frame, 0, weight = 1)
 	######
 	return(cmd.frame)
 }

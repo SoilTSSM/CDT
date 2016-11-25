@@ -7,9 +7,9 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 	units <- str_trim(units)
 
 	if(!is.na(units)){
-		 if(units != "") colorkeyTitle <- paste('(',units,')',sep = '')
-		 else colorkeyTitle<-''
-	} else colorkeyTitle<-''
+		 if(units != "") colorkeyTitle <- paste('(', units, ')', sep = '')
+		 else colorkeyTitle <- ''
+	} else colorkeyTitle <- ''
 
 	
 	##X-Y Axis
@@ -27,17 +27,27 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 	##Axis lab
 	axlabs <- LatLonAxisLabels(axis.x, axis.y)
 	##X-axis
-	Xaxis = list(relation = "same", draw = T, alternating = c(1,2), at = axis.x, labels = axlabs$xaxl, tck = c(1,1))
+	Xaxis = list(relation = "same", draw = T, alternating = c(1, 2), at = axis.x, labels = axlabs$xaxl, tck = c(1, 1))
 	###Y-axis
-	Yaxis = list(relation = "same", draw = T, alternating = c(1,2), at = axis.y, labels = axlabs$yaxl, tck = c(1,1))
+	Yaxis = list(relation = "same", draw = T, alternating = c(1, 2), at = axis.y, labels = axlabs$yaxl, tck = c(1, 1))
 
 	#########################################
 	donStn <- allDATA[[1]][[1]]
-	plotStn <- levelplot(donStn$value~donStn$x+donStn$y, at = ticks, prepanel = prepanel.default.xyplot, panel = function(x, y, z,...){
-		panel.lines(ocrds, col = "black", lwd = 0.5)
-		panel.abline(h = grid.y, v = grid.x, col = "lightgray", lty = 3)
-		panel.levelplot.points(x, y, z, type = 'p', cex = 0.9,...)
-	},colorkey = FALSE)
+
+	donStn <- as.image(donStn$value, x = cbind(donStn$x, donStn$y), nx = 60, ny = 60)
+	plotStn <- levelplot(donStn$z, row.values = donStn$x, column.values = donStn$y, at = ticks,
+		interpolate = TRUE, region = TRUE, 
+		panel = function(...){
+			panel.levelplot(...)
+			panel.lines(ocrds, col = "black", lwd = 0.5)
+			panel.abline(h = grid.y, v = grid.x, col = "lightgray", lty = 3)
+		},colorkey = FALSE)
+
+	# plotStn <- levelplot(donStn$value~donStn$x+donStn$y, at = ticks, prepanel = prepanel.default.xyplot, panel = function(x, y, z,...){
+	# 	panel.lines(ocrds, col = "black", lwd = 0.5)
+	# 	panel.abline(h = grid.y, v = grid.x, col = "lightgray", lty = 3)
+	# 	panel.levelplot.points(x, y, z, type = 'p', cex = 0.9,...)
+	# },colorkey = FALSE)
 
 	PlotObj0 <- plotStn
 	####
@@ -77,15 +87,15 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 	}
 	### Colorkey option
 	if(colorkeyPlace == 'bottom'){
-		layout.pad <- c(1,1,1,2) #left, right, top, bottom
+		layout.pad <- c(1, 1, 1, 2) #left, right, top, bottom
 		posTitle <- 'right'
-		xyposTitle <- c(1,0.2)
+		xyposTitle <- c(1, 0.2)
 		justTitle <- c("center", "center")
 		rotTitle <- 0 
 	}else if(colorkeyPlace == 'right'){
-		layout.pad <- c(1,2,1,1)
+		layout.pad <- c(1, 2, 1, 1)
 		posTitle <- 'top'
-		xyposTitle <- c(1,1.5)
+		xyposTitle <- c(1, 1.5)
 		justTitle <- c("right", "center")
 		rotTitle <- 0
 	}
@@ -96,10 +106,12 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 	layout.heights = list(top.padding = layout.pad[3], bottom.padding = layout.pad[4]))
 
 	##Colorkey
-	colorkey <- list(space = colorkeyPlace, col = loko, width = 1.5, height = 1, raster = TRUE, interpolate = TRUE, at = 1:nticks, labels = list(labels = labticks, at = 1:nticks, cex = 0.8, col = 'black', rot = 0),
-		axis.line = list(alpha = 0.5, lty = 1, lwd = 1, col = 'black'))
+	colorkey <- list(space = colorkeyPlace, col = loko, width = 1.5, height = 1, raster = TRUE, interpolate = TRUE, at = 1:nticks,
+					labels = list(labels = labticks, at = 1:nticks, cex = 0.8, col = 'black', rot = 0),
+					axis.line = list(alpha = 0.5, lty = 1, lwd = 1, col = 'black'))
 	colorkeyFrame <- draw.colorkey(key = colorkey, draw = FALSE, vp = NULL)
-	grobObj <- textGrob(colorkeyTitle, x = xyposTitle[1], y = xyposTitle[2], just = justTitle, rot = rotTitle, gp = gpar(fontsize = 12, fontface = 'plain', col = "black", cex = 0.8))
+	grobObj <- textGrob(colorkeyTitle, x = xyposTitle[1], y = xyposTitle[2], just = justTitle, rot = rotTitle,
+						gp = gpar(fontsize = 12, fontface = 'plain', col = "black", cex = 0.8))
 	
 	##add legend title
 	lezandyGrob <- packGrob(frame = colorkeyFrame, grob = grobObj, side = posTitle, dynamic = T)
@@ -116,7 +128,9 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 	##strip
 	stripCust <- strip.custom(factor.levels = panelTitle, bg = 'lightblue')
 
-	print(update(PlotObj, aspect = 'fill', as.table = TRUE, par.settings = parSettings, xlab='',ylab='',xlim = xlim, ylim = ylim, col.regions = loko, par.strip.text = parStripText, strip = stripCust, scales = list(x = Xaxis, y = Yaxis), legend = lezandy))
+	print(update(PlotObj, aspect = 'fill', as.table = TRUE, par.settings = parSettings, xlab = '', ylab = '',
+				xlim = xlim, ylim = ylim, col.regions = loko, par.strip.text = parStripText, strip = stripCust,
+				scales = list(x = Xaxis, y = Yaxis), legend = lezandy))
 
 }
 

@@ -1,0 +1,16 @@
+{
+    // Input and Output files/directory
+    "IO.files": [{
+        // Station data filename
+        "STN.file": "",
+        // Elevation data filename
+        "DEM.file": "",
+        // Full path to the directory to save results
+        "dir2save": ""
+    }],
+    // Date range to be used to compute the coefficients
+    "Down.Date.Range": [{
+        "start.year": 1961,
+        "end.year": 2010
+    }]
+}

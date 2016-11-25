@@ -66,11 +66,22 @@ h.scale <- function(per) as.integer(per*height.scr/100)
 ##font width
 sfont0 <- as.numeric(tclvalue(tkfont.measure(main.win, paste("0123456789",
 			paste(letters[1:26], LETTERS[1:26], collapse = '', sep = ''), sep = ''))))/(10+2*26)
+
+if(Sys.info()["sysname"] == "Windows"){
+	##Output message, tktext height
+	txtHeight <- 6
+	w.opfiles.perc <- 35
+}else{
+	txtHeight <- 7
+	w.opfiles.perc <- 30
+}
+
+##List open files width
+w.opfiles <- as.integer(w.scale(w.opfiles.perc)/sfont0)
+
 ##left panel width
 wpanel.left <- w.scale(30)
 hpanel.left <- h.scale(70)
-##List open files width
-w.opfiles <- as.integer(w.scale(29)/sfont0)
 ##stations choice width
 wframe.choix.stn <- as.integer(w.scale(21.5)/sfont0)
 ##Status bar width (from left)
@@ -78,9 +89,6 @@ wbstatus1 <- as.integer(w.scale(50)/sfont0)
 wbstatus2a <- as.integer(w.scale(15)/sfont0)
 wbstatus2b <- as.integer(w.scale(15)/sfont0)
 wbstatus3 <- as.integer(w.scale(15)/sfont0)
-##Output message, tktext height
-txtHeight <- 7
-if(Sys.info()["sysname"] == "Windows") txtHeight <- 6
 
 #####**************************** TOP MENU ************************######
 

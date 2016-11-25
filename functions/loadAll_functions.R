@@ -59,10 +59,11 @@ source(file.path(apps.dir, 'functions', 'homogenization_AdjPlot_functions.R', fs
 source(file.path(apps.dir, 'functions', 'homogenization_BreakPtPlot_functions.R', fsep = .Platform$file.sep))
 ###
 
+source(file.path(apps.dir, 'functions', 'merging_functions.R', fsep = .Platform$file.sep))
+
 source(file.path(apps.dir, 'functions', 'mergingRR_dlgBox_functions.R', fsep = .Platform$file.sep))
 source(file.path(apps.dir, 'functions', 'mergingRR_execute_functions.R', fsep = .Platform$file.sep))
 source(file.path(apps.dir, 'functions', 'mergingRR_Procs_functions.R', fsep = .Platform$file.sep))
-
 
 source(file.path(apps.dir, 'functions', 'mergingTT_dlgBox_functions.R', fsep = .Platform$file.sep))
 source(file.path(apps.dir, 'functions', 'mergingTT_execute_functions.R', fsep = .Platform$file.sep))

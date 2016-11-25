@@ -213,7 +213,7 @@ mergeOneDekadRain <- function(){
 		if(usemask == "2"){
 			grid.loc <- defSpatialPixels(list(lon = grd.lon, lat = grd.lat))
 			demGrid <- defSpatialPixels(list(lon = demData$lon, lat = demData$lat))
-			is.regridDEM <- is.sameSpatialPixelsObj(grid.loc, demGrid, tol = 1e-07)
+			is.regridDEM <- is.diffSpatialPixelsObj(grid.loc, demGrid, tol = 1e-07)
 			if(is.regridDEM){
 				dem <- regridDEMFun(demData, list(lon = grd.lon, lat = grd.lat), regrid = 'BLW')
 			}else{
