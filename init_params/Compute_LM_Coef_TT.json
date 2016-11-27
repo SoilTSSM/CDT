@@ -25,8 +25,8 @@
     // Bias computation parameters
     "LM.Params": [{
         // Minimum length of non missing values to be used to perform LM
-        "min.length": 100,
-        // Minimum number of non missing stations to interpolate coef (not used)
+        "min.length": 15,
+        // Minimum number of non missing stations to interpolate coef
         "min.stn": 10
     }],
     // Interpolation Parameters,  gstat arguments

@@ -35,7 +35,7 @@
         // Minimum length of non missing values to be used to calculate the factor
         // or to fit the distribution
         "min.length": 15,
-        // Minimum number of non missing stations to interpolate bias (not used)
+        // Minimum number of non missing stations to interpolate bias
         "min.stn": 10
     }],
     // Interpolation Parameters,  gstat arguments

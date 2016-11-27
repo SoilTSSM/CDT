@@ -183,8 +183,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	#####
 	tkconfigure(bt.dir.LM, command = function(){
 		dir4LM <- tk_choose.dir(GeneralParameters$IO.files$LMCoef.dir, "")
-		if(is.na(dir4LM)) tclvalue(dir.LMCoef) <- ""
-		else tclvalue(dir.LMCoef) <- dir4LM
+		tclvalue(dir.LMCoef) <- if(!is.na(dir4LM)) dir4LM else ""
 	})
 
 	#####
@@ -1816,8 +1815,8 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	tkgrid(txt.bias, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cb.bias, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	infobulle(cb.bias, 'Method to be used to calculate Bias Factors or Parameters')
-	status.bar.display(cb.bias, TextOutputVar, 'Method to be used to calculate Bias Factors or Parameters')
+	infobulle(cb.bias, 'Method used to calculate Bias Factors or Parameters')
+	status.bar.display(cb.bias, TextOutputVar, 'Method used to calculate Bias Factors or Parameters')
 
 	######
 

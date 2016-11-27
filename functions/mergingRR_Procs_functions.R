@@ -181,6 +181,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 	maxdist <- as.numeric(GeneralParameters$Interpolation.pars$maxdist)
 	use.block <- GeneralParameters$Interpolation.pars$use.block
 	vgm.model <- as.character(GeneralParameters$Interpolation.pars$vgm.model[[1]])
+	min.stn <- as.numeric(GeneralParameters$Bias.Factor$min.stn)
 
 	# res.coarse <- as.numeric(GeneralParameters$Interpolation.pars$res.coarse)
 	res.coarse <- interpBiasparams$res.coarse
@@ -280,13 +281,14 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 		}
 		packages <- c('sp', 'gstat', 'automap')
 		toExports <- c('bias.pars', 'itimes', 'interp.grid', 'interp.method',
-						'vgm.model', 'nmin', 'nmax', 'maxdist', 'bGrd')
+						'min.stn', 'vgm.model', 'nmin', 'nmax', 'maxdist', 'bGrd')
 		BIAS <- vector(mode = 'list', length = ntimes)
 		BIAS[itimes] <- foreach(m = itimes, .packages = packages, .export = toExports) %parLoop% {
 			locations.stn <- interp.grid$coords.stn
 			locations.stn$pars <- bias.pars[itimes == m, ]
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
-			
+			if(length(locations.stn$pars) < min.stn) return(matrix(1, ncol = nlat0, nrow = nlon0))
+
 			xstn <- as.data.frame(locations.stn)
 			xadd <- as.data.frame(interp.grid$coords.grd)
 			xadd$pars <- 1
@@ -356,7 +358,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 		}
 		packages <- c('sp', 'gstat', 'automap')
 		toExports <- c('bias.pars', 'months', 'interp.grid', 'interp.method', 'vgm.model',
-						'nmin', 'nmax', 'maxdist', 'bGrd', 'create.grd', 'is.regridRFE')
+						'min.stn', 'nmin', 'nmax', 'maxdist', 'bGrd', 'create.grd', 'is.regridRFE')
 
 		PARS.stn <- vector(mode = 'list', length = 12)
 		PARS.stn[months] <- foreach(m = months, .packages = packages, .export = toExports) %parLoop% {
@@ -364,6 +366,8 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				locations.stn <- interp.grid$coords.stn
 				locations.stn$pars <- bias.pars$pars.stn[[m]][[j]]
 				locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
+				if(length(locations.stn$pars) < min.stn) return(NULL)
+
 				extrm <- quantile(locations.stn$pars, probs = c(0.0001, 0.9999))
 				locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
@@ -463,13 +467,26 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 		grd.shape <- ncvar_def("shape", "", xy.dim, NA, longname= "Shape parameters of the gamma distribution", prec = "float")
 
 		for(jfl in months){
+			if(is.null(params.distr$interp.pars.stn[[jfl]]$prob) |
+				is.null(params.distr$interp.pars.stn[[jfl]]$scale) |
+				is.null(params.distr$interp.pars.stn[[jfl]]$shape)){
+				prob.nc <- params.distr$interp.pars.rfe[[jfl]]$prob
+				scale.nc <- params.distr$interp.pars.rfe[[jfl]]$scale
+				shape.nc <- params.distr$interp.pars.rfe[[jfl]]$shape
+			}else{
+				prob.nc <- params.distr$interp.pars.stn[[jfl]]$prob
+				scale.nc <- params.distr$interp.pars.stn[[jfl]]$scale
+				shape.nc <- params.distr$interp.pars.stn[[jfl]]$shape
+			}
 			outnc1 <- file.path(origdir, paste('Bernoulli-Gamma_Pars.STN', '_', jfl, '.nc', sep = ''))
 			nc1 <- nc_create(outnc1, list(grd.prob, grd.scale, grd.shape))
-			ncvar_put(nc1, grd.prob, params.distr$interp.pars.stn[[jfl]]$prob)
-			ncvar_put(nc1, grd.scale, params.distr$interp.pars.stn[[jfl]]$scale)
-			ncvar_put(nc1, grd.shape, params.distr$interp.pars.stn[[jfl]]$shape)
+			ncvar_put(nc1, grd.prob, prob.nc)
+			ncvar_put(nc1, grd.scale, scale.nc)
+			ncvar_put(nc1, grd.shape, shape.nc)
 			nc_close(nc1)
+		}	
 
+		for(jfl in months){
 			outnc2 <- file.path(origdir, paste('Bernoulli-Gamma_Pars.RFE', '_', jfl, '.nc', sep = ''))
 			nc2 <- nc_create(outnc2, list(grd.prob, grd.scale, grd.shape))
 			ncvar_put(nc2, grd.prob, params.distr$interp.pars.rfe[[jfl]]$prob)
@@ -706,8 +723,8 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 			xadj <- quantile.mapping.BGamma(xrfe, PARS.stn[[ijt]], PARS.rfe[[ijt]], adjZero)
 			xadj[is.nan(xadj)] <- xrfe[is.nan(xadj)]
 			xadj[is.infinite(xadj)] <- xrfe[is.infinite(xadj)]
-		}else xadj <- round(xrfe * BIAS[[ijt]], 2)
-
+		}else xadj <- xrfe * BIAS[[ijt]]
+		xadj[xadj < 0] <- 0
 		xadj[is.na(xadj)] <- -99
 
 		############
@@ -737,6 +754,7 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 ComputeLMCoefRain <- function(comptLMparams){
 	GeneralParameters <- comptLMparams$GeneralParameters
 	min.len <- as.numeric(GeneralParameters$LM.Params$min.length)
+	min.stn <- as.numeric(GeneralParameters$LM.Params$min.stn)
 	months <- sort(as.numeric(GeneralParameters$LM.Months))
 	interp.method <- GeneralParameters$Interpolation.pars$interp.method
 	nmin <- as.numeric(GeneralParameters$Interpolation.pars$nmin)
@@ -863,7 +881,7 @@ ComputeLMCoefRain <- function(comptLMparams){
 		closeklust <- FALSE
 	}
 	packages <- c('sp', 'gstat', 'automap')
-	toExports <- c('model.coef', 'months', 'interp.grid', 'interp.method',
+	toExports <- c('model.coef', 'months', 'interp.grid', 'interp.method', 'min.stn',
 				'vgm.model', 'nmin', 'nmax', 'maxdist', 'bGrd', 'nlat0', 'nlon0')
 	MODEL.COEF <- vector(mode = 'list', length = 12)
 	MODEL.COEF[months] <- foreach(m = months, .packages = packages, .export = toExports) %parLoop% {
@@ -872,6 +890,8 @@ ComputeLMCoefRain <- function(comptLMparams){
 			xcoef <- model.coef[[jc]]
 			locations.stn$pars <- xcoef[as.numeric(rownames(xcoef)) == m, ]
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
+			if(length(locations.stn$pars) < min.stn) return(NULL)
+
 			extrm <- quantile(locations.stn$pars, probs = c(0.0001, 0.9999))
 			locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 			
@@ -923,6 +943,10 @@ ComputeLMCoefRain <- function(comptLMparams){
 	grd.intercept <- ncvar_def("intercept", "", xy.dim, NA, longname= "Linear model Coef: Intercept", prec = "float")
 
 	for(jfl in months){
+		if(is.null(MODEL.COEF[[jfl]]$slope) | is.null(MODEL.COEF[[jfl]]$intercept)){
+			InsertMessagesTxt(main.txt.out, paste("Unable to compute coef not enough stations, month:", jfl), format = TRUE)
+			next
+		}
 		outnc1 <- file.path(origdir, paste('LM_Coefficient', '_', jfl, '.nc', sep = ''))
 		nc1 <- nc_create(outnc1, list(grd.slope, grd.intercept))
 		ncvar_put(nc1, grd.slope, MODEL.COEF[[jfl]]$slope)
