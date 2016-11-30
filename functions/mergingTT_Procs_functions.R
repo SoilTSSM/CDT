@@ -1138,7 +1138,7 @@ ComputeLMCoefTemp <- function(comptLMparams){
 				ina <- is.na(pars.grd$var1.pred)
 				if(any(ina)){
 					pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
-											block = bGrd, nmin = nmax, nmax = nmax, maxdist = maxdist, debug.level = 0)
+											block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 					pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
 				}
 			}
@@ -1358,7 +1358,7 @@ MergingFunctionTemp <- function(paramsMRG){
 			ina <- is.na(res.grd$var1.pred)
 			if(any(ina)){
 				res.grd.na <- krige(var1.pred~1, locations = res.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
-										block = bGrd, nmin = nmax, nmax = nmax, maxdist = maxdist, debug.level = 0)
+										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 				res.grd$var1.pred[ina] <- res.grd.na$var1.pred
 			}
 			resid <- matrix(res.grd$var1.pred, ncol = nlat0, nrow = nlon0)
