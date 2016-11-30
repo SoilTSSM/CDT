@@ -117,9 +117,9 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 
 		data.rfe[sapply(data.rfe, is.null)] <- list(matrix(NA, ncol = length(lat.rfe), nrow = length(lon.rfe)))
 		idcoarse <- indexCoarseGrid(lon.rfe, lat.rfe, res.coarse)
-		# date.stn <- date.stn[istdt]
+		date.stn <- date.stn[istdt]
 		data.stn <- data.stn[istdt, , drop = FALSE]
-		month.stn <- as(substr(date.bias, 5, 6), 'numeric')
+		month.stn <- as(substr(date.stn, 5, 6), 'numeric')
 
 		toExports <- c('data.rfe', 'id.stn', 'data.stn', 'fit.berngamma', 'min.len')
 
@@ -130,6 +130,7 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 		    fit.berngamma(xdata, min.len)
 		}
 
+		month.rfe <- as(substr(date.bias, 5, 6), 'numeric')
 		data.rfe <- simplify2array(data.rfe)
 		data.rfe <- data.rfe[idcoarse$ix, idcoarse$iy, ]
 		nbgrd <- prod(dim(data.rfe)[1:2])
@@ -140,7 +141,7 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 		pars.Crs.Rfe <- vector(mode = 'list', length = 12)
 		pars.Crs.Rfe[months] <- foreach (m = months, .packages = packages, .export = toExports) %:% 
 		  foreach (id = id.grdRfe, .packages = packages, .export = toExports) %parLoop% {
-			xdata <- data.rfe[month.stn == m, id.grdRfe == id]
+			xdata <- data.rfe[month.rfe == m, id.grdRfe == id]
 		    fit.berngamma(xdata, min.len)
 		}
 		if(closeklust) stopCluster(klust)
@@ -288,6 +289,13 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 			locations.stn$pars <- bias.pars[itimes == m, ]
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
 			if(length(locations.stn$pars) < min.stn) return(matrix(1, ncol = nlat0, nrow = nlon0))
+			if(!any(locations.stn$pars != 1)) return(matrix(1, ncol = nlat0, nrow = nlon0))
+
+			if(interp.method == 'Kriging'){
+				vgm <- try(autofitVariogram(pars~1, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
+				if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
+				else vgm <- NULL
+			}else vgm <- NULL
 
 			xstn <- as.data.frame(locations.stn)
 			xadd <- as.data.frame(interp.grid$coords.grd)
@@ -313,22 +321,20 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)	
 			}else{
 				coordinates(locations.stn) <- ~lon+lat
-				if(interp.method == 'Kriging'){
-					vgm <- try(autofitVariogram(pars~1, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-					if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
-					else vgm <- NULL
-				}else vgm <- NULL
-
 				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
 									block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+				pars.grd$var1.pred[pars.grd$var1.pred < 0] <- NA
+				pars.grd$var1.pred[pars.grd$var1.pred > 3] <- NA
 				ina <- is.na(pars.grd$var1.pred)
 				if(any(ina)){
-					pars.grd.na <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid[ina, ], model = vgm,
-										block = bGrd, nmin = nmin, nmax = nmax, maxdist = 2*maxdist, debug.level = 0)
+					pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
+										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 					pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
 				}
 			}
 			grdbias <- pars.grd$var1.pred
+			grdbias[grdbias > 3] <- 3
+			grdbias[grdbias < 0] <- 0.1
 			grdbias[is.na(grdbias)] <- 1
 			matrix(grdbias, ncol = nlat0, nrow = nlon0)
 		}
@@ -367,9 +373,15 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				locations.stn$pars <- bias.pars$pars.stn[[m]][[j]]
 				locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
 				if(length(locations.stn$pars) < min.stn) return(NULL)
-
+				
 				extrm <- quantile(locations.stn$pars, probs = c(0.0001, 0.9999))
 				locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
+
+				if(interp.method == 'Kriging'){
+					vgm <- try(autofitVariogram(pars~1, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
+					if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
+					else vgm <- NULL
+				}else vgm <- NULL
 
 				xstn <- as.data.frame(locations.stn)
 
@@ -400,23 +412,25 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 					pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)	
 				}else{
 					coordinates(locations.stn) <- ~lon+lat
-
-					if(interp.method == 'Kriging'){
-						vgm <- try(autofitVariogram(pars~1, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-						if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
-						else vgm <- NULL
-					}else vgm <- NULL
-
 					pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
 										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+					pars.grd$var1.pred[pars.grd$var1.pred < 0] <- NA
+					if(j == 1) pars.grd$var1.pred[pars.grd$var1.pred > 1] <- NA
 					ina <- is.na(pars.grd$var1.pred)
 					if(any(ina)){
-						pars.grd.na <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid[ina, ], model = vgm,
-											block = bGrd, nmin = nmin, nmax = nmax, maxdist = 2*maxdist, debug.level = 0)
+						pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
+											block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 						pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
 					}
 				}
-				matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
+				ret <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
+				if(j == 1){
+					ret[ret < 0] <- 0
+					ret[ret > 1] <- 1
+				}else if(j == 2){
+					ret[ret < 0] <- 0.01
+				}else ret[ret < 0] <- 0.1
+				ret
 			})
 			names(pars.mon) <- c('prob', 'scale', 'shape')
 			pars.mon
@@ -428,33 +442,62 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				locations.rfe <- interp.grid$coords.grd
 				locations.rfe$pars <- bias.pars$pars.rfe[[m]][[j]]
 				locations.rfe <- locations.rfe[!is.na(locations.rfe$pars), ]
+				if(length(locations.rfe$pars) < min.stn) return(NULL)
 				extrm <- quantile(locations.rfe$pars, probs = c(0.0001, 0.9999))
 				locations.rfe <- locations.rfe[locations.rfe$pars > extrm[1] & locations.rfe$pars < extrm[2], ]
 
-				if(interp.method == 'NN'){
-					pars.grd <- krige(pars~1, locations = locations.rfe, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)	
-				}else{
-					if(interp.method == 'Kriging'){
-						vgm <- try(autofitVariogram(pars~1, input_data = locations.rfe, model = vgm.model, cressie = TRUE), silent = TRUE)
-						if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
-						else vgm <- NULL
-					}else vgm <- NULL
+				if(interp.method == 'Kriging'){
+					vgm <- try(autofitVariogram(pars~1, input_data = locations.rfe, model = vgm.model, cressie = TRUE), silent = TRUE)
+					if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
+					else vgm <- NULL
+				}else vgm <- NULL
 
+				if(interp.method == 'NN'){
+					pars.grd <- krige(pars~1, locations = locations.rfe, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)
+				}else{
 					pars.grd <- krige(pars~1, locations = locations.rfe, newdata = interp.grid$newgrid, model = vgm,
 									block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+					pars.grd$var1.pred[pars.grd$var1.pred < 0] <- NA
+					if(j == 1) pars.grd$var1.pred[pars.grd$var1.pred > 1] <- NA
 					ina <- is.na(pars.grd$var1.pred)
 					if(any(ina)){
-						pars.grd.na <- krige(pars~1, locations = locations.rfe, newdata = interp.grid$newgrid[ina, ], model = vgm,
-											block = bGrd, nmin = nmin, nmax = nmax, maxdist = 2*maxdist, debug.level = 0)
+						pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], nmax = 1, debug.level = 0)
 						pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
 					}
 				}
-				matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
+				ret <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
+				if(j == 1){
+					ret[ret < 0] <- 0
+					ret[ret > 1] <- 1
+				}else if(j == 2){
+					ret[ret < 0] <- 0.01
+				}else ret[ret < 0] <- 0.1
+				ret
 			})
 			names(pars.mon) <- c('prob', 'scale', 'shape')
 			pars.mon
 		}
 		if(closeklust) stopCluster(klust)
+
+		for(m in months){
+			for(j in 1:3){
+				par.stn <- PARS.stn[[m]][[j]]
+				par.rfe <- PARS.rfe[[m]][[j]]
+				if(!is.null(par.stn) & !is.null(par.rfe)){
+					ix <- is.na(par.stn)
+					par.stn[ix] <- par.rfe[ix]
+					PARS.stn[[m]][[j]] <- par.stn
+				}
+				if(is.null(par.rfe)){
+					ret <- matrix(NA, ncol = nlat0, nrow = nlon0)
+					if(j == 1) ret[] <- 0
+					if(j == 2) ret[] <- 1
+					if(j == 3) ret[] <- 1
+					PARS.stn[[m]][[j]] <- ret
+					PARS.rfe[[m]][[j]] <- ret
+				}
+			}
+		}
 
 		params.distr <- list(fit.stn = bias.pars$fit.stn, fit.rfe = bias.pars$fit.rfe,
 									pars.stn = bias.pars$pars.stn, pars.rfe = bias.pars$pars.rfe,
@@ -484,7 +527,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 			ncvar_put(nc1, grd.scale, scale.nc)
 			ncvar_put(nc1, grd.shape, shape.nc)
 			nc_close(nc1)
-		}	
+		}
 
 		for(jfl in months){
 			outnc2 <- file.path(origdir, paste('Bernoulli-Gamma_Pars.RFE', '_', jfl, '.nc', sep = ''))
@@ -894,6 +937,12 @@ ComputeLMCoefRain <- function(comptLMparams){
 
 			extrm <- quantile(locations.stn$pars, probs = c(0.0001, 0.9999))
 			locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
+
+			if(interp.method == 'Kriging'){
+				vgm <- try(autofitVariogram(pars~1, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
+				if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
+				else vgm <- NULL
+			}else vgm <- NULL
 			
 			xstn <- as.data.frame(locations.stn)
 			xadd <- as.data.frame(interp.grid$coords.grd)
@@ -918,18 +967,12 @@ ComputeLMCoefRain <- function(comptLMparams){
 				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)
 			}else{
 				coordinates(locations.stn) <- ~lon+lat
-				if(interp.method == 'Kriging'){
-					vgm <- try(autofitVariogram(pars~1, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-					if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
-					else vgm <- NULL
-				}else vgm <- NULL
-
 				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
 									block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 				ina <- is.na(pars.grd$var1.pred)
 				if(any(ina)){
-					pars.grd.na <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid[ina, ], model = vgm,
-											block = bGrd, nmin = nmax, nmax = nmax, maxdist = 2*maxdist, debug.level = 0)
+					pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
+										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 					pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
 				}
 			}
@@ -944,8 +987,8 @@ ComputeLMCoefRain <- function(comptLMparams){
 
 	for(jfl in months){
 		if(is.null(MODEL.COEF[[jfl]]$slope) | is.null(MODEL.COEF[[jfl]]$intercept)){
-			InsertMessagesTxt(main.txt.out, paste("Unable to compute coef not enough stations, month:", jfl), format = TRUE)
-			next
+			MODEL.COEF[[jfl]]$slope <- matrix(1, ncol = nlat0, nrow = nlon0)
+			MODEL.COEF[[jfl]]$intercept <- matrix(0, ncol = nlat0, nrow = nlon0)
 		}
 		outnc1 <- file.path(origdir, paste('LM_Coefficient', '_', jfl, '.nc', sep = ''))
 		nc1 <- nc_create(outnc1, list(grd.slope, grd.intercept))
@@ -1217,8 +1260,8 @@ MergingFunctionRain <- function(paramsMRG){
 								block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 			ina <- is.na(res.grd$var1.pred)
 			if(any(ina)){
-				res.grd.na <- krige(res~1, locations = locations.stn, newdata = interp.grid$newgrid[ina, ], model = vgm,
-										block = bGrd, nmin = nmax, nmax = nmax, maxdist = 2*maxdist, debug.level = 0)
+				res.grd.na <- krige(var1.pred~1, locations = res.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
+										block = bGrd, nmin = nmax, nmax = nmax, maxdist = maxdist, debug.level = 0)
 				res.grd$var1.pred[ina] <- res.grd.na$var1.pred
 			}
 			resid <- matrix(res.grd$var1.pred, ncol = nlat0, nrow = nlon0)
@@ -1230,8 +1273,8 @@ MergingFunctionRain <- function(paramsMRG){
 									maxdist = maxdist, block = bGrd,  debug.level = 0)
 				ina <- is.na(rnr.res.grd$var1.pred)
 				if(any(ina)){
-					rnr.res.grd.na <- krige(rnr.res~1, locations = locations.stn, newdata = interp.grid$newgrid[ina, ],
-											block = bGrd, maxdist = 2*maxdist, debug.level = 0)
+					rnr.res.grd.na <- krige(var1.pred~1, locations = rnr.res.grd[!ina, ], newdata = interp.grid$newgrid[ina, ],
+											block = bGrd, maxdist = maxdist, debug.level = 0)
 					rnr.res.grd$var1.pred[ina] <- rnr.res.grd.na$var1.pred
 				}
 
