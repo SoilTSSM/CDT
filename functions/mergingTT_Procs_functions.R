@@ -930,8 +930,6 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 
 		if(bias.method == "Quantile.Mapping"){
 			xadj <- quantile.mapping.Gau(xtmp, PARS.stn[[ijt]], PARS.down[[ijt]])
-			xadj[is.nan(xadj)] <- xtmp[is.nan(xadj)]
-			xadj[is.infinite(xadj)] <- xtmp[is.infinite(xadj)]
 		}else xadj <- round(xtmp * BIAS[[ijt]], 2)
 
 		xadj[is.na(xadj)] <- -99

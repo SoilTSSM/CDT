@@ -60,6 +60,9 @@ quantile.mapping.BGamma <- function(x, pars.stn, pars.rfe, rfe.zero){
 	res[ip] <- qgamma((pars.stn$prob[ip]+p.rfe[ip]-1)/pars.stn$prob[ip],
                      scale = pars.stn$scale[ip], shape = pars.stn$shape[ip])
 	res[is.na(x)] <- NA
+	res[is.nan(res)] <- x[is.nan(res)]
+	res[is.infinite(res)] <- 3*x[is.infinite(res)]
+	res[!is.na(res) & (res > 3*x)] <- 3*x[!is.na(res) & (res > 3*x)]
 	if(rfe.zero) res[x == 0] <- 0
     return(res)
 }
@@ -128,6 +131,10 @@ quantile.mapping.Gau <- function(x, pars.stn, pars.reanal){
 	p.reanal[ix] <- pnorm(x[ix], mean = pars.reanal$mean[ix], sd = pars.reanal$sd[ix])
 	res <- qnorm(p.reanal, mean = pars.stn$mean, sd = pars.stn$sd)
 	res[is.na(x)] <- NA
+	res[is.nan(res)] <- x[is.nan(res)]
+	res[is.infinite(res)] <- 3*x[is.infinite(res)]
+	res[!is.na(res) & (res > x*3)] <- 3*x[!is.na(res) & (res > x*3)]
+	res[!is.na(res) & (res < x/3)] <- 0.5*x[!is.na(res) & (res < x/3)]
     return(res)
 }
 

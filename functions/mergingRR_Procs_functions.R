@@ -764,8 +764,6 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 
 		if(bias.method == "Quantile.Mapping"){
 			xadj <- quantile.mapping.BGamma(xrfe, PARS.stn[[ijt]], PARS.rfe[[ijt]], adjZero)
-			xadj[is.nan(xadj)] <- xrfe[is.nan(xadj)]
-			xadj[is.infinite(xadj)] <- xrfe[is.infinite(xadj)]
 		}else xadj <- xrfe * BIAS[[ijt]]
 		xadj[xadj < 0] <- 0
 		xadj[is.na(xadj)] <- -99
