@@ -190,7 +190,15 @@ PlotMergingOutputCmd <- function(){
 							custom.color = tclvalue(custom.color),
 							custom.level = tclvalue(custom.level)))
 
-		dataNCDF0 <- dataNCDF
+		nclen <- length(dataNCDF)
+		dataNCDF0 <- vector(mode = "list", length = 0)
+		if(nclen > 0){
+			for(j in 1:nclen){
+				dataNCDF0[[j]] <- list(tclvalue(dataNCDF[[j]][[1]]),
+										tclvalue(dataNCDF[[j]][[2]]),
+										tclvalue(dataNCDF[[j]][[3]]))
+			}
+		}
 		jfile <- getIndex.AllOpenFiles(file.stnfl)
 		if(length(jfile) > 0){
 			openStnData <- list(stnFileType = AllOpenFilesType[[jfile]], stnDataFile = AllOpenFilesData[[jfile]])
@@ -257,16 +265,16 @@ PlotMergingOutputCmd <- function(){
 
 		nclen <- length(dataNCDF0)
 		if(nclen > 0){
-			tclvalue(dataNCDF[[1]][[1]]) <- tclvalue(dataNCDF0[[1]][[1]])
-			tclvalue(dataNCDF[[1]][[2]]) <- tclvalue(dataNCDF0[[1]][[2]])
-			tclvalue(dataNCDF[[1]][[3]]) <- tclvalue(dataNCDF0[[1]][[3]])
+			tclvalue(dataNCDF[[1]][[1]]) <- dataNCDF0[[1]][[1]]
+			tclvalue(dataNCDF[[1]][[2]]) <- dataNCDF0[[1]][[2]]
+			tclvalue(dataNCDF[[1]][[3]]) <- dataNCDF0[[1]][[3]]
 			if(nclen > 1){
 				pos <<- 1
 				jCDF <<- 2
 				for(j in 2:nclen){
-					tcl.var <- list(dir = tclvalue(dataNCDF0[[j]][[1]]),
-									format = tclvalue(dataNCDF0[[j]][[2]]),
-									name = tclvalue(dataNCDF0[[j]][[3]]))
+					tcl.var <- list(dir = dataNCDF0[[j]][[1]],
+									format = dataNCDF0[[j]][[2]],
+									name = dataNCDF0[[j]][[3]])
 					dataNCDF[[j]] <<- addNcdfFun(j, pos, subfr2, tcl.var)
 					jCDF <<- jCDF+1
 					pos <<- pos+1
