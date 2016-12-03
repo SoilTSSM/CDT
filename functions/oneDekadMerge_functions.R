@@ -302,10 +302,17 @@ mergeOneDekadRain <- function(){
 					sp.trend <- rfeData$z * coef1 + coef2
 					locations.stn$res <- locations.stn$stn - sp.trend[ijGrd][noNA]
 				}else{
+					simplediff <- if(var(locations.stn$stn) < 1e-07 | var(locations.stn$rfe) < 1e-07) TRUE else FALSE
 					glm.stn <- glm(stn~rfe, data = locations.stn, family = gaussian)
-					sp.trend <- predict(glm.stn, newdata = interp.grid$newgrid)
-					sp.trend <- matrix(sp.trend, ncol = nlat0, nrow = nlon0)
-					locations.stn$res <- residuals(glm.stn)
+					if(is.na(glm.stn$coefficients[2]) | glm.stn$coefficients[2] < 0) simplediff <- TRUE
+					if(!simplediff){
+						sp.trend <- predict(glm.stn, newdata = interp.grid$newgrid)
+						sp.trend <- matrix(sp.trend, ncol = nlat0, nrow = nlon0)
+						locations.stn$res <- residuals(glm.stn)
+					}else{
+						sp.trend <- xrfe
+						locations.stn$res <- locations.stn$stn - locations.stn$rfe
+					}
 				}
 			}else{
 				sp.trend <- rfeData$z
@@ -370,8 +377,8 @@ mergeOneDekadRain <- function(){
 								block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 			ina <- is.na(res.grd$var1.pred)
 			if(any(ina)){
-				res.grd.na <- krige(res~1, locations = locations.stn, newdata = interp.grid$newgrid[ina, ], model = vgm,
-										block = bGrd, nmin = nmax, nmax = nmax, maxdist = 2*maxdist, debug.level = 0)
+				res.grd.na <- krige(var1.pred~1, locations = res.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
+										block = bGrd, nmin = nmax, nmax = nmax, maxdist = maxdist, debug.level = 0)
 				res.grd$var1.pred[ina] <- res.grd.na$var1.pred
 			}
 			resid <- matrix(res.grd$var1.pred, ncol = nlat0, nrow = nlon0)
@@ -383,8 +390,8 @@ mergeOneDekadRain <- function(){
 									maxdist = maxdist, block = bGrd,  debug.level = 0)
 				ina <- is.na(rnr.res.grd$var1.pred)
 				if(any(ina)){
-					rnr.res.grd.na <- krige(rnr.res~1, locations = locations.stn, newdata = interp.grid$newgrid[ina, ],
-											block = bGrd, maxdist = 2*maxdist, debug.level = 0)
+					rnr.res.grd.na <- krige(var1.pred~1, locations = rnr.res.grd[!ina, ], newdata = interp.grid$newgrid[ina, ],
+											block = bGrd, maxdist = maxdist, debug.level = 0)
 					rnr.res.grd$var1.pred[ina] <- rnr.res.grd.na$var1.pred
 				}
 
@@ -400,7 +407,11 @@ mergeOneDekadRain <- function(){
 
 				imsk <- matrix(irnr, nrow = nlon0, ncol = nlat0)
 				rnr[imsk] <- rnr.rfe[imsk]
-				if(smooth.RnoR) rnr <- smooth.matrix(rnr, 3)
+				if(smooth.RnoR){
+					if(sum(rnr.rfe, na.rm = TRUE) == 0) npix <- 5
+					else npix <- 3
+					rnr <- smooth.matrix(rnr, npix)
+				}
 			}else rnr <- matrix(1, ncol = nlat0, nrow = nlon0)
 
 			############

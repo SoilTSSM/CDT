@@ -838,7 +838,7 @@ ComputeLMCoefRain <- function(comptLMparams){
 	rfeData <- comptLMparams$rfeData
 	lon.rfe <- rfeData$lon
 	lat.rfe <- rfeData$lat
-	# date.rfe <- rfeData$dates
+	date.rfe <- rfeData$dates
 	data.rfe <- rfeData$data
 
 	xy.grid <- comptLMparams$xy.grid
@@ -893,6 +893,13 @@ ComputeLMCoefRain <- function(comptLMparams){
 		bGrd <- createBlock(cells@cellsize, 2, 5)
 	}
 
+	dtrfe <- date.rfe%in%date.stn
+	dtstn <- date.stn%in%date.rfe
+	data.stn <- data.stn[dtstn, ]
+	date.stn <- date.stn[dtstn]
+	data.rfe.stn <- data.rfe.stn[dtrfe, ]
+	# date.rfe <- date.rfe[dtrfe]
+
 	month.stn <- as(substr(date.stn, 5, 6), 'numeric')
 	year.stn <- as(substr(date.stn, 1, 4), 'numeric')
 	iyear0 <- (year.stn >= year1 & year.stn <= year2) & (month.stn%in%months)
@@ -907,7 +914,11 @@ ComputeLMCoefRain <- function(comptLMparams){
 	model.coef <- lapply(model, function(x){
 		sapply(x, function(m){
 			if(is.null(m)) c(NA, NA)
-			else coefficients(m)
+			else{
+				xcoef <- coefficients(m)
+				if(is.na(xcoef[2]) | xcoef[2] <= 0) xcoef <- c(NA, NA)
+				xcoef
+			}
 		})
 	})
 	model.coef <- list(slope = sapply(model.coef, function(x) x[2, ]), intercept = sapply(model.coef, function(x) x[1, ]))
@@ -988,6 +999,9 @@ ComputeLMCoefRain <- function(comptLMparams){
 			MODEL.COEF[[jfl]]$slope <- matrix(1, ncol = nlat0, nrow = nlon0)
 			MODEL.COEF[[jfl]]$intercept <- matrix(0, ncol = nlat0, nrow = nlon0)
 		}
+		xneg <- MODEL.COEF[[jfl]]$slope <= 0
+		MODEL.COEF[[jfl]]$slope[xneg] <- 1
+		MODEL.COEF[[jfl]]$intercept[xneg] <- 0
 		outnc1 <- file.path(origdir, paste('LM_Coefficient', '_', jfl, '.nc', sep = ''))
 		nc1 <- nc_create(outnc1, list(grd.slope, grd.intercept))
 		ncvar_put(nc1, grd.slope, MODEL.COEF[[jfl]]$slope)
@@ -1024,7 +1038,7 @@ MergingFunctionRain <- function(paramsMRG){
 	if(is.null(ncInfo)) return(NULL)
 
 	#############
-	if(doparallel & length(which(ncInfo$exist)) >= 20){
+	if(doparallel & length(which(ncInfo$exist)) >= 10){
 		klust <- makeCluster(nb_cores)
 		registerDoParallel(klust)
 		`%parLoop%` <- `%dopar%`
@@ -1190,10 +1204,17 @@ MergingFunctionRain <- function(paramsMRG){
 					sp.trend <- xrfe * MODEL.COEF[[mo]]$slope + MODEL.COEF[[mo]]$intercept
 					locations.stn$res <- locations.stn$stn - sp.trend[ijGrd][noNA]
 				}else{
+					simplediff <- if(var(locations.stn$stn) < 1e-07 | var(locations.stn$rfe) < 1e-07) TRUE else FALSE
 					glm.stn <- glm(stn~rfe, data = locations.stn, family = gaussian)
-					sp.trend <- predict(glm.stn, newdata = interp.grid$newgrid)
-					sp.trend <- matrix(sp.trend, ncol = nlat0, nrow = nlon0)
-					locations.stn$res <- residuals(glm.stn)
+					if(is.na(glm.stn$coefficients[2]) | glm.stn$coefficients[2] < 0) simplediff <- TRUE
+					if(!simplediff){
+						sp.trend <- predict(glm.stn, newdata = interp.grid$newgrid)
+						sp.trend <- matrix(sp.trend, ncol = nlat0, nrow = nlon0)
+						locations.stn$res <- residuals(glm.stn)
+					}else{
+						sp.trend <- xrfe
+						locations.stn$res <- locations.stn$stn - locations.stn$rfe
+					}
 				}
 			}else{
 				sp.trend <- xrfe
@@ -1288,7 +1309,11 @@ MergingFunctionRain <- function(paramsMRG){
 
 				imsk <- matrix(irnr, nrow = nlon0, ncol = nlat0)
 				rnr[imsk] <- rnr.rfe[imsk]
-				if(smooth.RnoR) rnr <- smooth.matrix(rnr, 3)
+				if(smooth.RnoR){
+					if(sum(rnr.rfe, na.rm = TRUE) == 0) npix <- 5
+					else npix <- 3
+					rnr <- smooth.matrix(rnr, npix)
+				}
 			}else rnr <- matrix(1, ncol = nlat0, nrow = nlon0)
 
 			############
