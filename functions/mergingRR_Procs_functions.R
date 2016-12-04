@@ -1223,8 +1223,8 @@ MergingFunctionRain <- function(paramsMRG){
 			
 			############
 			locations.stn <- locations.stn[!is.na(locations.stn$res), ]
-			extrm <- quantile(locations.stn$res, probs = c(0.0001, 0.9999))
-			locations.stn <- locations.stn[locations.stn$res > extrm[1] & locations.stn$res < extrm[2], ]
+			# extrm <- quantile(locations.stn$res, probs = c(0.0001, 0.9999))
+			# locations.stn <- locations.stn[locations.stn$res > extrm[1] & locations.stn$res < extrm[2], ]
 		}else do.merging <- FALSE
 
 		############
