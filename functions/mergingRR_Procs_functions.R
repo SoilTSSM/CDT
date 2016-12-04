@@ -1301,6 +1301,7 @@ MergingFunctionRain <- function(paramsMRG){
 				rnr.res.grd[is.na(rnr.res.grd)] <- 0
 
 				rnr <- rnr + rnr.res.grd
+				rnr[rnr > 100] <- 100
 				rnr <- exp(rnr)/(1+exp(rnr))
 
 				### decision boundary 0.6
