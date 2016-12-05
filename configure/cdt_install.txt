@@ -1,0 +1,51 @@
+Install Tcl library if not installed yet
+Install R if not installed
+
+##############################
+on Mac install XQuartz if not installed
+
+
+###############################
+for Mac and Linux install GDAL, GEOS and PROJ
+
+Mac:
+http://www.kyngchaos.com/software:frameworks
+downloal the GDAL complete
+
+#############################################
+--with-proj=/Library/Frameworks/PROJ.framework/unix
+--with-gdal=/Library/Frameworks/GDAL.framework/unix/bin/gdal-config
+
+##################
+ubuntu 
+
+sudo apt-get install libproj-dev libgdal-dev libgeos-dev
+
+#sudo apt-get install libgdal1-dev libproj-dev libgeos-dev
+
+#############################################
+
+go to the terminal
+which gdal-config
+which geos-config
+
+##################################
+create a directory you want to put CDT
+
+go to https://github.com/rijaf/CDT on a browser
+on the button Clone or download 
+copy the url https://github.com/rijaf/CDT.git
+
+Now open a Terminal
+cd /to/the/directory/you/want/to/put/CDT 
+
+Type on the terminal
+git clone https://github.com/rijaf/CDT.git
+
+###################################
+
+Open R from the terminal 
+source('/to/the/directory/you/want/to/put/CDT/CDT.R')
+
+
+
