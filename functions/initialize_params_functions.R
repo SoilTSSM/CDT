@@ -227,24 +227,8 @@ init.params <- function(action, period){
 	}
 	################
 	if(action == 'agg.ts'){
-		period1 <- 'dekadal'
-		data.type <- 'cdt'
-		seasonal <- data.frame(c('start.mon', 'length.mon'), c('1', '3'))
-		names(seasonal) <- c('Parameters', 'Values')
-		file.io <- data.frame(c('stn.file', 'dir2save'), c('', ''))
-		names(file.io) <- c('Parameters', 'Values')
-		compute.var <- data.frame(c('function', 'miss.frac'), c('mean', '0.95'))
-		names(compute.var) <- c('Parameters', 'Values')
-		file.date.format <- data.frame(c('file.format', 'date.format'), c("1", "1"))
-		names(file.date.format) <- c('Parameters', 'Values')
-		datesSE <- data.frame(c('istart.yrs', 'istart.mon', 'istart.day', 'iend.yrs', 'iend.mon', 'iend.day'),
-								c('2010', '1', '1', '2014', '12', '31'))
-		names(datesSE) <- c('Parameters', 'Values')
-		IO.file.format <- data.frame(c('Input', 'Output'), c("daily_%s%s%s.nc", "rfe"))
-		names(IO.file.format) <- c('Parameters', 'Values')
-		ret.params <- list(action = action, period = period, period1 = period1, seasonal = seasonal, file.io = file.io,
-							compute.var = compute.var, data.type = data.type, file.date.format = file.date.format,
-							datesSE = datesSE, IO.file.format = IO.file.format)
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Aggregate_time_series.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
 	}
 	###########################################
 

@@ -1,0 +1,54 @@
+{
+    // Type of data:  
+    // "series": One station series
+    // "cdt": CDT data format
+    // "netcdf": NetCDF gridded data
+    "data.type": "cdt",
+
+    // Time step of the aggregated data
+    // "dekadal": Dekadal data
+    // "monthly": Monthly data
+    // "yearly": Yearly data
+    // "seasonal": Seasonal data (JFM)
+    // "seasonal1": Rolling Seasonal data (JFM, FMM, MMA, ..., NDJ, DJF)
+    "output.time": "dekadal",
+
+    "IO.files": [{
+        // Full path to the directory of netcdf data to convert
+        // or file containing the data to convert
+        "In.dir.file": "",
+        // Full path to the directory  or file to save results
+        "Out.dir.file": ""
+    }],
+    "Seasonal": [{
+        // Start month for the seasonal series (1 to 12)
+        "start.mon": 1,
+        // Length of the season, if start.mon = 1 and length.mon = 3 then the season is JFM
+        "length.mon": 3
+    }],
+    "compute.var": [{
+        // Function to be used to aggregate the series
+        "Function": "mean",
+        // Minimum fraction of available data that must be present for the time period to compute
+        "miss.frac": 0.95
+    }],
+    "One.series": [{
+        // Series format, 1: one variable, 0: 3 variables (Rain, Tmax, Tmin)
+        "file.format": 1,
+        // Date format, 1: grouped (YYYYMMDD), 0: separated (YYYY MM DD)
+        "date.format": 1
+    }],
+    // Date range
+    "Date.Range": [{
+        "start.year": 1983,
+        "start.mon": 1,
+        "start.day": 1,
+        "end.year": 2015,
+        "end.mon": 12,
+        "end.day": 31
+    }],
+    "ncdf.file.format": [{
+        "input": "rfe_%s%s%s.nc",
+        "output": "rfe_%s%s%s.nc"
+    }]
+}

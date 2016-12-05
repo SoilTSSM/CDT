@@ -363,11 +363,11 @@ Execute_All_Functions <- function(get.stn){
 		agg2run <- try(ExeAggTimeSeries(GeneralParameters), silent = TRUE)
 		if(!inherits(agg2run, "try-error")){
 			if(!is.null(agg2run)){
-				if(agg2run == 0) InsertMessagesTxt(main.txt.out, paste("Conversion from", as.character(GeneralParameters$period), "to", as.character(GeneralParameters$period1), "data finished successfully"))
-				else InsertMessagesTxt(main.txt.out, paste("Conversion from", as.character(GeneralParameters$period), "to", as.character(GeneralParameters$period1), "data failed"), format = TRUE)
-			}else InsertMessagesTxt(main.txt.out, paste("Conversion from", as.character(GeneralParameters$period), "to", as.character(GeneralParameters$period1), "data failed"), format = TRUE)
+				if(agg2run == 0) InsertMessagesTxt(main.txt.out, paste("Conversion from", GeneralParameters$period, "to", GeneralParameters$output.time, "data finished successfully"))
+				else InsertMessagesTxt(main.txt.out, paste("Conversion from", GeneralParameters$period, "to", GeneralParameters$output.time, "data failed"), format = TRUE)
+			}else InsertMessagesTxt(main.txt.out, paste("Conversion from", GeneralParameters$period, "to", GeneralParameters$output.time, "data failed"), format = TRUE)
 		}else{
-			InsertMessagesTxt(main.txt.out, paste("Conversion from", as.character(GeneralParameters$period), "to", as.character(GeneralParameters$period1), "data failed"), format = TRUE)
+			InsertMessagesTxt(main.txt.out, paste("Conversion from", GeneralParameters$period, "to", GeneralParameters$output.time, "data failed"), format = TRUE)
 			InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',agg2run[1]), format = TRUE)
 		}
 		return(NULL)

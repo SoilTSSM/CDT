@@ -302,7 +302,7 @@ getMonthsInSeason <- function(start.mois, end.mois, full = FALSE){
 }
 
 getMonthsInSeason1 <- function(start.mois, len.mois, full = FALSE){
-	if(full)  frmt <- "%B"
+	if(full) frmt <- "%B"
 	else frmt <- "%b"
 	tmois <- format(ISOdate(2014, 1:12, 1), frmt)
 	ix <- which(tmois == start.mois)
@@ -317,11 +317,10 @@ getMonthsInSeason1 <- function(start.mois, len.mois, full = FALSE){
 
 fileORdir2Save <- function(filedirVar, isFile = TRUE){
 	if(isFile){
-		filetypes  <-  "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}"
+		filetypes <- "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}"
 		if(Sys.info()["sysname"] == "Windows") file2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes, defaultextension = TRUE)
 		else file2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes)
-		if(is.na(file2save)) tclvalue(filedirVar) <- ""
-		else tclvalue(filedirVar) <- file2save
+		tclvalue(filedirVar) <- if(!is.na(file2save)) file2save else ""
 	}else{
 		dir2save <- tk_choose.dir(getwd(), "")
 		if(is.na(dir2save)) tclvalue(filedirVar) <- ""
