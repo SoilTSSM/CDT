@@ -34,6 +34,16 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 
 	start.mon <- tclVar(GeneralParameters$Seasonal$start.mon)
 	length.mon <- tclVar(GeneralParameters$Seasonal$length.mon)
+	if(tclvalue(ConvertData) == 'Seasonal data'){
+		state.enSeasS <- 'normal'
+		state.enSeasL <- 'normal'
+	}else if(tclvalue(ConvertData) == 'Rolling Seasonal data'){
+		state.enSeasS <- 'disabled'
+		state.enSeasL <- 'normal'
+	}else{
+		state.enSeasS <- 'disabled'
+		state.enSeasL <- 'disabled'
+	}
 
 	DataType <- tclVar()
 	CbdatatypeVAL <- c('One station series', 'CDT data format', 'NetCDF gridded data')
@@ -50,9 +60,9 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 	Cbperiod1 <- ttkcombobox(frParams, values = Cbperiod1VAL, textvariable = ConvertData, width = wtkcombo1)
 	labconv2 <- tklabel(frParams, text=' TO ')
 	labSeasS <- tklabel(frParams, text='Start Month', anchor = 'e', justify = 'right')
-	enSeasS <- tkentry(frParams, textvariable = start.mon, width = 3, state = 'disabled')
+	enSeasS <- tkentry(frParams, textvariable = start.mon, width = 3, state = state.enSeasS)
 	labSeasL <- tklabel(frParams, text='Width')
-	enSeasL <- tkentry(frParams, textvariable = length.mon, width = 3, state = 'disabled')
+	enSeasL <- tkentry(frParams, textvariable = length.mon, width = 3, state = state.enSeasL)
 	labdatype <- ttklabelframe(frParams, text = 'Type of Data', labelanchor = "nw", relief = "groove", borderwidth = 2)
 	frcompVar <- tkframe(frParams)
 
@@ -477,16 +487,15 @@ netcdfDataAgg <- function(tt, GeneralParameters, daydek){
 	infobulle(en.inrfeff, 'Enter the filename format of the input NetCDF,\nexample: rfe_19830125.nc')
 	status.bar.display(en.inrfeff, TextOutputVar, 'Enter the filename format of the input NetCDF, example: rfe_1983013.nc')
 	infobulle(en.outmrgff, 'Enter the filename format  of the output aggregated data')
-	status.bar.display(en.outmrgff, TextOutputVar, 'Enter the filename format of the output aggregated data')
+	status.bar.display(en.outmrgff, TextOutputVar, 'Enter the filename format of the output aggregated data\nIf the output are yearly or seasonal you have to put only one %s')
 
 	###################
 
 	tkgrid(frDate, row = 0, column = 0, sticky = 'ew', padx = 1, pady = 5, ipady = 6)
 	tkgrid(frFF, row = 0, column = 1, sticky = 'ew', padx = 1, pady = 1)
 
-	###################
-
 	################################
+
 	bt.prm.OK <- tkbutton(frMRG1, text=" OK ")
 	bt.prm.CA <- tkbutton(frMRG1, text = "Cancel")
 
@@ -511,7 +520,6 @@ netcdfDataAgg <- function(tt, GeneralParameters, daydek){
 		tkdestroy(tt1)
 		tkfocus(tt)
 	})
-
 
 	tkgrid(bt.prm.OK, row = 0, column = 0, sticky = 'w', padx = 5, pady = 1, ipadx = 5, ipady = 1)
 	tkgrid(bt.prm.CA, row = 0, column = 1, sticky = 'e', padx = 5, pady = 1, ipadx = 1, ipady = 1)

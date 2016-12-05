@@ -85,7 +85,18 @@ ExeAggTimeSeries <- function(GeneralParameters){
 
 		dstart <- as.Date(paste(istart.yrs, istart.mon, istart.day, sep = '-'), format = '%Y-%m-%d')
 		dend <- as.Date(paste(iend.yrs, iend.mon, iend.day, sep = '-'), format = '%Y-%m-%d')
+		if(is.na(dstart)){
+			InsertMessagesTxt(main.txt.out, "Wrong start date", format = TRUE)
+			tcl("update")
+			return(NULL)
+		}
+		if(is.na(dend)){
+			InsertMessagesTxt(main.txt.out, "Wrong end date", format = TRUE)
+			tcl("update")
+			return(NULL)
+		}
 
+		######
 		if(period == 'daily'){
 			daty <- seq(dstart, dend, 'day')
 			dates <- format(daty, '%Y%m%d')
@@ -106,6 +117,7 @@ ExeAggTimeSeries <- function(GeneralParameters){
 														 as.character(substr(dates, 5, 6))))
 		}
 
+		######
 		existFl <- unlist(lapply(filein0, file.exists))
 		if(!any(existFl)){
 			InsertMessagesTxt(main.txt.out, "Unable to locate NetCDF files", format = TRUE)
@@ -115,6 +127,7 @@ ExeAggTimeSeries <- function(GeneralParameters){
 		filein0 <- filein0[existFl]
 		dates <- dates[existFl]
 
+		######
 		nc <- nc_open(filein0[1])
 		# missval <- nc$var[[1]]$missval
 		units <- nc$var[[1]]$units
@@ -126,15 +139,14 @@ ExeAggTimeSeries <- function(GeneralParameters){
 		
 		nx <- dims[[1]]$len
 		ny <- dims[[2]]$len
-
 		prec <- switch(prec, 
 						'byte' = 'short', 
 						'single' = 'float', 
 						prec)
 		missval <- -9999
+		grd.out <- ncvar_def(name = varname, units = units, dim = dims, missval = missval, longname = longname, prec = prec)
 
-		grd <- ncvar_def(name = varname, units = units, dim = dims, missval = missval, longname = longname, prec = prec)
-
+		######
 		## do parallel
 		vartmp <- lapply(filein0, function(ncfile){
 						nc <- nc_open(ncfile)
@@ -144,17 +156,27 @@ ExeAggTimeSeries <- function(GeneralParameters){
 					})
 		vartmp <- aggregateSeries(vartmp, dates, fun = fun, na.rm = TRUE, min.frac = minfrac,
 								time.step.In = period, time.step.Out = period1, type = 'list')
+		######
+		if(period1 == 'dekadal'){
+			ncfiles2 <- file.path(output2save, sprintf(outformat, substr(vartmp$out$date, 1, 4),
+								substr(vartmp$out$date, 5, 6), substr(vartmp$out$date, 7, 7)))
+		}else  if(period1 == 'monthly'){
+			ncfiles2 <- file.path(output2save, sprintf(outformat, substr(vartmp$out$date, 1, 4),
+								substr(vartmp$out$date, 5, 6)))
+		}else{
+			ncfiles2 <- file.path(output2save, sprintf(outformat, vartmp$out$date))
+		}
 
+		######
 		for(j in seq_along(vartmp$out$date)){
-			fileout <- paste(outformat, '_', vartmp$out$date[j], '.nc', sep = '')
+			outfl <- ncfiles2[j]
 			don <- vartmp$out$data[[j]]
 			don[is.na(don)] <- missval
-			ncfiles2 <- file.path(output2save, fileout, fsep = .Platform$file.sep)
-			nc2 <- nc_create(ncfiles2, grd)
-			ncvar_put(nc2, grd, don)
+			nc2 <- nc_create(outfl, grd.out)
+			ncvar_put(nc2, grd.out, don)
 			nc_close(nc2)
 		}
-		rm(vartmp, dates, filein0, don, grd, daty)
+		rm(vartmp, dates, filein0, don, grd.out, daty)
 		gc()
 	}
 	InsertMessagesTxt(main.txt.out, 'Aggregating time series finished')
