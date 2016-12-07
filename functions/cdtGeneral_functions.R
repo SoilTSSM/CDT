@@ -924,7 +924,7 @@ ncFilesInfo <- function(freqData, start.date, end.date, months, ncDir, ncFileFor
 	}
 	if(freqData == 'monthly'){
 		dates <- format(seq(start.date, end.date, 'month'), '%Y%m')
-		ncDataFiles <- file.path(rfeDir, sprintf(ncFileFormat, substr(dates, 1, 4),
+		ncDataFiles <- file.path(ncDir, sprintf(ncFileFormat, substr(dates, 1, 4),
 						substr(dates, 5, 6)), fsep = .Platform$file.sep)
 	}
 	months.dates <- as(substr(dates, 5, 6), 'numeric')

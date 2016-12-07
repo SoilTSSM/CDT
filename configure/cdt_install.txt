@@ -12,7 +12,7 @@ Mac:
 http://www.kyngchaos.com/software:frameworks
 downloal the GDAL complete
 
-install.packages('rgdal', type = "source", configure-args='--with-gdal-config=/Library/Frameworks/GDAL.framework/unix/bin/gdal-config --with-proj-include=/Library/Frameworks/PROJ.framework/unix/include --with-proj-lib=/Library/Frameworks/PROJ.framework/unix/lib')
+install.packages('rgdal', type = "source", configure.args = '--with-gdal-config=/Library/Frameworks/GDAL.framework/unix/bin/gdal-config --with-proj-include=/Library/Frameworks/PROJ.framework/unix/include --with-proj-lib=/Library/Frameworks/PROJ.framework/unix/lib')
 
 install.packages('rgeos', type = "source", configure.args = '--with-geos-config=/Library/Frameworks/GEOS.framework/unix/bin/geos-config')
 
@@ -26,7 +26,7 @@ ubuntu
 
 sudo apt-get install libproj-dev libgdal-dev libgeos-dev
 
-#sudo apt-get install libgdal1-dev libproj-dev libgeos-dev
+
 
 #############################################
 
