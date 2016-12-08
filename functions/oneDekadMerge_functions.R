@@ -191,6 +191,23 @@ mergeOneDekadRain <- function(){
 	## merging
 	no.stnData <- GeneralParameters$No.Stn.Data
 	if(!no.stnData){
+		interp.method <- GeneralParameters$Interpolation.pars$interp.method
+		nmin <- GeneralParameters$Interpolation.pars$nmin
+		nmax <- GeneralParameters$Interpolation.pars$nmax
+		maxdist <- GeneralParameters$Interpolation.pars$maxdist
+		vgm.model <- GeneralParameters$vgm.model
+		# use.block <- GeneralParameters$use.block
+		res.coarse <- maxdist/2
+		res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
+		maxdist <- if(maxdist < res.coarse) res.coarse else maxdist
+
+		Mrg.Method <- GeneralParameters$Mrg.Method
+		min.stn <- GeneralParameters$Merging.pars$min.stn
+		min.non.zero <- GeneralParameters$Merging.pars$min.non.zero
+	 	use.RnoR <- GeneralParameters$Merging.pars$use.RnoR
+	 	smooth.RnoR <- GeneralParameters$Merging.pars$smooth.RnoR
+		wet.day <- GeneralParameters$Merging.pars$wet.day
+
 		if(Mrg.Method == "Spatio-Temporal LM"){
 			coeffl <- paste('LM_Coefficient_', as.numeric(dmon), '.nc', sep = '')
 			coefFiles <- file.path(GeneralParameters$IO.files$LMCoef.dir, coeffl)
@@ -251,24 +268,6 @@ mergeOneDekadRain <- function(){
 		}
 		
 		#######
-		interp.method <- GeneralParameters$Interpolation.pars$interp.method
-		nmin <- GeneralParameters$Interpolation.pars$nmin
-		nmax <- GeneralParameters$Interpolation.pars$nmax
-		maxdist <- GeneralParameters$Interpolation.pars$maxdist
-		vgm.model <- GeneralParameters$vgm.model
-		# use.block <- GeneralParameters$use.block
-		res.coarse <- maxdist/2
-		res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
-		maxdist <- if(maxdist < res.coarse) res.coarse else maxdist
-
-		Mrg.Method <- GeneralParameters$Mrg.Method
-		min.stn <- GeneralParameters$Merging.pars$min.stn
-		min.non.zero <- GeneralParameters$Merging.pars$min.non.zero
-	 	use.RnoR <- GeneralParameters$Merging.pars$use.RnoR
-	 	smooth.RnoR <- GeneralParameters$Merging.pars$smooth.RnoR
-		wet.day <- GeneralParameters$Merging.pars$wet.day
-
-		#######
 		demGrid <- list(x = rfeData$x, y = rfeData$y, z = matrix(1, nrow = nlon0, ncol = nlat0))
 		ObjStn <- list(x = lon.stn, y = lat.stn, z = rep(1, length(lon.stn)))
 
@@ -290,7 +289,7 @@ mergeOneDekadRain <- function(){
 		interp.grid$newgrid$rfe <- c(rfeData$z)
 
 		############
-		noNA <- !is.na(locations.stn$stn)
+		noNA <- !is.na(locations.stn$stn) & !is.na(locations.stn$rfe)
 		min.stn.nonNA <- length(which(noNA))
 		nb.stn.nonZero <- length(which(noNA & locations.stn$stn > 0))
 		locations.stn <- locations.stn[noNA, ]

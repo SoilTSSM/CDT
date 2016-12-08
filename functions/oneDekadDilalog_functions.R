@@ -676,6 +676,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 			GeneralParameters$IO.files$SHP.file <<- str_trim(tclvalue(file.blkshp))
 			GeneralParameters$IO.files$LMCoef.dir <<- str_trim(tclvalue(dir.LMCoef))
 
+			GeneralParameters$Bias.Method <<- str_trim(tclvalue(bias.method))
 			GeneralParameters$Prefix$Mean.Bias.Prefix <<- str_trim(tclvalue(meanbsprefix))
 
 			GeneralParameters$RFE.data <<- str_trim(tclvalue(data.rfe))

@@ -4,12 +4,14 @@ warningFun <- function(w){
 	txt <- as.character(w)
 	retW <- gsub('[\r\n]', '', txt)
 	InsertMessagesTxt(main.txt.out, retW, format = TRUE)
+	return(NULL)
 }
 
 errorFun <- function(e){
 	txt <- as.character(e)
 	retE <- gsub('[\r\n]', '', txt)
 	InsertMessagesTxt(main.txt.out, retE, format = TRUE)
+	return(NULL)
 }
 
 #####**************************** Initialize variables ************************######

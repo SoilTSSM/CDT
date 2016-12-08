@@ -573,6 +573,7 @@ getExtractDataFun <- function(retExtractParams){
 			}
 			rlon <- xlon[ilo]
 			rlat <- xlat[ila]
+			rval <- xval[ilo, ila]
 		}
 		if(extType == 'Polygon'){
 			ilo <- xlon >= bbxregOI[1, 1] & xlon <= bbxregOI[1, 2]
@@ -817,7 +818,7 @@ getExtractDataFun <- function(retExtractParams){
 		}else{
 			RVAL[sapply(RVAL, is.null)] <- list(matrix(NA, ncol = length(rlat), nrow = length(rlon)))
 			rlon <- matrix(round(rlon, 5), nrow = nrow(rval), ncol = ncol(rval))
-			rlat <- matrix(round(rlat, 5), nrow = nrow(rval), ncol = ncol(rval), byrow = T)
+			rlat <- matrix(round(rlat, 5), nrow = nrow(rval), ncol = ncol(rval), byrow = TRUE)
 			if(period0 == period1){
 				daty <- dates
 				fileout <- file.path(out2sav, paste('Output_', daty, '.txt', sep = ''), fsep = .Platform$file.sep)
