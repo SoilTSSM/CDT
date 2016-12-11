@@ -732,7 +732,7 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 		closeklust <- FALSE
 	}
 
-	packages <- c('ncdf4')
+	packages <- c('ncdf4', 'fields')
 	toExports <- c(toExports, 'rfeData', 'is.regridRFE', 'bias.method', 'origdir',
 					 'grd.bsadj', 'freqData', 'adjRfeFF')
 
