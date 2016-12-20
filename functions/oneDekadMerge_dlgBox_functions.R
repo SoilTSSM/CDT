@@ -1,7 +1,6 @@
 mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	if (Sys.info()["sysname"] == "Windows") largeur <- 29
-	else largeur <- 27
+	largeur <- if(Sys.info()["sysname"] == "Windows") 29 else 27
 
 	##
 	tt <- tktoplevel()
@@ -75,9 +74,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
 			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkgrid(chk.stnfl, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -195,13 +192,8 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	grd_vlat2 <- tkentry(frbbox, width = 5, justify = "right", textvariable = maxLat, state = stateRFE2)
 
 	tkconfigure(bt.grdrfe, command = function(){
-		fileopen <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "",
-								filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
-		if(fileopen == "" | is.na(fileopen)) return(NULL)
-		nc.opfiles1 <- preview.data.nc(tt, fileopen, "")
-		nc.opfiles <- list(basename(fileopen), nc.opfiles1, fileopen)
-		if(!is.null(nc.opfiles1)){
-			tkinsert(all.opfiles, "end", basename(fileopen))
+		nc.opfiles <- getOpenNetcdf(tt, all.opfiles)
+		if(!is.null(nc.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
 			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
@@ -212,9 +204,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
 			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkgrid(chk.rfe, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -285,8 +275,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 
 	if(tclvalue(adj.bias) == '1'){
 		stateBiasdir <- 'normal'
-		if(tclvalue(bias.method) == "Quantile.Mapping") stateBiaspfx <- 'disabled'
-		else stateBiaspfx <- 'normal'
+		stateBiaspfx <- if(tclvalue(bias.method) == "Quantile.Mapping") 'disabled' else 'normal'
 	}else{
 		stateBiasdir <- 'disabled'
 		stateBiaspfx <- 'disabled'
@@ -335,15 +324,15 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.mth.bias, state = 'normal')
 			tkconfigure(en.dir.bias, state = 'normal')
 			tkconfigure(bt.dir.bias, state = 'normal')
-			if(tclvalue(bias.method) == "Quantile.Mapping") tkconfigure(en.prf.bias, state = 'disabled')
-			else tkconfigure(en.prf.bias, state = 'normal')
+			stateBSM <- if(tclvalue(bias.method) == "Quantile.Mapping") 'disabled' else 'normal'
+			tkconfigure(en.prf.bias, state = stateBSM)
 		}
 	})
 
 	tkbind(cb.mth.bias,"<<ComboboxSelected>>", function(){
 		if(tclvalue(adj.bias) == '1'){
-			if(tclvalue(bias.method) == "Quantile.Mapping") tkconfigure(en.prf.bias, state = 'disabled')
-			else tkconfigure(en.prf.bias, state = 'normal')
+			stateBSM <- if(tclvalue(bias.method) == "Quantile.Mapping") 'disabled' else 'normal'
+			tkconfigure(en.prf.bias, state = stateBSM)
 		}else tkconfigure(en.prf.bias, state = 'disabled')
 	})
 
@@ -361,8 +350,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	dir.LMCoef <- tclVar(GeneralParameters$IO.files$LMCoef.dir)
 	if(str_trim(GeneralParameters$Mrg.Method) == "Regression Kriging") stateLMCoef <- 'disabled'
 	else{
-		if(tclvalue(no.stnfl) == '0') stateLMCoef <- 'normal'
-		else stateLMCoef <- 'disabled'
+		stateLMCoef <- if(tclvalue(no.stnfl) == '0') 'normal' else 'disabled'
 	}
 
 	txt.mrg <- tklabel(frMrg, text = 'Mering method', anchor = 'w', justify = 'left')
@@ -418,13 +406,9 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	#####
 
 	tkbind(cb.mrg, "<<ComboboxSelected>>", function(){
-		if(tclvalue(mrg.method) == "Spatio-Temporal LM"){
-			tkconfigure(en.dir.LM, state = 'normal')
-			tkconfigure(bt.dir.LM, state = 'normal')
-		}else{
-			tkconfigure(en.dir.LM, state = 'disabled')
-			tkconfigure(bt.dir.LM, state = 'disabled')
-		}
+		stateLM <- if(tclvalue(mrg.method) == "Spatio-Temporal LM") 'normal' else 'disabled'
+		tkconfigure(en.dir.LM, state = stateLM)
+		tkconfigure(bt.dir.LM, state = stateLM)
 	})
 
 
@@ -492,12 +476,10 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 									'3' = blankChx[3])
 
 	if(str_trim(GeneralParameters$Blank.Grid) == '2'){
-		if(tclvalue(no.stnfl) == '0') statedem <- 'normal'
-		else statedem <- 'disabled'
+		statedem <- if(tclvalue(no.stnfl) == '0') 'normal' else 'disabled'
 	}else statedem <- 'disabled'
 	if(str_trim(GeneralParameters$Blank.Grid) == '3'){
-		if(tclvalue(no.stnfl) == '0') stateshp <- 'normal'
-		else stateshp <- 'disabled'
+		stateshp <- if(tclvalue(no.stnfl) == '0') 'normal' else 'disabled'
 	}else stateshp <- 'disabled'
 
 	txt.blankGrd <- tklabel(frBlank, text = 'Blank', anchor = 'w', justify = 'left')
@@ -523,9 +505,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
 			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkconfigure(bt.blkshp, state = stateshp, command = function(){
@@ -542,9 +522,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
 			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkgrid(txt.blankGrd, row = 0, column = 0, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
@@ -601,11 +579,11 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 
 	tkconfigure(bt.file.save, command = function(){
 		file2save1 <- tk_choose.dir(str_trim(GeneralParameters$IO.files$dir2save), "")
-			if(is.na(file2save1)) tclvalue(file.save1) <- str_trim(GeneralParameters$IO.files$dir2save)
-			else{
-				dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
-				tclvalue(file.save1) <- file2save1
-			}
+		if(is.na(file2save1)) tclvalue(file.save1) <- str_trim(GeneralParameters$IO.files$dir2save)
+		else{
+			dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
+			tclvalue(file.save1) <- file2save1
+		}
 	})
 
 	tkgrid(txt.file.save, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)

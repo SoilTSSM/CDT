@@ -17,8 +17,7 @@ configCDT <- function(){
 	tkgrab.set(config.win)
 	tkfocus(config.win)
 
-	if(Sys.info()["sysname"] == "Windows") width.entry <- 61
-	else width.entry <- 43	
+	width.entry <- if(Sys.info()["sysname"] == "Windows") 61 else 43	
 
 	fr1.conf <- tkframe(config.win, relief = 'sunken', borderwidth = 2)
 	fr2.conf <- tkframe(config.win, relief = 'sunken', borderwidth = 2)

@@ -344,15 +344,19 @@ Execute_All_Functions <- function(get.stn){
 	}
 
 	#####
-	if(GeneralParameters$action == "agg.stn"){
-		agg2run <- try(AggregateDataCDT(GeneralParameters), silent = TRUE)
+	if(GeneralParameters$action == "cdtInput.stn"){		
+		if(GeneralParameters$data.type == "Multiple Files") conversionFunc <- "formatCDTDataMultiple.Files"
+		if(GeneralParameters$data.type == "Single File") conversionFunc <- "formatCDTDataSingle.File"
+		conversionFunc <- match.fun(conversionFunc)
+
+		agg2run <- try(conversionFunc(GeneralParameters), silent = TRUE)
 		if(!inherits(agg2run, "try-error")){
 			if(!is.null(agg2run)){
-				if(agg2run == 0) 	InsertMessagesTxt(main.txt.out, "Aggregation finished successfully")
-				else InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
-			}else InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
+				if(agg2run == 0) 	InsertMessagesTxt(main.txt.out, "Conversion to CDT data finished successfully")
+				else InsertMessagesTxt(main.txt.out, "Conversion to CDT data failed", format = TRUE)
+			}else InsertMessagesTxt(main.txt.out, "Conversion to CDT data failed", format = TRUE)
 		}else{
-			InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
+			InsertMessagesTxt(main.txt.out, "Conversion to CDT data failed", format = TRUE)
 			InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',agg2run[1]), format = TRUE)
 		}
 		return(NULL)

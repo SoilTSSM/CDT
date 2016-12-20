@@ -33,9 +33,9 @@
         "miss.frac": 0.95
     }],
     "One.series": [{
-        // Series format, 1: one variable, 0: 3 variables (Rain, Tmax, Tmin)
+        // Series format, 1: one variable, 3: 3 variables (Rain, Tmax, Tmin)
         "file.format": 1,
-        // Date format, 1: grouped (YYYYMMDD), 0: separated (YYYY MM DD)
+        // Date format, 1: grouped (YYYYMMDD), 3: separated (YYYY MM DD)
         "date.format": 1
     }],
     // Date range

@@ -130,7 +130,7 @@ tkadd(top.menu, "cascade", label = "Data Preparation", menu = menu.dataprep)
 ##########
 tkadd(menu.dataprep, "command", label = "Format CDTs Input Data", command = function(){
 	refreshCDT.lcmd.env()
-	initpars <- initialize.parameters('agg.stn', 'daily')
+	initpars <- initialize.parameters('cdtInput.stn', 'daily')
 	GeneralParameters <<- AggregateInputStationData(main.win, initpars)
 })
 

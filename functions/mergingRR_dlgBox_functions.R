@@ -1,8 +1,7 @@
 
 mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	if (Sys.info()["sysname"] == "Windows") largeur <- 23
-	else largeur <- 21
+	largeur <- if (Sys.info()["sysname"] == "Windows") 23 else 21
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
@@ -30,13 +29,9 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	status.bar.display(cb.mrg, TextOutputVar, 'Method to be used to perform merging')
 
 	tkbind(cb.mrg, "<<ComboboxSelected>>", function(){
-		if(tclvalue(mrg.method) == "Spatio-Temporal LM"){
-			tkconfigure(en.dir.LM, state = 'normal')
-			tkconfigure(bt.dir.LM, state = 'normal')
-		}else{
-			tkconfigure(en.dir.LM, state = 'disabled')
-			tkconfigure(bt.dir.LM, state = 'disabled')
-		}
+		stateLM <- if(tclvalue(mrg.method) == "Spatio-Temporal LM") 'normal' else 'disabled'
+		tkconfigure(en.dir.LM, state = stateLM)
+		tkconfigure(bt.dir.LM, state = stateLM)
 	})
 
 	############################################
@@ -63,9 +58,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
 			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkgrid(txt.stnfl, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
@@ -104,13 +97,8 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	})
 
 	tkconfigure(bt.grdrfe, command = function(){
-		fileopen <- tclvalue(tkgetOpenFile(initialdir = tclvalue(dir.rfe), initialfile = "",
-								filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
-		if(fileopen == "" | is.na(fileopen)) return(NULL)
-		nc.opfiles1 <- preview.data.nc(tt, fileopen, "")
-		nc.opfiles <- list(basename(fileopen), nc.opfiles1, fileopen)
-		if(!is.null(nc.opfiles1)){
-			tkinsert(all.opfiles, "end", basename(fileopen))
+		nc.opfiles <- getOpenNetcdf(tt, all.opfiles, initialdir = tclvalue(dir.rfe))
+		if(!is.null(nc.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
 			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
@@ -121,9 +109,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
 			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkconfigure(bt.newGrd, command = function(){
@@ -164,8 +150,8 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 
 	######
 	tkbind(cb.newGrd, "<Button-1>", function(){
-		if(tclvalue(newGrd) == '0') tkconfigure(bt.newGrd, state = 'normal')
-		else tkconfigure(bt.newGrd, state = 'disabled')
+		statenewGrd <- if(tclvalue(newGrd) == '0') 'normal' else 'disabled'
+		tkconfigure(bt.newGrd, state = statenewGrd)
 	})
 
 	############################################
@@ -173,9 +159,8 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	frDirLM <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
 
 	dir.LMCoef <- tclVar(GeneralParameters$IO.files$LMCoef.dir)
-	if(str_trim(GeneralParameters$Mrg.Method) == "Regression Kriging") stateLMCoef <- 'disabled'
-	else stateLMCoef <- 'normal'
-
+	stateLMCoef <- if(str_trim(GeneralParameters$Mrg.Method) == "Regression Kriging") 'disabled' else 'normal'
+	
 	txt.dir.LM <- tklabel(frDirLM, text = "Directory of LMCoef files", anchor = 'w', justify = 'left')
 	en.dir.LM <- tkentry(frDirLM, textvariable = dir.LMCoef, width = largeur, state = stateLMCoef)
 	bt.dir.LM <- tkbutton(frDirLM, text = "...", state = stateLMCoef)
@@ -235,13 +220,9 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 
 	file.grddem <- tclVar(GeneralParameters$IO.files$DEM.file)
 	file.blkshp <- tclVar(GeneralParameters$IO.files$SHP.file)
-	if(as.character(GeneralParameters$Blank.Grid) == '2' | (GeneralParameters$Create.Grid & GeneralParameters$Grid.From == '2')) statedem <- 'normal'
-	else statedem <- 'disabled'
-	# statedem <- 'normal'
-	if(as.character(GeneralParameters$Blank.Grid) == '3') stateshp <- 'normal'
-	else stateshp <- 'disabled'
-	# stateshp <- 'normal'
-
+	statedem <- if(as.character(GeneralParameters$Blank.Grid) == '2' | (GeneralParameters$Create.Grid & GeneralParameters$Grid.From == '2')) 'normal' else 'disabled'
+	stateshp <- if(as.character(GeneralParameters$Blank.Grid) == '3') 'normal' else 'disabled'
+	
 	txt.grddem <- tklabel(frDEMSHP, text = "Elevation data(NetCDF)", anchor = 'w', justify = 'left')
 	cb.grddem <- ttkcombobox(frDEMSHP, values = unlist(listOpenFiles), textvariable = file.grddem, state = statedem)
 	bt.grddem <- tkbutton(frDEMSHP, text = "...", state = statedem)
@@ -263,14 +244,11 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
 			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkconfigure(bt.blkshp, command = function(){
 		shp.opfiles <- getOpenShp(tt, all.opfiles)
-
 		if(!is.null(shp.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'shp'
@@ -283,9 +261,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
 			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	#####
@@ -329,10 +305,8 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	iend.yrs <- tclVar(GeneralParameters$Mrg.Date.Range$end.year)
 	iend.mon <- tclVar(GeneralParameters$Mrg.Date.Range$end.mon)
 	iend.day <- tclVar(GeneralParameters$Mrg.Date.Range$end.dek)
-	if(GeneralParameters$period == 'dekadal') day.txtVar <- tclVar('Dek')
-	else day.txtVar <- tclVar('Day')
-	if(GeneralParameters$period == 'monthly') statedate <- 'disabled'
-	else statedate <- 'normal'
+	day.txtVar <- if(GeneralParameters$period == 'dekadal') tclVar('Dek') else tclVar('Day')
+	statedate <- if(GeneralParameters$period == 'monthly') 'disabled' else 'normal'
 	# use.months <- tclVar(paste(GeneralParameters$Mrg.Months, collapse=' '))
 
 	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period)
@@ -623,7 +597,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 				GeneralParameters$IO.files$RFE.dir <<- str_trim(tclvalue(dir.rfe))
 				GeneralParameters$IO.files$RFE.file <<- str_trim(tclvalue(file.grdrfe))
 				GeneralParameters$FileFormat$RFE.File.Format <<- str_trim(tclvalue(inrfeff))
-				GeneralParameters$Create.Grid <<- switch(str_trim(tclvalue(newGrd)), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$Create.Grid <<- switch(tclvalue(newGrd), '0' = FALSE, '1' = TRUE)
 				GeneralParameters$IO.files$LMCoef.dir <<- str_trim(tclvalue(dir.LMCoef))
 				GeneralParameters$IO.files$dir2save <<- str_trim(tclvalue(file.save1))
 				GeneralParameters$IO.files$DEM.file <<- str_trim(tclvalue(file.grddem))
@@ -652,8 +626,8 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 				GeneralParameters$Mrg.set$min.stn <<- as.numeric(str_trim(tclvalue(min.stn)))
 				GeneralParameters$Mrg.set$min.non.zero <<- as.numeric(str_trim(tclvalue(min.non.zero)))
 				# GeneralParameters$Mrg.set$maxdist.RnoR <<- as.numeric(str_trim(tclvalue(max.rnr.dst)))
-				GeneralParameters$Mrg.set$use.RnoR <<- switch(str_trim(tclvalue(use.RnoR)), '0' = FALSE, '1' = TRUE)
-				GeneralParameters$Mrg.set$smooth.RnoR <<- switch(str_trim(tclvalue(smooth.RnoR)), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$Mrg.set$use.RnoR <<- switch(tclvalue(use.RnoR), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$Mrg.set$smooth.RnoR <<- switch(tclvalue(smooth.RnoR), '0' = FALSE, '1' = TRUE)
 
 				GeneralParameters$FileFormat$Mrg.file.format <<- str_trim(tclvalue(outmrgff))
 				GeneralParameters$Blank.Grid <<- switch(str_trim(tclvalue(blankGrd)),
@@ -704,8 +678,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 
 coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	if (Sys.info()["sysname"] == "Windows") largeur <- 23
-	else largeur <- 21
+	largeur <- if (Sys.info()["sysname"] == "Windows") 23 else 21
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
@@ -739,9 +712,7 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkgrid(txt.stnfl, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
@@ -777,13 +748,8 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 	})
 
 	tkconfigure(bt.grdrfe, command = function(){
-		fileopen <- tclvalue(tkgetOpenFile(initialdir = tclvalue(dir.rfe), initialfile = "",
-								filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
-		if(fileopen == "" | is.na(fileopen)) return(NULL)
-		nc.opfiles1 <- preview.data.nc(tt, fileopen, "")
-		nc.opfiles <- list(basename(fileopen), nc.opfiles1, fileopen)
-		if(!is.null(nc.opfiles1)){
-			tkinsert(all.opfiles, "end", basename(fileopen))
+		nc.opfiles <- getOpenNetcdf(tt, all.opfiles, initialdir = tclvalue(dir.rfe))
+		if(!is.null(nc.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
 			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
@@ -793,9 +759,7 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 	######
 
@@ -841,9 +805,7 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	#####
@@ -945,8 +907,7 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 	frGrid <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
 	varCreateGrd <- tclVar(GeneralParameters$Create.Grid)
-	if(str_trim(GeneralParameters$Create.Grid) == '3') stategrd <- 'normal'
-	else stategrd <- 'disabled'
+	stategrd <- if(str_trim(GeneralParameters$Create.Grid) == '3') 'normal' else 'disabled'
 
 	txt.CreateGrd <- tklabel(frGrid, text = 'Create grid for interpolation', anchor = 'w', justify = 'left')
 	grdRFE.rbt <- tkradiobutton(frGrid, text = "From RFE", anchor = 'w', justify = 'left')
@@ -1247,8 +1208,8 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	######
 
 	tkbind(cb.bias,"<<ComboboxSelected>>", function(){
-		if(tclvalue(bias.method) == "Quantile.Mapping") tkconfigure(en.outbiasff, state = 'disabled')
-		else tkconfigure(en.outbiasff, state = 'normal')
+		stateBSM <- if(tclvalue(bias.method) == "Quantile.Mapping") 'disabled' else 'normal'
+		tkconfigure(en.outbiasff, state = stateBSM)
 	})
 
 	############################################
@@ -1273,9 +1234,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkgrid(txt.stnfl, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
@@ -1311,13 +1270,8 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	})
 
 	tkconfigure(bt.grdrfe, command = function(){
-		fileopen <- tclvalue(tkgetOpenFile(initialdir = tclvalue(dir.rfe), initialfile = "",
-								filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
-		if(fileopen == "" | is.na(fileopen)) return(NULL)
-		nc.opfiles1 <- preview.data.nc(tt, fileopen, "")
-		nc.opfiles <- list(basename(fileopen), nc.opfiles1, fileopen)
-		if(!is.null(nc.opfiles1)){
-			tkinsert(all.opfiles, "end", basename(fileopen))
+		nc.opfiles <- getOpenNetcdf(tt, all.opfiles, initialdir = tclvalue(dir.rfe))
+		if(!is.null(nc.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
 			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
@@ -1327,9 +1281,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 	######
 
@@ -1375,9 +1327,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	#####
@@ -1497,8 +1447,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	frGrid <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
 	varCreateGrd <- tclVar(GeneralParameters$Create.Grid)
-	if(str_trim(GeneralParameters$Create.Grid) == '3') stategrd <- 'normal'
-	else stategrd <- 'disabled'
+	stategrd <- if(str_trim(GeneralParameters$Create.Grid) == '3') 'normal' else 'disabled'
 
 	txt.CreateGrd <- tklabel(frGrid, text = 'Create grid for interpolation', anchor = 'w', justify = 'left')
 	grdRFE.rbt <- tkradiobutton(frGrid, text = "From RFE", anchor = 'w', justify = 'left')
@@ -1662,8 +1611,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	frPfxBias <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
 	outbiasff <- tclVar(GeneralParameters$Prefix$Mean.Bias.Prefix)
-	if(str_trim(GeneralParameters$Bias.Method) == "Quantile.Mapping") statePfxBias <- 'disabled'
-	else statePfxBias <- 'normal'
+	statePfxBias <- if(str_trim(GeneralParameters$Bias.Method) == "Quantile.Mapping") 'disabled' else 'normal'
 
 	txt.outbiasff <- tklabel(frPfxBias, text = 'Mean bias filename prefix', anchor = 'w', justify = 'left')
 	en.outbiasff <- tkentry(frPfxBias, textvariable = outbiasff, width = largeur, state = statePfxBias)
@@ -1693,7 +1641,6 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	#######
 
 	tkconfigure(bt.prm.OK, command = function(){
-
 		if(str_trim(tclvalue(file.stnfl)) == ""){
 			tkmessageBox(message = "Choose the file containing the gauge data", icon = "warning", type = "ok")
 			#tkwait.window(tt)
@@ -1790,8 +1737,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 
 rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	if (Sys.info()["sysname"] == "Windows") largeur <- 23
-	else largeur <- 21
+	largeur <- if (Sys.info()["sysname"] == "Windows") 23 else 21
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
@@ -1821,8 +1767,8 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	######
 
 	tkbind(cb.bias,"<<ComboboxSelected>>", function(){
-		if(tclvalue(bias.method) == "Quantile.Mapping") tkconfigure(en.outbiasff, state = 'disabled')
-		else tkconfigure(en.outbiasff, state = 'normal')
+		stateBSM <- if(tclvalue(bias.method) == "Quantile.Mapping") 'disabled' else 'normal'
+		tkconfigure(en.outbiasff, state = stateBSM)
 	})
 
 	############################################
@@ -1849,13 +1795,8 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	})
 
 	tkconfigure(bt.grdrfe, command = function(){
-		fileopen <- tclvalue(tkgetOpenFile(initialdir = tclvalue(dir.rfe), initialfile = "",
-								filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
-		if(fileopen == "" | is.na(fileopen)) return(NULL)
-		nc.opfiles1 <- preview.data.nc(tt, fileopen, "")
-		nc.opfiles <- list(basename(fileopen), nc.opfiles1, fileopen)
-		if(!is.null(nc.opfiles1)){
-			tkinsert(all.opfiles, "end", basename(fileopen))
+		nc.opfiles <- getOpenNetcdf(tt, all.opfiles, initialdir = tclvalue(dir.rfe))
+		if(!is.null(nc.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
 			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
@@ -1863,9 +1804,7 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
 			tclvalue(file.grdrfe) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	######
@@ -1896,8 +1835,7 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 
 	dir.bias <- tclVar(GeneralParameters$IO.files$Bias.dir)
 	outbiasff <- tclVar(GeneralParameters$Prefix$Mean.Bias.Prefix)
-	if(str_trim(GeneralParameters$Bias.Method) == "Quantile.Mapping") statePfxBias <- 'disabled'
-	else statePfxBias <- 'normal'
+	statePfxBias <- if(str_trim(GeneralParameters$Bias.Method) == "Quantile.Mapping") 'disabled' else 'normal'
 
 	txt.dir.bias <- tklabel(frDirBias, text = "Directory of mean bias files", anchor = 'w', justify = 'left')
 	en.dir.bias <- tkentry(frDirBias, textvariable = dir.bias, width = largeur)
@@ -1908,8 +1846,7 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	#####
 	tkconfigure(bt.dir.bias, command = function(){
 		dir4bias <- tk_choose.dir(GeneralParameters$IO.files$Bias.dir, "")
-		if(is.na(dir4bias)) tclvalue(dir.bias) <- ""
-		else tclvalue(dir.bias) <- dir4bias
+		tclvalue(dir.bias) <- if(is.na(dir4bias)) "" else dir4bias
 	})
 
 	#####
@@ -1948,10 +1885,9 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	iend.yrs <- tclVar(GeneralParameters$Adjust.Date.Range$end.year)
 	iend.mon <- tclVar(GeneralParameters$Adjust.Date.Range$end.mon)
 	iend.day <- tclVar(GeneralParameters$Adjust.Date.Range$end.dek)
-	if(GeneralParameters$period == 'dekadal') day.txtVar <- tclVar('Dek')
-	else day.txtVar <- tclVar('Day')
-	if(GeneralParameters$period == 'monthly') statedate <- 'disabled'
-	else statedate <- 'normal'
+	day.txtVar <- if(GeneralParameters$period == 'dekadal') tclVar('Dek') else tclVar('Day')
+	statedate <- if(GeneralParameters$period == 'monthly') 'disabled' else 'normal'
+	
 	# use.months <- tclVar(paste(GeneralParameters$Adjust.Months, collapse=' '))
 
 	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period)

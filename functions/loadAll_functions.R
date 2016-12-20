@@ -7,15 +7,15 @@ source(file.path(apps.dir, 'functions', 'cdtAccueil_functions.R', fsep = .Platfo
 source(file.path(apps.dir, 'functions', 'cdtAbout_functions.R', fsep = .Platform$file.sep))
 
 source(file.path(apps.dir, 'functions', 'initialize_params_functions.R', fsep = .Platform$file.sep))
-source(file.path(apps.dir, 'functions', 'Execute_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtExecute_functions.R', fsep = .Platform$file.sep))
 
 
 source(file.path(apps.dir, 'functions', 'cdtOpenWriteFiles_functions.R', fsep = .Platform$file.sep))
-source(file.path(apps.dir, 'functions', 'preview_df_function.R', fsep = .Platform$file.sep))
-source(file.path(apps.dir, 'functions', 'preview_nc_function.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtPreview_df_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtPreview_nc_functions.R', fsep = .Platform$file.sep))
 
-source(file.path(apps.dir, 'functions', 'clear_CDT_Data_functions.R', fsep = .Platform$file.sep))
-source(file.path(apps.dir, 'functions', 'Climato_Computation_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtDisaggregateStnData_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtClimato0_functions.R', fsep = .Platform$file.sep))
 source(file.path(apps.dir, 'functions', 'cdtClimato_functions.R', fsep = .Platform$file.sep))
 
 source(file.path(apps.dir, 'functions', 'cdtTables_functions.R', fsep = .Platform$file.sep))
@@ -69,30 +69,32 @@ source(file.path(apps.dir, 'functions', 'mergingTT_dlgBox_functions.R', fsep = .
 source(file.path(apps.dir, 'functions', 'mergingTT_execute_functions.R', fsep = .Platform$file.sep))
 source(file.path(apps.dir, 'functions', 'mergingTT_Procs_functions.R', fsep = .Platform$file.sep))
 
+source(file.path(apps.dir, 'functions', 'cdtFormatInputData_dlgBox_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtFormatInputData_Procs_functions.R', fsep = .Platform$file.sep))
 
-source(file.path(apps.dir, 'functions', 'aggregate_dlgBox_functions.R', fsep = .Platform$file.sep))
-source(file.path(apps.dir, 'functions', 'aggregate_Procs_functions.R', fsep = .Platform$file.sep))
-source(file.path(apps.dir, 'functions', 'aggregate_dlgTimeSeries_functions.R', fsep = .Platform$file.sep))
-source(file.path(apps.dir, 'functions', 'aggregate_execTimeSeries_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtAggregateOutputData_dlgBox_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtAggregateOutputData_Procs_functions.R', fsep = .Platform$file.sep))
+
+source(file.path(apps.dir, 'functions', 'aggregateTimeSeries_dlgBox_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'aggregateTimeSeries_Procs_functions.R', fsep = .Platform$file.sep))
 
 source(file.path(apps.dir, 'functions', 'downloadRFE_functions.R', fsep = .Platform$file.sep))
 source(file.path(apps.dir, 'functions', 'downloadShapefile_functions.R', fsep = .Platform$file.sep))
 source(file.path(apps.dir, 'functions', 'downloadDEM_functions.R', fsep = .Platform$file.sep))
 
+source(file.path(apps.dir, 'functions', 'extractTS_leftCmd_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'extractTS_displayMap_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'extractTS_Procs_functions.R', fsep = .Platform$file.sep))
 
-source(file.path(apps.dir, 'functions', 'extr_leftCmd_functions.R', fsep = .Platform$file.sep))
-source(file.path(apps.dir, 'functions', 'extr_displayMap_functions.R', fsep = .Platform$file.sep))
-source(file.path(apps.dir, 'functions', 'extr_proc_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'AssessDataAvail_leftCmd_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'AssessDataAvail_displayNA_functions.R', fsep = .Platform$file.sep))
 
-source(file.path(apps.dir, 'functions', 'AssDat_leftCmd_functions.R', fsep = .Platform$file.sep))
-source(file.path(apps.dir, 'functions', 'AssDat_displayNA_functions.R', fsep = .Platform$file.sep))
-
-source(file.path(apps.dir, 'functions', 'chkCoords_Dialog_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'chkCoords_dlgBox_functions.R', fsep = .Platform$file.sep))
 source(file.path(apps.dir, 'functions', 'chkCoords_lelfCmd_functions.R', fsep = .Platform$file.sep))
-source(file.path(apps.dir, 'functions', 'chkCoords_Exec_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'chkCoords_Procs_functions.R', fsep = .Platform$file.sep))
 
-source(file.path(apps.dir, 'functions', 'oneDekadDilalog_functions.R', fsep = .Platform$file.sep))
-source(file.path(apps.dir, 'functions', 'oneDekadMerge_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'oneDekadMerge_dlgBox_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'oneDekadMerge_Procs_functions.R', fsep = .Platform$file.sep))
 
 
 ####

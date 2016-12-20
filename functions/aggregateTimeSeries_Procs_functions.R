@@ -19,7 +19,9 @@ ExeAggTimeSeries <- function(GeneralParameters){
 
 	if(datatype == 'cdt'){
 		donne <- getStnOpenData(input.data)
+		if(is.null(donne)) return(NULL)
 		donneInfo <- getStnOpenDataInfo(input.data)
+		if(is.null(donneInfo)) return(NULL)
 		donne <- getCDTdataAndDisplayMsg(donne, period)
 		if(is.null(donne)) return(NULL)
 		miss.val <- donneInfo[[3]]$miss.val
@@ -48,7 +50,9 @@ ExeAggTimeSeries <- function(GeneralParameters){
 		datefrmt <- GeneralParameters$One.series$date.format
 
 		donne <- getStnOpenData(input.data)
+		if(is.null(donne)) return(NULL)
 		donneInfo <- getStnOpenDataInfo(input.data)
+		if(is.null(donneInfo)) return(NULL)
 		donne <- getCDTTSdataAndDisplayMsg(donne, period, filefrmt, datefrmt)
 		if(is.null(donne)) return(NULL)
 		miss.val <- donneInfo[[3]]$miss.val

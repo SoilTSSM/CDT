@@ -212,18 +212,21 @@ init.params <- function(action, period){
 		ret.params <- list(action = action, period = 'daily', file.io = file.io)
 	}
 	################
-	if(action == 'agg.stn'){
-		period <- 'daily'
-		file.io <- data.frame(c('Stn.sample', 'Stn.Info', 'Stn.dir', 'File.save'), c('', '', '', ''))
-		names(file.io) <- c('Parameters', 'Values')
-		file.date.format <- data.frame(c('file.format', 'date.format'), c("1", "1"))
-		names(file.date.format) <- c('Parameters', 'Values')
-		StartEnd.date <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek', 'iend.yrs', 'iend.mon', 'iend.dek'),
-									c('1961', '1', '1', '2014', '12', '31'))
-		names(StartEnd.date) <- c('Parameters', 'Values')
-		min.perc <- '1'
-		ret.params <- list(action = action, period = period, file.io = file.io, file.date.format = file.date.format,
-							StartEnd.date = StartEnd.date, min.perc = min.perc)
+	if(action == 'cdtInput.stn'){
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Fomat_CDT_inputData.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
+
+		# period <- 'daily'
+		# file.io <- data.frame(c('Stn.sample', 'Stn.Info', 'Stn.dir', 'File.save'), c('', '', '', ''))
+		# names(file.io) <- c('Parameters', 'Values')
+		# file.date.format <- data.frame(c('file.format', 'date.format'), c("1", "1"))
+		# names(file.date.format) <- c('Parameters', 'Values')
+		# StartEnd.date <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek', 'iend.yrs', 'iend.mon', 'iend.dek'),
+		# 							c('1961', '1', '1', '2014', '12', '31'))
+		# names(StartEnd.date) <- c('Parameters', 'Values')
+		# min.perc <- '1'
+		# ret.params <- list(action = action, period = period, file.io = file.io, file.date.format = file.date.format,
+		# 					StartEnd.date = StartEnd.date, min.perc = min.perc)
 	}
 	################
 	if(action == 'agg.ts'){

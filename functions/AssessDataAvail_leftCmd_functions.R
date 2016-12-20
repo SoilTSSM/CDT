@@ -43,9 +43,7 @@ AssessDataPanelCmd <- function(){
 			stnSumNA <- as.character(dat.opfiles[[2]][1,-1])
 			tclvalue(stnSumNA.val) <- stnSumNA[1]
 			tkconfigure(stnSumNA.cb, values = stnSumNA, textvariable = stnSumNA.val)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	###################
@@ -83,9 +81,10 @@ AssessDataPanelCmd <- function(){
 	#######################
 
 	get.period <- function(){
-		if(tclvalue(file.period) == 'Daily data') period <- 'daily'
-		if(tclvalue(file.period) == 'Dekadal data') period <- 'dekadal'
-		if(tclvalue(file.period) == 'Monthly data') period <- 'monthly'
+		period <- switch(str_trim(tclvalue(file.period)),
+								'Daily data' = 'daily',
+								'Dekadal data' =  'dekadal',
+								'Monthly data' = 'monthly')
 		return(period)		
 	}
 

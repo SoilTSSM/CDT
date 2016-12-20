@@ -1,8 +1,7 @@
 
 coefDownGetInfoTemp <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	if (Sys.info()["sysname"] == "Windows") largeur <- 23
-	else largeur <- 21
+	largeur <- if(Sys.info()["sysname"] == "Windows") 23 else 21
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
@@ -34,9 +33,7 @@ coefDownGetInfoTemp <- function(parent.win, GeneralParameters){
 			tclvalue(file.stnfl) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkgrid(txt.stnfl, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
@@ -70,9 +67,7 @@ coefDownGetInfoTemp <- function(parent.win, GeneralParameters){
 			tclvalue(file.grddem) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	#####
@@ -99,11 +94,11 @@ coefDownGetInfoTemp <- function(parent.win, GeneralParameters){
 
 	tkconfigure(bt.file.save, command = function(){
 		file2save1 <- tk_choose.dir(GeneralParameters$IO.files$dir2save, "")
-			if(is.na(file2save1)) tclvalue(file.save1) <- GeneralParameters$IO.files$dir2save
-			else{
-				dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
-				tclvalue(file.save1) <- file2save1
-			}
+		if(is.na(file2save1)) tclvalue(file.save1) <- GeneralParameters$IO.files$dir2save
+		else{
+			dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
+			tclvalue(file.save1) <- file2save1
+		}
 	})
 
 	#####
@@ -237,8 +232,7 @@ coefDownGetInfoTemp <- function(parent.win, GeneralParameters){
 
 downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	if (Sys.info()["sysname"] == "Windows") largeur <- 23
-	else largeur <- 21
+	largeur <- if(Sys.info()["sysname"] == "Windows") 23 else 21
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
@@ -298,13 +292,8 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	})
 
 	tkconfigure(bt.grdrfe, command = function(){
-		fileopen <- tclvalue(tkgetOpenFile(initialdir = tclvalue(dir.rfe), initialfile = "",
-								filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
-		if(fileopen == "" | is.na(fileopen)) return(NULL)
-		nc.opfiles1 <- preview.data.nc(tt, fileopen, "")
-		nc.opfiles <- list(basename(fileopen), nc.opfiles1, fileopen)
-		if(!is.null(nc.opfiles1)){
-			tkinsert(all.opfiles, "end", basename(fileopen))
+		nc.opfiles <- getOpenNetcdf(tt, all.opfiles, initialdir = tclvalue(dir.rfe))
+		if(!is.null(nc.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
 			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
@@ -313,9 +302,7 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 			tclvalue(file.grdrfe) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	######
@@ -361,9 +348,7 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 			tclvalue(file.grddem) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	#####
@@ -393,11 +378,11 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 
 	tkconfigure(bt.file.save, command = function(){
 		file2save1 <- tk_choose.dir(GeneralParameters$IO.files$dir2save, "")
-			if(is.na(file2save1)) tclvalue(file.save1) <- GeneralParameters$IO.files$dir2save
-			else{
-				dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
-				tclvalue(file.save1) <- file2save1
-			}
+		if(is.na(file2save1)) tclvalue(file.save1) <- GeneralParameters$IO.files$dir2save
+		else{
+			dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
+			tclvalue(file.save1) <- file2save1
+		}
 	})
 
 	#####
@@ -437,10 +422,8 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	iend.yrs <- tclVar(GeneralParameters$Down.Date.Range$end.year)
 	iend.mon <- tclVar(GeneralParameters$Down.Date.Range$end.mon)
 	iend.day <- tclVar(GeneralParameters$Down.Date.Range$end.dek)
-	if(GeneralParameters$period == 'dekadal') day.txtVar <- tclVar('Dek')
-	else day.txtVar <- tclVar('Day')
-	if(GeneralParameters$period == 'monthly') statedate <- 'disabled'
-	else statedate <- 'normal'
+	day.txtVar <- if(GeneralParameters$period == 'dekadal') tclVar('Dek') else tclVar('Day')
+	statedate <- if(GeneralParameters$period == 'monthly') 'disabled' else 'normal'
 	# use.months <- tclVar(paste(GeneralParameters$Down.Months, collapse=' '))
 
 	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period)
@@ -509,8 +492,7 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	frGrid <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
 	varCreateGrd <- tclVar(GeneralParameters$Grid.From)
-	if(str_trim(GeneralParameters$Grid.From) == '2') stategrd <- 'normal'
-	else stategrd <- 'disabled'
+	stategrd <- if(str_trim(GeneralParameters$Grid.From) == '2') 'normal' else 'disabled'
 
 	txt.CreateGrd <- tklabel(frGrid, text = 'Create grid for interpolation', anchor = 'w', justify = 'left')
 	grdDEM.rbt <- tkradiobutton(frGrid, text = "From DEM", anchor = 'w', justify = 'left')
@@ -722,8 +704,7 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 
 biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	if (Sys.info()["sysname"] == "Windows") largeur <- 23
-	else largeur <- 21
+	largeur <- if(Sys.info()["sysname"] == "Windows") 23 else 21
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
@@ -753,8 +734,8 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 	######
 
 	tkbind(cb.bias,"<<ComboboxSelected>>", function(){
-		if(tclvalue(bias.method) == "Quantile.Mapping") tkconfigure(en.outbiasff, state = 'disabled')
-		else tkconfigure(en.outbiasff, state = 'normal')
+		stateBSM <- if(tclvalue(bias.method) == "Quantile.Mapping") 'disabled' else 'normal'
+		tkconfigure(en.outbiasff, state = stateBSM)
 	})
 
 	############################################
@@ -778,9 +759,7 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 			tclvalue(file.stnfl) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkgrid(txt.stnfl, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
@@ -847,9 +826,7 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 			tclvalue(file.grddem) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	#####
@@ -876,11 +853,11 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 
 	tkconfigure(bt.file.save, command = function(){
 		file2save1 <- tk_choose.dir(GeneralParameters$IO.files$dir2save, "")
-			if(is.na(file2save1)) tclvalue(file.save1) <- GeneralParameters$IO.files$dir2save
-			else{
-				dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
-				tclvalue(file.save1) <- file2save1
-			}
+		if(is.na(file2save1)) tclvalue(file.save1) <- GeneralParameters$IO.files$dir2save
+		else{
+			dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
+			tclvalue(file.save1) <- file2save1
+		}
 	})
 
 	#####
@@ -1087,8 +1064,7 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 	frPfxBias <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
 	outbiasff <- tclVar(GeneralParameters$Format$Mean.Bias.Prefix)
-	if(str_trim(GeneralParameters$Bias.Method) == "Quantile.Mapping") statePfxBias <- 'disabled'
-	else statePfxBias <- 'normal'
+	statePfxBias <- if(str_trim(GeneralParameters$Bias.Method) == "Quantile.Mapping") 'disabled' else 'normal'
 
 	txt.outbiasff <- tklabel(frPfxBias, text = 'Mean bias filename prefix', anchor = 'w', justify = 'left')
 	en.outbiasff <- tkentry(frPfxBias, textvariable = outbiasff, width = largeur, state = statePfxBias)
@@ -1117,7 +1093,6 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 	#######
 
 	tkconfigure(bt.prm.OK, command = function(){
-
 		if(str_trim(tclvalue(file.stnfl)) == ""){
 			tkmessageBox(message = "Choose the file containing the gauge data", icon = "warning", type = "ok")
 			#tkwait.window(tt)
@@ -1208,8 +1183,7 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 
 adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	if (Sys.info()["sysname"] == "Windows") largeur <- 23
-	else largeur <- 21
+	largeur <- if(Sys.info()["sysname"] == "Windows") 23 else 21
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
@@ -1239,8 +1213,8 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 	######
 
 	tkbind(cb.bias,"<<ComboboxSelected>>", function(){
-		if(tclvalue(bias.method) == "Quantile.Mapping") tkconfigure(en.outbiasff, state = 'disabled')
-		else tkconfigure(en.outbiasff, state = 'normal')
+		stateBSM <- if(tclvalue(bias.method) == "Quantile.Mapping") 'disabled' else 'normal'
+		tkconfigure(en.outbiasff, state = stateBSM)
 	})
 
 	############################################
@@ -1283,8 +1257,7 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 
 	dir.bias <- tclVar(GeneralParameters$IO.files$Bias.dir)
 	outbiasff <- tclVar(GeneralParameters$Format$Mean.Bias.Prefix)
-	if(str_trim(GeneralParameters$Bias.Method) == "Quantile.Mapping") statePfxBias <- 'disabled'
-	else statePfxBias <- 'normal'
+	statePfxBias <- if(str_trim(GeneralParameters$Bias.Method) == "Quantile.Mapping") 'disabled' else 'normal'
 
 	txt.dir.bias <- tklabel(frDirBias, text = "Directory of mean bias files", anchor = 'w', justify = 'left')
 	en.dir.bias <- tkentry(frDirBias, textvariable = dir.bias, width = largeur)
@@ -1295,8 +1268,7 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 	#####
 	tkconfigure(bt.dir.bias, command = function(){
 		dir4bias <- tk_choose.dir(GeneralParameters$IO.files$Bias.dir, "")
-		if(is.na(dir4bias)) tclvalue(dir.bias) <- ""
-		else tclvalue(dir.bias) <- dir4bias
+		tclvalue(dir.bias) <- if(is.na(dir4bias)) "" else dir4bias
 	})
 
 	#####
@@ -1335,10 +1307,8 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 	iend.yrs <- tclVar(GeneralParameters$Adjust.Date.Range$end.year)
 	iend.mon <- tclVar(GeneralParameters$Adjust.Date.Range$end.mon)
 	iend.day <- tclVar(GeneralParameters$Adjust.Date.Range$end.dek)
-	if(GeneralParameters$period == 'dekadal') day.txtVar <- tclVar('Dek')
-	else day.txtVar <- tclVar('Day')
-	if(GeneralParameters$period == 'monthly') statedate <- 'disabled'
-	else statedate <- 'normal'
+	day.txtVar <- if(GeneralParameters$period == 'dekadal') tclVar('Dek') else tclVar('Day')
+	statedate <- if(GeneralParameters$period == 'monthly') 'disabled' else 'normal'
 	# use.months <- tclVar(paste(GeneralParameters$Adjust.Months, collapse=' '))
 
 	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period)
@@ -1431,11 +1401,11 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 
 	tkconfigure(bt.file.save, command = function(){
 		file2save1 <- tk_choose.dir(GeneralParameters$IO.files$dir2save, "")
-			if(is.na(file2save1)) tclvalue(file.save1) <- GeneralParameters$IO.files$dir2save
-			else{
-				dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
-				tclvalue(file.save1) <- file2save1
-			}
+		if(is.na(file2save1)) tclvalue(file.save1) <- GeneralParameters$IO.files$dir2save
+		else{
+			dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
+			tclvalue(file.save1) <- file2save1
+		}
 	})
 
 	#####
@@ -1543,8 +1513,7 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 
 coefLMGetInfoTemp <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	if (Sys.info()["sysname"] == "Windows") largeur <- 23
-	else largeur <- 21
+	largeur <- if(Sys.info()["sysname"] == "Windows") 23 else 21
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
@@ -1577,9 +1546,7 @@ coefLMGetInfoTemp <- function(parent.win, GeneralParameters){
 			tclvalue(file.stnfl) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkgrid(txt.stnfl, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
@@ -1645,9 +1612,7 @@ coefLMGetInfoTemp <- function(parent.win, GeneralParameters){
 			tclvalue(file.grddem) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	#####
@@ -1675,11 +1640,11 @@ coefLMGetInfoTemp <- function(parent.win, GeneralParameters){
 
 	tkconfigure(bt.file.save, command = function(){
 		file2save1 <- tk_choose.dir(GeneralParameters$IO.files$dir2save, "")
-			if(is.na(file2save1)) tclvalue(file.save1) <- GeneralParameters$IO.files$dir2save
-			else{
-				dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
-				tclvalue(file.save1) <- file2save1
-			}
+		if(is.na(file2save1)) tclvalue(file.save1) <- GeneralParameters$IO.files$dir2save
+		else{
+			dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
+			tclvalue(file.save1) <- file2save1
+		}
 	})
 
 	#####
@@ -1968,8 +1933,7 @@ coefLMGetInfoTemp <- function(parent.win, GeneralParameters){
 
 mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	if (Sys.info()["sysname"] == "Windows") largeur <- 23
-	else largeur <- 21
+	largeur <- if(Sys.info()["sysname"] == "Windows") 23 else 21
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
@@ -1997,13 +1961,9 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 	status.bar.display(cb.mrg, TextOutputVar, 'Method to be used to perform merging')
 
 	tkbind(cb.mrg, "<<ComboboxSelected>>", function(){
-		if(tclvalue(mrg.method) == "Spatio-Temporal LM"){
-			tkconfigure(en.dir.LM, state = 'normal')
-			tkconfigure(bt.dir.LM, state = 'normal')
-		}else{
-			tkconfigure(en.dir.LM, state = 'disabled')
-			tkconfigure(bt.dir.LM, state = 'disabled')
-		}
+		stateMRGM <- if(tclvalue(mrg.method) == "Spatio-Temporal LM") 'normal' else 'disabled'
+		tkconfigure(en.dir.LM, state = stateMRGM)
+		tkconfigure(bt.dir.LM, state = stateMRGM)
 	})
 
 	############################################
@@ -2029,9 +1989,7 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkgrid(txt.stnfl, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
@@ -2082,8 +2040,7 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 	frDirLM <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
 
 	dir.LMCoef <- tclVar(GeneralParameters$IO.files$LMCoef.dir)
-	if(str_trim(GeneralParameters$Mrg.Method) == "Regression Kriging") stateLMCoef <- 'disabled'
-	else stateLMCoef <- 'normal'
+	stateLMCoef <- if(str_trim(GeneralParameters$Mrg.Method) == "Regression Kriging") 'disabled' else 'normal'
 
 	txt.dir.LM <- tklabel(frDirLM, text = "Directory of LMCoef files", anchor = 'w', justify = 'left')
 	en.dir.LM <- tkentry(frDirLM, textvariable = dir.LMCoef, width = largeur, state = stateLMCoef)
@@ -2092,8 +2049,7 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 	#####
 	tkconfigure(bt.dir.LM, command = function(){
 		dir4LM <- tk_choose.dir(GeneralParameters$IO.files$LMCoef.dir, "")
-		if(is.na(dir4LM)) tclvalue(dir.LMCoef) <- ""
-		else tclvalue(dir.LMCoef) <- dir4LM
+		tclvalue(dir.LMCoef) <- if(is.na(dir4LM)) "" else dir4LM
 	})
 
 	#####
@@ -2121,11 +2077,11 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 
 	tkconfigure(bt.file.save, command = function(){
 		file2save1 <- tk_choose.dir(GeneralParameters$IO.files$dir2save, "")
-			if(is.na(file2save1)) tclvalue(file.save1) <- GeneralParameters$IO.files$dir2save
-			else{
-				dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
-				tclvalue(file.save1) <- file2save1
-			}
+		if(is.na(file2save1)) tclvalue(file.save1) <- GeneralParameters$IO.files$dir2save
+		else{
+			dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
+			tclvalue(file.save1) <- file2save1
+		}
 	})
 
 	#####
@@ -2145,10 +2101,8 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 
 	file.grddem <- tclVar(GeneralParameters$IO.files$DEM.file)
 	file.blkshp <- tclVar(GeneralParameters$IO.files$SHP.file)
-	if(as.character(GeneralParameters$Blank.Grid) == '2') statedem <- 'normal'
-	else statedem <- 'disabled'
-	if(as.character(GeneralParameters$Blank.Grid) == '3') stateshp <- 'normal'
-	else stateshp <- 'disabled'
+	statedem <- if(as.character(GeneralParameters$Blank.Grid) == '2') 'normal' else 'disabled'
+	stateshp <- if(as.character(GeneralParameters$Blank.Grid) == '3') 'normal' else 'disabled'
 
 	txt.grddem <- tklabel(frDEMSHP, text = "Elevation data(NetCDF)", anchor = 'w', justify = 'left')
 	cb.grddem <- ttkcombobox(frDEMSHP, values = unlist(listOpenFiles), textvariable = file.grddem, state = statedem)
@@ -2170,14 +2124,11 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkconfigure(bt.blkshp, command = function(){
 		shp.opfiles <- getOpenShp(tt, all.opfiles)
-
 		if(!is.null(shp.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'shp'
@@ -2189,9 +2140,7 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	#####
@@ -2235,10 +2184,8 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 	iend.yrs <- tclVar(GeneralParameters$Mrg.Date.Range$end.year)
 	iend.mon <- tclVar(GeneralParameters$Mrg.Date.Range$end.mon)
 	iend.day <- tclVar(GeneralParameters$Mrg.Date.Range$end.dek)
-	if(GeneralParameters$period == 'dekadal') day.txtVar <- tclVar('Dek')
-	else day.txtVar <- tclVar('Day')
-	if(GeneralParameters$period == 'monthly') statedate <- 'disabled'
-	else statedate <- 'normal'
+	day.txtVar <- if(GeneralParameters$period == 'dekadal') tclVar('Dek') else tclVar('Day')
+	statedate <- if(GeneralParameters$period == 'monthly') 'disabled' else 'normal'
 	# use.months <- tclVar(paste(GeneralParameters$Mrg.Months, collapse=' '))
 
 	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period)

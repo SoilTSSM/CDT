@@ -49,8 +49,7 @@ ValidationPanelCmd <- function(clim.var){
 	frameDirSav <- ttklabelframe(subfr1, text = "Directory to save result", relief = 'groove')
 
 	#######################
-	file.period <- tclVar()
-	tclvalue(file.period) <- 'Dekadal data'
+	file.period <- tclVar('Dekadal data')
 	file.stnfl <- tclVar()
 
 	combPrd.tab1 <- ttkcombobox(frameStn, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
@@ -104,17 +103,12 @@ ValidationPanelCmd <- function(clim.var){
 	#######################
 	tkconfigure(bdirCDF.tab1, command = function(){
 		dir4cdf <- tk_choose.dir(tclvalue(dirNetCDF), "")
-		if(is.na(dir4cdf)) tclvalue(dirNetCDF)<-""
-		else tclvalue(dirNetCDF) <- dir4cdf
+		tclvalue(dirNetCDF) <- if(is.na(dir4cdf)) "" else dir4cdf
 	})
 
 	tkconfigure(btgrdCDF.tab1, command = function(){
-		fileopen <- tclvalue(tkgetOpenFile(initialdir = tclvalue(dirNetCDF), initialfile = "", filetypes="{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
-		if(fileopen == "" | is.na(fileopen) | fileopen == "NA") return(NULL)
-		nc.opfiles1 <- preview.data.nc(main.win, fileopen,"")
-		nc.opfiles <- list(basename(fileopen), nc.opfiles1, fileopen)
-		if(!is.null(nc.opfiles1)){
-			tkinsert(all.opfiles, "end", basename(fileopen))
+		nc.opfiles <- getOpenNetcdf(main.win, all.opfiles, initialdir = tclvalue(dirNetCDF))
+		if(!is.null(nc.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
 			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
@@ -690,8 +684,7 @@ ValidationPanelCmd <- function(clim.var){
 				imois1 <- sort(getMonthsInSeason(tclvalue(start_mois), tclvalue(end_mois), full = TRUE))
 				iyear0 <- sort(EnvRainValidation$YEAR)
 				iyear1 <- as.numeric(tclvalue(start_year)):as.numeric(tclvalue(end_year))
-				if(identical(imois0, imois1) & identical(iyear0, iyear1)) do_extr <- 0
-				else do_extr <- 1
+				do_extr <- if(identical(imois0, imois1) & identical(iyear0, iyear1)) 0 else 1
 			}else{
 				do_extr <- 1
 				assign('Inputs', Inputs, envir = EnvRainValidation)

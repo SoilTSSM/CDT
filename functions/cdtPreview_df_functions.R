@@ -1,5 +1,10 @@
 ###preview data.frame
 preview.data <- function(parent.win, fileopen, title.pop){
+	## Text preview width
+	txta.w <- 42
+	## Text label width
+	labprvw <- 51
+
 	tt <- tktoplevel()
 	tkgrab.set(tt)
 	tkfocus(tt)
@@ -12,12 +17,9 @@ preview.data <- function(parent.win, fileopen, title.pop){
 	fr.delim <- ttklabelframe(fr0, text = "Delimiters", labelanchor = "nw", relief = "sunken", borderwidth = 2)
 	fr.head <- ttklabelframe(fr0, text = "Header", labelanchor = "nw", relief = "sunken", borderwidth = 2)
 
-	tkgrid(fr.delim, row = 0, column = 0, padx = 5, pady = 2, ipadx = 2, ipady = 2, sticky = 'w')
-	tkgrid(fr.head, row = 0, column = 2, padx = 5, pady = 2, ipadx = 2, ipady = 2, sticky = 'e')
-
 	##############
-	etrval <- tclVar("")
-	rbval <- tclVar("tb")
+	etrval <- tclVar()
+	rbval <- tclVar("sp")
 
 	delim1 <- tkradiobutton(fr.delim, text = "Tab")
 	delim2 <- tkradiobutton(fr.delim, text = "Space")
@@ -40,7 +42,7 @@ preview.data <- function(parent.win, fileopen, title.pop){
 	tkgrid(vdelim5, row = 1, column = 2, sticky = "e")
 
 	##############
-	etrval1 <- tclVar("1")
+	etrval1 <- tclVar(1)
 	vhead <- tclVar("FALSE")
 	ishead <- c("TRUE", "FALSE")
 
@@ -54,15 +56,18 @@ preview.data <- function(parent.win, fileopen, title.pop){
 	tkgrid(lb2, row = 1, column = 0)
 	tkgrid(head, row = 1, column = 1)
 
-	#######
- 	fr1a <- tkframe(fr1, relief = "groove", borderwidth = 2)
-	tkgrid(fr1a, padx = 5)
+	##############
+	tkgrid(fr.delim, row = 0, column = 0, padx = 5, pady = 2, ipadx = 2, ipady = 2, sticky = 'w')
+	tkgrid(fr.head, row = 0, column = 2, padx = 5, pady = 2, ipadx = 2, ipady = 2, sticky = 'e')
 
-	labprvw <- 51
+	##############
+ 	fr1a <- tkframe(fr1, relief = "groove", borderwidth = 2)
+
 	labtxt <- tklabel(fr1a, text = paste("Preview of ", fileopen), width = labprvw, anchor = 'w')
 	xscr <- tkscrollbar(fr1a, repeatinterval = 5, orient = "horizontal", command = function(...) tkxview(txta, ...))
 	yscr <- tkscrollbar(fr1a, repeatinterval = 5, command = function(...) tkyview(txta, ...))
-	txta <- tktext(fr1a, bg = "white", font = "courier", xscrollcommand = function(...) tkset(xscr, ...),
+	txta <- tktext(fr1a, bg = "white", font = "courier", width = txta.w, height = 9,
+					xscrollcommand = function(...) tkset(xscr, ...),
 					yscrollcommand = function(...) tkset(yscr, ...), wrap = "none")
 
 	tkgrid(labtxt, row = 0, column = 0, sticky = 'w')
@@ -71,9 +76,6 @@ preview.data <- function(parent.win, fileopen, title.pop){
 	tkgrid.configure(txta, row = 1, column = 0, sticky = "nsew")
 	tkgrid.configure(yscr, sticky = "ns")
 	tkgrid.configure(xscr, sticky = "ew")
-
-	txta.w <- 42
-	tkconfigure(txta, width = txta.w, height = 9)
 
 	is.rdble <- !inherits(try(rdL <- readLines(fileopen, n = 10, warn = FALSE), silent = TRUE), "try-error")
 	if(!is.rdble){
@@ -87,25 +89,30 @@ preview.data <- function(parent.win, fileopen, title.pop){
 		tcl("update")
 	}
 
-	######
+	##############
+	tkgrid(fr1a, row = 0, column = 0, padx = 5, pady = 1, ipadx = 0, ipady = 0, sticky = 'we')
+
+	##############
 	fr.miss <- tkframe(fr2, relief = "groove", borderwidth = 2)
 	fr.but <- tkframe(fr2)
-	tkgrid(fr.miss, row = 0, column = 0, padx = 5, ipadx = 5, sticky = 'w')
-	tkgrid(fr.but, row = 0, column = 2, padx = 5, ipadx = 5, sticky = 'e')
 
+	##############
 	confpath <- file.path(apps.dir, 'configure', 'configure_user.json')
 	conffile <- fromJSON(confpath)
 	etrmiss <- tclVar(str_trim(conffile$missing.value))
 
 	lbmiss <- tklabel(fr.miss, text = 'Missing Value')
 	missvl <- tkentry(fr.miss, width = 5, textvariable = etrmiss, justify = "center")
+
 	tkgrid(lbmiss, row = 0, column = 0)
 	tkgrid(missvl, row = 0, column = 1)
-	#####
+
+	##############
 	separator <- NULL
+
 	OK.but <- tkbutton(fr.but, text = "OK", width = 4, command = function() {
 		delim <- as.character(tclvalue(rbval))
-		if(delim == 'tb') sepr <- ""
+		if(delim == 'tb') sepr <- "\t"
 		if(delim == 'sp') sepr <- ""
 		if(delim == 'sc') sepr <- ";"
 		if(delim == 'cm') sepr <- ","
@@ -113,15 +120,18 @@ preview.data <- function(parent.win, fileopen, title.pop){
 			tclvalue(etrval) <- tclvalue(tkget(vdelim5))
 			sepr <- tclvalue(etrval)
 		}
+		
 		header <- as.logical(tclvalue(vhead))
 		tclvalue(etrval1) <- tclvalue(tkget(skp))
 		skip <- as.numeric(tclvalue(etrval1))
 		missval <- as.character(tclvalue(etrmiss))
 		separator <<- list(sepr = sepr, header = header, skip = skip, miss.val = missval)
+		
 		tkgrab.release(tt)
 		tkdestroy(tt)
 		tkfocus(parent.win)
 	})
+
 	CA.but <- tkbutton(fr.but, text = "Cancel", width = 4, command = function() {
 		separator <<- NULL
 		tkgrab.release(tt)
@@ -129,14 +139,19 @@ preview.data <- function(parent.win, fileopen, title.pop){
 		tkfocus(parent.win)
 	})
 
-	tkgrid(OK.but, CA.but)
-	tkgrid.configure(OK.but, row = 0, column = 0, padx = 5, ipadx = 10, sticky = 'w')
-	tkgrid.configure(CA.but, row = 0, column = 1, padx = 5, ipadx = 5, sticky = 'e')
+	tkgrid(OK.but, row = 0, column = 0, padx = 5, ipadx = 10, sticky = 'w')
+	tkgrid(CA.but, row = 0, column = 1, padx = 5, ipadx = 5, sticky = 'e')
+
+	##############
+	tkgrid(fr.miss, row = 0, column = 0, padx = 5, ipadx = 5, sticky = 'w')
+	tkgrid(fr.but, row = 0, column = 2, padx = 5, ipadx = 5, sticky = 'e')
 
 	#####################
 	tkgrid(fr0, row = 0, column = 0, sticky = 'snwe', padx = 5, pady = 5)
 	tkgrid(fr1, row = 1, column = 0, columnspan = 3, padx = 5, pady = 5)
 	tkgrid(fr2, row = 2, column = 0, sticky = 'snwe', padx = 5, pady = 5)
+
+	#####################
 
 	tkwm.withdraw(tt)
 	tcl('update')

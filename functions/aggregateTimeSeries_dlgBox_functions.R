@@ -1,6 +1,6 @@
 mainDialogAggTs <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	largeur <- if (Sys.info()["sysname"] == "Windows") 34 else 32
+	largeur <- if(Sys.info()["sysname"] == "Windows") 34 else 32
 	wtkcombo <- 30
 	wtkcombo1 <- 15
 
@@ -82,12 +82,14 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 	settingdone <- NULL
 	if(tclvalue(DataType) == 'One station series'){
 		tkconfigure(bt.opt.set, state = 'normal', command = function(){
-			GeneralParameters <<- oneStnDataAgg(main.win, GeneralParameters, tclvalue(OriginData))
+			GeneralParameters <<- oneStnDataAgg(tt, GeneralParameters, tclvalue(OriginData))
 			settingdone <<- 1
 		})
-	}else if(tclvalue(DataType) == 'CDT data format'){
+	}
+	if(tclvalue(DataType) == 'CDT data format'){
 		tkconfigure(bt.opt.set, state = 'disabled')
-	}else if(tclvalue(DataType) == 'NetCDF gridded data'){
+	}
+	if(tclvalue(DataType) == 'NetCDF gridded data'){
 		tkconfigure(bt.opt.set, state = 'normal', command = function(){
 			GeneralParameters <<- netcdfDataAgg(tt, GeneralParameters, tclvalue(OriginData))
 			settingdone <<- 1
@@ -95,9 +97,9 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 	}
 
 	#######
-
 	tkgrid(Cbdatatype, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
 	tkgrid(bt.opt.set, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
+
 	#######
 	tkgrid(AggreFunlab, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
 	tkgrid(CbAggreFun, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
@@ -176,7 +178,7 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 	file.stnfl <- tclVar(GeneralParameters$IO.files$In.dir.file)
 	file.save1 <- tclVar(GeneralParameters$IO.files$Out.dir.file)
 	fileINdir <- tclVar('Input data')
-	fileORdir <- tclVar('File to save computed data')
+	fileORdir <- tclVar('File to save aggregated data')
 
 	inDirFlile <- tklabel(frIO, text = tclvalue(fileINdir), textvariable = fileINdir, anchor = 'w', justify = 'left')
 	cb.stnfl <- ttkcombobox(frIO, values = unlist(listOpenFiles), textvariable = file.stnfl, width = wtkcombo)
@@ -197,9 +199,7 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
 			tclvalue(file.stnfl) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	tkconfigure(bt.file.save, command = function() fileORdir2Save(file.save1, isFile = TRUE))
@@ -246,14 +246,12 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 					listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
 					tclvalue(file.stnfl) <- AllOpenFilesData[[nopf+1]][[1]]
 					tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
-				}else{
-					return(NULL)
-				}
+				}else return(NULL)
 			})
 
 			tkconfigure(bt.file.save, command = function() fileORdir2Save(file.save1, isFile = TRUE))
 			tkconfigure(bt.opt.set, state = 'normal', command = function(){
-				GeneralParameters <<- oneStnDataAgg(main.win, GeneralParameters, tclvalue(OriginData))
+				GeneralParameters <<- oneStnDataAgg(tt, GeneralParameters, tclvalue(OriginData))
 				settingdone <<- 1
 			})
 
@@ -262,7 +260,8 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 			status.bar.display(cb.stnfl, TextOutputVar, 'Choose the file containing the data to aggregate')
 			infobulle(en.file.save, 'Enter the full path of the file to save result')
 			status.bar.display(en.file.save, TextOutputVar, 'Enter the full path of the file to save aggregated data')
-		}else if(tclvalue(DataType) == 'CDT data format'){
+		}
+		if(tclvalue(DataType) == 'CDT data format'){
 			tclvalue(fileINdir) <- 'Input data'
 			tclvalue(fileORdir) <- 'File to save aggregated data'
 
@@ -279,9 +278,7 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 					listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
 					tclvalue(file.stnfl) <- AllOpenFilesData[[nopf+1]][[1]]
 					tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
-				}else{
-					return(NULL)
-				}
+				}else return(NULL)
 			})
 
 			tkconfigure(bt.file.save, command = function() fileORdir2Save(file.save1, isFile = TRUE))
@@ -292,7 +289,8 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 			status.bar.display(cb.stnfl, TextOutputVar, 'Choose the file containing the data to aggregate')
 			infobulle(en.file.save, 'Enter the full path of the file to save result')
 			status.bar.display(en.file.save, TextOutputVar, 'Enter the full path of the file to save aggregated data')
-		}else if(tclvalue(DataType) == 'NetCDF gridded data'){
+		}
+		if(tclvalue(DataType) == 'NetCDF gridded data'){
 			tclvalue(fileINdir) <- 'Directory containing the NetCDF data'
 			tclvalue(fileORdir) <- 'Directory to save result'
 
@@ -441,9 +439,8 @@ netcdfDataAgg <- function(tt, GeneralParameters, daydek){
 	fin.txt <- tklabel(frDate, text = 'End date', anchor = 'e', justify = 'right')
 	yrs.txt <- tklabel(frDate, text = 'Year')
 	mon.txt <- tklabel(frDate, text = 'Month')
-	if(daydek == 'Daily data') day.txt <- tklabel(frDate, text = 'Day')
-	if(daydek == 'Dekadal data') day.txt <- tklabel(frDate, text = 'Dek')
-	if(daydek == 'Monthly data') day.txt <- tklabel(frDate, text = 'Day')
+	txtLabDay <- if(daydek == 'Dekadal data') 'Dek' else 'Day'
+	day.txt <- tklabel(frDate, text = txtLabDay)
 
 	yrs1.v <- tkentry(frDate, width = 4, textvariable = istart.yrs, justify = "right")
 	mon1.v <- tkentry(frDate, width = 4, textvariable = istart.mon, justify = "right")
@@ -536,7 +533,7 @@ netcdfDataAgg <- function(tt, GeneralParameters, daydek){
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
 	tkwm.geometry(tt1, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt1)
-	tkwm.title(tt1, 'NetCDF Data Settings')
+	tkwm.title(tt1, 'NetCDF Data - Settings')
 	tkwm.deiconify(tt1)
 
 	tkfocus(tt1)
@@ -564,7 +561,7 @@ oneStnDataAgg <- function(top.win, GeneralParameters, speriod){
 	ffrmt2 <- tkradiobutton(fr.fileformat1, text = "Rain Tmax Tmin", anchor = 'w', justify = 'left')
 
 	tkconfigure(ffrmt1, variable = rbffrmt, value = "1")
-	tkconfigure(ffrmt2, variable = rbffrmt, value = "0")
+	tkconfigure(ffrmt2, variable = rbffrmt, value = "3")
 
 	tkgrid(ffrmt1, row = 0, column = 0, sticky = "we")
 	tkgrid(ffrmt2, row = 1, column = 0, sticky = "we")
@@ -590,7 +587,7 @@ oneStnDataAgg <- function(top.win, GeneralParameters, speriod){
 	dtfrmt3 <- tklabel(fr.fileformat2, text = '')
 
 	tkconfigure(dtfrmt1, variable = rbdtfrmt, value = "1")
-	tkconfigure(dtfrmt2, variable = rbdtfrmt, value = "0")
+	tkconfigure(dtfrmt2, variable = rbdtfrmt, value = "3")
 
 	tkgrid(dtfrmt1, row = 0, column = 0, sticky = "we")
 	tkgrid(dtfrmt2, row = 1, column = 0, sticky = "we")
@@ -607,10 +604,10 @@ oneStnDataAgg <- function(top.win, GeneralParameters, speriod){
 
 	################################
 
-	bt.fileformat <- tkbutton(frMRG1, text=" OK ")
+	bt.prm.OK <- tkbutton(frMRG1, text=" OK ")
 	bt.prm.CA <- tkbutton(frMRG1, text = "Cancel")
 
-	tkconfigure(bt.fileformat, command = function(){
+	tkconfigure(bt.prm.OK, command = function(){
 		GeneralParameters$One.series$file.format <<- tclvalue(rbffrmt)
 		GeneralParameters$One.series$date.format <<- tclvalue(rbdtfrmt)
 
@@ -625,7 +622,7 @@ oneStnDataAgg <- function(top.win, GeneralParameters, speriod){
 		tkfocus(top.win)
 	})
 
-	tkgrid(bt.fileformat, row = 0, column = 0, sticky = 'w', padx = 5, pady = 1, ipadx = 5, ipady = 1)
+	tkgrid(bt.prm.OK, row = 0, column = 0, sticky = 'w', padx = 5, pady = 1, ipadx = 5, ipady = 1)
 	tkgrid(bt.prm.CA, row = 0, column = 1, sticky = 'e', padx = 5, pady = 1, ipadx = 1, ipady = 1)
 
 	################################
@@ -640,7 +637,7 @@ oneStnDataAgg <- function(top.win, GeneralParameters, speriod){
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
 	tkwm.geometry(tt1, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt1)
-	tkwm.title(tt1, '')
+	tkwm.title(tt1, 'One Station - Settings')
 	tkwm.deiconify(tt1)
 
 	tkfocus(tt1)
