@@ -979,8 +979,12 @@ ExtractDataPanelCmd <- function(){
 	})
 
 	#############################
+	nbpts <- 1
 	tkconfigure(addObjs.tab3, command = function(){
-		if(tclvalue(area_type) == 'Multiple Points') tkinsert(retMultiP$textObj, "end", paste(paste(tclvalue(minlonRect), tclvalue(minlatRect)), "\n"))
+		if(tclvalue(area_type) == 'Multiple Points'){			
+			tkinsert(retMultiP$textObj, "end", paste(paste('Pts', nbpts, sep = ''), tclvalue(minlonRect), tclvalue(minlatRect), "\n"))
+			nbpts <<- nbpts+1
+		}
 		if(tclvalue(area_type) == 'Multiple Polygons') tkinsert(retMultiP$textObj, "end", paste(tclvalue(namePoly), "\n"))
 	})
 
@@ -1066,23 +1070,16 @@ previewWin <- function(parent.win, states, shpL){
 	frA <- tkframe(tt, relief = "raised", borderwidth = 2)
 	frB <- tkframe(tt)
 
+	########
 	frA1 <- ttklabelframe(frA, text = 'Multiple Points', relief = 'groove', borderwidth = 2)
-	frA2 <- ttklabelframe(frA, text = 'Multiple Polygons', relief = 'groove', borderwidth = 2)
-	frA3 <- tkframe(frA, relief = 'groove', borderwidth = 2)
 
-	tkgrid(frA1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frA2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frA3, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	##
 	coordsfiles <- tclVar()
+	coordsfrom <- tclVar('crd')
+
+	crdfrm1 <- tkradiobutton(frA1, variable = coordsfrom, value = "crd", text = "From coordinate file", anchor = 'w', justify = 'left', state = states[1])
+	crdfrm2 <- tkradiobutton(frA1, variable = coordsfrom, value = "cdt", text = "From CDT data", anchor = 'w', justify = 'left', state = states[1])
 	cbmltpts <- ttkcombobox(frA1, values = unlist(listOpenFiles), textvariable = coordsfiles, state = states[1], width = w.opfiles-5)
 	btmltpts <- tkbutton(frA1, text = "...", state = states[1])
-	tkgrid(cbmltpts, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(btmltpts, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	infobulle(frA1, 'File containing the coordinates of points to be extracted')
-	status.bar.display(frA1, TextOutputVar, 'File containing the coordinates of points to be extracted')
 
 	tkconfigure(btmltpts, command = function(){
 		tkdelete(textObj, "0.0", "end")
@@ -1094,22 +1091,43 @@ previewWin <- function(parent.win, states, shpL){
 			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
 			tclvalue(coordsfiles) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(cbmltpts, values = unlist(listOpenFiles), textvariable = coordsfiles)
+			
 			crds <- dat.opfiles[[2]]
-			for(i in 1:nrow(crds))	tkinsert(textObj, "end", paste(crds[i, 1], crds[i, 2], "\n"))
+			if(tclvalue(coordsfrom) == 'crd') crds <- crds[, c(1, 3, 4), drop = FALSE]
+			if(tclvalue(coordsfrom) == 'cdt') crds <- t(crds[1:3, -1, drop = FALSE])
+			for(i in 1:nrow(crds))	tkinsert(textObj, "end", paste(crds[i, 1], crds[i, 2], crds[i, 3], "\n"))
 		}
 	})
 
+	tkgrid(crdfrm1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+ 	tkgrid(crdfrm2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cbmltpts, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(btmltpts, row = 2, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(crdfrm1, 'The coordinates come from a coordinate file')
+	status.bar.display(crdfrm1, TextOutputVar, 'The coordinates come from a coordinate file')
+	infobulle(crdfrm2, 'The coordinates come from a CDT data file')
+	status.bar.display(crdfrm2, TextOutputVar, 'The coordinates come from a CDT data file')
+	infobulle(cbmltpts, 'Choose the file in the list')
+	status.bar.display(cbmltpts, TextOutputVar, 'File containing the ids and coordinates of points to be extracted')
+	infobulle(btmltpts, 'Browse file if not listed')
+	status.bar.display(btmltpts, TextOutputVar, 'Browse file if not listed')
+
+	tkgrid(frA1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	########
 	tkbind(cbmltpts, "<<ComboboxSelected>>", function(){
 		tkdelete(textObj, "0.0", "end")
-		all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-		jfile <- which(all.open.file == tclvalue(coordsfiles))
-		crds <- AllOpenFilesData[[jfile]][[2]]
-		for(i in 1:nrow(crds))	tkinsert(textObj, "end", paste(crds[i, 1], crds[i, 2], "\n"))
+		crds <- getStnOpenData(coordsfiles)
+		if(tclvalue(coordsfrom) == 'crd') crds <- crds[, c(1, 3, 4), drop = FALSE]
+		if(tclvalue(coordsfrom) == 'cdt') crds <- t(crds[1:3, -1, drop = FALSE])
+		for(i in 1:nrow(crds))	tkinsert(textObj, "end", paste(crds[i, 1], crds[i, 2], crds[i, 3], "\n"))
  	})
 
-	##
+	########
+	frA2 <- ttklabelframe(frA, text = 'Multiple Polygons', relief = 'groove', borderwidth = 2)
+
 	btmpoly <- tkbutton(frA2, text = 'Get All Polygons', state = states[2])
-	tkgrid(btmpoly, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	tkconfigure(btmpoly, command = function(){
 		tkdelete(textObj, "0.0", "end")
@@ -1122,12 +1140,24 @@ previewWin <- function(parent.win, states, shpL){
 		}
 	})
 
-	##
+	tkgrid(btmpoly, sticky = 'we', rowspan = 1, columnspan = 1, padx = 10, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(btmpoly, 'Get all the polygons from the shapefile')
+	status.bar.display(btmpoly, TextOutputVar, 'Get all the polygons from the shapefile')
+
+	tkgrid(frA2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 20, ipady = 1)
+
+	########
+	frA3 <- tkframe(frA, relief = 'groove', borderwidth = 2)
+
 	yscr <- tkscrollbar(frA3, repeatinterval = 4, command = function(...) tkyview(textObj,...))
 	textObj <- tktext(frA3, bg = "white", yscrollcommand = function(...) tkset(yscr,...), wrap = "none", height = 5, width = w.opfiles+5) #
+
 	tkgrid(textObj, yscr)
 	tkgrid.configure(yscr, sticky = "ns")
 	tkgrid.configure(textObj, sticky = 'nswe')
+
+	tkgrid(frA3, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	########################
 	btOK <- tkbutton(frB, text = "OK")

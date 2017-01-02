@@ -608,7 +608,7 @@ singleFileCDTFormat <- function(top.win, GeneralParameters, speriod){
 		statedaydek <- 'disabled'
 	}
 
-	stateCrds <- if(tclvalue(coords.infile) == '1') 'normal' else 'disabled'
+	stateCrds <- if(GeneralParameters$Single.File$coords.included) 'normal' else 'disabled'
 
 	if(GeneralParameters$Single.File$include.elev){
 		stateElv <- if(GeneralParameters$Single.File$coords.included) 'normal' else 'disabled'

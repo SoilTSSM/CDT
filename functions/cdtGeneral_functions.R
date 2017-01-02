@@ -42,7 +42,7 @@ refreshCDT.lcmd.env <- function(lcmdf = lcmd.frame, choixStn = lchoixStnFr){
 
 	lcmd.container <- list('lcmd.frame_homo', 'lcmd.frame_qc', 'lcmd.frame_chk', 'lcmd.frame_extrdata', 'lcmd.frame_assdata',
 						'lcmd.frame_mergePlot', 'lcmd.frame_CDTffrtPlot', 'lcmd.frame_grdNcdfPlot', 'lcmd.frame_rhtests',
-						'lcmd.frame_interpol', 'lcmd.frame_valid', 'lcmd.frame_qc0Chck')
+						'lcmd.frame_interpol', 'lcmd.frame_valid', 'lcmd.frame_qc0Chck', 'lcmd.frame_merge2cdt')
 	all.cdt.env <- list(EnvQcOutlierData, EnvQcZeroChkData, EnvInterpolation, EnvMultiPP,
 					EnvHomogzData, EnvRainValidation)
 	ret <- lapply(lcmd.container, assign, NULL, envir = .GlobalEnv)
@@ -1064,3 +1064,18 @@ movingwindow <- function(mat, kernel) {
 
 # x[x < 89.9] <- NA
 # image(x, col = rainbow(64))
+
+#################################################################################
+
+## Test if the elements of two vectors are equals
+isEquals <- function(x, y){
+	ix <- (x == y) | (is.na(x) & is.na(y))
+	ix[is.na(ix)] <- FALSE
+	ix
+}
+
+## Test if two vectors are equals
+isEqual <- function(x, y) !any(!isEquals(x, y))
+
+
+

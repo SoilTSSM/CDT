@@ -41,7 +41,7 @@ adjDon <- NULL
 assign('lcmd.frame', NULL, envir = .GlobalEnv)
 lcmd.container <- list('lcmd.frame_homo', 'lcmd.frame_qc', 'lcmd.frame_chk', 'lcmd.frame_extrdata', 'lcmd.frame_assdata',
 						'lcmd.frame_mergePlot', 'lcmd.frame_CDTffrtPlot', 'lcmd.frame_grdNcdfPlot', 'lcmd.frame_rhtests',
-						'lcmd.frame_interpol', 'lcmd.frame_valid', 'lcmd.frame_qc0Chck')
+						'lcmd.frame_interpol', 'lcmd.frame_valid', 'lcmd.frame_qc0Chck', 'lcmd.frame_merge2cdt')
 lcmd.ret <- lapply(lcmd.container, assign, NULL, envir = .GlobalEnv)
 
 #####**************************** General&Generic functions ************************######

@@ -72,6 +72,9 @@ source(file.path(apps.dir, 'functions', 'mergingTT_Procs_functions.R', fsep = .P
 source(file.path(apps.dir, 'functions', 'cdtFormatInputData_dlgBox_functions.R', fsep = .Platform$file.sep))
 source(file.path(apps.dir, 'functions', 'cdtFormatInputData_Procs_functions.R', fsep = .Platform$file.sep))
 
+source(file.path(apps.dir, 'functions', 'merge2CDTdata_leftCmd_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'merge2CDTdata_Procs_functions.R', fsep = .Platform$file.sep))
+
 source(file.path(apps.dir, 'functions', 'cdtAggregateOutputData_dlgBox_functions.R', fsep = .Platform$file.sep))
 source(file.path(apps.dir, 'functions', 'cdtAggregateOutputData_Procs_functions.R', fsep = .Platform$file.sep))
 

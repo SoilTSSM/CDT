@@ -424,16 +424,21 @@ getExtractDataFun <- function(retExtractParams){
 		}
 	}
 
-	if(!is.null(multiptspoly)){
+	if(!is.na(multiptspoly)){
 		multiptspoly <- gsub("[\r]", "", multiptspoly)
-		multiptspoly <- strsplit(multiptspoly,"[\n]")[[1]]
+		multiptspoly <- str_trim(strsplit(multiptspoly,"[\n]")[[1]])
 		multiptspoly <- multiptspoly[multiptspoly != ""]
-
+		if(length(multiptspoly) == 0){
+			InsertMessagesTxt(main.txt.out, "No coordinates found", format = TRUE)
+			return(NULL)
+		}
 		if(extType == 'Multiple Points'){
 			multiptspoly <- t(sapply(multiptspoly, function(x) strsplit(x," ")[[1]]))
-			if(nrow(multiptspoly) > 1) multiptspoly <- apply(multiptspoly, 2, as.numeric)
-			else multiptspoly <- matrix(as.numeric(multiptspoly), ncol = 2)
-			headinfo <- cbind(paste('Pts', 1:nrow(multiptspoly), sep = ''), multiptspoly)
+			multiptspoly <- data.frame(multiptspoly, stringsAsFactors = FALSE)
+			rownames(multiptspoly) <- NULL
+			names(multiptspoly) <- c('id', 'x', 'y')
+			multiptspoly[, 2:3] <- apply(multiptspoly[, 2:3, drop = FALSE], 2, as.numeric)
+			headinfo <- multiptspoly
 		}
 
 		if(extType == 'Multiple Polygons'){
@@ -442,7 +447,6 @@ getExtractDataFun <- function(retExtractParams){
 				multiptspoly <- str_trim(multiptspoly)
 				##
 				shpf.union <- unionSpatialPolygons(shpf, as.character(shpf@data[, shpId]))
-				# shpf.union <- gUnaryUnion(shpf, as.character(shpf@data[, shpId]))
 				shpf.df <- aggregate(as(shpf, "data.frame")[, 1], list(as.character(shpf@data[, shpId])), identity)
 				shpf.df$x <- seq(shpf.union)
 				row.names(shpf.df) <- sapply(slot(shpf.union, "polygons"), function(x) slot(x, "ID"))
@@ -451,13 +455,6 @@ getExtractDataFun <- function(retExtractParams){
 				bbxregOI <- bbox(regOI)
 				headinfo <- cbind(as.character(regOI@data$Group.1), round(coordinates(regOI), 5))
 				headinfo[, 1] <- str_replace_all(headinfo[, 1], "[^[:alnum:]]", ".")
-				# regOI <- shpf[as.character(shpf@data[, shpId])%in%multiptspoly, ]
-				# bbxregOI <- bbox(regOI)
-				# headinfo <- cbind(as.character(regOI@data[, shpId]), round(coordinates(regOI), 5))
-				# headinfo[, 1] <- str_replace_all(headinfo[, 1], "[^[:alnum:]]", ".")
-			}else{
-				InsertMessagesTxt(main.txt.out, "Ceci ne devrait pas se produire", format = TRUE)
-				return(NULL)
 			}
 		}
 	}else{
@@ -497,7 +494,7 @@ getExtractDataFun <- function(retExtractParams){
 			ila <- ila[ilola]
 		}
 	}else  if(extType == 'Multiple Points'){
-		ilo <- xlon >= (min(multiptspoly[, 1], na.rm = TRUE)-pmLon) & xlon <= (max(multiptspoly[, 1], na.rm = TRUE)+pmLon)
+		ilo <- xlon >= (min(multiptspoly$x, na.rm = TRUE)-pmLon) & xlon <= (max(multiptspoly$x, na.rm = TRUE)+pmLon)
 		if(!any(ilo)){
 			InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
 			return(NULL)
@@ -508,7 +505,7 @@ getExtractDataFun <- function(retExtractParams){
 		if(iloL[length(iloL)] < length(ilo)) ilo[iloL[length(iloL)]+1] <- TRUE
 		rlon <- xlon[ilo]
 
-		ila <- xlat >= (min(multiptspoly[, 2], na.rm = TRUE)-pmLat) & xlat <= (max(multiptspoly[, 2], na.rm = TRUE)+pmLat)
+		ila <- xlat >= (min(multiptspoly$y, na.rm = TRUE)-pmLat) & xlat <= (max(multiptspoly$y, na.rm = TRUE)+pmLat)
 		if(!any(ila)){
 			InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
 			return(NULL)
@@ -526,8 +523,7 @@ getExtractDataFun <- function(retExtractParams){
 		ny <- sptNC@grid@cellsize[2]
 		pady <- round(pmLat/ny)
 
-		pts.loc <- as.data.frame(multiptspoly)
-		names(pts.loc) <- c('x', 'y')
+		pts.loc <- multiptspoly[, c('x', 'y'), drop = FALSE]
 		pts.w.voisin <- lapply(1:nrow(pts.loc), function(j){
 			voisin <- expand.grid(x = pts.loc$x[j] + nx*(-padx:padx), y =  pts.loc$y[j] + ny*(-pady:pady))
 			cbind(voisin, j)

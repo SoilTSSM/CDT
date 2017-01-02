@@ -137,6 +137,17 @@ tkadd(menu.dataprep, "command", label = "Format CDTs Input Data", command = func
 ##########
 tkadd(menu.dataprep, "separator")
 
+tkadd(menu.dataprep, "command", label = "Merge two CDT data format", command = function(){
+	refreshCDT.lcmd.env()
+	if(is.null(lcmd.frame_merge2cdt)){
+		lcmd.frame <<- merge2CDTDataPanelCmd()
+		lcmd.frame_merge2cdt <<- 1
+	}
+})
+
+##########
+tkadd(menu.dataprep, "separator")
+
 ##########
 tkadd(menu.dataprep, "command", label = "Assess Data Availability", command = function(){
 	refreshCDT.lcmd.env()
