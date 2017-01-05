@@ -1,15 +1,23 @@
 ###preview netcdf
 preview.data.nc <- function(parent.win, openncf, title.pop){
-	txta.w <- 38
-	txta.h <- 7
+	if (Sys.info()["sysname"] == "Windows"){
+		txta.w <- 38
+		txta.h <- 8
+		largeur <- 34
+	}else{
+		txta.w <- 40
+		txta.h <- 7
+		largeur <- 25
+	}
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
 	tkfocus(tt)
 
 	####################################
-	is.rdble <- !inherits(try(nc <- nc_open(openncf), silent = TRUE), "try-error")
-	if(!is.rdble){
+
+	nc <- try(nc <- nc_open(openncf), silent = TRUE)
+	if(inherits(nc, "try-error")){
 		InsertMessagesTxt(main.txt.out, paste("Unable to open file ", openncf), format = TRUE)
 		tkgrab.release(tt)
 		tkdestroy(tt)
@@ -58,58 +66,50 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 		if(nd > 0){
 			for(j in 1:nd){
 				dimstring <- paste(dimstring, nc$var[[i]]$dim[[j]]$name, sep = '')
-				if(j < nd) dimstring <- paste(dimstring,',',sep = '')
+				if(j < nd) dimstring <- paste(dimstring, ',', sep = '')
 			}
 		}
-		dimstring <- paste(dimstring,'] ',sep = '')
-		print.nc[[i+ncdim+3]] <- paste(nc$var[[i]]$prec, ' ', nc$var[[i]]$name, dimstring,' Longname:',nc$var[[i]]$longname,' Missval:',nc$var[[i]]$missval, sep = '')
+		dimstring <- paste(dimstring, '] ', sep = '')
+		print.nc[[i+ncdim+3]] <- paste(nc$var[[i]]$prec, ' ', nc$var[[i]]$name, dimstring,
+								' Longname:', nc$var[[i]]$longname, ' Missval:', nc$var[[i]]$missval, sep = '')
 	}
-############
-	fr.haut <- tkframe(tt)
-	fr.bas <- tkframe(tt)
-	tkgrid(fr.haut, row = 0, column = 0, sticky = 'n', padx = 5, pady = 1)
-	tkgrid(fr.bas, row = 1, column = 0, sticky = 'n', padx = 5, pady = 1)
+	
+	####################################
 
+	fr.haut <- tkframe(tt)
 
 	dim.choose <- ttklabelframe(fr.haut, text = "Data Information", labelanchor = "nw", relief = "sunken", borderwidth = 2)
-	fr.button <- tkframe(fr.haut)
-	tkgrid(dim.choose, row = 0, column = 0, sticky = 'w', padx = 1, pady = 5)
-	tkgrid(fr.button, row = 0, column = 1, sticky = 'e', padx = 5, pady = 5)
 
-	txtlb1 <- tklabel(dim.choose, text = 'Variable:',anchor = 'e')
-	var.choix <- c('Choose Variable', paste(var.info[,1], var.info[,4], sep = '::'))
-	var.dim <- tclVar()
-	tclvalue(var.dim) <- var.choix[1]
-	cb.var <- ttkcombobox( dim.choose, values = var.choix, textvariable = var.dim, state = "readonly")
-
-	txtlb2 <- tklabel(dim.choose, text = 'Longitude:',anchor = 'e')
-	txtlb3 <- tklabel(dim.choose, text = 'Latitude:',anchor = 'e')
-
+	var.choix <- c('Choose Variable', paste(var.info[, 1], var.info[, 4], sep = '::'))
+	var.dim <- tclVar(var.choix[1])
 	X.choix <- c('')
-	X.dim <- tclVar()
-	tclvalue(X.dim) <- X.choix[1]
-	cb.X <- ttkcombobox( dim.choose, values = X.choix, textvariable = X.dim, state = 'disabled')
-
+	X.dim <- tclVar(X.choix[1])
 	Y.choix <- c('')
-	Y.dim <- tclVar()
-	tclvalue(Y.dim) <- Y.choix[1]
-	cb.Y <- ttkcombobox(dim.choose, values = Y.choix, textvariable = Y.dim, state = 'disabled')
+	Y.dim <- tclVar(Y.choix[1])
 
-	tkgrid(txtlb1, row = 0, column = 0, sticky = 'e', padx = 5, pady = 5)
-	tkgrid(cb.var, row = 0, column = 1, sticky = 'w', padx = 5, pady = 5)
-	tkgrid(txtlb2, row = 1, column = 0, sticky = 'e', padx = 5, pady = 5)
-	tkgrid(cb.X, row = 1, column = 1, sticky = 'w', padx = 5, pady = 5)
-	tkgrid(txtlb3, row = 2, column = 0, sticky = 'e', padx = 5, pady = 5)
-	tkgrid(cb.Y, row = 2, column = 1, sticky = 'w', padx = 5, pady = 5)
+	txtlb1 <- tklabel(dim.choose, text = 'Variable:', anchor = 'e', justify = 'right')
+	txtlb2 <- tklabel(dim.choose, text = 'Longitude:', anchor = 'e', justify = 'right')
+	txtlb3 <- tklabel(dim.choose, text = 'Latitude:', anchor = 'e', justify = 'right')
+
+	cb.var <- ttkcombobox( dim.choose, values = var.choix, textvariable = var.dim, state = "readonly", width = largeur)
+	cb.X <- ttkcombobox( dim.choose, values = X.choix, textvariable = X.dim, state = 'disabled', width = largeur)
+	cb.Y <- ttkcombobox(dim.choose, values = Y.choix, textvariable = Y.dim, state = 'disabled', width = largeur)
+
+	tkgrid(txtlb1, row = 0, column = 0, sticky = 'we', padx = 5, pady = 5)
+	tkgrid(cb.var, row = 0, column = 1, sticky = 'we', padx = 5, pady = 5)
+	tkgrid(txtlb2, row = 1, column = 0, sticky = 'we', padx = 5, pady = 5)
+	tkgrid(cb.X, row = 1, column = 1, sticky = 'we', padx = 5, pady = 5)
+	tkgrid(txtlb3, row = 2, column = 0, sticky = 'we', padx = 5, pady = 5)
+	tkgrid(cb.Y, row = 2, column = 1, sticky = 'we', padx = 5, pady = 5)
 
 	####
-	tkbind(cb.var,"<<ComboboxSelected>>", function(){
+	tkbind(cb.var, "<<ComboboxSelected>>", function(){
 		ichoix <- which(var.choix == as.character(tclvalue(var.dim)))
 		if(ichoix != 1){
 			ivar <<- ichoix-1
 			v.ndims <- var.info[ivar, 2]
-			X.choix <- c('',var.dim.info[[ivar]][1:v.ndims, 1])
-			Y.choix <- c('',var.dim.info[[ivar]][1:v.ndims, 1])
+			X.choix <- c('', var.dim.info[[ivar]][1:v.ndims, 1])
+			Y.choix <- c('', var.dim.info[[ivar]][1:v.ndims, 1])
 			tkconfigure(cb.X, state = 'normal', values = X.choix)
 			tkconfigure(cb.Y, state = 'normal', values = Y.choix)
 		}else{
@@ -120,29 +120,13 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 			tkconfigure(cb.Y, state = 'disabled', values = Y.choix)
 		}
 	})
-	######
 
-	xscr <- tkscrollbar(fr.bas, repeatinterval = 5, orient = "horizontal", command = function(...)tkxview(txta,...))
-	yscr <- tkscrollbar(fr.bas, repeatinterval = 5, command = function(...)tkyview(txta,...))
-	txta <- tktext(fr.bas, bg = "white", font = "courier", xscrollcommand = function(...)tkset(xscr,...),
-	yscrollcommand = function(...)tkset(yscr,...), wrap = "none")
+	#############
+	fr.button <- tkframe(fr.haut)
 
-	tkgrid(txta, yscr)
-	tkgrid(xscr)
-	tkgrid.configure(txta, row = 0, column = 0, sticky = "nsew")
-	tkgrid.configure(yscr, sticky = "ns")
-	tkgrid.configure(xscr, sticky = "ew")
-	tkconfigure(txta, width = txta.w, height = txta.h)
+	OK.but <- tkbutton(fr.button, text = "OK", width = 8)
+	CA.but <- tkbutton(fr.button, text = "Cancel", width = 8)
 
-	for(i in 1:length(print.nc)) tkinsert(txta, "end", paste(print.nc[i], "\n"))
-	tcl("update")
-	#####
-	OK.but <- tkbutton(fr.button, text = "OK", width = 4)
-	CA.but <- tkbutton(fr.button, text = "Cancel", width = 4)
-	tkgrid(OK.but, row = 0, column = 0, padx = 25, pady = 10, ipadx = 5)
-	tkgrid(CA.but, row = 1, column = 0, padx = 25, pady = 20)
-
-	#####
 	retval <- NULL
 	tkconfigure(OK.but, command = function() {
 		if(!is.null(ivar)){
@@ -168,11 +152,14 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 			if(idx == 1){
 				dat <- dat[xo, yo]
 			}else{
-				dat <- matrix(c(dat), nrow = v.size[idx], ncol = v.size[idy], byrow = T)
+				dat <- matrix(c(dat), nrow = v.size[idx], ncol = v.size[idy], byrow = TRUE)
 				dat <- dat[xo, yo]
 			}
-			retval <<- list(x = lon, y = lat, value = dat, var.unit = v.unit, dim.units = d.units, varid = as.character(var.info[ivar, 1]),
-			ilon = idx, ilat = idy, irevlat = irevlat)
+
+			retval <<- list(x = lon, y = lat, value = dat, var.unit = v.unit,
+							dim.units = d.units, varid = as.character(var.info[ivar, 1]),
+							ilon = idx, ilat = idy, irevlat = irevlat)
+
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
@@ -194,13 +181,48 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 		nc_close(nc)
 	})
 
+	#####
+
+	tkgrid(OK.but, row = 0, column = 0, padx = 5, pady = 5)
+	tkgrid(CA.but, row = 1, column = 0, padx = 5, pady = 5)
+
+	######
+
+	tkgrid(dim.choose, row = 0, column = 0, sticky = 'w', padx = 1, pady = 5)
+	tkgrid(fr.button, row = 0, column = 1, sticky = 'e', padx = 5, pady = 5)
+
+	####################################
+
+	fr.bas <- tkframe(tt)
+
+	xscr <- tkscrollbar(fr.bas, repeatinterval = 5, orient = "horizontal", command = function(...) tkxview(txta, ...))
+	yscr <- tkscrollbar(fr.bas, repeatinterval = 5, command = function(...) tkyview(txta, ...))
+	txta <- tktext(fr.bas, bg = "white", font = "courier", wrap = "none",
+					xscrollcommand = function(...) tkset(xscr, ...),
+					yscrollcommand = function(...) tkset(yscr, ...),
+					width = txta.w, height = txta.h)
+
+	tkgrid(txta, yscr)
+	tkgrid(xscr)
+	tkgrid.configure(txta, row = 0, column = 0, sticky = "nsew")
+	tkgrid.configure(yscr, sticky = "ns")
+	tkgrid.configure(xscr, sticky = "ew")
+
+	for(i in 1:length(print.nc)) tkinsert(txta, "end", paste(print.nc[i], "\n"))
+	tcl("update")
+
+	####################################
+
+	tkgrid(fr.haut, row = 0, column = 0, sticky = 'we', padx = 5, pady = 1)
+	tkgrid(fr.bas, row = 1, column = 0, sticky = 'we', padx = 5, pady = 5)
+
 	tkwm.withdraw(tt)
 	tcl('update')
 	tt.w <- as.integer(tkwinfo("reqwidth", tt))
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, paste("Data Import Options - ", title.pop))
 	tkwm.deiconify(tt)

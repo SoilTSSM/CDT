@@ -1,0 +1,13 @@
+{
+    // Input and Output files/directory
+    "IO.files": [{
+        // Station data filename
+        "STN.file": "",
+        // ESRI shapefile
+        "SHP.file": "",
+        // Full path to the directory to save results
+        "dir2save": ""
+    }],
+    //Distance from boundaries (km)
+    "buffer": 10
+}

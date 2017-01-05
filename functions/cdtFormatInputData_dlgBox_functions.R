@@ -1,7 +1,16 @@
 
 
 AggregateInputStationData <- function(parent.win, GeneralParameters){
-	largeur <- if (Sys.info()["sysname"] == "Windows") 40 else 40
+	# largeur <- if (Sys.info()["sysname"] == "Windows") 40 else 40
+	if (Sys.info()["sysname"] == "Windows"){
+		largeur <- 51
+		largeur1 <- 23
+		largeur2 <- 22
+	}else{
+		largeur <- 40
+		largeur1 <- 18
+		largeur2 <- 21
+	}
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
@@ -32,7 +41,7 @@ AggregateInputStationData <- function(parent.win, GeneralParameters){
 	minperc <- tclVar(GeneralParameters$min.perc)
 
 	#########
-	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period) #, width = 10
+	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period, width = largeur1)
 	frtxtDate <- ttklabelframe(frDate, text = "Date Range", relief = 'groove')
 	minperc.lab <- tklabel(frDate, text = 'Min percentage (%)',anchor = 'e', justify = 'right')
 	minperc.ent <- tkentry(frDate, width = 4, textvariable = minperc, justify = "right")
@@ -138,8 +147,8 @@ AggregateInputStationData <- function(parent.win, GeneralParameters){
 	data.type <- tclVar(GeneralParameters$data.type)
 
 	txt.dataType <- tklabel(frData, text = 'Format of input files', anchor = 'w', justify = 'left')
-	cb.dataType <- ttkcombobox(frData, values = c("Multiple Files", "Single File"), textvariable = data.type)
-	bt.dataType <- tkbutton(frData, text = "Input File Setting", width = floor(largeur/2)+1)
+	cb.dataType <- ttkcombobox(frData, values = c("Multiple Files", "Single File"), textvariable = data.type, width = largeur1)
+	bt.dataType <- tkbutton(frData, text = "Input File Setting", width = largeur2)
 
 	if(tclvalue(data.type) == "Multiple Files") dataType.Fun <- "multipleFileCDTFormat"
 	if(tclvalue(data.type) == "Single File") dataType.Fun <- "singleFileCDTFormat"

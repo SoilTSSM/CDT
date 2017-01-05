@@ -1,7 +1,16 @@
 getDEMFun <- function(parent.win){
-	if(Sys.info()["sysname"] == "Windows") largeur <- 33
-	else largeur <- 31
+	if (Sys.info()["sysname"] == "Windows"){
+		largeur <- 35
+		largeur1 <- 15
+	}else{
+		largeur <- 28
+		largeur1 <- 15
+	}
 
+	downdem <- fromJSON(file.path(apps.dir, 'init_params', 'Download_DEM.json'))
+	if(str_trim(downdem$dir2save) == "") downdem$dir2save <- getwd()
+
+	#####
 	tt <- tktoplevel()
 	tkgrab.set(tt)
 	tkfocus(tt)
@@ -9,35 +18,24 @@ getDEMFun <- function(parent.win){
 	frGrd0 <- tkframe(tt, relief = 'raised', borderwidth = 2)
 	frGrd1 <- tkframe(tt)
 
-
+	#####
 	frA1 <- tkframe(frGrd0, relief = 'sunken', bd = 2)
-	frA2 <- tkframe(frGrd0, relief = 'sunken', bd = 2)
-	tkgrid(frA1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 5, pady = 5, ipadx = 1, ipady = 1)
-	tkgrid(frA2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 5, pady = 5, ipadx = 1, ipady = 1)
 
-	###
+	minLon <- tclVar(downdem$bbox$minlon)
+	maxLon <- tclVar(downdem$bbox$maxlon)
+	minLat <- tclVar(downdem$bbox$minlat)
+	maxLat <- tclVar(downdem$bbox$maxlat)
 
 	fr_grd <- ttklabelframe(frA1, text = "Area of interest", relief = "groove", borderwidth = 2)
-	tkgrid(fr_grd, padx = 5, pady = 5)
-	grd_llon <- tklabel(fr_grd, text = "Longitude", anchor = 'e', justify = 'right')
+
+	grd_llon <- tklabel(fr_grd, text = "Longitude", anchor = 'e', justify = 'right', width = largeur1)
 	grd_llat <- tklabel(fr_grd, text = "Latitude", anchor = 'e', justify = 'right')
 	grd_lb1 <- tklabel(fr_grd, text = "Minimum")
 	grd_lb2 <- tklabel(fr_grd, text = "Maximum")
-
-	grd_vlon1 <- tkentry.h(fr_grd, TextOutputVar, 'Minimum longitude in degree', 'Minimum longitude in degree')
-	grd_vlon2 <- tkentry.h(fr_grd, TextOutputVar, 'Maximum longitude in degree', 'Maximum longitude in degree')
-	grd_vlat1 <- tkentry.h(fr_grd, TextOutputVar, 'Minimum latitude in degree', 'Minimum latitude in degree')
-	grd_vlat2 <- tkentry.h(fr_grd, TextOutputVar, 'Maximum latitude in degree', 'Maximum latitude in degree')
-
-	minLon <- tclVar('42')
-	maxLon <- tclVar('52')
-	minLat <- tclVar('-26')
-	maxLat <- tclVar('-12')
-
-	tkconfigure(grd_vlon1, width = 8, justify = "right", textvariable = minLon)
-	tkconfigure(grd_vlon2, width = 8, justify = "right", textvariable = maxLon)
-	tkconfigure(grd_vlat1, width = 8, justify = "right", textvariable = minLat)
-	tkconfigure(grd_vlat2, width = 8, justify = "right", textvariable = maxLat)
+	grd_vlon1 <- tkentry(fr_grd, width = 8, justify = "right", textvariable = minLon)
+	grd_vlon2 <- tkentry(fr_grd, width = 8, justify = "right", textvariable = maxLon)
+	grd_vlat1 <- tkentry(fr_grd, width = 8, justify = "right", textvariable = minLat)
+	grd_vlat2 <- tkentry(fr_grd, width = 8, justify = "right", textvariable = maxLat)
 
 	tkgrid(grd_lb1, row = 0, column = 1, sticky = "ew")
 	tkgrid(grd_lb2, row = 0, column = 2, sticky = "ew")
@@ -48,26 +46,47 @@ getDEMFun <- function(parent.win){
 	tkgrid(grd_vlat1, row = 2, column = 1, sticky = "ew")
 	tkgrid(grd_vlat2, row = 2, column = 2, sticky = "ew")
 
-	###
-	lab2 <- tklabel(frA2, text = 'Directory to save downloaded files', anchor = 'w', justify = 'left')
+	tkgrid(fr_grd, row = 0, column = 0, sticky = "ew", padx = 5, pady = 5)
 
-	dir2save <- tclVar('')
-	enfile.save <- tkentry(frA2, textvariable = dir2save, width = largeur)  #
-	btfile.save <- tkbutton.h(frA2, text = "...", TextOutputVar, 'or browse here','')
+	infobulle(grd_vlon1, 'Minimum longitude in decimal degree')
+	status.bar.display(grd_vlon1, TextOutputVar, 'Minimum longitude in decimal degree')
+	infobulle(grd_vlon2, 'Maximum longitude in decimal degree')
+	status.bar.display(grd_vlon2, TextOutputVar, 'Maximum longitude in decimal degree')
+	infobulle(grd_vlat1, 'Minimum latitude in decimal degree')
+	status.bar.display(grd_vlat1, TextOutputVar, 'Minimum latitude in decimal degree')
+	infobulle(grd_vlat2, 'Maximum latitude in decimal degree')
+	status.bar.display(grd_vlat2, TextOutputVar, 'Maximum latitude in decimal degree')
+
+	#########
+	frA2 <- tkframe(frGrd0, relief = 'sunken', bd = 2)
+
+	dir2save <- tclVar(downdem$dir2save)
+
+	lab2 <- tklabel(frA2, text = 'Directory to save downloaded files', anchor = 'w', justify = 'left')
+	enfile.save <- tkentry(frA2, textvariable = dir2save, width = largeur)
+	btfile.save <- tkbutton(frA2, text = "...")
+
+	###
 	tkconfigure(btfile.save, command = function() fileORdir2Save(dir2save, isFile = FALSE))
 
-	infobulle(frA2, 'Enter the full path to directory to save downloaded files')
-	status.bar.display(frA2, TextOutputVar, 'Enter the full path to directory to save downloaded files')
-
+	###
 	tkgrid(lab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(enfile.save, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(btfile.save, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	###
+	infobulle(enfile.save, 'Enter the full path to directory to save downloaded files')
+	status.bar.display(enfile.save, TextOutputVar, 'Enter the full path to directory to save downloaded files')
+	infobulle(btfile.save, 'or browse here')
+
+	######
+	tkgrid(frA1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 5, pady = 5, ipadx = 1, ipady = 1)
+	tkgrid(frA2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 5, pady = 5, ipadx = 1, ipady = 1)
+
+	######
 	btOK <- ttkbutton(frGrd1, text = 'Download')
-	tkgrid(btOK, row = 0, column = 0, sticky = 'e', padx = 5, pady = 5)
+
 	tkconfigure(btOK, command = function(){
-		outdir <- tclvalue(dir2save)
+		outdir <- str_trim(tclvalue(dir2save))
 		minlon <- as.numeric(tclvalue(minLon))
 		maxlon <- as.numeric(tclvalue(maxLon))
 		minlat <- as.numeric(tclvalue(minLat))
@@ -91,6 +110,9 @@ getDEMFun <- function(parent.win){
 		}
 	})
 
+	tkgrid(btOK, row = 0, column = 0, sticky = 'e', padx = 5, pady = 5)
+
+	#####
 	tkgrid(frGrd0, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frGrd1, row = 1, column = 1, sticky = 'se', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
@@ -100,7 +122,7 @@ getDEMFun <- function(parent.win){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Digital Elevation Model')
 	tkwm.deiconify(tt)
@@ -116,8 +138,8 @@ getDEMFun <- function(parent.win){
 }
 
 ###################
-ExecDownload_DEM <- function(minlon, maxlon, minlat, maxlat, outdir){
 
+ExecDownload_DEM <- function(minlon, maxlon, minlat, maxlat, outdir){
 	tkconfigure(main.win, cursor = 'watch');tcl('update')
 	getDEM(minlon, maxlon, minlat, maxlat, outdir)
 	tkconfigure(main.win, cursor = '')
@@ -167,6 +189,7 @@ getDEM <- function(minlon, maxlon, minlat, maxlat, outdir){
 	link1 <- paste(url1, area1, 'data.nc', sep = '/')
 	ret1 <- try(download.file(link1, destfile1, method = "auto", quiet = TRUE, mode = "wb", cacheOK = TRUE), silent = TRUE)
 
+	### Africa
 	xm <- seq(-19.0125, 51.975, 0.0375)
 	ym <- seq(-35.9625, 38.025, 0.0375)
 
@@ -176,15 +199,15 @@ getDEM <- function(minlon, maxlon, minlat, maxlat, outdir){
 			if(!inherits(down, "try-error")) InsertMessagesTxt(main.txt.out, msg)
 			else{
 				InsertMessagesTxt(main.txt.out, 'Unable to aggregate DEM for mering', format = TRUE)
-				InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',down[1]), format = TRUE)
+				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', down[1]), format = TRUE)
 			}
-		}else InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',ret[1]), format = TRUE)
+		}else InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', ret[1]), format = TRUE)
 	}
 
 	aggregateFailedMsg <- function(ret, destfile, msg){
 		unlink(destfile)
 		InsertMessagesTxt(main.txt.out, msg, format = TRUE)
-		InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',ret[1]), format = TRUE)
+		InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', ret[1]), format = TRUE)
 	}
 
 	if(!inherits(ret, "try-error")) aggregateDEM2Merge(ret, destfile, TRUE, 'z', "Elevation and bathymetric data", 'Download finished for DEM 2-min')

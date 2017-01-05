@@ -1,110 +1,17 @@
 excludeOutStnFun <- function(GeneralParameters){
-	file.pars <- as.character(GeneralParameters$file.io$Values)
-	stnf <- file.pars[1]
-	shpf <- file.pars[2]
-	dir2save <- file.pars[3]
-	buff <- as.numeric(as.character(GeneralParameters$buffer))/111
-	outdir <- file.path(dir2save, paste('ChkCoord', getf.no.ext(stnf), sep = '_'), fsep = .Platform$file.sep)
+	stnf <- GeneralParameters$IO.files$STN.file
+	shpf <- GeneralParameters$IO.files$SHP.file
+	dir2save <- GeneralParameters$IO.files$dir2save
+	buff <- GeneralParameters$buffer/111
+
+	outdir <- file.path(dir2save, paste('ChkCoord', getf.no.ext(stnf), sep = '_'))
 	if(!file.exists(outdir)) dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
+	file.no.ext <- getf.no.ext(stnf)
+	file.extens <- file_ext(stnf)
 
-# ###############
-# 	shpd <- getShpOpenData(shpf)[[2]]
-# 	if(is.null(shpd)){
-# 		InsertMessagesTxt(main.txt.out, paste('Unable to open', shpf, 'or it is not an ESRI shapefile'), format = TRUE)
-# 		return(NULL)
-# 	}
-
-# 	shpd <- as(shpd, "SpatialPolygons")
-# 	shpd <- gUnaryUnion(shpd)
-# 	shpd <- gSimplify(shpd, tol = 0.05, topologyPreserve = TRUE)
-# 	shpd <- gBuffer(shpd, width = buff)
-
-# 	infos <- getStnOpenDataInfo(stnf)
-# 	missval <- infos[[3]]$miss.val
-# 	donne <- getStnOpenData(stnf)
-# 	if(is.null(donne)){
-# 		InsertMessagesTxt(main.txt.out, paste('Unable to open', stnf), format = TRUE)
-# 		return(NULL)
-# 	} 
-
-# 	##############
-# 	id <- as.character(donne[1, -1])
-# 	lon <- round(as.numeric(donne[2, -1]), 6)
-# 	lat <- round(as.numeric(donne[3, -1]), 6)
-
-# 	##missing coordinates
-# 	imiss <- which((is.na(lon) | lon< -180 | lon > 360 |is.na(lat) | lat< -90 | lat > 90))
-
-# 	##ducpicates coordinates
-# 	idup0 <- which(duplicated(cbind(lon, lat)))
-# 	idup1 <- which(duplicated(cbind(lon, lat), fromLast = T))
-# 	idup <- sort(union(idup0, idup1))
-
-# 	#coordinates outside country boundaries
-# 	infodon <- data.frame(lon = lon, lat = lat, ID = id)
-# 	idout <- 1:nrow(infodon)
-# 	infodon <- na.omit(infodon)
-# 	coordinates(infodon)<- ~lon+lat
-
-# 	ioutc <- is.na(over(infodon, geometry(shpd)))
-# 	ioutc <- idout[ioutc]
-
-# 	####
-# 	exclus <- NULL
-# 	if(length(imiss) > 0) exclus <- rbind(exclus, cbind('Missing Coordinates', cbind(id[imiss], lon[imiss], lat[imiss], imiss)))
-# 	if(length(idup) > 0)	exclus <- rbind(exclus, cbind('Duplicate Coordinates', cbind(id[idup], lon[idup], lat[idup], idup)))
-# 	if(length(ioutc) > 0) exclus <- rbind(exclus, cbind('Coordinates Outside', cbind(id[ioutc], lon[ioutc], lat[ioutc], ioutc)))
-# 	if(!is.null(exclus)){
-# 		exclus <- as.data.frame(exclus)
-# 		exclus <- exclus[!duplicated(exclus[, c(2, 5)]), ]
-# 		exclus <- exclus[order(exclus[, 3, 4]), ]
-# 	}else{
-# 		exclus <- data.frame(NA, NA, NA, NA, NA)
-# 	}
-# 	names(exclus) <- c('Info', 'ID.Station', 'Longitude', 'Latitude', 'ID.Col')
-# 	fexcl <- file.path(outdir, paste(getf.no.ext(stnf), '_2CORRECT_STATIONS.txt', sep = ''), fsep = .Platform$file.sep)
-# 	write.table(exclus, fexcl, row.names = FALSE, col.names = TRUE)
-
-
-# 	####
-# 	if(nchar(as.character(donne[5, 1])) == 8){
-# 		period <- 'daily'
-# 	}else if(nchar(as.character(donne[5, 1])) == 7){
-# 		period <- 'dekadal'
-# 	}else if(nchar(as.character(donne[5,1])) == 6){
-# 		period <- 'monthly'
-# 	}else{
-# 		InsertMessagesTxt(main.txt.out, 'Date has wrong format.', format = TRUE)
-# 		return(NULL)
-# 	}
-
-# 	donne1 <- getCDTdataAndDisplayMsg(donne, period)
-# 	if(is.null(donne1)) return(NULL)
-# 	if(is.null(donne1$elv)){
-# 		HeadInfo <- donne[1:3, ]
-# 		donne <- donne[-c(1:3), -1]
-# 	}else{
-# 		HeadInfo <- donne[1:4, ]
-# 		donne <- donne[-c(1:4), -1]
-# 	}
-# 	##voir dates pour donne et donne1
-# 	dates1 <- donne1$dates
-
-# 	don <- cbind(dates, donne)
-# 	names(don) <- names(HeadInfo)
-# 	donne1 <- rbind(HeadInfo, don)
-# 	donne1[is.na(donne1)] <- missval
-# 	fsave <- file.path(outdir, paste(getf.no.ext(stnf), '_CHECKED_STATIONS.txt', sep = ''), fsep = .Platform$file.sep)
-# 	# write.table(donne1, fsave, row.names = FALSE, col.names = FALSE)
-# 	writeFiles(donne1, fsave)
-
-##############
-	all.open.file <- as.character(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])))
-
-	jshp <- which(all.open.file == shpf)
-	if(AllOpenFilesType[[jshp]] == "shp") shpd <- AllOpenFilesData[[jshp]][[2]]
-	else{
-		InsertMessagesTxt(main.txt.out, paste(shpf, 'is not an ESRI shapefile'), format = TRUE)
+	shpd <- getShpOpenData(shpf)[[2]]
+	if(is.null(shpd)){
+		InsertMessagesTxt(main.txt.out, paste('Unable to open', shpf, 'or it is not an ESRI shapefile'), format = TRUE)
 		return(NULL)
 	}
 
@@ -113,166 +20,107 @@ excludeOutStnFun <- function(GeneralParameters){
 	shpd <- gSimplify(shpd, tol = 0.05, topologyPreserve = TRUE)
 	shpd <- gBuffer(shpd, width = buff)
 
-
-	jfile <- which(all.open.file == stnf)
-	if(length(jfile) == 0){
-		InsertMessagesTxt(main.txt.out, paste(stnf, 'cannot found') ,format = TRUE)
+	infos <- getStnOpenDataInfo(stnf)
+	missval <- infos[[3]]$miss.val
+	donne <- getStnOpenData(stnf)
+	if(is.null(donne)){
+		InsertMessagesTxt(main.txt.out, paste('Unable to open', stnf), format = TRUE)
 		return(NULL)
 	}
-	donne <- AllOpenFilesData[[jfile]][[2]]
-	missval <- AllOpenFilesData[[jfile]][[4]]$miss.val
+	ndaty <- nchar(donne[nrow(donne), 1])
+	period <- ifelse(ndaty == 8, 'daily', ifelse(ndaty == 7, 'dekadal', ifelse(ndaty == 6, 'monthly', NA)))
+	if(is.na(period)){
+		InsertMessagesTxt(main.txt.out, "Unknown date", format = TRUE)
+		return(NULL)
+	}
+	
+	donne1 <- splitCDTData(donne, period)
 
-	id <- as.character(donne[1, -1])
-	lon <- round(as.numeric(donne[2, -1]), 6)
-	lat <- round(as.numeric(donne[3, -1]), 6)
-
-	##missing coordinates
-	imiss <- which((is.na(lon) | lon< -180 | lon > 360 |is.na(lat) | lat< -90 | lat > 90))
-
-	##ducpicates coordinates
-	idup0 <- which(duplicated(cbind(lon, lat)))
-	idup1 <- which(duplicated(cbind(lon, lat), fromLast = T))
-	idup <- sort(union(idup0, idup1))
+	## missing & duplicated coords
+	imiss <- donne1$miss.coords.idx
+	idup <- donne1$dup.coords.idx
 
 	#coordinates outside country boundaries
-	infodon <- data.frame(lon = lon, lat = lat, ID = id)
-	idout <- 1:nrow(infodon)
-	infodon <- na.omit(infodon)
-	coordinates(infodon)<- ~lon+lat
-
+	infodon0 <- t(donne[1:3, -1])
+	infodon <- infodon0 <- data.frame(infodon0, 1:nrow(infodon0))
+	names(infodon) <- c('ID', 'lon', 'lat', 'idout')
+	infodon <- infodon[!imiss, , drop = FALSE]
+	infodon[, -1] <- apply(infodon[, -1], 2, as.numeric)
+	coordinates(infodon) <- ~lon+lat
 	ioutc <- is.na(over(infodon, geometry(shpd)))
-	ioutc <- idout[ioutc]
+	ioutc <- infodon$idout[ioutc]
 
-	####
 	exclus <- NULL
-	if(length(imiss) > 0) exclus <- rbind(exclus, cbind('Missing Coordinates', cbind(id[imiss], lon[imiss], lat[imiss], imiss)))
-	if(length(idup) > 0)	exclus <- rbind(exclus, cbind('Duplicate Coordinates', cbind(id[idup], lon[idup], lat[idup], idup)))
-	if(length(ioutc) > 0) exclus <- rbind(exclus, cbind('Coordinates Outside', cbind(id[ioutc], lon[ioutc], lat[ioutc], ioutc)))
+	if(any(imiss)) exclus <- rbind(exclus, cbind('Missing Coordinates', as.matrix(infodon0[imiss, , drop = FALSE])))
+	if(any(idup)) exclus <- rbind(exclus, cbind('Duplicate Coordinates', as.matrix(infodon0[idup, , drop = FALSE])))
+	if(length(ioutc) > 0) exclus <- rbind(exclus, cbind('Coordinates Outside', as.matrix(infodon0[ioutc, , drop = FALSE])))
+
 	if(!is.null(exclus)){
-		exclus <- as.data.frame(exclus)
+		exclus <- as.data.frame(exclus, stringsAsFactors = FALSE)
 		exclus <- exclus[!duplicated(exclus[, c(2, 5)]), ]
-		exclus <- exclus[order(exclus[, 3, 4]), ]
+		exclus <- exclus[order(paste(exclus[, 3], exclus[, 4], sep = '_')), ]
 	}else{
 		exclus <- data.frame(NA, NA, NA, NA, NA)
 	}
+
 	names(exclus) <- c('Info', 'ID.Station', 'Longitude', 'Latitude', 'ID.Col')
-	fexcl <- file.path(outdir, paste(getf.no.ext(stnf), '_2CORRECT_STATIONS.txt', sep = ''), fsep = .Platform$file.sep)
+	fexcl <- file.path(outdir, paste(file.no.ext, '_2CORRECT_STATIONS.txt', sep = ''))
 	write.table(exclus, fexcl, row.names = FALSE, col.names = TRUE)
 
-	###
-	if(length(grep('alt|elev|elv', donne[4, 1], ignore.case = TRUE)) == 1){
-		HeadInfo <- donne[1:4, ]
-
-		if(nchar(as.character(donne[5, 1])) == 8){
-			dates <- as.Date(donne[-c(1:4), 1], format = '%Y%m%d')
-			period <- 'daily'
-		}else if(nchar(as.character(donne[5, 1])) == 7){
-			xan <- substr(as.character(donne[-c(1:4), 1]), 1, 4)
-			xmo <- substr(as.character(donne[-c(1:4), 1]), 5, 6)
-			xdk <- substr(as.character(donne[-c(1:4), 1]), 7, 7)
-			notdek <- which(as.numeric(xdk) > 3)
-			dates <- as.Date(paste(xan, xmo, xdk, sep = '-'))
-			dates[notdek] <- NA
-			period <- 'dekadal'
-		}else if(nchar(as.character(donne[5,1])) == 6){
-			xan <- substr(as.character(donne[-c(1:4), 1]), 1, 4)
-			xmo <- substr(as.character(donne[-c(1:4), 1]), 5, 6)
-			dates <- as.Date(paste(xan, xmo, '1', sep = '-'))
-			period <- 'monthly'
-		}else{
-			InsertMessagesTxt(main.txt.out, 'Date has wrong format.', format = TRUE)
-			return(NULL)
-		}
-		donne <- donne[-c(1:4), -1]
-	}else{
+	daty0 <- donne1$dates
+	if(is.null(donne1$elv)){
+		daty <- donne[-(1:3), 1]
+		donne1$data <- donne[-(1:3), -1]
 		HeadInfo <- donne[1:3, ]
-
-		if(nchar(as.character(donne[5, 1])) == 8){
-			dates <- as.Date(donne[-c(1:3), 1], format = '%Y%m%d')
-			period <- 'daily'
-		}else if(nchar(as.character(donne[5,1])) == 7){
-			xan <- substr(as.character(donne[-c(1:3), 1]), 1, 4)
-			xmo <- substr(as.character(donne[-c(1:3), 1]), 5, 6)
-			xdk <- substr(as.character(donne[-c(1:3), 1]), 7, 7)
-			notdek <- which(as.numeric(xdk) > 3)
-			dates <- as.Date(paste(xan, xmo, xdk, sep = '-'))
-			period <- 'dekadal'
-		}else if(nchar(as.character(donne[5, 1])) == 6){
-			xan <- substr(as.character(donne[-c(1:3), 1]), 1, 4)
-			xmo <- substr(as.character(donne[-c(1:3), 1]), 5, 6)
-			dates <- as.Date(paste(xan, xmo, '1', sep = '-'))
-			period <- 'monthly'
-		}else{
-			InsertMessagesTxt(main.txt.out, 'Date has wrong format.',format = TRUE)
-			return(NULL)
-		}
-		donne <- donne[-c(1:3), -1]
+	}else{
+		daty <- donne[-(1:4), 1]
+		donne1$data <- donne[-(1:4), -1]
+		HeadInfo <- donne[1:4, ]
 	}
+	donne1 <- donne1$data[match(daty0, daty), ]
 
-	donne <- apply(donne, 2, as.numeric)
-	donne <- donne[!is.na(dates),]
-	dates <- dates[!is.na(dates)]
-	donne <- donne[order(dates),]
-	dates <- dates[order(dates)]
+	donne <- cbind(daty0, donne1)
+	names(donne) <- names(HeadInfo)
+	donne <- rbind(HeadInfo, donne)
+	donne[is.na(donne)] <- missval
+	fsave <- file.path(outdir, paste(file.no.ext, '_CHECKED_STATIONS.', file.extens, sep = ''))
+	writeFiles(donne, fsave)
 
-	##fill missing dates
-	if(period == 'daily'){
-		odates <- data.frame(format(seq(min(dates), max(dates), 'day'), '%Y%m%d'))
-		names(odates) <- 'dates'
-		dates <- format(dates, '%Y%m%d')
-	}else if(period == 'dekadal'){
-		odates <- seq(min(dates), max(dates), 'day')
-		odates <- paste(format(odates[which(as.numeric(format(odates, '%d')) <= 3)], '%Y%m'),
-					as.numeric(format(odates[which(as.numeric(format(odates, '%d')) <= 3)], '%d')), sep = '')
-		odates <- data.frame(odates)
-		names(odates) <- 'dates'
-		dates <- paste(format(dates, '%Y%m'), as.numeric(format(dates, '%d')), sep = '')
-	}else if(period == 'monthly'){
-		odates <- data.frame(format(seq(min(dates), max(dates), 'month'), '%Y%m'))
-		names(odates) <- 'dates'
-		dates <- format(dates, '%Y%m')
-	}
-	tmp.data <- data.frame(dates = dates, donne)
-	tmp.data <- merge(odates, tmp.data, by.x = 'dates', by.y = 'dates', all = TRUE)
-	donne <- tmp.data[, -1]
-	dates <- as.character(tmp.data[, 1])
-
-	don <- cbind(dates, donne)
-	names(don) <- names(HeadInfo)
-	donne1 <- rbind(HeadInfo, don)
-	donne1[is.na(donne1)] <- missval
-	fsave <- file.path(outdir, paste(getf.no.ext(stnf), '_CHECKED_STATIONS.', file_ext(stnf), sep = ''))
-	writeFiles(donne1, fsave)
-
-	res <- list(action = 'chk.coords', period = period, Stndoute = exclus, data = donne, dates = dates,
-				HeadInfo = HeadInfo, missval = missval, outdir = outdir)
-	rm(odates, tmp.data, don, donne1)
-
+	idx.col <- cbind(seq(ncol(donne1)), seq(ncol(donne1)))
+	res <- list(action = 'chk.coords', period = period, Stndoute = exclus, data = donne1, dates = daty0,
+				HeadInfo = HeadInfo, missval = missval, outdir = outdir, idx.col = idx.col)
+	rm(daty, daty0, donne, donne1)
 	return(res)
 }
 
 #########################
 
 checkCDTcoords <- function(ReturnExecResults, GeneralParameters){
-	file.no.ext <- getf.no.ext(as.character(GeneralParameters$file.io$Values[1]))
-	file.extens <- file_ext(as.character(GeneralParameters$file.io$Values[1]))
+	file.no.ext <- getf.no.ext(GeneralParameters$IO.files$STN.file)
+	file.extens <- file_ext(GeneralParameters$IO.files$STN.file)
 	fexcl <- file.path(ReturnExecResults$outdir, paste(file.no.ext, '_2CORRECT_STATIONS.txt', sep = ''))
 	fsave <- file.path(ReturnExecResults$outdir, paste(file.no.ext, '_CHECKED_STATIONS.', file.extens, sep = ''))
 
 	exclus <- ReturnExecResults$Stndoute
-	retenus <- read.table(fexcl, header = TRUE)
-	######
-	idna<-!is.na(as.character(retenus$ID.Station)) & !is.na(as.character(retenus$ID.Col))
-	retenus <- retenus[idna, ]
+	retenus <- read.table(fexcl, header = TRUE, colClasses = 'character', stringsAsFactors = FALSE)
 
-	exc.idcl <- as.character(exclus$ID.Col)
-	ret.idcl <- as.character(retenus$ID.Col)
+	######
+	idna <- !is.na(str_trim(retenus$ID.Station)) & !is.na(str_trim(retenus$ID.Col))
+	retenus <- retenus[idna, , drop = FALSE]
+	
+	retenus$ID.Col <- ReturnExecResults$idx.col[match(as.numeric(retenus$ID.Col), ReturnExecResults$idx.col[, 2]), 1]
+	exclus$ID.Col <- ReturnExecResults$idx.col[match(as.numeric(exclus$ID.Col), ReturnExecResults$idx.col[, 2]), 1]
+
+	exc.idcl <- str_trim(exclus$ID.Col)
+	ret.idcl <- str_trim(retenus$ID.Col)
 	stn.omit <- as.numeric(exc.idcl[is.na(match(exc.idcl, ret.idcl))])
 
 	if(length(ret.idcl) > 0){
 		ret.col <- as.numeric(ret.idcl)
-		ReturnExecResults$HeadInfo[2, ret.col+1] <- as.character(retenus$Longitude)
-		ReturnExecResults$HeadInfo[3, ret.col+1] <- as.character(retenus$Latitude)
+		ReturnExecResults$HeadInfo[2, ret.col+1] <- str_trim(retenus$Longitude)
+		ReturnExecResults$HeadInfo[3, ret.col+1] <- str_trim(retenus$Latitude)
+		ReturnExecResults$Stndoute[match(ret.idcl, exc.idcl), 3] <- str_trim(retenus$Longitude)
+		ReturnExecResults$Stndoute[match(ret.idcl, exc.idcl), 4] <- str_trim(retenus$Latitude)
 	}
 
 	don <- cbind(ReturnExecResults$dates, ReturnExecResults$data)
@@ -281,9 +129,12 @@ checkCDTcoords <- function(ReturnExecResults, GeneralParameters){
 	donne[is.na(donne)] <- ReturnExecResults$missval
 
 	if(length(stn.omit) > 0){
-		donne <- donne[, -(stn.omit+1)]
-		ReturnExecResults$HeadInfo <- ReturnExecResults$HeadInfo[, -(stn.omit+1)]
-		ReturnExecResults$data <- ReturnExecResults$data[, -stn.omit]
+		donne <- donne[, -(stn.omit+1), drop = FALSE]
+		ReturnExecResults$HeadInfo <- ReturnExecResults$HeadInfo[, -(stn.omit+1), drop = FALSE]
+		ReturnExecResults$data <- ReturnExecResults$data[, -stn.omit, drop = FALSE]
+		ReturnExecResults$Stndoute <- ReturnExecResults$Stndoute[!as.numeric(exc.idcl)%in%stn.omit, , drop = FALSE]
+		idx <- ReturnExecResults$idx.col[-stn.omit, 2, drop = FALSE]
+		ReturnExecResults$idx.col <- cbind(seq(ncol(ReturnExecResults$data)), idx)
 	}
 
 	writeFiles(donne, fsave)

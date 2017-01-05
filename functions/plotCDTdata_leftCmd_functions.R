@@ -1,16 +1,18 @@
 PlotCDTDataFormatCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
-
-	largeur <- as.integer(w.scale(21)/sfont0)
-	wncdf_ff <- as.integer(w.scale(14)/sfont0) 
-	#scrollable frame width
 	if(Sys.info()["sysname"] == "Windows"){
-		wscrlwin <- w.scale(20)
-		hscrlwin <- h.scale(27)
+		wscrlwin <- w.scale(24)
+		hscrlwin <- h.scale(30)
+		wPreview <- w.scale(21)
+		largeur <- as.integer(w.scale(27)/sfont0)
 	}else{
 		wscrlwin <- w.scale(24)  
-		hscrlwin <- h.scale(34) 
+		hscrlwin <- h.scale(27) 
+		wPreview <- w.scale(22)
+		largeur <- as.integer(w.scale(21)/sfont0)
 	}
+
+	PlotCDTdata <- fromJSON(file.path(apps.dir, 'init_params', 'Plot_CDT_Data.json'))
 
 	###################
 
@@ -41,18 +43,43 @@ PlotCDTDataFormatCmd <- function(){
 	tkgrid.columnconfigure(scrw1, 0, weight = 1)
 	subfr1 <- bwScrollableFrame(scrw1, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr1, 0, weight = 1)
-	
+
+	##############
+
+	file.period <- tclVar()
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(PlotCDTdata$cdt$cdt.freq, 
+									'daily' = cb.periodVAL[1], 
+									'dekadal' = cb.periodVAL[2],
+									'monthly' = cb.periodVAL[3])
+	file.stnfl <- tclVar(PlotCDTdata$cdt$cdt.file)
+	unit_sym <- tclVar(PlotCDTdata$cdt$cdt.uni)
+	file.plotShp <- tclVar(PlotCDTdata$shp)
+
+	idate_yrs <- tclVar(PlotCDTdata$date$year)
+	idate_mon <- tclVar(PlotCDTdata$date$mon)
+	idate_day <- tclVar(PlotCDTdata$date$day)
+	dayLabTab1_Var <- tclVar(PlotCDTdata$date$day.label)
+
 	##############
 	frameStn <- ttklabelframe(subfr1, text = "Station data file", relief = 'groove')
 
-	file.period <- tclVar()
-	tclvalue(file.period) <- 'Dekadal data'
-	combPrd.tab1 <- ttkcombobox(frameStn, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
-
-	#######################
-	file.stnfl <- tclVar()
+	combPrd.tab1 <- ttkcombobox(frameStn, values = cb.periodVAL, textvariable = file.period, width = largeur)
 	combStnfl.tab1 <- ttkcombobox(frameStn, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur)
 	btStnfl.tab1 <- tkbutton(frameStn, text = "...") 
+
+	labDate.tab1 <- tklabel(frameStn, text = "Date", anchor = 'e', justify = 'right')
+	yrsLab.tab1 <- tklabel(frameStn, text = 'Year', anchor = 'w', justify = 'left')
+	monLab.tab1 <- tklabel(frameStn, text = 'Month', anchor = 'w', justify = 'left')
+	dayLab.tab1 <- tklabel(frameStn, text = tclvalue(dayLabTab1_Var), textvariable = dayLabTab1_Var, anchor = 'w', justify = 'left')
+	yrs1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_yrs, justify = "left")
+	mon1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_mon, justify = "left")
+	day1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_day, justify = "left")
+
+	unitLab.tab1 <- tklabel(frameStn, text = 'Units', anchor = 'e', justify = 'right')
+	unitEd.tab1 <- tkentry(frameStn, width = 8, textvariable = unit_sym, justify = "left")
+
+	#######################
 	tkconfigure(btStnfl.tab1, command = function(){
 		dat.opfiles <- getOpenFiles(main.win, all.opfiles)
 		if(!is.null(dat.opfiles)){
@@ -65,31 +92,6 @@ PlotCDTDataFormatCmd <- function(){
 			tkconfigure(combShp.tab1, values = unlist(listOpenFiles), textvariable = file.plotShp)
 		}else return(NULL)
 	})
-	infobulle(combStnfl.tab1, 'Choose the station data in the list')
-	status.bar.display(combStnfl.tab1, TextOutputVar, 'Choose the file containing the station data')
-	infobulle(btStnfl.tab1, 'Browse file if not listed')
-	status.bar.display(btStnfl.tab1, TextOutputVar, 'Browse file if not listed')
-
-	#######################
-	labDate.tab1 <- tklabel(frameStn, text = "Date", anchor = 'e', justify = 'right')
-	yrsLab.tab1 <- tklabel(frameStn, text = 'Year', anchor = 'w', justify = 'left')
-	monLab.tab1 <- tklabel(frameStn, text = 'Month', anchor = 'w', justify = 'left')
-	dayLabTab1_Var <- tclVar('Dek')
-	dayLab.tab1 <- tklabel(frameStn, text = tclvalue(dayLabTab1_Var), textvariable = dayLabTab1_Var, anchor = 'w', justify = 'left')
-	
-	idate_yrs <- tclVar('1983')
-	idate_mon <- tclVar('1')
-	idate_day <- tclVar('1')
-	
-	yrs1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_yrs, justify = "left")
-	mon1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_mon, justify = "left")
-	day1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_day, justify = "left")
-
-	unit_sym <- tclVar('mm')	
-	unitLab.tab1 <- tklabel(frameStn, text = 'Units', anchor = 'e', justify = 'right')
-	unitEd.tab1 <- tkentry(frameStn, width = 8, textvariable = unit_sym, justify = "left")
-	infobulle(unitEd.tab1, 'Display unit on colorscale')
-	status.bar.display(unitEd.tab1, TextOutputVar, 'Display unit on colorscale')
 
 	###############
 	tkgrid(combPrd.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
@@ -104,20 +106,28 @@ PlotCDTDataFormatCmd <- function(){
 	tkgrid(day1.tab1, row = 3, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(unitLab.tab1, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(unitEd.tab1, row = 4, column = 1, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+
+	infobulle(combStnfl.tab1, 'Choose the station data in the list')
+	status.bar.display(combStnfl.tab1, TextOutputVar, 'Choose the file containing the station data')
+	infobulle(btStnfl.tab1, 'Browse file if not listed')
+	status.bar.display(btStnfl.tab1, TextOutputVar, 'Browse file if not listed')
+	infobulle(unitEd.tab1, 'Unit to display on colorscale')
+	status.bar.display(unitEd.tab1, TextOutputVar, 'Unit to display on colorscale')
 	
 	##############
 	frameShp <- ttklabelframe(subfr1, text = "Shapefiles for boundary", relief = 'groove')
 
-	file.plotShp <- tclVar()
 	combShp.tab1 <- ttkcombobox(frameShp, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur) 
 	btShp.tab1 <- tkbutton(frameShp, text = "...") 
+
+	###############
 	tkconfigure(btShp.tab1, command = function(){
 		shp.opfiles <- getOpenShp(main.win, all.opfiles)
 		if(!is.null(shp.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'shp'
 			AllOpenFilesData[[nopf+1]] <<- shp.opfiles
-			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]		
+			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
 			tclvalue(file.plotShp) <- AllOpenFilesData[[nopf+1]][[1]]
 			tkconfigure(combStnfl.tab1, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(combShp.tab1, values = unlist(listOpenFiles), textvariable = file.plotShp)
@@ -128,11 +138,16 @@ PlotCDTDataFormatCmd <- function(){
 	tkgrid(combShp.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(btShp.tab1, row = 0, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
+	infobulle(combShp.tab1, 'Choose the file containing the ESRI shapefiles')
+	status.bar.display(combShp.tab1, TextOutputVar, 'Choose the file containing the ESRI shapefiles')
+	infobulle(btShp.tab1, 'Browse file if not listed')
+	status.bar.display(btShp.tab1, TextOutputVar, 'Browse file if not listed')
+
 	#############################
 	tkgrid(frameStn, row = 0, column = 0, sticky = 'we')
 	tkgrid(frameShp, row = 1, column = 0, sticky = 'we')
 	
-	#######################################################################################################
+	############################
 	tkbind(combPrd.tab1,"<<ComboboxSelected>>", function(){
 		if(tclvalue(file.period) == 'Daily data'){
 			tclvalue(dayLabTab1_Var)<-'Day'
@@ -160,16 +175,20 @@ PlotCDTDataFormatCmd <- function(){
 	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr2, 0, weight = 1)
 
-	wPreview <- wscrlwin-20
-	nb.color <- tclVar('10')
-	preset.color <- tclVar()
-	tclvalue(preset.color) <- 'tim.colors'
+	###############
+
+	nb.color <- tclVar(PlotCDTdata$color.opt$nb.color)
+	preset.color <- tclVar(PlotCDTdata$color.opt$preset.color)
+	reverse.color <- tclVar(PlotCDTdata$color.opt$reverse.color)
+	custom.color <- tclVar(PlotCDTdata$color.opt$custom.color)
+	custom.level <- tclVar(PlotCDTdata$color.opt$custom.level)
+
+	###############
 
 	labPresetCol.tab2 <- tklabel(subfr2, text = 'Presets colorkey', anchor = 'w', justify = 'left')
 	combPresetCol.tab2 <- ttkcombobox(subfr2, values = c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors'), textvariable = preset.color, width = 13)
 	nbPresetCol.tab2 <- tkentry(subfr2, width = 3, textvariable = nb.color, justify = "left")
 
-	reverse.color <- tclVar(0)
 	labRevCol.tab2 <- tklabel(subfr2, text = 'Reverse', anchor = 'e', justify = 'right')
 	chkRevCol.tab2 <- tkcheckbutton(subfr2, variable = reverse.color, anchor = 'w', justify = 'left')
 
@@ -177,21 +196,12 @@ PlotCDTDataFormatCmd <- function(){
 	previewPresetCol.tab2 <- tkcanvas(subfr2, width = wPreview, height = 20, bg = 'white')
 
 	sep2.tab2 <- ttkseparator(subfr2)
-	custom.color <- tclVar(0)
 	chkCustoCol.tab2 <- tkcheckbutton(subfr2, variable = custom.color, text = 'User customized  colorkey', anchor = 'w', justify = 'left')
 	butCustoCol.tab2 <- tkbutton(subfr2, text = "Custom", state = 'disabled')
 
 	sep3.tab2 <- ttkseparator(subfr2)
-	custom.level <- tclVar(0)
 	chkCustoLev.tab2 <- tkcheckbutton(subfr2, variable = custom.level, text = 'User customized  levels', anchor = 'w', justify = 'left')
 	butCustoLev.tab2 <- tkbutton(subfr2, text = "Custom", state = 'disabled')
-
-	infobulle(combPresetCol.tab2, 'Predefined color palettes')
-	status.bar.display(combPresetCol.tab2, TextOutputVar, 'Predefined color palettes')
-	infobulle(nbPresetCol.tab2, 'Number of color levels to be in the palette')
-	status.bar.display(nbPresetCol.tab2, TextOutputVar, 'Number of color levels to be in the palette')
-	infobulle(chkRevCol.tab2, 'Reverse the color palettes')
-	status.bar.display(chkRevCol.tab2, TextOutputVar, 'Reverse the color palettes')
 
 	#####
 	tkgrid(labPresetCol.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -209,9 +219,18 @@ PlotCDTDataFormatCmd <- function(){
 	tkgrid(chkCustoLev.tab2, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(butCustoLev.tab2, row = 7, column = 4, sticky = 'w', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
+	infobulle(combPresetCol.tab2, 'Predefined color palettes')
+	status.bar.display(combPresetCol.tab2, TextOutputVar, 'Predefined color palettes')
+	infobulle(nbPresetCol.tab2, 'Number of color levels to be in the palette')
+	status.bar.display(nbPresetCol.tab2, TextOutputVar, 'Number of color levels to be in the palette')
+	infobulle(chkRevCol.tab2, 'Reverse the color palettes')
+	status.bar.display(chkRevCol.tab2, TextOutputVar, 'Reverse the color palettes')
+
 	########################
 	##Preview Color
-	kolor <- getGradientColor(tim.colors(10), 0:wPreview)
+	nkol <- as.numeric(PlotCDTdata$color.opt$nb.color)
+	funkol <- match.fun(PlotCDTdata$color.opt$preset.color)
+	kolor <- getGradientColor(funkol(nkol), 0:wPreview)
 	tkdelete(previewPresetCol.tab2, 'gradlines0')
 	for(i in 0:wPreview) tkcreate(previewPresetCol.tab2, "line", i, 0, i, 20, fill = kolor[i], tags = 'gradlines0')
 
@@ -321,4 +340,3 @@ PlotCDTDataFormatCmd <- function(){
 	return(cmd.frame)
 }
 
-	

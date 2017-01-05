@@ -1,63 +1,73 @@
 DownloadRFE <- function(parent.win){
-	if(Sys.info()["sysname"] == "Windows") largeur <- 27
-	else largeur <- 21
+	if(Sys.info()["sysname"] == "Windows"){
+		largeur <- 27
+		largeur1 <- 24
+	}else{
+		largeur <- 21
+		largeur1 <- 24
+	}
 
+	downrfe <- fromJSON(file.path(apps.dir, 'init_params', 'Download_RFE.json'))
+	if(str_trim(downrfe$dir2save) == "") downrfe$dir2save <- getwd()
+	
+	#####################
 	tt <- tktoplevel()
 	tkgrab.set(tt)
 	tkfocus(tt)
 
 	frA <- tkframe(tt)
 	frB <- tkframe(tt)
-	tkgrid(frA, frB)
-
-	fr.A0 <- tkframe(frA, relief = 'sunken', borderwidth = 2)
-	tkgrid(fr.A0, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	fr.A01 <- tkframe(fr.A0)
-	fr.A02 <- tkframe(fr.A0)
-	tkgrid(fr.A01, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(fr.A02, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	fileSource <- tclVar('10-DAYS TAMSAT')
-	cb.period <- ttkcombobox(fr.A02, values = c('10-DAYS TAMSAT', '10-DAYS CHIRP', '------------------','DAILY TAMSAT', 'DAILY CHIRPS'), textvariable = fileSource, width = 24)
-	infobulle(cb.period, 'Choose the data source')
-	status.bar.display(cb.period, TextOutputVar, 'Choose the data source')
-	tkgrid(cb.period)
 
 	#####################
-	fr.B2 <- tkframe(frA, relief = 'sunken', borderwidth = 2)
-	tkgrid(fr.B2, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	infobulle(fr.B2, 'Start and end date for the merging')
-	status.bar.display(fr.B2, TextOutputVar, 'Start and end date for the merging')
+	frA1 <- tkframe(frA, relief = 'sunken', borderwidth = 2)
 
-	deb.txt <- tklabel(fr.B2, text = 'Start date', anchor = 'e', justify = 'right')
-	fin.txt <- tklabel(fr.B2, text = 'End date', anchor = 'e', justify = 'right')
-	yrs.txt <- tklabel(fr.B2, text = 'Year')
-	mon.txt <- tklabel(fr.B2, text = 'Month')
-	daytext <- tclVar('Dek')
-	day.txt <- tklabel(fr.B2, text = tclvalue(daytext), textvariable = daytext)
+	fileSource <- tclVar(str_trim(downrfe$rfe.data))
+	rfeChoix <- c('10-DAYS TAMSAT', '10-DAYS CHIRP',
+				  '------------------',
+				  'DAILY TAMSAT', 'DAILY CHIRPS')
 
-	istart.yrs <- tclVar('1983')
-	istart.mon <- tclVar('1')
-	istart.day <- tclVar('1')
-	iend.yrs <- tclVar('2014')
-	iend.mon <- tclVar('12')
-	iend.day <- tclVar('3')
+	cb.period <- ttkcombobox(frA1, values = rfeChoix, textvariable = fileSource, width = largeur1)
 
-	tkbind(cb.period,"<<ComboboxSelected>>", function(){
-	if(tclvalue(fileSource) == '10-DAYS TAMSAT' | tclvalue(fileSource) == '10-DAYS CHIRP'){
-		tclvalue(daytext) <- 'Dek'
-		tclvalue(iend.day) <- '3'
-	}else{
-		tclvalue(daytext) <- 'Day'
-		tclvalue(iend.day) <- '31'
-	}
+	######
+	tkgrid(cb.period, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(cb.period, 'Choose the data source')
+	status.bar.display(cb.period, TextOutputVar, 'Choose the data source')
+
+	######
+	tkbind(cb.period, "<<ComboboxSelected>>", function(){
+		if(tclvalue(fileSource) == '10-DAYS TAMSAT' | tclvalue(fileSource) == '10-DAYS CHIRP'){
+			tclvalue(daytext) <- 'Dek'
+			tclvalue(iend.day) <- '3'
+		}else{
+			tclvalue(daytext) <- 'Day'
+			tclvalue(iend.day) <- '31'
+		}
 	})
-	yrs1.v <- tkentry(fr.B2, width = 4, textvariable = istart.yrs, justify = "right")
-	mon1.v <- tkentry(fr.B2, width = 4, textvariable = istart.mon, justify = "right")
-	day1.v <- tkentry(fr.B2, width = 4, textvariable = istart.day, justify = "right")
-	yrs2.v <- tkentry(fr.B2, width = 4, textvariable = iend.yrs, justify = "right")
-	mon2.v <- tkentry(fr.B2, width = 4, textvariable = iend.mon, justify = "right")
-	day2.v <- tkentry(fr.B2, width = 4, textvariable = iend.day, justify = "right")
+
+	######
+	frA2 <- tkframe(frA, relief = 'sunken', borderwidth = 2)
+
+	istart.yrs <- tclVar(downrfe$date$year1)
+	istart.mon <- tclVar(downrfe$date$mon1)
+	istart.day <- tclVar(downrfe$date$day1)
+	iend.yrs <- tclVar(downrfe$date$year2)
+	iend.mon <- tclVar(downrfe$date$mon2)
+	iend.day <- tclVar(downrfe$date$day2)
+	daytext <- tclVar(downrfe$date$day.label)
+
+	deb.txt <- tklabel(frA2, text = 'Start date', anchor = 'e', justify = 'right')
+	fin.txt <- tklabel(frA2, text = 'End date', anchor = 'e', justify = 'right')
+	yrs.txt <- tklabel(frA2, text = 'Year')
+	mon.txt <- tklabel(frA2, text = 'Mon')
+	day.txt <- tklabel(frA2, text = tclvalue(daytext), textvariable = daytext)
+
+	yrs1.v <- tkentry(frA2, width = 4, textvariable = istart.yrs, justify = "right")
+	mon1.v <- tkentry(frA2, width = 4, textvariable = istart.mon, justify = "right")
+	day1.v <- tkentry(frA2, width = 4, textvariable = istart.day, justify = "right")
+	yrs2.v <- tkentry(frA2, width = 4, textvariable = iend.yrs, justify = "right")
+	mon2.v <- tkentry(frA2, width = 4, textvariable = iend.mon, justify = "right")
+	day2.v <- tkentry(frA2, width = 4, textvariable = iend.day, justify = "right")
 
 	tkgrid(deb.txt, row = 1, column = 0, sticky = 'ew', padx = 1, pady = 1)
 	tkgrid(fin.txt, row = 2, column = 0, sticky = 'ew', padx = 1, pady = 1)
@@ -71,8 +81,14 @@ DownloadRFE <- function(parent.win){
 	tkgrid(mon2.v, row = 2, column = 2, sticky = 'ew', padx = 1, pady = 1)
 	tkgrid(day2.v, row = 2, column = 3, sticky = 'ew', padx = 1, pady = 1)
 
-	bt.prm.OK <- tkbutton(frA, text=" Download ")
-	tkgrid(bt.prm.OK, row = 2, column = 0, sticky = 'w', padx = 25, pady = 1, ipadx = 1, ipady = 1)
+	infobulle(frA2, 'Start and end date to download RFE')
+	status.bar.display(frA2, TextOutputVar, 'Start and end date to download RFE')
+
+	######
+	frA3 <- tkframe(frA)
+
+	bt.prm.OK <- ttkbutton(frA3, text = "Download")
+
 	tkconfigure(bt.prm.OK, command = function(){
 		istart.yrs0 <- as.numeric(tclvalue(istart.yrs))
 		istart.mon0 <- as.numeric(tclvalue(istart.mon))
@@ -86,8 +102,9 @@ DownloadRFE <- function(parent.win){
 		maxlon <- as.numeric(tclvalue(maxLon))
 		minlat <- as.numeric(tclvalue(minLat))
 		maxlat <- as.numeric(tclvalue(maxLat))
-		outdir <- tclvalue(file.save1)
-		datasrc <- tclvalue(fileSource)
+		outdir <- str_trim(tclvalue(file.save1))
+		datasrc <- str_trim(tclvalue(fileSource))
+
 		if(outdir == "" | outdir == "NA"){
 			tkmessageBox(message = "Browse or enter directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
@@ -99,37 +116,40 @@ DownloadRFE <- function(parent.win){
 				InsertMessagesTxt(main.txt.out, "Downloading.................")
 				return(ExecDownload_SatData(datasrc, istart, iend, minlon, maxlon, minlat, maxlat, outdir))
 			}else{
-				InsertMessagesTxt(main.txt.out, 'No internet connection', format = TRUE)
+				InsertMessagesTxt(main.txt.out, 'No Internet connection', format = TRUE)
 				return(NULL)
 			}
 		}
 	})
 
+	tkgrid(bt.prm.OK, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
 	##################
-	frGrd0 <- tkframe(frB, relief = 'sunken', borderwidth = 2)
-	tkgrid(frGrd0, row = 0, column = 1, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	fr_grd <- ttklabelframe(frGrd0, text = "Area of interest", relief = "groove", borderwidth = 2)
-	tkgrid(fr_grd, sticky = 'we')
+	tkgrid(frA1, row = 0, column = 0, sticky = 'we', padx = 1, pady = 5, ipadx = 1, ipady = 1)
+	tkgrid(frA2, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frA3)
+
+	##################
+
+	frB1 <- tkframe(frB, relief = 'sunken', borderwidth = 2)
+
+	minLon <- tclVar(downrfe$bbox$minlon)
+	maxLon <- tclVar(downrfe$bbox$maxlon)
+	minLat <- tclVar(downrfe$bbox$minlat)
+	maxLat <- tclVar(downrfe$bbox$maxlat)
+
+	fr_grd <- ttklabelframe(frB1, text = "Area of interest", relief = "groove", borderwidth = 2)
+
 	grd_llon <- tklabel(fr_grd, text = "Longitude", anchor = 'e', justify = 'right')
 	grd_llat <- tklabel(fr_grd, text = "Latitude", anchor = 'e', justify = 'right')
 	grd_lb1 <- tklabel(fr_grd, text = "Minimum")
 	grd_lb2 <- tklabel(fr_grd, text = "Maximum")
+	grd_vlon1 <- tkentry(fr_grd, width = 8, justify = "right", textvariable = minLon)
+	grd_vlon2 <- tkentry(fr_grd, width = 8, justify = "right", textvariable = maxLon)
+	grd_vlat1 <- tkentry(fr_grd, width = 8, justify = "right", textvariable = minLat)
+	grd_vlat2 <- tkentry(fr_grd, width = 8, justify = "right", textvariable = maxLat)
 
-	grd_vlon1 <- tkentry.h(fr_grd, TextOutputVar, 'Minimum longitude in degree', 'Minimum longitude in degree')
-	grd_vlon2 <- tkentry.h(fr_grd, TextOutputVar, 'Maximum longitude in degree', 'Maximum longitude in degree')
-	grd_vlat1 <- tkentry.h(fr_grd, TextOutputVar, 'Minimum latitude in degree', 'Minimum latitude in degree')
-	grd_vlat2 <- tkentry.h(fr_grd, TextOutputVar, 'Maximum latitude in degree', 'Maximum latitude in degree')
-
-	minLon <- tclVar('42')
-	maxLon <- tclVar('52')
-	minLat <- tclVar('-26')
-	maxLat <- tclVar('-12')
-
-	tkconfigure(grd_vlon1, width = 8, justify = "right", textvariable = minLon)
-	tkconfigure(grd_vlon2, width = 8, justify = "right", textvariable = maxLon)
-	tkconfigure(grd_vlat1, width = 8, justify = "right", textvariable = minLat)
-	tkconfigure(grd_vlat2, width = 8, justify = "right", textvariable = maxLat)
-
+	######
 	tkgrid(grd_lb1, row = 0, column = 1, sticky = "ew")
 	tkgrid(grd_lb2, row = 0, column = 2, sticky = "ew")
 	tkgrid(grd_llon, row = 1, column = 0, sticky = "ew")
@@ -138,33 +158,52 @@ DownloadRFE <- function(parent.win){
 	tkgrid(grd_llat, row = 2, column = 0, sticky = "ew")
 	tkgrid(grd_vlat1, row = 2, column = 1, sticky = "ew")
 	tkgrid(grd_vlat2, row = 2, column = 2, sticky = "ew")
+
+	tkgrid(fr_grd, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(grd_vlon1, 'Minimum longitude in degree decimal')
+	status.bar.display(grd_vlon1, TextOutputVar, 'Minimum longitude in degree decimal')
+	infobulle(grd_vlon2, 'Maximum longitude in degree decimal')
+	status.bar.display(grd_vlon2, TextOutputVar, 'Maximum longitude in degree decimal')
+	infobulle(grd_vlat1, 'Minimum latitude in degree decimal')
+	status.bar.display(grd_vlat1, TextOutputVar, 'Minimum latitude in degree decimal')
+	infobulle(grd_vlat2, 'Maximum latitude in degree decimal')
+	status.bar.display(grd_vlat2, TextOutputVar, 'Maximum latitude in degree decimal')
+
 	########
-	fr.A1 <- tkframe(frB, relief = 'sunken', borderwidth = 2)
-	tkgrid(fr.A1, row = 1, column = 1, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	fr.A11 <- tkframe(fr.A1)
-	fr.A12 <- tkframe(fr.A1)
-	tkgrid(fr.A11, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 0)
-	tkgrid(fr.A12, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 0)
 
-	frA11.txt <- tklabel(fr.A11, text = 'Directory to save downloaded files')
-	tkgrid(frA11.txt)
+	frB2 <- tkframe(frB, relief = 'sunken', borderwidth = 2)
 
-	file.save1 <- tclVar('')
-	en.file.save <- tkentry(fr.A12, textvariable = file.save1, width = largeur)
-	infobulle(en.file.save, 'Enter the full path to\ndirectory to save downloaded files')
-	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to directory to save downloaded files')
-	bt.file.save <- tkbutton.h(fr.A12, text = "...", TextOutputVar, 'or browse here','')
-	tkgrid(en.file.save, bt.file.save)
-	tkgrid.configure(en.file.save, row = 0, column = 0, sticky = 'w')
-	tkgrid.configure(bt.file.save, row = 0, column = 1, sticky = 'e')
+	file.save1 <- tclVar(downrfe$dir2save)
+
+	txt.file.save <- tklabel(frB2, text = 'Directory to save downloaded files', anchor = 'w', justify = 'left')
+	en.file.save <- tkentry(frB2, textvariable = file.save1, width = largeur)
+	bt.file.save <- tkbutton(frB2, text = "...")
+
 	tkconfigure(bt.file.save, command = function(){
-		file2save1 <- tk_choose.dir(getwd(), "")
-			if(is.na(file2save1)) tclvalue(file.save1) <- getwd()
+		file2save1 <- tk_choose.dir(downrfe$dir2save, "")
+			if(is.na(file2save1)) tclvalue(file.save1) <- downrfe$dir2save
 			else{
 				dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
 				tclvalue(file.save1) <- file2save1
 			}
 	})
+
+	tkgrid(txt.file.save, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.file.save, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.file.save, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(en.file.save, 'Enter the full path to\ndirectory to save downloaded files')
+	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to directory to save downloaded files')
+	infobulle(bt.file.save, 'or browse here')
+
+	##################
+	tkgrid(frB1, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frB2, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	##########
+	tkgrid(frA, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frB, row = 0, column = 1, sticky = 'nswe', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	tkwm.withdraw(tt)
 	tcl('update')
@@ -172,7 +211,7 @@ DownloadRFE <- function(parent.win){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Download Satellite Rainfall Estimate data')
 	tkwm.deiconify(tt)
@@ -192,7 +231,7 @@ ExecDownload_SatData <- function(datasrc, istart, iend, minlon, maxlon, minlat, 
 
 	tkconfigure(main.win, cursor = 'watch');tcl('update')
 	ret <- downloadRFE_fun(datasrc, istart, iend, minlon, maxlon, minlat, maxlat, outdir)
-	tkconfigure(main.win, cursor='')
+	tkconfigure(main.win, cursor = '')
 	if(!is.null(ret)){
 		if(ret == 0) InsertMessagesTxt(main.txt.out, "Download Done!")
 		else if(ret == -1) InsertMessagesTxt(main.txt.out, "Some files could not be downloaded", format = TRUE)
@@ -204,7 +243,6 @@ ExecDownload_SatData <- function(datasrc, istart, iend, minlon, maxlon, minlat, 
 downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxlat, outdir){
 	outRet <- 0
 	if(datasrc == '10-DAYS TAMSAT'){
-		#url <- 'http://www.met.reading.ac.uk/~tamsat/public_data'
 		url <- 'http://tamsat.org.uk/public_data'
 		outdir0 <- file.path(outdir, 'Dekad_TAMSAT_Africa', fsep = .Platform$file.sep)
 		if(!file.exists(outdir0)) dir.create(outdir0, showWarnings = FALSE, recursive = TRUE)
@@ -216,7 +254,7 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			InsertMessagesTxt(main.txt.out, 'Check the start date', format = TRUE)
 			return(NULL)
 		}
-		deb <- strsplit(as.character(deb),'-')
+		deb <- strsplit(as.character(deb), '-')
 		year1 <- deb[[1]][1]
 		mon1 <- deb[[1]][2]
 		dek1 <- as.numeric(deb[[1]][3])
@@ -229,7 +267,7 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			InsertMessagesTxt(main.txt.out, 'Check the end date', format = TRUE)
 			return(NULL)
 		}
-		fin <- strsplit(as.character(fin),'-')
+		fin <- strsplit(as.character(fin), '-')
 		year2 <- fin[[1]][1]
 		mon2 <- fin[[1]][2]
 		dek2 <- as.numeric(fin[[1]][3])
@@ -238,31 +276,31 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			return(NULL)
 		}
 
-		dates <- seq(as.Date(paste(year1, mon1, dek1, sep = '/')), as.Date(paste(year2, mon2, dek2, sep = '/')),'day')
-		dates <- format(dates[as.numeric(format(dates,'%d')) <= 3],'%Y-%m-%d')
+		dates <- seq(as.Date(paste(year1, mon1, dek1, sep = '/')), as.Date(paste(year2, mon2, dek2, sep = '/')), 'day')
+		dates <- format(dates[as.numeric(format(dates, '%d')) <= 3], '%Y-%m-%d')
 
 		tcl("update", "idletasks")
 		for(fl in dates){
-			daty <- strsplit(as.character(fl),'-')
+			daty <- strsplit(as.character(fl), '-')
 			year <- daty[[1]][1]
 			mon <- daty[[1]][2]
 			dek <- as.numeric(daty[[1]][3])
-			file0 <- paste('rfe', year, '_', mon,'-dk', dek,'.nc', sep = '')
+			file0 <- paste('rfe', year, '_', mon, '-dk', dek, '.nc', sep = '')
 			link <- paste(url, year, mon, file0, sep = '/')
 			destfile0 <- file.path(outdir0, file0, fsep = .Platform$file.sep)
 			test <- try(suppressWarnings(readLines(link, n = 1)), silent = TRUE)
 			if(inherits(test, "try-error")){
-				InsertMessagesTxt(main.txt.out, paste('Cannot open the connection or file does not exist:',file0), format = TRUE)
-				outRet<- -1
+				InsertMessagesTxt(main.txt.out, paste('Cannot open the connection or file does not exist:', file0), format = TRUE)
+				outRet <- -1
 				next
 			}else{
 				ret <- try(download.file(link, destfile0, mode = "wb", quiet = TRUE), silent = TRUE)
 				if(ret != 0){
-					InsertMessagesTxt(main.txt.out, paste('Download failed:',file0), format = TRUE)
-					outRet<- -1
+					InsertMessagesTxt(main.txt.out, paste('Download failed :', file0), format = TRUE)
+					outRet <- -1
 					next
 				}else{
-					InsertMessagesTxt(main.txt.out, paste('Download:',file0, 'done!'))
+					InsertMessagesTxt(main.txt.out, paste('Download :', file0, 'done!'))
 					nc <- nc_open(destfile0)
 					xm <- nc$dim[[2]]$vals
 					ym <- nc$dim[[1]]$vals
@@ -286,7 +324,8 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 					nc2 <- nc_create(outfl, rfeout)
 					ncvar_put(nc2, rfeout, xdat)
 					nc_close(nc2)
-					InsertMessagesTxt(main.txt.out, paste('Extraction:',file0, 'over', paste('bbox', minlon, minlat, maxlon, maxlat, sep = ':'),'done!'))
+					InsertMessagesTxt(main.txt.out, paste('Extraction :', file0, 'over',
+										paste('bbox', minlon, minlat, maxlon, maxlat, sep = ':'), 'done!'))
 				}
 			}
 			tcl("update")
@@ -295,7 +334,6 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 	#####################################################
 
 	if(datasrc == 'DAILY TAMSAT'){
-		# url <- 'http://www.met.reading.ac.uk/~tamsat/public_data'
 		url <- 'http://tamsat.org.uk/public_data'
 		outdir0 <- file.path(outdir, 'Daily_TAMSAT_Africa', fsep = .Platform$file.sep)
 		if(!file.exists(outdir0)) dir.create(outdir0, showWarnings = FALSE, recursive = TRUE)
@@ -307,7 +345,7 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			InsertMessagesTxt(main.txt.out, 'Check the start date', format = TRUE)
 			return(NULL)
 		}
-		deb <- strsplit(as.character(deb),'-')
+		deb <- strsplit(as.character(deb), '-')
 		year1 <- deb[[1]][1]
 		mon1 <- deb[[1]][2]
 		day1 <- deb[[1]][3]
@@ -317,35 +355,36 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			InsertMessagesTxt(main.txt.out, 'Check the end date', format = TRUE)
 			return(NULL)
 		}
-		fin <- strsplit(as.character(fin),'-')
+		fin <- strsplit(as.character(fin), '-')
 		year2 <- fin[[1]][1]
 		mon2 <- fin[[1]][2]
 		day2 <- fin[[1]][3]
 
-		dates <- as.character(seq(as.Date(paste(year1, mon1, day1, sep = '-')), as.Date(paste(year2, mon2, day2, sep = '-')),'day'))
+		dates <- as.character(seq(as.Date(paste(year1, mon1, day1, sep = '-')),
+								as.Date(paste(year2, mon2, day2, sep = '-')), 'day'))
 
 		tcl("update", "idletasks")
 		for(fl in dates){
-			daty <- strsplit(as.character(fl),'-')
+			daty <- strsplit(as.character(fl), '-')
 			year <- daty[[1]][1]
 			mon <- daty[[1]][2]
 			day <- daty[[1]][3]
-			file0 <- paste('rfe', year, '_', mon, '_', day,'.nc', sep = '')
+			file0 <- paste('rfe', year, '_', mon, '_', day, '.nc', sep = '')
 			link <- paste(url, year, mon, file0, sep = '/')
 			destfile0 <- file.path(outdir0, file0, fsep = .Platform$file.sep)
 			test <- try(suppressWarnings(readLines(link, n = 1)), silent = TRUE)
 			if(inherits(test, "try-error")){
-				InsertMessagesTxt(main.txt.out, paste('Cannot open the connection or file does not exist:',file0), format = TRUE)
-				outRet<- -1
+				InsertMessagesTxt(main.txt.out, paste('Cannot open the connection or file does not exist:', file0), format = TRUE)
+				outRet <- -1
 				next
 			}else{
 				ret <- try(download.file(link, destfile0, mode = "wb", quiet = TRUE), silent = TRUE)
 				if(ret != 0){
-					InsertMessagesTxt(main.txt.out, paste('Échec du téléchargement pour:',file0), format = TRUE)
-					outRet<- -1
+					InsertMessagesTxt(main.txt.out, paste('Download failed :', file0), format = TRUE)
+					outRet <- -1
 					next
 				}else{
-					InsertMessagesTxt(main.txt.out, paste('Téléchargement pour:',file0, 'terminé'))
+					InsertMessagesTxt(main.txt.out, paste('Download :', file0, 'done!'))
 					nc <- nc_open(destfile0)
 					xm <- nc$dim[[2]]$vals
 					ym <- nc$dim[[1]]$vals
@@ -369,7 +408,8 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 					nc2 <- nc_create(outfl, rfeout)
 					ncvar_put(nc2, rfeout, xdat)
 					nc_close(nc2)
-					InsertMessagesTxt(main.txt.out, paste('Extraction de:',file0, 'sur', paste('bbox', minlon, minlat, maxlon, maxlat, sep = ':'),'terminée'))
+					InsertMessagesTxt(main.txt.out, paste('Extraction :', file0, 'over',
+										paste('bbox', minlon, minlat, maxlon, maxlat, sep = ':'), 'done!'))
 				}
 			}
 			tcl("update")
@@ -390,7 +430,7 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			InsertMessagesTxt(main.txt.out, 'Check the start date', format = TRUE)
 			return(NULL)
 		}
-		dek1 <- as.numeric(strsplit(as.character(deb),'-')[[1]][3])
+		dek1 <- as.numeric(strsplit(as.character(deb), '-')[[1]][3])
 		if(dek1 > 3){
 			InsertMessagesTxt(main.txt.out, 'Dekad must be between 1 and 3', format = TRUE)
 			return(NULL)
@@ -400,36 +440,38 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			InsertMessagesTxt(main.txt.out, 'Check the end date', format = TRUE)
 			return(NULL)
 		}
-		dek2 <- as.numeric(strsplit(as.character(fin),'-')[[1]][3])
+		dek2 <- as.numeric(strsplit(as.character(fin), '-')[[1]][3])
 		if(dek2 > 3){
 			InsertMessagesTxt(main.txt.out, 'Dekad must be between 1 and 3', format = TRUE)
 			return(NULL)
 		}
 
 		dates <- seq(deb, fin, 'day')
-		dates <- do.call('rbind', strsplit(as.character(dates[which(as.numeric(format(dates,'%d')) <= 3)]),'-'))
-		dates <- dates[,c(1:3,2:3)]
+		dates <- do.call('rbind', strsplit(as.character(dates[which(as.numeric(format(dates, '%d')) <= 3)]), '-'))
+		dates <- dates[, c(1:3, 2:3)]
 		if(is.null(dim(dates))) dates <- matrix(dates, ncol = 5)
-		dates[,4] <- mois[as.numeric(dates[,2])]
-		dates[,3] <- ifelse(dates[,3] == '01', '1-10', ifelse(dates[,3] == '02', '11-20', '03'))
-		if(length(which(dates[,3] == '03'))>0){
-			endmois <- apply(matrix(dates[dates[,3] == '03', 1:2], ncol = 2), 1, function(x) rev((28:31)[which(!is.na(as.Date(paste(x[1], x[2], 28:31, sep = '-'))))])[1])
-			dates[dates[,3] == '03', 3] <- paste(21, endmois, sep = '-')
+		dates[, 4] <- mois[as.numeric(dates[, 2])]
+		dates[, 3] <- ifelse(dates[, 3] == '01', '1-10', ifelse(dates[, 3] == '02', '11-20', '03'))
+		if(length(which(dates[, 3] == '03')) > 0){
+			endmois <- apply(matrix(dates[dates[, 3] == '03', 1:2], ncol = 2), 1,
+						function(x) rev((28:31)[which(!is.na(as.Date(paste(x[1], x[2], 28:31, sep = '-'))))])[1])
+			dates[dates[, 3] == '03', 3] <- paste(21, endmois, sep = '-')
 		}
 
 		tcl("update", "idletasks")
 		for(j in 1:nrow(dates)){
-			time <- paste('T/%28', dates[j, 3],'%20', dates[j, 4],'%20', dates[j, 1],'%29/VALUES', sep = '')
+			time <- paste('T/%28', dates[j, 3], '%20', dates[j, 4], '%20', dates[j, 1], '%29/VALUES', sep = '')
 			link <- paste(url, area, time, 'data.nc', sep = '/')
-			fileout <- paste('chirp_', dates[j, 1], dates[j, 2], as.numeric(dates[j, 5]),'.nc', sep = '')
+			fileout <- paste('chirp_', dates[j, 1], dates[j, 2], as.numeric(dates[j, 5]), '.nc', sep = '')
 			destfile <- file.path(outdir, fileout, fsep = .Platform$file.sep)
 			ret <- try(download.file(link, destfile, mode = "wb", quiet = TRUE), silent = TRUE)
 			if(ret != 0){
-				InsertMessagesTxt(main.txt.out, paste('Échec du téléchargement pour:',fileout), format = TRUE)
-				outRet<- -1
+				InsertMessagesTxt(main.txt.out, paste('Download failed :', fileout), format = TRUE)
+				outRet <- -1
 				next
 			}else{
-				InsertMessagesTxt(main.txt.out, paste('Extraction de:',fileout, 'sur', paste('bbox', minlon, minlat, maxlon, maxlat, sep = ':'),'terminée'))
+				InsertMessagesTxt(main.txt.out, paste('Extraction :', fileout, 'over',
+									paste('bbox', minlon, minlat, maxlon, maxlat, sep = ':'), 'done!'))
 			}
 			tcl("update")
 		}
@@ -456,26 +498,26 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 		}
 
 		dates <- seq(deb, fin, 'day')
-		dates <- do.call('rbind', strsplit(as.character(dates),'-'))
+		dates <- do.call('rbind', strsplit(as.character(dates), '-'))
 
-		dates <- dates[,c(1:3,2)]
+		dates <- dates[, c(1:3, 2)]
 		if(is.null(dim(dates))) dates <- matrix(dates, ncol = 4)
-		dates[,4] <- mois[as.numeric(dates[,2])]
+		dates[, 4] <- mois[as.numeric(dates[, 2])]
 
 		tcl("update", "idletasks")
 		for(j in 1:nrow(dates)){
-			time <- paste('T/%28', as.numeric(dates[j, 3]),'%20', dates[j, 4],'%20', dates[j, 1],'%29/VALUES', sep = '')
+			time <- paste('T/%28', as.numeric(dates[j, 3]), '%20', dates[j, 4], '%20', dates[j, 1], '%29/VALUES', sep = '')
 			link <- paste(url, area, time, 'data.nc', sep = '/')
-			fileout <- paste('chirps_', dates[j, 1], dates[j, 2], dates[j, 3],'.nc', sep = '')
+			fileout <- paste('chirps_', dates[j, 1], dates[j, 2], dates[j, 3], '.nc', sep = '')
 			destfile <- file.path(outdir, fileout, fsep = .Platform$file.sep)
 			ret <- try(download.file(link, destfile, mode = "wb", quiet = TRUE), silent = TRUE)
 			if(ret != 0){
-				InsertMessagesTxt(main.txt.out, paste('Échec du téléchargement pour:',fileout), format = TRUE)
-				outRet<- -1
+				InsertMessagesTxt(main.txt.out, paste('Download failed :', fileout), format = TRUE)
+				outRet <- -1
 				next
 			}else{
-				InsertMessagesTxt(main.txt.out, paste('Extraction de:',fileout, 'sur',
-				paste('bbox', minlon, minlat, maxlon, maxlat, sep = ':'),'terminée'))
+				InsertMessagesTxt(main.txt.out, paste('Extraction :',fileout, 'over',
+									paste('bbox', minlon, minlat, maxlon, maxlat, sep = ':'), 'done!'))
 			}
 			tcl("update")
 		}

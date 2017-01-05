@@ -122,15 +122,15 @@ Execute_All_Functions <- function(get.stn){
 				if(outret == 0) InsertMessagesTxt(outtxt, msgOK)
 				else{
 					InsertMessagesTxt(outtxt, msgFail, format = TRUE)
-					InsertMessagesTxt(outtxt, gsub('[\r\n]','',outret[1]), format = TRUE)
+					InsertMessagesTxt(outtxt, gsub('[\r\n]', '', outret[1]), format = TRUE)
 				}
 			}else{
 				InsertMessagesTxt(outtxt, msgFail, format = TRUE)
-				InsertMessagesTxt(outtxt, gsub('[\r\n]','',outret[1]), format = TRUE)
+				InsertMessagesTxt(outtxt, gsub('[\r\n]', '', outret[1]), format = TRUE)
 			}
 		}else{
 			InsertMessagesTxt(outtxt, msgFail, format = TRUE)
-			InsertMessagesTxt(outtxt, gsub('[\r\n]','',outret[1]), format = TRUE)
+			InsertMessagesTxt(outtxt, gsub('[\r\n]', '', outret[1]), format = TRUE)
 		}
 	}
 	
@@ -139,7 +139,7 @@ Execute_All_Functions <- function(get.stn){
 
 	##compute mean Gauge-RFE bias
 	if(GeneralParameters$action == 'coefbias.rain'){
-		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('STN_RFE_Bias', getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'), fsep = .Platform$file.sep)
+		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('STN_RFE_Bias', getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'))
 		mrg2run <- try(execBiasRain(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Computing Gauge-RFE bias finished successfully", "Computing Gauge-RFE bias failed")
 	}
@@ -282,15 +282,17 @@ Execute_All_Functions <- function(get.stn){
 	################################################################################
 	
 	if(GeneralParameters$action == "chk.coords"){
-		chk2run <- try(RetChkCrd <- excludeOutStnFun(GeneralParameters), silent = TRUE)
-		if(!inherits(chk2run, "try-error")){
-			if(is.na(RetChkCrd$Stndoute[1,1])) InsertMessagesTxt(main.txt.out, "All station's coordinates are OK!")
+		RetChkCrd <- try(excludeOutStnFun(GeneralParameters), silent = TRUE)
+		if(!inherits(RetChkCrd, "try-error")){
+			if(is.na(RetChkCrd$Stndoute[1, 1])) InsertMessagesTxt(main.txt.out, "All station's coordinates are OK!")
 			GeneralParameters$period <<- RetChkCrd$period
-			InsertMessagesTxt(main.txt.out, paste("Stations coordinates checked successfully for", getf.no.ext(as.character(GeneralParameters$file.io$Values[1]))))
+			InsertMessagesTxt(main.txt.out, paste("Stations coordinates checked successfully for",
+								getf.no.ext(GeneralParameters$IO.files$STN.file)))
 			return(RetChkCrd)
 		}else{
-			InsertMessagesTxt(main.txt.out, paste("Stations coordinates checking failed", getf.no.ext(as.character(GeneralParameters$file.io$Values[1]))), format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',chk2run[1]), format = TRUE)
+			InsertMessagesTxt(main.txt.out, paste("Stations coordinates checking failed",
+								getf.no.ext(GeneralParameters$IO.files$STN.file)), format = TRUE)
+			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', RetChkCrd[1]), format = TRUE)
 			return(NULL)
 		}
 	}
@@ -305,7 +307,7 @@ Execute_All_Functions <- function(get.stn){
 			} else InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
 		}else{
 			InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',agg2run[1]), format = TRUE)
+			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', agg2run[1]), format = TRUE)
 		}
 		return(NULL)
 	}
@@ -320,7 +322,7 @@ Execute_All_Functions <- function(get.stn){
 			} else InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
 		}else{
 			InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',agg2run[1]), format = TRUE)
+			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', agg2run[1]), format = TRUE)
 		}
 		return(NULL)
 	}
@@ -338,7 +340,7 @@ Execute_All_Functions <- function(get.stn){
 			} else InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
 		}else{
 			InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',agg2run[1]), format = TRUE)
+			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', agg2run[1]), format = TRUE)
 		}
 		return(NULL)
 	}
@@ -357,7 +359,7 @@ Execute_All_Functions <- function(get.stn){
 			}else InsertMessagesTxt(main.txt.out, "Conversion to CDT data failed", format = TRUE)
 		}else{
 			InsertMessagesTxt(main.txt.out, "Conversion to CDT data failed", format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',agg2run[1]), format = TRUE)
+			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', agg2run[1]), format = TRUE)
 		}
 		return(NULL)
 	}
@@ -372,7 +374,7 @@ Execute_All_Functions <- function(get.stn){
 			}else InsertMessagesTxt(main.txt.out, paste("Conversion from", GeneralParameters$period, "to", GeneralParameters$output.time, "data failed"), format = TRUE)
 		}else{
 			InsertMessagesTxt(main.txt.out, paste("Conversion from", GeneralParameters$period, "to", GeneralParameters$output.time, "data failed"), format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',agg2run[1]), format = TRUE)
+			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', agg2run[1]), format = TRUE)
 		}
 		return(NULL)
 	}

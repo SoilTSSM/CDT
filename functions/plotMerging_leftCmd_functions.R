@@ -1,14 +1,16 @@
 
 PlotMergingOutputCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
-	largeur <- as.integer(w.scale(21)/sfont0)
-	wncdf_ff <- as.integer(w.scale(14)/sfont0) 
 	if(Sys.info()["sysname"] == "Windows"){
-		wscrlwin <- w.scale(20)
-		hscrlwin <- h.scale(28)
+		wscrlwin <- w.scale(24)
+		hscrlwin <- h.scale(34)
+		wPreview <- w.scale(21)
+		largeur <- as.integer(w.scale(27)/sfont0)
 	}else{
 		wscrlwin <- w.scale(24)  
-		hscrlwin <- h.scale(35)
+		hscrlwin <- h.scale(32)
+		wPreview <- w.scale(22)
+		largeur <- as.integer(w.scale(21)/sfont0)
 	}
 
 	PlotOutMrg <- fromJSON(file.path(apps.dir, 'init_params', 'Plot_Output_Merging.json'))
@@ -20,7 +22,7 @@ PlotMergingOutputCmd <- function(){
 	tknote.cmd <- bwNoteBook(cmd.frame)
 	plotBut.cmd <- tkframe(cmd.frame)
 	tkgrid(tknote.cmd, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 4)
-	tkgrid(plotBut.cmd, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 3)
+	tkgrid(plotBut.cmd, row = 1, column = 1, sticky = 'se', rowspan = 1, columnspan = 3)
 	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
 	tkgrid.rowconfigure(tknote.cmd, 0, weight = 1)
 	tkgrid.columnconfigure(plotBut.cmd, 0, weight = 1)
@@ -54,7 +56,13 @@ PlotMergingOutputCmd <- function(){
 	subfr1 <- bwScrollableFrame(scrw1, width = wscrlwin, height = hscrlwin)
 
 	##############################
-	file.period <- tclVar(PlotOutMrg$Obs$Obs.freq)
+
+	file.period <- tclVar()
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(PlotOutMrg$Obs$Obs.freq, 
+									'daily' = cb.periodVAL[1], 
+									'dekadal' = cb.periodVAL[2],
+									'monthly' = cb.periodVAL[3])
 	file.stnfl <- tclVar(PlotOutMrg$Obs$Obs.file)
 	dayLabTab1_Var <- tclVar(PlotOutMrg$date$day.label)
 	idate_yrs <- tclVar(PlotOutMrg$date$year)
@@ -66,10 +74,8 @@ PlotMergingOutputCmd <- function(){
 
 	##############################
 	frameStn <- ttklabelframe(subfr1, text = "Station data file", relief = 'groove')
-	frameShp <- ttklabelframe(subfr1, text = "Shapefiles for boundary", relief = 'groove')
 
-	##############################
-	combPrd.tab1 <- ttkcombobox(frameStn, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
+	combPrd.tab1 <- ttkcombobox(frameStn, values = cb.periodVAL, textvariable = file.period, width = largeur)
 	combStnfl.tab1 <- ttkcombobox(frameStn, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur)
 	btStnfl.tab1 <- tkbutton(frameStn, text = "...") 
 	labDate.tab1 <- tklabel(frameStn, text = "Date", anchor = 'e', justify = 'right')
@@ -140,6 +146,7 @@ PlotMergingOutputCmd <- function(){
 	})
 
 	##############################
+	frameShp <- ttklabelframe(subfr1, text = "Shapefiles for boundary", relief = 'groove')
 	
 	combShp.tab1 <- ttkcombobox(frameShp, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur) 
 	btShp.tab1 <- tkbutton(frameShp, text = "...") 
@@ -162,6 +169,11 @@ PlotMergingOutputCmd <- function(){
 	##############################
 	tkgrid(combShp.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(btShp.tab1, row = 0, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+
+	infobulle(combShp.tab1, 'Choose the file containing the ESRI shapefiles')
+	status.bar.display(combShp.tab1, TextOutputVar, 'Choose the file containing the ESRI shapefiles')
+	infobulle(btShp.tab1, 'Browse file if not listed')
+	status.bar.display(btShp.tab1, TextOutputVar, 'Browse file if not listed')
 
 	##############################
 	tkgrid(frameStn, row = 0, column = 0, sticky = 'we')
@@ -413,14 +425,13 @@ PlotMergingOutputCmd <- function(){
 
 	##############################
 
-	wPreview <- wscrlwin-20
-
 	nb.color <- tclVar(PlotOutMrg$color.opt$nb.color)
 	preset.color <- tclVar(PlotOutMrg$color.opt$preset.color)
 	reverse.color <- tclVar(PlotOutMrg$color.opt$reverse.color)
 	custom.color <- tclVar(PlotOutMrg$color.opt$custom.color)
 	custom.level <- tclVar(PlotOutMrg$color.opt$custom.level)
 
+	########################
 	labPresetCol.tab3 <- tklabel(subfr3, text = 'Presets colorkey', anchor = 'w', justify = 'left')
 	combPresetCol.tab3 <- ttkcombobox(subfr3, values = c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors'), textvariable = preset.color, width = 13)
 	nbPresetCol.tab3 <- tkentry(subfr3, width = 3, textvariable = nb.color, justify = "left")
@@ -464,7 +475,9 @@ PlotMergingOutputCmd <- function(){
 
 	########################
 	##Preview Color
-	kolor <- getGradientColor(tim.colors(10), 0:wPreview)
+	nkol <- as.numeric(PlotOutMrg$color.opt$nb.color)
+	funkol <- match.fun(PlotOutMrg$color.opt$preset.color)
+	kolor <- getGradientColor(funkol(nkol), 0:wPreview)
 	tkdelete(previewPresetCol.tab3, 'gradlines0')
 	for(i in 0:wPreview) tkcreate(previewPresetCol.tab3, "line", i, 0, i, 20, fill = kolor[i], tags = 'gradlines0')
 
@@ -535,13 +548,13 @@ PlotMergingOutputCmd <- function(){
 	
 	#######################################################################################################
 
-	plot_prev <- tkbutton(plotBut.cmd, text=" <<- Prev")
+	plot_prev <- tkbutton(plotBut.cmd, text = "<<-Prev")
 	plotDataBut <- tkbutton(plotBut.cmd, text = "Plot Data")
 	plot_next <- tkbutton(plotBut.cmd, text = "Next->>")
 
-	tkgrid(plot_prev, row = 0, column = 0, sticky = 'w', padx = 5, pady = 5)
-	tkgrid(plotDataBut, row = 0, column = 1, sticky = 'we', padx = 5, pady = 5)
-	tkgrid(plot_next, row = 0, column = 2, sticky = 'e', padx = 5, pady = 5)
+	tkgrid(plot_prev, row = 0, column = 0, sticky = 'w', padx = 2, pady = 5)
+	tkgrid(plotDataBut, row = 0, column = 1, sticky = 'we', padx = 2, pady = 5)
+	tkgrid(plot_next, row = 0, column = 2, sticky = 'e', padx = 2, pady = 5)
 
 	#################
 
@@ -601,12 +614,12 @@ PlotMergingOutputCmd <- function(){
 			return(NULL)
 		}
 		if(tclvalue(file.period) == 'Daily data') daty <- daty-1
-		if(tclvalue(file.period) == 'Dekadal data') daty <- addDekads(daty,-1)
-		if(tclvalue(file.period) == 'Monthly data') daty <- addMonths(daty,-1)
-		daty <- format(daty,'%Y%m%d')
-		tclvalue(idate_yrs) <- as.numeric(substr(daty, 1,4))
-		tclvalue(idate_mon) <- as.numeric(substr(daty, 5,6))
-		tclvalue(idate_day) <- as.numeric(substr(daty, 7,8))
+		if(tclvalue(file.period) == 'Dekadal data') daty <- addDekads(daty, -1)
+		if(tclvalue(file.period) == 'Monthly data') daty <- addMonths(daty, -1)
+		daty <- format(daty, '%Y%m%d')
+		tclvalue(idate_yrs) <- as.numeric(substr(daty, 1, 4))
+		tclvalue(idate_mon) <- as.numeric(substr(daty, 5, 6))
+		tclvalue(idate_day) <- as.numeric(substr(daty, 7, 8))
 
 		#####
 		if(tclvalue(custom.color) == '0' | length(listCol) == 0){
@@ -663,10 +676,10 @@ PlotMergingOutputCmd <- function(){
 		if(tclvalue(file.period) == 'Daily data') daty <- daty+1
 		if(tclvalue(file.period) == 'Dekadal data') daty <- addDekads(daty, 1)
 		if(tclvalue(file.period) == 'Monthly data') daty <- addMonths(daty, 1)
-		daty <- format(daty,'%Y%m%d')
-		tclvalue(idate_yrs) <- as.numeric(substr(daty, 1,4))
-		tclvalue(idate_mon) <- as.numeric(substr(daty, 5,6))
-		tclvalue(idate_day) <- as.numeric(substr(daty, 7,8))
+		daty <- format(daty, '%Y%m%d')
+		tclvalue(idate_yrs) <- as.numeric(substr(daty, 1, 4))
+		tclvalue(idate_mon) <- as.numeric(substr(daty, 5, 6))
+		tclvalue(idate_day) <- as.numeric(substr(daty, 7, 8))
 
 		#####
 		if(tclvalue(custom.color) == '0' | length(listCol) == 0){

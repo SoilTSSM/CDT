@@ -9,7 +9,7 @@ tkadd(popup.opfiles, "command", label = "Open in table", command = function(){
 		if(tp.file == 'ascii'){
 			tkconfigure(main.win, cursor = 'watch');tcl('update')
 			tab.array <- displayInTable(tknotes)
-			tkconfigure(main.win, cursor='')
+			tkconfigure(main.win, cursor = '')
 			ntab <- length(AllOpenTabType)
 			AllOpenTabType[[ntab+1]] <<- 'arr'
 			AllOpenTabData[[ntab+1]] <<- tab.array
@@ -24,7 +24,7 @@ defile.popup <- function(x, y) {
 	xTxt <- as.integer(x) + rootx
 	yTxt <- as.integer(y) + rooty
 	tkselection.clear(all.opfiles, "0", as.character(length(AllOpenFilesData)-1))
-	idsel <- tclvalue(tkindex(all.opfiles, paste("@", x,",", y, sep = "")))
+	idsel <- tclvalue(tkindex(all.opfiles, paste("@", x, ",", y, sep = "")))
 	tkselection.set(all.opfiles, idsel)
 	.Tcl(paste("tk_popup", .Tcl.args(popup.opfiles, xTxt, yTxt)))
 }
@@ -77,11 +77,11 @@ popupAddRemoveRow0 <- function(parent, tabData, tabid){
 		rooty <- as.integer(tkwinfo("rooty", table1))
 		xTxt <- as.integer(x) + rootx
 		yTxt <- as.integer(y) + rooty
-		if(tclvalue(tkindex(table1, paste("@", x,",", y, sep = ""), "col")) == "0"){
+		if(tclvalue(tkindex(table1, paste("@", x, ",", y, sep = ""), "col")) == "0"){
 			#tkselection.clear(table1, "all")
-			selrow <- tclvalue(tkindex(table1, paste("@", x,",", y, sep = ""), "row"))
+			selrow <- tclvalue(tkindex(table1, paste("@", x, ",", y, sep = ""), "row"))
 			tkselection.set(table1, paste(selrow, 0, sep = ','), paste(selrow, data_arr$ncol, sep = ','))
-			#selrow <- unlist(strsplit(tclvalue(tcl(table1, "curselection")),' '))
+			#selrow <- unlist(strsplit(tclvalue(tcl(table1, "curselection")), ' '))
 			#tkselection.set(table1, selrow[1], selrow[length(selrow)])
 			.Tcl(paste("tk_popup", .Tcl.args(popup.EditTable, xTxt, yTxt)))
 		}
@@ -115,11 +115,11 @@ popupAddRemoveRow <- function(parent){
 		rooty <- as.integer(tkwinfo("rooty", table1))
 		xTxt <- as.integer(x) + rootx
 		yTxt <- as.integer(y) + rooty
-		if(tclvalue(tkindex(table1, paste("@", x,",", y, sep = ""), "col")) == "0"){
+		if(tclvalue(tkindex(table1, paste("@", x, ",", y, sep = ""), "col")) == "0"){
 			#tkselection.clear(table1, "all")
-			selrow <- tclvalue(tkindex(table1, paste("@", x,",", y, sep = ""), "row"))
+			selrow <- tclvalue(tkindex(table1, paste("@", x, ",", y, sep = ""), "row"))
 			tkselection.set(table1, paste(selrow, 0, sep = ','), paste(selrow, data_arr$ncol, sep = ','))
-			#selrow <- unlist(strsplit(tclvalue(tcl(table1, "curselection")),' '))
+			#selrow <- unlist(strsplit(tclvalue(tcl(table1, "curselection")), ' '))
 			#tkselection.set(table1, selrow[1], selrow[length(selrow)])
 			.Tcl(paste("tk_popup", .Tcl.args(popup.EditTable, xTxt, yTxt)))
 		}
@@ -131,7 +131,7 @@ popupAddRemoveRow <- function(parent){
 }
 #############################################
 insertRowAbove <- function(parent, data_arr, nl){
-	tkinsert(parent, "rows", unlist(strsplit(tclvalue(tcl(parent, "curselection")),','))[1], "-1")
+	tkinsert(parent, "rows", unlist(strsplit(tclvalue(tcl(parent, "curselection")), ','))[1], "-1")
 	nl <- nl+1
 	data_arr$nrow <- nl #as.numeric(tclvalue(tkindex(parent, 'end', 'row')))
 	for(i in 1:nl) data_arr[i, 0] <- i
@@ -139,7 +139,7 @@ insertRowAbove <- function(parent, data_arr, nl){
 }
 
 insertRowBelow <- function(parent, data_arr, nl){
-	tkinsert(parent, "rows", unlist(strsplit(tclvalue(tcl(parent, "curselection")),','))[1], "1")
+	tkinsert(parent, "rows", unlist(strsplit(tclvalue(tcl(parent, "curselection")), ','))[1], "1")
 	nl <- nl+1
 	data_arr$nrow <- nl
 	for(i in 1:nl) data_arr[i, 0] <- i
@@ -147,11 +147,11 @@ insertRowBelow <- function(parent, data_arr, nl){
 }
 
 deleteSelRow <- function(parent, data_arr, nl){
-	#tkdelete(parent, "rows", unlist(strsplit(tclvalue(tcl(parent, "curselection")),','))[1], "1")
+	#tkdelete(parent, "rows", unlist(strsplit(tclvalue(tcl(parent, "curselection")), ','))[1], "1")
 	#nl <- nl-1
-	tmp <- unlist(strsplit(tclvalue(tcl(parent, "curselection")),' '))
-	tmp <- do.call('rbind', strsplit(tmp,','))
-	remrow <- sort(as.numeric(levels(as.factor(tmp[,1]))))
+	tmp <- unlist(strsplit(tclvalue(tcl(parent, "curselection")), ' '))
+	tmp <- do.call('rbind', strsplit(tmp, ','))
+	remrow <- sort(as.numeric(levels(as.factor(tmp[, 1]))))
 	tkdelete(parent, "rows", remrow[1], length(remrow))
 	nl <- nl-length(remrow)
 

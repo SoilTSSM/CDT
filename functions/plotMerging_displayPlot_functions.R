@@ -61,12 +61,13 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 		donne1 <- data.frame(expand.grid(x = xydon$x, y = xydon$y), z = c(xydon$value))
 #		plotXYdon <- levelplot(xydon$value, row.values = xydon$x, column.values = xydon$y, at = ticks, 
 		plotXYdon <- levelplot(z~x+y, data = donne1, at = ticks, 
-		interpolate = TRUE, region = TRUE, 
-		panel = function(...){
-			panel.levelplot(...)
-			panel.lines(ocrds, col = "black", lwd = 0.5)
-			panel.abline(h = grid.y, v = grid.x, col = "lightgray", lty = 3)
-		},colorkey = FALSE)
+								interpolate = TRUE, region = TRUE, 
+								panel = function(...){
+									panel.levelplot(...)
+									panel.lines(ocrds, col = "black", lwd = 0.5)
+									panel.abline(h = grid.y, v = grid.x, col = "lightgray", lty = 3)
+								},
+								colorkey = FALSE)
 		PlotObj0 <- c(PlotObj0, plotXYdon)
 	}
 
@@ -77,7 +78,6 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 	LayoutObj <- manageLayout(nbPlot, transpose = FALSE)
 	PlotObj <- c(PlotObj0, layout = LayoutObj$dim)
 
-#cat(nbPlot, LayoutObj$dim,'\n')
 	###################
 	###Colorkey position
 	if(diff(xlim)*LayoutObj$dim[1] >= diff(ylim)*LayoutObj$dim[2]){
@@ -102,11 +102,12 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 
 	##par.settings
 	parSettings <- list(background = list(alpha = 1, col = 'white'),
-	layout.widths = list(left.padding = layout.pad[1], right.padding = layout.pad[2]),
-	layout.heights = list(top.padding = layout.pad[3], bottom.padding = layout.pad[4]))
+						layout.widths = list(left.padding = layout.pad[1], right.padding = layout.pad[2]),
+						layout.heights = list(top.padding = layout.pad[3], bottom.padding = layout.pad[4]))
 
 	##Colorkey
-	colorkey <- list(space = colorkeyPlace, col = loko, width = 1.5, height = 1, raster = TRUE, interpolate = TRUE, at = 1:nticks,
+	colorkey <- list(space = colorkeyPlace, col = loko, width = 1.5, height = 1,
+					raster = TRUE, interpolate = TRUE, at = 1:nticks,
 					labels = list(labels = labticks, at = 1:nticks, cex = 0.8, col = 'black', rot = 0),
 					axis.line = list(alpha = 0.5, lty = 1, lwd = 1, col = 'black'))
 	colorkeyFrame <- draw.colorkey(key = colorkey, draw = FALSE, vp = NULL)

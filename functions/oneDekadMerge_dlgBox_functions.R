@@ -1,6 +1,21 @@
 mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	largeur <- if(Sys.info()["sysname"] == "Windows") 29 else 27
+	# largeur <- if(Sys.info()["sysname"] == "Windows") 29 else 27
+
+	if (Sys.info()["sysname"] == "Windows"){
+		largeur <- 28
+		largeur0 <- 33
+		largeur1 <- 25
+		largeur2 <- 18
+		largeur3 <- 28
+	}else{
+		largeur <- 25
+		largeur0 <- 25
+		largeur1 <- 23
+		largeur2 <- 15
+		largeur3 <- 28
+	}
+
 
 	##
 	tt <- tktoplevel()
@@ -58,7 +73,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 
 	chk.stnfl <- tkcheckbutton(frStnfl, variable = no.stnfl, text = 'No station data available', anchor = 'w', justify = 'left')
 	txt.stnfl <- tklabel(frStnfl, text = 'Station data file', anchor = 'w', justify = 'left')
-	cb.stnfl <- ttkcombobox(frStnfl, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur, state = state.stnfl)
+	cb.stnfl <- ttkcombobox(frStnfl, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur1, state = state.stnfl)
 	bt.stnfl <- tkbutton(frStnfl, text = "...", state = state.stnfl)
 
 	tkconfigure(bt.stnfl, command = function(){
@@ -175,11 +190,11 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 
 	chk.rfe <- tkcheckbutton(frRfe, variable = down.rfe, text = 'RFE data already downloaded', anchor = 'w', justify = 'left')
 	txt.grdrfe <- tklabel(frRfe, text = "RFE file", anchor = 'w', justify = 'left')
-	cb.grdrfe <- ttkcombobox(frRfe, values = unlist(listOpenFiles), textvariable = file.grdrfe, width = largeur, state = stateRFE1)
+	cb.grdrfe <- ttkcombobox(frRfe, values = unlist(listOpenFiles), textvariable = file.grdrfe, width = largeur1, state = stateRFE1)
 	bt.grdrfe <- tkbutton(frRfe, text = "...", state = stateRFE1)
 
 	frDown <- ttklabelframe(frRfe, text = "Download RFE", relief = 'groove')
-	cb.down.rfe <- ttkcombobox(frDown, values = c('TAMSAT', 'CHIRP'), textvariable = data.rfe, state = stateRFE2)
+	cb.down.rfe <- ttkcombobox(frDown, values = c('TAMSAT', 'CHIRP'), textvariable = data.rfe, width = largeur1, state = stateRFE2)
 
 	frbbox <- tkframe(frDown)
 	txt.lon <- tklabel(frbbox, text = "Longitude", anchor = 'e', justify = 'right')
@@ -283,12 +298,12 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 
 	chk.bias <- tkcheckbutton(frBias, variable = adj.bias, text = 'Perform bias correction', anchor = 'w', justify = 'left')
 	txt.mth.bias <- tklabel(frBias, text = 'Bias method', anchor = 'w', justify = 'left')
-	cb.mth.bias <- ttkcombobox(frBias, values = cb.biasMthd, textvariable = bias.method, width = 12, state = stateBiasdir)
+	cb.mth.bias <- ttkcombobox(frBias, values = cb.biasMthd, textvariable = bias.method, state = stateBiasdir, width = largeur2)
 	txt.dir.bias <- tklabel(frBias, text = "Directory of bias files", anchor = 'w', justify = 'left')
-	en.dir.bias <- tkentry(frBias, textvariable = dir.bias, width = largeur, state = stateBiasdir)
+	en.dir.bias <- tkentry(frBias, textvariable = dir.bias, state = stateBiasdir, width = largeur0)
 	bt.dir.bias <- tkbutton(frBias, text = "...", state = stateBiasdir)
 	txt.prf.bias <- tklabel(frBias, text = 'Mean bias filename prefix', anchor = 'w', justify = 'left')
-	en.prf.bias <- tkentry(frBias, textvariable = meanbsprefix, width = largeur, state = stateBiaspfx)
+	en.prf.bias <- tkentry(frBias, textvariable = meanbsprefix, state = stateBiaspfx, width = largeur0)
 
 	tkconfigure(bt.dir.bias, command = function(){
 		dir4bias <- tk_choose.dir(str_trim(GeneralParameters$IO.files$BIAS.dir), "")
@@ -296,8 +311,8 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	})
 
 	tkgrid(chk.bias, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.mth.bias, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cb.mth.bias, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 3, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.mth.bias, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.mth.bias, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(txt.dir.bias, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.dir.bias, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(bt.dir.bias, row = 3, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
@@ -354,9 +369,9 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	}
 
 	txt.mrg <- tklabel(frMrg, text = 'Mering method', anchor = 'w', justify = 'left')
-	cb.mrg <- ttkcombobox(frMrg, values = cb.MrgMthd, textvariable = mrg.method, state = stateMrg)
+	cb.mrg <- ttkcombobox(frMrg, values = cb.MrgMthd, textvariable = mrg.method, state = stateMrg, width = largeur2)
 	txt.dir.LM <- tklabel(frMrg, text = "Directory of LMCoef files", anchor = 'w', justify = 'left')
-	en.dir.LM <- tkentry(frMrg, textvariable = dir.LMCoef, width = largeur, state = stateLMCoef)
+	en.dir.LM <- tkentry(frMrg, textvariable = dir.LMCoef, state = stateLMCoef, width = largeur0)
 	bt.dir.LM <- tkbutton(frMrg, text = "...", state = stateLMCoef)
 	frMrgPars <- ttklabelframe(frMrg, text = "Merging parameters", relief = 'groove')
 
@@ -374,12 +389,12 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	})
 	#####
 
-	tkgrid(txt.mrg, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cb.mrg, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.dir.LM, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.dir.LM, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(bt.dir.LM, row = 2, column = 3, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frMrgPars, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.mrg, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.mrg, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.dir.LM, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.dir.LM, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.dir.LM, row = 2, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frMrgPars, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	tkgrid(min.nbrs.stn.l, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(min.nbrs.stn.v, row = 0, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -426,7 +441,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	maxdist <- tclVar(GeneralParameters$Interpolation.pars$maxdist)
 
 	txt.Interp <- tklabel(frInterp, text = 'Interpolation method', anchor = 'w', justify = 'left')
-	cb.Interp <- ttkcombobox(frInterp, values = cb.InterpVAL, textvariable = interp.method, state = stateMrg)
+	cb.Interp <- ttkcombobox(frInterp, values = cb.InterpVAL, textvariable = interp.method, state = stateMrg, width = largeur3)
 	frIDW <- ttklabelframe(frInterp, text = "Interpolation parameters", relief = 'groove')
 
 	########
@@ -483,12 +498,12 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	}else stateshp <- 'disabled'
 
 	txt.blankGrd <- tklabel(frBlank, text = 'Blank', anchor = 'w', justify = 'left')
-	cb.blankGrd <- ttkcombobox(frBlank, values = blankChx, textvariable = blankGrd, state = stateMrg)
+	cb.blankGrd <- ttkcombobox(frBlank, values = blankChx, textvariable = blankGrd, state = stateMrg, width = largeur2)
 	txt.grddem <- tklabel(frBlank, text = "Elevation data(NetCDF)", anchor = 'w', justify = 'left')
-	cb.grddem <- ttkcombobox(frBlank, values = unlist(listOpenFiles), textvariable = file.grddem, state = statedem, width = largeur-1)
+	cb.grddem <- ttkcombobox(frBlank, values = unlist(listOpenFiles), textvariable = file.grddem, state = statedem, width = largeur1)
 	bt.grddem <- tkbutton(frBlank, text = "...")
 	txt.blkshp <- tklabel(frBlank, text = "ESRI shapefiles for blanking", anchor = 'w', justify = 'left')
-	cb.blkshp <- ttkcombobox(frBlank, values = unlist(listOpenFiles), textvariable = file.blkshp, state = stateshp, width = largeur-1)
+	cb.blkshp <- ttkcombobox(frBlank, values = unlist(listOpenFiles), textvariable = file.blkshp, state = stateshp, width = largeur1)
 	bt.blkshp <- tkbutton(frBlank, text = "...")
 
 	tkconfigure(bt.grddem, state = statedem, command = function(){
@@ -526,7 +541,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	})
 
 	tkgrid(txt.blankGrd, row = 0, column = 0, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
-	tkgrid(cb.blankGrd, row = 0, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
+	tkgrid(cb.blankGrd, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 3, ipadx = 1, ipady = 1)
 
 	tkgrid(txt.grddem, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cb.grddem, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)

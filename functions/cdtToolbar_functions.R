@@ -124,7 +124,7 @@ tkbind(spinV,"<<Decrement>>", function(){
 tkconfigure(tb.open.file, state = 'normal', command = function(){
 	tkconfigure(main.win, cursor = 'watch');tcl('update')
 	dat.opfiles <- getOpenFiles(main.win, all.opfiles)
-	tkconfigure(main.win, cursor='')
+	tkconfigure(main.win, cursor = '')
 	if(!is.null(dat.opfiles)){
 		nopf <- length(AllOpenFilesType)
 		AllOpenFilesType[[nopf+1]] <<- 'ascii'

@@ -1,0 +1,19 @@
+{
+    "rfe.data": "10-DAYS TAMSAT",
+    "date": [{
+        "year1": 1983,
+        "mon1": 1,
+        "day1": 1,
+        "year2": 1984,
+        "mon2": 12,
+        "day2": 3,
+        "day.label": "Dek"
+    }],
+    "bbox": [{
+        "minlon": 42,
+        "maxlon": 52,
+        "minlat": -26,
+        "maxlat": -12
+    }],
+    "dir2save": ""
+}

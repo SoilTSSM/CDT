@@ -17,15 +17,12 @@ splitCDTData <- function(donne, period){
 			return(NULL)
 		}
 	}
-	stn.id <- as.character(as.matrix(donne[1, -1]))
-	stn.lon <- as.numeric(as.matrix(donne[2, -1]))
-	stn.lat <- as.numeric(as.matrix(donne[3, -1]))
 	if(length(grep('alt|elev|elv', as.character(donne[4, 1]), ignore.case = TRUE)) == 1){
 		Info <- data.frame(t(donne[1:4, -1]))
 		names(Info) <- c('Stations', 'Lon', 'Lat', 'ELV')
 		if(period == 'daily'){
 			dates.bak <- as.character(donne[-c(1:4), 1])
-			dates <- as.Date(dates.bak, format='%Y%m%d')
+			dates <- as.Date(dates.bak, format = '%Y%m%d')
 		}else if(period == 'dekadal'){
 			xan <- substr(as.character(donne[-c(1:4), 1]), 1, 4)
 			xmo <- substr(as.character(donne[-c(1:4), 1]), 5, 6)
@@ -40,14 +37,13 @@ splitCDTData <- function(donne, period){
 			dates.bak <- paste(xan, xmo, '1', sep = '-')
 			dates <- as.Date(dates.bak)
 		}
-		stn.elv <- as.numeric(donne[4, -1])
 		donne <- as.matrix(donne[-c(1:4), -1])
 	}else{
 		Info <- data.frame(t(donne[1:3, -1]))
 		names(Info) <- c('Stations', 'Lon', 'Lat')
 		if(period == 'daily'){
 			dates.bak <- as.character(donne[-c(1:3), 1])
-			dates <- as.Date(dates.bak, format='%Y%m%d')
+			dates <- as.Date(dates.bak, format = '%Y%m%d')
 		}else if(period == 'dekadal'){
 			xan <- substr(as.character(donne[-c(1:3), 1]), 1, 4)
 			xmo <- substr(as.character(donne[-c(1:3), 1]), 5, 6)
@@ -62,7 +58,6 @@ splitCDTData <- function(donne, period){
 			dates.bak <- paste(xan, xmo, '1', sep = '-')
 			dates <- as.Date(dates.bak)
 		}
-		stn.elv <- NULL
 		donne <- as.matrix(donne[-c(1:3), -1])
 	}
 
@@ -114,30 +109,30 @@ splitCDTData <- function(donne, period){
 	duplicated.dates <-  if(any(idates0)) list(date = dup.dates, data = ddup.dates) else NULL
 	missing.dates <-  if(any(is.na(ix))) list(date = miss.dates) else NULL
 
-	##missing coordinates
-	imiss<-(is.na(stn.lon) | is.na(stn.lat) | stn.lat < -90 | stn.lat > 90)
-	stn.lon <- stn.lon[!imiss]
-	stn.lat <- stn.lat[!imiss]
-	stn.id <- stn.id[!imiss]
-	stn.elv <- stn.elv[!imiss]
-	donne <- donne[,!imiss, drop = FALSE]
+	##missing & duplicated coordinates
+	Info <- apply(Info, 2, as.character)
+	stn.id <- as.character(Info[, 1])
+	stn.lon <- as.numeric(Info[, 2])
+	stn.lat <- as.numeric(Info[, 3])
+	stn.elv <- if(dim(Info)[2] == 4) as.numeric(Info[, 4]) else NULL
 
-	##duplicates coordinates
-	idup <- duplicated(cbind(stn.lon, stn.lat))
-	idup1 <- duplicated(cbind(stn.lon, stn.lat), fromLast = T)
-	# omit doublon
-	stn.lon <- stn.lon[!idup]
-	stn.lat <- stn.lat[!idup]
-	stn.id <- stn.id[!idup]
-	stn.elv <- stn.elv[!idup]
-	donne <- donne[,!idup, drop = FALSE]
+	imiss <- (is.na(stn.lon) | stn.lon < -180 | stn.lon > 360 | is.na(stn.lat) | stn.lat < -90 | stn.lat > 90)
+	idup <- duplicated(Info[, 2:3]) | duplicated(Info[, 2:3], fromLast = TRUE)
+	aretenir <- !imiss & !duplicated(Info[, 2:3])
 
-	stn.miss <- if(any(imiss)) Info[imiss,] else NULL
-	stn.dup <- if(any(idup1 | idup)) rbind(Info[idup1, ], Info[idup, ]) else NULL
+	stn.lon <- stn.lon[aretenir]
+	stn.lat <- stn.lat[aretenir]
+	stn.id <- stn.id[aretenir]
+	stn.elv <- stn.elv[aretenir]
+	donne <- donne[, aretenir, drop = FALSE]
+
+	stn.miss <- if(any(imiss)) Info[imiss, , drop = FALSE] else NULL
+	stn.dup <- if(any(idup)) Info[idup, , drop = FALSE] else NULL
 
 	stnlist <- list(id = stn.id, lon = stn.lon, lat = stn.lat, elv = stn.elv, dates = dates, data = donne,
 					wrong.dates = wrong.dates, duplicated.dates = duplicated.dates, missing.dates = missing.dates,
-					duplicated.coords = stn.dup, missing.coords = stn.miss)
+					duplicated.coords = stn.dup, missing.coords = stn.miss,
+					miss.coords.idx = imiss, dup.coords.idx = idup)
 	return(stnlist)
 }
 

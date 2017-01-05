@@ -1,7 +1,13 @@
 
 mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	largeur <- if (Sys.info()["sysname"] == "Windows") 23 else 21
+	if (Sys.info()["sysname"] == "Windows"){
+		largeur <- 28
+		largeur1 <- 25
+	}else{
+		largeur <- 25
+		largeur1 <- 24
+	}
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
@@ -11,6 +17,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	frMRG1 <- tkframe(tt)
 	frLeft <- tkframe(frMRG0, relief = "groove", borderwidth = 2)
 	frRight <- tkframe(frMRG0, relief = "groove", borderwidth = 2)
+	frRight1 <- tkframe(frMRG0, relief = "groove", borderwidth = 2)
 
 	############################################
 
@@ -19,8 +26,8 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	mrg.method <- tclVar(str_trim(GeneralParameters$Mrg.Method))
 	cb.MrgMthd <- c("Regression Kriging", "Spatio-Temporal LM")
 
-	txt.mrg <- tklabel(frMrg, text = 'Mering method', anchor = 'w', justify = 'left')
-	cb.mrg <- ttkcombobox(frMrg, values = cb.MrgMthd, textvariable = mrg.method)
+	txt.mrg <- tklabel(frMrg, text = 'Merging method', anchor = 'w', justify = 'left')
+	cb.mrg <- ttkcombobox(frMrg, values = cb.MrgMthd, textvariable = mrg.method, width = largeur1)
 
 	tkgrid(txt.mrg, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cb.mrg, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -41,7 +48,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	file.stnfl <- tclVar(GeneralParameters$IO.files$STN.file)
 
 	txt.stnfl <- tklabel(frSTN, text = 'Station data file', anchor = 'w', justify = 'left')
-	cb.stnfl <- ttkcombobox(frSTN, values = unlist(listOpenFiles), textvariable = file.stnfl)
+	cb.stnfl <- ttkcombobox(frSTN, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur1)
 	bt.stnfl <- tkbutton(frSTN, text = "...")
 
 	######
@@ -83,7 +90,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	en.dir.rfe <- tkentry(frRFE, textvariable = dir.rfe, width = largeur)
 	bt.dir.rfe <- tkbutton(frRFE, text = "...")
 	txt.grdrfe <- tklabel(frRFE, text = "RFE or ADJ-RFE sample file", anchor = 'w', justify = 'left')
-	cb.grdrfe <- ttkcombobox(frRFE, values = unlist(listOpenFiles), textvariable = file.grdrfe)
+	cb.grdrfe <- ttkcombobox(frRFE, values = unlist(listOpenFiles), textvariable = file.grdrfe, width = largeur1)
 	bt.grdrfe <- tkbutton(frRFE, text = "...")
 	txt.inrfeff <- tklabel(frRFE, text = 'Input RFE or ADJ-RFE file format', anchor = 'w', justify = 'left')
 	en.inrfeff <- tkentry(frRFE, textvariable = inrfeff, width = largeur)
@@ -183,111 +190,10 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	status.bar.display(bt.dir.LM, TextOutputVar, 'or browse here')
 
 	############################################
-
-	frSave <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
-
-	file.save1 <- tclVar(GeneralParameters$IO.files$dir2save)
-
-	txt.file.save <- tklabel(frSave, text = 'Directory to save result', anchor = 'w', justify = 'left')
-	en.file.save <- tkentry(frSave, textvariable = file.save1, width = largeur)
-	bt.file.save <- tkbutton(frSave, text = "...")
-
-	#####
-
-	tkconfigure(bt.file.save, command = function(){
-		file2save1 <- tk_choose.dir(GeneralParameters$IO.files$dir2save, "")
-			if(is.na(file2save1)) tclvalue(file.save1) <- GeneralParameters$IO.files$dir2save
-			else{
-				dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
-				tclvalue(file.save1) <- file2save1
-			}
-	})
-
-	#####
-
-	tkgrid(txt.file.save, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(en.file.save, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(bt.file.save, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
-
-	infobulle(en.file.save, 'Enter the full path to directory to save result')
-	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to directory to save result')
-	infobulle(bt.file.save, 'or browse here')
-	status.bar.display(bt.file.save, TextOutputVar, 'or browse here')
-
-	############################################
-
-	frDEMSHP <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
-
-	file.grddem <- tclVar(GeneralParameters$IO.files$DEM.file)
-	file.blkshp <- tclVar(GeneralParameters$IO.files$SHP.file)
-	statedem <- if(as.character(GeneralParameters$Blank.Grid) == '2' | (GeneralParameters$Create.Grid & GeneralParameters$Grid.From == '2')) 'normal' else 'disabled'
-	stateshp <- if(as.character(GeneralParameters$Blank.Grid) == '3') 'normal' else 'disabled'
-	
-	txt.grddem <- tklabel(frDEMSHP, text = "Elevation data(NetCDF)", anchor = 'w', justify = 'left')
-	cb.grddem <- ttkcombobox(frDEMSHP, values = unlist(listOpenFiles), textvariable = file.grddem, state = statedem)
-	bt.grddem <- tkbutton(frDEMSHP, text = "...", state = statedem)
-	txt.blkshp <- tklabel(frDEMSHP, text = "ESRI shapefiles for blanking", anchor = 'w', justify = 'left')
-	cb.blkshp <- ttkcombobox(frDEMSHP, values = unlist(listOpenFiles), textvariable = file.blkshp, state = stateshp)
-	bt.blkshp <- tkbutton(frDEMSHP, text = "...", state = stateshp)
-
-	####
-	tkconfigure(bt.grddem, command = function(){
-		nc.opfiles <- getOpenNetcdf(tt, all.opfiles)
-		if(!is.null(nc.opfiles)){
-			nopf <- length(AllOpenFilesType)
-			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
-			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
-
-			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
-			tclvalue(file.grddem) <- AllOpenFilesData[[nopf+1]][[1]]
-			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
-			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
-			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
-			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
-		}else return(NULL)
-	})
-
-	tkconfigure(bt.blkshp, command = function(){
-		shp.opfiles <- getOpenShp(tt, all.opfiles)
-		if(!is.null(shp.opfiles)){
-			nopf <- length(AllOpenFilesType)
-			AllOpenFilesType[[nopf+1]] <<- 'shp'
-			AllOpenFilesData[[nopf+1]] <<- shp.opfiles
-			tclvalue(file.blkshp) <- AllOpenFilesData[[nopf+1]][[1]]
-
-			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
-			tclvalue(file.blkshp) <- AllOpenFilesData[[nopf+1]][[1]]
-			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
-			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
-			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
-			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
-		}else return(NULL)
-	})
-
-	#####
-	tkgrid(txt.grddem, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(cb.grddem, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(bt.grddem, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(txt.blkshp, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(cb.blkshp, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(bt.blkshp, row = 3, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
-
-	infobulle(cb.grddem, 'Choose the file in the list')
-	status.bar.display(cb.grddem, TextOutputVar, 'File containing the elevation data in netcdf')
-	infobulle(bt.grddem, 'Browse file if not listed')
-	status.bar.display(bt.grddem, TextOutputVar, 'Browse file if not listed')
-	infobulle(cb.blkshp, 'Choose the file in the list')
-	status.bar.display(cb.blkshp, TextOutputVar, 'Choose the file containing the ESRI shapefiles')
-	infobulle(bt.blkshp, 'Browse file if not listed')
-	status.bar.display(bt.blkshp, TextOutputVar, 'Browse file if not listed')
-
-	############################################
 	tkgrid(frMrg, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frSTN, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frRFE, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frDirLM, row = 3, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frSave, row = 4, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frDEMSHP, row = 5, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#######################  RIGHT   #####################
 
@@ -309,7 +215,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	statedate <- if(GeneralParameters$period == 'monthly') 'disabled' else 'normal'
 	# use.months <- tclVar(paste(GeneralParameters$Mrg.Months, collapse=' '))
 
-	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period)
+	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period, width = largeur1)
 	frtxtDate <- ttklabelframe(frDate, text = "Date Range", relief = 'groove')
 
 	deb.txt <- tklabel(frtxtDate, text = 'Start date', anchor = 'e', justify = 'right')
@@ -385,7 +291,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	# res.coarse <- tclVar(GeneralParameters$Interpolation.pars$res.coarse)
 
 	txt.Interp <- tklabel(frInterp, text = 'Interpolation method', anchor = 'w', justify = 'left')
-	cb.Interp <- ttkcombobox(frInterp, values = cb.InterpVAL, textvariable = interp.method)
+	cb.Interp <- ttkcombobox(frInterp, values = cb.InterpVAL, textvariable = interp.method, width = largeur1)
 	frIDW <- ttklabelframe(frInterp, text = "Interpolation parameters", relief = 'groove')
 	# frCoarse <- tkframe(frInterp)
 
@@ -472,7 +378,44 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	# status.bar.display(max.rnr.dst.v, TextOutputVar, 'Maximum distance (in decimal degrees) for interpolating Rain-noRain mask')
 
 	############################################
-	frOutmrg <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
+	tkgrid(frDate, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frInterp, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frMrgPars, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#######################  RIGHT 1 #####################
+
+	frSave <- tkframe(frRight1, relief = 'sunken', borderwidth = 2)
+
+	file.save1 <- tclVar(GeneralParameters$IO.files$dir2save)
+
+	txt.file.save <- tklabel(frSave, text = 'Directory to save result', anchor = 'w', justify = 'left')
+	en.file.save <- tkentry(frSave, textvariable = file.save1, width = largeur)
+	bt.file.save <- tkbutton(frSave, text = "...")
+
+	#####
+
+	tkconfigure(bt.file.save, command = function(){
+		file2save1 <- tk_choose.dir(GeneralParameters$IO.files$dir2save, "")
+			if(is.na(file2save1)) tclvalue(file.save1) <- GeneralParameters$IO.files$dir2save
+			else{
+				dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
+				tclvalue(file.save1) <- file2save1
+			}
+	})
+
+	#####
+
+	tkgrid(txt.file.save, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(en.file.save, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(bt.file.save, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 2, ipadx = 1, ipady = 1)
+
+	infobulle(en.file.save, 'Enter the full path to directory to save result')
+	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to directory to save result')
+	infobulle(bt.file.save, 'or browse here')
+	status.bar.display(bt.file.save, TextOutputVar, 'or browse here')
+
+	############################################
+	frOutmrg <- tkframe(frRight1, relief = 'sunken', borderwidth = 2)
 
 	outmrgff <- tclVar(GeneralParameters$FileFormat$Mrg.file.format)
 
@@ -481,15 +424,14 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 
 	#####
 
-	tkgrid(txt.outmrgff, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(en.outmrgff, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(txt.outmrgff, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 4, ipadx = 1, ipady = 1)
+	tkgrid(en.outmrgff, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 4, ipadx = 1, ipady = 1)
 
 	infobulle(en.outmrgff, 'Format of the merged data files names in NetCDF,\nexample: rr_mrg_1983012_ALL.nc')
 	status.bar.display(en.outmrgff, TextOutputVar, 'Format of the merged data files names in NetCDF,\nexample: rr_mrg_1983012_ALL.nc')
 
 	############################################
-
-	frblank <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
+	frblank <- tkframe(frRight1, relief = 'sunken', borderwidth = 2)
 
 	blankGrd <- tclVar()
 	cb.blankVAL <- c("None", "Use DEM", "Use ESRI shapefile")
@@ -498,17 +440,77 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 									'2' = cb.blankVAL[2],
 									'3' = cb.blankVAL[3])
 
-	txt.blankGrd <- tklabel(frblank, text = 'Blank merged data', anchor = 'w', justify = 'left')
-	cb.blankGrd <- ttkcombobox(frblank, values = cb.blankVAL, textvariable = blankGrd)
-	#####
+	file.grddem <- tclVar(GeneralParameters$IO.files$DEM.file)
+	file.blkshp <- tclVar(GeneralParameters$IO.files$SHP.file)
+	statedem <- if(as.character(GeneralParameters$Blank.Grid) == '2' | (GeneralParameters$Create.Grid & GeneralParameters$Grid.From == '2')) 'normal' else 'disabled'
+	stateshp <- if(as.character(GeneralParameters$Blank.Grid) == '3') 'normal' else 'disabled'
 
-	tkgrid(txt.blankGrd, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(cb.blankGrd, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+	txt.blankGrd <- tklabel(frblank, text = 'Blank merged data', anchor = 'w', justify = 'left')
+	cb.blankGrd <- ttkcombobox(frblank, values = cb.blankVAL, textvariable = blankGrd, width = largeur1)
+	txt.grddem <- tklabel(frblank, text = "Elevation data(NetCDF)", anchor = 'w', justify = 'left')
+	cb.grddem <- ttkcombobox(frblank, values = unlist(listOpenFiles), textvariable = file.grddem, state = statedem, width = largeur1)
+	bt.grddem <- tkbutton(frblank, text = "...", state = statedem)
+	txt.blkshp <- tklabel(frblank, text = "ESRI shapefiles for blanking", anchor = 'w', justify = 'left')
+	cb.blkshp <- ttkcombobox(frblank, values = unlist(listOpenFiles), textvariable = file.blkshp, state = stateshp, width = largeur1)
+	bt.blkshp <- tkbutton(frblank, text = "...", state = stateshp)
+
+	########
+	tkconfigure(bt.grddem, command = function(){
+		nc.opfiles <- getOpenNetcdf(tt, all.opfiles)
+		if(!is.null(nc.opfiles)){
+			nopf <- length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
+			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
+
+			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.grddem) <- AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
+			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
+			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
+			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
+		}else return(NULL)
+	})
+
+	tkconfigure(bt.blkshp, command = function(){
+		shp.opfiles <- getOpenShp(tt, all.opfiles)
+		if(!is.null(shp.opfiles)){
+			nopf <- length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]] <<- 'shp'
+			AllOpenFilesData[[nopf+1]] <<- shp.opfiles
+			tclvalue(file.blkshp) <- AllOpenFilesData[[nopf+1]][[1]]
+
+			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.blkshp) <- AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
+			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
+			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
+			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)
+		}else return(NULL)
+	})
+
+	#####
+	tkgrid(txt.blankGrd, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(cb.blankGrd, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(txt.grddem, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(cb.grddem, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(bt.grddem, row = 3, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(txt.blkshp, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(cb.blkshp, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(bt.blkshp, row = 5, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 2, ipadx = 1, ipady = 1)
 
 	infobulle(cb.blankGrd, 'Blank grid outside the country boundaries or over ocean')
 	status.bar.display(cb.blankGrd, TextOutputVar,'Blank grid outside the country boundaries  or over ocean\ngiven by the DEM mask or the shapefile')
+	infobulle(cb.grddem, 'Choose the file in the list')
+	status.bar.display(cb.grddem, TextOutputVar, 'File containing the elevation data in netcdf')
+	infobulle(bt.grddem, 'Browse file if not listed')
+	status.bar.display(bt.grddem, TextOutputVar, 'Browse file if not listed')
+	infobulle(cb.blkshp, 'Choose the file in the list')
+	status.bar.display(cb.blkshp, TextOutputVar, 'Choose the file containing the ESRI shapefiles')
+	infobulle(bt.blkshp, 'Browse file if not listed')
+	status.bar.display(bt.blkshp, TextOutputVar, 'Browse file if not listed')
 
-	###########
+	############################################
+
 	tkbind(cb.blankGrd,"<<ComboboxSelected>>", function(){
 		if(tclvalue(blankGrd) == 'None'){
 			tkconfigure(cb.blkshp, state = 'disabled')
@@ -542,16 +544,15 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	})
 
 	############################################
-	tkgrid(frDate, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frInterp, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frMrgPars, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frOutmrg, row = 3, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frblank, row = 4, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frSave, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frOutmrg, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frblank, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	############################################
 	
 	tkgrid(frLeft, row = 0, column = 0, sticky = 'news', padx = 5, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frRight, row = 0, column = 1, sticky = 'news', padx = 5, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frRight1, row = 0, column = 2, sticky = 'news', padx = 5, pady = 1, ipadx = 1, ipady = 1)
 
 	############################################
 
@@ -673,12 +674,17 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	return(GeneralParameters)
 }
 
-
 #############################################################################################
 
 coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	largeur <- if (Sys.info()["sysname"] == "Windows") 23 else 21
+	if (Sys.info()["sysname"] == "Windows"){
+		largeur <- 28
+		largeur1 <- 25
+	}else{
+		largeur <- 25
+		largeur1 <- 24
+	}
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
@@ -696,7 +702,7 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 	file.stnfl <- tclVar(GeneralParameters$IO.files$STN.file)
 
 	txt.stnfl <- tklabel(frSTN, text = 'Station data file', anchor = 'w', justify = 'left')
-	cb.stnfl <- ttkcombobox(frSTN, values = unlist(listOpenFiles), textvariable = file.stnfl)
+	cb.stnfl <- ttkcombobox(frSTN, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur1)
 	bt.stnfl <- tkbutton(frSTN, text = "...")
 
 	######
@@ -736,7 +742,7 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 	en.dir.rfe <- tkentry(frRFE, textvariable = dir.rfe, width = largeur)
 	bt.dir.rfe <- tkbutton(frRFE, text = "...")
 	txt.grdrfe <- tklabel(frRFE, text = "RFE or ADJ-RFE sample file", anchor = 'w', justify = 'left')
-	cb.grdrfe <- ttkcombobox(frRFE, values = unlist(listOpenFiles), textvariable = file.grdrfe)
+	cb.grdrfe <- ttkcombobox(frRFE, values = unlist(listOpenFiles), textvariable = file.grdrfe, width = largeur1)
 	bt.grdrfe <- tkbutton(frRFE, text = "...")
 	txt.inrfeff <- tklabel(frRFE, text = 'Input RFE or ADJ-RFE file format', anchor = 'w', justify = 'left')
 	en.inrfeff <- tkentry(frRFE, textvariable = inrfeff, width = largeur)
@@ -789,7 +795,7 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 	file.grddem <- tclVar(GeneralParameters$IO.files$DEM.file)
 
 	txt.grddem <- tklabel(frDEM, text = "Elevation data(NetCDF)", anchor = 'w', justify = 'left')
-	cb.grddem <- ttkcombobox(frDEM, values = unlist(listOpenFiles), textvariable = file.grddem)
+	cb.grddem <- ttkcombobox(frDEM, values = unlist(listOpenFiles), textvariable = file.grddem, width = largeur1)
 	bt.grddem <- tkbutton(frDEM, text = "...")
 
 	####
@@ -872,7 +878,7 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 	year2 <- tclVar(GeneralParameters$LM.Date.Range$end.year)
 	# use.months <- tclVar(paste(GeneralParameters$LM.Months, collapse=' '))
 
-	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period)
+	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period, width = largeur1)
 	frtxtDate <- ttklabelframe(frDate, text = "Year Range", relief = 'groove')
 
 	years1.l <- tklabel(frtxtDate, text = 'Start', anchor = 'e', justify = 'right')
@@ -974,7 +980,7 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 	}
 
 	txt.Interp <- tklabel(frInterp, text = 'Interpolation method', anchor = 'w', justify = 'left')
-	cb.Interp <- ttkcombobox(frInterp, values = cb.InterpVAL, textvariable = interp.method)
+	cb.Interp <- ttkcombobox(frInterp, values = cb.InterpVAL, textvariable = interp.method, width = largeur1)
 	frNN <- ttklabelframe(frInterp, text = "Nearest Neighbor", relief = 'groove')
 	frIDW <- ttklabelframe(frInterp, text = "Inverse Distance & Kriging", relief = 'groove')
 	# frCoarse <- tkframe(frInterp)
@@ -1177,8 +1183,13 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 
 coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	if (Sys.info()["sysname"] == "Windows") largeur <- 23
-	else largeur <- 21
+	if (Sys.info()["sysname"] == "Windows"){
+		largeur <- 28
+		largeur1 <- 25
+	}else{
+		largeur <- 25
+		largeur1 <- 24
+	}
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
@@ -1197,7 +1208,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	cb.biasMthd <- c("Quantile.Mapping", "Multiplicative.Bias.Var", "Multiplicative.Bias.Mon")
 
 	txt.bias <- tklabel(frBias, text = 'Bias method', anchor = 'w', justify = 'left')
-	cb.bias <- ttkcombobox(frBias, values = cb.biasMthd, textvariable = bias.method)
+	cb.bias <- ttkcombobox(frBias, values = cb.biasMthd, textvariable = bias.method, width = largeur1)
 
 	tkgrid(txt.bias, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cb.bias, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -1218,7 +1229,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	file.stnfl <- tclVar(GeneralParameters$IO.files$STN.file)
 
 	txt.stnfl <- tklabel(frSTN, text = 'Station data file', anchor = 'w', justify = 'left')
-	cb.stnfl <- ttkcombobox(frSTN, values = unlist(listOpenFiles), textvariable = file.stnfl)
+	cb.stnfl <- ttkcombobox(frSTN, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur1)
 	bt.stnfl <- tkbutton(frSTN, text = "...")
 
 	######
@@ -1258,7 +1269,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	en.dir.rfe <- tkentry(frRFE, textvariable = dir.rfe, width = largeur)
 	bt.dir.rfe <- tkbutton(frRFE, text = "...")
 	txt.grdrfe <- tklabel(frRFE, text = "RFE's sample file", anchor = 'w', justify = 'left')
-	cb.grdrfe <- ttkcombobox(frRFE, values = unlist(listOpenFiles), textvariable = file.grdrfe)
+	cb.grdrfe <- ttkcombobox(frRFE, values = unlist(listOpenFiles), textvariable = file.grdrfe, width = largeur1)
 	bt.grdrfe <- tkbutton(frRFE, text = "...")
 	txt.inrfeff <- tklabel(frRFE, text = 'Input RFE file format', anchor = 'w', justify = 'left')
 	en.inrfeff <- tkentry(frRFE, textvariable = inrfeff, width = largeur)
@@ -1311,7 +1322,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	file.grddem <- tclVar(GeneralParameters$IO.files$DEM.file)
 
 	txt.grddem <- tklabel(frDEM, text = "Elevation data(NetCDF)", anchor = 'w', justify = 'left')
-	cb.grddem <- ttkcombobox(frDEM, values = unlist(listOpenFiles), textvariable = file.grddem)
+	cb.grddem <- ttkcombobox(frDEM, values = unlist(listOpenFiles), textvariable = file.grddem, width = largeur1)
 	bt.grddem <- tkbutton(frDEM, text = "...")
 
 	####
@@ -1411,7 +1422,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	year2 <- tclVar(GeneralParameters$Bias.Date.Range$end.year)
 	# use.months <- tclVar(paste(GeneralParameters$Bias.Months, collapse=' '))
 
-	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period)
+	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period, width = largeur1)
 	frtxtDate <- ttklabelframe(frDate, text = "Year Range", relief = 'groove')
 
 	years1.l <- tklabel(frtxtDate, text = 'Start', anchor = 'e', justify = 'right')
@@ -1514,7 +1525,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	}
 
 	txt.Interp <- tklabel(frInterp, text = 'Interpolation method', anchor = 'w', justify = 'left')
-	cb.Interp <- ttkcombobox(frInterp, values = cb.InterpVAL, textvariable = interp.method)
+	cb.Interp <- ttkcombobox(frInterp, values = cb.InterpVAL, textvariable = interp.method, width = largeur1)
 	frNN <- ttklabelframe(frInterp, text = "Nearest Neighbor", relief = 'groove')
 	frIDW <- ttklabelframe(frInterp, text = "Inverse Distance & Kriging", relief = 'groove')
 	# frCoarse <- tkframe(frInterp)
@@ -1737,7 +1748,14 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 
 rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	largeur <- if (Sys.info()["sysname"] == "Windows") 23 else 21
+	if (Sys.info()["sysname"] == "Windows"){
+		largeur <- 28
+		largeur1 <- 25
+	}else{
+		largeur <- 25
+		largeur1 <- 24
+	}
+
 
 	tt <- tktoplevel()
 	tkgrab.set(tt)
@@ -1756,7 +1774,7 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	cb.biasMthd <- c("Quantile.Mapping", "Multiplicative.Bias.Var", "Multiplicative.Bias.Mon")
 
 	txt.bias <- tklabel(frBias, text = 'Bias method', anchor = 'w', justify = 'left')
-	cb.bias <- ttkcombobox(frBias, values = cb.biasMthd, textvariable = bias.method)
+	cb.bias <- ttkcombobox(frBias, values = cb.biasMthd, textvariable = bias.method, width = largeur1)
 
 	tkgrid(txt.bias, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cb.bias, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -1783,7 +1801,7 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	en.dir.rfe <- tkentry(frRFE, textvariable = dir.rfe, width = largeur)
 	bt.dir.rfe <- tkbutton(frRFE, text = "...")
 	txt.grdrfe <- tklabel(frRFE, text = "RFE's sample file", anchor = 'w', justify = 'left')
-	cb.grdrfe <- ttkcombobox(frRFE, values = unlist(listOpenFiles), textvariable = file.grdrfe)
+	cb.grdrfe <- ttkcombobox(frRFE, values = unlist(listOpenFiles), textvariable = file.grdrfe, width = largeur1)
 	bt.grdrfe <- tkbutton(frRFE, text = "...")
 	txt.inrfeff <- tklabel(frRFE, text = 'Input RFE filename format', anchor = 'w', justify = 'left')
 	en.inrfeff <- tkentry(frRFE, textvariable = inrfeff, width = largeur)
@@ -1890,7 +1908,7 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	
 	# use.months <- tclVar(paste(GeneralParameters$Adjust.Months, collapse=' '))
 
-	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period)
+	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period, width = largeur1)
 	frtxtDate <- ttklabelframe(frDate, text = "Date Range", relief = 'groove')
 
 	deb.txt <- tklabel(frtxtDate, text = 'Start date', anchor = 'e', justify = 'right')
@@ -1973,7 +1991,7 @@ rmvBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	file.save1 <- tclVar(GeneralParameters$IO.files$dir2save)
 
 	txt.file.save <- tklabel(frSave, text = 'Directory to save result', anchor = 'w', justify = 'left')
-	en.file.save <- tkentry(frSave, textvariable = file.save1, width = largeur)
+	en.file.save <- tkentry(frSave, textvariable = file.save1, width = largeur-3)
 	bt.file.save <- tkbutton(frSave, text = "...")
 
 	#####

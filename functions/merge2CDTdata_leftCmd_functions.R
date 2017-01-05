@@ -19,7 +19,7 @@ merge2CDTDataPanelCmd <- function(){
 	file.save1 <- tclVar()
 
 	txtStnfl1 <- tklabel(input.cmd, text = 'CDT data #1', anchor = 'w', justify = 'left')
-	cbStnfl1 <- ttkcombobox(input.cmd, values = unlist(listOpenFiles), textvariable = file.stnfl1) #, width = largeur
+	cbStnfl1 <- ttkcombobox(input.cmd, values = unlist(listOpenFiles), textvariable = file.stnfl1)
 	btStnfl1 <- tkbutton(input.cmd, text = "...")
 	txtStnfl2 <- tklabel(input.cmd, text = 'CDT data #2', anchor = 'w', justify = 'left')
 	cbStnfl2 <- ttkcombobox(input.cmd, values = unlist(listOpenFiles), textvariable = file.stnfl2)

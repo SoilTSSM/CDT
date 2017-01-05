@@ -1,0 +1,15 @@
+{
+    "ncdf": [{
+        "nc.file": "",
+        "nc.unit": "mm"
+    }],
+    "shp": "",
+    "blank": false,
+    "color.opt": [{
+        "nb.color": 10,
+        "preset.color": "tim.colors",
+        "reverse.color": false,
+        "custom.color": false,
+        "custom.level": false
+    }]
+}

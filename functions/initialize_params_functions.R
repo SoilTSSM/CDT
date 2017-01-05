@@ -111,7 +111,8 @@ init.params <- function(action, period){
 	}
 
 	#########################################################################
-	###Mean bias rainfall
+	## Merging Rainfall
+	###Mean bias
 	if(action == 'coefbias.rain'){
 		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Mean_Bias_Factor_RR.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
@@ -147,6 +148,7 @@ init.params <- function(action, period){
 	}
 
 	#################################################################
+	## Merging temperature
 	##compute regression parameters for downscaling
 	if(action == 'coefdown.temp'){
 		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Downscalling_Coef_TT.json'))
@@ -190,14 +192,13 @@ init.params <- function(action, period){
 	}
 
 	#############################################################################################3
-
-	#######################
+	
 	if(action == 'chk.coords'){
-		file.io <- data.frame(c('stn.file', 'shp.file', 'dir2save'), c('', '', getwd()))
-		names(file.io) <- c('Parameters', 'Values')
-		buffer <- '10.0'
-		ret.params <- list(action = action, period = 'daily', file.io = file.io, buffer = buffer)
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Check_STN_Coords.json'))
+		ret.params <- c(list(action = action, period = 'daily'), ret.params)
+		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
+
 	######################
 	if(action == 'agg.qc'){
 		file.io <- getwd()
@@ -211,28 +212,19 @@ init.params <- function(action, period){
 		file.io <- getwd()
 		ret.params <- list(action = action, period = 'daily', file.io = file.io)
 	}
+
 	################
 	if(action == 'cdtInput.stn'){
 		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Fomat_CDT_inputData.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
-
-		# period <- 'daily'
-		# file.io <- data.frame(c('Stn.sample', 'Stn.Info', 'Stn.dir', 'File.save'), c('', '', '', ''))
-		# names(file.io) <- c('Parameters', 'Values')
-		# file.date.format <- data.frame(c('file.format', 'date.format'), c("1", "1"))
-		# names(file.date.format) <- c('Parameters', 'Values')
-		# StartEnd.date <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek', 'iend.yrs', 'iend.mon', 'iend.dek'),
-		# 							c('1961', '1', '1', '2014', '12', '31'))
-		# names(StartEnd.date) <- c('Parameters', 'Values')
-		# min.perc <- '1'
-		# ret.params <- list(action = action, period = period, file.io = file.io, file.date.format = file.date.format,
-		# 					StartEnd.date = StartEnd.date, min.perc = min.perc)
 	}
+
 	################
 	if(action == 'agg.ts'){
 		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Aggregate_time_series.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
 	}
+
 	###########################################
 
 	if(action == 'extrct.ts'){

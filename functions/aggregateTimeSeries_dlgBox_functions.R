@@ -1,8 +1,16 @@
 mainDialogAggTs <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	largeur <- if(Sys.info()["sysname"] == "Windows") 34 else 32
-	wtkcombo <- 30
-	wtkcombo1 <- 15
+	if (Sys.info()["sysname"] == "Windows"){
+		largeur <- 46
+		largeur1 <- 42
+		largeur2 <- 37
+		wtkcombo <- 19
+	}else{
+		largeur <- 34
+		largeur1 <- 32
+		largeur2 <- 27
+		wtkcombo <- 16
+	}
 
 	###################
 
@@ -56,8 +64,8 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 	MissFrac <- tclVar(GeneralParameters$compute.var$miss.frac)
 
 	####
-	Cbperiod0 <- ttkcombobox(frParams, values = Cbperiod0VAL, textvariable = OriginData, width = wtkcombo1)
-	Cbperiod1 <- ttkcombobox(frParams, values = Cbperiod1VAL, textvariable = ConvertData, width = wtkcombo1)
+	Cbperiod0 <- ttkcombobox(frParams, values = Cbperiod0VAL, textvariable = OriginData, width = wtkcombo)
+	Cbperiod1 <- ttkcombobox(frParams, values = Cbperiod1VAL, textvariable = ConvertData, width = wtkcombo)
 	labconv2 <- tklabel(frParams, text=' TO ')
 	labSeasS <- tklabel(frParams, text='Start Month', anchor = 'e', justify = 'right')
 	enSeasS <- tkentry(frParams, textvariable = start.mon, width = 3, state = state.enSeasS)
@@ -67,7 +75,7 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 	frcompVar <- tkframe(frParams)
 
 	######
-	Cbdatatype <- ttkcombobox(labdatype, values = CbdatatypeVAL, textvariable = DataType)
+	Cbdatatype <- ttkcombobox(labdatype, values = CbdatatypeVAL, textvariable = DataType, width = largeur2)
 	bt.opt.set <- tkbutton(labdatype, text = "Settings")
 
 	######
@@ -181,7 +189,7 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 	fileORdir <- tclVar('File to save aggregated data')
 
 	inDirFlile <- tklabel(frIO, text = tclvalue(fileINdir), textvariable = fileINdir, anchor = 'w', justify = 'left')
-	cb.stnfl <- ttkcombobox(frIO, values = unlist(listOpenFiles), textvariable = file.stnfl, width = wtkcombo)
+	cb.stnfl <- ttkcombobox(frIO, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur1)
 	bt.stnfl <- tkbutton(frIO, text = "...")
 	outDirFlile <- tklabel(frIO, text = tclvalue(fileORdir), textvariable = fileORdir, anchor = 'w', justify = 'left')
 	en.file.save <- tkentry(frIO, textvariable = file.save1, width = largeur)
@@ -233,7 +241,7 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 			tclvalue(fileINdir) <- 'Input data'
 			tclvalue(fileORdir) <- 'File to save aggregated data'
 
-			cb.stnfl <- ttkcombobox(frIO, values = unlist(listOpenFiles), textvariable = file.stnfl, width = wtkcombo)
+			cb.stnfl <- ttkcombobox(frIO, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur1)
 
 			#######
 			tkconfigure(bt.stnfl, command = function(){
@@ -265,7 +273,7 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 			tclvalue(fileINdir) <- 'Input data'
 			tclvalue(fileORdir) <- 'File to save aggregated data'
 
-			cb.stnfl <- ttkcombobox(frIO, values = unlist(listOpenFiles), textvariable = file.stnfl, width = wtkcombo)
+			cb.stnfl <- ttkcombobox(frIO, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur1)
 
 			#######
 			tkconfigure(bt.stnfl, command = function(){
