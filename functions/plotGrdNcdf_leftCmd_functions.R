@@ -157,16 +157,17 @@ PlotGriddedNcdfCmd <- function(){
 	labRevCol.tab2 <- tklabel(subfr2, text = 'Reverse', anchor = 'e', justify = 'right')
 	chkRevCol.tab2 <- tkcheckbutton(subfr2, variable = reverse.color, anchor = 'w', justify = 'left')
 
-	sep1.tab2 <- ttkseparator(subfr2)
 	previewPresetCol.tab2 <- tkcanvas(subfr2, width = wPreview, height = 20, bg = 'white')
 
-	sep2.tab2 <- ttkseparator(subfr2)
 	chkCustoCol.tab2 <- tkcheckbutton(subfr2, variable = custom.color, text = 'User customized  colorkey', anchor = 'w', justify = 'left')
 	butCustoCol.tab2 <- tkbutton(subfr2, text = "Custom", state = 'disabled')
 
-	sep3.tab2 <- ttkseparator(subfr2)
 	chkCustoLev.tab2 <- tkcheckbutton(subfr2, variable = custom.level, text = 'User customized  levels', anchor = 'w', justify = 'left')
 	butCustoLev.tab2 <- tkbutton(subfr2, text = "Custom", state = 'disabled')
+
+	sep1.tab2 <- ttkseparator(subfr2)
+	sep2.tab2 <- ttkseparator(subfr2)
+	sep3.tab2 <- ttkseparator(subfr2)
 
 	########################
 	tkgrid(labPresetCol.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -199,7 +200,7 @@ PlotGriddedNcdfCmd <- function(){
 	tkdelete(previewPresetCol.tab2, 'gradlines0')
 	for(i in 0:wPreview) tkcreate(previewPresetCol.tab2, "line", i, 0, i, 20, fill = kolor[i], tags = 'gradlines0')
 
-	tkbind(combPresetCol.tab2,"<<ComboboxSelected>>", function(){
+	tkbind(combPresetCol.tab2, "<<ComboboxSelected>>", function(){
 		n <- as.numeric(tclvalue(nb.color))
 		colFun <- match.fun(tclvalue(preset.color))
 		listCol <- colFun(n)
@@ -210,7 +211,7 @@ PlotGriddedNcdfCmd <- function(){
 	})
 
 	#reverse
-	tkbind(chkRevCol.tab2,"<Button-1>", function(){
+	tkbind(chkRevCol.tab2, "<Button-1>", function(){
 		if(tclvalue(custom.color) == '0'){
 			n <- as.numeric(tclvalue(nb.color))
 			colFun <- match.fun(tclvalue(preset.color))
@@ -224,7 +225,7 @@ PlotGriddedNcdfCmd <- function(){
 	
 	########################
 	##Customized color
-	tkbind(chkCustoCol.tab2,"<Button-1>", function(){
+	tkbind(chkCustoCol.tab2, "<Button-1>", function(){
 		if(tclvalue(custom.color) == '0') tkconfigure(butCustoCol.tab2, state = 'normal')
 		else tkconfigure(butCustoCol.tab2, state = 'disabled')
 	})
@@ -241,7 +242,7 @@ PlotGriddedNcdfCmd <- function(){
 
 	########################
 	##Customized level	
-	tkbind(chkCustoLev.tab2,"<Button-1>", function(){
+	tkbind(chkCustoLev.tab2, "<Button-1>", function(){
 		if(tclvalue(custom.level) == '0') tkconfigure(butCustoLev.tab2, state = 'normal')
 		else tkconfigure(butCustoLev.tab2, state = 'disabled')
 	})
@@ -259,10 +260,14 @@ PlotGriddedNcdfCmd <- function(){
 	
 	#######################################################################################################
 	
+	plotDataBut <- tkbutton(plotBut.cmd, text = "Plot Data")
+
+	tkgrid(plotDataBut, row = 0, column = 0, sticky = 'e', padx = 5, pady = 5)
+
+	#################
+
 	notebookTab <- NULL
 	#######
-
-	plotDataBut <- tkbutton(plotBut.cmd, text = "Plot Data")
 	
 	tkconfigure(plotDataBut, command = function(){
 		if(tclvalue(custom.color) == '0' | length(listCol) == 0){
@@ -292,7 +297,6 @@ PlotGriddedNcdfCmd <- function(){
 		}
 	})
 
-	tkgrid(plotDataBut, row = 0, column = 0, sticky = 'e', padx = 5, pady = 5)
 	
 	#######################################################################################################
 	

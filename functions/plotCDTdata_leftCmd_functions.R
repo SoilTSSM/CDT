@@ -41,6 +41,7 @@ PlotCDTDataFormatCmd <- function(){
 	scrw1 <- bwScrolledWindow(frTab1)
 	tkgrid(scrw1)
 	tkgrid.columnconfigure(scrw1, 0, weight = 1)
+
 	subfr1 <- bwScrollableFrame(scrw1, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr1, 0, weight = 1)
 
@@ -148,13 +149,13 @@ PlotCDTDataFormatCmd <- function(){
 	tkgrid(frameShp, row = 1, column = 0, sticky = 'we')
 	
 	############################
-	tkbind(combPrd.tab1,"<<ComboboxSelected>>", function(){
+	tkbind(combPrd.tab1, "<<ComboboxSelected>>", function(){
 		if(tclvalue(file.period) == 'Daily data'){
-			tclvalue(dayLabTab1_Var)<-'Day'
+			tclvalue(dayLabTab1_Var) <- 'Day'
 			tkconfigure(day1.tab1, state = 'normal')
 		}
 		if(tclvalue(file.period) == 'Dekadal data'){
-			tclvalue(dayLabTab1_Var)<-'Dek'
+			tclvalue(dayLabTab1_Var) <- 'Dek'
 			tkconfigure(day1.tab1, state = 'normal')
 		}
 		if(tclvalue(file.period) == 'Monthly data'){
@@ -172,6 +173,7 @@ PlotCDTDataFormatCmd <- function(){
 	scrw2 <- bwScrolledWindow(frTab2)
 	tkgrid(scrw2)
 	tkgrid.columnconfigure(scrw2, 0, weight = 1)
+
 	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr2, 0, weight = 1)
 
@@ -192,16 +194,17 @@ PlotCDTDataFormatCmd <- function(){
 	labRevCol.tab2 <- tklabel(subfr2, text = 'Reverse', anchor = 'e', justify = 'right')
 	chkRevCol.tab2 <- tkcheckbutton(subfr2, variable = reverse.color, anchor = 'w', justify = 'left')
 
-	sep1.tab2 <- ttkseparator(subfr2)
 	previewPresetCol.tab2 <- tkcanvas(subfr2, width = wPreview, height = 20, bg = 'white')
 
-	sep2.tab2 <- ttkseparator(subfr2)
 	chkCustoCol.tab2 <- tkcheckbutton(subfr2, variable = custom.color, text = 'User customized  colorkey', anchor = 'w', justify = 'left')
 	butCustoCol.tab2 <- tkbutton(subfr2, text = "Custom", state = 'disabled')
 
-	sep3.tab2 <- ttkseparator(subfr2)
 	chkCustoLev.tab2 <- tkcheckbutton(subfr2, variable = custom.level, text = 'User customized  levels', anchor = 'w', justify = 'left')
 	butCustoLev.tab2 <- tkbutton(subfr2, text = "Custom", state = 'disabled')
+
+	sep1.tab2 <- ttkseparator(subfr2)
+	sep2.tab2 <- ttkseparator(subfr2)
+	sep3.tab2 <- ttkseparator(subfr2)
 
 	#####
 	tkgrid(labPresetCol.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -234,7 +237,7 @@ PlotCDTDataFormatCmd <- function(){
 	tkdelete(previewPresetCol.tab2, 'gradlines0')
 	for(i in 0:wPreview) tkcreate(previewPresetCol.tab2, "line", i, 0, i, 20, fill = kolor[i], tags = 'gradlines0')
 
-	tkbind(combPresetCol.tab2,"<<ComboboxSelected>>", function(){
+	tkbind(combPresetCol.tab2, "<<ComboboxSelected>>", function(){
 		n <- as.numeric(tclvalue(nb.color))
 		colFun <- match.fun(tclvalue(preset.color))
 		listCol <- colFun(n)
@@ -245,7 +248,7 @@ PlotCDTDataFormatCmd <- function(){
 	})
 
 	#reverse
-	tkbind(chkRevCol.tab2,"<Button-1>", function(){
+	tkbind(chkRevCol.tab2, "<Button-1>", function(){
 		if(tclvalue(custom.color) == '0'){
 			n <- as.numeric(tclvalue(nb.color))
 			colFun <- match.fun(tclvalue(preset.color))
@@ -259,7 +262,7 @@ PlotCDTDataFormatCmd <- function(){
 	
 	########################
 	##Customized color	
-	tkbind(chkCustoCol.tab2,"<Button-1>", function(){
+	tkbind(chkCustoCol.tab2, "<Button-1>", function(){
 		if(tclvalue(custom.color) == '0') tkconfigure(butCustoCol.tab2, state = 'normal')
 		else tkconfigure(butCustoCol.tab2, state = 'disabled')
 	})
@@ -276,7 +279,7 @@ PlotCDTDataFormatCmd <- function(){
 
 	########################
 	##Customized level	
-	tkbind(chkCustoLev.tab2,"<Button-1>", function(){
+	tkbind(chkCustoLev.tab2, "<Button-1>", function(){
 		if(tclvalue(custom.level) == '0') tkconfigure(butCustoLev.tab2, state = 'normal')
 		else tkconfigure(butCustoLev.tab2, state = 'disabled')
 	})
@@ -298,12 +301,15 @@ PlotCDTDataFormatCmd <- function(){
 	
 	#######################################################################################################
 	
+	plotDataBut <- tkbutton(plotBut.cmd, text = "Plot Data")
+
+	tkgrid(plotDataBut, row = 0, column = 0, sticky = 'e', padx = 5, pady = 5)
+
+	#################
+	
 	notebookTab <- NULL
 	#######
 
-	plotDataBut <- tkbutton(plotBut.cmd, text = "Plot Data")
-	tkgrid(plotDataBut, row = 0, column = 0, sticky = 'e', padx = 5, pady = 5)
-	
 	tkconfigure(plotDataBut, command = function(){
 		if(tclvalue(custom.color) == '0' | length(listCol) == 0){
 			n <- as.numeric(tclvalue(nb.color))

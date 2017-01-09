@@ -102,7 +102,7 @@ configCDT <- function(){
 
 	########
 
-	bt.close.conf <- tkbutton(fr3.conf, text=" OK ") 
+	bt.close.conf <- ttkbutton(fr3.conf, text = "OK", width = 8) 
 
 	tkconfigure(bt.close.conf, command = function(){
 		workdir <- tclvalue(dirpath)

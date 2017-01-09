@@ -1030,6 +1030,7 @@ smooth.matrix <- function(mat, ns){
 
 
 slope.aspect <- function(mat, xres, yres, smoothing = 1){
+	## Sobel filter
 	sobel <- (c(1, 2, 1)%*%t(c(-1, 0, 1)))/8
 	xkernel <- matrix(sobel, 3)
 	ykernel <- t(matrix(sobel, 3))[3:1, ]

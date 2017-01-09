@@ -131,7 +131,8 @@ PlotMergingOutputCmd <- function(){
 	status.bar.display(unitEd.tab1, TextOutputVar, 'Display unit on colorscale')
 
 	##############################
-	tkbind(combPrd.tab1,"<<ComboboxSelected>>", function(){
+
+	tkbind(combPrd.tab1, "<<ComboboxSelected>>", function(){
 		if(tclvalue(file.period) == 'Daily data'){
 			tclvalue(dayLabTab1_Var) <- 'Day'
 			tkconfigure(day1.tab1, state = 'normal')
@@ -439,16 +440,17 @@ PlotMergingOutputCmd <- function(){
 	labRevCol.tab3 <- tklabel(subfr3, text = 'Reverse', anchor = 'e', justify = 'right')
 	chkRevCol.tab3 <- tkcheckbutton(subfr3, variable = reverse.color, anchor = 'w', justify = 'left')
 
-	sep1.tab3 <- ttkseparator(subfr3)
 	previewPresetCol.tab3 <- tkcanvas(subfr3, width = wPreview, height = 20, bg = 'white')
 
-	sep2.tab3 <- ttkseparator(subfr3)
 	chkCustoCol.tab3 <- tkcheckbutton(subfr3, variable = custom.color, text = 'User customized  colorkey', anchor = 'w', justify = 'left')
 	butCustoCol.tab3 <- tkbutton(subfr3, text = "Custom", state = 'disabled')
 
-	sep3.tab3 <- ttkseparator(subfr3)
 	chkCustoLev.tab3 <- tkcheckbutton(subfr3, variable = custom.level, text = 'User customized  levels', anchor = 'w', justify = 'left')
 	butCustoLev.tab3 <- tkbutton(subfr3, text = "Custom", state = 'disabled')
+
+	sep1.tab3 <- ttkseparator(subfr3)
+	sep2.tab3 <- ttkseparator(subfr3)
+	sep3.tab3 <- ttkseparator(subfr3)
 
 	########################
 	tkgrid(labPresetCol.tab3, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -481,7 +483,7 @@ PlotMergingOutputCmd <- function(){
 	tkdelete(previewPresetCol.tab3, 'gradlines0')
 	for(i in 0:wPreview) tkcreate(previewPresetCol.tab3, "line", i, 0, i, 20, fill = kolor[i], tags = 'gradlines0')
 
-	tkbind(combPresetCol.tab3,"<<ComboboxSelected>>", function(){
+	tkbind(combPresetCol.tab3, "<<ComboboxSelected>>", function(){
 		n <- as.numeric(tclvalue(nb.color))
 		colFun <- match.fun(tclvalue(preset.color))
 		listCol <- colFun(n)
@@ -492,7 +494,7 @@ PlotMergingOutputCmd <- function(){
 	})
 
 	#reverse
-	tkbind(chkRevCol.tab3,"<Button-1>", function(){
+	tkbind(chkRevCol.tab3, "<Button-1>", function(){
 		if(tclvalue(custom.color) == '0'){
 			n <- as.numeric(tclvalue(nb.color))
 			colFun <- match.fun(tclvalue(preset.color))
@@ -506,7 +508,7 @@ PlotMergingOutputCmd <- function(){
 	
 	########################
 	##Customized color	
-	tkbind(chkCustoCol.tab3,"<Button-1>", function(){
+	tkbind(chkCustoCol.tab3, "<Button-1>", function(){
 		if(tclvalue(custom.color) == '0') tkconfigure(butCustoCol.tab3, state = 'normal')
 		else tkconfigure(butCustoCol.tab3, state = 'disabled')
 	})
@@ -523,7 +525,7 @@ PlotMergingOutputCmd <- function(){
 
 	########################
 	##Customized level	
-	tkbind(chkCustoLev.tab3,"<Button-1>", function(){
+	tkbind(chkCustoLev.tab3, "<Button-1>", function(){
 		if(tclvalue(custom.level) == '0') tkconfigure(butCustoLev.tab3, state = 'normal')
 		else tkconfigure(butCustoLev.tab3, state = 'disabled')
 	})
