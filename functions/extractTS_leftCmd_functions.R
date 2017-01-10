@@ -69,7 +69,7 @@ ExtractDataPanelCmd <- function(){
 	
 	sep1.tab1 <- ttkseparator(subfr1)
 	lab1.tab1 <- tklabel(subfr1, text = 'Directory of NetCDF files', anchor = 'w', justify = 'left')
-	dirCDF.tab1 <- tkentry(subfr1, textvariable = dirNetCDF, width = largeur) #
+	dirCDF.tab1 <- tkentry(subfr1, textvariable = dirNetCDF, width = largeur)
 	bdirCDF.tab1 <- tkbutton(subfr1, text = "...")
 	cap1.tab1 <- tklabel(subfr1, text = "NetCDF file format", anchor = 'e', justify = 'right')
 	netCDFff.tab1 <- tkentry(subfr1, textvariable = netCDFff, width = wncdf_ff)
@@ -89,8 +89,7 @@ ExtractDataPanelCmd <- function(){
 
 	tkconfigure(bdirCDF.tab1, command = function(){
 		dir4cdf <- tk_choose.dir(tclvalue(dirNetCDF), "")
-		if(is.na(dir4cdf)) tclvalue(dirNetCDF) <- ""
-		else tclvalue(dirNetCDF) <- dir4cdf
+		tclvalue(dirNetCDF) <- if(is.na(dir4cdf)) "" else dir4cdf
 	})
 
 	tkconfigure(btSHP.tab1, command = function(){
@@ -202,7 +201,7 @@ ExtractDataPanelCmd <- function(){
 	output_TSformat <- tclVar('Dekadal')
 
 	# MonthsName <- format(ISOdate(2014,1:12,1), "%B")
-	MonthsName <- format(ISOdate(2014,1:12,1), "%b")
+	MonthsName <- format(ISOdate(2014, 1:12, 1), "%b")
 	use_mois1 <- tclVar(MonthsName[1])
 	use_mois2 <- tclVar(MonthsName[12])
 
@@ -380,7 +379,7 @@ ExtractDataPanelCmd <- function(){
 
 	sep3.tab3 <- ttkseparator(subfr3)
 	lab3.tab3 <- tklabel(subfr3, text = "Polygon", anchor = 'w', justify = 'left', bg = 'green')
-	cbpolyType.tab3 <- ttkcombobox(subfr3, values='', textvariable = namePoly, width = 10, state = 'disabled') #
+	cbpolyType.tab3 <- ttkcombobox(subfr3, values = '', textvariable = namePoly, width = 10, state = 'disabled')
 
 	##########################
 
@@ -503,7 +502,7 @@ ExtractDataPanelCmd <- function(){
 	pressButDrag <<- tclVar('0')
 	pressGetCoords <<- tclVar('0')
 
-	tkbind(btRedraw.tab3,"<Button-1>", function(){
+	tkbind(btRedraw.tab3, "<Button-1>", function(){
 		tclvalue(pressButP) <<- 0
 		tclvalue(pressButM) <<- 0
 		tclvalue(pressButRect) <<- 0
@@ -517,7 +516,7 @@ ExtractDataPanelCmd <- function(){
 		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
 	})
 
-	tkbind(btReset.tab3,"<Button-1>", function(){
+	tkbind(btReset.tab3, "<Button-1>", function(){
 		tclvalue(pressButP) <<- 0
 		tclvalue(pressButM) <<- 0
 		tclvalue(pressButRect) <<- 0
@@ -531,7 +530,7 @@ ExtractDataPanelCmd <- function(){
 		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
 	})
 
-	tkbind(btZoomP.tab3,"<Button-1>", function(){
+	tkbind(btZoomP.tab3, "<Button-1>", function(){
 		tclvalue(pressButP) <<- 1
 		tclvalue(pressButM) <<- 0
 		tclvalue(pressButRect) <<- 0
@@ -545,7 +544,7 @@ ExtractDataPanelCmd <- function(){
 		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
 	})
 
-	tkbind(btZoomM.tab3,"<Button-1>", function(){
+	tkbind(btZoomM.tab3, "<Button-1>", function(){
 		tclvalue(pressButP) <<- 0
 		tclvalue(pressButM) <<- 1
 		tclvalue(pressButRect) <<- 0
@@ -559,7 +558,7 @@ ExtractDataPanelCmd <- function(){
 		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
 	})
 
-	tkbind(btZoomRect.tab3,"<Button-1>", function(){
+	tkbind(btZoomRect.tab3, "<Button-1>", function(){
 		tclvalue(pressButP) <<- 0
 		tclvalue(pressButM) <<- 0
 		tclvalue(pressButRect) <<- 1
@@ -573,7 +572,7 @@ ExtractDataPanelCmd <- function(){
 		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
 	})
 
-	tkbind(btPanImg.tab3,"<Button-1>", function(){
+	tkbind(btPanImg.tab3, "<Button-1>", function(){
 		tclvalue(pressButP) <<- 0
 		tclvalue(pressButM) <<- 0
 		tclvalue(pressButRect) <<- 0
@@ -587,7 +586,7 @@ ExtractDataPanelCmd <- function(){
 		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
 	})
 
-	tkbind(getArea.tab3,"<Button-1>", function(){
+	tkbind(getArea.tab3, "<Button-1>", function(){
 		tclvalue(pressButP) <<- 0
 		tclvalue(pressButM) <<- 0
 		tclvalue(pressButRect) <<- 0
@@ -662,7 +661,7 @@ ExtractDataPanelCmd <- function(){
 
 	sep2.tab4 <- ttkseparator(subfr4)
 	lab2.tab4 <- tklabel(subfr4, text = tclvalue(fileORdir), textvariable = fileORdir, anchor = 'w', justify = 'left')
-	fl2sav.tab4 <- tkentry(subfr4, textvariable = file.save1, width = largeur) #
+	fl2sav.tab4 <- tkentry(subfr4, textvariable = file.save1, width = largeur)
 	bfl2sav.tab4 <- tkbutton(subfr4, text = "...")
 
 	sep3.tab4 <- ttkseparator(subfr4)
@@ -707,7 +706,7 @@ ExtractDataPanelCmd <- function(){
 					out.type = tclvalue(ChoixOutType),
 					outdir = tclvalue(file.save1))
 
-# assign('retExtractParams', retExtractParams, envir = .GlobalEnv)
+		# assign('retExtractParams', retExtractParams, envir = .GlobalEnv)
 
 		tkconfigure(main.win, cursor = 'watch')
 		InsertMessagesTxt(main.txt.out, "Extraction.................")

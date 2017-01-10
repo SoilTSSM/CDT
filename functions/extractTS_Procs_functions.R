@@ -8,7 +8,7 @@ getExtractDataFun <- function(retExtractParams){
 				comp.fun <- paste('anomaly', period1, sep = '.')
 				comp.fun <- match.fun(comp.fun)
 				xadaty <- as.character(xanom[, 1])
-				xanom <- round(comp.fun(xanom[,2], xadaty), 1)
+				xanom <- round(comp.fun(xanom[, 2], xadaty), 1)
 				xanom <- data.frame(Date = xadaty, Values = xanom)
 				xanom <- xanom[as.numeric(substr(xadaty, 5, 6))%in%id.mois, , drop = FALSE]
 				xanom[is.na(xanom[, 2]) | is.nan(xanom[, 2]), 2] <- -9999
@@ -139,7 +139,7 @@ getExtractDataFun <- function(retExtractParams){
 				xtmp[4, -1] <- round(xclim, 1)
 				xclim <- xtmp[1:4, ]
 				if(period1 == 'yearly') xclim[4, 1] <- 'Yearly.mean'
-				else xclim[4, 1] <- strsplit(xclim[4, 1],'-')[[1]][1]
+				else xclim[4, 1] <- strsplit(xclim[4, 1], '-')[[1]][1]
 			}
 			xclim[is.na(xclim) | is.nan(xclim)] <- -99
 			writeFiles(xclim, out2sav.clim)
@@ -212,8 +212,8 @@ getExtractDataFun <- function(retExtractParams){
 					fileout.clim <- file.path(dirname(fileout[1]), paste('Climatologies_Output_Year', file_ext(basename(fileout[1])), sep = '.'))
 					capdate <- paste('DATE:', 'Yearly.mean')
 				}else{
-					daty <- strsplit(daty.clim[1],'-')[[1]][1]
-					fileout.clim <- file.path(dirname(fileout[1]), paste('Climatologies_Output_', daty,'.', file_ext(basename(fileout[1])), sep = ''))
+					daty <- strsplit(daty.clim[1], '-')[[1]][1]
+					fileout.clim <- file.path(dirname(fileout[1]), paste('Climatologies_Output_', daty, '.', file_ext(basename(fileout[1])), sep = ''))
 					capdate <- paste('DATE:', daty)
 				}
 			}
@@ -277,8 +277,8 @@ getExtractDataFun <- function(retExtractParams){
 		}
 
 		if(ChoixOutType == '3'){
-			xlon <- rlon[,1]
-			xlat <- as.numeric(rlat[1,])
+			xlon <- rlon[, 1]
+			xlat <- as.numeric(rlat[1, ])
 			xcrds <- expand.grid(xlon, xlat, daty)
 			xcrds <- xcrds[, 3:1]
 			if(is.list(RVAL)) xdata <- round(unlist(RVAL), 1)
@@ -295,7 +295,7 @@ getExtractDataFun <- function(retExtractParams){
 	ncdir <- retExtractParams$ncdat$dir
 	ncfformat <- retExtractParams$ncdat$format
 
-	range.date <- as.numeric(retExtractParams$dates)
+	range.date <- as.numeric(str_trim(retExtractParams$dates))
 	yrs1 <- range.date[1]
 	mon1 <- range.date[2]
 	day1 <- range.date[3]
@@ -336,8 +336,9 @@ getExtractDataFun <- function(retExtractParams){
 	pmLat <- pts.int[2]
 
 	####
-	outTsTable <- cbind(c('Daily', 'Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'), c('daily', 'dekadal', 'monthly', 'season3', 'season6', 'yearly'))
-	period1 <- outTsTable[outTsTable[,1] == outTS, 2]
+	outTsTable <- cbind(c('Daily', 'Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'),
+						c('daily', 'dekadal', 'monthly', 'season3', 'season6', 'yearly'))
+	period1 <- outTsTable[outTsTable[, 1] == outTS, 2]
 
 	####
 	if(is.na(yrs1) | is.na(mon1) | is.na(day1) | is.na(yrs2) | is.na(mon2) | is.na(day2)){
@@ -348,21 +349,40 @@ getExtractDataFun <- function(retExtractParams){
 	####
 	if(period == 'Daily data'){
 		period0 <- 'daily'
-		dates <- format(seq(as.Date(paste(yrs1, mon1, day1, sep = '-')), as.Date(paste(yrs2, mon2, day2, sep = '-')),'day'),'%Y%m%d')
-		ncfiles <- sprintf(ncfformat, substr(dates, 1,4), substr(dates, 5,6), substr(dates, 7,8))
+		daty1 <- try(as.Date(paste(yrs1, mon1, day1, sep = '-')), silent = TRUE)
+		daty2 <- try(as.Date(paste(yrs2, mon2, day2, sep = '-')), silent = TRUE)
+		if(inherits(daty1, "try-error") | inherits(daty2, "try-error")){
+			InsertMessagesTxt(main.txt.out, "Invalid date for time series extraction", format = TRUE)
+			return(NULL)
+		}
+		dates <- format(seq(daty1, daty2, 'day'), '%Y%m%d')
+		ncfiles <- sprintf(ncfformat, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 8))
 	}
 
 	if(period == 'Dekadal data'){
 		period0 <- 'dekadal'
-		dates <- seq(as.Date(paste(yrs1, mon1, day1, sep = '-')), as.Date(paste(yrs2, mon2, day2, sep = '-')),'day')
-		dates <- paste(format(dates[which(as.numeric(format(dates,'%d')) <= 3)],'%Y%m'), as.numeric(format(dates[which(as.numeric(format(dates,'%d')) <= 3)],'%d')), sep = '')
-		ncfiles <- sprintf(ncfformat, substr(dates, 1,4), substr(dates, 5,6), substr(dates, 7,7))
+		daty1 <- try(as.Date(paste(yrs1, mon1, day1, sep = '-')), silent = TRUE)
+		daty2 <- try(as.Date(paste(yrs2, mon2, day2, sep = '-')), silent = TRUE)
+		if(inherits(daty1, "try-error") | inherits(daty2, "try-error")){
+			InsertMessagesTxt(main.txt.out, "Invalid date for time series extraction", format = TRUE)
+			return(NULL)
+		}
+		dates <- seq(daty1, daty2, 'day')
+		dates <- paste(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%Y%m'),
+					as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%d')), sep = '')
+		ncfiles <- sprintf(ncfformat, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 7))
 	}
 
 	if(period == 'Monthly data'){
 		period0 <- 'monthly'
-		dates <- format(seq(as.Date(paste(yrs1, mon1, day1, sep = '-')), as.Date(paste(yrs2, mon2, day2, sep = '-')),'month'),'%Y%m')
-		ncfiles <- sprintf(ncfformat, substr(dates, 1,4), substr(dates, 5,6))
+		daty1 <- try(as.Date(paste(yrs1, mon1, day1, sep = '-')), silent = TRUE)
+		daty2 <- try(as.Date(paste(yrs2, mon2, day2, sep = '-')), silent = TRUE)
+		if(inherits(daty1, "try-error") | inherits(daty2, "try-error")){
+			InsertMessagesTxt(main.txt.out, "Invalid date for time series extraction", format = TRUE)
+			return(NULL)
+		}
+		dates <- format(seq(daty1, daty2, 'month'), '%Y%m')
+		ncfiles <- sprintf(ncfformat, substr(dates, 1, 4), substr(dates, 5, 6))
 	}
 
 	if(!file.exists(ncdir)){
@@ -416,51 +436,50 @@ getExtractDataFun <- function(retExtractParams){
 			shpf.union <- SpatialPolygonsDataFrame(shpf.union, shpf.df)
 			regOI <- shpf.union[as.character(shpf.union@data$Group.1) == polyName, ]
 			bbxregOI <- bbox(regOI)
-			# regOI <- shpf[as.character(shpf@data[, shpId]) == polyName, ]
-			# bbxregOI <- bbox(regOI)
 		}else{
 			InsertMessagesTxt(main.txt.out, "Ceci ne devrait pas se produire", format = TRUE)
 			return(NULL)
 		}
 	}
 
-	if(!is.na(multiptspoly)){
-		multiptspoly <- gsub("[\r]", "", multiptspoly)
-		multiptspoly <- str_trim(strsplit(multiptspoly,"[\n]")[[1]])
-		multiptspoly <- multiptspoly[multiptspoly != ""]
-		if(length(multiptspoly) == 0){
-			InsertMessagesTxt(main.txt.out, "No coordinates found", format = TRUE)
+	if(extType == 'Multiple Points' | extType == 'Multiple Polygons'){
+		if(!is.na(multiptspoly)){
+			multiptspoly <- gsub("[\r]", "", multiptspoly)
+			multiptspoly <- str_trim(strsplit(multiptspoly, "[\n]")[[1]])
+			multiptspoly <- multiptspoly[multiptspoly != ""]
+			if(length(multiptspoly) == 0){
+				InsertMessagesTxt(main.txt.out, "No coordinates found", format = TRUE)
+				return(NULL)
+			}
+			if(extType == 'Multiple Points'){
+				multiptspoly <- t(sapply(multiptspoly, function(x) strsplit(x, " ")[[1]]))
+				multiptspoly <- data.frame(multiptspoly, stringsAsFactors = FALSE)
+				rownames(multiptspoly) <- NULL
+				names(multiptspoly) <- c('id', 'x', 'y')
+				multiptspoly[, 2:3] <- apply(multiptspoly[, 2:3, drop = FALSE], 2, as.numeric)
+				headinfo <- multiptspoly
+			}
+
+			if(extType == 'Multiple Polygons'){
+				shpf <- getShpOpenData(shpfl)[[2]]
+				if(!is.null(shpf)){
+					multiptspoly <- str_trim(multiptspoly)
+					shpf.union <- unionSpatialPolygons(shpf, as.character(shpf@data[, shpId]))
+					shpf.df <- aggregate(as(shpf, "data.frame")[, 1], list(as.character(shpf@data[, shpId])), identity)
+					shpf.df$x <- seq(shpf.union)
+					row.names(shpf.df) <- sapply(slot(shpf.union, "polygons"), function(x) slot(x, "ID"))
+					shpf.union <- SpatialPolygonsDataFrame(shpf.union, shpf.df)
+					regOI <- shpf.union[as.character(shpf.union@data$Group.1)%in%multiptspoly, ]
+					bbxregOI <- bbox(regOI)
+					headinfo <- cbind(as.character(regOI@data$Group.1), round(coordinates(regOI), 5))
+					headinfo[, 1] <- str_replace_all(headinfo[, 1], "[^[:alnum:]]", ".")
+				}
+			}
+		}else{
+			if(extType == 'Multiple Points') InsertMessagesTxt(main.txt.out, "No selected points", format = TRUE)
+			if(extType == 'Multiple Polygons') InsertMessagesTxt(main.txt.out, "No selected polygons", format = TRUE)
 			return(NULL)
 		}
-		if(extType == 'Multiple Points'){
-			multiptspoly <- t(sapply(multiptspoly, function(x) strsplit(x," ")[[1]]))
-			multiptspoly <- data.frame(multiptspoly, stringsAsFactors = FALSE)
-			rownames(multiptspoly) <- NULL
-			names(multiptspoly) <- c('id', 'x', 'y')
-			multiptspoly[, 2:3] <- apply(multiptspoly[, 2:3, drop = FALSE], 2, as.numeric)
-			headinfo <- multiptspoly
-		}
-
-		if(extType == 'Multiple Polygons'){
-			shpf <- getShpOpenData(shpfl)[[2]]
-			if(!is.null(shpf)){
-				multiptspoly <- str_trim(multiptspoly)
-				##
-				shpf.union <- unionSpatialPolygons(shpf, as.character(shpf@data[, shpId]))
-				shpf.df <- aggregate(as(shpf, "data.frame")[, 1], list(as.character(shpf@data[, shpId])), identity)
-				shpf.df$x <- seq(shpf.union)
-				row.names(shpf.df) <- sapply(slot(shpf.union, "polygons"), function(x) slot(x, "ID"))
-				shpf.union <- SpatialPolygonsDataFrame(shpf.union, shpf.df)
-				regOI <- shpf.union[as.character(shpf.union@data$Group.1)%in%multiptspoly, ]
-				bbxregOI <- bbox(regOI)
-				headinfo <- cbind(as.character(regOI@data$Group.1), round(coordinates(regOI), 5))
-				headinfo[, 1] <- str_replace_all(headinfo[, 1], "[^[:alnum:]]", ".")
-			}
-		}
-	}else{
-		if(extType == 'Multiple Points') InsertMessagesTxt(main.txt.out, "No selected points", format = TRUE)
-		if(extType == 'Multiple Polygons') InsertMessagesTxt(main.txt.out, "No selected polygons", format = TRUE)
-		return(NULL)
 	}
 
 	###########################################################################################
@@ -547,10 +566,6 @@ getExtractDataFun <- function(retExtractParams){
 		rlon <- xlon[ilo]
 		rlat <- xlat[ila]
 
-		# sptNC <- expand.grid(x = rlon, y = rlat)
-		# coordinates(sptNC) <- ~x+y
-		# idmat <- lapply(seq_along(regOI), function(j) matrix(over(sptNC, geometry(regOI[j,])), nrow = length(rlon), ncol = length(rlat)))
-
 		rval <- xval[ilo, ila]
 		rval[] <- 1:prod(dim(rval))
 		sptNC <- expand.grid(x = rlon, y = rlat)
@@ -581,10 +596,6 @@ getExtractDataFun <- function(retExtractParams){
 			rlon <- xlon[ilo]
 			rlat <- xlat[ila]
 
-			# sptNC <- expand.grid(x = rlon, y = rlat)
-			# coordinates(sptNC) <- ~x+y
-			# idmat <- matrix(over(sptNC, geometry(regOI)), nrow = length(rlon), ncol = length(rlat))
-
 			rval <- xval[ilo, ila]
 			rval[] <- 1:prod(dim(rval))
 			w.pix <- id.pix <- rval
@@ -603,49 +614,6 @@ getExtractDataFun <- function(retExtractParams){
 
 	######################
 
-	# RVAL <- vector(mode = 'list', length = length(ncpath))
-	# for(fl in seq_along(ncpath)){
-	# 	if(!existFl[fl]) next
-	# 	nc <- nc_open(ncpath[fl])
-	# 	xval <- ncvar_get(nc, varid = nc$var[[1]]$name)
-	# 	nc_close(nc)
-	# 	rval <- xval[ilo, ila]
-
-	# 	if(extType == 'Point'){
-	# 		if(!any(ilola)) rval <- NA
-	# 		else{
-	# 			if(length(ilo) > 1) rval <- mean(diag(rval), na.rm = TRUE)
-	# 		}
-	# 		RVAL[[fl]] <- rval
-	# 	}else if(extType == 'Multiple Points'){
-	# 		if(pmLon > 0 | pmLat > 0){
-	# 			RVAL[[fl]] <- tapply(rval[pts.w.voisin$ijv], pts.w.voisin$j, mean, na.rm = TRUE)
-	# 		}else{
-	# 			RVAL[[fl]] <- rval[unname(over(pts.loc, geometry(sptNC)))]
-	# 		}
-	# 	}else if(extType == 'Multiple Polygons'){
-	# 		# RVAL[[fl]] <- sapply(seq_along(idmat), function(j) round(mean(rval[!is.na(idmat[[j]])], na.rm = TRUE), 1))
-	# 		RVAL[[fl]] <- sapply(idmat, function(x) if(!is.null(x)) round(sum(rval[x[, 2]]*x[, 3], na.rm = TRUE), 1) else NA)
-	# 	}else{
-	# 		if(extType == 'Rectangle'){
-	# 			if(spAvrg == '1'){
-	# 				rval <- round(mean(rval, na.rm = TRUE), 1)
-	# 				rval <- if(is.nan(rval)) NA else rval
-	# 			}
-	# 		}
-	# 		if(extType == 'Polygon'){
-	# 			# rval[is.na(idmat)] <- NA
-	# 			rval[is.na(idmat$id)] <- NA
-	# 			if(spAvrg == '1'){
-	# 				# rval <- round(mean(rval, na.rm = TRUE), 1)
-	# 				rval <- round(sum(rval*idmat$weight, na.rm = TRUE))
-	# 				rval <- if(is.nan(rval)) NA else rval
-	# 			}	
-	# 		}
-	# 		RVAL[[fl]] <- rval
-	# 	}
-	# }
-
 	if(doparallel & length(ncpath[existFl]) >= 90){
 		klust <- makeCluster(nb_cores)
 		registerDoParallel(klust)
@@ -658,7 +626,8 @@ getExtractDataFun <- function(retExtractParams){
 	NCDATA <- foreach(fl = seq_along(ncpath), .packages = 'ncdf4',
 					.export = c('ncpath', 'existFl')) %parLoop% {
 		if(!existFl[fl]) return(NULL)
-		nc <- nc_open(ncpath[fl])
+		nc <- try(nc_open(ncpath[fl]), silent = TRUE)
+		if(inherits(nc, "try-error")) return(NULL)
 		xval <- ncvar_get(nc, varid = nc$var[[1]]$name)
 		nc_close(nc)
 		return(xval)
@@ -692,7 +661,7 @@ getExtractDataFun <- function(retExtractParams){
 				if(spAvrg == '1'){
 					rval <- round(sum(rval*idmat$weight, na.rm = TRUE))
 					rval <- if(is.nan(rval)) NA else rval
-				}	
+				}
 			}
 		}
 		return(rval)
@@ -701,7 +670,6 @@ getExtractDataFun <- function(retExtractParams){
 	######################################################################################################
 
 	if(extType == 'Point'){
-		
 		RVAL[sapply(RVAL, is.null)] <- NA
 		xval <- unlist(RVAL)
 		
@@ -715,7 +683,7 @@ getExtractDataFun <- function(retExtractParams){
 				xtmp <- seasonal_fun(period0, xval, dates, smon = season1, lmon = 3, fun = aggfun, frac = missfrac)
 				xtmp.clim <- xtmp
 				xtmp[, 3] <- round(xtmp[, 3], 1)
-				xtmp[is.na(xtmp[, 3]), 3]<- -99
+				xtmp[is.na(xtmp[, 3]), 3] <- -99
 			}else if(period1 == 'season6'){
 				xtmp <- seasonal_fun(period0, xval, dates, smon = season1, lmon = 6, fun = aggfun, frac = missfrac)
 				xtmp.clim <- xtmp
@@ -818,7 +786,7 @@ getExtractDataFun <- function(retExtractParams){
 			if(period0 == period1){
 				daty <- dates
 				fileout <- file.path(out2sav, paste('Output_', daty, '.txt', sep = ''), fsep = .Platform$file.sep)
-				capdate <- paste('DATE:',daty)
+				capdate <- paste('DATE:', daty)
 				daty.clim <- dates0
 				xtmp.clim <- RVAL[match(dates0, daty)]
 				xtmp.clim[sapply(xtmp.clim, is.null)] <- list(matrix(NA, nrow = nrow(rval), ncol = ncol(rval)))
@@ -828,8 +796,8 @@ getExtractDataFun <- function(retExtractParams){
 					Season <- lstOmat[[1]]
 					Start_Year <- lstOmat[[2]]
 					daty <- paste(Season, Start_Year, sep = '-')
-					fileout <- file.path(out2sav, paste('Output_', Season, '_',Start_Year,'.txt', sep = ''), fsep = .Platform$file.sep)
-					capdate <- paste('Season:',Season, 'Start_Year:',Start_Year)
+					fileout <- file.path(out2sav, paste('Output_', Season, '_', Start_Year, '.txt', sep = ''), fsep = .Platform$file.sep)
+					capdate <- paste('Season:', Season, 'Start_Year:', Start_Year)
 					RVAL <- lstOmat[[3]]
 					daty.clim <- daty
 					xtmp.clim <- RVAL
@@ -838,8 +806,8 @@ getExtractDataFun <- function(retExtractParams){
 					Season <- lstOmat[[1]]
 					Start_Year <- lstOmat[[2]]
 					daty <- paste(Season, Start_Year, sep = '-')
-					fileout <- file.path(out2sav, paste('Output_', Season, '_',Start_Year,'.txt', sep = ''), fsep = .Platform$file.sep)
-					capdate <- paste('Season:',Season, 'Start_Year:',Start_Year)
+					fileout <- file.path(out2sav, paste('Output_', Season, '_',Start_Year, '.txt', sep = ''), fsep = .Platform$file.sep)
+					capdate <- paste('Season:', Season, 'Start_Year:', Start_Year)
 					RVAL <- lstOmat[[3]]
 					daty.clim <- daty
 					xtmp.clim <- RVAL
@@ -848,8 +816,8 @@ getExtractDataFun <- function(retExtractParams){
 					comp.fun <- match.fun(comp.fun)
 					lstOmat <- comp.fun(RVAL, dates, fun = aggfun, minfrac = missfrac)
 					daty <- lstOmat[[1]]
-					fileout <- file.path(out2sav, paste('Output_', daty,'.txt', sep = ''), fsep = .Platform$file.sep)
-					capdate <- paste('DATE:',daty)
+					fileout <- file.path(out2sav, paste('Output_', daty, '.txt', sep = ''), fsep = .Platform$file.sep)
+					capdate <- paste('DATE:', daty)
 					RVAL <- lstOmat[[2]]
 					comp.fun <- paste(period0, 2, period1, sep = '')
 					comp.fun <- match.fun(comp.fun)

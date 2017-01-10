@@ -6,14 +6,14 @@ Execute_All_Functions <- function(get.stn){
 			outpdir <- file.path(EnvQcOutlierData$baseDir, 'Outputs', fsep = .Platform$file.sep)
 			ggdir <- list.files(outpdir)
 			failedqc <- lapply(ggdir, function(lstn){
-				ggfileout <- file.path(outpdir, lstn, paste(lstn,'.txt', sep = ''), fsep = .Platform$file.sep)
+				ggfileout <- file.path(outpdir, lstn, paste(lstn, '.txt', sep = ''), fsep = .Platform$file.sep)
 				file.exists(ggfileout)
 			})
 			failedqc <- ggdir[!unlist(failedqc)]
 			if(length(failedqc) > 0){
 				failedqc <- data.frame(failedqc)
 				names(failedqc) <- 'QC failed: Stations not checked'
-				containertab <- displayConsOutputTabs(tknotes, failedqc, title = paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])),'Failed'))
+				containertab <- displayConsOutputTabs(tknotes, failedqc, title = paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), 'Failed'))
 				ntab <- length(AllOpenTabType)
 				AllOpenTabType[[ntab+1]] <<- 'ctxt'
 				AllOpenTabData[[ntab+1]] <<- containertab
@@ -36,7 +36,7 @@ Execute_All_Functions <- function(get.stn){
 				failedzc <- data.frame(failedzc)
 				names(failedzc) <- 'Zeros check failed: Stations not checked'
 				containertab <- displayConsOutputTabs(tknotes, failedzc,
-				title = paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])),'Failed'))
+				title = paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), 'Failed'))
 				ntab <- length(AllOpenTabType)
 				AllOpenTabType[[ntab+1]] <<- 'ctxt'
 				AllOpenTabData[[ntab+1]] <<- containertab
@@ -55,7 +55,7 @@ Execute_All_Functions <- function(get.stn){
 			outpdir <- file.path(EnvQcOutlierData$baseDir, 'Outputs', fsep = .Platform$file.sep)
 			ggdir <- list.files(outpdir)
 			failedqc <- lapply(ggdir, function(lstn){
-				ggfileout <- file.path(outpdir, lstn, paste(lstn,'.txt', sep = ''), fsep = .Platform$file.sep)
+				ggfileout <- file.path(outpdir, lstn, paste(lstn, '.txt', sep = ''), fsep = .Platform$file.sep)
 				file.exists(ggfileout)
 			})
 			failedqc <- ggdir[!unlist(failedqc)]
@@ -63,7 +63,7 @@ Execute_All_Functions <- function(get.stn){
 			if(length(failedqc) > 0){
 				failedqc <- data.frame(failedqc)
 				names(failedqc) <- 'QC failed: Stations not checked'
-				containertab <- displayConsOutputTabs(tknotes, failedqc, title = paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])),'Failed'))
+				containertab <- displayConsOutputTabs(tknotes, failedqc, title = paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), 'Failed'))
 				ntab <- length(AllOpenTabType)
 				AllOpenTabType[[ntab+1]] <<- 'ctxt'
 				AllOpenTabData[[ntab+1]] <<- containertab
@@ -80,15 +80,17 @@ Execute_All_Functions <- function(get.stn){
 		RetHom <- try(ExecHomData(get.stn), silent = TRUE)
 		if(inherits(RetHom, "try-error")){
 			InsertMessagesTxt(main.txt.out, paste("Homogeneity test failed for", get.stn), format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',RetHom[1]), format = TRUE)
+			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '',RetHom[1]), format = TRUE)
 			return(NULL)
 		}else{
 			freqdata <- GeneralParameters$period
 			outsdir <- file.path(EnvHomogzData$baseDir, 'Outputs', get.stn, fsep = .Platform$file.sep)
 			if(!file.exists(outsdir)) dir.create(outsdir, showWarnings = FALSE, recursive = TRUE)
 
-			fileout <- file.path(outsdir, paste(get.stn,'.Rdata', sep = ''), fsep = .Platform$file.sep)
-			ReturnExecResults <- list(action = GeneralParameters$action, period = GeneralParameters$period, station = get.stn, res = RetHom$breakpts, outputdir = outsdir, refSerie = list(dyref = RetHom$dyref, dkref = RetHom$dkref, moref = RetHom$moref))
+			fileout <- file.path(outsdir, paste(get.stn, '.Rdata', sep = ''), fsep = .Platform$file.sep)
+			ReturnExecResults <- list(action = GeneralParameters$action, period = GeneralParameters$period,
+										station = get.stn, res = RetHom$breakpts, outputdir = outsdir,
+										refSerie = list(dyref = RetHom$dyref, dkref = RetHom$dkref, moref = RetHom$moref))
 			breakpts <- getBreakpointsData(ReturnExecResults)
 			save(ReturnExecResults, file = fileout)
 
