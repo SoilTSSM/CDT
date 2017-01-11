@@ -1029,42 +1029,90 @@ smooth.matrix <- function(mat, ns){
 #################################################################################
 
 
-slope.aspect <- function(mat, xres, yres, smoothing = 1){
-	## Sobel filter
-	sobel <- (c(1, 2, 1)%*%t(c(-1, 0, 1)))/8
-	xkernel <- matrix(sobel, 3)
-	ykernel <- t(matrix(sobel, 3))[3:1, ]
-	x.mov <- movingwindow(mat, xkernel)/xres
-	y.mov <- movingwindow(mat, ykernel)/yres
-	slope <- atan(sqrt(x.mov^2 + y.mov^2)/smoothing)
+Conv2Type1 <- function(mat1, mat2, inverse = 'col'){
+    demimat <- nrow(mat2) %/% 2
+    nout <- nrow(mat2) + 2
+    Out <- matrix(NA, nout, nout)
+    inmat <- matrix(0, nout, nout)
+    for(i in 1:dim(mat1)[1]){
+        for(j in 1:dim(mat1)[2]){
+            inmat[demimat + i, demimat + j] <- mat1[i, j]
+        }
+    }
+    for(i in seq(nout)) {
+        for(j in seq(nout)) {
+            ii <- (i-demimat):(i+demimat)
+            jj <- (j-demimat):(j+demimat)
+            ii[ii < 1] <- 1
+            ii[ii > nout] <- nout
+            jj[jj < 1] <- 1
+            jj[jj > nout] <- nout
+            Out[i, j] <- sum(mat2 * inmat[ii, jj])
+        }
+    }
+    if(inverse == 'col') Out <- Out[, nout:1]
+    if(inverse == 'row') Out <- Out[nout:1, ]
+    return(Out)
+}
+
+Conv2Type2 <- function(mat, Kernel) { 
+ 	halfkersize <- nrow(Kernel)%/%2
+	for(j in 1:halfkersize) mat <- cbind(mat[, 1], mat, mat[, ncol(mat)])
+	for(j in 1:halfkersize) mat <- rbind(mat[1, ], mat, mat[nrow(mat), ])
+ 	Out <- mat
+ 	Out[] <- NA
+ 	ii0 <- (1+halfkersize):(nrow(mat)-halfkersize)
+ 	jj0 <- (1+halfkersize):(ncol(mat)-halfkersize)
+    for(i in ii0){
+        for(j in jj0){
+            ii <- (i-halfkersize):(i+halfkersize)
+            jj <- (j-halfkersize):(j+halfkersize)
+            Out[i, j] <- sum(Kernel * mat[ii, jj])
+        }
+    }
+    Out <- Out[ii0, jj0]
+    return(Out)
+}
+
+
+Sobel.Filter <- function(BaseVector, KernelVector, k = 3, direction = "X"){
+	if(!(is.vector(BaseVector) & is.numeric(BaseVector))){
+		stop("BaseVector must be a numeric vector.\n")
+	}
+	if(!(is.vector(KernelVector) & is.numeric(KernelVector))){
+		stop("KernelVector must be a numeric vector.\n")
+	}
+	if(k == 1 | k%%2 != 1) stop("k must be an odd integer and greater than 1.\n")
+	if(direction == "X"){
+		sobel <- (BaseVector %*% t(KernelVector))/8
+	}else if(direction == "Y"){
+		sobel <- (KernelVector %*% t(BaseVector))/8
+	}else{
+		stop('direction must be "X" or "Y"\n')
+	}
+	BaseMatrix <- BaseVector %*% t(BaseVector)
+	if(k > 3){
+		k <- k%/%2-1
+		inv <- if(direction == "X") 'col' else 'row'
+		for(i in 1:k) sobel <- Conv2Type1(BaseMatrix, sobel, inverse = inv)/16
+	}
+	return(sobel)
+}
+
+slope.aspect <- function(mat, xres, yres, Gx = NULL, Gy = NULL, smoothing = 1){
+	mat <- data.matrix(mat)
+	if(is.null(Gx) | is.null(Gy)){
+		Gx <- Sobel.Filter(c(1, 2, 1), c(-1, 0, 1), k = 3, direction = "X")
+		Gy <- Sobel.Filter(c(1, 2, 1), c(1, 0, -1), k = 3, direction = "Y")
+	}
+	x.dir <- Conv2Type2(mat, Gx)/xres
+	y.dir <- Conv2Type2(mat, Gy)/yres
+	slope <- atan(sqrt(x.dir^2 + y.dir^2)/smoothing)
 	slope <- (180/pi) * slope
-	aspect <- 180 - (180/pi) * atan(y.mov/x.mov) + 90 * (x.mov/abs(x.mov))
+	aspect <- 180 - (180/pi) * atan(y.dir/x.dir) + 90 * (x.dir/abs(x.dir))
 	aspect[slope == 0] <- 0
 	return(list(slope = slope, aspect = aspect))
 }
-
-movingwindow <- function(mat, kernel) { 
- 	x <- mat
- 	x[] <- NA
-    mwoffset <- (nrow(kernel)-1)/2
-    for(i in (1+mwoffset):(nrow(mat)-mwoffset)) {
-        for(j in (1+mwoffset):(ncol(mat)-mwoffset)) {
-            x[i, j] <- sum(kernel * mat[(i-mwoffset):(i+mwoffset), (j-mwoffset):(j+mwoffset)])
-        }
-    }
-    dim(x) <- dim(mat)
-    return(x)
-}
-
-# mat <- demGrid$z
-# xres <- 0.03750001
-# yres <- 0.03750001
-
-# slopeasp <- slope.aspect(mat, xres, yres)
-# x <- slopeasp$slope
-
-# x[x < 89.9] <- NA
-# image(x, col = rainbow(64))
 
 #################################################################################
 
