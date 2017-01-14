@@ -76,5 +76,11 @@
         // Coarse resolution from gridded data to  complete points data
         // when interpolate (in decimal degree)
         "res.coarse": 0.5
+    }],
+    // Add auxiliary variables
+    "auxvar": [{
+        "dem": false,
+        "slope": false,
+        "aspect": false
     }]
 }

@@ -194,6 +194,13 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 	meanBiasPrefix <- GeneralParameters$Prefix$Mean.Bias.Prefix
 
 	origdir <- interpBiasparams$origdir
+
+	#############
+	auxvar <- c('dem', 'slp', 'asp')
+	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
+	if(any(is.auxvar)){
+		formule <- formula(paste('pars', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
+	}else formule <- formula(paste('pars', '~', 1, sep = ''))
 	
 	#############
 	stnData <- interpBiasparams$stnData
@@ -201,11 +208,6 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 	lat.stn <- stnData$lat
 
 	#############
-	demData <- interpBiasparams$demData
-	lon.dem <- demData$lon
-	lat.dem <- demData$lat
-	grd.dem <- demData$demMat
-	grd.dem[grd.dem < 0] <- 0
 
 	xy.grid <- interpBiasparams$xy.grid
 	grdSp <- defSpatialPixels(xy.grid)
@@ -217,7 +219,12 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 	dy <- ncdim_def("Lat", "degreeN", xy.grid$lat)
 	xy.dim <- list(dx, dy)
 
-	## regrid dem si necessaire
+	#############
+	demData <- interpBiasparams$demData
+	lon.dem <- demData$lon
+	lat.dem <- demData$lat
+	grd.dem <- demData$demMat
+	grd.dem[grd.dem < 0] <- 0
 	demSp <- defSpatialPixels(list(lon = lon.dem, lat = lat.dem))
 	is.regridDEM <- is.diffSpatialPixelsObj(grdSp, demSp, tol = 1e-07)
 	
@@ -226,17 +233,24 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 		demGrid <- interp.surface.grid(demGrid, list(x = xy.grid$lon, y = xy.grid$lat))
 	}
 
+	demres <- grdSp@grid@cellsize
+	slpasp <- slope.aspect(demGrid$z, demres[1], demres[2], filter = "sobel")
+	demGrid$slp <- slpasp$slope
+	demGrid$asp <- slpasp$aspect
+
+	ijGrd <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), xy.grid)
+	ObjStn <- list(x = lon.stn, y = lat.stn, z = demGrid$z[ijGrd], slp = demGrid$slp[ijGrd], asp = demGrid$asp[ijGrd])
+
 	# regrid RFE
 	rfeGrid <- NULL
 	rfeSp <- defSpatialPixels(xy.rfe)
 	is.regridRFE <- is.diffSpatialPixelsObj(grdSp, rfeSp, tol = 1e-07)
 	if(create.grd != '1' & is.regridRFE){
 		rfeGrid <- interp.surface.grid(demGrid, list(x = xy.rfe$lon, y = xy.rfe$lat))
+		irfe <- over(rfeSp, grdSp)
+		rfeGrid$slp <- matrix(demGrid$slp[irfe], length(xy.rfe$lon), length(xy.rfe$lat))
+		rfeGrid$asp <- matrix(demGrid$asp[irfe], length(xy.rfe$lon), length(xy.rfe$lat))
 	}
-
-	## dem at stn loc
-	ijGrd <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), xy.grid)
-	ObjStn <- list(x = lon.stn, y = lat.stn, z = demGrid$z[ijGrd])
 
 	## create grid to interp
 	bGrd <- NULL
@@ -258,7 +272,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 		bGrd <- createBlock(cells@cellsize, 2, 5)
 	}
 
-	params.grid <- list(xy.grid = xy.grid, interp.grid = interp.grid)
+	# params.grid <- list(xy.grid = xy.grid, interp.grid = interp.grid)
 	# mrgRaindat$params.grid <- params.grid
 
 	## interpolation
@@ -268,7 +282,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 			ntimes <- 12
 		}
 		if(bias.method == 'Multiplicative.Bias.Var'){
-			ntimes <- switch(freqData, 'daily' = 365, 'dekadal' = 36, 'monthly' = 12)				
+			ntimes <- switch(freqData, 'daily' = 365, 'dekadal' = 36, 'monthly' = 12)
 		}
 
 		if(doparallel & length(itimes) >= 3){
@@ -281,20 +295,23 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 			closeklust <- FALSE
 		}
 		packages <- c('sp', 'gstat', 'automap')
-		toExports <- c('bias.pars', 'itimes', 'interp.grid', 'interp.method',
-						'min.stn', 'vgm.model', 'nmin', 'nmax', 'maxdist', 'bGrd')
+		toExports <- c('bias.pars', 'itimes', 'interp.grid', 'interp.method', 'formule',
+						'auxvar', 'is.auxvar', 'min.stn', 'vgm.model', 'nmin', 'nmax', 'maxdist', 'bGrd')
 		BIAS <- vector(mode = 'list', length = ntimes)
 		BIAS[itimes] <- foreach(m = itimes, .packages = packages, .export = toExports) %parLoop% {
 			locations.stn <- interp.grid$coords.stn
 			locations.stn$pars <- bias.pars[itimes == m, ]
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
+
+			extrm <- quantile(locations.stn$pars, probs = c(0.0001, 0.9999))
+			locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
+
 			if(length(locations.stn$pars) < min.stn) return(matrix(1, ncol = nlat0, nrow = nlon0))
 			if(!any(locations.stn$pars != 1)) return(matrix(1, ncol = nlat0, nrow = nlon0))
 
 			if(interp.method == 'Kriging'){
-				vgm <- try(autofitVariogram(pars~1, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-				if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
-				else vgm <- NULL
+				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
+				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
 			}else vgm <- NULL
 
 			xstn <- as.data.frame(locations.stn)
@@ -321,10 +338,21 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)	
 			}else{
 				coordinates(locations.stn) <- ~lon+lat
-				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-									block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-				pars.grd$var1.pred[pars.grd$var1.pred < 0] <- NA
-				pars.grd$var1.pred[pars.grd$var1.pred > 3] <- NA
+				if(any(is.auxvar)){
+					locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+					pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
+										nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+				}else{
+					pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
+										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+				}
+				# pars.grd$var1.pred[pars.grd$var1.pred < 0] <- NA
+				# pars.grd$var1.pred[pars.grd$var1.pred > 3] <- NA
+				# extrm <- quantile(pars.grd$var1.pred, probs = c(0.001, 0.999), na.rm = TRUE)
+				extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
+				ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
+				pars.grd$var1.pred[ixtrm] <- NA
+
 				ina <- is.na(pars.grd$var1.pred)
 				if(any(ina)){
 					pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
@@ -340,7 +368,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 		}
 		if(closeklust) stopCluster(klust)
 			
-		bias.factor <- list(bias = bias.pars, interp.bias = BIAS)
+		# bias.factor <- list(bias = bias.pars, interp.bias = BIAS)
 		# mrgRaindat$bias.factor <- bias.factor
 
 		#Defines netcdf output
@@ -348,10 +376,10 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 		for(jfl in itimes){
 			outnc <- file.path(origdir, paste(meanBiasPrefix, '_', jfl, '.nc', sep = ''))
 			nc2 <- nc_create(outnc, grd.bs)
-			ncvar_put(nc2, grd.bs, bias.factor$interp.bias[[jfl]])
+			ncvar_put(nc2, grd.bs, BIAS[[jfl]])
 			nc_close(nc2)
 		}
-		rm(BIAS, bias.factor)
+		rm(BIAS)
 	}else{
 		if(doparallel & length(months) >= 3){
 			klust <- makeCluster(nb_cores)
@@ -363,8 +391,8 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 			closeklust <- FALSE
 		}
 		packages <- c('sp', 'gstat', 'automap')
-		toExports <- c('bias.pars', 'months', 'interp.grid', 'interp.method', 'vgm.model',
-						'min.stn', 'nmin', 'nmax', 'maxdist', 'bGrd', 'create.grd', 'is.regridRFE')
+		toExports <- c('bias.pars', 'months', 'interp.grid', 'interp.method', 'vgm.model', 'formule',
+						'auxvar', 'is.auxvar', 'min.stn', 'nmin', 'nmax', 'maxdist', 'bGrd', 'create.grd', 'is.regridRFE')
 
 		PARS.stn <- vector(mode = 'list', length = 12)
 		PARS.stn[months] <- foreach(m = months, .packages = packages, .export = toExports) %parLoop% {
@@ -378,9 +406,8 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
 				if(interp.method == 'Kriging'){
-					vgm <- try(autofitVariogram(pars~1, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-					if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
-					else vgm <- NULL
+					vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
+					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
 				}else vgm <- NULL
 
 				xstn <- as.data.frame(locations.stn)
@@ -412,10 +439,22 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 					pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)	
 				}else{
 					coordinates(locations.stn) <- ~lon+lat
-					pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+					if(any(is.auxvar)){
+						locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+						pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
+											nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+					}else{
+						pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
+											block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+					}
 					pars.grd$var1.pred[pars.grd$var1.pred < 0] <- NA
 					if(j == 1) pars.grd$var1.pred[pars.grd$var1.pred > 1] <- NA
+
+					# extrm <- quantile(pars.grd$var1.pred, probs = c(0.001, 0.999), na.rm = TRUE)
+					extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
+					ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
+					pars.grd$var1.pred[ixtrm] <- NA
+
 					ina <- is.na(pars.grd$var1.pred)
 					if(any(ina)){
 						pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
@@ -447,18 +486,29 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				locations.rfe <- locations.rfe[locations.rfe$pars > extrm[1] & locations.rfe$pars < extrm[2], ]
 
 				if(interp.method == 'Kriging'){
-					vgm <- try(autofitVariogram(pars~1, input_data = locations.rfe, model = vgm.model, cressie = TRUE), silent = TRUE)
-					if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
-					else vgm <- NULL
+					vgm <- try(autofitVariogram(formule, input_data = locations.rfe, model = vgm.model, cressie = TRUE), silent = TRUE)
+					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
 				}else vgm <- NULL
 
 				if(interp.method == 'NN'){
 					pars.grd <- krige(pars~1, locations = locations.rfe, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)
 				}else{
-					pars.grd <- krige(pars~1, locations = locations.rfe, newdata = interp.grid$newgrid, model = vgm,
-									block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+					if(any(is.auxvar)){
+						locations.rfe <- locations.rfe[Reduce("&", as.data.frame(!is.na(locations.rfe@data[, auxvar[is.auxvar]]))), ]
+						pars.grd <- krige(formule, locations = locations.rfe, newdata = interp.grid$newgrid, model = vgm,
+										nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+					}else{
+						pars.grd <- krige(formule, locations = locations.rfe, newdata = interp.grid$newgrid, model = vgm,
+										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+					}
 					pars.grd$var1.pred[pars.grd$var1.pred < 0] <- NA
 					if(j == 1) pars.grd$var1.pred[pars.grd$var1.pred > 1] <- NA
+
+					# extrm <- quantile(pars.grd$var1.pred, probs = c(0.001, 0.999), na.rm = TRUE)
+					extrm <- c(min(locations.rfe$pars, na.rm = TRUE), max(locations.rfe$pars, na.rm = TRUE))
+					ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
+					pars.grd$var1.pred[ixtrm] <- NA
+
 					ina <- is.na(pars.grd$var1.pred)
 					if(any(ina)){
 						pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], nmax = 1, debug.level = 0)
@@ -499,9 +549,9 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 			}
 		}
 
-		params.distr <- list(fit.stn = bias.pars$fit.stn, fit.rfe = bias.pars$fit.rfe,
-									pars.stn = bias.pars$pars.stn, pars.rfe = bias.pars$pars.rfe,
-									interp.pars.stn = PARS.stn, interp.pars.rfe = PARS.rfe)
+		# params.distr <- list(fit.stn = bias.pars$fit.stn, fit.rfe = bias.pars$fit.rfe,
+		# 							pars.stn = bias.pars$pars.stn, pars.rfe = bias.pars$pars.rfe,
+		# 							interp.pars.stn = PARS.stn, interp.pars.rfe = PARS.rfe)
 		# mrgRaindat$params.distr <- params.distr
 
 		#Defines netcdf output
@@ -510,16 +560,14 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 		grd.shape <- ncvar_def("shape", "", xy.dim, NA, longname= "Shape parameters of the gamma distribution", prec = "float")
 
 		for(jfl in months){
-			if(is.null(params.distr$interp.pars.stn[[jfl]]$prob) |
-				is.null(params.distr$interp.pars.stn[[jfl]]$scale) |
-				is.null(params.distr$interp.pars.stn[[jfl]]$shape)){
-				prob.nc <- params.distr$interp.pars.rfe[[jfl]]$prob
-				scale.nc <- params.distr$interp.pars.rfe[[jfl]]$scale
-				shape.nc <- params.distr$interp.pars.rfe[[jfl]]$shape
+			if(is.null(PARS.stn[[jfl]]$prob) | is.null(PARS.stn[[jfl]]$scale) | is.null(PARS.stn[[jfl]]$shape)){
+				prob.nc <- PARS.rfe[[jfl]]$prob
+				scale.nc <- PARS.rfe[[jfl]]$scale
+				shape.nc <- PARS.rfe[[jfl]]$shape
 			}else{
-				prob.nc <- params.distr$interp.pars.stn[[jfl]]$prob
-				scale.nc <- params.distr$interp.pars.stn[[jfl]]$scale
-				shape.nc <- params.distr$interp.pars.stn[[jfl]]$shape
+				prob.nc <- PARS.stn[[jfl]]$prob
+				scale.nc <- PARS.stn[[jfl]]$scale
+				shape.nc <- PARS.stn[[jfl]]$shape
 			}
 			outnc1 <- file.path(origdir, paste('Bernoulli-Gamma_Pars.STN', '_', jfl, '.nc', sep = ''))
 			nc1 <- nc_create(outnc1, list(grd.prob, grd.scale, grd.shape))
@@ -532,17 +580,17 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 		for(jfl in months){
 			outnc2 <- file.path(origdir, paste('Bernoulli-Gamma_Pars.RFE', '_', jfl, '.nc', sep = ''))
 			nc2 <- nc_create(outnc2, list(grd.prob, grd.scale, grd.shape))
-			ncvar_put(nc2, grd.prob, params.distr$interp.pars.rfe[[jfl]]$prob)
-			ncvar_put(nc2, grd.scale, params.distr$interp.pars.rfe[[jfl]]$scale)
-			ncvar_put(nc2, grd.shape, params.distr$interp.pars.rfe[[jfl]]$shape)
+			ncvar_put(nc2, grd.prob, PARS.rfe[[jfl]]$prob)
+			ncvar_put(nc2, grd.scale, PARS.rfe[[jfl]]$scale)
+			ncvar_put(nc2, grd.shape, PARS.rfe[[jfl]]$shape)
 			nc_close(nc2)
 		}
-		rm(PARS.stn, PARS.rfe, params.distr)
+		rm(PARS.stn, PARS.rfe)
 	}
 
 	# outfile <- file.path(origdir, 'DataUsed2ComputeBias.RData')
 	# save(mrgRaindat, file = outfile)
-	rm(stnData, demData, demGrid, ObjStn, interp.grid, params.grid)
+	rm(stnData, demData, demGrid, ObjStn, interp.grid)
 	gc()
 	InsertMessagesTxt(main.txt.out, 'Interpolating bias factors finished')
 	tcl("update")
@@ -820,19 +868,19 @@ ComputeLMCoefRain <- function(comptLMparams){
 	res.coarse <- comptLMparams$res.coarse
 
 	#############
+	auxvar <- c('dem', 'slp', 'asp')
+	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
+	if(any(is.auxvar)){
+		formule <- formula(paste('pars', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
+	}else formule <- formula(paste('pars', '~', 1, sep = ''))
+
+	#############
 	stnData <- comptLMparams$stnData
 	id.stn <- stnData$id
 	lon.stn <- stnData$lon
 	lat.stn <- stnData$lat
 	date.stn <- stnData$dates
 	data.stn <- stnData$data
-
-	#############
-	demData <- comptLMparams$demData
-	lon.dem <- demData$lon
-	lat.dem <- demData$lat
-	grd.dem <- demData$demMat
-	grd.dem[grd.dem < 0] <- 0
 
 	#############
 	rfeData <- comptLMparams$rfeData
@@ -861,7 +909,12 @@ ComputeLMCoefRain <- function(comptLMparams){
 		else rep(NA, length(ijrfe))
 	}))
 
-	## regrid dem si necessaire
+	#############
+	demData <- comptLMparams$demData
+	lon.dem <- demData$lon
+	lat.dem <- demData$lat
+	grd.dem <- demData$demMat
+	grd.dem[grd.dem < 0] <- 0
 	demSp <- defSpatialPixels(list(lon = lon.dem, lat = lat.dem))
 	is.regridDEM <- is.diffSpatialPixelsObj(grdSp, demSp, tol = 1e-07)
 	
@@ -870,9 +923,13 @@ ComputeLMCoefRain <- function(comptLMparams){
 		demGrid <- interp.surface.grid(demGrid, list(x = xy.grid$lon, y = xy.grid$lat))
 	}
 
-	## dem at stn loc
+	demres <- grdSp@grid@cellsize
+	slpasp <- slope.aspect(demGrid$z, demres[1], demres[2], filter = "sobel")
+	demGrid$slp <- slpasp$slope
+	demGrid$asp <- slpasp$aspect
+
 	ijdem <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), xy.grid)
-	ObjStn <- list(x = lon.stn, y = lat.stn, z = demGrid$z[ijdem])
+	ObjStn <- list(x = lon.stn, y = lat.stn, z = demGrid$z[ijdem], slp = demGrid$slp[ijdem], asp = demGrid$asp[ijdem])
 
 	## create grid to interp
 	bGrd <- NULL
@@ -923,6 +980,9 @@ ComputeLMCoefRain <- function(comptLMparams){
 	})
 	model.coef <- list(slope = sapply(model.coef, function(x) x[2, ]), intercept = sapply(model.coef, function(x) x[1, ]))
 
+	#model.params <- list(model = model, coef = model.coef)
+	#save(model.params, file = file.path(origdir, "MODEL_OUTPUT.RData"))
+
 	if(doparallel & length(months) >= 3){
 		klust <- makeCluster(nb_cores)
 		registerDoParallel(klust)
@@ -933,8 +993,8 @@ ComputeLMCoefRain <- function(comptLMparams){
 		closeklust <- FALSE
 	}
 	packages <- c('sp', 'gstat', 'automap')
-	toExports <- c('model.coef', 'months', 'interp.grid', 'interp.method', 'min.stn',
-				'vgm.model', 'nmin', 'nmax', 'maxdist', 'bGrd', 'nlat0', 'nlon0')
+	toExports <- c('model.coef', 'months', 'interp.grid', 'interp.method', 'min.stn','formule',
+					'auxvar', 'is.auxvar', 'vgm.model', 'nmin', 'nmax', 'maxdist', 'bGrd', 'nlat0', 'nlon0')
 	MODEL.COEF <- vector(mode = 'list', length = 12)
 	MODEL.COEF[months] <- foreach(m = months, .packages = packages, .export = toExports) %parLoop% {
 		pars.mon <- lapply(1:2, function(jc){
@@ -948,9 +1008,8 @@ ComputeLMCoefRain <- function(comptLMparams){
 			locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
 			if(interp.method == 'Kriging'){
-				vgm <- try(autofitVariogram(pars~1, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-				if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
-				else vgm <- NULL
+				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
+				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
 			}else vgm <- NULL
 			
 			xstn <- as.data.frame(locations.stn)
@@ -971,13 +1030,25 @@ ComputeLMCoefRain <- function(comptLMparams){
 			}
 			xadd <- xadd[iadd, ]
 			locations.stn <- rbind(xstn, xadd)
+
 			if(interp.method == 'NN'){
 				coordinates(locations.stn) <- ~lon+lat+elv
 				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)
 			}else{
 				coordinates(locations.stn) <- ~lon+lat
-				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-									block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+				if(any(is.auxvar)){
+					locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+					pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
+										nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+				}else{
+					pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
+										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+				}
+				
+				# extrm <- quantile(pars.grd$var1.pred, probs = c(0.001, 0.999), na.rm = TRUE)
+				extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
+				ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
+				pars.grd$var1.pred[ixtrm] <- NA
 				ina <- is.na(pars.grd$var1.pred)
 				if(any(ina)){
 					pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
@@ -1104,28 +1175,38 @@ MergingFunctionRain <- function(paramsMRG){
 	Mrg.file.format <- GeneralParameters$FileFormat$Mrg.file.format
 
 	#############
+	auxvar <- c('dem', 'slp', 'asp')
+	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
+	if(any(is.auxvar)){
+		formule <- formula(paste('res', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
+	}else formule <- formula(paste('res', '~', 1, sep = ''))
+
+	#############
+
 	demData <- paramsMRG$demData
 	if(!is.null(demData)){
-		grd.dem <- demData$demMat
-		grd.dem[grd.dem < 0] <- 0
-		demSp <- defSpatialPixels(list(lon = demData$lon, lat = demData$lat))
-		is.regridDEM <- is.diffSpatialPixelsObj(grdSp, demSp, tol = 1e-07)
-		
-		demGrid <- list(x = demData$lon, y = demData$lat, z = grd.dem)
-		if(is.regridDEM){
-			demGrid <- interp.surface.grid(demGrid, list(x = xy.grid$lon, y = xy.grid$lat))
-		}
-		## dem at stn loc
+		demData$z[demData$z < 0] <- 0
+		demres <- grdSp@grid@cellsize
+		slpasp <- slope.aspect(demData$z, demres[1], demres[2], filter = "sobel")
+		demData$slp <- slpasp$slope
+		demData$asp <- slpasp$aspect
 		ijdem <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), xy.grid)
-		dem.stn <- demGrid$z[ijdem]
+		dem.stn.val <- demData$z[ijdem]
+		dem.stn.slp <- demData$slp[ijdem]
+		dem.stn.asp <- demData$asp[ijdem]
 	}else{
-		demGrid <- list(x = xy.grid$lon, y = xy.grid$lat, z = matrix(1, nrow = nlon0, ncol = nlat0))
-		dem.stn <- rep(1, length(lon.stn))
+		dem.grd.val <- matrix(1, nrow = nlon0, ncol = nlat0)
+		dem.grd.slp <- matrix(0, nrow = nlon0, ncol = nlat0)
+		dem.grd.asp <- matrix(0, nrow = nlon0, ncol = nlat0)
+		demData <- list(x = xy.grid$lon, y = xy.grid$lat, z = dem.grd.val, slp = dem.grd.slp, asp = dem.grd.asp)
+		dem.stn.val <- rep(1, length(lon.stn))
+		dem.stn.slp <- rep(0, length(lon.stn))
+		dem.stn.asp <- rep(0, length(lon.stn))
 	}
-	ObjStn <- list(x = lon.stn, y = lat.stn, z = dem.stn)
+	ObjStn <- list(x = lon.stn, y = lat.stn, z = dem.stn.val, slp = dem.stn.slp, asp = dem.stn.asp)
 
 	## create grid to interp
-	interp.grid <- createGrid(ObjStn, demGrid, as.dim.elv = FALSE, res.coarse = res.coarse)
+	interp.grid <- createGrid(ObjStn, demData, as.dim.elv = FALSE, res.coarse = res.coarse)
 	cells <- SpatialPixels(points = interp.grid$newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)))@grid
 	bGrd <- createBlock(cells@cellsize, 2, 5)
 
@@ -1135,6 +1216,7 @@ MergingFunctionRain <- function(paramsMRG){
 		existLMCfl <- file.exists(coefFiles)
 		if(any(!existLMCfl)){
 			for(i in which(!existLMCfl)) InsertMessagesTxt(main.txt.out, paste(coefFiles[i], "doesn't exist"), format = TRUE)
+			if(closeklust) stopCluster(klust)
 			return(NULL)
 		}
 		MODEL.COEF <- vector(mode = 'list', length = 12)
@@ -1253,9 +1335,8 @@ MergingFunctionRain <- function(paramsMRG){
 
 			############
 			if(interp.method == 'Kriging'){
-				vgm <- try(autofitVariogram(res~1, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-				if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
-				else vgm <- NULL
+				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
+				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
 			}else vgm <- NULL
 
 			###########
@@ -1275,14 +1356,27 @@ MergingFunctionRain <- function(paramsMRG){
 			coordinates(locations.stn) <- ~lon+lat
 
 			###########
-			res.grd <- krige(res~1, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-								block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+			if(any(is.auxvar)){
+				locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+				res.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
+									nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+			}else{
+				res.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
+									block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+			}
+
+			# extrm <- quantile(res.grd$var1.pred, probs = c(0.001, 0.999), na.rm = TRUE)
+			extrm <- c(min(locations.stn$res, na.rm = TRUE), max(locations.stn$res, na.rm = TRUE))
+			ixtrm <- is.na(res.grd$var1.pred) | (res.grd$var1.pred <= extrm[1] | res.grd$var1.pred >= extrm[2])
+			res.grd$var1.pred[ixtrm] <- NA
+
 			ina <- is.na(res.grd$var1.pred)
 			if(any(ina)){
 				res.grd.na <- krige(var1.pred~1, locations = res.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
 										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 				res.grd$var1.pred[ina] <- res.grd.na$var1.pred
 			}
+			
 			resid <- matrix(res.grd$var1.pred, ncol = nlat0, nrow = nlon0)
 			resid[is.na(resid)] <- 0
 
@@ -1311,8 +1405,7 @@ MergingFunctionRain <- function(paramsMRG){
 				imsk <- matrix(irnr, nrow = nlon0, ncol = nlat0)
 				rnr[imsk] <- rnr.rfe[imsk]
 				if(smooth.RnoR){
-					if(sum(rnr.rfe, na.rm = TRUE) == 0) npix <- 5
-					else npix <- 3
+					npix <- if(sum(rnr.rfe, na.rm = TRUE) == 0) 5 else 3
 					rnr <- smooth.matrix(rnr, npix)
 				}
 			}else rnr <- matrix(1, ncol = nlat0, nrow = nlon0)
@@ -1331,19 +1424,126 @@ MergingFunctionRain <- function(paramsMRG){
 		if(freqData == 'daily'){
 			outfl <- file.path(origdir, sprintf(Mrg.file.format, substr(ncInfo$dates[jj], 1, 4),
 								substr(ncInfo$dates[jj], 5, 6), substr(ncInfo$dates[jj], 7, 8)))
-		}else  if(freqData == 'dekadal'){
+		}else if(freqData == 'dekadal'){
 			outfl <- file.path(origdir, sprintf(Mrg.file.format, substr(ncInfo$dates[jj], 1, 4),
 								substr(ncInfo$dates[jj], 5, 6), substr(ncInfo$dates[jj], 7, 7)))
-		}else  if(freqData == 'monthly'){
+		}else if(freqData == 'monthly'){
 			outfl <- file.path(origdir, sprintf(Mrg.file.format, substr(ncInfo$dates[jj], 1, 4),
 								substr(ncInfo$dates[jj], 5, 6)))
 		}
 
 		nc2 <- nc_create(outfl, grd.nc.out)
-		ncvar_put(nc2, grd.nc.out, out.mrg)
+		ncvar_put(nc2, grd.nc.out, round(out.mrg))
 		nc_close(nc2)
 		return(0)
 	}
+
+	############
+	InsertMessagesTxt(main.txt.out, 'Scaling up daily data ...')
+	tcl("update")
+	dekdaty <- ncInfo$dates[ncInfo$exist]
+	if(freqData == "daily" & GeneralParameters$Scale.daily & length(dekdaty) > 7){
+		dekDataInfo <- getRFESampleData(GeneralParameters$IO.files$DEK.file)
+		dekDir <- GeneralParameters$IO.files$DEK.dir
+		dekfilefrmt <- GeneralParameters$FileFormat$DEK.File.Format
+		months <- GeneralParameters$Mrg.Months
+
+		an <- substr(dekdaty, 1, 4)
+		mois <- substr(dekdaty, 5, 6)
+		jour <- as.numeric(substr(dekdaty, 7, 8))
+		outfl <- file.path(origdir, sprintf(Mrg.file.format, an, mois, jour))
+
+		nbs <- ifelse(jour[1] <= 10, 10, ifelse(jour[1] > 10 & jour[1] <= 20, 10,
+					rev((28:31)[which(!is.na(as.Date(paste(an[1], mois[1], 28:31, sep = '-'))))])[1]-20))
+		nbe <- ifelse(jour[length(an)] <= 10, 10, ifelse(jour[length(an)] > 10 & jour[length(an)] <= 20, 10,
+					rev((28:31)[which(!is.na(as.Date(paste(an[length(an)], mois[length(an)], 28:31, sep = '-'))))])[1]-20))
+		jour[jour <= 10] <- 1
+		jour[jour > 10 & jour <= 20] <- 2
+		jour[jour > 20] <- 3
+		nbd <- rle(jour)$lengths
+		nbd[c(1, length(nbd))] <- c(nbs, nbe)
+		jj <- paste(an, mois, jour, sep = '')
+		dekDate <- cbind(aggregate(rep(1, length(an)), by = list(jj), sum), nbd, seq_along(nbd))
+		names(dekDate) <- c('date', 'izy', 'feno', 'id')
+
+		daily.data <- data.frame(id = seq_along(jj), file = outfl)
+		dekdaty1 <- as.character(dekDate$date)
+		for(j in seq_along(dekdaty1)) daily.data[jj == dekdaty1[j], 1] <- dekDate$id[j]
+
+		an1 <- substr(dekdaty1, 1, 4)
+		mois1 <- substr(dekdaty1, 5, 6)
+		jour1 <- substr(dekdaty1, 7, 7)
+		start.date1 <- as.Date(paste(an1[1], mois1[1], jour1[1], sep = '-'))
+		end.date1 <- as.Date(paste(an1[length(an1)], mois1[length(an1)], jour1[length(an1)], sep = '-'))
+
+		error.msg <- "Merged dekadal data not found"
+		dekInfo <- ncFilesInfo('dekadal', start.date1, end.date1, months, dekDir, dekfilefrmt, error.msg)
+		if(is.null(dekInfo)){
+			if(closeklust) stopCluster(klust)
+			return(NULL)
+		}
+		dekinfo <- data.frame(date = dekInfo$dates, exist = dekInfo$exist, file = dekInfo$nc.files)
+		dekinfo <- merge(dekDate, dekinfo, by = "date", all.x = TRUE)
+		dekinfo <- dekinfo[dekinfo$izy == dekinfo$feno & dekinfo$exist, , drop = FALSE]
+		daily.data <- daily.data[daily.data$id%in%dekinfo$id, , drop = FALSE]
+		oper.dek <- list()
+		for(j in seq_along(dekinfo$id)) oper.dek[[j]] <- list(dek = as.character(dekinfo$file[dekinfo$id == dekinfo$id[j]]),
+															day = as.character(daily.data$file[daily.data$id == dekinfo$id[j]]))
+		############
+		nc <- nc_open(oper.dek[[1]]$dek)
+		xlon <- nc$dim[[dekDataInfo$rfeILon]]$vals
+		xlat <- nc$dim[[dekDataInfo$rfeILat]]$vals
+		nc_close(nc)
+		xo <- order(xlon)
+		xlon <- xlon[xo]
+		yo <- order(xlat)
+		xlat <- xlat[yo]
+		rfeDek <- defSpatialPixels(list(lon = xlon, lat = xlat))
+
+		nc <- nc_open(oper.dek[[1]]$day[1])
+		dlon <- nc$dim[[1]]$vals
+		dlat <- nc$dim[[2]]$vals
+		nc_close(nc)
+		rfeDay <- defSpatialPixels(list(lon = dlon, lat = dlat))
+
+		is.regridDEK <- is.diffSpatialPixelsObj(rfeDay, rfeDek, tol = 1e-07)
+
+		packages <- c('ncdf4', 'fields')
+		ncdata <- foreach(jj = seq_along(oper.dek), .packages = packages) %parLoop% {
+			nc <- nc_open(oper.dek[[jj]]$dek)
+			xdek <- ncvar_get(nc, varid = dekDataInfo$rfeVarid)
+			nc_close(nc)
+			xdek <- xdek[xo, yo]
+			if(dekDataInfo$rfeILat == 1){
+				xdek <- matrix(c(xdek), nrow = length(xlon), ncol = length(xlat), byrow = TRUE)
+			}
+
+			if(is.regridDEK){
+				dekGrid <- interp.surface.grid(list(x = xlon, y = xlat, z = xdek), list(x = dlon, y = dlat))
+				xdek <- dekGrid$z
+			}
+
+			xday <- lapply(seq_along(oper.dek[[jj]]$day), function(j){
+				nc <- nc_open(oper.dek[[jj]]$day[j])
+				xdd <- ncvar_get(nc, varid = nc$var[[1]]$name)
+				nc_close(nc)
+				xdd
+			})
+
+			xday <- simplify2array(xday)
+			ddek <- apply(xday, 1:2, sum)
+			scl <- xdek/ddek
+			scl[is.na(scl) | is.nan(scl) | is.infinite(scl)] <- 1
+			xday <- sweep(xday, 1:2, scl, `*`)
+
+			for(j in seq_along(oper.dek[[jj]]$day)){
+				nc2 <- nc_create(oper.dek[[jj]]$day[j], grd.nc.out)
+				ncvar_put(nc2, grd.nc.out, round(xday[, , j]))
+				nc_close(nc2)
+			}
+		}
+	}
+
 	if(closeklust) stopCluster(klust)
 
 	InsertMessagesTxt(main.txt.out, 'Merging finished')

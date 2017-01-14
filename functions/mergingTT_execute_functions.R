@@ -157,13 +157,11 @@ execBiasTemp <- function(origdir){
 	rad.lat <- as.numeric(GeneralParameters$Interpolation.pars$rad.lat)
 	maxdist <- as.numeric(GeneralParameters$Interpolation.pars$maxdist)
 
-	if(interp.method == 'NN') res.coarse <- sqrt((rad.lon*mean(downData$lon[-1]-downData$lon[-nlon0]))^2 + (rad.lat*mean(downData$lat[-1]-downData$lat[-nlat0]))^2)/2
-	else res.coarse <- maxdist/2
+	res.coarse <- if(interp.method == 'NN') sqrt((rad.lon*mean(downData$lon[-1]-downData$lon[-nlon0]))^2 + (rad.lat*mean(downData$lat[-1]-downData$lat[-nlat0]))^2)/2 else maxdist/2
 	res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
 
 	comptMBiasparms <- list(GeneralParameters = GeneralParameters, stnData = stnData, downData = downData, res.coarse = res.coarse)
 	bias.pars <- ComputeMeanBiasTemp(comptMBiasparms)
-
 
 	interpBiasparams <- list(GeneralParameters = GeneralParameters, bias.pars = bias.pars, stnData = stnData,
 							demData = demData, xy.grid = xy.grid, res.coarse = res.coarse, origdir = origdir)
@@ -267,8 +265,7 @@ execLMCoefTemp <- function(origdir){
 	rad.lat <- as.numeric(GeneralParameters$Interpolation.pars$rad.lat)
 	maxdist <- as.numeric(GeneralParameters$Interpolation.pars$maxdist)
 
-	if(interp.method == 'NN') res.coarse <- sqrt((rad.lon*mean(adjData$lon[-1]-adjData$lon[-nlon0]))^2 + (rad.lat*mean(adjData$lat[-1]-adjData$lat[-nlat0]))^2)/2
-	else res.coarse <- maxdist/2
+	res.coarse <- if(interp.method == 'NN') sqrt((rad.lon*mean(adjData$lon[-1]-adjData$lon[-nlon0]))^2 + (rad.lat*mean(adjData$lat[-1]-adjData$lat[-nlat0]))^2)/2 else maxdist/2
 	res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
 
 	################
@@ -296,12 +293,17 @@ execMergeTemp <- function(origdir){
 	if(is.null(stnData)) return(NULL)
 
 	blank.grid <- GeneralParameters$Blank.Grid
-	
+	grdblnk <- blank.grid == '2'
+	auxvar <- GeneralParameters$auxvar$dem | GeneralParameters$auxvar$slope | GeneralParameters$auxvar$aspect
+
 	## DEM data
 	demData <- NULL
-	if(blank.grid == '2'){
+	if(grdblnk | auxvar){
 		demData <- getDemOpenDataSPDF(GeneralParameters$IO.files$DEM.file)
-		if(is.null(demData)) return(NULL)
+		if(is.null(demData)){
+			InsertMessagesTxt(main.txt.out, "No elevation data found", format = TRUE)
+			return(NULL)
+		}
 	}
 
 	adjDir <- GeneralParameters$IO.files$ADJ.dir
@@ -336,15 +338,20 @@ execMergeTemp <- function(origdir){
 	xy.grid <- list(lon = grd.lon, lat = grd.lat)
 	newGrid <- defSpatialPixels(xy.grid)
 
-	if(blank.grid == "1") outMask <- NULL
-	if(blank.grid == "2"){
+	## regrid DEM data
+	if(grdblnk | auxvar){
 		demGrid <- defSpatialPixels(list(lon = demData$lon, lat = demData$lat))
 		is.regridDEM <- is.diffSpatialPixelsObj(newGrid, demGrid, tol = 1e-07)
 		if(is.regridDEM){
-			outMask <- interp.surface.grid(list(x = demData$lon, y = demData$lat, z = demData$demMat),
-					list(x = grd.lon, y = grd.lat))
-			outMask <- outMask$z
-		}else outMask <- demData$demMat
+			demData <- interp.surface.grid(list(x = demData$lon, y = demData$lat, z = demData$demMat),
+											list(x = grd.lon, y = grd.lat))
+		}
+	}else demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
+
+
+	if(blank.grid == "1") outMask <- NULL
+	if(blank.grid == "2"){
+		outMask <- demData$z
 		outMask[outMask <= 0] <- NA
 	}
 	if(blank.grid == "3"){

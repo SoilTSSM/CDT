@@ -83,5 +83,11 @@
         "minlat": -26,
         "maxlat": -12,
         "reslat": 0.1
+    }],
+    // Add auxiliary variables
+    "auxvar": [{
+        "dem": false,
+        "slope": false,
+        "aspect": false
     }]
 }

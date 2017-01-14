@@ -88,8 +88,8 @@ bias.TT.calc.fun <- function(df, min.len){
 		bs <- sum(df$stn)/sum(df$tt)
 		if(is.nan(bs)) bs <- 1    # 0/0
 		if(is.infinite(bs)) bs <- 1.5  # n/0
-		if(bs == 0) bs <- 0.5  # 0/n
-		if(bs > 3) bs <- 3
+		if(bs == 0) bs <- 0.6  # 0/n
+		if(bs > 1.5) bs <- 1.5
 		if(bs < 0) bs <- 1
 	}
 	return(bs)

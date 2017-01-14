@@ -481,7 +481,7 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	# status.bar.display(en.months, TextOutputVar, 'Months to be downscaled')
 
 	###########
-	tkbind(cb.period,"<<ComboboxSelected>>", function(){
+	tkbind(cb.period, "<<ComboboxSelected>>", function(){
 		if(tclvalue(file.period) == 'Daily data'){
 			tclvalue(day.txtVar) <- "Day"
 			tkconfigure(day1.v, state = 'normal')
@@ -531,10 +531,10 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	status.bar.display(frGrid, TextOutputVar, 'Create the grid to interpolate the downscaled data')
 
 	###########
-	tkbind(grdDEM.rbt,"<Button-1>", function(){
+	tkbind(grdDEM.rbt, "<Button-1>", function(){
 		tkconfigure(bt.getNewgrid, state = 'disabled')
 	})
-	tkbind(grdNEW.rbt,"<Button-1>", function(){
+	tkbind(grdNEW.rbt, "<Button-1>", function(){
 		tkconfigure(bt.getNewgrid, state = 'normal')
 	})
 
@@ -751,7 +751,7 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 
 	######
 
-	tkbind(cb.bias,"<<ComboboxSelected>>", function(){
+	tkbind(cb.bias, "<<ComboboxSelected>>", function(){
 		stateBSM <- if(tclvalue(bias.method) == "Quantile.Mapping") 'disabled' else 'normal'
 		tkconfigure(en.outbiasff, state = stateBSM)
 	})
@@ -891,20 +891,19 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 
 	############################################
 
-	# frPfxBias <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
+	frPfxBias <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
 
-	# outbiasff <- tclVar(GeneralParameters$Prefix$Mean.Bias.Prefix)
-	# if(str_trim(GeneralParameters$Bias.Method) == "Quantile.Mapping") statePfxBias <- 'disabled'
-	# else statePfxBias <- 'normal'
+	outbiasff <- tclVar(GeneralParameters$Format$Mean.Bias.Prefix)
+	statePfxBias <- if(str_trim(GeneralParameters$Bias.Method) == "Quantile.Mapping") 'disabled' else 'normal'
 
-	# txt.outbiasff <- tklabel(frPfxBias, text = 'Mean bias filename prefix', anchor = 'w', justify = 'left')
-	# en.outbiasff <- tkentry(frPfxBias, textvariable = outbiasff, width = largeur, state = statePfxBias)
+	txt.outbiasff <- tklabel(frPfxBias, text = 'Mean bias filename prefix', anchor = 'w', justify = 'left')
+	en.outbiasff <- tkentry(frPfxBias, textvariable = outbiasff, width = largeur, state = statePfxBias)
 
-	# tkgrid(txt.outbiasff, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	# tkgrid(en.outbiasff, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(txt.outbiasff, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(en.outbiasff, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 
-	# infobulle(en.outbiasff, 'Prefix for the file name of the mean bias coefficient')
-	# status.bar.display(en.outbiasff, TextOutputVar, 'Prefix for the file name of the mean bias coefficient')
+	infobulle(en.outbiasff, 'Prefix for the file name of the mean bias coefficient')
+	status.bar.display(en.outbiasff, TextOutputVar, 'Prefix for the file name of the mean bias coefficient')
 
 	############################################
 	tkgrid(frBias, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -912,7 +911,7 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 	tkgrid(frRFE, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frDEM, row = 3, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frSave, row = 4, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	# tkgrid(frPfxBias, row = 5, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frPfxBias, row = 5, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#######################  RIGHT   #####################
 
@@ -1036,8 +1035,8 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 
 	tkgrid(txt.Interp, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cb.Interp, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frNN, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frIDW, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frNN, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 5, ipadx = 1, ipady = 1)
+	tkgrid(frIDW, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 5, ipadx = 1, ipady = 1)
 	# tkgrid(frCoarse, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	########
@@ -1059,7 +1058,7 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 	# infobulle(frCoarse, 'Coarse resolution from gridded data to complete points data\nwhen interpolating (in decimal degree)')
 	# status.bar.display(frCoarse, TextOutputVar, 'Coarse resolution from gridded data to complete points data\nwhen interpolating (in decimal degree)')
 
-	tkbind(cb.Interp,"<<ComboboxSelected>>", function(){
+	tkbind(cb.Interp, "<<ComboboxSelected>>", function(){
 		if(tclvalue(interp.method) == 'Nearest Neighbor'){
 			tkconfigure(mul.lon.v, state = 'normal')
 			tkconfigure(mul.lat.v, state = 'normal')
@@ -1079,24 +1078,33 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 
 	############################################
 
-	frPfxBias <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
+	frauxvar <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
-	outbiasff <- tclVar(GeneralParameters$Format$Mean.Bias.Prefix)
-	statePfxBias <- if(str_trim(GeneralParameters$Bias.Method) == "Quantile.Mapping") 'disabled' else 'normal'
+	dem.auxvar <- tclVar(GeneralParameters$auxvar$dem)
+	slope.auxvar <- tclVar(GeneralParameters$auxvar$slope)
+	aspect.auxvar <- tclVar(GeneralParameters$auxvar$aspect)
 
-	txt.outbiasff <- tklabel(frPfxBias, text = 'Mean bias filename prefix', anchor = 'w', justify = 'left')
-	en.outbiasff <- tkentry(frPfxBias, textvariable = outbiasff, width = largeur, state = statePfxBias)
+	txt.auxvar <- tklabel(frauxvar, text = 'Include auxiliary variables', anchor = 'w', justify = 'left')
+	dem.chk.auxvar <- tkcheckbutton(frauxvar, variable = dem.auxvar, text = 'DEM', anchor = 'w', justify = 'left')
+	slope.chk.auxvar <- tkcheckbutton(frauxvar, variable = slope.auxvar, text = 'Slope', anchor = 'w', justify = 'left')
+	aspect.chk.auxvar <- tkcheckbutton(frauxvar, variable = aspect.auxvar, text = 'Aspect', anchor = 'w', justify = 'left')
 
-	tkgrid(txt.outbiasff, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(en.outbiasff, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(txt.auxvar, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(dem.chk.auxvar, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(slope.chk.auxvar, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(aspect.chk.auxvar, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	infobulle(en.outbiasff, 'Prefix for the file name of the mean bias coefficient')
-	status.bar.display(en.outbiasff, TextOutputVar, 'Prefix for the file name of the mean bias coefficient')
+	infobulle(dem.chk.auxvar, 'Include elevation data as auxiliary variable')
+	status.bar.display(dem.chk.auxvar, TextOutputVar, 'Include elevation data as auxiliary variable')
+	infobulle(slope.chk.auxvar, 'Include slope data as auxiliary variable')
+	status.bar.display(slope.chk.auxvar, TextOutputVar, 'Include slope data as auxiliary variable')
+	infobulle(aspect.chk.auxvar, 'Include aspect data as auxiliary variable')
+	status.bar.display(aspect.chk.auxvar, TextOutputVar, 'Include aspect data as auxiliary variable')
 
 	############################################
 	tkgrid(frDate, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frInterp, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frPfxBias, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frInterp, row = 1, column = 0, sticky = 'we', padx = 1, pady = 5, ipadx = 1, ipady = 1)
+	tkgrid(frauxvar, row = 2, column = 0, sticky = 'we', padx = 1, pady = 5, ipadx = 1, ipady = 1)
 
 	############################################
 	
@@ -1158,6 +1166,10 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 				GeneralParameters$Interpolation.pars$nmin <<- as.numeric(str_trim(tclvalue(nmin)))
 				GeneralParameters$Interpolation.pars$nmax <<- as.numeric(str_trim(tclvalue(nmax)))
 				GeneralParameters$Interpolation.pars$maxdist <<- as.numeric(str_trim(tclvalue(maxdist)))
+
+				GeneralParameters$auxvar$dem <<- switch(tclvalue(dem.auxvar), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$auxvar$slope <<- switch(tclvalue(slope.auxvar), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$auxvar$aspect <<- switch(tclvalue(aspect.auxvar), '0' = FALSE, '1' = TRUE)
 
 				tkgrab.release(tt)
 				tkdestroy(tt)
@@ -1236,7 +1248,7 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 
 	######
 
-	tkbind(cb.bias,"<<ComboboxSelected>>", function(){
+	tkbind(cb.bias, "<<ComboboxSelected>>", function(){
 		stateBSM <- if(tclvalue(bias.method) == "Quantile.Mapping") 'disabled' else 'normal'
 		tkconfigure(en.outbiasff, state = stateBSM)
 	})
@@ -1378,7 +1390,7 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 	# status.bar.display(en.months, TextOutputVar, 'Months to be adjusted')
 
 	###########
-	tkbind(cb.period,"<<ComboboxSelected>>", function(){
+	tkbind(cb.period, "<<ComboboxSelected>>", function(){
 		if(tclvalue(file.period) == 'Daily data'){
 			tclvalue(day.txtVar) <- "Day"
 			tkconfigure(day1.v, state = 'normal')
@@ -1839,7 +1851,7 @@ coefLMGetInfoTemp <- function(parent.win, GeneralParameters){
 	# infobulle(frCoarse, 'Coarse resolution from gridded data to complete points data\nwhen interpolating (in decimal degree)')
 	# status.bar.display(frCoarse, TextOutputVar, 'Coarse resolution from gridded data to complete points data\nwhen interpolating (in decimal degree)')
 
-	tkbind(cb.Interp,"<<ComboboxSelected>>", function(){
+	tkbind(cb.Interp, "<<ComboboxSelected>>", function(){
 		if(tclvalue(interp.method) == 'Nearest Neighbor'){
 			tkconfigure(mul.lon.v, state = 'normal')
 			tkconfigure(mul.lat.v, state = 'normal')
@@ -1859,8 +1871,34 @@ coefLMGetInfoTemp <- function(parent.win, GeneralParameters){
 
 	############################################
 
+	frauxvar <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
+
+	dem.auxvar <- tclVar(GeneralParameters$auxvar$dem)
+	slope.auxvar <- tclVar(GeneralParameters$auxvar$slope)
+	aspect.auxvar <- tclVar(GeneralParameters$auxvar$aspect)
+
+	txt.auxvar <- tklabel(frauxvar, text = 'Include auxiliary variables', anchor = 'w', justify = 'left')
+	dem.chk.auxvar <- tkcheckbutton(frauxvar, variable = dem.auxvar, text = 'DEM', anchor = 'w', justify = 'left')
+	slope.chk.auxvar <- tkcheckbutton(frauxvar, variable = slope.auxvar, text = 'Slope', anchor = 'w', justify = 'left')
+	aspect.chk.auxvar <- tkcheckbutton(frauxvar, variable = aspect.auxvar, text = 'Aspect', anchor = 'w', justify = 'left')
+
+	tkgrid(txt.auxvar, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(dem.chk.auxvar, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(slope.chk.auxvar, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(aspect.chk.auxvar, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(dem.chk.auxvar, 'Include elevation data as auxiliary variable')
+	status.bar.display(dem.chk.auxvar, TextOutputVar, 'Include elevation data as auxiliary variable')
+	infobulle(slope.chk.auxvar, 'Include slope data as auxiliary variable')
+	status.bar.display(slope.chk.auxvar, TextOutputVar, 'Include slope data as auxiliary variable')
+	infobulle(aspect.chk.auxvar, 'Include aspect data as auxiliary variable')
+	status.bar.display(aspect.chk.auxvar, TextOutputVar, 'Include aspect data as auxiliary variable')
+
+	############################################
+
 	tkgrid(frDate, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frInterp, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frauxvar, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	############################################
 	
@@ -1919,6 +1957,10 @@ coefLMGetInfoTemp <- function(parent.win, GeneralParameters){
 				GeneralParameters$Interpolation.pars$nmin <<- as.numeric(str_trim(tclvalue(nmin)))
 				GeneralParameters$Interpolation.pars$nmax <<- as.numeric(str_trim(tclvalue(nmax)))
 				GeneralParameters$Interpolation.pars$maxdist <<- as.numeric(str_trim(tclvalue(maxdist)))
+
+				GeneralParameters$auxvar$dem <<- switch(tclvalue(dem.auxvar), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$auxvar$slope <<- switch(tclvalue(slope.auxvar), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$auxvar$aspect <<- switch(tclvalue(aspect.auxvar), '0' = FALSE, '1' = TRUE)
 
 				tkgrab.release(tt)
 				tkdestroy(tt)
@@ -2168,7 +2210,7 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 	# status.bar.display(en.months, TextOutputVar, 'Months to be merged')
 
 	###########
-	tkbind(cb.period,"<<ComboboxSelected>>", function(){
+	tkbind(cb.period, "<<ComboboxSelected>>", function(){
 		if(tclvalue(file.period) == 'Daily data'){
 			tclvalue(day.txtVar) <- "Day"
 			tkconfigure(day1.v, state = 'normal')
@@ -2295,9 +2337,9 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 
 	#####
 
-	tkgrid(txt.file.save, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(en.file.save, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(bt.file.save, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(txt.file.save, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.file.save, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.file.save, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(en.file.save, 'Enter the full path to directory to save result')
 	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to directory to save result')
@@ -2314,8 +2356,8 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 
 	#####
 
-	tkgrid(txt.outmrgff, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 4, ipadx = 1, ipady = 1)
-	tkgrid(en.outmrgff, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 4, ipadx = 1, ipady = 1)
+	tkgrid(txt.outmrgff, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.outmrgff, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(en.outmrgff, 'Format of the merged data files names in NetCDF,\nexample: rr_mrg_1983012_ALL.nc')
 	status.bar.display(en.outmrgff, TextOutputVar, 'Format of the merged data files names in NetCDF,\nexample: rr_mrg_1983012_ALL.nc')
@@ -2332,8 +2374,11 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 									'3' = cb.blankVAL[3])
 	file.grddem <- tclVar(GeneralParameters$IO.files$DEM.file)
 	file.blkshp <- tclVar(GeneralParameters$IO.files$SHP.file)
-	statedem <- if(as.character(GeneralParameters$Blank.Grid) == '2') 'normal' else 'disabled'
-	stateshp <- if(as.character(GeneralParameters$Blank.Grid) == '3') 'normal' else 'disabled'
+
+	isdemGrd <- str_trim(GeneralParameters$Blank.Grid) == '2'
+	isdemAux <- GeneralParameters$auxvar$dem | GeneralParameters$auxvar$slope | GeneralParameters$auxvar$aspect 
+	statedem <- if(isdemGrd | isdemAux) 'normal' else 'disabled'
+	stateshp <- if(str_trim(GeneralParameters$Blank.Grid) == '3') 'normal' else 'disabled'
 
 	txt.blankGrd <- tklabel(frblank, text = 'Blank merged data', anchor = 'w', justify = 'left')
 	cb.blankGrd <- ttkcombobox(frblank, values = cb.blankVAL, textvariable = blankGrd, width = largeur1)
@@ -2378,15 +2423,15 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 
 	#####
 
-	tkgrid(txt.blankGrd, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(cb.blankGrd, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(txt.blankGrd, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.blankGrd, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 
-	tkgrid(txt.grddem, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(cb.grddem, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(bt.grddem, row = 3, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(txt.blkshp, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(cb.blkshp, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(bt.blkshp, row = 5, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(txt.grddem, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(cb.grddem, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(bt.grddem, row = 3, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(txt.blkshp, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 0)
+	tkgrid(cb.blkshp, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 0)
+	tkgrid(bt.blkshp, row = 5, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 0)
 
 	infobulle(cb.blankGrd, 'Blank grid outside the country boundaries or over ocean')
 	status.bar.display(cb.blankGrd, TextOutputVar,'Blank grid outside the country boundaries  or over ocean\ngiven by the DEM mask or the shapefile')
@@ -2400,12 +2445,15 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 	status.bar.display(bt.blkshp, TextOutputVar, 'Browse file if not listed')
 
 	###########
-	tkbind(cb.blankGrd,"<<ComboboxSelected>>", function(){
+
+	tkbind(cb.blankGrd, "<<ComboboxSelected>>", function(){
 		if(tclvalue(blankGrd) == 'None'){
 			tkconfigure(cb.blkshp, state = 'disabled')
 			tkconfigure(bt.blkshp, state = 'disabled')
-			tkconfigure(cb.grddem, state = 'disabled')
-			tkconfigure(bt.grddem, state = 'disabled')
+			auxvar <- tclvalue(dem.auxvar) == '1' | tclvalue(slope.auxvar) == '1' | tclvalue(aspect.auxvar) == '1'
+			statedem <- if(auxvar) 'normal' else 'disabled'
+			tkconfigure(cb.grddem, state = statedem)
+			tkconfigure(bt.grddem, state = statedem)
 		}
 		if(tclvalue(blankGrd) == 'Use DEM'){
 			tkconfigure(cb.blkshp, state = 'disabled')
@@ -2416,15 +2464,69 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 		if(tclvalue(blankGrd) == 'Use ESRI shapefile'){
 			tkconfigure(cb.blkshp, state = 'normal')
 			tkconfigure(bt.blkshp, state = 'normal')
-			tkconfigure(cb.grddem, state = 'disabled')
-			tkconfigure(bt.grddem, state = 'disabled')
+			auxvar <- tclvalue(dem.auxvar) == '1' | tclvalue(slope.auxvar) == '1' | tclvalue(aspect.auxvar) == '1'
+			statedem <- if(auxvar) 'normal' else 'disabled'
+			tkconfigure(cb.grddem, state = statedem)
+			tkconfigure(bt.grddem, state = statedem)
 		}
+	})
+
+	############################################
+
+	frauxvar <- tkframe(frRight1, relief = 'sunken', borderwidth = 2)
+
+	dem.auxvar <- tclVar(GeneralParameters$auxvar$dem)
+	slope.auxvar <- tclVar(GeneralParameters$auxvar$slope)
+	aspect.auxvar <- tclVar(GeneralParameters$auxvar$aspect)
+
+	txt.auxvar <- tklabel(frauxvar, text = 'Include auxiliary variables', anchor = 'w', justify = 'left')
+	dem.chk.auxvar <- tkcheckbutton(frauxvar, variable = dem.auxvar, text = 'DEM', anchor = 'w', justify = 'left')
+	slope.chk.auxvar <- tkcheckbutton(frauxvar, variable = slope.auxvar, text = 'Slope', anchor = 'w', justify = 'left')
+	aspect.chk.auxvar <- tkcheckbutton(frauxvar, variable = aspect.auxvar, text = 'Aspect', anchor = 'w', justify = 'left')
+
+	tkgrid(txt.auxvar, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(dem.chk.auxvar, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(slope.chk.auxvar, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(aspect.chk.auxvar, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(dem.chk.auxvar, 'Include elevation data as auxiliary variable')
+	status.bar.display(dem.chk.auxvar, TextOutputVar, 'Include elevation data as auxiliary variable')
+	infobulle(slope.chk.auxvar, 'Include slope data as auxiliary variable')
+	status.bar.display(slope.chk.auxvar, TextOutputVar, 'Include slope data as auxiliary variable')
+	infobulle(aspect.chk.auxvar, 'Include aspect data as auxiliary variable')
+	status.bar.display(aspect.chk.auxvar, TextOutputVar, 'Include aspect data as auxiliary variable')
+
+	############################################
+
+	tkbind(dem.chk.auxvar, "<Button-1>", function(){
+		auxvar <- tclvalue(dem.auxvar) == '0' | tclvalue(slope.auxvar) == '1' | tclvalue(aspect.auxvar) == '1'
+		blank <- tclvalue(blankGrd) == 'Use DEM'
+		statedem <- if(auxvar | blank) 'normal' else 'disabled'
+		tkconfigure(cb.grddem, state = statedem)
+		tkconfigure(bt.grddem, state = statedem)
+	})
+
+	tkbind(slope.chk.auxvar, "<Button-1>", function(){
+		auxvar <- tclvalue(dem.auxvar) == '1' | tclvalue(slope.auxvar) == '0' | tclvalue(aspect.auxvar) == '1'
+		blank <- tclvalue(blankGrd) == 'Use DEM'
+		statedem <- if(auxvar | blank) 'normal' else 'disabled'
+		tkconfigure(cb.grddem, state = statedem)
+		tkconfigure(bt.grddem, state = statedem)
+	})
+
+	tkbind(aspect.chk.auxvar, "<Button-1>", function(){
+		auxvar <- tclvalue(dem.auxvar) == '1' | tclvalue(slope.auxvar) == '1' | tclvalue(aspect.auxvar) == '0'
+		blank <- tclvalue(blankGrd) == 'Use DEM'
+		statedem <- if(auxvar | blank) 'normal' else 'disabled'
+		tkconfigure(cb.grddem, state = statedem)
+		tkconfigure(bt.grddem, state = statedem)
 	})
 
 	############################################
 	tkgrid(frSave, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frOutmrg, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frblank, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frauxvar, row = 3, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	############################################
 	
@@ -2501,6 +2603,10 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 				GeneralParameters$Blank.Grid <<- switch(str_trim(tclvalue(blankGrd)),
 														"None" = '1', "Use DEM" = '2',
 														"Use ESRI shapefile" = '3')
+				GeneralParameters$auxvar$dem <<- switch(tclvalue(dem.auxvar), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$auxvar$slope <<- switch(tclvalue(slope.auxvar), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$auxvar$aspect <<- switch(tclvalue(aspect.auxvar), '0' = FALSE, '1' = TRUE)
+
 				tkgrab.release(tt)
 				tkdestroy(tt)
 				tkfocus(parent.win)

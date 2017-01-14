@@ -66,5 +66,11 @@
     // "1" : None
     // "2" : Use DEM
     // "3" : Use ESRI shapefile
-    "Blank.Grid": "1"
+    "Blank.Grid": "1",
+    // Add auxiliary variables
+    "auxvar": [{
+        "dem": false,
+        "slope": false,
+        "aspect": false
+    }]
 }

@@ -443,9 +443,8 @@ createGrid <- function(ObjStn, ObjGrd, ObjRfe = NULL, as.dim.elv = TRUE, latlong
 	latO <- ObjStn$y
 	lonS <- ObjGrd$x
 	latS <- ObjGrd$y
-	demS <- c(ObjGrd$z)
-	gridO <- data.frame(lon = lonO, lat = latO, elv = ObjStn$z)
-	gridS <- data.frame(expand.grid(lon = lonS, lat = latS), elv = demS)
+	gridO <- data.frame(lon = lonO, lat = latO, elv = ObjStn$z, dem = ObjStn$z, slp = ObjStn$slp, asp = ObjStn$asp)
+	gridS <- data.frame(expand.grid(lon = lonS, lat = latS), elv = c(ObjGrd$z), dem = c(ObjGrd$z), slp = c(ObjGrd$slp), asp = c(ObjGrd$asp))
 
 	ixOa <- is.na(gridO$elv)
 	if(any(ixOa)){
@@ -454,7 +453,7 @@ createGrid <- function(ObjStn, ObjGrd, ObjRfe = NULL, as.dim.elv = TRUE, latlong
 						newdata = gridOa, nmin = 3, nmax = 10, debug.level = 0)
 		gridO$elv[ixOa] <- round(gridOa$var1.pred)
 	}
-	
+
 	ixSa <- is.na(gridS$elv)
 	if(any(ixSa)){
 		gridSa <- gridS[ixSa, c('lon', 'lat'), drop = FALSE]
@@ -463,7 +462,7 @@ createGrid <- function(ObjStn, ObjGrd, ObjRfe = NULL, as.dim.elv = TRUE, latlong
 		gridS$elv[ixSa] <- round(gridSa$var1.pred)
 		ObjGrd$z[ixSa] <- round(gridSa$var1.pred)
 	}
-	
+
 	coordinates(gridO) <- ~lon+lat
 	coordinates(gridS) <- ~lon+lat
 
@@ -476,14 +475,18 @@ createGrid <- function(ObjStn, ObjGrd, ObjRfe = NULL, as.dim.elv = TRUE, latlong
 		lonS1 <- ObjGrd$x[idcoarse$ix]
 		latS1 <- ObjGrd$y[idcoarse$iy]
 		demS1 <- c(ObjGrd$z[idcoarse$ix, idcoarse$iy])
-		gridS1 <- data.frame(expand.grid(lon = lonS1, lat = latS1), elv = demS1)
+		slpS1 <- c(ObjGrd$slp[idcoarse$ix, idcoarse$iy])
+		aspS1 <- c(ObjGrd$asp[idcoarse$ix, idcoarse$iy])
+		gridS1 <- data.frame(expand.grid(lon = lonS1, lat = latS1), elv = demS1, dem = demS1, slp = slpS1, asp = aspS1)
 		coordinates(gridS1) <- ~lon+lat
 		if(!is.null(ObjRfe)){
 			idcoarse1 <- indexCoarseGrid(ObjRfe$x, ObjRfe$y, res.coarse)
 			lonS2 <- ObjRfe$x[idcoarse1$ix]
 			latS2 <- ObjRfe$y[idcoarse1$iy]
 			demS2 <- c(ObjRfe$z[idcoarse1$ix, idcoarse1$iy])
-			gridS2 <- data.frame(expand.grid(lon = lonS2, lat = latS2), elv = demS2)
+			slpS2 <- c(ObjRfe$slp[idcoarse1$ix, idcoarse1$iy])
+			aspS2 <- c(ObjRfe$asp[idcoarse1$ix, idcoarse1$iy])
+			gridS2 <- data.frame(expand.grid(lon = lonS2, lat = latS2), elv = demS2, dem = demS2, slp = slpS2, asp = aspS2)
 			coordinates(gridS2) <- ~lon+lat
 		}
 	}
@@ -511,10 +514,10 @@ createGrid <- function(ObjStn, ObjGrd, ObjRfe = NULL, as.dim.elv = TRUE, latlong
 			gridS[, c('lon', 'lat')] <- gridS[, c('lon', 'lat')]/1000
 		}
 		if(normalize){
-			mgrd <- apply(rbind(gridO, gridS), 2, mean)
-			sgrd <- apply(rbind(gridO, gridS), 2, sd)
-			gridO <- as.data.frame(t((t(gridO)-mgrd)/sgrd))
-			gridS <- as.data.frame(t((t(gridS)-mgrd)/sgrd))
+			mgrd <- apply(rbind(gridO[, c('lon', 'lat', 'elv')], gridS[, c('lon', 'lat', 'elv')]), 2, mean)
+			sgrd <- apply(rbind(gridO[, c('lon', 'lat', 'elv')], gridS[, c('lon', 'lat', 'elv')]), 2, sd)
+			gridO[, c('lon', 'lat', 'elv')] <- as.data.frame(t((t(gridO[, c('lon', 'lat', 'elv')])-mgrd)/sgrd))
+			gridS[, c('lon', 'lat', 'elv')] <- as.data.frame(t((t(gridS[, c('lon', 'lat', 'elv')])-mgrd)/sgrd))
 		}
 		coordinates(gridO) <- ~lon+lat+elv
 		coordinates(gridS) <- ~lon+lat+elv
@@ -526,9 +529,9 @@ createGrid <- function(ObjStn, ObjGrd, ObjRfe = NULL, as.dim.elv = TRUE, latlong
 			gridS1[, c('lon', 'lat')] <- t(t(gridS1[, c('lon', 'lat')])-origin)
 			if(tolower(latlong) == 'km') gridS1[, c('lon', 'lat')] <- gridS1[, c('lon', 'lat')]/1000
 			if(normalize){
-				# mgrd1 <- apply(gridS1, 2, mean)
-				# sgrd1 <- apply(gridS1, 2, sd)
-				gridS1 <- as.data.frame(t((t(gridS1)-mgrd)/sgrd))
+				# mgrd1 <- apply(gridS1[, c('lon', 'lat', 'elv')], 2, mean)
+				# sgrd1 <- apply(gridS1[, c('lon', 'lat', 'elv')], 2, sd)
+				gridS1[, c('lon', 'lat', 'elv')] <- as.data.frame(t((t(gridS1[, c('lon', 'lat', 'elv')])-mgrd)/sgrd))
 			}
 			coordinates(gridS1) <- ~lon+lat+elv
 			
@@ -539,14 +542,38 @@ createGrid <- function(ObjStn, ObjGrd, ObjRfe = NULL, as.dim.elv = TRUE, latlong
 				gridS2[, c('lon', 'lat')] <- t(t(gridS2[, c('lon', 'lat')])-origin)
 				if(tolower(latlong) == 'km') gridS2[, c('lon', 'lat')] <- gridS2[, c('lon', 'lat')]/1000
 				if(normalize){
-					# mgrd2 <- apply(gridS2, 2, mean)
-					# sgrd2 <- apply(gridS2, 2, sd)
-					gridS2 <- as.data.frame(t((t(gridS2)-mgrd)/sgrd))
+					# mgrd2 <- apply(gridS2[, c('lon', 'lat', 'elv')], 2, mean)
+					# sgrd2 <- apply(gridS2[, c('lon', 'lat', 'elv')], 2, sd)
+					gridS2[, c('lon', 'lat', 'elv')] <- as.data.frame(t((t(gridS2[, c('lon', 'lat', 'elv')])-mgrd)/sgrd))
 				}
 				coordinates(gridS2) <- ~lon+lat+elv
 			}
 		}
 	}
+	max.slope <- 1.570796 #change 90 if degree
+	max.aspect <- 360
+	min.dem <- min(gridS$dem, na.rm = TRUE)
+	max.dem <- max(gridS$dem, na.rm = TRUE)
+
+	gridO$dem <- (gridO$dem-min.dem)/(max.dem-min.dem)
+	gridO$slp <- gridO$slp/max.slope
+	gridO$asp <- gridO$asp/max.aspect
+
+	gridS$dem <- (gridS$dem-min.dem)/(max.dem-min.dem)
+	gridS$slp <- gridS$slp/max.slope
+	gridS$asp <- gridS$asp/max.aspect
+
+	if(!is.null(gridS1)){
+		gridS1$dem <- (gridS1$dem-min.dem)/(max.dem-min.dem)
+		gridS1$slp <- gridS1$slp/max.slope
+		gridS1$asp <- gridS1$asp/max.aspect
+	}
+	if(!is.null(gridS2)){
+		gridS2$dem <- (gridS2$dem-min.dem)/(max.dem-min.dem)
+		gridS2$slp <- gridS2$slp/max.slope
+		gridS2$asp <- gridS2$asp/max.aspect
+	}
+
 	return(list(coords.stn = gridO, coords.grd = gridS1, coords.rfe = gridS2,
 				newgrid = gridS, idxy = idcoarse, idxy.rfe = idcoarse1))
 }
@@ -1004,6 +1031,20 @@ read.NetCDF.Data <- function(read.ncdf.parms){
 
 #################################################################################
 
+## Test if the elements of two vectors are equals
+isEquals <- function(x, y){
+	ix <- (x == y) | (is.na(x) & is.na(y))
+	ix[is.na(ix)] <- FALSE
+	ix
+}
+
+## Test if two vectors are equals
+isEqual <- function(x, y) !any(!isEquals(x, y))
+
+
+
+#################################################################################
+
 smooth.matrix <- function(mat, ns){
 	matrix.shift <- function(n, shift){
 		mshift <- matrix(NA, ncol = n, nrow = 2*shift+1)
@@ -1056,6 +1097,7 @@ Conv2Type1 <- function(mat1, mat2, inverse = 'col'){
 }
 
 Conv2Type2 <- function(mat, Kernel) { 
+ 	## equivalent raster::focal
  	halfkersize <- nrow(Kernel)%/%2
 	for(j in 1:halfkersize) mat <- cbind(mat[, 1], mat, mat[, ncol(mat)])
 	for(j in 1:halfkersize) mat <- rbind(mat[1, ], mat, mat[nrow(mat), ])
@@ -1099,7 +1141,7 @@ Sobel.Filter <- function(BaseVector, KernelVector, k = 3, direction = "X"){
 	return(sobel)
 }
 
-slope.aspect <- function(mat, xres, yres, Gx = NULL, Gy = NULL, smoothing = 1){
+slope.aspect1 <- function(mat, xres, yres, Gx = NULL, Gy = NULL, smoothing = 1){
 	mat <- data.matrix(mat)
 	if(is.null(Gx) | is.null(Gy)){
 		Gx <- Sobel.Filter(c(1, 2, 1), c(-1, 0, 1), k = 3, direction = "X")
@@ -1107,24 +1149,80 @@ slope.aspect <- function(mat, xres, yres, Gx = NULL, Gy = NULL, smoothing = 1){
 	}
 	x.dir <- Conv2Type2(mat, Gx)/xres
 	y.dir <- Conv2Type2(mat, Gy)/yres
-	slope <- atan(sqrt(x.dir^2 + y.dir^2)/smoothing)
-	slope <- (180/pi) * slope
+	##Add Tangential curvature
+	##Add Profile curvature
+	# slope <- atan(sqrt(x.dir^2 + y.dir^2)/smoothing)
+	# aspect <- 180 - atan2(y.dir, x.dir) + 90 * (x.dir/abs(x.dir))
+
+	slope <- (180/pi) * atan(sqrt(x.dir^2 + y.dir^2)/smoothing)
 	aspect <- 180 - (180/pi) * atan(y.dir/x.dir) + 90 * (x.dir/abs(x.dir))
 	aspect[slope == 0] <- 0
 	return(list(slope = slope, aspect = aspect))
 }
 
-#################################################################################
 
-## Test if the elements of two vectors are equals
-isEquals <- function(x, y){
-	ix <- (x == y) | (is.na(x) & is.na(y))
-	ix[is.na(ix)] <- FALSE
-	ix
+slope.aspect <- function(mat, xres, yres, filter = "sobel", smoothing = 1){
+	mat <- data.matrix(mat)
+	ras <- raster(mat)
+	# BaseVector <- c(1, 1, 1)
+	# KernelVector <- c(-1, 0, 1)
+	if(filter == "evans"){
+		#Prewitt
+		Gx <- c(1, 1, 1) %*% t(c(-1, 0, 1))/6
+		Gy <- c(1, 0, -1) %*% t(c(1, 1, 1))/6
+		Gx2 <- c(1, 1, 1) %*% t(c(1, -2, 1))/3
+		Gy2 <- c(1, -2, 1) %*% t(c(1, 1, 1))/3
+		Gxy <- c(-1, 0, 1) %*% t(c(1, 0, -1))/4
+	}
+
+	if(filter == "shary"){
+		#Prewitt
+		Gx <- c(1, 1, 1) %*% t(c(-1, 0, 1))/6
+		Gy <- c(1, 0, -1) %*% t(c(1, 1, 1))/6
+		Gx2 <- c(1, 3, 1) %*% t(c(1, -2, 1))/5
+		Gy2 <- c(1, -2, 1) %*% t(c(1, 3, 1))/5
+		Gxy <- c(-1, 0, 1) %*% t(c(1, 0, -1))/4
+	}
+
+	if(filter == "zev.tho"){
+		Gx <- c(0, 1, 0) %*% t(c(-1, 0, 1))/2
+		Gy <- c(1, 0, -1) %*% t(c(0, 1, 0))/2
+		Gx2 <- c(0, 1, 0) %*% t(c(1, -2, 1))/2
+		Gy2 <- c(1, -2, 1) %*% t(c(0, 1, 0))/2
+		Gxy <- c(-1, 0, 1) %*% t(c(1, 0, -1))/4
+	}
+
+	if(filter == "moore"){
+		Gx <- c(0, 1, 0) %*% t(c(-1, 0, 1))/2
+		Gy <- c(1, 0, -1) %*% t(c(0, 1, 0))/2
+		Gx2 <- c(0, 1, 0) %*% t(c(1, -2, 1))/1
+		Gy2 <- c(1, -2, 1) %*% t(c(0, 1, 0))/1
+		Gxy <- c(-1, 0, 1) %*% t(c(1, 0, -1))/4
+	}
+
+	if(filter == "sobel"){
+		#Sobel
+		Gx <- c(1, 2, 1) %*% t(c(-1, 0, 1))/8
+		Gy <- c(1, 0, -1) %*% t(c(1, 2, 1))/8
+		Gx2 <- c(1, 2, 1) %*% t(c(1, -2, 1))/4
+		Gy2 <- c(1, -2, 1) %*% t(c(1, 2, 1))/4
+		Gxy <- c(-1, 0, 1) %*% t(c(1, 0, -1))/4
+	}
+
+	x.dir <- focal(ras, w = Gx, pad = TRUE, padValue = 0)/xres
+	y.dir <- focal(ras, w = Gy, pad = TRUE, padValue = 0)/yres
+	x2.dir <- focal(ras, w = Gx2, pad = TRUE, padValue = 0)/xres^2
+	y2.dir <- focal(ras, w = Gy2, pad = TRUE, padValue = 0)/yres^2
+	xy.dir <- focal(ras, w = Gxy, pad = TRUE, padValue = 0)/(xres*yres)
+
+	slope <- atan(sqrt(x.dir^2 + y.dir^2)/smoothing)
+	aspect <- 180 - atan2(y.dir, x.dir) + 90 * (x.dir/abs(x.dir))
+	plan.curvature <- -1*(y.dir^2*x2.dir - 2*x.dir*y.dir*xy.dir + x.dir^2*y2.dir)/((x.dir^2 + y.dir^2)*sqrt(1 + x.dir^2 + y.dir^2))
+	prof.curvature <- -1*(x.dir^2*x2.dir + 2*x.dir*y.dir*xy.dir + y.dir^2*y2.dir)/((x.dir^2 + y.dir^2)*sqrt(1 + x.dir^2 + y.dir^2)^3)
+
+	ret <- list(slope = as.matrix(slope), aspect = as.matrix(aspect),
+				tan.curvature = as.matrix(plan.curvature), prof.curvature = as.matrix(prof.curvature))
+	return(ret)
 }
-
-## Test if two vectors are equals
-isEqual <- function(x, y) !any(!isEquals(x, y))
-
 
 

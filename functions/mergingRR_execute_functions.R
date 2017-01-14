@@ -51,8 +51,7 @@ execBiasRain <- function(origdir){
 	rad.lat <- as.numeric(GeneralParameters$Interpolation.pars$rad.lat)
 	maxdist <- as.numeric(GeneralParameters$Interpolation.pars$maxdist)
 
-	if(interp.method == 'NN') res.coarse <- sqrt((rad.lon*mean(grd.lon[-1]-grd.lon[-nlon0]))^2 + (rad.lat*mean(grd.lat[-1]-grd.lat[-nlat0]))^2)/2
-	else res.coarse <- maxdist/2
+	res.coarse <- if(interp.method == 'NN') sqrt((rad.lon*mean(grd.lon[-1]-grd.lon[-nlon0]))^2 + (rad.lat*mean(grd.lat[-1]-grd.lat[-nlat0]))^2)/2 else maxdist/2
 	res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
 
 	################
@@ -75,20 +74,21 @@ execBiasRain <- function(origdir){
 	xy.rfe <- list(lon = rfeData$lon, lat = rfeData$lat)
 
 	###############
+	bias.exist <- GeneralParameters$bias.calc$bias.exist
+	bias.file <- str_trim(GeneralParameters$bias.calc$bias.file)
+	outfile.bias <- if(bias.file == "") file.path(origdir, 'BiasParams.RData') else bias.file
 
-	comptMBiasparms <- list(GeneralParameters = GeneralParameters, stnData = stnData, rfeData = rfeData, res.coarse = res.coarse)
-	bias.pars <- ComputeMeanBiasRain(comptMBiasparms)
-
-
-# outfile <- file.path(origdir, 'BiasParams.RData', fsep = .Platform$file.sep)
-# save(bias.pars, file = outfile)
-
+	if(!bias.exist){
+		comptMBiasparms <- list(GeneralParameters = GeneralParameters, stnData = stnData, rfeData = rfeData, res.coarse = res.coarse)
+		bias.pars <- ComputeMeanBiasRain(comptMBiasparms)
+		save(bias.pars, file = outfile.bias)
+	}else load(outfile.bias)
 
 	interpBiasparams <- list(GeneralParameters = GeneralParameters, bias.pars = bias.pars, stnData = stnData,
 							demData = demData, xy.grid = xy.grid, xy.rfe = xy.rfe, res.coarse = res.coarse, origdir = origdir)
 	ret <- InterpolateMeanBiasRain(interpBiasparams)
 
-	# outfile <- file.path(origdir, 'DataUsed2ComputeBias.RData', fsep = .Platform$file.sep)
+	# outfile <- file.path(origdir, 'DataUsed2ComputeBias.RData')
 	# save(stnData, demData, rfeData, file = outfile)
 
 	rm(comptMBiasparms, stnData, demData, rfeDataInfo, rfeData, bias.pars, interpBiasparams)
@@ -202,8 +202,7 @@ execLMCoefRain <- function(origdir){
 	rad.lat <- as.numeric(GeneralParameters$Interpolation.pars$rad.lat)
 	maxdist <- as.numeric(GeneralParameters$Interpolation.pars$maxdist)
 
-	if(interp.method == 'NN') res.coarse <- sqrt((rad.lon*mean(grd.lon[-1]-grd.lon[-nlon0]))^2 + (rad.lat*mean(grd.lat[-1]-grd.lat[-nlat0]))^2)/2
-	else res.coarse <- maxdist/2
+	res.coarse <- if(interp.method == 'NN') sqrt((rad.lon*mean(grd.lon[-1]-grd.lon[-nlon0]))^2 + (rad.lat*mean(grd.lat[-1]-grd.lat[-nlat0]))^2)/2 else maxdist/2
 	res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
 
 	################
@@ -254,12 +253,18 @@ execMergeRain <- function(origdir){
 	create.grid <- GeneralParameters$Create.Grid
 	grid.from <- GeneralParameters$Grid.From
 	blank.grid <- GeneralParameters$Blank.Grid
-	
+
+	grdblnk <- (create.grid & grid.from == '2') | blank.grid == '2'
+	auxvar <- GeneralParameters$auxvar$dem | GeneralParameters$auxvar$slope | GeneralParameters$auxvar$aspect
+
 	## DEM data
 	demData <- NULL
-	if((create.grid & grid.from == '2') | blank.grid == '2'){
+	if(grdblnk | auxvar){
 		demData <- getDemOpenDataSPDF(GeneralParameters$IO.files$DEM.file)
-		if(is.null(demData)) return(NULL)
+		if(is.null(demData)){
+			InsertMessagesTxt(main.txt.out, "No elevation data found", format = TRUE)
+			return(NULL)
+		}
 	}
 
 	##Create grid for interpolation
@@ -301,15 +306,20 @@ execMergeRain <- function(origdir){
 	xy.grid <- list(lon = grd.lon, lat = grd.lat)
 	newGrid <- defSpatialPixels(xy.grid)
 
-	if(blank.grid == "1") outMask <- NULL
-	if(blank.grid == "2"){
+	## regrid DEM data
+	if(grdblnk | auxvar){
 		demGrid <- defSpatialPixels(list(lon = demData$lon, lat = demData$lat))
 		is.regridDEM <- is.diffSpatialPixelsObj(newGrid, demGrid, tol = 1e-07)
 		if(is.regridDEM){
-			outMask <- interp.surface.grid(list(x = demData$lon, y = demData$lat, z = demData$demMat),
-					list(x = grd.lon, y = grd.lat))
-			outMask <- outMask$z
-		}else outMask <- demData$demMat
+			demData <- interp.surface.grid(list(x = demData$lon, y = demData$lat, z = demData$demMat),
+											list(x = grd.lon, y = grd.lat))
+		}
+	}else demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
+
+	## blank
+	if(blank.grid == "1") outMask <- NULL
+	if(blank.grid == "2"){
+		outMask <- demData$z
 		outMask[outMask <= 0] <- NA
 	}
 	if(blank.grid == "3"){

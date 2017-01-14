@@ -13,19 +13,28 @@
         "DEM.file": "",
         // Full path to the directory of RFE or Adj-RFE data
         "RFE.dir": "",
-        // RFE sample filename
+        // RFE sample file
         "RFE.file": "",
         // ESRI shapefile
         "SHP.file": "",
         // Full path to the directory to save results
-        "dir2save": ""
+        "dir2save": "",
+        // Scaling up daily merged data to match dekadal totals
+        // Full path to the directory of merged dekadal data
+        "DEK.dir": "",
+        // Merged dekadal sample file
+        "DEK.file": ""
     }],
     "FileFormat": [{
         // Adj-RFE or RFE filename format 
         "RFE.File.Format": "rr_adj_%s%s%s.nc",
+        // Merged dekadal filename format (Scaling up daily merged data)
+        "DEK.File.Format": "rr_mrg_%s%s%s_ALL.nc",
         // Merged filename format
         "Mrg.file.format": "rr_mrg_%s%s%s_ALL.nc"
     }],
+    // Scaling up daily merged data to match dekadal totals from dekadal merged data
+    "Scale.daily": false,
     // Merging Date range
     "Mrg.Date.Range": [{
         "start.year": 1983,
@@ -95,5 +104,11 @@
         "minlat": -26,
         "maxlat": -12,
         "reslat": 0.1
+    }],
+    // Add auxiliary variables
+    "auxvar": [{
+        "dem": false,
+        "slope": false,
+        "aspect": false
     }]
 }

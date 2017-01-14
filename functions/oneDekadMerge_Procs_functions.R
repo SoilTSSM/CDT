@@ -268,8 +268,14 @@ mergeOneDekadRain <- function(){
 		}
 		
 		#######
-		demGrid <- list(x = rfeData$x, y = rfeData$y, z = matrix(1, nrow = nlon0, ncol = nlat0))
-		ObjStn <- list(x = lon.stn, y = lat.stn, z = rep(1, length(lon.stn)))
+		dem.grd.val <- matrix(1, nrow = nlon0, ncol = nlat0)
+		dem.grd.slp <- matrix(0, nrow = nlon0, ncol = nlat0)
+		dem.grd.asp <- matrix(0, nrow = nlon0, ncol = nlat0)
+		dem.stn.val <- rep(1, length(lon.stn))
+		dem.stn.slp <- rep(0, length(lon.stn))
+		dem.stn.asp <- rep(0, length(lon.stn))
+		demGrid <- list(x = rfeData$x, y = rfeData$y, z = dem.grd.val, slp = dem.grd.slp, asp = dem.grd.asp)
+		ObjStn <- list(x = lon.stn, y = lat.stn,  z = dem.stn.val, slp = dem.stn.slp, asp = dem.stn.asp)
 
 		interp.grid <- createGrid(ObjStn, demGrid, as.dim.elv = FALSE, res.coarse = res.coarse)
 		cells <- SpatialPixels(points = interp.grid$newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)))@grid
