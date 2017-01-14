@@ -339,15 +339,16 @@ execMergeTemp <- function(origdir){
 	newGrid <- defSpatialPixels(xy.grid)
 
 	## regrid DEM data
-	if(grdblnk | auxvar){
-		demGrid <- defSpatialPixels(list(lon = demData$lon, lat = demData$lat))
-		is.regridDEM <- is.diffSpatialPixelsObj(newGrid, demGrid, tol = 1e-07)
-		if(is.regridDEM){
-			demData <- interp.surface.grid(list(x = demData$lon, y = demData$lat, z = demData$demMat),
-											list(x = grd.lon, y = grd.lat))
-		}
-	}else demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
-
+	if(!is.null(demData)){
+		if(grdblnk | auxvar){
+			demGrid <- defSpatialPixels(list(lon = demData$lon, lat = demData$lat))
+			is.regridDEM <- is.diffSpatialPixelsObj(newGrid, demGrid, tol = 1e-07)
+			if(is.regridDEM){
+				demData <- interp.surface.grid(list(x = demData$lon, y = demData$lat, z = demData$demMat),
+												list(x = grd.lon, y = grd.lat))
+			}
+		}else demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
+	}
 
 	if(blank.grid == "1") outMask <- NULL
 	if(blank.grid == "2"){
