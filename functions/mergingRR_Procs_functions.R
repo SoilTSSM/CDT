@@ -883,12 +883,6 @@ ComputeLMCoefRain <- function(comptLMparams){
 	data.stn <- stnData$data
 
 	#############
-	rfeData <- comptLMparams$rfeData
-	lon.rfe <- rfeData$lon
-	lat.rfe <- rfeData$lat
-	date.rfe <- rfeData$dates
-	data.rfe <- rfeData$data
-
 	xy.grid <- comptLMparams$xy.grid
 	grdSp <- defSpatialPixels(xy.grid)
 	nlon0 <- length(xy.grid$lon)
@@ -899,15 +893,10 @@ ComputeLMCoefRain <- function(comptLMparams){
 	dy <- ncdim_def("Lat", "degreeN", xy.grid$lat)
 	xy.dim <- list(dx, dy)
 
-	InsertMessagesTxt(main.txt.out, 'Compute LM Coefficients ...')
-	tcl("update")
-
-	## rfe at stn loc
-	ijrfe <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), list(lon = lon.rfe, lat = lat.rfe))
-	data.rfe.stn  <- t(sapply(data.rfe, function(x){
-		if(!is.null(x)) x[ijrfe]
-		else rep(NA, length(ijrfe))
-	}))
+	#############
+	rfeData <- read.NetCDF.Data2Points(comptLMparams$rfeData, list(lon = lon.stn, lat = lat.stn))
+	data.rfe.stn <- t(sapply(rfeData$data, function(x) if(!is.null(x)) x else rep(NA, length(lon.stn))))
+	date.rfe <- rfeData$dates
 
 	#############
 	demData <- comptLMparams$demData
@@ -928,6 +917,7 @@ ComputeLMCoefRain <- function(comptLMparams){
 	demGrid$slp <- slpasp$slope
 	demGrid$asp <- slpasp$aspect
 
+	#############
 	ijdem <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), xy.grid)
 	ObjStn <- list(x = lon.stn, y = lat.stn, z = demGrid$z[ijdem], slp = demGrid$slp[ijdem], asp = demGrid$asp[ijdem])
 
@@ -950,6 +940,10 @@ ComputeLMCoefRain <- function(comptLMparams){
 		bGrd <- createBlock(cells@cellsize, 2, 5)
 	}
 
+	#############
+	InsertMessagesTxt(main.txt.out, 'Compute LM Coefficients ...')
+	tcl("update")
+
 	dtrfe <- date.rfe%in%date.stn
 	dtstn <- date.stn%in%date.rfe
 	data.stn <- data.stn[dtstn, ]
@@ -967,21 +961,46 @@ ComputeLMCoefRain <- function(comptLMparams){
 						stn = c(data.stn.reg), rfe = c(data.rfe.stn))
 
 	##############
+
 	model <- by(dataf, dataf$id.stn, fitLM.month.RR, min.len)
-	model.coef <- lapply(model, function(x){
+
+	xmod <- lapply(model, function(x){
 		sapply(x, function(m){
-			if(is.null(m)) c(NA, NA)
+			if(is.null(m)) c(NA, NA, NA, NA, NA)
 			else{
+				smod <- summary(m)
 				xcoef <- coefficients(m)
-				if(is.na(xcoef[2]) | xcoef[2] <= 0) xcoef <- c(NA, NA)
-				xcoef
+				if(is.null(smod$fstatistic)) c(xcoef, NA, NA, NA)
+				else c(xcoef, pf(smod$fstatistic[1], smod$fstatistic[2], smod$fstatistic[3], lower.tail = FALSE), smod$r.squared, smod$adj.r.squared)
 			}
 		})
 	})
-	model.coef <- list(slope = sapply(model.coef, function(x) x[2, ]), intercept = sapply(model.coef, function(x) x[1, ]))
 
-	#model.params <- list(model = model, coef = model.coef)
-	#save(model.params, file = file.path(origdir, "MODEL_OUTPUT.RData"))
+	model.coef <- list(slope = sapply(xmod, function(x) x[2, ]),
+					   intercept = sapply(xmod, function(x) x[1, ]),
+					   pvalue = sapply(xmod, function(x) x[3, ]),
+					   rsquared = sapply(xmod, function(x) x[4, ]),
+					   adj.rsquared = sapply(xmod, function(x) x[5, ]))
+	nommodcoef <- names(model.coef)
+
+	islp <- !is.na(model.coef$slope) & model.coef$slope > 0
+	model.coef$slope[!islp] <- NA
+	extrm <- t(apply(model.coef$slope, 1, quantile, prob = c(0.001, 0.99), na.rm = TRUE))
+	islp <- !is.na(model.coef$slope) & model.coef$slope > extrm[, 1] & model.coef$slope < extrm[, 2]
+	intrcp <- !is.na(model.coef$intercept)
+	ipval <- !is.na(model.coef$pvalue) & !is.nan(model.coef$pvalue) & model.coef$pvalue < 0.05
+	irsq <- !is.na(model.coef$adj.rsquared) & model.coef$adj.rsquared > 0.2
+
+	model.coef <- lapply(model.coef, function(x){
+		x[!(islp & intrcp & ipval & irsq)] <- NA
+		x
+	})
+	names(model.coef) <- nommodcoef
+
+	##########
+	model.params <- list(model = model, coef = model.coef)
+	save(model.params, file = file.path(origdir, "LM_MODEL_PARS.RData"))
+	##########
 
 	if(doparallel & length(months) >= 3){
 		klust <- makeCluster(nb_cores)
@@ -1003,9 +1022,6 @@ ComputeLMCoefRain <- function(comptLMparams){
 			locations.stn$pars <- xcoef[as.numeric(rownames(xcoef)) == m, ]
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
 			if(length(locations.stn$pars) < min.stn) return(NULL)
-
-			extrm <- quantile(locations.stn$pars, probs = c(0.0001, 0.9999))
-			locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
 			if(interp.method == 'Kriging'){
 				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
@@ -1045,7 +1061,6 @@ ComputeLMCoefRain <- function(comptLMparams){
 										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 				}
 				
-				# extrm <- quantile(pars.grd$var1.pred, probs = c(0.001, 0.999), na.rm = TRUE)
 				extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
 				ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
 				pars.grd$var1.pred[ixtrm] <- NA
@@ -1083,7 +1098,7 @@ ComputeLMCoefRain <- function(comptLMparams){
 	InsertMessagesTxt(main.txt.out, 'Computing LM Coefficients finished')
 	tcl("update")
 	rm(rfeData, stnData, demData, data.rfe.stn, grd.dem,
-		data.stn, data.rfe, demGrid, interp.grid, data.stn.reg,
+		data.stn, demGrid, interp.grid, data.stn.reg,
 		model, model.coef, MODEL.COEF)
 	return(0)
 }

@@ -1029,6 +1029,66 @@ read.NetCDF.Data <- function(read.ncdf.parms){
 	return(ret)
 }
 
+
+#################################################################################
+## read ncdf files
+## input arguments 
+## extact at points list.lonlat.pts <- list(lon = lon.pts, lat = lat.pts)
+
+read.NetCDF.Data2Points <- function(read.ncdf.parms, list.lonlat.pts){
+	InsertMessagesTxt(main.txt.out, read.ncdf.parms$msg$start)
+	tcl("update")
+
+	ncInfo <- ncFilesInfo(read.ncdf.parms$ncfiles$freqData, read.ncdf.parms$ncfiles$start.date,
+							read.ncdf.parms$ncfiles$end.date, read.ncdf.parms$ncfiles$months,
+							read.ncdf.parms$ncfiles$ncDir, read.ncdf.parms$ncfiles$ncFileFormat,
+							read.ncdf.parms$errmsg)
+	if(is.null(ncInfo)) return(NULL)
+
+	if(doparallel & length(which(ncInfo$exist)) >= 180){
+		klust <- makeCluster(nb_cores)
+		registerDoParallel(klust)
+		`%parLoop%` <- `%dopar%`
+		closeklust <- TRUE
+	}else{
+		`%parLoop%` <- `%do%`
+		closeklust <- FALSE
+	}
+
+	nc <- nc_open(ncInfo$nc.files[which(ncInfo$exist)[1]])
+	lon <- nc$dim[[read.ncdf.parms$ncinfo$xo]]$vals
+	lat <- nc$dim[[read.ncdf.parms$ncinfo$yo]]$vals
+	nc_close(nc)
+
+	xo <- order(lon)
+	lon <- lon[xo]
+	yo <- order(lat)
+	lat <- lat[yo]
+
+	packages <- c('ncdf4', 'sp')
+	toExports <- c('ncInfo', 'read.ncdf.parms', 'list.lonlat.pts', 'grid2pointINDEX')
+	ncdata <- foreach(jj = seq_along(ncInfo$nc.files), .packages = packages, .export = toExports) %parLoop% {
+		if(ncInfo$exist[jj]){
+			nc <- nc_open(ncInfo$nc.files[jj])
+			xvar <- ncvar_get(nc, varid = read.ncdf.parms$ncinfo$varid)
+			nc_close(nc)
+			xvar <- xvar[xo, yo]
+			if(read.ncdf.parms$ncinfo$yo == 1){
+				xvar <- matrix(c(xvar), nrow = length(lon), ncol = length(lat), byrow = TRUE)
+			}
+			ijx <- grid2pointINDEX(list.lonlat.pts, list(lon = lon, lat = lat))
+			xvar <- xvar[ijx]
+		}else xvar <- NULL
+		xvar
+	}
+	if(closeklust) stopCluster(klust)
+	ret <- list(lon = list.lonlat.pts$lon, lat = list.lonlat.pts$lat, dates = ncInfo$dates, data = ncdata)
+	InsertMessagesTxt(main.txt.out, read.ncdf.parms$msg$end)
+	tcl("update")
+	return(ret)
+}
+
+
 #################################################################################
 
 ## Test if the elements of two vectors are equals

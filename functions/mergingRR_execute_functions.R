@@ -219,15 +219,12 @@ execLMCoefRain <- function(origdir){
 	ncinfo <- list(xo = rfeDataInfo$rfeILon, yo = rfeDataInfo$rfeILat, varid = rfeDataInfo$rfeVarid)
 	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 
-	rfeData <- read.NetCDF.Data(read.ncdf.parms)
-	if(is.null(rfeData)) return(NULL)
-
 	################
 	comptLMparams <- list(GeneralParameters = GeneralParameters, stnData = stnData, demData = demData,
-						rfeData = rfeData, xy.grid = xy.grid, res.coarse = res.coarse, origdir = origdir)
+						rfeData = read.ncdf.parms, xy.grid = xy.grid, res.coarse = res.coarse, origdir = origdir)
 	ret <- ComputeLMCoefRain(comptLMparams)
 	
-	rm(comptLMparams, stnData, demData, rfeData)
+	rm(comptLMparams, stnData, demData)
 	gc()
 	if(!is.null(ret)){
 		if(ret == 0) return(0)
