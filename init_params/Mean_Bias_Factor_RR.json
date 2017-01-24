@@ -98,10 +98,5 @@
         "dem": false,
         "slope": false,
         "aspect": false
-    }],
-    // save and load bias parameters
-    "bias.calc": [{
-        "bias.exist": false,
-        "bias.file": ""
     }]
 }

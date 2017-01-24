@@ -16,38 +16,71 @@ bias.RR.calc.fun <- function(df, min.len){
 	return(bs)
 }
 
-### fit distribution Bernoulli-Gamma 
-fit.berngamma <- function(x, min.len){
+##############################
+## Fit Mixture distribution
+fit.mixture.distr <- function(x, min.len = 7, alpha = 0.05,
+						distr.fun = c("berngamma", "bernlnorm", "bernweibull", "bernexp"),
+						method = 'mle', lower = c(0, 1e-10, 1e-10), upper = c(1, Inf, Inf),
+						keepdata = FALSE, keepdata.nb = 3, ...){
+	require(ADGofTest)
 	x <- x[!is.na(x)]
+	ret <- NULL
 	if(length(x) > min.len){
 		if(length(x[x > 0]) > 2){
 			if(var(x[x > 0]) == 0) x[x > 0] <- x[x > 0]+runif(length(x[x > 0]))
+			if(length(which(x == 0)) == 0) x <- c(x, 0)
 		}else return(NULL)
-		ts <- startberngamma(x)
-		fit.mod <- try(fitdist(x, "berngamma", method = 'mle',
-					start = list(prob = ts$prob, scale = ts$scale, shape = ts$shape), 
-					lower = c(0, 1e-10, 1e-10), upper = rep(Inf, 3)), silent = TRUE)
-		if(!inherits(fit.mod, "try-error")) return(fit.mod)
-		else return(NULL)
-	}else return(NULL)
+
+		ret <- lapply(distr.fun, function(distrf){
+			start.fun <- match.fun(paste("start", distrf, sep = ""))
+			start.pars <- start.fun(x)
+			fit.mod <- try(fitdist(x, distrf, method = method, start = start.pars, lower = lower, upper = upper,
+									keepdata = keepdata, keepdata.nb = keepdata.nb, ...), silent = TRUE)
+			if(!inherits(fit.mod, "try-error")){
+				pdistrf <- match.fun(paste('p', distrf, sep = ''))
+				goftest <- do.call("ad.test", c(list(x), pdistrf, as.list(fit.mod$estimate)))	
+				goftest$data.name <- paste(deparse(substitute(x)), 'and', distrf) 
+				test <- if(goftest$p.value > alpha) 'yes' else 'no'
+				res <- list(fitted.distr = fit.mod, ADgoftest = goftest, h0 = test)
+			}else res <- list(fitted.distr = NULL, ADgoftest = NULL, h0 = 'null')
+			return(res)
+		})
+		names(ret) <- distr.fun
+	}
+	return(ret)
 }
 
-### Extract parameters
-extract.BG.parameters <- function(months, fitted.model){
-	pars.Ret <- vector(mode = 'list', length = 12)
-	pars.Ret[months] <- lapply(months, function(m){
-		pars <- sapply(fitted.model[[m]], function(x){
-				y <- x$estimate
-				if(is.null(y)) y <- rep(NA, 3)
-				y
-			})
-		list(prob = pars[1, ], scale = pars[2, ], shape = pars[3, ])
+##############################
+
+outputADTest <- function(X, months = 1:12, distr = "berngamma"){
+	H0.test <- vector(mode = 'list', length = 12)
+	H0.test[months] <- lapply(X[months], function(mon){
+		sapply(mon, function(stn) if(!is.null(stn)) stn[[distr]]$h0 else 'null')
 	})
-	pars.Ret[months] <- rapply(pars.Ret[months], f = function(x) ifelse(is.nan(x) | is.infinite(x), NA, x), how = "replace")
-	return(pars.Ret)
+	return(H0.test)
 }
 
+##############################
+### Extract parameters
+extractDistrParams <- function(X, months = 1:12, distr = "berngamma"){
+	pars <- vector(mode = 'list', length = 12)
+	pars[months] <- lapply(X[months], function(mon){
+		parstn <- lapply(mon, function(stn){
+			if(!is.null(stn)){
+				fitdist <- stn[[distr]]$fitted.distr
+				if(!is.null(fitdist)) fitdist$estimate else NA
+			}else NA
+		})
+		nom <- na.omit(do.call('rbind', lapply(parstn, function(x) if(length(x) > 1) names(x) else NA)))[1, ]
+		parstn <- do.call('rbind', parstn)
+		dimnames(parstn)[[2]] <- nom
+		parstn
+	})
+	pars[months] <- rapply(pars[months], f = function(x) ifelse(is.nan(x) | is.infinite(x), NA, x), how = "replace")
+	return(pars)
+}
 
+##############################
 ### Quantile mapping
 quantile.mapping.BGamma <- function(x, pars.stn, pars.rfe, rfe.zero){
 	res <- x
@@ -67,6 +100,7 @@ quantile.mapping.BGamma <- function(x, pars.stn, pars.rfe, rfe.zero){
     return(res)
 }
 
+##############################
 ## Fit linear model
 fitLM.fun.RR <- function(df, min.len){
 	df <- na.omit(df)

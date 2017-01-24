@@ -6,8 +6,8 @@ apps.dir <<- dirname(parent.frame(2)$ofile)
 imgdir <<- file.path(apps.dir, 'images', fsep = .Platform$file.sep)
 
 pkgs <- c('R.utils', 'stringr', 'jsonlite', 'tkrplot', 'gmt', 'fields', 'latticeExtra', 'sp', 'maptools',
-		'gstat', 'automap', 'reshape2', 'ncdf4', 'foreach', 'doParallel', 'raster', 'rgdal', 'rgeos',
-		'RCurl', 'qmap', 'fitdistrplus')
+			'gstat', 'automap', 'reshape2', 'ncdf4', 'foreach', 'doParallel', 'raster', 'rgdal', 'rgeos',
+			'RCurl', 'fitdistrplus', 'qmap', 'ADGofTest')
 new.pkgs <- pkgs[!(pkgs %in% installed.packages()[,"Package"])]
 if(length(new.pkgs) > 0){
 	if(Sys.info()["sysname"] == "Windows") {
@@ -83,8 +83,8 @@ if(tclPath$UseOtherTclTk == 1){
 #########Load library
 
 packages <- list('tcltk', 'tkrplot', 'grid', 'lattice', 'latticeExtra', 'sp', 'ncdf4', 'gmt', 'fields',
-	'gstat', 'automap', 'reshape2', 'compiler', 'parallel', 'foreach', 'doParallel',
-	'raster', 'rgeos', 'rgdal', 'maptools', 'RCurl', 'qmap', 'fitdistrplus')
+				'gstat', 'automap', 'reshape2', 'compiler', 'parallel', 'foreach', 'doParallel',
+				'raster', 'rgeos', 'rgdal', 'maptools', 'RCurl', 'fitdistrplus', 'qmap')
 ret.pkgs <- sapply(packages, library, character.only = TRUE, logical.return = TRUE)
 #compilePKGS(enable = TRUE)
 #enableJIT(3)

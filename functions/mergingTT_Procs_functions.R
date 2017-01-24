@@ -38,11 +38,13 @@ GlmCoefDownscaling <- function(paramsGlmCoef){
 		glm.dat <- data.frame(dem = z, tt = tt)
 		glm.dat <- na.omit(glm.dat)
 		if(length(glm.dat[, 1]) == 0) next #skip if all data NA
+		## standardize
 		moy <- unname(apply(glm.dat, 2, mean))
 		ect <- unname(apply(glm.dat, 2, sd))
 		if(ect[1] == 0 | ect[2] == 0) next  #skip if variance null
 		glm.dat <- t((t(glm.dat)-moy)/ect)
 		glm.dat[glm.dat[, 2] < -3, 2] <- -3
+
 		glm.dat <- as.data.frame(glm.dat)
 		glm.tt <- lm(tt~dem, data = glm.dat)
 		coef[m, 1] <- glm.tt$coefficients[1]
@@ -88,10 +90,14 @@ GlmCoefDownscaling <- function(paramsGlmCoef){
 #################################################################################################
 
 ReanalysisDownscaling <- function(paramsDownscl){
-	InsertMessagesTxt(main.txt.out, "Downscale  Reanalysis ...")
-	tcl("update")
+	
+	if(paramsDownscl$memType == 2){
+		reanalData <- read.NetCDF.Data(paramsDownscl$reanalData$read.ncdf.parms)
+		if(is.null(reanalData)) return(NULL)
+		reanalDataExist <- length(reanalData$data)
+	}else reanalDataExist <- length(which(paramsDownscl$reanalData$exist))
 
-	if(doparallel & length(paramsDownscl$reanalData$data) >= 20){
+	if(doparallel & reanalDataExist >= 20){
 		klust <- makeCluster(nb_cores)
 		registerDoParallel(klust)
 		`%parLoop%` <- `%dopar%`
@@ -107,31 +113,12 @@ ReanalysisDownscaling <- function(paramsDownscl){
 	nmin <- GeneralParameters$Interpolation.pars$nmin
 	nmax <- GeneralParameters$Interpolation.pars$nmax
 	maxdist <- GeneralParameters$Interpolation.pars$maxdist
-	vgm.model <- GeneralParameters$Interpolation.pars$vgm.model
+	vgm.model <- str_trim(GeneralParameters$Interpolation.pars$vgm.model[[1]])
 	use.block <- GeneralParameters$Interpolation.pars$use.block
 
 	freqData <- GeneralParameters$period
 	Down.File.Format <- GeneralParameters$Format$Down.File.Format
 	origdir <- paramsDownscl$origdir
-
-	###############
-	xy.grid <- paramsDownscl$xy.grid
-	newGrid <- defSpatialPixels(xy.grid)
-	nlon0 <- length(xy.grid$lon)
-	nlat0 <- length(xy.grid$lat)
-
-	bGrd <- NULL
-	if(use.block) bGrd <- createBlock(newGrid@grid@cellsize, 2, 5)
-
-	###############
-	downCoef <- paramsDownscl$downCoef
-
-	###############
-	reanalData <- paramsDownscl$reanalData
-	lon.reanl <- reanalData$lon
-	lat.reanl <- reanalData$lat
-	date.reanl <- reanalData$dates
-	data.reanl <- reanalData$data
 
 	#############
 	# auxvar <- c('dem', 'slp', 'asp')
@@ -141,22 +128,31 @@ ReanalysisDownscaling <- function(paramsDownscl){
 	# }else formule <- formula(paste('res', '~', 1, sep = ''))
 
 	###############
-	demGrid <- paramsDownscl$demGrid
-	##create slope.aspect
+	if(paramsDownscl$memType == 2){
+		lon.reanl <- reanalData$lon
+		lat.reanl <- reanalData$lat
+		dates.reanl <- reanalData$dates
+		data.reanl <- reanalData$data
+	}else{
+		nc <- nc_open(paramsDownscl$reanalData$nc.files[which(paramsDownscl$reanalData$exist)[1]])
+		lon.reanl <- nc$dim[[paramsDownscl$reanalData$ncinfo$xo]]$vals
+		lat.reanl <- nc$dim[[paramsDownscl$reanalData$ncinfo$yo]]$vals
+		nc_close(nc)
+		xo <- order(lon.reanl)
+		lon.reanl <- lon.reanl[xo]
+		yo <- order(lat.reanl)
+		lat.reanl <- lat.reanl[yo]
+	}
 
-	coords.reanl <- expand.grid(lon = lon.reanl, lat = lat.reanl)
-	ijreanl <- grid2pointINDEX(list(lon = coords.reanl$lon, lat = coords.reanl$lat),
-								list(lon = xy.grid$lon, lat = xy.grid$lat))
-	dem.reanl <- demGrid[ijreanl]
-	dem.reanl.mean <- mean(dem.reanl, na.rm = TRUE)
-	dem.reanl.sd <- sd(dem.reanl, na.rm = TRUE)
-	dem.reanl <- (dem.reanl-dem.reanl.mean)/dem.reanl.sd
-	dim(dem.reanl) <- c(length(lon.reanl), length(lat.reanl))
+	###############
+	InsertMessagesTxt(main.txt.out, "Downscale  Reanalysis ...")
+	tcl("update")
 
-	###
-	dem.mean <- mean(demGrid, na.rm = TRUE)
-	dem.sd <- sd(demGrid, na.rm = TRUE)
-	dem <- (demGrid - dem.mean)/dem.sd
+	###############
+	xy.grid <- paramsDownscl$xy.grid
+	grdSp <- defSpatialPixels(xy.grid)
+	nlon0 <- length(xy.grid$lon)
+	nlat0 <- length(xy.grid$lat)
 
 	###############
 	#Defines netcdf output dims
@@ -164,58 +160,110 @@ ReanalysisDownscaling <- function(paramsDownscl){
 	dy <- ncdim_def("Lat", "degreeN", xy.grid$lat)
 	out.tt <- ncvar_def("temp", "DegC", list(dx, dy), -99, longname = "Dwonscaled temperature from reanalysis data", prec = "float")
 
+	###############
+
+	## DEM at reanalysis grid
+	coords.reanl <- expand.grid(lon = lon.reanl, lat = lat.reanl)
+	ijreanl <- grid2pointINDEX(list(lon = coords.reanl$lon, lat = coords.reanl$lat), xy.grid)
+
+	demGrid <- paramsDownscl$demGrid
+	demres <- grdSp@grid@cellsize
+	slpasp <- slope.aspect(demGrid, demres[1], demres[2], filter = "sobel")
+
+	ObjGrd <- list(x = xy.grid$lon, y = xy.grid$lat, z = demGrid, slp = slpasp$slope, asp = slpasp$aspect)
+	ObjStn <- list(x = coords.reanl$lon, y = coords.reanl$lat, z = demGrid[ijreanl], slp = slpasp$slope[ijreanl], asp = slpasp$aspect[ijreanl])
+	interp.grid <- createGrid(ObjStn, ObjGrd, as.dim.elv = FALSE, coarse.grid = FALSE)
+
+	bGrd <- NULL
+	if(use.block){
+		cells <- SpatialPixels(points = interp.grid$newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)))@grid
+		bGrd <- createBlock(cells@cellsize, 2, 5)
+	}
+
+	###############
+	## Coeff standardized dem and stn
+	downCoef <- paramsDownscl$downCoef
+
+	###############
+	## standardize dem
+	dem.mean <- mean(demGrid, na.rm = TRUE)
+	dem.sd <- sd(demGrid, na.rm = TRUE)
+	demStand <- (demGrid - dem.mean)/dem.sd
+	dem.reanl <- demStand[ijreanl]
+	dim(dem.reanl) <- c(length(lon.reanl), length(lat.reanl))
+
+	###############
 	packages <- c('sp', 'gstat', 'automap', 'ncdf4')
 
-	ret <- foreach(jj= seq_along(data.reanl), .packages = packages) %parLoop% {
-		tt.reanl <- data.reanl[[jj]]
-		if(is.null(tt.reanl)) return(NULL)
-		mon <- as.numeric(substr(date.reanl[jj], 5, 6))
+	jloop <- if(paramsDownscl$memType == 2) seq_along(data.reanl) else seq_along(paramsDownscl$reanalData$nc.files)
+	ret <- foreach(jj = jloop, .packages = packages) %parLoop% {
+		if(paramsDownscl$memType == 2){
+			tt.reanl <- data.reanl[[jj]]
+			if(is.null(tt.reanl)) return(NULL)
+			date.reanl <- dates.reanl[jj]
+		}else{
+			if(paramsDownscl$reanalData$exist[jj]){
+				nc <- nc_open(paramsDownscl$reanalData$nc.files[jj])
+				tt.reanl <- ncvar_get(nc, varid = paramsDownscl$reanalData$ncinfo$varid)
+				nc_close(nc)
+				tt.reanl <- tt.reanl[xo, yo]
+				if(paramsDownscl$reanalData$ncinfo$yo == 1){
+					tt.reanl <- matrix(c(tt.reanl), nrow = length(lon.reanl), ncol = length(lat.reanl), byrow = TRUE)
+				}
+			}else return(NULL)
+			date.reanl <- paramsDownscl$reanalData$dates[[jj]]
+		}
+
+		############
+		## standardize reanal
 		tt.mean <- mean(tt.reanl, na.rm = TRUE)
 		tt.sd <- sd(tt.reanl, na.rm = TRUE)
 		tt.std <- (tt.reanl-tt.mean)/tt.sd
-		tt.res <- tt.std - (downCoef[mon, 2] * dem.reanl + downCoef[mon, 1])
 
-		tt.Obj <- data.frame(expand.grid(lon = lon.reanl, lat = lat.reanl), res = c(tt.res))
-		tt.Obj <- tt.Obj[!is.na(tt.Obj$res), ]
-		coordinates(tt.Obj) <- ~lon+lat
+		mon <- as.numeric(substr(date.reanl, 5, 6))
+	
+		locations.reanl <- interp.grid$coords.stn
+		locations.reanl$res <- c(tt.std - (downCoef[mon, 2] * dem.reanl + downCoef[mon, 1]))
+		locations.reanl <- locations.reanl[!is.na(locations.reanl$res), ]
 
 		############
 		if(interp.method == 'Kriging'){
-			vgm <- try(autofitVariogram(res~1, input_data = tt.Obj, model = vgm.model, cressie = TRUE), silent = TRUE)
+			vgm <- try(autofitVariogram(res~1, input_data = locations.reanl, model = vgm.model, cressie = TRUE), silent = TRUE)
 			vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
 		}else vgm <- NULL
 
-		grd.temp <- krige(res~1, locations = tt.Obj, newdata = newGrid, model = vgm, block = bGrd,
-							nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+		grd.temp <- krige(res~1, locations = locations.reanl, newdata = interp.grid$newgrid, model = vgm,
+							block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
  
+		############
+		# if(any(is.auxvar)) locations.reanl <- locations.reanl[Reduce("&", as.data.frame(!is.na(locations.reanl@data[, auxvar[is.auxvar]]))), ]
+
 		# if(interp.method == 'Kriging'){
-		# 	vgm <- try(autofitVariogram(formule, input_data = tt.Obj, model = vgm.model, cressie = TRUE), silent = TRUE)
+		# 	vgm <- try(autofitVariogram(formule, input_data = locations.reanl, model = vgm.model, cressie = TRUE), silent = TRUE)
 		# 	vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
 		# }else vgm <- NULL
-		# if(any(is.auxvar)){
-		# 	#remove NA for auxvar in tt.Obj
-		# 	grd.temp <- krige(formule, locations = tt.Obj, newdata = newGrid, model = vgm
-		# 					nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-		# }else{
-		# 	grd.temp <- krige(formule, locations = tt.Obj, newdata = newGrid, model = vgm,
-		# 					block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-		# }
 
- 		downTT <- matrix(grd.temp$var1.pred, ncol = nlat0, nrow = nlon0)
-		downTT <- (downCoef[mon, 2] * dem + downCoef[mon, 1]) + downTT
+		# block <- if(any(is.auxvar)) NULL else bGrd
+		# grd.temp <- krige(formule, locations = locations.reanl, newdata = interp.grid$newgrid, model = vgm,
+		# 				block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+
+ 		############
+		downTT <- matrix(grd.temp$var1.pred, ncol = nlat0, nrow = nlon0)
+		downTT[is.na(downTT)] <- 0
+		downTT <- (downCoef[mon, 2] * demStand + downCoef[mon, 1]) + downTT
 		downTT <- downTT * tt.sd + tt.mean
 		downTT[is.na(downTT)] <- -99
 
 		############
 		if(freqData == 'daily'){
-			outfl <- file.path(origdir, sprintf(Down.File.Format, substr(date.reanl[jj], 1, 4),
-								substr(date.reanl[jj], 5, 6), substr(date.reanl[jj], 7, 8)))
+			outfl <- file.path(origdir, sprintf(Down.File.Format, substr(date.reanl, 1, 4),
+								substr(date.reanl, 5, 6), substr(date.reanl, 7, 8)))
 		}else  if(freqData == 'dekadal'){
-			outfl <- file.path(origdir, sprintf(Down.File.Format, substr(date.reanl[jj], 1, 4),
-								substr(date.reanl[jj], 5, 6), substr(date.reanl[jj], 7, 7)))
+			outfl <- file.path(origdir, sprintf(Down.File.Format, substr(date.reanl, 1, 4),
+								substr(date.reanl, 5, 6), substr(date.reanl, 7, 7)))
 		}else  if(freqData == 'monthly'){
-			outfl <- file.path(origdir, sprintf(Down.File.Format, substr(date.reanl[jj], 1, 4),
-								substr(date.reanl[jj], 5, 6)))
+			outfl <- file.path(origdir, sprintf(Down.File.Format, substr(date.reanl, 1, 4),
+								substr(date.reanl, 5, 6)))
 		}
 
 		nc2 <- nc_create(outfl, out.tt)
@@ -226,7 +274,8 @@ ReanalysisDownscaling <- function(paramsDownscl){
 
 	InsertMessagesTxt(main.txt.out, 'Downscaling  Reanalysis finished')
 	tcl("update")
-	rm(reanalData, demGrid, dem)
+	rm(demGrid, demStand, dem.reanl, interp.grid, ObjGrd, ObjStn)
+	if(paramsDownscl$memType == 2) rm(reanalData, data.reanl)
 	gc()
 	return(0)
 }
@@ -1050,9 +1099,6 @@ ComputeLMCoefTemp <- function(comptLMparams){
 
 	origdir <- comptLMparams$origdir
 
-	# res.coarse <- as.numeric(GeneralParameters$Interpolation.pars$res.coarse)
-	res.coarse <- comptLMparams$res.coarse
-
 	#############
 	auxvar <- c('dem', 'slp', 'asp')
 	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
@@ -1069,13 +1115,30 @@ ComputeLMCoefTemp <- function(comptLMparams){
 	data.stn <- stnData$data
 
 	#############
-	adjData <- comptLMparams$adjData
-	lon.adj <- adjData$lon
-	lat.adj <- adjData$lat
-	# date.adj <- adjData$dates
-	data.adj <- adjData$data
+	if(comptLMparams$memType == 2){
+		# read then extract
+		adjData <- read.NetCDF.Data(comptLMparams$adjData)
+		if(is.null(adjData)) return(NULL)
+		ijtmp <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), list(lon = adjData$lon, lat = adjData$lat))
+		data.adj.stn  <- t(sapply(adjData$data, function(x){
+			if(!is.null(x)) x[ijtmp]
+			else rep(NA, length(ijtmp))
+		}))
+	}else{
+		# read and extract
+		adjData <- read.NetCDF.Data2Points(comptLMparams$adjData, list(lon = lon.stn, lat = lat.stn))
+		if(is.null(adjData)) return(NULL)
+		data.adj.stn <- t(sapply(adjData$data, function(x) if(!is.null(x)) x else rep(NA, length(lon.stn))))
+	}
+	date.adj <- adjData$dates
 
-	xy.grid <- comptLMparams$xy.grid
+	#############
+	xy.grid <- list(lon = adjData$lon, lat = adjData$lat)
+
+	# res.coarse <- as.numeric(GeneralParameters$Interpolation.pars$res.coarse)
+	res.coarse <- if(interp.method == 'NN') sqrt((rad.lon*mean(xy.grid$lon[-1]-xy.grid$lon[-nlon0]))^2 + (rad.lat*mean(xy.grid$lat[-1]-xy.grid$lat[-nlat0]))^2)/2 else maxdist/2
+	res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
+
 	grdSp <- defSpatialPixels(xy.grid)
 	nlon0 <- length(xy.grid$lon)
 	nlat0 <- length(xy.grid$lat)
@@ -1084,16 +1147,6 @@ ComputeLMCoefTemp <- function(comptLMparams){
 	dx <- ncdim_def("Lon", "degreeE", xy.grid$lon)
 	dy <- ncdim_def("Lat", "degreeN", xy.grid$lat)
 	xy.dim <- list(dx, dy)
-
-	InsertMessagesTxt(main.txt.out, 'Compute LM Coefficients ...')
-	tcl("update")
-
-	## temp at stn loc
-	ijtmp <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), list(lon = lon.adj, lat = lat.adj))
-	data.adj.stn  <- t(sapply(data.adj, function(x){
-		if(!is.null(x)) x[ijtmp]
-		else rep(NA, length(ijtmp))
-	}))
 
 	#############
 	demData <- comptLMparams$demData
@@ -1136,6 +1189,17 @@ ComputeLMCoefTemp <- function(comptLMparams){
 		bGrd <- createBlock(cells@cellsize, 2, 5)
 	}
 
+	#############
+	InsertMessagesTxt(main.txt.out, 'Compute LM Coefficients ...')
+	tcl("update")
+
+	dtadj <- date.adj%in%date.stn
+	dtstn <- date.stn%in%date.adj
+	data.stn <- data.stn[dtstn, , drop = FALSE]
+	date.stn <- date.stn[dtstn]
+	data.adj.stn <- data.adj.stn[dtadj, , drop = FALSE]
+	# date.adj <- date.adj[dtadj]
+
 	month.stn <- as(substr(date.stn, 5, 6), 'numeric')
 	year.stn <- as(substr(date.stn, 1, 4), 'numeric')
 	iyear0 <- (year.stn >= year1 & year.stn <= year2) & (month.stn%in%months)
@@ -1147,16 +1211,44 @@ ComputeLMCoefTemp <- function(comptLMparams){
 
 	##############
 	model <- by(dataf, dataf$id.stn, fitLM.month.TT, min.len)
-	model.coef <- lapply(model, function(x){
+
+	xmod <- lapply(model, function(x){
 		sapply(x, function(m){
-			if(is.null(m)) c(NA, NA)
-			else coefficients(m)
+			if(is.null(m)) c(NA, NA, NA, NA, NA)
+			else{
+				smod <- summary(m)
+				xcoef <- coefficients(m)
+				if(is.null(smod$fstatistic)) c(xcoef, NA, NA, NA)
+				else c(xcoef, pf(smod$fstatistic[1], smod$fstatistic[2], smod$fstatistic[3], lower.tail = FALSE), smod$r.squared, smod$adj.r.squared)
+			}
 		})
 	})
-	model.coef <- list(slope = sapply(model.coef, function(x) x[2, ]), intercept = sapply(model.coef, function(x) x[1, ]))
 
-	#model.params <- list(model = model, coef = model.coef)
-	#save(model.params, file = file.path(origdir, "MODEL_OUTPUT.RData"))
+	model.coef <- list(slope = sapply(xmod, function(x) x[2, ]),
+					   intercept = sapply(xmod, function(x) x[1, ]),
+					   pvalue = sapply(xmod, function(x) x[3, ]),
+					   rsquared = sapply(xmod, function(x) x[4, ]),
+					   adj.rsquared = sapply(xmod, function(x) x[5, ]))
+	nommodcoef <- names(model.coef)
+
+	islp <- !is.na(model.coef$slope) & model.coef$slope > 0
+	model.coef$slope[!islp] <- NA
+	extrm <- t(apply(model.coef$slope, 1, quantile, prob = c(0.001, 0.999), na.rm = TRUE))
+	islp <- !is.na(model.coef$slope) & model.coef$slope > extrm[, 1] & model.coef$slope < extrm[, 2]
+	intrcp <- !is.na(model.coef$intercept)
+	ipval <- !is.na(model.coef$pvalue) & !is.nan(model.coef$pvalue) & model.coef$pvalue < 0.05
+	irsq <- !is.na(model.coef$adj.rsquared) & model.coef$adj.rsquared > 0.2
+
+	model.coef <- lapply(model.coef, function(x){
+		x[!(islp & intrcp & ipval & irsq)] <- NA
+		x
+	})
+	names(model.coef) <- nommodcoef
+
+	##########
+	model.params <- list(model = model, coef = model.coef)
+	save(model.params, file = file.path(origdir, "LM_MODEL_PARS.RData"))
+	##########
 
 	if(doparallel & length(months) >= 3){
 		klust <- makeCluster(nb_cores)
@@ -1182,6 +1274,7 @@ ComputeLMCoefTemp <- function(comptLMparams){
 			extrm <- quantile(locations.stn$pars, probs = c(0.0001, 0.9999))
 			locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
+			if(any(is.auxvar)) locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
 			if(interp.method == 'Kriging'){
 				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -1211,16 +1304,10 @@ ComputeLMCoefTemp <- function(comptLMparams){
 				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)
 			}else{
 				coordinates(locations.stn) <- ~lon+lat
-				if(any(is.auxvar)){
-					locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
-					pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-										nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-				}else{
-					pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-				}
+				block <- if(any(is.auxvar)) NULL else bGrd
+				pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
+									block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 
-				# extrm <- quantile(pars.grd$var1.pred, probs = c(0.001, 0.999), na.rm = TRUE)
 				extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
 				ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
 				pars.grd$var1.pred[ixtrm] <- NA
@@ -1257,7 +1344,7 @@ ComputeLMCoefTemp <- function(comptLMparams){
 	InsertMessagesTxt(main.txt.out, 'Computing LM Coefficients finished')
 	tcl("update")
 	rm(adjData, stnData, demData, data.adj.stn, grd.dem,
-		data.stn, data.adj, demGrid, interp.grid, data.stn.reg,
+		data.stn, demGrid, interp.grid, data.stn.reg,
 		model, model.coef, MODEL.COEF)
 	return(0)
 }
@@ -1435,6 +1522,7 @@ MergingFunctionTemp <- function(paramsMRG){
 		############
 
 		if(do.merging){
+			if(any(is.auxvar)) locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
 			if(interp.method == 'Kriging'){
 				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 				if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
@@ -1454,17 +1542,10 @@ MergingFunctionTemp <- function(paramsMRG){
 			coordinates(locations.stn) <- ~lon+lat
 
 			###########
+			block <- if(any(is.auxvar)) NULL else bGrd
+			res.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
+								block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 
-			if(any(is.auxvar)){
-				locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
-				res.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-									nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-			}else{
-				res.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-									block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-			}
-
-			# extrm <- quantile(res.grd$var1.pred, probs = c(0.001, 0.999), na.rm = TRUE)
 			extrm <- c(min(locations.stn$res, na.rm = TRUE), max(locations.stn$res, na.rm = TRUE))
 			ixtrm <- is.na(res.grd$var1.pred) | (res.grd$var1.pred <= extrm[1] | res.grd$var1.pred >= extrm[2])
 			res.grd$var1.pred[ixtrm] <- NA

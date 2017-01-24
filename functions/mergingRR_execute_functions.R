@@ -1,10 +1,11 @@
 
 execBiasRain <- function(origdir){
-	freqData <- GeneralParameters$period
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
-	create.grd <- GeneralParameters$Create.Grid
+	memType <- 2
 
+	create.grd <- GeneralParameters$Create.Grid
+	freqData <- GeneralParameters$period
 	year1 <- as.numeric(GeneralParameters$Bias.Date.Range$start.year)
 	year2 <- as.numeric(GeneralParameters$Bias.Date.Range$end.year)
 	months <- as.numeric(GeneralParameters$Bias.Months)
@@ -22,7 +23,9 @@ execBiasRain <- function(origdir){
 
 	# # ##RFE sample file
 	rfeDataInfo <- getRFESampleData(GeneralParameters$IO.files$RFE.file)
-	
+	if(is.null(rfeDataInfo)) return(NULL)
+	xy.rfe <- list(lon = rfeDataInfo$lon, lat = rfeDataInfo$lat)
+
 	##Create grid for interpolation
 	if(create.grd == '1'){
 		grd.lon <- rfeDataInfo$lon
@@ -68,28 +71,14 @@ execBiasRain <- function(origdir){
 	ncinfo <- list(xo = rfeDataInfo$rfeILon, yo = rfeDataInfo$rfeILat, varid = rfeDataInfo$rfeVarid)
 	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 
-	rfeData <- read.NetCDF.Data(read.ncdf.parms)
-	if(is.null(rfeData)) return(NULL)
-
-	xy.rfe <- list(lon = rfeData$lon, lat = rfeData$lat)
-
 	###############
-	bias.exist <- GeneralParameters$bias.calc$bias.exist
-	bias.file <- str_trim(GeneralParameters$bias.calc$bias.file)
-	outfile.bias <- if(bias.file == "") file.path(origdir, 'BiasParams.RData') else bias.file
-
-	if(!bias.exist){
-		comptMBiasparms <- list(GeneralParameters = GeneralParameters, stnData = stnData, rfeData = rfeData, res.coarse = res.coarse)
-		bias.pars <- ComputeMeanBiasRain(comptMBiasparms)
-		save(bias.pars, file = outfile.bias)
-	}else load(outfile.bias)
+	comptMBiasparms <- list(GeneralParameters = GeneralParameters, stnData = stnData, rfeData = read.ncdf.parms,
+							xy.rfe = xy.rfe, res.coarse = res.coarse, memType = memType, origdir = origdir)
+	bias.pars <- ComputeMeanBiasRain(comptMBiasparms)
 
 	interpBiasparams <- list(GeneralParameters = GeneralParameters, bias.pars = bias.pars, stnData = stnData,
 							demData = demData, xy.grid = xy.grid, xy.rfe = xy.rfe, res.coarse = res.coarse, origdir = origdir)
 	ret <- InterpolateMeanBiasRain(interpBiasparams)
-
-	# outfile <- file.path(origdir, 'DataUsed2ComputeBias.RData')
-	# save(stnData, demData, rfeData, file = outfile)
 
 	rm(comptMBiasparms, stnData, demData, rfeDataInfo, rfeData, bias.pars, interpBiasparams)
 	gc()
@@ -151,9 +140,11 @@ execAdjBiasRain <- function(origdir){
 #### Compute LM coef
 
 execLMCoefRain <- function(origdir){
-	freqData <- GeneralParameters$period
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
+	memType <- 2
+
+	freqData <- GeneralParameters$period
 	create.grd <- GeneralParameters$Create.Grid
 
 	year1 <- as.numeric(GeneralParameters$LM.Date.Range$start.year)
@@ -220,7 +211,7 @@ execLMCoefRain <- function(origdir){
 	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 
 	################
-	comptLMparams <- list(GeneralParameters = GeneralParameters, stnData = stnData, demData = demData,
+	comptLMparams <- list(GeneralParameters = GeneralParameters, stnData = stnData, demData = demData, memType = memType,
 						rfeData = read.ncdf.parms, xy.grid = xy.grid, res.coarse = res.coarse, origdir = origdir)
 	ret <- ComputeLMCoefRain(comptLMparams)
 	

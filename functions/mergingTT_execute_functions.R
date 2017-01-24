@@ -28,6 +28,8 @@ execCoefDownTemp <- function(origdir){
 execDownscalingTemp <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
+	memType <- 2
+
 	freqData <- GeneralParameters$period
 	start.year <- GeneralParameters$Down.Date.Range$start.year
 	start.mon <- GeneralParameters$Down.Date.Range$start.mon
@@ -48,18 +50,21 @@ execDownscalingTemp <- function(origdir){
 	reanalInfo <- getRFESampleData(GeneralParameters$IO.files$Reanal.file)
 
 	################
-	downCoef <- try(read.table(GeneralParameters$IO.files$Coef.file), silent = TRUE)
+	CoefFile <- str_trim(GeneralParameters$IO.files$Coef.file)
+	if(!file.exists(CoefFile)){
+		InsertMessagesTxt(main.txt.out, paste(CoefFile, "not found"), format = TRUE)
+		return(NULL)
+	}
+	downCoef <- try(read.table(CoefFile), silent = TRUE)
 	if(inherits(downCoef, "try-error")){
 		InsertMessagesTxt(main.txt.out, 'Error reading downscaling coefficients', format = TRUE)
 		return(NULL)
 	}
-		
+
 	################
 	###get elevation data
 	demData <- getDemOpenDataSPDF(GeneralParameters$IO.files$DEM.file)
 	if(is.null(demData)) return(NULL)
-	demGrid <- demData$demMat
-	demGrid[demGrid < 0] <- 0
 
 	##Create grid for interpolation
 	create.grd <- GeneralParameters$Grid.From
@@ -80,32 +85,37 @@ execDownscalingTemp <- function(origdir){
 	nlat0 <- length(grd.lat)
 	xy.grid <- list(lon = grd.lon, lat = grd.lat)
 
-	##interpolate dem in new grid
+	## DEM data  at new grid
 	if(create.grd == '2'){
 		is.regridDEM <- is.diffSpatialPixelsObj(defSpatialPixels(xy.grid),
 						defSpatialPixels(list(lon = demData$lon, lat = demData$lat)), tol = 1e-07)
 		if(is.regridDEM){
-			demGrid <- list(x = demData$lon, y = demData$lat, z = demGrid)
+			demGrid <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
 			demGrid <- interp.surface.grid(demGrid, list(x = xy.grid$lon, y = xy.grid$lat))
 			demGrid <- demGrid$z
 		}
+	}else demGrid <- demData$demMat
+	demGrid[demGrid < 0] <- 0
+
+	################
+	errmsg <- "Reanalysis data not found"
+	ncInfo <- ncFilesInfo(freqData, start.date, end.date, months, reanalDir, reanalfilefrmt, errmsg)
+	if(is.null(ncInfo)) return(NULL)
+
+	ncinfo <- list(xo = reanalInfo$rfeILon, yo = reanalInfo$rfeILat, varid = reanalInfo$rfeVarid)
+	ncInfo$ncinfo <- ncinfo
+	if(memType == 2){
+		msg <- list(start = 'Read Reanalysis data ...', end = 'Reading Reanalysis data finished')
+		ncfiles <- list(freqData = freqData, start.date = start.date, end.date = end.date,
+						months = months, ncDir = reanalDir, ncFileFormat = reanalfilefrmt)
+		ncInfo$read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 	}
 
 	################
-	msg <- list(start = 'Read Reanalysis data ...', end = 'Reading Reanalysis data finished')
-	errmsg <- "Reanalysis data not found"
-	ncfiles <- list(freqData = freqData, start.date = start.date, end.date = end.date,
-					months = months, ncDir = reanalDir, ncFileFormat = reanalfilefrmt)
-	ncinfo <- list(xo = reanalInfo$rfeILon, yo = reanalInfo$rfeILat, varid = reanalInfo$rfeVarid)
-	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
-
-	reanalData <- read.NetCDF.Data(read.ncdf.parms)
-	if(is.null(reanalData)) return(NULL)
-
 	paramsDownscl <- list(GeneralParameters = GeneralParameters, demGrid = demGrid, downCoef = downCoef, 
-							reanalData = reanalData, xy.grid = xy.grid, origdir = origdir)
+							reanalData = ncInfo, xy.grid = xy.grid, origdir = origdir, memType = memType)
 	ret <- ReanalysisDownscaling(paramsDownscl)
-	rm(paramsDownscl, demData, demGrid, reanalInfo, reanalData)
+	rm(paramsDownscl, demData, demGrid, reanalInfo)
 	gc()
 	if(!is.null(ret)){
 		if(ret == 0) return(0)
@@ -225,9 +235,11 @@ execAjdBiasDownTemp <- function(origdir){
 #### Compute LM coef
 
 execLMCoefTemp <- function(origdir){
-	freqData <- GeneralParameters$period
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
+	memType <- 2
+
+	freqData <- GeneralParameters$period
 	year1 <- as.numeric(GeneralParameters$LM.Date.Range$start.year)
 	year2 <- as.numeric(GeneralParameters$LM.Date.Range$end.year)
 	months <- as.numeric(GeneralParameters$LM.Months)
@@ -254,26 +266,12 @@ execLMCoefTemp <- function(origdir){
 	ncinfo <- list(xo = 1, yo = 2, varid = "temp")
 	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 
-	adjData <- read.NetCDF.Data(read.ncdf.parms)
-	if(is.null(adjData)) return(NULL)
-	nlon0 <- length(adjData$lon)
-	nlat0 <- length(adjData$lat)
-	xy.grid <- list(lon = adjData$lon, lat = adjData$lat)
-
-	interp.method <- GeneralParameters$Interpolation.pars$interp.method
-	rad.lon <- as.numeric(GeneralParameters$Interpolation.pars$rad.lon)
-	rad.lat <- as.numeric(GeneralParameters$Interpolation.pars$rad.lat)
-	maxdist <- as.numeric(GeneralParameters$Interpolation.pars$maxdist)
-
-	res.coarse <- if(interp.method == 'NN') sqrt((rad.lon*mean(adjData$lon[-1]-adjData$lon[-nlon0]))^2 + (rad.lat*mean(adjData$lat[-1]-adjData$lat[-nlat0]))^2)/2 else maxdist/2
-	res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
-
 	################
 	comptLMparams <- list(GeneralParameters = GeneralParameters, stnData = stnData, demData = demData,
-						adjData = adjData, xy.grid = xy.grid, res.coarse = res.coarse, origdir = origdir)
+						adjData = read.ncdf.parms, origdir = origdir, memType = memType)
 	ret <- ComputeLMCoefTemp(comptLMparams)
 	
-	rm(comptLMparams, stnData, demData, adjData)
+	rm(comptLMparams, stnData, demData)
 	gc()
 	if(!is.null(ret)){
 		if(ret == 0) return(0)

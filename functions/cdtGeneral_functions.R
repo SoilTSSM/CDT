@@ -436,8 +436,7 @@ indexCoarseGrid <- function(lon, lat, res = 0.25){
 ##################################################################################
 ### create grid for interpolation 
 
-createGrid <- function(ObjStn, ObjGrd, ObjRfe = NULL, as.dim.elv = TRUE, latlong = 'km',
-						normalize = FALSE, coarse.grid = TRUE, res.coarse = 0.25){
+createGrid <- function(ObjStn, ObjGrd, ObjRfe = NULL, as.dim.elv = TRUE, latlong = 'km', normalize = FALSE, coarse.grid = TRUE, res.coarse = 0.25){
 	lon2UTM <- function(lon) (floor((lon + 180)/6) %% 60) + 1
 	lonO <- ObjStn$x
 	latO <- ObjStn$y
@@ -1082,7 +1081,8 @@ read.NetCDF.Data2Points <- function(read.ncdf.parms, list.lonlat.pts){
 		xvar
 	}
 	if(closeklust) stopCluster(klust)
-	ret <- list(lon = list.lonlat.pts$lon, lat = list.lonlat.pts$lat, dates = ncInfo$dates, data = ncdata)
+	ret <- list(dates = ncInfo$dates, data = ncdata, lon = lon, lat = lat,
+				lon.pts = list.lonlat.pts$lon, lat.pts = list.lonlat.pts$lat)
 	InsertMessagesTxt(main.txt.out, read.ncdf.parms$msg$end)
 	tcl("update")
 	return(ret)
