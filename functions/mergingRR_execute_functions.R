@@ -93,6 +93,8 @@ execBiasRain <- function(origdir){
 execAdjBiasRain <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
+	memType <- 2
+
 	freqData <- GeneralParameters$period
 	start.year <- GeneralParameters$Adjust.Date.Range$start.year
 	start.mon <- GeneralParameters$Adjust.Date.Range$start.mon
@@ -105,14 +107,13 @@ execAdjBiasRain <- function(origdir){
 	rfeDir <- GeneralParameters$IO.files$RFE.dir
 	rfefilefrmt <- GeneralParameters$Prefix$RFE.File.Format
 
+	###get elevation data
+	rfeDataInfo <- getRFESampleData(GeneralParameters$IO.files$RFE.file)
+
 	################
 
 	start.date <- as.Date(paste(start.year, start.mon, start.dek, sep = '/'), format = '%Y/%m/%d')
 	end.date <- as.Date(paste(end.year, end.mon, end.dek, sep = '/'), format = '%Y/%m/%d')
-
-	################
-
-	rfeDataInfo <- getRFESampleData(GeneralParameters$IO.files$RFE.file)
 
 	################
 	## RFE DATA
@@ -123,10 +124,8 @@ execAdjBiasRain <- function(origdir){
 	ncinfo <- list(xo = rfeDataInfo$rfeILon, yo = rfeDataInfo$rfeILat, varid = rfeDataInfo$rfeVarid)
 	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 
-	rfeData <- read.NetCDF.Data(read.ncdf.parms)
-	if(is.null(rfeData)) return(NULL)
-
-	adjMeanBiasparms <- list(rfeData = rfeData, GeneralParameters = GeneralParameters, origdir = origdir)
+	adjMeanBiasparms <- list(rfeData = read.ncdf.parms, GeneralParameters = GeneralParameters,
+								origdir = origdir, memType = memType)
 	ret <- AjdMeanBiasRain(adjMeanBiasparms)
 	rm(adjMeanBiasparms, rfeData, rfeDataInfo)
 	gc()

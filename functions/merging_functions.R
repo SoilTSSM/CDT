@@ -22,7 +22,6 @@ fit.mixture.distr <- function(x, min.len = 7, alpha = 0.05,
 						distr.fun = c("berngamma", "bernlnorm", "bernweibull", "bernexp"),
 						method = 'mle', lower = c(0, 1e-10, 1e-10), upper = c(1, Inf, Inf),
 						keepdata = FALSE, keepdata.nb = 3, ...){
-	require(ADGofTest)
 	x <- x[!is.na(x)]
 	ret <- NULL
 	if(length(x) > min.len){
@@ -37,8 +36,9 @@ fit.mixture.distr <- function(x, min.len = 7, alpha = 0.05,
 			fit.mod <- try(fitdist(x, distrf, method = method, start = start.pars, lower = lower, upper = upper,
 									keepdata = keepdata, keepdata.nb = keepdata.nb, ...), silent = TRUE)
 			if(!inherits(fit.mod, "try-error")){
+				# Anderson-Darling Test
 				pdistrf <- match.fun(paste('p', distrf, sep = ''))
-				goftest <- do.call("ad.test", c(list(x), pdistrf, as.list(fit.mod$estimate)))	
+				goftest <- do.call("ad.test", c(list(x), pdistrf, as.list(fit.mod$estimate)))
 				goftest$data.name <- paste(deparse(substitute(x)), 'and', distrf) 
 				test <- if(goftest$p.value > alpha) 'yes' else 'no'
 				res <- list(fitted.distr = fit.mod, ADgoftest = goftest, h0 = test)
@@ -86,18 +86,16 @@ quantile.mapping.BGamma <- function(x, pars.stn, pars.rfe, rfe.zero){
 	res <- x
 	p.rfe <- 1-pars.rfe$prob
 	ix <- !is.na(x) & (x > 0)
-	p.rfe[ix] <- 1-pars.rfe$prob[ix] + pars.rfe$prob[ix]*pgamma(x[ix],
-	 			scale = pars.rfe$scale[ix], shape = pars.rfe$shape[ix])
-	p.rfe[p.rfe == 1] <- 1-1e-15
+	p.rfe[ix] <- p.rfe[ix] + pars.rfe$prob[ix]*pgamma(x[ix], scale = pars.rfe$scale[ix], shape = pars.rfe$shape[ix])
+	p.rfe[p.rfe > 0.999] <- 0.99
 	ip <- p.rfe > (1-pars.stn$prob)
-	res[ip] <- qgamma((pars.stn$prob[ip]+p.rfe[ip]-1)/pars.stn$prob[ip],
-                     scale = pars.stn$scale[ip], shape = pars.stn$shape[ip])
-	res[is.na(x)] <- NA
-	res[is.nan(res)] <- x[is.nan(res)]
-	res[is.infinite(res)] <- 3*x[is.infinite(res)]
-	res[!is.na(res) & (res > 3*x)] <- 3*x[!is.na(res) & (res > 3*x)]
+	pp <- (pars.stn$prob[ip]+p.rfe[ip]-1)/pars.stn$prob[ip]
+	pp[pp > 0.999] <- 0.99
+	res[ip] <- qgamma(pp, scale = pars.stn$scale[ip], shape = pars.stn$shape[ip])
+	miss <- is.na(res) | is.nan(res) | is.infinite(res)
+	res[miss] <- x[miss]
 	if(rfe.zero) res[x == 0] <- 0
-    return(res)
+	return(res)
 }
 
 ##############################
@@ -129,49 +127,73 @@ bias.TT.calc.fun <- function(df, min.len){
 	return(bs)
 }
 
+##############################
 ### fit normal distribution for temp
-fit.norm.temp <- function(x, min.len){
+fit.norm.temp <- function(x, min.len, alpha = 0.05, method = 'mle',
+						lower = c(-20, 0), upper = c(60, 10),
+						keepdata = FALSE, keepdata.nb = 3, ...){
 	x <- x[!is.na(x)]
+	ret <- NULL
 	if(length(x) > min.len){
 		xmoy <- mean(x)
 		xsd <- sd(x)
-		fit.mod <- try(fitdist(x, "norm", method = 'mle',
-					start = list(mean = xmoy, sd = xsd), 
-					lower = c(-40, 0), upper = c(60, Inf)), silent = TRUE)
-		if(!inherits(fit.mod, "try-error")) return(fit.mod)
-		else return(NULL)
-	}else return(NULL)
+		fit.mod <- try(fitdist(x, "norm", method = method,
+					start = list(mean = xmoy, sd = xsd), lower = lower, upper = upper,
+					keepdata = keepdata, keepdata.nb = keepdata.nb, ...), silent = TRUE)
+		if(!inherits(fit.mod, "try-error")){
+			# Shapiro-Wilk normality test
+			swnt <- shapiro.test(x)
+			test <- if(swnt$p.value > alpha) 'yes' else 'no'
+			ret <- list(fitted.distr = fit.mod, SWNtest = swnt, h0 = test)
+		}else ret <- list(fitted.distr = NULL, SWNtest = NULL, h0 = 'null')
+	}
+	return(ret)
 }
 
-### Extract parameters
-extract.Gau.parameters <- function(months, fitted.model){
-	pars.Ret <- vector(mode = 'list', length = 12)
-	pars.Ret[months] <- lapply(months, function(m){
-		pars <- sapply(fitted.model[[m]], function(x){
-				y <- x$estimate
-				if(is.null(y)) y <- rep(NA, 2)
-				y
-			})
-		list(mean = pars[1, ], sd = pars[2, ])
+##############################
+outputSWNTest <- function(X, months = 1:12){
+	H0.test <- vector(mode = 'list', length = 12)
+	H0.test[months] <- lapply(X[months], function(mon){
+		sapply(mon, function(stn) if(!is.null(stn)) stn$h0 else 'null')
 	})
-	pars.Ret[months] <- rapply(pars.Ret[months], f = function(x) ifelse(is.nan(x) | is.infinite(x), NA, x), how = "replace")
-	return(pars.Ret)
+	return(H0.test)
 }
 
+##############################
+### Extract parameters
+extractNormDistrParams <- function(X, months = 1:12){
+	pars <- vector(mode = 'list', length = 12)
+	pars[months] <- lapply(X[months], function(mon){
+		parstn <- lapply(mon, function(stn){
+			if(!is.null(stn)){
+				fitdist <- stn$fitted.distr
+				if(!is.null(fitdist)) fitdist$estimate else NA
+			}else NA
+		})
+		nom <- na.omit(do.call('rbind', lapply(parstn, function(x) if(length(x) > 1) names(x) else NA)))[1, ]
+		parstn <- do.call('rbind', parstn)
+		dimnames(parstn)[[2]] <- nom
+		parstn
+	})
+	pars[months] <- rapply(pars[months], f = function(x) ifelse(is.nan(x) | is.infinite(x), NA, x), how = "replace")
+	return(pars)
+}
+
+##############################
 ### Quantile mapping
 quantile.mapping.Gau <- function(x, pars.stn, pars.reanal){
 	p.reanal <- x
 	ix <- !is.na(x)
 	p.reanal[ix] <- pnorm(x[ix], mean = pars.reanal$mean[ix], sd = pars.reanal$sd[ix])
+	p.reanal[ix][p.reanal[ix] < 0.001] <- 0.01
+	p.reanal[ix][p.reanal[ix] > 0.999] <- 0.99
 	res <- qnorm(p.reanal, mean = pars.stn$mean, sd = pars.stn$sd)
-	res[is.na(x)] <- NA
-	res[is.nan(res)] <- x[is.nan(res)]
-	res[is.infinite(res)] <- 3*x[is.infinite(res)]
-	res[!is.na(res) & (res > x*3)] <- 3*x[!is.na(res) & (res > x*3)]
-	res[!is.na(res) & (res < x/3)] <- 0.5*x[!is.na(res) & (res < x/3)]
+	miss <- is.na(res) | is.nan(res) | is.infinite(res)
+	res[miss] <- x[miss]
     return(res)
 }
 
+##############################
 ## Fit linear model
 fitLM.fun.TT <- function(df, min.len){
 	df <- na.omit(df)

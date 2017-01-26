@@ -283,9 +283,6 @@ ReanalysisDownscaling <- function(paramsDownscl){
 #################################################################################################
 
 ComputeMeanBiasTemp <- function(comptMBiasparms){
-	InsertMessagesTxt(main.txt.out, 'Compute bias factors ...')
-	tcl("update")
-
 	GeneralParameters <- comptMBiasparms$GeneralParameters
 	freqData <- GeneralParameters$period
 	months <- as.numeric(GeneralParameters$Bias.Months)
@@ -295,6 +292,7 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 	# res.coarse <- as.numeric(GeneralParameters$Interpolation.pars$res.coarse)
 	res.coarse <- comptMBiasparms$res.coarse
 
+	###############
 	stnData <- comptMBiasparms$stnData
 	id.stn <- stnData$id
 	lon.stn <- stnData$lon
@@ -302,29 +300,51 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 	date.stn <- stnData$dates
 	data.stn <- stnData$data
 
-	downData <- comptMBiasparms$downData
-	lon.down <- downData$lon
-	lat.down <- downData$lat
-	date.down <- downData$dates
-	data.down <- downData$data
-	###
+	###############
+	if(comptMBiasparms$memType == 2){
+		downData <- read.NetCDF.Data(comptMBiasparms$downData)
+		if(is.null(downData)) return(NULL)
+		ijGrd <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), list(lon = downData$lon, lat = downData$lat))
+		data.down.stn <- t(sapply(downData$data, function(x){
+			if(!is.null(x)) x[ijGrd]
+			else rep(NA, length(ijGrd))
+		}))
+		if(bias.method == 'Quantile.Mapping'){
+			data.down <- downData$data
+			data.down[sapply(data.down, is.null)] <- list(matrix(NA, ncol = length(downData$lat), nrow = length(downData$lon)))
+			idcoarse <- indexCoarseGrid(downData$lon, downData$lat, res.coarse)
+			data.down <- t(sapply(data.down, function(x) x[idcoarse$ix, idcoarse$iy, drop = FALSE]))
+			ptsData1 <- expand.grid(lon = downData$lon[idcoarse$ix], lat = downData$lat[idcoarse$iy])
+		}
+	}else{
+		nstn <- length(lon.stn)
+		ptsData0 <- list(lon = lon.stn, lat = lat.stn)
+		if(bias.method == 'Quantile.Mapping'){
+			idcoarse <- indexCoarseGrid(comptMBiasparms$xy.grid$lon, comptMBiasparms$xy.grid$lat, res.coarse)
+			ptsData1 <- expand.grid(lon = comptMBiasparms$xy.grid$lon[idcoarse$ix], lat = comptMBiasparms$xy.grid$lat[idcoarse$iy])
+			nbgrd <- nrow(ptsData1)
+			ptsData <- list(lon = c(ptsData0$lon, ptsData1$lon), lat = c(ptsData0$lat, ptsData1$lat))
+		}
+		downData <- read.NetCDF.Data2Points(comptMBiasparms$downData, ptsData)
+		if(is.null(downData)) return(NULL)
+		data.down0 <- t(sapply(downData$data, function(x) if(!is.null(x)) x else rep(NA, length(ptsData$lon))))			
+		data.down.stn <- data.down0[, 1:nstn]
+		if(bias.method == 'Quantile.Mapping') data.down <- data.down0[, nstn+(1:nbgrd)]
+	}
+
+	###############
 	date.bias <- downData$dates
-
-	ijGrd <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), list(lon = lon.down, lat = lat.down))
-
 	ibsdt <- date.bias%in%date.stn
 	istdt <- date.stn%in%date.bias
 	if(!any(ibsdt)) return(NULL)
 
-	if(bias.method == 'Multiplicative.Bias.Mon'){
-		data.down.stn <- t(sapply(data.down, function(x){
-			if(!is.null(x)) x[ijGrd]
-			else rep(NA, length(ijGrd))
-		}))
+	###############
+	InsertMessagesTxt(main.txt.out, 'Compute bias factors ...')
+	tcl("update")
 
+	if(bias.method == 'Multiplicative.Bias.Mon'){
 		date.bias <- date.bias[ibsdt]
 		data.down.stn <- data.down.stn[ibsdt, , drop = FALSE]
-		# date.stn <- date.stn[istdt]
 		data.stn <- data.stn[istdt, , drop = FALSE]
 
 		month.stn <- as(substr(date.bias, 5, 6), 'numeric')
@@ -335,18 +355,15 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 		bias <- lapply(bias, function(x) sapply(x,'[[', 1))
 		bias <- t(do.call('rbind', bias))
 
+		bias.pars <- list(bias.stn = bias, lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
+							data.stn = data.stn, date.down = data.down.stn, date = date.bias)
+
 		rm(data.down.stn, dataf)
 	}
 
 	if(bias.method == 'Multiplicative.Bias.Var'){
-		data.down.stn <- t(sapply(data.down, function(x){
-			if(!is.null(x)) x[ijGrd]
-			else rep(NA, length(ijGrd))
-		}))
-
 		date.bias <- date.bias[ibsdt]
 		data.down.stn <- data.down.stn[ibsdt, , drop = FALSE]
-		# date.stn <- date.stn[istdt]
 		data.stn <- data.stn[istdt, , drop = FALSE]
 
 		if(freqData == 'daily'){
@@ -383,6 +400,8 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 		bias <- lapply(bias, function(x) sapply(x,'[[', 1))
 		bias <- t(do.call('rbind', bias))
 
+		bias.pars <- list(bias.stn = bias, lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
+							data.stn = data.stn, date.down = data.down.stn, date = date.bias)
 		rm(data.down.stn, dataf)
 	}
 
@@ -396,49 +415,67 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 			`%parLoop%` <- `%do%`
 			closeklust <- FALSE
 		}
-		packages <- c('fitdistrplus')
 
-		data.down[sapply(data.down, is.null)] <- list(matrix(NA, ncol = length(lat.down), nrow = length(lon.down)))
-		idcoarse <- indexCoarseGrid(lon.down, lat.down, res.coarse)
 		date.stn <- date.stn[istdt]
 		data.stn <- data.stn[istdt, , drop = FALSE]
 		month.stn <- as(substr(date.stn, 5, 6), 'numeric')
-
-		toExports <- c('data.down', 'id.stn', 'data.stn', 'fit.norm.temp', 'min.len')
-
-		pars.Obs.Stn <- vector(mode = 'list', length = 12)
-		pars.Obs.Stn[months] <- foreach (m = months, .packages = packages, .export = toExports) %:% 
-		  foreach (id = id.stn, .packages = packages, .export = toExports) %parLoop% {
-			xdata <- data.stn[month.stn == m, id.stn == id]
-		    fit.norm.temp(xdata, min.len)
-		}
-
 		month.down <- as(substr(date.bias, 5, 6), 'numeric')
-		data.down <- simplify2array(data.down)
-		data.down <- data.down[idcoarse$ix, idcoarse$iy, ]
-		nbgrd <- prod(dim(data.down)[1:2])
-		nt <- dim(data.down)[3]
-		data.down <- aperm(data.down, c(3, 1, 2))
-		dim(data.down) <- c(nt, nbgrd)
 
-		id.grdDown <- 1:nbgrd
-		pars.Crs.Down <- vector(mode = 'list', length = 12)
-		pars.Crs.Down[months] <- foreach (m = months, .packages = packages, .export = toExports) %:% 
-		  foreach (id = id.grdDown, .packages = packages, .export = toExports) %parLoop% {
-			xdata <- data.down[month.down == m, id.grdDown == id]
-		    fit.norm.temp(xdata, min.len)
+		packages <- c('fitdistrplus')
+		toExports <- c('data.down', 'data.down.stn', 'data.stn', 'fit.norm.temp', 'min.len')
+
+		parsDistr <- vector(mode = 'list', length = 12)
+		parsDistr[months] <- foreach (m = months, .packages = packages, .export = toExports) %parLoop% {
+			xstn <- data.stn[month.stn == m, , drop = FALSE]
+			xdownstn <- data.down.stn[month.down == m, , drop = FALSE]
+			xdown <- data.down[month.down == m, , drop = FALSE]
+			xstn <- lapply(seq(ncol(xstn)), function(j) fit.norm.temp(xstn[, j], min.len))
+			xdownstn <- lapply(seq(ncol(xdownstn)), function(j) fit.norm.temp(xdownstn[, j], min.len))
+			xdown <- lapply(seq(ncol(xdown)), function(j) fit.norm.temp(xdown[, j], min.len))
+			list(stn = xstn, downstn = xdownstn, down = xdown)
 		}
 		if(closeklust) stopCluster(klust)
 
-		pars.Stn <- extract.Gau.parameters(months, pars.Obs.Stn)
-		pars.Down <- extract.Gau.parameters(months, pars.Crs.Down)
-		bias <- list(fit.stn = pars.Obs.Stn, fit.down = pars.Crs.Down, pars.stn = pars.Stn, pars.down = pars.Down)
-		rm(pars.Obs.Stn, pars.Crs.Down, pars.Stn, pars.Down)
+		pars.Obs.Stn <- lapply(parsDistr, '[[', 1)
+		pars.Obs.down <- lapply(parsDistr, '[[', 2)
+		pars.Crs.down <- lapply(parsDistr, '[[', 3)
+
+		SW.stn <- outputSWNTest(pars.Obs.Stn, months)
+		SW.downstn <- outputSWNTest(pars.Obs.down, months)
+		SW.down <- outputSWNTest(pars.Crs.down, months)
+
+		pars.Stn <- extractNormDistrParams(pars.Obs.Stn, months)
+		pars.Downstn <- extractNormDistrParams(pars.Obs.down, months)
+		pars.Down <- extractNormDistrParams(pars.Crs.down, months)
+
+		parsSW <- vector(mode = 'list', length = 12)
+		parsSW[months] <- lapply(months, function(j){
+			istn <- SW.stn[[j]] == 'yes' & SW.downstn[[j]] == 'yes'
+			idown <- SW.down[[j]] == 'yes'
+			list(down = idown, stn = istn)
+		})
+
+		parsSW.Down <- lapply(parsSW, '[[', 1)
+		parsSW.Stn <- lapply(parsSW, '[[', 2)
+		bias <- list(pars.sw.stn = parsSW.Stn, pars.sw.down = parsSW.Down, pars.stn = pars.Stn,
+					pars.downstn = pars.Downstn, pars.down = pars.Down)
+
+		##########
+		bias.pars <- list(fit.stn = pars.Obs.Stn, fit.downstn = pars.Obs.down, fit.down = pars.Crs.down,
+						lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
+						lon.down = comptMBiasparms$xy.grid$lon[idcoarse$ix],
+						lat.down = comptMBiasparms$xy.grid$lat[idcoarse$iy],
+						data.stn = data.stn, data.downstn = data.down.stn,
+						data.down = data.down, date = date.bias)
+		rm(parsDistr, pars.Obs.Stn, pars.Obs.down, pars.Crs.down, pars.Stn, pars.Down,
+			pars.Downstn, parsSW, parsSW.Down, parsSW.Stn)
 	}
+
+	save(bias.pars, file = file.path(comptMBiasparms$origdir, "BIAS_PARAMS.RData"))
 
 	InsertMessagesTxt(main.txt.out, 'Computing bias factors finished')
 	tcl("update")
-	rm(stnData, downData, data.stn, data.down)
+	rm(stnData, downData, data.stn, bias.pars)
 	gc()
 	return(bias)
 }
@@ -533,6 +570,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 		nelv <- if(nelv > 1) nelv else 2
 		z.maxdist <- rad.elv*(diff(range(coordinates(interp.grid$newgrid)[, 'elv']))/(nelv-1))
 		xy.maxdist <- if(xy.maxdist < res.coarse) res.coarse else xy.maxdist
+		maxdist <- sqrt(xy.maxdist^2 + z.maxdist^2)
 	}else{
 		interp.grid <- createGrid(ObjStn, demGrid, as.dim.elv = FALSE,
 								coarse.grid = TRUE, res.coarse = res.coarse)
@@ -540,9 +578,6 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 		cells <- SpatialPixels(points = interp.grid$newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)))@grid
 		bGrd <- createBlock(cells@cellsize, 2, 5)
 	}
-
-	# params.grid <- list(xy.grid = xy.grid, interp.grid = interp.grid)
-	# mrgRaindat$params.grid <- params.grid
 
 	## interpolation
 	if(bias.method != 'Quantile.Mapping'){
@@ -572,7 +607,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 			locations.stn$pars <- bias.pars[itimes == m, ]
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
 			
-			extrm <- quantile(locations.stn$pars, probs = c(0.0001, 0.9999))
+			extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
 			locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
 			if(length(locations.stn$pars) < min.stn) return(matrix(1, ncol = nlat0, nrow = nlon0))
@@ -604,19 +639,18 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 
 			if(interp.method == 'NN'){
 				coordinates(locations.stn) <- ~lon+lat+elv
-				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)	
+				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid,
+									nmax = 1, maxdist = maxdist, debug.level = 0)	
 			}else{
 				coordinates(locations.stn) <- ~lon+lat
 				if(any(is.auxvar)){
 					locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
-					pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-										nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-				}else{
-					pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-				}
+					block <- NULL
+				}else block <- bGrd
 
-				# extrm <- quantile(pars.grd$var1.pred, probs = c(0.001, 0.999), na.rm = TRUE)
+				pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
+									block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+
 				extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
 				ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
 				pars.grd$var1.pred[ixtrm] <- NA
@@ -628,16 +662,13 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 					pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
 				}
 			}
-			grdbias <- pars.grd$var1.pred
+			grdbias <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
 			grdbias[grdbias > 1.5] <- 1
 			grdbias[grdbias < 0.6] <- 1
 			grdbias[is.na(grdbias)] <- 1
-			matrix(grdbias, ncol = nlat0, nrow = nlon0)
+			grdbias
 		}
 		if(closeklust) stopCluster(klust)
-			
-		# bias.factor <- list(bias = bias.pars, interp.bias = BIAS)
-		# mrgRaindat$bias.factor <- bias.factor
 
 		#Defines netcdf output
 		grd.bs <- ncvar_def("bias", "", xy.dim, NA, longname= "Multiplicative Mean Bias Factor", prec = "float")
@@ -666,12 +697,10 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 		PARS.stn[months] <- foreach(m = months, .packages = packages, .export = toExports) %parLoop% {
 			pars.mon <- lapply(1:2, function(j){
 				locations.stn <- interp.grid$coords.stn
-				locations.stn$pars <- bias.pars$pars.stn[[m]][[j]]
+				locations.stn$pars <- bias.pars$pars.stn[[m]][, j]
+				locations.stn$pars[!bias.pars$pars.sw.stn[[m]]] <- NA
 				locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
 				if(length(locations.stn$pars) < min.stn) return(NULL)
-
-				extrm <- quantile(locations.stn$pars, probs = c(0.0001, 0.9999))
-				locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
 				if(interp.method == 'Kriging'){
 					vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
@@ -680,12 +709,18 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 
 				xstn <- as.data.frame(locations.stn)
 				xadd <- as.data.frame(interp.grid$coords.grd)
-				xadd$pars <- bias.pars$pars.down[[m]][[j]]
-				xadd <- xadd[!is.na(xadd$pars), ]
-				extrm1 <- quantile(xadd$pars, probs = c(0.0001, 0.9999))
-				xadd <- xadd[xadd$pars > extrm1[1] & xadd$pars < extrm1[2], ]
-				iadd <- rep(TRUE, nrow(xadd))
+				xadd$pars <- bias.pars$pars.down[[m]][, j]
+				xadd$pars[!bias.pars$pars.sw.down[[m]]] <- NA
 
+				xaddstn <- as.data.frame(interp.grid$coords.stn)
+				xaddstn$pars <- bias.pars$pars.downstn[[m]][, j]
+				xaddstn$pars[!bias.pars$pars.sw.stn[[m]]] <- NA
+
+				xadd <- rbind(xadd, xaddstn)
+				xadd <- xadd[!is.na(xadd$pars), ]
+				if(length(xadd$pars) < min.stn) return(NULL)
+
+				iadd <- rep(TRUE, nrow(xadd))
 				for(k in 1:nrow(xstn)){
 					if(interp.method == 'NN'){
 						xy.dst <- sqrt((xstn$lon[k]-xadd$lon)^2+(xstn$lat[k]-xadd$lat)^2)*sqrt(2)
@@ -700,34 +735,28 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 				xadd <- xadd[iadd, ]
 				locations.stn <- rbind(xstn, xadd)
 
+				extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
+				locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
+
 				if(interp.method == 'NN'){
+					locations.stn <- locations.stn[!duplicated(locations.stn[, c('lon', 'lat', 'elv')]), ]
 					coordinates(locations.stn) <- ~lon+lat+elv
-					pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)
+					pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid,
+										nmax = 1, maxdist = maxdist, debug.level = 0)
 				}else{
+					locations.stn <- locations.stn[!duplicated(locations.stn[, c('lon', 'lat')]), ]
 					coordinates(locations.stn) <- ~lon+lat
 					if(any(is.auxvar)){
 						locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
-						pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-											nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-					}else{
-						pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-											block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-					}
+						block <- NULL
+					}else  block <- bGrd
 
-					if(j == 2) pars.grd$var1.pred[pars.grd$var1.pred < 0] <- NA
-					# extrm <- quantile(pars.grd$var1.pred, probs = c(0.001, 0.999), na.rm = TRUE)
-					extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
-					ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
-					pars.grd$var1.pred[ixtrm] <- NA
-
-					ina <- is.na(pars.grd$var1.pred)
-					if(any(ina)){
-						pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
-											block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-						pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
-					}
+					pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
+										block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 				}
-				matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
+				ret <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
+				if(j == 2) ret[ret < 0] <- NA
+				ret
 			})
 			names(pars.mon) <- c('mean', 'sd')
 			pars.mon
@@ -737,105 +766,101 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 		PARS.down[months] <- foreach(m = months, .packages = packages, .export = toExports) %parLoop% {
 			pars.mon <- lapply(1:2, function(j){
 				locations.down <- interp.grid$coords.grd
-				locations.down$pars <- bias.pars$pars.down[[m]][[j]]
+				locations.down$pars <- bias.pars$pars.down[[m]][, j]
+				locations.down$pars[!bias.pars$pars.sw.down[[m]]] <- NA
+
+				locations.downstn <- interp.grid$coords.stn
+				locations.downstn$pars <- bias.pars$pars.downstn[[m]][, j]
+				locations.downstn$pars[!bias.pars$pars.sw.stn[[m]]] <- NA
+
+				locations.down <- rbind(locations.down, locations.downstn)
 				locations.down <- locations.down[!is.na(locations.down$pars), ]
 				if(length(locations.down$pars) < min.stn) return(NULL)
-				extrm <- quantile(locations.down$pars, probs = c(0.0001, 0.9999))
-				locations.down <- locations.down[locations.down$pars > extrm[1] & locations.down$pars < extrm[2], ]
 
+				extrm <- quantile(locations.down$pars, probs = c(0.001, 0.999))
+				locations.down <- locations.down[locations.down$pars > extrm[1] & locations.down$pars < extrm[2], ]
+				locations.down <- remove.duplicates(locations.down)
+
+				if(any(is.auxvar)) locations.down <- locations.down[Reduce("&", as.data.frame(!is.na(locations.down[, auxvar[is.auxvar]]))), ]
 				if(interp.method == 'Kriging'){
 					vgm <- try(autofitVariogram(formule, input_data = locations.down, model = vgm.model, cressie = TRUE), silent = TRUE)
 					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
 				}else vgm <- NULL
 
 				if(interp.method == 'NN'){
-					pars.grd <- krige(pars~1, locations = locations.down, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)
+					pars.grd <- krige(pars~1, locations = locations.down, newdata = interp.grid$newgrid,
+										nmax = 1, maxdist = maxdist, debug.level = 0)
 				}else{
-					if(any(is.auxvar)){
-						locations.down <- locations.down[Reduce("&", as.data.frame(!is.na(locations.down[, auxvar[is.auxvar]]))), ]
-						pars.grd <- krige(formule, locations = locations.down, newdata = interp.grid$newgrid, model = vgm,
-										nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-					}else{
-						pars.grd <- krige(formule, locations = locations.down, newdata = interp.grid$newgrid, model = vgm,
-										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-					}
-
-					if(j == 2) pars.grd$var1.pred[pars.grd$var1.pred < 0] <- NA
-					# extrm <- quantile(pars.grd$var1.pred, probs = c(0.001, 0.999), na.rm = TRUE)
-					extrm <- c(min(locations.down$pars, na.rm = TRUE), max(locations.down$pars, na.rm = TRUE))
-					ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
-					pars.grd$var1.pred[ixtrm] <- NA
-
-					ina <- is.na(pars.grd$var1.pred)
-					if(any(ina)){
-						pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
-											block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-						pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
-					}
+					block <- if(any(is.auxvar)) NULL else bGrd
+					pars.grd <- krige(formule, locations = locations.down, newdata = interp.grid$newgrid, model = vgm,
+											block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 				}
-				matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
+				ret <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
+				if(j == 2) ret[ret < 0] <- NA
+				ret
 			})
 			names(pars.mon) <- c('mean', 'sd')
 			pars.mon
 		}
 		if(closeklust) stopCluster(klust)
 
+		################
 
-		for(m in months){
-			for(j in 1:2){
-				par.stn <- PARS.stn[[m]][[j]]
-				par.down <- PARS.down[[m]][[j]]
-				if(!is.null(par.stn) & !is.null(par.down)){
-					ix <- is.na(par.stn)
-					par.stn[ix] <- par.down[ix]
-					PARS.stn[[m]][[j]] <- par.stn
+		default <- apply(do.call('rbind', bias.pars$pars.down), 2, median, na.rm = TRUE)
+		PARS <- vector(mode = 'list', length = 12)
+		PARS[months] <- lapply(months, function(m){
+			par.stn <- PARS.stn[[m]]
+			par.down <- PARS.down[[m]]
+			xmean <- xsd <- matrix(NA, ncol = nlat0, nrow = nlon0)
+			if(!is.null(par.stn) & !is.null(par.down)){
+				if(!is.null(par.stn$mean) & !is.null(par.stn$sd) &
+					!is.null(par.down$mean) & !is.null(par.down$sd)){
+					ina <- is.na(par.stn$mean) | is.na(par.stn$sd) |
+							is.na(par.down$mean) | is.na(par.down$sd)
+					mmean <- median(par.down$mean, na.rm = TRUE)
+					msd <-  median(par.down$sd, na.rm = TRUE)
+					par.stn$mean[ina] <- mmean
+					par.stn$sd[ina] <- msd
+					par.down$mean[ina] <- mmean
+					par.down$sd[ina] <- msd
+					ret.stn <- list(mean = par.stn$mean, sd = par.stn$sd)
+					ret.down <- list(mean = par.down$mean, sd = par.down$sd)
+				}else{
+					xmean[] <- default['mean']
+					xsd[] <- default['sd']
+					ret.stn <- ret.down <- list(mean = xmean, sd = xsd)
 				}
-				if(is.null(par.down)){
-					ret <- matrix(NA, ncol = nlat0, nrow = nlon0)
-					if(j == 1) ret[] <- 0
-					if(j == 2) ret[] <- 1
-					PARS.stn[[m]][[j]] <- ret
-					PARS.down[[m]][[j]] <- ret
-				}
+			}else{
+				xmean[] <- default['mean']
+				xsd[] <- default['sd']
+				ret.stn <- ret.down <- list(mean = xmean, sd = xsd)
 			}
-		}
+			list(stn = ret.stn, down = ret.down)
+		})
 
-		# params.distr <- list(fit.stn = bias.pars$fit.stn, fit.down = bias.pars$fit.down,
-		# 							pars.stn = bias.pars$pars.stn, pars.down = bias.pars$pars.down,
-		# 							interp.pars.stn = PARS.stn, interp.pars.down = PARS.down)
-		# mrgRaindat$params.distr <- params.distr
-
+		################
 		#Defines netcdf output
 		grd.mean <- ncvar_def("mean", "degC", xy.dim, NA, longname= "Means normal distribution", prec = "float")
 		grd.sd <- ncvar_def("sd", "degC", xy.dim, NA, longname= "Standard deviations normal distribution", prec = "float")
 
 		for(jfl in months){
-			if(is.null(PARS.stn[[jfl]]$mean) | is.null(PARS.stn[[jfl]]$sd)){
-				mean.nc <- PARS.down[[jfl]]$mean
-				sd.nc <- PARS.down[[jfl]]$sd
-			}else{
-				mean.nc <- PARS.stn[[jfl]]$mean
-				sd.nc <- PARS.stn[[jfl]]$sd
-			}
 			outnc1 <- file.path(origdir, paste('Gaussian_Pars.STN', '_', jfl, '.nc', sep = ''))
 			nc1 <- nc_create(outnc1, list(grd.mean, grd.sd))
-			ncvar_put(nc1, grd.mean, mean.nc)
-			ncvar_put(nc1, grd.sd, sd.nc)
+			ncvar_put(nc1, grd.mean, PARS[[jfl]]$stn$mean)
+			ncvar_put(nc1, grd.sd, PARS[[jfl]]$stn$sd)
 			nc_close(nc1)
 		}
 			
 		for(jfl in months){
 			outnc2 <- file.path(origdir, paste('Gaussian_Pars.REANAL', '_', jfl, '.nc', sep = ''))
 			nc2 <- nc_create(outnc2, list(grd.mean, grd.sd))
-			ncvar_put(nc2, grd.mean, PARS.down[[jfl]]$mean)
-			ncvar_put(nc2, grd.sd, PARS.down[[jfl]]$sd)
+			ncvar_put(nc2, grd.mean, PARS[[jfl]]$down$mean)
+			ncvar_put(nc2, grd.sd, PARS[[jfl]]$down$sd)
 			nc_close(nc2)
 		}
-		rm(PARS.stn, PARS.down)
+		rm(PARS.stn, PARS.down, PARS)
 	}
 
-	# outfile <- file.path(origdir, 'DataUsed2ComputeBias.RData')
-	# save(mrgRaindat, file = outfile)
 	rm(stnData, demData, demGrid, ObjStn, interp.grid)
 	gc()
 	InsertMessagesTxt(main.txt.out, 'Interpolating bias factors finished')
@@ -847,8 +872,6 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 
 ##correct downscaled reanalysis bias
 AjdMeanBiasTemp <- function(adjMeanBiasparms){
-	InsertMessagesTxt(main.txt.out, 'Correct Reanalysis Bias ...')
-	tcl("update")
 
 	GeneralParameters <- adjMeanBiasparms$GeneralParameters
 	origdir <- adjMeanBiasparms$origdir
@@ -861,6 +884,10 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 	months <- sort(as.numeric(GeneralParameters$Adjust.Months))
 
 	downData <- adjMeanBiasparms$downData
+
+	###############
+	InsertMessagesTxt(main.txt.out, 'Correct Reanalysis Bias ...')
+	tcl("update")
 
 	if(bias.method == "Multiplicative.Bias.Mon"){
 		biasFile <- file.path(biasDir, paste(meanBiasPrefix, '_', months, '.nc', sep = ''))

@@ -345,7 +345,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 			locations.stn$pars <- bias.pars[itimes == m, ]
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
 
-			extrm <- quantile(locations.stn$pars, probs = c(0.0001, 0.9999))
+			extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
 			locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
 			if(length(locations.stn$pars) < min.stn) return(matrix(1, ncol = nlat0, nrow = nlon0))
@@ -378,7 +378,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 			if(interp.method == 'NN'){
 				coordinates(locations.stn) <- ~lon+lat+elv
 				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid,
-					nmax = 1, maxdist = maxdist, debug.level = 0)	
+									nmax = 1, maxdist = maxdist, debug.level = 0)	
 			}else{
 				coordinates(locations.stn) <- ~lon+lat
 				if(any(is.auxvar)){
@@ -400,11 +400,11 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 					pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
 				}
 			}
-			grdbias <- pars.grd$var1.pred
+			grdbias <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
 			grdbias[grdbias > 3] <- 3
 			grdbias[grdbias < 0] <- 0.1
 			grdbias[is.na(grdbias)] <- 1
-			matrix(grdbias, ncol = nlat0, nrow = nlon0)
+			grdbias
 		}
 		if(closeklust) stopCluster(klust)
 
@@ -473,14 +473,14 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				xadd <- xadd[iadd, ]
 				locations.stn <- rbind(xstn, xadd)
 
-				extrm <- quantile(locations.stn$pars, probs = c(0.0001, 0.9999))
+				extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
 				locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
 				if(interp.method == 'NN'){
 					locations.stn <- locations.stn[!duplicated(locations.stn[, c('lon', 'lat', 'elv')]), ]
 					coordinates(locations.stn) <- ~lon+lat+elv
 					pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid,
-						nmax = 1, maxdist = maxdist, debug.level = 0)
+										nmax = 1, maxdist = maxdist, debug.level = 0)
 				}else{
 					locations.stn <- locations.stn[!duplicated(locations.stn[, c('lon', 'lat')]), ]
 					coordinates(locations.stn) <- ~lon+lat
@@ -517,7 +517,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				locations.rfe <- locations.rfe[!is.na(locations.rfe$pars), ]
 				if(length(locations.rfe$pars) < min.stn) return(NULL)
 
-				extrm <- quantile(locations.rfe$pars, probs = c(0.0001, 0.9999))
+				extrm <- quantile(locations.rfe$pars, probs = c(0.001, 0.999))
 				locations.rfe <- locations.rfe[locations.rfe$pars > extrm[1] & locations.rfe$pars < extrm[2], ]
 				locations.rfe <- remove.duplicates(locations.rfe)
 
@@ -529,7 +529,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 
 				if(interp.method == 'NN'){
 					pars.grd <- krige(pars~1, locations = locations.rfe, newdata = interp.grid$newgrid,
-									nmax = 1, maxdist = maxdist, debug.level = 0)
+										nmax = 1, maxdist = maxdist, debug.level = 0)
 				}else{
 					block <- if(any(is.auxvar)) NULL else bGrd
 					pars.grd <- krige(formule, locations = locations.rfe, newdata = interp.grid$newgrid, model = vgm,
@@ -547,64 +547,41 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 		}
 		if(closeklust) stopCluster(klust)
 
+		################
+
+		default <- apply(do.call('rbind', bias.pars$pars.rfe), 2, median, na.rm = TRUE)
 		PARS <- vector(mode = 'list', length = 12)
 		PARS[months] <- lapply(months, function(m){
 			par.stn <- PARS.stn[[m]]
 			par.rfe <- PARS.rfe[[m]]
 			prob <- scale <- shape <- matrix(NA, ncol = nlat0, nrow = nlon0)
 			if(!is.null(par.stn) & !is.null(par.rfe)){
-				################
-				# if(!is.null(par.stn$prob) & !is.null(par.stn$scale) & !is.null(par.stn$shape) &
-				# 	!is.null(par.rfe$prob) & !is.null(par.rfe$scale) & !is.null(par.rfe$shape)){
-				# 	iprob <- is.na(par.stn$prob) | is.na(par.rfe$prob)
-				# 	par.stn$prob[iprob] <- 0.5
-				# 	par.rfe$prob[iprob] <- 0.5
-				# 	ina <- is.na(par.stn$scale) | is.na(par.stn$shape) | is.na(par.rfe$scale) | is.na(par.rfe$shape)
-				# 	par.stn$scale[ina] <- 2
-				# 	par.stn$shape[ina] <- 2
-				# 	par.rfe$scale[ina] <- 2
-				# 	par.rfe$shape[ina] <- 2
-				# 	ret.stn <- list(prob = par.stn$prob, scale = par.stn$scale, shape = par.stn$shape)
-				# 	ret.rfe <- list(prob = par.rfe$prob, scale = par.rfe$scale, shape = par.rfe$shape)
-				# }else if(!is.null(par.stn$prob) & (is.null(par.stn$scale) | is.null(par.stn$shape)) &
-				# 		!is.null(par.rfe$prob) & (is.null(par.rfe$scale) | is.null(par.rfe$shape))){
-				# 	iprob <- is.na(par.stn$prob) | is.na(par.rfe$prob)
-				# 	par.stn$prob[iprob] <- 0.5
-				# 	par.rfe$prob[iprob] <- 0.5
-				# 	scale[] <- 2
-				# 	shape[] <- 2
-				# 	ret.stn <- list(prob = par.stn$prob, scale = scale, shape = shape)
-				# 	ret.rfe <- list(prob = par.rfe$prob, scale = scale, shape = shape)
-				# }else{
-				# 	prob[] <- 0.5
-				# 	scale[] <- 2
-				# 	shape[] <- 2
-				# 	ret.stn <- ret.rfe <- list(prob = prob, scale = scale, shape = shape)
-				# }
-				################
 				if(!is.null(par.stn$prob) & !is.null(par.stn$scale) & !is.null(par.stn$shape) &
 					!is.null(par.rfe$prob) & !is.null(par.rfe$scale) & !is.null(par.rfe$shape)){
 					ina <- is.na(par.stn$prob) | is.na(par.stn$scale) | is.na(par.stn$shape) |
 							is.na(par.rfe$prob) | is.na(par.rfe$scale) | is.na(par.rfe$shape)
-					par.stn$prob[ina] <- 0.5
-					par.stn$scale[ina] <- 2
-					par.stn$shape[ina] <- 2
-					par.rfe$prob[ina] <- 0.5
-					par.rfe$scale[ina] <- 2
-					par.rfe$shape[ina] <- 2
+					mprob <- median(par.rfe$prob, na.rm = TRUE)
+					mscale <- median(par.rfe$scale, na.rm = TRUE)
+					mshape <- median(par.rfe$shape, na.rm = TRUE)
+					par.stn$prob[ina] <- mprob
+					par.stn$scale[ina] <- mscale
+					par.stn$shape[ina] <- mshape
+					par.rfe$prob[ina] <- mprob
+					par.rfe$scale[ina] <- mscale
+					par.rfe$shape[ina] <- mshape
 					ret.stn <- list(prob = par.stn$prob, scale = par.stn$scale, shape = par.stn$shape)
 					ret.rfe <- list(prob = par.rfe$prob, scale = par.rfe$scale, shape = par.rfe$shape)
 				}else{
-					prob[] <- 0.5
-					scale[] <- 2
-					shape[] <- 2
+					prob[] <- default['prob']
+					scale[] <- default['scale']
+					shape[] <- default['shape']
 					ret.stn <- ret.rfe <- list(prob = prob, scale = scale, shape = shape)
 				}
 				################
 			}else{
-				prob[] <- 0.5
-				scale[] <- 2
-				shape[] <- 2
+				prob[] <- default['prob']
+				scale[] <- default['scale']
+				shape[] <- default['shape']
 				ret.stn <- ret.rfe <- list(prob = prob, scale = scale, shape = shape)
 			}
 			list(stn = ret.stn, rfe = ret.rfe)
@@ -646,9 +623,6 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 
 ##correct RFE bias
 AjdMeanBiasRain <- function(adjMeanBiasparms){
-	InsertMessagesTxt(main.txt.out, 'Correct RFE Bias ...')
-	tcl("update")
-
 	GeneralParameters <- adjMeanBiasparms$GeneralParameters
 	origdir <- adjMeanBiasparms$origdir
 
@@ -660,7 +634,47 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 	months <- sort(as.numeric(GeneralParameters$Adjust.Months))
 	adjZero <- GeneralParameters$Adjusted.to.Zero
 
-	rfeData <- adjMeanBiasparms$rfeData
+	memType <- adjMeanBiasparms$memType
+
+	###############
+	if(memType == 2){
+		rfeData <- read.NetCDF.Data(adjMeanBiasparms$rfeData)
+		if(is.null(rfeData)) return(NULL)
+
+		irfe <- !sapply(rfeData$data, is.null)
+		if(!any(irfe)){
+			InsertMessagesTxt(main.txt.out, "All RFE data are missing", format = TRUE)
+			return(NULL)
+		}
+
+		rfeData$dates <- rfeData$dates[irfe]
+		rfeData$data <- rfeData$data[irfe]
+	}else{
+		ncfiles <- adjMeanBiasparms$rfeData$ncfiles
+		ncInfo <- ncFilesInfo(ncfiles$freqData, ncfiles$start.date, ncfiles$end.date, ncfiles$months,
+							ncfiles$ncDir, ncfiles$ncFileFormat, adjMeanBiasparms$rfeData$errmsg)
+		if(is.null(ncInfo)) return(NULL)
+
+		ncInfo$nc.files <- ncInfo$nc.files[ncInfo$exist]
+		ncInfo$dates <- ncInfo$dates[ncInfo$exist]
+
+		nc <- nc_open(ncInfo$nc.files[1])
+		rlon <- nc$dim[[adjMeanBiasparms$rfeData$ncinfo$xo]]$vals
+		rlat <- nc$dim[[adjMeanBiasparms$rfeData$ncinfo$yo]]$vals
+		nc_close(nc)
+		xo <- order(rlon)
+		rlon <- rlon[xo]
+		yo <- order(rlat)
+		rlat <- rlat[yo]
+		rfeData <- list(lon = rlon, lat = rlat, dates = ncInfo$dates, files = ncInfo$nc.files,
+						xo = xo, yo = yo, varid = adjMeanBiasparms$rfeData$ncinfo$varid,
+						yorder = adjMeanBiasparms$rfeData$ncinfo$yo)
+	}
+	rfeSp <- defSpatialPixels(list(lon = rfeData$lon, lat = rfeData$lat))
+
+	###############
+	InsertMessagesTxt(main.txt.out, 'Correct RFE Bias ...')
+	tcl("update")
 
 	if(bias.method == "Multiplicative.Bias.Mon"){
 		biasFile <- file.path(biasDir, paste(meanBiasPrefix, '_', months, '.nc', sep = ''))
@@ -795,25 +809,19 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 		toExports <- c('quantile.mapping.BGamma', 'lon', 'lat', 'PARS.stn', 'PARS.rfe', 'adjZero')
 	}
 
+	########
+	## RFE regrid?
+	biasSp <- defSpatialPixels(list(lon = lon, lat = lat))
+	is.regridRFE <- is.diffSpatialPixelsObj(biasSp, rfeSp, tol = 1e-07)
+	
+	########
 	#Defines netcdf output dims
 	dx <- ncdim_def("Lon", "degreeE", lon)
 	dy <- ncdim_def("Lat", "degreeN", lat)
 	xy.dim <- list(dx, dy)
 	grd.bsadj <- ncvar_def("precip", "mm", xy.dim, -99, longname= "Bias Corrected RFE", prec = "short")
 
-	irfe <- !sapply(rfeData$data, is.null)
-	if(!any(irfe)){
-		InsertMessagesTxt(main.txt.out, "RFE data not found", format = TRUE)
-		return(NULL)
-	}
-
-	rfeData$dates <- rfeData$dates[irfe]
-	rfeData$data <- rfeData$data[irfe]
-
-	####
-	biasSp <- defSpatialPixels(list(lon = lon, lat = lat))
-	rfeSp <- defSpatialPixels(list(lon = rfeData$lon, lat = rfeData$lat))
-	is.regridRFE <- is.diffSpatialPixelsObj(biasSp, rfeSp, tol = 1e-07)
+	########
 
 	if(doparallel & length(rfeData$dates) >= 30){
 		klust <- makeCluster(nb_cores)
@@ -827,15 +835,28 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 
 	packages <- c('ncdf4', 'fields')
 	toExports <- c(toExports, 'rfeData', 'is.regridRFE', 'bias.method', 'origdir',
-					 'grd.bsadj', 'freqData', 'adjRfeFF')
+					 'grd.bsadj', 'freqData', 'adjRfeFF', 'memType')
 
 	ret <- foreach(jfl = seq_along(rfeData$dates), .packages = packages, .export = toExports) %parLoop% {
-		xrfe <- rfeData$data[[jfl]]
-		drfe <- rfeData$dates[jfl]
+		if(memType == 2){
+			xrfe <- rfeData$data[[jfl]]
+			drfe <- rfeData$dates[jfl]
+		}else{
+			nc <- nc_open(rfeData$files[jfl])
+			xrfe <- ncvar_get(nc, varid = rfeData$varid)
+			nc_close(nc)
+			xrfe <- xrfe[rfeData$xo, rfeData$yo]
+			if(rfeData$yorder == 1){
+				xrfe <- matrix(c(xrfe), nrow = length(rfeData$lon), ncol = length(rfeData$lat), byrow = TRUE)
+			}
+			drfe <- rfeData$dates[jfl]
+		}
+
 		if(is.regridRFE){
 			rfeGrid <- interp.surface.grid(list(x = rfeData$lon, y = rfeData$lat, z = xrfe), list(x = lon, y = lat))
 			xrfe <- rfeGrid$z
 		}
+
 		if(bias.method == "Multiplicative.Bias.Var"){
 			if(freqData == 'daily'){
 				ann <- as.numeric(substr(drfe, 1, 4))
@@ -858,6 +879,7 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 		if(bias.method == "Quantile.Mapping"){
 			xadj <- quantile.mapping.BGamma(xrfe, PARS.stn[[ijt]], PARS.rfe[[ijt]], adjZero)
 		}else xadj <- xrfe * BIAS[[ijt]]
+
 		xadj[xadj < 0] <- 0
 		xadj[is.na(xadj)] <- -99
 

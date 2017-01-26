@@ -84,7 +84,7 @@ if(tclPath$UseOtherTclTk == 1){
 
 packages <- list('tcltk', 'tkrplot', 'grid', 'lattice', 'latticeExtra', 'sp', 'ncdf4', 'gmt', 'fields',
 				'gstat', 'automap', 'reshape2', 'compiler', 'parallel', 'foreach', 'doParallel',
-				'raster', 'rgeos', 'rgdal', 'maptools', 'RCurl', 'fitdistrplus', 'qmap')
+				'raster', 'rgeos', 'rgdal', 'maptools', 'RCurl', 'fitdistrplus', 'qmap', 'ADGofTest')
 ret.pkgs <- sapply(packages, library, character.only = TRUE, logical.return = TRUE)
 #compilePKGS(enable = TRUE)
 #enableJIT(3)

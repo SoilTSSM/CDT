@@ -126,9 +126,11 @@ execDownscalingTemp <- function(origdir){
 #######################################################################################
 
 execBiasTemp <- function(origdir){
-	freqData <- GeneralParameters$period
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
+	memType <- 2
+
+	freqData <- GeneralParameters$period
 	year1 <- as.numeric(GeneralParameters$Bias.Date.Range$start.year)
 	year2 <- as.numeric(GeneralParameters$Bias.Date.Range$end.year)
 	months <- as.numeric(GeneralParameters$Bias.Months)
@@ -140,7 +142,7 @@ execBiasTemp <- function(origdir){
 	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
 	stnData <- getCDTdataAndDisplayMsg(stnData, freqData)
 	if(is.null(stnData)) return(NULL)
-	
+
 	###get elevation data
 	demData <- getDemOpenDataSPDF(GeneralParameters$IO.files$DEM.file)
 	if(is.null(demData)) return(NULL)
@@ -149,6 +151,7 @@ execBiasTemp <- function(origdir){
 	start.date <- as.Date(paste(year1, '0101', sep = ''), format = '%Y%m%d')
 	end.date <- as.Date(paste(year2, '1231', sep = ''), format = '%Y%m%d')
 
+	########
 	msg <- list(start = 'Read Downscaled data ...', end = 'Reading Downscaled data finished')
 	errmsg <- "Downscaled data not found"
 	ncfiles <- list(freqData = freqData, start.date = start.date, end.date = end.date,
@@ -156,28 +159,36 @@ execBiasTemp <- function(origdir){
 	ncinfo <- list(xo = 1, yo = 2, varid = "temp")
 	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 
-	downData <- read.NetCDF.Data(read.ncdf.parms)
-	if(is.null(downData)) return(NULL)
-	nlon0 <- length(downData$lon)
-	nlat0 <- length(downData$lat)
-	xy.grid <- list(lon = downData$lon, lat = downData$lat)
+	########
+	ncInfo <- do.call("ncFilesInfo", c(ncfiles, errmsg))
+	if(is.null(ncInfo)) return(NULL)
+	nc <- nc_open(ncInfo$nc.files[ncInfo$exist][1])
+	rlon <- nc$dim[[1]]$vals
+	rlat <- nc$dim[[2]]$vals
+	nc_close(nc)
+	nlon0 <- length(rlon)
+	nlat0 <- length(rlat)
+	xy.grid <- list(lon = rlon, lat = rlat)
 
+	########
 	interp.method <- GeneralParameters$Interpolation.pars$interp.method
 	rad.lon <- as.numeric(GeneralParameters$Interpolation.pars$rad.lon)
 	rad.lat <- as.numeric(GeneralParameters$Interpolation.pars$rad.lat)
 	maxdist <- as.numeric(GeneralParameters$Interpolation.pars$maxdist)
 
-	res.coarse <- if(interp.method == 'NN') sqrt((rad.lon*mean(downData$lon[-1]-downData$lon[-nlon0]))^2 + (rad.lat*mean(downData$lat[-1]-downData$lat[-nlat0]))^2)/2 else maxdist/2
+	res.coarse <- if(interp.method == 'NN') sqrt((rad.lon*mean(rlon[-1]-rlon[-nlon0]))^2 + (rad.lat*mean(rlat[-1]-rlat[-nlat0]))^2)/2 else maxdist/2
 	res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
 
-	comptMBiasparms <- list(GeneralParameters = GeneralParameters, stnData = stnData, downData = downData, res.coarse = res.coarse)
+	########
+	comptMBiasparms <- list(GeneralParameters = GeneralParameters, stnData = stnData, xy.grid = xy.grid,
+							downData = read.ncdf.parms, res.coarse = res.coarse, memType = memType, origdir = origdir)
 	bias.pars <- ComputeMeanBiasTemp(comptMBiasparms)
 
 	interpBiasparams <- list(GeneralParameters = GeneralParameters, bias.pars = bias.pars, stnData = stnData,
 							demData = demData, xy.grid = xy.grid, res.coarse = res.coarse, origdir = origdir)
 	ret <- InterpolateMeanBiasTemp(interpBiasparams)
 
-	rm(comptMBiasparms, stnData, demData, downData, bias.pars, interpBiasparams)
+	rm(comptMBiasparms, stnData, demData, bias.pars, interpBiasparams)
 	gc()
 	if(!is.null(ret)){
 		if(ret == 0) return(0)
