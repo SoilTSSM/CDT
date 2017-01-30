@@ -31,20 +31,6 @@ execDownscalingTemp <- function(origdir){
 	memType <- 2
 
 	freqData <- GeneralParameters$period
-	start.year <- GeneralParameters$Down.Date.Range$start.year
-	start.mon <- GeneralParameters$Down.Date.Range$start.mon
-	start.dek <- GeneralParameters$Down.Date.Range$start.dek
-	end.year <- GeneralParameters$Down.Date.Range$end.year
-	end.mon <- GeneralParameters$Down.Date.Range$end.mon
-	end.dek <- GeneralParameters$Down.Date.Range$end.dek
-	months <- GeneralParameters$Down.Months
-
-	reanalDir <- GeneralParameters$IO.files$Reanal.dir
-	reanalfilefrmt <- GeneralParameters$Format$Reanal.File.Format
-
-	################
-	start.date <- as.Date(paste(start.year, start.mon, start.dek, sep = '/'), format = '%Y/%m/%d')
-	end.date <- as.Date(paste(end.year, end.mon, end.dek, sep = '/'), format = '%Y/%m/%d')
 
 	##Reanalysis sample file
 	reanalInfo <- getRFESampleData(GeneralParameters$IO.files$Reanal.file)
@@ -98,6 +84,21 @@ execDownscalingTemp <- function(origdir){
 	demGrid[demGrid < 0] <- 0
 
 	################
+	start.year <- GeneralParameters$Down.Date.Range$start.year
+	start.mon <- GeneralParameters$Down.Date.Range$start.mon
+	start.dek <- GeneralParameters$Down.Date.Range$start.dek
+	end.year <- GeneralParameters$Down.Date.Range$end.year
+	end.mon <- GeneralParameters$Down.Date.Range$end.mon
+	end.dek <- GeneralParameters$Down.Date.Range$end.dek
+	months <- GeneralParameters$Down.Months
+
+	reanalDir <- GeneralParameters$IO.files$Reanal.dir
+	reanalfilefrmt <- GeneralParameters$Format$Reanal.File.Format
+
+	################
+	start.date <- as.Date(paste(start.year, start.mon, start.dek, sep = '/'), format = '%Y/%m/%d')
+	end.date <- as.Date(paste(end.year, end.mon, end.dek, sep = '/'), format = '%Y/%m/%d')
+
 	errmsg <- "Reanalysis data not found"
 	ncInfo <- ncFilesInfo(freqData, start.date, end.date, months, reanalDir, reanalfilefrmt, errmsg)
 	if(is.null(ncInfo)) return(NULL)
@@ -131,12 +132,6 @@ execBiasTemp <- function(origdir){
 	memType <- 2
 
 	freqData <- GeneralParameters$period
-	year1 <- as.numeric(GeneralParameters$Bias.Date.Range$start.year)
-	year2 <- as.numeric(GeneralParameters$Bias.Date.Range$end.year)
-	months <- as.numeric(GeneralParameters$Bias.Months)
-
-	reanalDir <- GeneralParameters$IO.files$Down.dir
-	reanalfilefrmt <- GeneralParameters$Format$Down.File.Format
 
 	#######get data
 	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
@@ -148,6 +143,13 @@ execBiasTemp <- function(origdir){
 	if(is.null(demData)) return(NULL)
 
 	########
+	year1 <- as.numeric(GeneralParameters$Bias.Date.Range$start.year)
+	year2 <- as.numeric(GeneralParameters$Bias.Date.Range$end.year)
+	months <- as.numeric(GeneralParameters$Bias.Months)
+
+	reanalDir <- GeneralParameters$IO.files$Down.dir
+	reanalfilefrmt <- GeneralParameters$Format$Down.File.Format
+
 	start.date <- as.Date(paste(year1, '0101', sep = ''), format = '%Y%m%d')
 	end.date <- as.Date(paste(year2, '1231', sep = ''), format = '%Y%m%d')
 
@@ -202,6 +204,9 @@ execBiasTemp <- function(origdir){
 execAjdBiasDownTemp <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
+	memType <- 2
+
+	################
 	freqData <- GeneralParameters$period
 	start.year <- GeneralParameters$Adjust.Date.Range$start.year
 	start.mon <- GeneralParameters$Adjust.Date.Range$start.mon
@@ -213,8 +218,6 @@ execAjdBiasDownTemp <- function(origdir){
 
 	downDir <- GeneralParameters$IO.files$Down.dir
 	downfilefrmt <- GeneralParameters$Format$Down.File.Format
-
-	################
 
 	start.date <- as.Date(paste(start.year, start.mon, start.dek, sep = '/'), format = '%Y/%m/%d')
 	end.date <- as.Date(paste(end.year, end.mon, end.dek, sep = '/'), format = '%Y/%m/%d')
@@ -228,12 +231,10 @@ execAjdBiasDownTemp <- function(origdir){
 	ncinfo <- list(xo = 1, yo = 2, varid = "temp")
 	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 
-	downData <- read.NetCDF.Data(read.ncdf.parms)
-	if(is.null(downData)) return(NULL)
-
-	adjMeanBiasparms <- list(downData = downData, GeneralParameters = GeneralParameters, origdir = origdir)
+	adjMeanBiasparms <- list(downData = read.ncdf.parms, GeneralParameters = GeneralParameters,
+							origdir = origdir, memType = memType)
 	ret <- AjdMeanBiasTemp(adjMeanBiasparms)
-	rm(adjMeanBiasparms, downData)
+	rm(adjMeanBiasparms)
 	gc()
 	if(!is.null(ret)){
 		if(ret == 0) return(0)
@@ -251,11 +252,6 @@ execLMCoefTemp <- function(origdir){
 	memType <- 2
 
 	freqData <- GeneralParameters$period
-	year1 <- as.numeric(GeneralParameters$LM.Date.Range$start.year)
-	year2 <- as.numeric(GeneralParameters$LM.Date.Range$end.year)
-	months <- as.numeric(GeneralParameters$LM.Months)
-	adjDir <- GeneralParameters$IO.files$Down.dir
-	adjfilefrmt <- GeneralParameters$Format$Adj.File.Format
 
 	#######get data
 	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
@@ -267,9 +263,16 @@ execLMCoefTemp <- function(origdir){
 	if(is.null(demData)) return(NULL)
 
 	########
+	year1 <- as.numeric(GeneralParameters$LM.Date.Range$start.year)
+	year2 <- as.numeric(GeneralParameters$LM.Date.Range$end.year)
+	months <- as.numeric(GeneralParameters$LM.Months)
+	adjDir <- GeneralParameters$IO.files$Down.dir
+	adjfilefrmt <- GeneralParameters$Format$Adj.File.Format
+
 	start.date <- as.Date(paste(year1, '0101', sep = ''), format = '%Y%m%d')
 	end.date <- as.Date(paste(year2, '1231', sep = ''), format = '%Y%m%d')
 
+	################
 	msg <- list(start = 'Read bias corrected reanalysis data ...', end = 'Reading bias corrected reanalysis data finished')
 	errmsg <- "Adjusted Reanalysis data not found"
 	ncfiles <- list(freqData = freqData, start.date = start.date, end.date = end.date,

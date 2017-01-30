@@ -187,6 +187,26 @@ tkadd(menu.dataprep, "command", label = "Download RFE data", command = function(
 	DownloadRFE(main.win)
 })
 
+##########
+tkadd(menu.dataprep, "separator")
+
+##########
+tkadd(menu.dataprep, "command", label = "Filling missing dekadal temperature values", command = function(){
+	refreshCDT.lcmd.env()
+	initpars <- initialize.parameters('fill.temp', 'dekadal')
+	GeneralParameters <<- fillMissDekTemp(main.win, initpars)
+})
+
+# ##########
+# tkadd(menu.dataprep, "separator")
+
+# ##########
+# tkadd(menu.dataprep, "command", label = "Data Conversion", command = function(){
+# 	refreshCDT.lcmd.env()
+# 	initpars <- initialize.parameters('data.convrs', 'dekadal')
+# 	GeneralParameters <<- DataConversion(main.win, initpars)
+# })
+
 ##########xxxxxxxxxxxxxxxxxx Menu Quality Control xxxxxxxxxxxxxxxxxx##########
 
 menu.qchom <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")

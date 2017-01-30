@@ -2,5 +2,5 @@
 -----------
 
 ```{r gen_date, echo=FALSE, results='asis'}
-pander::pander(paste('Generated on :',format(Sys.time(), '%B %d, %Y, %H:%M')),level=6)
+pander::pander(paste('Generated on :', format(Sys.time(), '%B %d, %Y, %H:%M')), level = 6)
 ```

@@ -1,16 +1,16 @@
 
-```{r, echo=FALSE}
+```{r, echo = FALSE}
+anchor.point <- function(...) paste('<a name="', as.character(eval(substitute(alist(...)))), '"></a>', sep = '')
 menuselection <- function(...) {
-  menu<-paste(as.character(eval(substitute(alist(...)))),collapse=' &#8227; ')
-  paste("<span class='menuselection'>",menu,"</span>",sep='')
+  menu <- paste(as.character(eval(substitute(alist(...)))), collapse = ' &#8227; ')
+  paste("<span class='menuselection'>", menu, "</span>", sep = '')
 }
-button <- function(...) paste("<span class='buttonclass'>",as.character(eval(substitute(alist(...)))),"</span>")
-onglet <- function(...) paste("<span class='ongletclass'>",as.character(eval(substitute(alist(...)))),"</span>")
+button <- function(...) paste("<span class='buttonclass'>", as.character(eval(substitute(alist(...)))), "</span>")
+onglet <- function(...) paste("<span class='ongletclass'>", as.character(eval(substitute(alist(...)))), "</span>")
 dropdownlistBut <- function() "<span class='dropdlistclass'>AA</span><span class='dropdclass'>&#9662;</span>"
-checkbox <- function(...) paste("<img src='images/common/checkbox.png' title='Checkbox' class='radiochckbutclass' /><span class='radiochcktextclass'>",as.character(eval(substitute(alist(...)))),"</span>")
-radiobutton <- function(...) paste("<img src='images/common/radiobutton.png' title='Radio button' class='radiochckbutclass' /><span class='radiochcktextclass'>",as.character(eval(substitute(alist(...)))),"</span>")
+checkbox <- function(...) paste("<img src='images/common/checkbox.png' title='Checkbox' class='radiochckbutclass' /><span class='radiochcktextclass'>", as.character(eval(substitute(alist(...)))), "</span>")
+radiobutton <- function(...) paste("<img src='images/common/radiobutton.png' title='Radio button' class='radiochckbutclass' /><span class='radiochcktextclass'>", as.character(eval(substitute(alist(...)))), "</span>")
 ```
-
 
 [executetask]: images/common/run24.gif "Execute the append task" id=cdtIcons class=cdtIcons
 [openfile]: images/common/open24.gif "Open data frame" id=cdtIcons class=cdtIcons

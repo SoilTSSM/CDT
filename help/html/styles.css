@@ -12,6 +12,23 @@ body {
     /*margin-bottom: 60px;*/
 }
 
+#toc-index a {
+    font-size: 14px;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+
+/*.toc-index-class h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-size: 14px;
+}
+*/
+
 
 /* navbar */
 

@@ -11,24 +11,23 @@
 
 
 
-<title></title>
+<title>CDT GUI</title>
 
 <script src="libs/jquery-1.11.3/jquery.min.js"></script>
-<script src="libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
-<link href="libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
-<script src="libs/tocify-1.9.1/jquery.tocify.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
 <script src="libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="libs/navigation-1.1/tabsets.js"></script>
+<link href="libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
+<script src="libs/highlightjs-1.1/highlight.js"></script>
 <link href="libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
 
 <style type="text/css">code{white-space: pre;}</style>
-<link rel="stylesheet"
-      href="libs/highlight/textmate.css"
-      type="text/css" />
-<script src="libs/highlight/highlight.js"></script>
 <style type="text/css">
   pre:not([class]) {
     background-color: white;
@@ -99,6 +98,7 @@ button.code-folding-btn:focus {
 }
 </style>
 
+
 <style type="text/css">
 /* padding for bootstrap navbar */
 body {
@@ -155,7 +155,6 @@ $(document).ready(function () {
 <div class="container-fluid main-container">
 
 <!-- tabsets -->
-<script src="libs/navigation-1.1/tabsets.js"></script>
 <script>
 $(document).ready(function () {
   window.buildTabsets("TOC");
@@ -177,11 +176,11 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2",
+      selectors: "h1,h2,h3",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
-        return text.replace(/[.\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
       },
       ignoreSelector: ".toc-ignore",
       scrollTo: 0
@@ -240,8 +239,9 @@ div.tocify {
 }
 
 .tocify-subheader .tocify-item {
-  font-size: 0.9em;
-  padding-left: 5px;
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -253,7 +253,6 @@ div.tocify {
 }
 .tocify-subheader .tocify-item {
   font-size: 0.95em;
-  padding-left: 10px;
 }
 
 </style>
@@ -301,14 +300,22 @@ div.tocify {
                         <li>
                             <a href="cdt_data_input.html">CDT Data</a>
                         </li>
-                        <li class="divider"></li>
-                        <li class="dropdown-header">Data Preparation</li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+              Data Preparation
+              <span class="caret"></span>
+            </a>
+                    <ul class="dropdown-menu" role="menu">
                         <li>
                             <a href="format_cdt_data.html">Format CDT Input Data</a>
                         </li>
+                        <li class="divider"></li>
                         <li>
                             <a href="assess_data_availability.html">Assess Data Availability</a>
                         </li>
+                        <li class="divider"></li>
                         <li>
                             <a href="download_data.html">Download Data</a>
                         </li>
@@ -408,17 +415,165 @@ div.tocify {
 
 
 
+<h1 class="title toc-ignore">CDT GUI</h1>
 
 </div>
 
 
-<div id="cdt-main-window" class="section level2">
-<h2>CDT Main Window</h2>
-<div class="figure">
-<img src="images/common/cdt_main_win.png" />
-
-</div>
 <p><br></p>
+<div id="cdt-main-window" class="section level2">
+<h2>CDT Main Window <a name="cdt.main.win"></a></h2>
+<p>When CDT starts, you are presented with the GUI as shown in the figure.</p>
+<center>
+<img src="images/cdt_file/cdt_main0.png" style="width:80.0%" style="height:80.0%" />
+</center>
+<p><br></p>
+<p>After you choose a function from the menu to execute, the GUI is transformed as follows (the numbers 1 through 7 in red-cyan circles are presented below)</p>
+<center>
+<img src="images/cdt_file/cdt_main.png" />
+</center>
+<p><br></p>
+<blockquote>
+<p>Your window decorations (title bar, etc.) may appear different depending on your operating system and window manager.</p>
+</blockquote>
+<p>CDT GUI is divided into seven areas:</p>
+<ol style="list-style-type: decimal">
+<li>Menu Bar</li>
+<li>Toolbars</li>
+<li>Loaded Files</li>
+<li>Input and Command Panels</li>
+<li>Map and Table View</li>
+<li>Output Message</li>
+<li>Status Bar</li>
+</ol>
+<p>These seven components of CDT interface are described in more detail in the following sections.</p>
+<div id="menu-bar" class="section level3">
+<h3>Menu Bar <a name="menu.bar"></a></h3>
+<p>The menu bar provides access to various CDT functions using a standard hierarchical menu.</p>
+<div id="file" class="section level4">
+<h4>File</h4>
+<!-- <span style="color:blue">File</span> -->
+<p>CDT can open three file types:</p>
+<ul>
+<li>Text/ASCII or CSV files</li>
+<li>NetCDF files</li>
+<li>ESRI Shapefiles</li>
+</ul>
+<div id="data-frames" class="section level5">
+<h5>Data Frames <a name="data.frame"></a></h5>
+<p>To open an text or CSV files, go to the menu <span class="menuselection">File ‣ Open data.frame</span> an Open File dialog will come up prompting you to select the file to be open.</p>
+<center>
+<img src="images/cdt_file/open_file.png" style="width:50.0%" style="height:50.0%" />
+</center>
+<p><br></p>
+<p>You can navigate through this dialog box to locate the path of the file to open, you can select a file by double-clicking on it or by selecting it and pressing the Open button.</p>
+<blockquote>
+<p>You can filter the file you want to open based on the file extension. If your file doesn’t have the default file extensions (.txt or .csv), you can use the “All files” filter to list your file. Here the file extension doesn’t matter as long as your file is an ASCII file.</p>
+</blockquote>
+<p>After you selected the file to open, another Open File dialog manager will appear with various options which allows you to precise the format of the <code>data.frame</code>.</p>
+<center>
+<img src="images/cdt_file/open_file_manager.png" style="width:60.0%" style="height:50.0%" />
+</center>
+<p><br></p>
+<p>So, you can:</p>
+<ol style="list-style-type: decimal">
+<li>specify the delimiter of the column</li>
+<li>import the data from the desired line</li>
+<li>specify if the data has a header or not</li>
+<li>have an overview of the data content</li>
+<li>provide the missing values flag if different from the general setting.</li>
+</ol>
+</div>
+<div id="netcdf-file" class="section level5">
+<h5>NetCDF file</h5>
+<p>You can load a NetCDF file into CDT using the menu options <span class="menuselection">File ‣ Open Netcdf file</span> an Open File dialog will come up prompting you to select the file, then another dialog box will appear for allowing the selection of the variable and coordinates.</p>
+<center>
+<img src="images/cdt_file/open_ncdf.png" style="width:60.0%" style="height:50.0%" />
+</center>
+<p><br></p>
+<p>Through this dialog box, you can:</p>
+<ol style="list-style-type: decimal">
+<li>select the variable to be loaded into CDT</li>
+<li>select the longitude</li>
+<li>select the latitude</li>
+<li>have an overview on the netcdf file.</li>
+</ol>
+</div>
+<div id="esri-shapefile" class="section level5">
+<h5>ESRI Shapefile</h5>
+<p>The menu <span class="menuselection">File ‣ Open ESRI Shapefile</span> allows to load shapefiles into CDT.</p>
+</div>
+<div id="save-table-and-image" class="section level5">
+<h5>Save table and image</h5>
+<p>The menu <span class="menuselection">File ‣ Save table</span> allows to save a table (i.e., a <code>data.frame</code>) opened on the right panel. If you want to save an opening table under a new name, use the menu <span class="menuselection">File ‣ Save table As…</span>.</p>
+<p>You can save a displayed image as JPEG from the menu <span class="menuselection">File ‣ Save Image As…</span>.</p>
+</div>
+<div id="cdt-configurations" class="section level5">
+<h5>CDT Configurations</h5>
+<p>The menu option <span class="menuselection">File ‣ Configurations</span> allows to change CDT working directory and set the missing values code.</p>
+<center>
+<img src="images/cdt_file/cdt_config.png" style="width:60.0%" style="height:50.0%" />
+</center>
+<p><br></p>
+<ol style="list-style-type: decimal">
+<li>allows to browse a directory tree to set the working directory</li>
+<li>allows to set missing values code for the whole session of CDT</li>
+<li>allows to change the path to Tktable library if you change the installation directory or installed separately</li>
+<li>same as 3. but for BWidget library</li>
+</ol>
+</div>
+<div id="exit-cdt" class="section level5">
+<h5>Exit CDT</h5>
+<p>The menu <span class="menuselection">File ‣ Quit CDT</span> allows to quit CDT.</p>
+</div>
+</div>
+<div id="others-menus" class="section level4">
+<h4><span style="color:blue">Others Menus</span></h4>
+<p>You can access the others menus through the navigation bar located at the top of the page.</p>
+</div>
+</div>
+<div id="toolbars" class="section level3">
+<h3>Toolbars <a name="toolbars"></a></h3>
+<p>The toolbar provides access to few functions in the File menu, plus additional tools for interacting with the displayed image. Each toolbar item has pop-up help available. Hold your mouse over the item and a short description of the tool’s purpose will be displayed.</p>
+<ul>
+<li><img src="images/common/open24.gif" title="Open data frame" id="cdtIcons" class="cdtIcons" /> allows to load <a href="#data.frame">data.frame</a> into CDT, it’s the same as the menu <span class="menuselection">File ‣ Open data.frame</span>.</li>
+<li><img src="images/common/save_img24.gif" title="Save image" id="cdtIcons" class="cdtIcons" /> allows to save current displayed image as JPEG, same as the menu <span class="menuselection">File ‣ Save Image As…</span>.</li>
+<li><img src="images/common/open_table24.gif" title="Open table" id="cdtIcons" class="cdtIcons" /> allows to open a <code>data.frame</code> and directly display it on a table without loading into CDT.</li>
+<li><img src="images/common/save_table24.gif" title="Save table" id="cdtIcons" class="cdtIcons" /> allows to save a table, same as <span class="menuselection">File ‣ Save table</span>.</li>
+<li><img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> allows to execute task from different functions listed in the menus.</li>
+<li><img src="images/common/spinH.png" title="Spinbox" id="cdtSpin" class="cdtSpin" width="130" height="70" /> a spinbox allows to specify the actual dimensions (height and width) of the visible image.</li>
+<li><img src="images/common/RedrawButton24.gif" title="Redraw plot" id="cdtIcons" class="cdtIcons" /> redraws displayed image after changing the height or width from the spinbox. After any change on the dimensions of the image through the spinbox, this button will be activated and becomes <img src="images/common/RedrawButton-Change24.gif" title="Redraw plot change" id="cdtIcons" class="cdtIcons" />, you have to redraw the plot to get the new dimensions.</li>
+<li><img src="images/common/close_tab24.gif" title="Close active tab" id="cdtIcons" class="cdtIcons" /> Close open tabs.</li>
+<li><img src="images/common/exit24.gif" title="Exit CDT" id="cdtIcons" class="cdtIcons" /> Quit CDT.</li>
+</ul>
+</div>
+<div id="open-files" class="section level3">
+<h3>Open Files <a name="open.files"></a></h3>
+<p>Each file loaded into CDT is listed in this listbox, it will avoid loading the file twice.</p>
+<center>
+<img src="images/cdt_file/loaded_files.png" style="width:40.0%" style="height:50.0%" />
+</center>
+<p><br></p>
+<p>You can delete the data by selecting the corresponding filename and then right click on it, on the drop down menu click on <span class="menuselection">Remove data</span>. You can display the <code>data.frame</code> on a table by selecting <span class="menuselection">Open in table</span> as well.</p>
+</div>
+<div id="input-and-command-panels" class="section level3">
+<h3>Input and Command Panels <a name="cmd.panel"></a></h3>
+<p>Each time you start a CDT function through the menu, an dialog box will come up prompting you to enter the inputs and outputs files and directories related to this function, as well as the required parameters so that the function runs correctly. Then CDT provides a command panel displayed in this area to work with the results, such as, display table or plot/map, select a stations, change options and execute other tasks.</p>
+<p>Sometimes, CDT goes directly to this panel without going through a dialog box, in such case, the panel gives you a way to enter the input, set all parameters and run the command.</p>
+</div>
+<div id="map-and-table-view" class="section level3">
+<h3>Map and Table View <a name="map.view"></a></h3>
+<p>Tables, print of R objects, plot and maps are displayed in this area.</p>
+<p>The tables can be a simple display of a <code>data.frame</code> or a table you can edit for further purposes, if it is an output from a function such as quality control and homogeneity tests.</p>
+<p>The plot and map displayed in this window will depend on the type of outputs or functions you have chosen to run.</p>
+<p>The map view can be panned, shifting the focus of the map display to another region, and it can be zoomed in and out.</p>
+</div>
+<div id="output-message" class="section level3">
+<h3>Output Message</h3>
+</div>
+<div id="status-bar" class="section level3">
+<h3>Status Bar</h3>
+</div>
 </div>
 <div id="gui-conventions" class="section level2">
 <h2>GUI Conventions</h2>
@@ -439,13 +594,13 @@ div.tocify {
 <li><p>Redraw map active: <img src="images/common/redraw128.gif" title="Redraw map" id="cdtIcons" class="cdtIcons2a" /></p></li>
 </ul>
 <hr />
-<p>Generated on : September 18, 2016, 22:01</p>
+<p>Generated on : January 30, 2017, 03:29</p>
 </div>
 
 <footer class="navbar navbar-inverse  navbar-fixed-bottom">
     <p>
         <small class="footer">
-           <a href="index.html">Climate Data Tools, 2016</a> &nbsp;
+           <a href="index.html">Climate Data Tools, 2017</a> &nbsp;
            <a  class="navbar-footer" href="https://iri.columbia.edu/"><img src="images/common/iri_logo_full.gif" alt="IRI"/></a> 
          </small>
     </p>
@@ -460,9 +615,13 @@ div.tocify {
 <script>
 
 // add bootstrap table styles to pandoc tables
-$(document).ready(function () {
+function bootstrapStylePandocTables() {
   $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
 });
+
 
 </script>
 

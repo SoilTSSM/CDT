@@ -318,16 +318,16 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 		}
 	}else{
 		nstn <- length(lon.stn)
-		ptsData0 <- list(lon = lon.stn, lat = lat.stn)
+		ptsData <- list(lon = lon.stn, lat = lat.stn)
 		if(bias.method == 'Quantile.Mapping'){
 			idcoarse <- indexCoarseGrid(comptMBiasparms$xy.grid$lon, comptMBiasparms$xy.grid$lat, res.coarse)
 			ptsData1 <- expand.grid(lon = comptMBiasparms$xy.grid$lon[idcoarse$ix], lat = comptMBiasparms$xy.grid$lat[idcoarse$iy])
 			nbgrd <- nrow(ptsData1)
-			ptsData <- list(lon = c(ptsData0$lon, ptsData1$lon), lat = c(ptsData0$lat, ptsData1$lat))
+			ptsData <- list(lon = c(ptsData$lon, ptsData1$lon), lat = c(ptsData$lat, ptsData1$lat))
 		}
 		downData <- read.NetCDF.Data2Points(comptMBiasparms$downData, ptsData)
 		if(is.null(downData)) return(NULL)
-		data.down0 <- t(sapply(downData$data, function(x) if(!is.null(x)) x else rep(NA, length(ptsData$lon))))			
+		data.down0 <- t(sapply(downData$data, function(x) if(!is.null(x)) x else rep(NA, length(ptsData$lon))))
 		data.down.stn <- data.down0[, 1:nstn]
 		if(bias.method == 'Quantile.Mapping') data.down <- data.down0[, nstn+(1:nbgrd)]
 	}
@@ -735,7 +735,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 				xadd <- xadd[iadd, ]
 				locations.stn <- rbind(xstn, xadd)
 
-				extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
+				extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.99))
 				locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
 				if(interp.method == 'NN'){
@@ -777,7 +777,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 				locations.down <- locations.down[!is.na(locations.down$pars), ]
 				if(length(locations.down$pars) < min.stn) return(NULL)
 
-				extrm <- quantile(locations.down$pars, probs = c(0.001, 0.999))
+				extrm <- quantile(locations.down$pars, probs = c(0.001, 0.99))
 				locations.down <- locations.down[locations.down$pars > extrm[1] & locations.down$pars < extrm[2], ]
 				locations.down <- remove.duplicates(locations.down)
 
@@ -883,7 +883,43 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 	adjRreanalFF <- GeneralParameters$Format$Adj.File.Format
 	months <- sort(as.numeric(GeneralParameters$Adjust.Months))
 
-	downData <- adjMeanBiasparms$downData
+	memType <- adjMeanBiasparms$memType
+
+	###############
+	if(memType == 2){
+		downData <- read.NetCDF.Data(adjMeanBiasparms$downData)
+		if(is.null(downData)) return(NULL)
+
+		irnl <- !sapply(downData$data, is.null)
+		if(!any(irnl)){
+			InsertMessagesTxt(main.txt.out, "Downscaled reanalysis data not found", format = TRUE)
+			return(NULL)
+		}
+
+		downData$dates <- downData$dates[irnl]
+		downData$data <- downData$data[irnl]
+	}else{
+		ncfiles <- adjMeanBiasparms$downData$ncfiles
+		ncInfo <- ncFilesInfo(ncfiles$freqData, ncfiles$start.date, ncfiles$end.date, ncfiles$months,
+							ncfiles$ncDir, ncfiles$ncFileFormat, adjMeanBiasparms$downData$errmsg)
+		if(is.null(ncInfo)) return(NULL)
+
+		ncInfo$nc.files <- ncInfo$nc.files[ncInfo$exist]
+		ncInfo$dates <- ncInfo$dates[ncInfo$exist]
+
+		nc <- nc_open(ncInfo$nc.files[1])
+		rlon <- nc$dim[[adjMeanBiasparms$downData$ncinfo$xo]]$vals
+		rlat <- nc$dim[[adjMeanBiasparms$downData$ncinfo$yo]]$vals
+		nc_close(nc)
+		xo <- order(rlon)
+		rlon <- rlon[xo]
+		yo <- order(rlat)
+		rlat <- rlat[yo]
+
+		downData <- list(lon = rlon, lat = rlat, dates = ncInfo$dates, files = ncInfo$nc.files,
+						xo = xo, yo = yo, varid = adjMeanBiasparms$downData$ncinfo$varid,
+						yorder = adjMeanBiasparms$downData$ncinfo$yo)
+	}
 
 	###############
 	InsertMessagesTxt(main.txt.out, 'Correct Reanalysis Bias ...')
@@ -1025,17 +1061,7 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 	dy <- ncdim_def("Lat", "degreeN", lat)
 	grd.bsadj <- ncvar_def("temp", "DegC", list(dx, dy), -99, longname= "Bias Corrected Reanalysis", prec = "float")
 
-	irnl <- !sapply(downData$data, is.null)
-	if(!any(irnl)){
-		InsertMessagesTxt(main.txt.out, "Downscaled reanalysis data not found", format = TRUE)
-		return(NULL)
-	}
-
-	downData$dates <- downData$dates[irnl]
-	downData$data <- downData$data[irnl]
-
 	####
-
 	if(doparallel & length(downData$dates) >= 30){
 		klust <- makeCluster(nb_cores)
 		registerDoParallel(klust)
@@ -1051,8 +1077,20 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 					 'grd.bsadj', 'freqData', 'adjRreanalFF')
 
 	ret <- foreach(jfl = seq_along(downData$dates), .packages = packages, .export = toExports) %parLoop% {
-		xtmp <- downData$data[[jfl]]
-		dtmp <- downData$dates[jfl]
+		if(memType == 2){
+			xtmp <- downData$data[[jfl]]
+			dtmp <- downData$dates[jfl]
+		}else{
+			nc <- nc_open(downData$files[jfl])
+			xtmp <- ncvar_get(nc, varid = downData$varid)
+			nc_close(nc)
+			xtmp <- xtmp[downData$xo, downData$yo]
+			if(downData$yorder == 1){
+				xtmp <- matrix(c(xtmp), nrow = length(downData$lon), ncol = length(downData$lat), byrow = TRUE)
+			}
+			dtmp <- downData$dates[jfl]
+		}
+
 		if(bias.method == "Multiplicative.Bias.Var"){
 			if(freqData == 'daily'){
 				ann <- as.numeric(substr(dtmp, 1, 4))

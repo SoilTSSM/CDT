@@ -225,6 +225,12 @@ init.params <- function(action, period){
 		ret.params <- c(list(action = action, period = period), ret.params)
 	}
 
+	################
+	if(action == 'fill.temp'){
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Filling_CDT_Temperature.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
+	}
+
 	###########################################
 
 	if(action == 'extrct.ts'){

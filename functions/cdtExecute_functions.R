@@ -381,6 +381,20 @@ Execute_All_Functions <- function(get.stn){
 		return(NULL)
 	}
 
+	#####
+	if(GeneralParameters$action == "fill.temp"){
+		retfill <- try(fillDekTempMissVal(GeneralParameters), silent = TRUE)
+		if(!inherits(retfill, "try-error")){
+			if(!is.null(retfill)){
+				if(retfill == 0) InsertMessagesTxt(main.txt.out, "Filling missing dekadal temperature values finished successfully")
+				else InsertMessagesTxt(main.txt.out, "Filling missing dekadal temperature values failed", format = TRUE)
+			}else InsertMessagesTxt(main.txt.out, "Filling missing dekadal temperature values failed", format = TRUE)
+		}else{
+			InsertMessagesTxt(main.txt.out, "Filling missing dekadal temperature values failed", format = TRUE)
+			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', retfill[1]), format = TRUE)
+		}
+		return(NULL)
+	}
 	###################
 
 }

@@ -35,16 +35,16 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 		}
 	}else{
 		nstn <- length(lon.stn)
-		ptsData0 <- list(lon = lon.stn, lat = lat.stn)
+		ptsData <- list(lon = lon.stn, lat = lat.stn)
 		if(bias.method == 'Quantile.Mapping'){
 			idcoarse <- indexCoarseGrid(comptMBiasparms$xy.rfe$lon, comptMBiasparms$xy.rfe$lat, res.coarse)
 			ptsData1 <- expand.grid(lon = comptMBiasparms$xy.rfe$lon[idcoarse$ix], lat = comptMBiasparms$xy.rfe$lat[idcoarse$iy])
 			nbgrd <- nrow(ptsData1)
-			ptsData <- list(lon = c(ptsData0$lon, ptsData1$lon), lat = c(ptsData0$lat, ptsData1$lat))
+			ptsData <- list(lon = c(ptsData$lon, ptsData1$lon), lat = c(ptsData$lat, ptsData1$lat))
 		}
 		rfeData <- read.NetCDF.Data2Points(comptMBiasparms$rfeData, ptsData)
 		if(is.null(rfeData)) return(NULL)
-		data.rfe0 <- t(sapply(rfeData$data, function(x) if(!is.null(x)) x else rep(NA, length(ptsData$lon))))			
+		data.rfe0 <- t(sapply(rfeData$data, function(x) if(!is.null(x)) x else rep(NA, length(ptsData$lon))))
 		data.rfe.stn <- data.rfe0[, 1:nstn]
 		if(bias.method == 'Quantile.Mapping') data.rfe <- data.rfe0[, nstn+(1:nbgrd)]
 	}
@@ -473,7 +473,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				xadd <- xadd[iadd, ]
 				locations.stn <- rbind(xstn, xadd)
 
-				extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
+				extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.99))
 				locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
 				if(interp.method == 'NN'){
@@ -493,8 +493,8 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				}
 				ret <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
 				if(j == 1){
-					ret[ret < 0] <- 0.001
-					ret[ret > 1] <- 0.999
+					ret[ret < 0] <- 0.01
+					ret[ret > 1] <- 0.99
 				}else ret[ret < 0] <- NA
 				ret
 			})
@@ -517,7 +517,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				locations.rfe <- locations.rfe[!is.na(locations.rfe$pars), ]
 				if(length(locations.rfe$pars) < min.stn) return(NULL)
 
-				extrm <- quantile(locations.rfe$pars, probs = c(0.001, 0.999))
+				extrm <- quantile(locations.rfe$pars, probs = c(0.001, 0.99))
 				locations.rfe <- locations.rfe[locations.rfe$pars > extrm[1] & locations.rfe$pars < extrm[2], ]
 				locations.rfe <- remove.duplicates(locations.rfe)
 
@@ -537,8 +537,8 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				}
 				ret <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
 				if(j == 1){
-					ret[ret < 0] <- 0.001
-					ret[ret > 1] <- 0.999
+					ret[ret < 0] <- 0.01
+					ret[ret > 1] <- 0.99
 				}else ret[ret < 0] <- NA
 				ret
 			})

@@ -1,23 +1,182 @@
 ---
+title: "CDT GUI"
 output:
   html_document:
     toc: true
-    toc_depth: 2
+    toc_depth: 3
     toc_float:
       collapsed: false 
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(fig.path='images/R_images/cdt_file_menu.')
+knitr::opts_chunk$set(fig.path = 'images/R_images/cdt_file_menu.')
 ```
-```{r, child="cdtMenuToolbar.Rmd"}
+```{r, child = "cdtMenuToolbar.Rmd"}
 ```
-
-## CDT Main Window
-
-![](images/common/cdt_main_win.png)
-
 <br>
+
+## CDT Main Window `r anchor.point('cdt.main.win')`
+
+When CDT starts, you are presented with the GUI as shown in the figure.
+
+<center>
+![](images/cdt_file/cdt_main0.png){height="80%" width="80%"}
+</center>
+<br>
+
+After you choose a function from the menu to execute, the GUI is transformed as follows (the numbers 1 through 7 in red-cyan circles are presented below)
+
+<center>
+![](images/cdt_file/cdt_main.png)
+</center>
+<br>
+
+ >  Your window decorations (title bar, etc.) may appear different depending on your operating system and window manager.
+
+CDT GUI is divided into seven areas:
+
+1. Menu Bar
+2. Toolbars
+3. Loaded Files
+4. Input and Command Panels
+5. Map and Table View
+6. Output Message
+7. Status Bar
+
+These seven components of CDT interface are described in more detail in the following sections.
+
+### Menu Bar `r anchor.point('menu.bar')`
+
+The menu bar provides access to various CDT functions using a standard hierarchical menu. 
+
+#### File
+<!-- <span style="color:blue">File</span> -->
+CDT can open three file types:
+
+*  Text/ASCII or CSV files
+*  NetCDF files
+*  ESRI Shapefiles
+
+##### Data Frames `r anchor.point('data.frame')`
+
+To open an text or CSV files, go to the menu `r menuselection('File','Open data.frame')` an Open File dialog will come up prompting you to select the file to be open. 
+
+<center>
+![](images/cdt_file/open_file.png){height="50%" width="50%"}
+</center>
+<br>
+
+You can navigate through this dialog box to locate the path of the file to open, you can select a file by double-clicking on it or by selecting it and pressing the Open button.
+
+ >  You can filter the file you want to open based on the file extension. If your file doesn't have the default file extensions (.txt or .csv), you can use the  "All files" filter to list your file. Here the file extension doesn't matter  as long as your file is an ASCII file.
+
+After you selected the file to open, another Open File dialog manager will appear with various options which allows you to precise the format of the `data.frame`.
+
+<center>
+![](images/cdt_file/open_file_manager.png){height="50%" width="60%"}
+</center>
+<br>
+
+So, you can:
+
+1. specify the delimiter of the column
+2. import the data from the desired line
+3. specify if the data has a header or not
+4. have an overview of the data content
+5. provide the missing values flag if different from the general setting.
+
+##### NetCDF file
+
+You can load a NetCDF file into CDT using the menu options `r menuselection('File','Open Netcdf file')` an Open File dialog will come up prompting you to select the file, then another dialog box will appear for allowing the selection of the variable and coordinates.
+
+<center>
+![](images/cdt_file/open_ncdf.png){height="50%" width="60%"}
+</center>
+<br>
+
+Through this dialog box, you can:
+
+1.  select the variable to be loaded into CDT
+2.  select the longitude
+3.  select the latitude
+4.  have an overview on the netcdf file.
+
+##### ESRI Shapefile
+
+The menu `r menuselection('File','Open ESRI Shapefile')`  allows to load shapefiles into CDT.
+
+##### Save table and image
+
+The menu `r menuselection('File','Save table')`  allows to save a table (i.e., a `data.frame`) opened on the right panel. If you want to save an opening table under a new name, use the menu `r menuselection('File','Save table As...')`.
+
+You can save a displayed image as JPEG from the menu `r menuselection('File','Save Image As...')`.
+
+##### CDT Configurations
+
+The menu option `r menuselection('File','Configurations')` allows to change CDT working directory and set the missing values code.
+
+<center>
+![](images/cdt_file/cdt_config.png){height="50%" width="60%"}
+</center>
+<br>
+
+1. allows to browse a directory tree to set the working directory
+2. allows to set missing values code for the whole session of CDT
+3. allows to change the path to Tktable library if you change the installation directory or installed separately
+4. same as 3. but for BWidget library
+
+##### Exit CDT
+
+The menu `r menuselection('File','Quit CDT')` allows to quit CDT.
+
+#### <span style="color:blue">Others Menus</span>
+
+You can access the others menus through the navigation bar located at the top of the page.
+
+### Toolbars `r anchor.point('toolbars')`
+
+The toolbar provides access to few functions in the File menu, plus additional tools for interacting with the displayed image. Each toolbar item has pop-up help available. Hold your mouse over the item and a short description of the tool’s purpose will be displayed.
+
+* ![][openfile] allows to load [data.frame](#data.frame) into CDT, it's the same as the menu `r menuselection('File','Open data.frame')`.
+* ![][saveimage] allows to save current displayed image as JPEG, same as the menu `r menuselection('File','Save Image As...')`.
+* ![][opentable] allows to open a `data.frame` and directly display it on a table without loading into CDT.
+* ![][savetable] allows to save a table, same as `r menuselection('File','Save table')`.
+* ![][executetask] allows to execute task from different functions listed in the menus.
+* ![][spinbox] a spinbox allows to specify the actual dimensions (height and width) of the visible image.
+* ![][redrawplot0] redraws displayed image after changing the height or width from the spinbox. After any change on the dimensions of the image through the spinbox, this button will be activated and becomes ![][redrawplot1], you have to redraw the plot to get the new dimensions.
+* ![][closetab] Close open tabs.
+* ![][exitcdt] Quit CDT.
+
+### Open Files `r anchor.point('open.files')`
+
+Each file loaded into CDT is listed in this listbox, it will avoid loading the file twice.
+
+<center>
+![](images/cdt_file/loaded_files.png){height="50%" width="40%"}
+</center>
+<br>
+
+You can delete the data by selecting the corresponding filename and then right click on it, on the drop down menu click on `r menuselection('Remove data')`. You can display the `data.frame` on a table by selecting `r menuselection('Open in table')` as well.
+
+### Input and Command Panels `r anchor.point('cmd.panel')`
+
+Each time you start a CDT function through the menu, an dialog box will come up prompting you to enter the inputs and  outputs files and directories related to this function, as well as the required parameters so that the function runs correctly. Then CDT provides a command panel displayed in this area to work with the results, such as, display table or plot/map, select a stations, change options and execute other tasks.
+
+Sometimes, CDT goes directly to this panel without going through a dialog box, in such case, the panel gives you a way to enter the input, set all parameters and run the command.
+
+### Map and Table View `r anchor.point('map.view')`
+
+Tables, print of R objects, plot and maps are displayed in this area.
+
+The tables can be a simple display of a `data.frame` or a table you can edit for further purposes, if it is an output from a function such as quality control and homogeneity tests.
+
+The plot and map displayed in this window will depend on the type of outputs or functions you have chosen to run. 
+
+The map view can be panned, shifting the focus of the map display to another region, and it can be zoomed in and out.
+
+### Output Message
+### Status Bar
+
 
 ## GUI Conventions
 
@@ -42,6 +201,6 @@ This section describes the uniform styles that will be used throughout this manu
 * Redraw map  active: ![][redrawmap1]
 
 
-```{r, child="_generated_date.Rmd"}
+```{r, child = "_generated_date.Rmd"}
 ```
 

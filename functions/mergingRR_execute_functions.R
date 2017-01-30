@@ -6,11 +6,6 @@ execBiasRain <- function(origdir){
 
 	create.grd <- GeneralParameters$Create.Grid
 	freqData <- GeneralParameters$period
-	year1 <- as.numeric(GeneralParameters$Bias.Date.Range$start.year)
-	year2 <- as.numeric(GeneralParameters$Bias.Date.Range$end.year)
-	months <- as.numeric(GeneralParameters$Bias.Months)
-	rfeDir <- GeneralParameters$IO.files$RFE.dir
-	rfefilefrmt <- GeneralParameters$Prefix$RFE.File.Format
 
 	#######get data
 	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
@@ -58,6 +53,11 @@ execBiasRain <- function(origdir){
 	res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
 
 	################
+	year1 <- as.numeric(GeneralParameters$Bias.Date.Range$start.year)
+	year2 <- as.numeric(GeneralParameters$Bias.Date.Range$end.year)
+	months <- as.numeric(GeneralParameters$Bias.Months)
+	rfeDir <- GeneralParameters$IO.files$RFE.dir
+	rfefilefrmt <- GeneralParameters$Prefix$RFE.File.Format
 
 	start.date <- as.Date(paste(year1, '0101', sep = ''), format = '%Y%m%d')
 	end.date <- as.Date(paste(year2, '1231', sep = ''), format = '%Y%m%d')
@@ -95,6 +95,10 @@ execAdjBiasRain <- function(origdir){
 
 	memType <- 2
 
+	###get elevation data
+	rfeDataInfo <- getRFESampleData(GeneralParameters$IO.files$RFE.file)
+
+	################
 	freqData <- GeneralParameters$period
 	start.year <- GeneralParameters$Adjust.Date.Range$start.year
 	start.mon <- GeneralParameters$Adjust.Date.Range$start.mon
@@ -106,11 +110,6 @@ execAdjBiasRain <- function(origdir){
 
 	rfeDir <- GeneralParameters$IO.files$RFE.dir
 	rfefilefrmt <- GeneralParameters$Prefix$RFE.File.Format
-
-	###get elevation data
-	rfeDataInfo <- getRFESampleData(GeneralParameters$IO.files$RFE.file)
-
-	################
 
 	start.date <- as.Date(paste(start.year, start.mon, start.dek, sep = '/'), format = '%Y/%m/%d')
 	end.date <- as.Date(paste(end.year, end.mon, end.dek, sep = '/'), format = '%Y/%m/%d')
@@ -127,7 +126,7 @@ execAdjBiasRain <- function(origdir){
 	adjMeanBiasparms <- list(rfeData = read.ncdf.parms, GeneralParameters = GeneralParameters,
 								origdir = origdir, memType = memType)
 	ret <- AjdMeanBiasRain(adjMeanBiasparms)
-	rm(adjMeanBiasparms, rfeData, rfeDataInfo)
+	rm(adjMeanBiasparms, rfeDataInfo)
 	gc()
 	if(!is.null(ret)){
 		if(ret == 0) return(0)
@@ -145,12 +144,6 @@ execLMCoefRain <- function(origdir){
 
 	freqData <- GeneralParameters$period
 	create.grd <- GeneralParameters$Create.Grid
-
-	year1 <- as.numeric(GeneralParameters$LM.Date.Range$start.year)
-	year2 <- as.numeric(GeneralParameters$LM.Date.Range$end.year)
-	months <- as.numeric(GeneralParameters$LM.Months)
-	rfeDir <- GeneralParameters$IO.files$RFE.dir
-	rfefilefrmt <- GeneralParameters$Prefix$RFE.File.Format
 
 	#######get data
 	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
@@ -196,12 +189,16 @@ execLMCoefRain <- function(origdir){
 	res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
 
 	################
+	year1 <- as.numeric(GeneralParameters$LM.Date.Range$start.year)
+	year2 <- as.numeric(GeneralParameters$LM.Date.Range$end.year)
+	months <- as.numeric(GeneralParameters$LM.Months)
+	rfeDir <- GeneralParameters$IO.files$RFE.dir
+	rfefilefrmt <- GeneralParameters$Prefix$RFE.File.Format
 
 	start.date <- as.Date(paste(year1, '0101', sep = ''), format = '%Y%m%d')
 	end.date <- as.Date(paste(year2, '1231', sep = ''), format = '%Y%m%d')
 
 	################
-
 	msg <- list(start = 'Read RFE data ...', end = 'Reading RFE data finished')
 	errmsg <- "RFE data not found"
 	ncfiles <- list(freqData = freqData, start.date = start.date, end.date = end.date,

@@ -6,7 +6,7 @@ coefDownGetInfoTemp <- function(parent.win, GeneralParameters){
 		largeur1 <- 25
 	}else{
 		largeur <- 25
-		largeur1 <- 23
+		largeur1 <- 24
 	}
 
 	tt <- tktoplevel()
@@ -243,7 +243,7 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 		largeur1 <- 25
 	}else{
 		largeur <- 25
-		largeur1 <- 23
+		largeur1 <- 24
 	}
 
 	tt <- tktoplevel()
@@ -721,7 +721,7 @@ biasGetInfoTempDown <- function(parent.win, GeneralParameters){
 		largeur1 <- 25
 	}else{
 		largeur <- 25
-		largeur1 <- 23
+		largeur1 <- 24
 	}
 
 	tt <- tktoplevel()
@@ -1218,7 +1218,7 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 		largeur1 <- 25
 	}else{
 		largeur <- 25
-		largeur1 <- 23
+		largeur1 <- 24
 	}
 
 	tt <- tktoplevel()
@@ -1554,7 +1554,7 @@ coefLMGetInfoTemp <- function(parent.win, GeneralParameters){
 		largeur1 <- 25
 	}else{
 		largeur <- 25
-		largeur1 <- 23
+		largeur1 <- 24
 	}
 
 	tt <- tktoplevel()
@@ -2009,7 +2009,7 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 		largeur1 <- 25
 	}else{
 		largeur <- 25
-		largeur1 <- 23
+		largeur1 <- 24
 	}
 
 	tt <- tktoplevel()

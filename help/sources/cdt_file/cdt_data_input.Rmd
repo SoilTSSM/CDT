@@ -8,8 +8,8 @@ output:
       collapsed: false
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(fig.path='images/R_images/cdt_data_input.')
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(fig.path = 'images/R_images/cdt_data_input.')
 ```
 
 CDT can handle daily, dekadal (10-days) or monthly series. A file can contains one station or several stations series. Input data series for one station can contains one or three variables (precipitation-maximum temperature-minimum temperature in this order). Each input data series should be stored in a text/ASCII or CSV (Comma-separated values) format file.
@@ -20,16 +20,20 @@ CDT can handle daily, dekadal (10-days) or monthly series. A file can contains o
 In this format, all the series for one variable from different stations are put together  on a single file. It is the standard input data format used by CDT, in which the first line is the ID or name of the stations (__*avoid putting space in stations name*__), the second  and third lines are longitude  and latitude of the stations,  and the fourth line is elevation data in meter (if it exists), and the following lines contain the observations, in which the first column is the date of observations. The following tables show the format of data
 
 
-```{r datanoelev, echo=FALSE, results='asis'}
-dat<-read.table('../../R_Data/daily_rr.txt')
-print(xtable::xtable(dat,caption = "Input series without elevation data"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData0\" border=0')
+```{r datanoelev, echo = FALSE, results = 'asis'}
+dat <- read.table('../../R_Data/daily_rr.txt')
+print(xtable::xtable(dat, caption = "Input series without elevation data"), type = 'html',
+			caption.placement = 'top', include.rownames = FALSE, include.colnames = FALSE,
+			html.table.attributes = 'id=\"cdtInputData\" class=\"cdtInputData0\" border=0')
 ```  
 <br>
 
 
-```{r datawelev, echo=FALSE, results='asis'}
-dat<-read.table('../../R_Data/daily_rr_elv.txt')
-print(xtable::xtable(dat,caption = "Input series with elevation data"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData0\" border=0')
+```{r datawelev, echo = FALSE, results = 'asis'}
+dat <- read.table('../../R_Data/daily_rr_elv.txt')
+print(xtable::xtable(dat, caption = "Input series with elevation data"), type = 'html',
+			caption.placement = 'top', include.rownames = FALSE, include.colnames = FALSE,
+			html.table.attributes = 'id=\"cdtInputData\" class=\"cdtInputData0\" border=0')
 ```   
  <br>
 
@@ -52,30 +56,19 @@ print(xtable::xtable(dat,caption = "Input series with elevation data"),type='htm
 Several formats are possible for input data series for one station. Series can have header (the column names) or not and  can contain one or three variables in the following order: precipitation-maximum temperature-minimum temperature. Observations dates can be grouped or separated. The following examples give us an overview of possibility.
 
 
-<div id="onestnseries">
-```{r day1v1dnh, echo=FALSE, results='asis'}
-dat<-read.table('../../R_Data/var1_date1_rr_day.txt')
-print(xtable::xtable(head(dat),caption = "Daily time series, 1 variable, grouped date, no header"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
+<div id = "onestnseries">
+```{r day1v1dnh, echo = FALSE, results = 'asis'}
+dat <- read.table('../../R_Data/var1_date1_rr_day.txt')
+print(xtable::xtable(head(dat), caption = "Daily time series, 1 variable, grouped date, no header"),
+		type = 'html', caption.placement = 'top', include.rownames = FALSE, include.colnames = FALSE,
+		html.table.attributes = 'id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
 ```  
 
-```{r day3v3dwh, echo=FALSE, results='asis'}
-dat<-read.table('../../R_Data/var3_date3_header_day.txt')
-print(xtable::xtable(head(dat),caption = "Daily time series, 3 variables, separated date, with header"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
-```  
-<div id="clearleft"></div>
-</div>
-
-<br>
-
-<div id="onestnseries">
-```{r dek1v3dwh, echo=FALSE, results='asis'}
-dat<-read.table('../../R_Data/var1_date3_tx_header_dek.txt')
-print(xtable::xtable(head(dat),caption = "Dekadal time series, 1 variable, separated date, with header"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
-```  
-
-```{r dek3v1dnh, echo=FALSE, results='asis'}
-dat<-read.table('../../R_Data/var3_date1_dek.txt')
-print(xtable::xtable(head(dat),caption = "Dekadal time series, 3 variables, grouped date, no header"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
+```{r day3v3dwh, echo = FALSE, results = 'asis'}
+dat <- read.table('../../R_Data/var3_date3_header_day.txt')
+print(xtable::xtable(head(dat), caption = "Daily time series, 3 variables, separated date, with header"),
+	type = 'html', caption.placement = 'top', include.rownames = FALSE, include.colnames = FALSE,
+	html.table.attributes = 'id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
 ```  
 <div id="clearleft"></div>
 </div>
@@ -83,14 +76,37 @@ print(xtable::xtable(head(dat),caption = "Dekadal time series, 3 variables, grou
 <br>
 
 <div id="onestnseries">
-```{r mon1v3dnh, echo=FALSE, results='asis'}
-dat<-read.table('../../R_Data/var1_date3_rr_mon.txt')
-print(xtable::xtable(head(dat),caption = "Monthly time series, 1 variable, separated date, no header"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
+```{r dek1v3dwh, echo = FALSE, results = 'asis'}
+dat <- read.table('../../R_Data/var1_date3_tx_header_dek.txt')
+print(xtable::xtable(head(dat), caption = "Dekadal time series, 1 variable, separated date, with header"),
+		type = 'html', caption.placement = 'top', include.rownames = FALSE, include.colnames = FALSE,
+		html.table.attributes = 'id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
 ```  
 
-```{r mon3v1dwh, echo=FALSE, results='asis'}
-dat<-read.table('../../R_Data/var3_date1_header_mon.txt')
-print(xtable::xtable(head(dat),caption = "Monthly time series, 3 variables, grouped date, with header"),type='html',caption.placement ='top',include.rownames=FALSE,include.colnames=FALSE,html.table.attributes='id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
+```{r dek3v1dnh, echo = FALSE, results = 'asis'}
+dat <- read.table('../../R_Data/var3_date1_dek.txt')
+print(xtable::xtable(head(dat), caption = "Dekadal time series, 3 variables, grouped date, no header"),
+		type = 'html', caption.placement = 'top', include.rownames = FALSE, include.colnames = FALSE,
+		html.table.attributes = 'id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
+```  
+<div id="clearleft"></div>
+</div>
+
+<br>
+
+<div id="onestnseries">
+```{r mon1v3dnh, echo = FALSE, results = 'asis'}
+dat <- read.table('../../R_Data/var1_date3_rr_mon.txt')
+print(xtable::xtable(head(dat), caption = "Monthly time series, 1 variable, separated date, no header"),
+	type = 'html', caption.placement = 'top', include.rownames = FALSE, include.colnames = FALSE,
+	html.table.attributes = 'id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
+```  
+
+```{r mon3v1dwh, echo = FALSE, results = 'asis'}
+dat <- read.table('../../R_Data/var3_date1_header_mon.txt')
+print(xtable::xtable(head(dat), caption = "Monthly time series, 3 variables, grouped date, with header"),
+	type = 'html', caption.placement = 'top', include.rownames = FALSE, include.colnames = FALSE,
+	html.table.attributes = 'id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
 ```  
 <div id="clearleft"></div>
 </div>  
@@ -114,6 +130,20 @@ As we can see, observations date can have two types of template formats: grouped
 > **Dekadal series** : **`YYYY MM D`**  
 >  **Monthly series** : **`YYYY MM`**
 
+## Coordinates data
+
+Sometimes CDT ask for the coordinates of the stations if it not included in the file containing the data, i.e., the coordinates are stored in a separate file.
+CDT has a specific format to store the coordinates, in which the first column is the ID of the stations (__*avoid putting space in the ID*__), the second column is the name of the station and the third and fourth are longitude  and latitude of the stations, the fifth column contains the elevation data in meter, and the following columns can contains any information about the stations. The columns containing the ID and long/lat of the stations shall not contain missing values.
+You can edit the coordinates file on Excel spreadsheet and save it as  a Comma Separated Values (CSV) file.  It is useful for working on empty cells. If you edit the coordinates on Excel spreadsheet,  you can leave blank the cells with missing values or fill it with missing values flag. 
+
+<center>
+![](images/cdt_file/coordinates_file.png){width="80%"}
+</center>
+<br>
+
+ >  The order of the columns 1 to 5 must be respected.
+
+You can add a header to this file, and specify it when you import the data to CDT.
 
 ## NetCDF data
 
@@ -127,9 +157,10 @@ rfe2014_02-dk1
 rfe2014_02-dk2
  ......
 ``` 
-The format of the filenames is arbitrary.
+The format of the filenames is arbitrary. To read and write NetCDF file, CDT use the `ncdf4` package.
 
-Any time you open a NetCDF file, you will be asked to provide a sample file and select the target variable and the order of the coordinates (lat-lon or lon-lat). The following examples show the order of the dimensions.
+Any time you open a NetCDF file, you will be asked to provide a sample file and select the target variable and the order of the coordinates (lat-lon or lon-lat).
+The following examples show the order of the dimensions.
 
 ```{r ncdf_open1}
 ## Elevation/bathymetry, longitude (X) goes first then latitude (Y)
@@ -137,7 +168,7 @@ require(ncdf4)
 nc <- nc_open('../../R_Data/DEM_2_Arc-Minute.nc')
 nc
 ```  
-```{r ncdf_close1,echo=FALSE}
+```{r ncdf_close1, echo = FALSE}
 nc_close(nc)
 ```  
 
@@ -147,11 +178,22 @@ nc_close(nc)
 nc <- nc_open('../../R_Data/rfe2014_01-dk3.nc')
 nc
 ```  
-```{r ncdf_close2,echo=FALSE}
+```{r ncdf_close2, echo = FALSE}
 nc_close(nc)
 ```  
 
-```{r, child="_generated_date.Rmd"}
-```
+Example of a NetCDF file containing 3 variables.
 
-[saka_kely]: images/cdt_file/example_image.png "Saka io"
+```{r ncdf_open3}
+## File containing the parameters of the Bernoulli-Gamma distribution
+## The file contains 3 variables (prob, scale and shape)
+nc <- nc_open('../../R_Data/Bernoulli-Gamma_Pars.STN_7.nc')
+nc
+```  
+```{r ncdf_close3, echo = FALSE}
+nc_close(nc)
+```  
+
+
+```{r, child = "_generated_date.Rmd"}
+```

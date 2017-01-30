@@ -1,0 +1,32 @@
+{
+    "IO.files": [{
+        // Station data filename
+        "STN.file": "",
+        // Full path to the directory of ncdf temperature data
+        "Temp.dir": "",
+        // Temperature filename format 
+        "Temp.File.Format": "tmax_adj_%s%s%s.nc",
+        // Full path to the file to save the data filled missing value
+        "f2save": ""
+    }],
+
+    // Filling Date range
+    "Fill.Date.Range": [{
+        "start.year": 1981,
+        "start.mon": 1,
+        "start.dek": 1,
+        "end.year": 2015,
+        "end.mon": 12,
+        "end.dek": 3
+    }],
+    // Months on which the filling will be performed
+    "Fill.Months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+
+    // Filling computation parameters
+    "Fill.Params": [{
+        // Minimum length of non missing values to be used to perform LM
+        "min.length": 15,
+        // number of data to be used before and after the missing position
+        "dek.windows": 10
+    }]
+}
