@@ -1,15 +1,41 @@
 
 ```{r, echo = FALSE}
-anchor.point <- function(...) paste('<a name="', as.character(eval(substitute(alist(...)))), '"></a>', sep = '')
+anchor.point <- function(...)
+						paste('<a name="',
+						as.character(eval(substitute(alist(...)))),
+						'"></a>', sep = '')
 menuselection <- function(...) {
   menu <- paste(as.character(eval(substitute(alist(...)))), collapse = ' &#8227; ')
   paste("<span class='menuselection'>", menu, "</span>", sep = '')
 }
-button <- function(...) paste("<span class='buttonclass'>", as.character(eval(substitute(alist(...)))), "</span>")
-onglet <- function(...) paste("<span class='ongletclass'>", as.character(eval(substitute(alist(...)))), "</span>")
+button <- function(...)
+					paste("<span class='buttonclass'>",
+					as.character(eval(substitute(alist(...)))),
+					"</span>")
+onglet <- function(...)
+					paste("<span class='ongletclass'>",
+					as.character(eval(substitute(alist(...)))),
+					"</span>")
 dropdownlistBut <- function() "<span class='dropdlistclass'>AA</span><span class='dropdclass'>&#9662;</span>"
-checkbox <- function(...) paste("<img src='images/common/checkbox.png' title='Checkbox' class='radiochckbutclass' /><span class='radiochcktextclass'>", as.character(eval(substitute(alist(...)))), "</span>")
-radiobutton <- function(...) paste("<img src='images/common/radiobutton.png' title='Radio button' class='radiochckbutclass' /><span class='radiochcktextclass'>", as.character(eval(substitute(alist(...)))), "</span>")
+checkbox <- function(...)
+					paste("<img src='images/common/checkbox.png' title='Checkbox' class='radiochckbutclass' /><span class='radiochcktextclass'>",
+					as.character(eval(substitute(alist(...)))),
+					"</span>")
+radiobutton <- function(...) 
+					paste("<img src='images/common/radiobutton.png' title='Radio button' class='radiochckbutclass' /><span class='radiochcktextclass'>",
+					as.character(eval(substitute(alist(...)))),
+					"</span>")
+img.caption <- function(...)
+						paste("<span class='img-caption'>",
+						as.character(eval(substitute(alist(...)))),
+						"</span>")
+put.image <- function(path, caption = NULL, height = 100, width = 100){
+			paste("<center>", "\n",
+			"![](", path, "){height=", height, "%", " width=", width, "%", "}", "\n",
+			if(!is.null(caption)) paste("<span class='img-caption'>", caption, "</span>"), "\n",
+			"</center>", "\n",
+			"<br>", sep = "")
+		}
 ```
 
 [executetask]: images/common/run24.gif "Execute the append task" id=cdtIcons class=cdtIcons
@@ -41,5 +67,6 @@ radiobutton <- function(...) paste("<img src='images/common/radiobutton.png' tit
 [zoomout1]: images/common/ZoomOut128.gif "Zoom out" id=cdtIcons class=cdtIcons2
 [redrawmap1]: images/common/redraw128.gif "Redraw map" id=cdtIcons class=cdtIcons2a
 [panmap1]: images/common/PanImage32.gif "Pan map" id=cdtIcons class=cdtIcons2
+
 
 

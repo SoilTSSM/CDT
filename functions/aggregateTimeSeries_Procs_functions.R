@@ -39,6 +39,7 @@ ExeAggTimeSeries <- function(GeneralParameters){
 			headers <- t(cbind(donne$id, donne$lon, donne$lat, donne$elv))
 			capition <- c('Stations', 'LON', 'LAT', paste(toupper(period1),'ELV', sep = '/'))
 		}
+		headers[is.na(headers)] <- miss.val
 		entete <- cbind(capition, headers)
 		outdonne <- rbind(entete, cbind(outdates, outdonne))
 		writeFiles(outdonne, output2save)

@@ -2,7 +2,7 @@
 output:
  html_document:
   toc: true
-  toc_depth: 2
+  toc_depth: 1
   toc_float:
    collapsed: false
 ---
@@ -23,21 +23,27 @@ output:
 
 ### [Map and Table View](cdt_file_menu.html#map.view)
 
-### [Output Message](cdt_file_menu.html)
+### [Output Message](cdt_file_menu.html#out.msg)
 
-### [Status Bar](cdt_file_menu.html)
-
-## [GUI Conventions](cdt_file_menu.html)
+### [Status Bar](cdt_file_menu.html#status.bar)
 
 # [CDT Input Data Format](cdt_data_input.html)
 
-## [ Data format with several stations](cdt_data_input.html)
+## [ Data format with several stations](cdt_data_input.html#cdt.format.data)
 
-## [Input series for one station](cdt_data_input.html)
+## [Input series for one station](cdt_data_input.html#cdt.ts.data)
 
-## [Coordinates data](cdt_data_input.html)
+## [Coordinates data](cdt_data_input.html#cdt.coords.data)
 
-## [NetCDF data](cdt_data_input.html)
+## [NetCDF data](cdt_data_input.html#cdt.ncdf.data)
+
+# [Format CDT Input data](format_cdt_data.html)
+
+## [Multiple Files](format_cdt_data.html#multiple.files)
+
+## [Single File](format_cdt_data.html#single.file)
+
+## [Merge two CDT data format](format_cdt_data.html#merge.2cdt.data)
 
 </div>
 

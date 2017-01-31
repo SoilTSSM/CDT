@@ -11,7 +11,7 @@
 
 
 
-<title>CDT GUI</title>
+<title>Format CDT Input data</title>
 
 <script src="libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -176,7 +176,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2,h3",
+      selectors: "h1,h2",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
@@ -420,205 +420,208 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">CDT GUI</h1>
+<h1 class="title toc-ignore">Format CDT Input data</h1>
 
 </div>
 
 
-<p><br></p>
-<div id="cdt-main-window" class="section level2">
-<h2>CDT Main Window <a name="cdt.main.win"></a></h2>
-<p>When CDT starts, you are presented with the GUI as shown in the figure.</p>
+<p>If you do not yet have a data in CDT format to work with, you can format your data to <a href="cdt_data_input.html#cdt.format.data">CDT station data format</a> using the menu options <span class="menuselection">Data Preparation ‣ Format CDTs Input Data</span>.</p>
+<p>CDT can format two types of input files:</p>
+<ul>
+<li>the data is already grouped together in a single file but not yet in CDT format</li>
+<li>or <a href="cdt_data_input.html#cdt.ts.data">each station has its data in a separate file</a></li>
+</ul>
+<p>The menu <span class="menuselection">Data Preparation ‣ Format CDTs Input Data</span> opens a dialog where you can enter the required input and select the options corresponding to your type of data.</p>
 <center>
 <div class="figure">
-<img src="images/cdt_file/cdt_main0.png" style="width:80.0%" style="height:80.0%" />
+<img src="images/data_prepraration/format_cdt_data/format_cdt_input_data.png" style="width:60.0%" style="height:60.0%" />
 
 </div>
 </center>
 <p><br></p>
-<p>After you choose a function from the menu to execute, the GUI is transformed as follows (the numbers 1 through 7 in red-cyan circles are presented below)</p>
+<ol style="list-style-type: decimal">
+<li>Select the time step of your data, there are three choices available: daily, dekadal and monthly data.</li>
+<li><p>Enter the start and end date to take account in CDT data output.</p>
+<blockquote>
+<p><strong>Note</strong><br />
+Dates must be correct, for example, if you enter 31 the day for June, this will cause an error.<br />
+Dekad must be 1, 2 or 3.<br />
+You can enter a date range you want for the final CDT data output, even if each station data has different date range.</p>
+</blockquote></li>
+<li>Enter here the minimum percentage (according the period you choose) of non-missing values for the series of a station to be accepted for the final CDT data output.</li>
+<li>Enter the name of the file to save the formated data or the full path to the file. You can also click on <img src="images/common/browsefiledir.png" title="Browse for a file" id="cdtIcons" class="cdtIcons" />, it opens a file dialog where you can select the name, path and type of file (txt or csv).</li>
+<li>Select the type of input files to be converted to CDT format, two choices available: <em>Multiple Files</em> and <em>Single File</em>.</li>
+<li><p>Click the button <span class="buttonclass"> Input File Setting </span> to set the parameters of the input file.</p></li>
+</ol>
+<div id="multiple-files" class="section level2">
+<h2>Multiple Files <a name="multiple.files"></a></h2>
+<p>In this case, each station has its own file, see the section <a href="cdt_data_input.html#cdt.ts.data">Input series for one station</a> for more details on the format of the data.</p>
+<p><strong><strong>Example:</strong></strong><br />
+As a simple illustration, suppose we have a daily precipitation data for 5 stations, each station has its own file and the name of each file should be the IDs of the station.</p>
+<pre><code>102001.txt
+102021.txt
+102038.txt
+102304.txt
+102305.txt</code></pre>
+<p>The format of data for each station must be the same. If we have a daily time series with separated date, the format of data in each file will look like as follows</p>
+<pre><code>  .....
+2004 7 1 -99
+2004 7 2 0
+2004 7 3 10.6
+2004 7 4 0
+2004 7 5 0
+2004 7 6 0
+2004 7 7 0
+2004 7 8 0
+  .....</code></pre>
+<p>And the coordinates of the stations are put in a separate file.</p>
 <center>
 <div class="figure">
-<img src="images/cdt_file/cdt_main.png" style="width:100.0%" style="height:100.0%" />
+<img src="images/data_prepraration/format_cdt_data/coordinates_file.png" style="width:50.0%" style="height:50.0%" />
 
 </div>
 </center>
 <p><br></p>
 <blockquote>
-<p>Your window decorations (title bar, etc.) may appear different depending on your operating system and window manager.</p>
+<p><strong>Note</strong><br />
+If you edit the coordinates on Excel spreadsheet, you can leave blank the cells with missing values or fill it with missing values flag (-99), then save it as a Comma Separated Values (CSV) file.<br />
+The order of the columns 1 to 5 must be respected.</p>
 </blockquote>
-<p>CDT GUI is divided into seven areas:</p>
-<ol style="list-style-type: decimal">
-<li>Menu Bar</li>
-<li>Toolbars</li>
-<li>Loaded Files</li>
-<li>Input and Command Panels</li>
-<li>Map and Table View</li>
-<li>Output Message</li>
-<li>Status Bar</li>
-</ol>
-<p>These seven components of CDT interface are described in more detail in the following sections.</p>
-<div id="menu-bar" class="section level3">
-<h3>Menu Bar <a name="menu.bar"></a></h3>
-<p>The menu bar provides access to various CDT functions using a standard hierarchical menu.</p>
-<div id="file" class="section level4">
-<h4>File</h4>
-<!-- <span style="color:blue">File</span> -->
-<p>CDT can open three file types:</p>
-<ul>
-<li>Text/ASCII or CSV files</li>
-<li>NetCDF files</li>
-<li>ESRI Shapefiles</li>
-</ul>
-<div id="data-frames" class="section level5">
-<h5>Data Frames <a name="data.frame"></a></h5>
-<p>To open an text or CSV files, go to the menu <span class="menuselection">File ‣ Open data.frame</span> an Open File dialog will come up prompting you to select the file to be open.</p>
+<p>To enter all this information to CDT, click the button <span class="buttonclass"> Input File Setting </span>, it opens a dialog box</p>
 <center>
 <div class="figure">
-<img src="images/cdt_file/open_file.png" style="width:50.0%" style="height:50.0%" />
+<img src="images/data_prepraration/format_cdt_data/format_cdt_input_data1.png" style="width:50.0%" style="height:50.0%" />
 
 </div>
 </center>
 <p><br></p>
-<p>You can navigate through this dialog box to locate the path of the file to open, you can select a file by double-clicking on it or by selecting it and pressing the Open button.</p>
+<ol style="list-style-type: decimal">
+<li>Enter the full path to directory containing the station files, or browse through <img src="images/common/browsefiledir.png" title="Browse for a file" id="cdtIcons" class="cdtIcons" />.</li>
+<li>Provide a sample of the data.</li>
+<li>Select the file containing the station coordinates, if the file is not loaded yet and therefore not listed, use the <img src="images/common/browsefiledir.png" title="Browse for a file" id="cdtIcons" class="cdtIcons" /> to open it.</li>
+<li>Check this box, if you want to include the elevation data to the final CDT data output, provided that your coordinates file has non-missing elevation data.</li>
+<li>Choose the number of climate variables in the file. On our example, we have only one variable (daily rainfall).</li>
+<li>Choose the format of date (grouped or separated). On our example, the date is separated with the format YYYY MM DD.</li>
+</ol>
+</div>
+<div id="single-file" class="section level2">
+<h2>Single File <a name="single.file"></a></h2>
+<p>This time, all station data are already put together in a single file with a specific format which are described below. After selected <em>Single File</em> from the drop-down list “Format of input files” and clicked the button <span class="buttonclass"> Input File Setting </span>, which will display a dialog box.</p>
+<center>
+<div class="figure">
+<img src="images/data_prepraration/format_cdt_data/format_cdt_input_data2.png" style="width:50.0%" style="height:50.0%" />
+
+</div>
+</center>
+<p><br></p>
+<ol style="list-style-type: decimal">
+<li>Select the file containing the station data to be formated, if the file is not loaded yet and therefore not listed, use the <img src="images/common/browsefiledir.png" title="Browse for a file" id="cdtIcons" class="cdtIcons" /> to open it.</li>
+<li>Check this box, if the coordinates of the station are included in the data.</li>
+<li>Select the file containing the station coordinates, if it is not included in the file containing the data. If the file is not loaded yet and therefore not listed, use the <img src="images/common/browsefiledir.png" title="Browse for a file" id="cdtIcons" class="cdtIcons" /> to open it.</li>
+<li>Check this box, if you want to include the elevation data to the final CDT data output, provided that the data file contains an elevation data or the elevation data is not missing on the coordinates file.</li>
+<li>Specify the column number for:
+<ul>
+<li><strong>COL.ID</strong>: stations IDs</li>
+<li><strong>COL.LON</strong>: longitude</li>
+<li><strong>COL.LAT</strong>: latitude</li>
+<li><strong>COL.ELEV</strong>: elevation data</li>
+<li><strong>COL.YEAR</strong>: column containing the year</li>
+<li><strong>COL.MONTH</strong>: month</li>
+<li><strong>COL.DAY/DEK</strong>: column containing the day or dekad</li>
+<li><strong>COL.DATA</strong>: column containing the climate variable or from which climate variable starts</li>
+</ul></li>
+<li>Select the number of columns containing the climate variable.
+<ul>
+<li>For daily data, there are 2 possible formats:
+<ul>
+<li>1 column: the climate variable is placed in a single column.<br />
+
+<center>
+<img src="images/data_prepraration/format_cdt_data/daily_wCrd_1Col.png" style="width:50.0%" style="height:50.0%" /><br />
+<span class="img-caption"> Format of data: one column, coordinates included </span>
+</center>
+<br></li>
+<li>31 columns: each month the climate variable is placed in 31 columns, one column is equivalent to one day.<br />
+
+<center>
+<img src="images/data_prepraration/format_cdt_data/daily_wCrd_31Col.png" style="width:70.0%" style="height:70.0%" /><br />
+<span class="img-caption"> Format of data: 31 columns, coordinates included </span>
+</center>
+<br><br />
+
+<center>
+<img src="images/data_prepraration/format_cdt_data/daily_noCrd_31col.png" style="width:70.0%" style="height:70.0%" /><br />
+<span class="img-caption"> Format of data: 31 columns, coordinates on a separate file </span>
+</center>
+<p><br></p>
 <blockquote>
-<p>You can filter the file you want to open based on the file extension. If your file doesn’t have the default file extensions (.txt or .csv), you can use the “All files” filter to list your file. Here the file extension doesn’t matter as long as your file is an ASCII file.</p>
-</blockquote>
-<p>After you selected the file to open, another Open File dialog manager will appear with various options which allows you to precise the format of the <code>data.frame</code>.</p>
-<center>
-<div class="figure">
-<img src="images/cdt_file/open_file_manager.png" style="width:60.0%" style="height:50.0%" />
-
-</div>
-</center>
-<p><br></p>
-<p>So, you can:</p>
-<ol style="list-style-type: decimal">
-<li>specify the delimiter of the column</li>
-<li>import the data from the desired line</li>
-<li>specify if the data has a header or not</li>
-<li>have an overview of the data content</li>
-<li>provide the missing values flag if different from the general setting.</li>
-</ol>
-</div>
-<div id="netcdf-file" class="section level5">
-<h5>NetCDF file</h5>
-<p>You can load a NetCDF file into CDT using the menu options <span class="menuselection">File ‣ Open Netcdf file</span> an Open File dialog will come up prompting you to select the file, then another dialog box will appear for allowing the selection of the variable and coordinates.</p>
-<center>
-<div class="figure">
-<img src="images/cdt_file/open_ncdf.png" style="width:60.0%" style="height:50.0%" />
-
-</div>
-</center>
-<p><br></p>
-<p>Through this dialog box, you can:</p>
-<ol style="list-style-type: decimal">
-<li>select the variable to be loaded into CDT</li>
-<li>select the longitude</li>
-<li>select the latitude</li>
-<li>have an overview on the netcdf file.</li>
-</ol>
-</div>
-<div id="esri-shapefile" class="section level5">
-<h5>ESRI Shapefile</h5>
-<p>The menu <span class="menuselection">File ‣ Open ESRI Shapefile</span> allows to load shapefiles into CDT.</p>
-</div>
-<div id="save-table-and-image" class="section level5">
-<h5>Save table and image</h5>
-<p>The menu <span class="menuselection">File ‣ Save table</span> allows to save a table (i.e., a <code>data.frame</code>) opened on the right panel. If you want to save an opening table under a new name, use the menu <span class="menuselection">File ‣ Save table As…</span>.</p>
-<p>You can save a displayed image as JPEG from the menu <span class="menuselection">File ‣ Save Image As…</span>.</p>
-</div>
-<div id="cdt-configurations" class="section level5">
-<h5>CDT Configurations</h5>
-<p>The menu option <span class="menuselection">File ‣ Configurations</span> allows to change CDT working directory and set the missing values code.</p>
-<center>
-<div class="figure">
-<img src="images/cdt_file/cdt_config.png" style="width:60.0%" style="height:50.0%" />
-
-</div>
-</center>
-<p><br></p>
-<ol style="list-style-type: decimal">
-<li>allows to browse a directory tree to set the working directory</li>
-<li>allows to set missing values code for the whole session of CDT</li>
-<li>allows to change the path to Tktable library if you change the installation directory or installed separately</li>
-<li>same as 3. but for BWidget library</li>
-</ol>
-</div>
-<div id="exit-cdt" class="section level5">
-<h5>Exit CDT</h5>
-<p>The menu <span class="menuselection">File ‣ Quit CDT</span> allows to quit CDT.</p>
-</div>
-</div>
-<div id="others-menus" class="section level4">
-<h4><span style="color:blue">Others Menus</span></h4>
-<p>You can access the others menus through the navigation bar located at the top of the page.</p>
-</div>
-</div>
-<div id="toolbars" class="section level3">
-<h3>Toolbars <a name="toolbars"></a></h3>
-<p>The toolbar provides access to few functions in the File menu, plus additional tools for interacting with the displayed image. Each toolbar item has pop-up help available. Hold your mouse over the item and a short description of the tool’s purpose will be displayed.</p>
+<p><strong>Note</strong><br />
+If you edit the data on Excel spreadsheet, you can leave blank the cells with missing values or fill it with missing values flag, then save it as a Comma Separated Values (CSV) file.<br />
+In addition, you can leave empty a whole line.</p>
+</blockquote></li>
+</ul></li>
+<li>Dekadal data, there are 3 possible formats:
 <ul>
-<li><img src="images/common/open24.gif" title="Open data frame" id="cdtIcons" class="cdtIcons" /> allows to load <a href="#data.frame">data.frame</a> into CDT, it’s the same as the menu <span class="menuselection">File ‣ Open data.frame</span>.</li>
-<li><img src="images/common/save_img24.gif" title="Save image" id="cdtIcons" class="cdtIcons" /> allows to save current displayed image as JPEG, same as the menu <span class="menuselection">File ‣ Save Image As…</span>.</li>
-<li><img src="images/common/open_table24.gif" title="Open table" id="cdtIcons" class="cdtIcons" /> allows to open a <code>data.frame</code> and directly display it on a table without loading into CDT.</li>
-<li><img src="images/common/save_table24.gif" title="Save table" id="cdtIcons" class="cdtIcons" /> allows to save a table, same as <span class="menuselection">File ‣ Save table</span>.</li>
-<li><img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> allows to execute task from different functions listed in the menus.</li>
-<li><img src="images/common/spinH.png" title="Spinbox" id="cdtSpin" class="cdtSpin" width="130" height="70" /> a spinbox allows to specify the actual dimensions (height and width) of the visible image.</li>
-<li><img src="images/common/RedrawButton24.gif" title="Redraw plot" id="cdtIcons" class="cdtIcons" /> redraws displayed image after changing the height or width from the spinbox. After any change on the dimensions of the image through the spinbox, this button will be activated and becomes <img src="images/common/RedrawButton-Change24.gif" title="Redraw plot change" id="cdtIcons" class="cdtIcons" />, you have to redraw the plot to get the new dimensions.</li>
-<li><img src="images/common/close_tab24.gif" title="Close active tab" id="cdtIcons" class="cdtIcons" /> Close open tabs.</li>
-<li><img src="images/common/exit24.gif" title="Exit CDT" id="cdtIcons" class="cdtIcons" /> Quit CDT.</li>
-</ul>
+<li>1 column: the climate variable is placed in a single column.<br />
+
+<center>
+<img src="images/data_prepraration/format_cdt_data/dek_wCrd_1Col.png" style="width:50.0%" style="height:50.0%" /><br />
+<span class="img-caption"> Format of data: one column, coordinates included </span>
+</center>
+<br></li>
+<li>3 columns: each month the climate variable is placed in 3 columns, one column is equivalent to one dekad.<br />
+
+<center>
+<img src="images/data_prepraration/format_cdt_data/dek_wCrd_3Col.png" style="width:60.0%" style="height:60.0%" /><br />
+<span class="img-caption"> Format of data: 3 columns, coordinates included </span>
+</center>
+<br></li>
+<li>36 columns: each year the climate variable is placed in 36 columns, one column is equivalent to one dekad.<br />
+
+<center>
+<img src="images/data_prepraration/format_cdt_data/dek_noCrd_36Col.png" style="width:70.0%" style="height:70.0%" /><br />
+<span class="img-caption"> Format of data: 36 columns, without coordinates included </span>
+</center>
+<br></li>
+</ul></li>
+<li>Monthly data, there are 2 possible formats:
+<ul>
+<li>1 column: the climate variable is placed in a single column.<br />
+
+<center>
+<img src="images/data_prepraration/format_cdt_data/mon_wCrd_1Col.png" style="width:50.0%" style="height:50.0%" /><br />
+<span class="img-caption"> Format of data: one column, coordinates included </span>
+</center>
+<br></li>
+<li>12 columns: each year the climate variable is placed in 12 columns, one column is equivalent to one month.<br />
+
+<center>
+<img src="images/data_prepraration/format_cdt_data/mon_wCrd_12Col.png" style="width:70.0%" style="height:70.0%" /><br />
+<span class="img-caption"> Format of data: 12 columns, coordinates included </span>
+</center>
+<br></li>
+</ul></li>
+</ul></li>
+</ol>
 </div>
-<div id="open-files" class="section level3">
-<h3>Open Files <a name="open.files"></a></h3>
-<p>Each file loaded into CDT is listed in this listbox, it will avoid loading the file twice.</p>
+<div id="merge-two-cdt-data-format" class="section level2">
+<h2>Merge two CDT data format <a name="merge.2cdt.data"></a></h2>
+<p>If you want to combine two CDT data formats from two different files into one file, use <span class="menuselection">Data Preparation ‣ Merge two CDT data format</span>, and the right command panel will be activated.</p>
 <center>
 <div class="figure">
-<img src="images/cdt_file/loaded_files.png" style="width:40.0%" style="height:50.0%" />
+<img src="images/data_prepraration/format_cdt_data/merge_2cdt_data.png" style="width:50.0%" style="height:50.0%" />
 
 </div>
 </center>
 <p><br></p>
-<p>You can delete the data by selecting the corresponding filename and then right click on it, on the drop down menu click on <span class="menuselection">Remove data</span>. You can display the <code>data.frame</code> on a table by selecting <span class="menuselection">Open in table</span> as well.</p>
-</div>
-<div id="input-and-command-panels" class="section level3">
-<h3>Input and Command Panels <a name="cmd.panel"></a></h3>
-<p>Each time you start a CDT function through the menu, an dialog box will come up prompting you to enter the inputs and outputs files and directories related to this function, as well as the required parameters so that the function runs correctly. Then CDT provides a command panel displayed in this area to work with the results, such as, display table or plot/map, select a stations, change options and execute other tasks.</p>
-<p>Sometimes, CDT goes directly to this panel without going through a dialog box, in such case, the panel gives you a way to enter the input, set all parameters and run the command.</p>
-</div>
-<div id="map-and-table-view" class="section level3">
-<h3>Map and Table View <a name="map.view"></a></h3>
-<p>Tables, print of R objects, plot and maps are displayed in this area.</p>
-<p>The tables can be a simple display of a <code>data.frame</code> or a table you can edit for further purposes, if it is an output from a function such as quality control and homogeneity tests.</p>
-<p>The plot and map displayed in this window will depend on the type of outputs or functions you have chosen to run.</p>
-<p>The map view can be panned, shifting the focus of the map display to another region, and it can be zoomed in and out.</p>
-</div>
-<div id="output-message" class="section level3">
-<h3>Output Message <a name="out.msg"></a></h3>
-<p>When loading data or running some functions, you can track and follow messages that appear in this area. You can check if there were an error during the operation or it has been successfully completed.</p>
-</div>
-<div id="status-bar" class="section level3">
-<h3>Status Bar <a name="status.bar"></a></h3>
-<p>On the left side of the status bar, you can get a long description of the widget (button, input entry, list box, combo box, …) you are hovering over (not available for all widgets). In addition, when you hold your mouse over the widget, a short description of the widget’s purpose will be displayed.</p>
-<center>
-<div class="figure">
-<img src="images/cdt_file/status_bar1.png" style="width:100.0%" style="height:150.0%" />
-
-</div>
-</center>
-<p><br></p>
-<p>When a map and graph are displayed, the right side of the status bar shows the current position of the mouse as a long/lat coordinate, following it while moving across the map view. Next to the coordinate display you will find the name of the polygon (region, district, …) displayed if the map is from an ESRI shapefile.</p>
-<center>
-<div class="figure">
-<img src="images/cdt_file/status_bar2.png" style="width:100.0%" style="height:150.0%" />
-
-</div>
-</center>
-<p><br></p>
+<ol style="list-style-type: decimal">
+<li>Select the filename of the first CDT data if it is already loaded, or open it through <span class="buttonclass"> … </span></li>
+<li>Select the second CDT data.</li>
+<li>Enter the name of the file to save the merged data or the full path to the file. You can also click on <span class="buttonclass"> … </span>, it opens a file dialog where you can select the name, path and type of file (txt or csv).</li>
+</ol>
+<p>To combine the two files, click on the button <span class="buttonclass"> Merge Data </span></p>
 <hr />
 <p>Generated on : January 31, 2017, 17:08</p>
-</div>
 </div>
 
 <footer class="navbar navbar-inverse  navbar-fixed-bottom">

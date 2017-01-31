@@ -14,11 +14,9 @@ knitr::opts_chunk$set(fig.path = 'images/R_images/cdt_data_input.')
 
 CDT can handle daily, dekadal (10-days) or monthly series. A file can contains one station or several stations series. Input data series for one station can contains one or three variables (precipitation-maximum temperature-minimum temperature in this order). Each input data series should be stored in a text/ASCII or CSV (Comma-separated values) format file.
 
-
-##  Data format with several stations
+##  Data format with several stations `r anchor.point('cdt.format.data')`
 
 In this format, all the series for one variable from different stations are put together  on a single file. It is the standard input data format used by CDT, in which the first line is the ID or name of the stations (__*avoid putting space in stations name*__), the second  and third lines are longitude  and latitude of the stations,  and the fourth line is elevation data in meter (if it exists), and the following lines contain the observations, in which the first column is the date of observations. The following tables show the format of data
-
 
 ```{r datanoelev, echo = FALSE, results = 'asis'}
 dat <- read.table('../../R_Data/daily_rr.txt')
@@ -28,14 +26,13 @@ print(xtable::xtable(dat, caption = "Input series without elevation data"), type
 ```  
 <br>
 
-
 ```{r datawelev, echo = FALSE, results = 'asis'}
 dat <- read.table('../../R_Data/daily_rr_elv.txt')
 print(xtable::xtable(dat, caption = "Input series with elevation data"), type = 'html',
 			caption.placement = 'top', include.rownames = FALSE, include.colnames = FALSE,
 			html.table.attributes = 'id=\"cdtInputData\" class=\"cdtInputData0\" border=0')
 ```   
- <br>
+<br>
 
 **_Date format_** 
 
@@ -50,8 +47,7 @@ print(xtable::xtable(dat, caption = "Input series with elevation data"), type = 
 
 > CDT use "-99" to code missing value in the data series. You can use your own missing value flag (the  missing value code you provided must be exactly the same as used in the data; for example, "-99." and "-99.0" are different; you can not tell to CDT "-99." instead of "-99.0" when "-99.0" is used in the input data series; it will produce some odd results).
 
-
-## Input series for one station
+## Input series for one station `r anchor.point('cdt.ts.data')`
 
 Several formats are possible for input data series for one station. Series can have header (the column names) or not and  can contain one or three variables in the following order: precipitation-maximum temperature-minimum temperature. Observations dates can be grouped or separated. The following examples give us an overview of possibility.
 
@@ -72,7 +68,6 @@ print(xtable::xtable(head(dat), caption = "Daily time series, 3 variables, separ
 ```  
 <div id="clearleft"></div>
 </div>
-
 <br>
 
 <div id="onestnseries">
@@ -91,7 +86,6 @@ print(xtable::xtable(head(dat), caption = "Dekadal time series, 3 variables, gro
 ```  
 <div id="clearleft"></div>
 </div>
-
 <br>
 
 <div id="onestnseries">
@@ -109,8 +103,7 @@ print(xtable::xtable(head(dat), caption = "Monthly time series, 3 variables, gro
 	html.table.attributes = 'id=\"cdtInputData\" class=\"cdtInputData1\" border=0')
 ```  
 <div id="clearleft"></div>
-</div>  
-
+</div>
 <br>
 
 As we can see, observations date can have two types of template formats: grouped and separated.
@@ -130,22 +123,19 @@ As we can see, observations date can have two types of template formats: grouped
 > **Dekadal series** : **`YYYY MM D`**  
 >  **Monthly series** : **`YYYY MM`**
 
-## Coordinates data
+## Coordinates data `r anchor.point('cdt.coords.data')`
 
 Sometimes CDT ask for the coordinates of the stations if it not included in the file containing the data, i.e., the coordinates are stored in a separate file.
 CDT has a specific format to store the coordinates, in which the first column is the ID of the stations (__*avoid putting space in the ID*__), the second column is the name of the station and the third and fourth are longitude  and latitude of the stations, the fifth column contains the elevation data in meter, and the following columns can contains any information about the stations. The columns containing the ID and long/lat of the stations shall not contain missing values.
 You can edit the coordinates file on Excel spreadsheet and save it as  a Comma Separated Values (CSV) file.  It is useful for working on empty cells. If you edit the coordinates on Excel spreadsheet,  you can leave blank the cells with missing values or fill it with missing values flag. 
 
-<center>
-![](images/cdt_file/coordinates_file.png){width="80%"}
-</center>
-<br>
+`r put.image("images/cdt_file/coordinates_file.png", width = 80)`
 
  >  The order of the columns 1 to 5 must be respected.
 
 You can add a header to this file, and specify it when you import the data to CDT.
 
-## NetCDF data
+## NetCDF data `r anchor.point('cdt.ncdf.data')`
 
 [NetCDF](http://www.unidata.ucar.edu/software/netcdf/docs) files contain one or more variables, which are usually structured as regular multi-dimensional arrays. CDT can handle 2D (lat/lon) NetCDF data with several variables, in other words ***data for each date should be stored in a separate file***, a file may contain only data for one day, dekad or month. For example, if we have a dekadal rainfall series, then the data for each dekad should be stored in a separate file as follows :
 

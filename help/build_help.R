@@ -151,7 +151,7 @@ setwd(help_dir)
 Sys.setenv(RMARKDOWN_MATHJAX_PATH = mathjax_dir)
 
 ## arrange files for toc
-toc.order <- c("index.Rmd", "cdt_file_menu.Rmd", "cdt_data_input.Rmd")
+toc.order <- c("index.Rmd", "cdt_file_menu.Rmd", "cdt_data_input.Rmd", "format_cdt_data.Rmd")
 
 #####
 all_src <- list.files(path = sources_dir, pattern = '.Rmd', full.names = TRUE, recursive = TRUE)
@@ -190,13 +190,18 @@ figure_files <- list.files(r_images, recursive = TRUE, full.names = TRUE)
 # html_files <- "cdt_file_menu.html"
 # figure_dir <- "cdt_file_menu_files"
 
+# html_files <- c("index.html", "format_cdt_data.html")
+
 ######
 exist_Rimage_fig <- sapply(strsplit(list.files(r_images), '\\.'), '[[', 1) %in% all_files
 if(any(exist_Rimage_fig)) unlink(figure_files[exist_Rimage_fig])
+
 exist_html_fig <- dir.exists(figure_dir)
 if(any(exist_html_fig)) unlink(figure_dir[exist_html_fig], recursive = TRUE, force = TRUE)
+
 exist_html_files <- file.exists(html_files)
 if(any(exist_html_files)) unlink(html_files[exist_html_files])
+
 exist_rmd_wd_files <- file.exists(rmd_files)
 if(any(exist_rmd_wd_files)) unlink(rmd_files[exist_rmd_wd_files])
 
@@ -212,7 +217,7 @@ cat(paste('---\n',
 				'output:', '\n',
 				' html_document:', '\n',
 				'  toc: true', '\n',
-				'  toc_depth: 2', '\n',
+				'  toc_depth: 1', '\n',
 				'  toc_float:', '\n',
 				'   collapsed: false', '\n',
 				'---\n', sep = ''), file = index.path)
@@ -236,6 +241,10 @@ cat("\n```{r, child = '_generated_date.Rmd'}\n```\n", file = index.path, append 
 file.copy(index.path, '.')
 
 rmd_files <- c("index.Rmd", rmd_files)
+
+###############
+
+# rmd_files <- c("index.Rmd", "format_cdt_data.Rmd")
 
 ###############
 

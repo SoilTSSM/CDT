@@ -79,12 +79,12 @@ AggregateInputStationData <- function(parent.win, GeneralParameters){
 	tkgrid(frtxtDate, row = 0, column = 2, sticky = 'we', rowspan = 2, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#########
-	infobulle(cb.period, 'Choose the frequency of data')
-	status.bar.display(cb.period, TextOutputVar, 'Choose the frequency of data')
+	infobulle(cb.period, 'Select the time step of the data')
+	status.bar.display(cb.period, TextOutputVar, 'Select the time step of the data')
 	infobulle(frtxtDate, 'Start and end date to take account')
 	status.bar.display(frtxtDate, TextOutputVar, 'Start and end date to take account')
-	ret0 <- lapply(list(minperc.lab, minperc.ent), function(x) infobulle(x, 'Minimum % of non-missing of the stations series\nto be accepted to the aggregated data'))
-	ret0 <- lapply(list(minperc.lab, minperc.ent), function(x) status.bar.display(x, TextOutputVar, 'Minimum % of non-missing of the stations series\nto be accepted to the aggregated data'))
+	ret0 <- lapply(list(minperc.lab, minperc.ent), function(x) infobulle(x, 'Minimum % of non-missing values of the stations series\nto be accepted to the aggregated data'))
+	ret0 <- lapply(list(minperc.lab, minperc.ent), function(x) status.bar.display(x, TextOutputVar, 'Minimum % of non-missing values of the stations series\nto be accepted to the aggregated data'))
 
 	#########
 	tkbind(cb.period, "<<ComboboxSelected>>", function(){
@@ -281,10 +281,10 @@ multipleFileCDTFormat <- function(top.win, GeneralParameters, speriod){
 	tkgrid(ffrmt1, row = 0, column = 0, sticky = "we")
 	tkgrid(ffrmt2, row = 1, column = 0, sticky = "we")
 
-	infobulle(ffrmt1, 'In case of single serie: The file contains 1 variable')
-	status.bar.display(ffrmt1, TextOutputVar, 'In case of single serie: The file contains 1 variable')
-	infobulle(ffrmt2, 'In case of single serie: The file contains\nRain, Tmax and Tmin in this order')
-	status.bar.display(ffrmt2, TextOutputVar, 'In case of single serie:The file contains Rain, Tmax and Tmin in this order')
+	infobulle(ffrmt1, 'The file contains 1 variable')
+	status.bar.display(ffrmt1, TextOutputVar, 'The file contains 1 variable')
+	infobulle(ffrmt2, 'The file contains\nRain, Tmax and Tmin in this order')
+	status.bar.display(ffrmt2, TextOutputVar, 'The file contains Rain, Tmax and Tmin in this order')
 
 	#####
 	fr.fileformat2 <- ttklabelframe(frFileFormat, text = "Dates Format", labelanchor = "nw", relief = "groove", borderwidth = 2)
@@ -306,10 +306,10 @@ multipleFileCDTFormat <- function(top.win, GeneralParameters, speriod){
 	tkgrid(dtfrmt2, row = 1, column = 0, sticky = "we")
 	tkgrid(dtfrmt3, row = 3, column = 0, sticky = "we")
 
-	infobulle(dtfrmt1, 'In case of single serie:\n dates are grouped')
-	status.bar.display(dtfrmt1, TextOutputVar, 'In case of single serie: dates are grouped')
-	infobulle(dtfrmt2, 'In case of single serie:\ndates are separated by space,\ntabulation or CSV format')
-	status.bar.display(dtfrmt2, TextOutputVar, 'In case of single serie: dates are separated by space, tabulation or CSV format')
+	infobulle(dtfrmt1, 'Dates are grouped')
+	status.bar.display(dtfrmt1, TextOutputVar, 'Dates are grouped')
+	infobulle(dtfrmt2, 'Dates are separated by space, tabulation or CSV format')
+	status.bar.display(dtfrmt2, TextOutputVar, 'Dates are separated by space, tabulation or CSV format')
 
 	###################
 	tkgrid(fr.fileformat1, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)

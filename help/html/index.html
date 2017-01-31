@@ -176,7 +176,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2",
+      selectors: "h1",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
@@ -281,11 +281,7 @@ div.tocify {
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <!-- 
-                <li>
-                    <a href="index.html">CDT User Guide</a>
-                </li>
-                 -->
+                <!-- CDT GUI & Data -->
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
               CDT GUI &amp; Data
@@ -302,6 +298,7 @@ div.tocify {
                         </li>
                     </ul>
                 </li>
+                <!-- Data Preparation -->
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
               Data Preparation
@@ -309,7 +306,7 @@ div.tocify {
             </a>
                     <ul class="dropdown-menu" role="menu">
                         <li>
-                            <a href="format_cdt_data.html">Format CDT Input Data</a>
+                            <a href="format_cdt_data.html">Format CDTs Input Data</a>
                         </li>
                         <li class="divider"></li>
                         <li>
@@ -317,10 +314,15 @@ div.tocify {
                         </li>
                         <li class="divider"></li>
                         <li>
+                            <a href="download_data.html">Aggregating Time Series</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
                             <a href="download_data.html">Download Data</a>
                         </li>
                     </ul>
                 </li>
+                <!-- Quality Control -->
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
               Quality Control
@@ -341,6 +343,7 @@ div.tocify {
                         </li>
                     </ul>
                 </li>
+                <!-- Merging Data -->
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
               Merging Data
@@ -365,7 +368,8 @@ div.tocify {
                         </li>
                     </ul>
                 </li>
-                <li class="dropdown">
+                <!-- Plot -->
+                <!--                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
               Processing &amp; Plot
               
@@ -396,6 +400,7 @@ div.tocify {
                         </li>
                     </ul>
                 </li>
+ -->
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li>
@@ -427,17 +432,20 @@ div.tocify {
 <h3 id="open-files"><a href="cdt_file_menu.html#open.files">Open Files</a></h3>
 <h3 id="input-and-command-panels"><a href="cdt_file_menu.html#cmd.panel">Input and Command Panels</a></h3>
 <h3 id="map-and-table-view"><a href="cdt_file_menu.html#map.view">Map and Table View</a></h3>
-<h3 id="output-message"><a href="cdt_file_menu.html">Output Message</a></h3>
-<h3 id="status-bar"><a href="cdt_file_menu.html">Status Bar</a></h3>
-<h2 id="gui-conventions"><a href="cdt_file_menu.html">GUI Conventions</a></h2>
+<h3 id="output-message"><a href="cdt_file_menu.html#out.msg">Output Message</a></h3>
+<h3 id="status-bar"><a href="cdt_file_menu.html#status.bar">Status Bar</a></h3>
 <h1 id="cdt-input-data-format"><a href="cdt_data_input.html">CDT Input Data Format</a></h1>
-<h2 id="data-format-with-several-stations"><a href="cdt_data_input.html">Data format with several stations</a></h2>
-<h2 id="input-series-for-one-station"><a href="cdt_data_input.html">Input series for one station</a></h2>
-<h2 id="coordinates-data"><a href="cdt_data_input.html">Coordinates data</a></h2>
-<h2 id="netcdf-data"><a href="cdt_data_input.html">NetCDF data</a></h2>
+<h2 id="data-format-with-several-stations"><a href="cdt_data_input.html#cdt.format.data">Data format with several stations</a></h2>
+<h2 id="input-series-for-one-station"><a href="cdt_data_input.html#cdt.ts.data">Input series for one station</a></h2>
+<h2 id="coordinates-data"><a href="cdt_data_input.html#cdt.coords.data">Coordinates data</a></h2>
+<h2 id="netcdf-data"><a href="cdt_data_input.html#cdt.ncdf.data">NetCDF data</a></h2>
+<h1 id="format-cdt-input-data"><a href="format_cdt_data.html">Format CDT Input data</a></h1>
+<h2 id="multiple-files"><a href="format_cdt_data.html#multiple.files">Multiple Files</a></h2>
+<h2 id="single-file"><a href="format_cdt_data.html#single.file">Single File</a></h2>
+<h2 id="merge-two-cdt-data-format"><a href="format_cdt_data.html#merge.2cdt.data">Merge two CDT data format</a></h2>
 </div>
 <hr />
-<p>Generated on : January 30, 2017, 03:29</p>
+<p>Generated on : January 31, 2017, 17:08</p>
 
 <footer class="navbar navbar-inverse  navbar-fixed-bottom">
     <p>

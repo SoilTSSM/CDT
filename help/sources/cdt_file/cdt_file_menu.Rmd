@@ -19,17 +19,11 @@ knitr::opts_chunk$set(fig.path = 'images/R_images/cdt_file_menu.')
 
 When CDT starts, you are presented with the GUI as shown in the figure.
 
-<center>
-![](images/cdt_file/cdt_main0.png){height="80%" width="80%"}
-</center>
-<br>
+`r put.image("images/cdt_file/cdt_main0.png", height = 80, width = 80)`
 
 After you choose a function from the menu to execute, the GUI is transformed as follows (the numbers 1 through 7 in red-cyan circles are presented below)
 
-<center>
-![](images/cdt_file/cdt_main.png)
-</center>
-<br>
+`r put.image("images/cdt_file/cdt_main.png")`
 
  >  Your window decorations (title bar, etc.) may appear different depending on your operating system and window manager.
 
@@ -61,10 +55,7 @@ CDT can open three file types:
 
 To open an text or CSV files, go to the menu `r menuselection('File','Open data.frame')` an Open File dialog will come up prompting you to select the file to be open. 
 
-<center>
-![](images/cdt_file/open_file.png){height="50%" width="50%"}
-</center>
-<br>
+`r put.image("images/cdt_file/open_file.png", height = 50, width = 50)`
 
 You can navigate through this dialog box to locate the path of the file to open, you can select a file by double-clicking on it or by selecting it and pressing the Open button.
 
@@ -72,10 +63,7 @@ You can navigate through this dialog box to locate the path of the file to open,
 
 After you selected the file to open, another Open File dialog manager will appear with various options which allows you to precise the format of the `data.frame`.
 
-<center>
-![](images/cdt_file/open_file_manager.png){height="50%" width="60%"}
-</center>
-<br>
+`r put.image("images/cdt_file/open_file_manager.png", height = 50, width = 60)`
 
 So, you can:
 
@@ -89,10 +77,7 @@ So, you can:
 
 You can load a NetCDF file into CDT using the menu options `r menuselection('File','Open Netcdf file')` an Open File dialog will come up prompting you to select the file, then another dialog box will appear for allowing the selection of the variable and coordinates.
 
-<center>
-![](images/cdt_file/open_ncdf.png){height="50%" width="60%"}
-</center>
-<br>
+`r put.image("images/cdt_file/open_ncdf.png", height = 50, width = 60)`
 
 Through this dialog box, you can:
 
@@ -115,10 +100,7 @@ You can save a displayed image as JPEG from the menu `r menuselection('File','Sa
 
 The menu option `r menuselection('File','Configurations')` allows to change CDT working directory and set the missing values code.
 
-<center>
-![](images/cdt_file/cdt_config.png){height="50%" width="60%"}
-</center>
-<br>
+`r put.image("images/cdt_file/cdt_config.png", height = 50, width = 60)`
 
 1. allows to browse a directory tree to set the working directory
 2. allows to set missing values code for the whole session of CDT
@@ -151,10 +133,7 @@ The toolbar provides access to few functions in the File menu, plus additional t
 
 Each file loaded into CDT is listed in this listbox, it will avoid loading the file twice.
 
-<center>
-![](images/cdt_file/loaded_files.png){height="50%" width="40%"}
-</center>
-<br>
+`r put.image("images/cdt_file/loaded_files.png", height = 50, width = 40)`
 
 You can delete the data by selecting the corresponding filename and then right click on it, on the drop down menu click on `r menuselection('Remove data')`. You can display the `data.frame` on a table by selecting `r menuselection('Open in table')` as well.
 
@@ -174,31 +153,19 @@ The plot and map displayed in this window will depend on the type of outputs or 
 
 The map view can be panned, shifting the focus of the map display to another region, and it can be zoomed in and out.
 
-### Output Message
-### Status Bar
+### Output Message `r anchor.point('out.msg')`
 
+When loading  data or running some functions, you can track and follow messages that appear in this area. You can check if there were an error  during the operation or it has been successfully completed.
 
-## GUI Conventions
+### Status Bar `r anchor.point('status.bar')`
 
-This section describes the uniform styles that will be used throughout this manual.
+On the left side of the status bar, you can get a long description of the widget (button, input entry, list box, combo box, ...) you are hovering over (not available for all widgets). In addition, when you hold your mouse over the widget, a short description of the widget’s purpose will be displayed.
 
-* Menu selection: `r menuselection('Quality Control','QC check: One station',Rainfall,'Zeros check')`
-* Toolbar icons: ![][savetable]
+`r put.image("images/cdt_file/status_bar1.png", height = 150)`
 
-* Button: `r button(Cancel)`
+When a map and graph are displayed, the right side of the status bar shows the current position of the mouse as a long/lat coordinate, following it while moving across the map view. Next to the coordinate display you will find the name of the polygon (region, district, ...) displayed if the map is from an ESRI shapefile.
 
-* Tabs: `r onglet(Options)`
-* Checkbox: `r checkbox('Use elevation')`
-* Radio button:  `r radiobutton('Use elevation')`
-* Dropdown list: This ![][dropdownarrow] is listbox
-* Spinbox, select a number: ![][spinbox]
-* Browse for a file or directory: ![][browsebutf]
-
-* Zoom in non-active: ![][zoomin0]
-* Zoom in active: ![][zoomin1]
-
-* Redraw map non-active: ![][redrawmap0]
-* Redraw map  active: ![][redrawmap1]
+`r put.image("images/cdt_file/status_bar2.png", height = 150)`
 
 
 ```{r, child = "_generated_date.Rmd"}

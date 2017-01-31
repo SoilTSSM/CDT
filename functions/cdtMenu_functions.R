@@ -135,7 +135,7 @@ tkadd(menu.dataprep, "command", label = "Format CDTs Input Data", command = func
 })
 
 ##########
-tkadd(menu.dataprep, "separator")
+# tkadd(menu.dataprep, "separator")
 
 tkadd(menu.dataprep, "command", label = "Merge two CDT data format", command = function(){
 	refreshCDT.lcmd.env()

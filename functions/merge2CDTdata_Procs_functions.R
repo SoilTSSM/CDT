@@ -132,6 +132,9 @@ merge2CDTdata <- function(GeneralParameters){
 		XX <- merge(XX1, XX2, all = TRUE)
 		rm(XX1, XX2)
 	}
+	xxo <- order(as.character(XX$Daty))
+	XX <- XX[xxo, ]
+	xxdaty <- as.character(XX$Daty)
 
 	######################
 

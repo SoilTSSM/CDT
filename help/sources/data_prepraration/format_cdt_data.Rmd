@@ -1,13 +1,153 @@
 ---
-title: "Foramt CDT Input data"
+title: "Format CDT Input data"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
 ---
 
-Format CDTs Input Data
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(fig.path = 'images/R_images/format_cdt_data.')
+```
+```{r, child = "cdtMenuToolbar.Rmd"}
+```
+If you do not yet have a data in CDT format to work with, you can format your data to [CDT station data format](cdt_data_input.html#cdt.format.data) using the menu options `r menuselection('Data Preparation','Format CDTs Input Data')`. 
 
+CDT can format two types of input files:
 
-```{r ,child="_attente.Rmd"}
+- the data is already grouped together in a single file but not yet in CDT format
+- or [each station has its data in a separate file](cdt_data_input.html#cdt.ts.data)
+
+The menu `r menuselection('Data Preparation','Format CDTs Input Data')` opens a dialog where you can enter the required input and select the options corresponding to your type of data.
+
+`r put.image("images/data_prepraration/format_cdt_data/format_cdt_input_data.png", height = 60, width = 60)`
+
+1. Select the time step of your data, there are three choices available: daily, dekadal and monthly data.
+2. Enter the start and end date to take account in CDT data output.
+
+	 >  **Note**
+	 >  Dates must be correct, for example, if you enter 31 the day for June, this will cause an error.
+	 >  Dekad must be 1, 2 or 3.
+	 >  You can enter a date range you want for the final CDT data output, even if each station data has different date range.
+
+3. Enter here the minimum percentage (according the period you choose) of non-missing values for the series of a station to be accepted for the final CDT data output.
+4. Enter the name of the file to save the formated data or the full path to the file. You can also click on ![][browsebutf], it opens a file dialog where you can select the name, path and type of file (txt or csv).
+5. Select the type of input files to be converted to CDT format, two choices available: *Multiple Files* and *Single File*.
+6. Click the button `r button('Input File Setting')` to set the parameters of the input file.
+
+## Multiple Files `r anchor.point('multiple.files')`
+
+In this case, each station has its own file, see the section [Input series for one station](cdt_data_input.html#cdt.ts.data) for more details on the format of the data.
+
+__**Example:**__
+As a simple illustration, suppose we have a daily precipitation data for 5 stations, each station has its own file and the name of each file should be the IDs of the station.
+
+```
+102001.txt
+102021.txt
+102038.txt
+102304.txt
+102305.txt
 ```
 
+The format of data for each station must be the same. If we have a daily time series with separated date, the format of data in each file will look like as follows
+
+```
+  .....
+2004 7 1 -99
+2004 7 2 0
+2004 7 3 10.6
+2004 7 4 0
+2004 7 5 0
+2004 7 6 0
+2004 7 7 0
+2004 7 8 0
+  .....
+```
+
+And the coordinates of the stations are put in a separate file.
+
+`r put.image("images/data_prepraration/format_cdt_data/coordinates_file.png", height = 50, width = 50)`
+
+ >  **Note**
+ >  If you edit the coordinates on Excel spreadsheet, you can leave blank the cells with missing values or fill it with missing values flag (-99), then save it as a Comma Separated Values (CSV) file. 
+ >  The order of the columns 1 to 5 must be respected.
+ 
+ To enter all this information to CDT, click the button `r button('Input File Setting')`, it opens a dialog box
+
+`r put.image("images/data_prepraration/format_cdt_data/format_cdt_input_data1.png", height = 50, width = 50)`
+
+1. Enter the full path to directory containing the station files, or browse through ![][browsebutf].
+2. Provide a sample of the data.
+3. Select the file containing the station coordinates, if the file is not loaded yet and therefore not listed, use the ![][browsebutf] to open it.
+4. Check this box, if you want to include the elevation data to the final CDT data output,  provided that your coordinates file has non-missing elevation data.
+5. Choose the number of climate variables in the file. On our example, we have only one variable (daily rainfall).
+6. Choose the format of date (grouped or separated). On our example, the date is separated with the format YYYY MM DD.
+
+## Single File  `r anchor.point('single.file')`
+
+This time, all station data are already put together in a single file with a specific format which are described below. After selected *Single File* from the drop-down list "Format of input files" and clicked the button `r button('Input File Setting')`, which will display a dialog box.
+
+`r put.image("images/data_prepraration/format_cdt_data/format_cdt_input_data2.png", height = 50, width = 50)`
+
+1. Select the file containing the station data to be formated, if the file is not loaded yet and therefore not listed, use the ![][browsebutf] to open it.
+2. Check this box, if the coordinates of the station are included in the data.
+3. Select the file containing the station coordinates, if it is not included in the file containing the data. If the file is not loaded yet and therefore not listed, use the ![][browsebutf] to open it.
+4. Check this box, if you want to include the elevation data to the final CDT data output,  provided that the data file contains an elevation data or the elevation data is not missing on the coordinates file.
+5. Specify the column number for:
+	* __COL.ID__: stations IDs
+	* __COL.LON__: longitude
+	* __COL.LAT__: latitude
+	* __COL.ELEV__: elevation data
+	* __COL.YEAR__: column containing the year
+	* __COL.MONTH__: month
+	* __COL.DAY/DEK__: column containing the day or dekad
+	* __COL.DATA__: column containing the climate variable or from which climate variable starts
+6. Select  the number of columns containing the climate variable.
+	* For daily data, there are 2 possible formats:
+		-  1 column: the climate variable is placed in a single column.
+			`r put.image("images/data_prepraration/format_cdt_data/daily_wCrd_1Col.png",
+			caption = "Format of data: one column, coordinates included", height = 50, width = 50)`
+		-  31 columns: each month the climate variable is placed in 31 columns, one column is equivalent to one day.
+			`r put.image("images/data_prepraration/format_cdt_data/daily_wCrd_31Col.png",
+			caption = "Format of data: 31 columns, coordinates included", height = 70, width = 70)`
+			`r put.image("images/data_prepraration/format_cdt_data/daily_noCrd_31col.png",
+			caption = "Format of data: 31 columns, coordinates on a separate file", height = 70, width = 70)`
+
+			 >  **Note**
+			 >  If you edit the data on Excel spreadsheet, you can leave blank the cells with missing values or fill it with missing values flag, then save it as a Comma Separated Values (CSV) file.
+			 >  In addition, you can leave empty a whole line.
+	* Dekadal data, there are 3 possible formats:
+		- 1 column: the climate variable is placed in a single column.
+			`r put.image("images/data_prepraration/format_cdt_data/dek_wCrd_1Col.png",
+			caption = "Format of data: one column, coordinates included", height = 50, width = 50)`
+		-  3 columns: each month the climate variable is placed in 3 columns, one column is equivalent to one dekad.
+			`r put.image("images/data_prepraration/format_cdt_data/dek_wCrd_3Col.png",
+			caption = "Format of data: 3 columns, coordinates included", height = 60, width = 60)`
+		-  36 columns: each year the climate variable is placed in 36 columns, one column is equivalent to one dekad.
+			`r put.image("images/data_prepraration/format_cdt_data/dek_noCrd_36Col.png",
+			caption = "Format of data: 36 columns, without coordinates included", height = 70, width = 70)`
+	* Monthly data, there are 2 possible formats:
+		- 1 column: the climate variable is placed in a single column.
+			`r put.image("images/data_prepraration/format_cdt_data/mon_wCrd_1Col.png",
+			caption = "Format of data: one column, coordinates included", height = 50, width = 50)`
+		-  12 columns: each year the climate variable is placed in 12 columns, one column is equivalent to one month.
+			`r put.image("images/data_prepraration/format_cdt_data/mon_wCrd_12Col.png",
+			caption = "Format of data: 12 columns, coordinates included", height = 70, width = 70)`
+
+## Merge two CDT data format `r anchor.point('merge.2cdt.data')`
+
+If you want to combine two CDT data formats from two different files into one file, use `r menuselection('Data Preparation','Merge two CDT data format')`, and the right command panel will be activated.
+
+`r put.image("images/data_prepraration/format_cdt_data/merge_2cdt_data.png", height = 50, width = 50)`
+
+1. Select the filename of the first CDT data if it is already loaded, or open it through `r button('...')`
+2. Select the second CDT data.
+3. Enter the name of the file to save the merged data or the full path to the file. You can also click on `r button('...')`, it opens a file dialog where you can select the name, path and type of file (txt or csv).
+
+To combine the two files, click on the button `r button('Merge Data')`
 
 ```{r, child="_generated_date.Rmd"}
 ```

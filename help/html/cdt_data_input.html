@@ -281,11 +281,7 @@ div.tocify {
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <!-- 
-                <li>
-                    <a href="index.html">CDT User Guide</a>
-                </li>
-                 -->
+                <!-- CDT GUI & Data -->
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
               CDT GUI &amp; Data
@@ -302,6 +298,7 @@ div.tocify {
                         </li>
                     </ul>
                 </li>
+                <!-- Data Preparation -->
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
               Data Preparation
@@ -309,7 +306,7 @@ div.tocify {
             </a>
                     <ul class="dropdown-menu" role="menu">
                         <li>
-                            <a href="format_cdt_data.html">Format CDT Input Data</a>
+                            <a href="format_cdt_data.html">Format CDTs Input Data</a>
                         </li>
                         <li class="divider"></li>
                         <li>
@@ -317,10 +314,15 @@ div.tocify {
                         </li>
                         <li class="divider"></li>
                         <li>
+                            <a href="download_data.html">Aggregating Time Series</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
                             <a href="download_data.html">Download Data</a>
                         </li>
                     </ul>
                 </li>
+                <!-- Quality Control -->
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
               Quality Control
@@ -341,6 +343,7 @@ div.tocify {
                         </li>
                     </ul>
                 </li>
+                <!-- Merging Data -->
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
               Merging Data
@@ -365,7 +368,8 @@ div.tocify {
                         </li>
                     </ul>
                 </li>
-                <li class="dropdown">
+                <!-- Plot -->
+                <!--                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
               Processing &amp; Plot
               
@@ -396,6 +400,7 @@ div.tocify {
                         </li>
                     </ul>
                 </li>
+ -->
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li>
@@ -422,10 +427,10 @@ div.tocify {
 
 <p>CDT can handle daily, dekadal (10-days) or monthly series. A file can contains one station or several stations series. Input data series for one station can contains one or three variables (precipitation-maximum temperature-minimum temperature in this order). Each input data series should be stored in a text/ASCII or CSV (Comma-separated values) format file.</p>
 <div id="data-format-with-several-stations" class="section level2">
-<h2>Data format with several stations</h2>
+<h2>Data format with several stations <a name="cdt.format.data"></a></h2>
 <p>In this format, all the series for one variable from different stations are put together on a single file. It is the standard input data format used by CDT, in which the first line is the ID or name of the stations (<strong><em>avoid putting space in stations name</em></strong>), the second and third lines are longitude and latitude of the stations, and the fourth line is elevation data in meter (if it exists), and the following lines contain the observations, in which the first column is the date of observations. The following tables show the format of data</p>
 <!-- html table generated in R 3.3.2 by xtable 1.8-2 package -->
-<!-- Mon Jan 30 03:29:35 2017 -->
+<!-- Tue Jan 31 17:08:52 2017 -->
 <table id="cdtInputData" class="cdtInputData0" border="0">
 <caption align="top">
 Input series without elevation data
@@ -753,7 +758,7 @@ DAILY/LAT
 </table>
 <p><br></p>
 <!-- html table generated in R 3.3.2 by xtable 1.8-2 package -->
-<!-- Mon Jan 30 03:29:35 2017 -->
+<!-- Tue Jan 31 17:08:52 2017 -->
 <table id="cdtInputData" class="cdtInputData0" border="0">
 <caption align="top">
 Input series with elevation data
@@ -1094,11 +1099,11 @@ DAILY/ELEV
 </blockquote>
 </div>
 <div id="input-series-for-one-station" class="section level2">
-<h2>Input series for one station</h2>
+<h2>Input series for one station <a name="cdt.ts.data"></a></h2>
 <p>Several formats are possible for input data series for one station. Series can have header (the column names) or not and can contain one or three variables in the following order: precipitation-maximum temperature-minimum temperature. Observations dates can be grouped or separated. The following examples give us an overview of possibility.</p>
 <div id="onestnseries">
 <!-- html table generated in R 3.3.2 by xtable 1.8-2 package -->
-<!-- Mon Jan 30 03:29:35 2017 -->
+<!-- Tue Jan 31 17:08:52 2017 -->
 <table id="cdtInputData" class="cdtInputData1" border="0">
 <caption align="top">
 Daily time series, 1 variable, grouped date, no header
@@ -1153,7 +1158,7 @@ Daily time series, 1 variable, grouped date, no header
 </tr>
 </table>
 <!-- html table generated in R 3.3.2 by xtable 1.8-2 package -->
-<!-- Mon Jan 30 03:29:36 2017 -->
+<!-- Tue Jan 31 17:08:52 2017 -->
 <table id="cdtInputData" class="cdtInputData1" border="0">
 <caption align="top">
 Daily time series, 3 variables, separated date, with header
@@ -1286,7 +1291,7 @@ tmin
 <p><br></p>
 <div id="onestnseries">
 <!-- html table generated in R 3.3.2 by xtable 1.8-2 package -->
-<!-- Mon Jan 30 03:29:36 2017 -->
+<!-- Tue Jan 31 17:08:52 2017 -->
 <table id="cdtInputData" class="cdtInputData1" border="0">
 <caption align="top">
 Dekadal time series, 1 variable, separated date, with header
@@ -1377,7 +1382,7 @@ tmax
 </tr>
 </table>
 <!-- html table generated in R 3.3.2 by xtable 1.8-2 package -->
-<!-- Mon Jan 30 03:29:36 2017 -->
+<!-- Tue Jan 31 17:08:52 2017 -->
 <table id="cdtInputData" class="cdtInputData1" border="0">
 <caption align="top">
 Dekadal time series, 3 variables, grouped date, no header
@@ -1474,7 +1479,7 @@ Dekadal time series, 3 variables, grouped date, no header
 <p><br></p>
 <div id="onestnseries">
 <!-- html table generated in R 3.3.2 by xtable 1.8-2 package -->
-<!-- Mon Jan 30 03:29:36 2017 -->
+<!-- Tue Jan 31 17:08:52 2017 -->
 <table id="cdtInputData" class="cdtInputData1" border="0">
 <caption align="top">
 Monthly time series, 1 variable, separated date, no header
@@ -1547,7 +1552,7 @@ Monthly time series, 1 variable, separated date, no header
 </tr>
 </table>
 <!-- html table generated in R 3.3.2 by xtable 1.8-2 package -->
-<!-- Mon Jan 30 03:29:36 2017 -->
+<!-- Tue Jan 31 17:08:52 2017 -->
 <table id="cdtInputData" class="cdtInputData1" border="0">
 <caption align="top">
 Monthly time series, 3 variables, grouped date, with header
@@ -1659,12 +1664,15 @@ tmin
 </blockquote>
 </div>
 <div id="coordinates-data" class="section level2">
-<h2>Coordinates data</h2>
+<h2>Coordinates data <a name="cdt.coords.data"></a></h2>
 <p>Sometimes CDT ask for the coordinates of the stations if it not included in the file containing the data, i.e., the coordinates are stored in a separate file.<br />
 CDT has a specific format to store the coordinates, in which the first column is the ID of the stations (<strong><em>avoid putting space in the ID</em></strong>), the second column is the name of the station and the third and fourth are longitude and latitude of the stations, the fifth column contains the elevation data in meter, and the following columns can contains any information about the stations. The columns containing the ID and long/lat of the stations shall not contain missing values.<br />
 You can edit the coordinates file on Excel spreadsheet and save it as a Comma Separated Values (CSV) file. It is useful for working on empty cells. If you edit the coordinates on Excel spreadsheet, you can leave blank the cells with missing values or fill it with missing values flag.</p>
 <center>
-<img src="images/cdt_file/coordinates_file.png" style="width:80.0%" />
+<div class="figure">
+<img src="images/cdt_file/coordinates_file.png" style="width:80.0%" style="height:100.0%" />
+
+</div>
 </center>
 <p><br></p>
 <blockquote>
@@ -1673,7 +1681,7 @@ You can edit the coordinates file on Excel spreadsheet and save it as a Comma Se
 <p>You can add a header to this file, and specify it when you import the data to CDT.</p>
 </div>
 <div id="netcdf-data" class="section level2">
-<h2>NetCDF data</h2>
+<h2>NetCDF data <a name="cdt.ncdf.data"></a></h2>
 <p><a href="http://www.unidata.ucar.edu/software/netcdf/docs">NetCDF</a> files contain one or more variables, which are usually structured as regular multi-dimensional arrays. CDT can handle 2D (lat/lon) NetCDF data with several variables, in other words <strong><em>data for each date should be stored in a separate file</em></strong>, a file may contain only data for one day, dekad or month. For example, if we have a dekadal rainfall series, then the data for each dekad should be stored in a separate file as follows :</p>
 <pre><code>rfe2014_01-dk1
 rfe2014_01-dk2
@@ -1774,7 +1782,7 @@ nc</code></pre>
 ##             units: degreeN
 ##             long_name: Lat</code></pre>
 <hr />
-<p>Generated on : January 30, 2017, 03:29</p>
+<p>Generated on : January 31, 2017, 17:08</p>
 </div>
 
 <footer class="navbar navbar-inverse  navbar-fixed-bottom">
