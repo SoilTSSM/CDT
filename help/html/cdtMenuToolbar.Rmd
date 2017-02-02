@@ -6,25 +6,25 @@ anchor.point <- function(...)
 						'"></a>', sep = '')
 menuselection <- function(...) {
   menu <- paste(as.character(eval(substitute(alist(...)))), collapse = ' &#8227; ')
-  paste("<span class='menuselection'>", menu, "</span>", sep = '')
+  paste("<span class='menuselection'>", menu, "</span> &nbsp;", sep = '')
 }
 button <- function(...)
 					paste("<span class='buttonclass'>",
 					as.character(eval(substitute(alist(...)))),
-					"</span>")
+					"</span> &nbsp;")
 onglet <- function(...)
 					paste("<span class='ongletclass'>",
 					as.character(eval(substitute(alist(...)))),
-					"</span>")
+					"</span> &nbsp;")
 dropdownlistBut <- function() "<span class='dropdlistclass'>AA</span><span class='dropdclass'>&#9662;</span>"
 checkbox <- function(...)
 					paste("<img src='images/common/checkbox.png' title='Checkbox' class='radiochckbutclass' /><span class='radiochcktextclass'>",
 					as.character(eval(substitute(alist(...)))),
-					"</span>")
+					"</span> &nbsp;")
 radiobutton <- function(...) 
 					paste("<img src='images/common/radiobutton.png' title='Radio button' class='radiochckbutclass' /><span class='radiochcktextclass'>",
 					as.character(eval(substitute(alist(...)))),
-					"</span>")
+					"</span> &nbsp;")
 img.caption <- function(...)
 						paste("<span class='img-caption'>",
 						as.character(eval(substitute(alist(...)))),

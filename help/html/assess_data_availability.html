@@ -11,7 +11,7 @@
 
 
 
-<title></title>
+<title>Assess Data Availability</title>
 
 <script src="libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,9 +19,6 @@
 <script src="libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="libs/bootstrap-3.3.5/shim/respond.min.js"></script>
-<script src="libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
-<link href="libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
-<script src="libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="libs/navigation-1.1/tabsets.js"></script>
 <link href="libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
 <script src="libs/highlightjs-1.1/highlight.js"></script>
@@ -166,107 +163,6 @@ $(document).ready(function () {
 
 
 
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = false;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
-
-<style type="text/css">
-
-#TOC {
-  margin: 25px 0px 20px 0px;
-}
-@media (max-width: 768px) {
-#TOC {
-  position: relative;
-  width: 100%;
-}
-}
-
-
-.toc-content {
-  padding-left: 30px;
-  padding-right: 40px;
-}
-
-div.main-container {
-  max-width: 1200px;
-}
-
-div.tocify {
-  width: 20%;
-  max-width: 260px;
-  max-height: 85%;
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-  div.tocify {
-    width: 25%;
-  }
-}
-
-@media (max-width: 767px) {
-  div.tocify {
-    width: 100%;
-    max-width: none;
-  }
-}
-
-.tocify ul, .tocify li {
-  line-height: 20px;
-}
-
-.tocify-subheader .tocify-item {
-  font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
-}
-
-.tocify .list-group-item {
-  border-radius: 0px;
-}
-
-.tocify-subheader {
-  display: inline;
-}
-.tocify-subheader .tocify-item {
-  font-size: 0.95em;
-}
-
-</style>
-
-<!-- setup 3col/9col grid for toc_float and main content  -->
-<div class="row-fluid">
-<div class="col-xs-12 col-sm-4 col-md-3">
-<div id="TOC" class="tocify">
-</div>
-</div>
-
-<div class="toc-content col-xs-12 col-sm-8 col-md-9">
-
-
 
 
 <div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
@@ -382,32 +278,47 @@ div.tocify {
 
 
 
+<h1 class="title toc-ignore">Assess Data Availability</h1>
 
 </div>
 
 
-<div id="toc-index" class="toc-index-class">
-<h1 id="cdt-gui"><a href="cdt_file_menu.html">CDT GUI</a></h1>
-<h2 id="cdt-main-window"><a href="cdt_file_menu.html#cdt.main.win">CDT Main Window</a></h2>
-<h3 id="menu-bar"><a href="cdt_file_menu.html#menu.bar">Menu Bar</a></h3>
-<h3 id="toolbars"><a href="cdt_file_menu.html#toolbars">Toolbars</a></h3>
-<h3 id="open-files"><a href="cdt_file_menu.html#open.files">Open Files</a></h3>
-<h3 id="input-and-command-panels"><a href="cdt_file_menu.html#cmd.panel">Input and Command Panels</a></h3>
-<h3 id="map-and-table-view"><a href="cdt_file_menu.html#map.view">Map and Table View</a></h3>
-<h3 id="output-message"><a href="cdt_file_menu.html#out.msg">Output Message</a></h3>
-<h3 id="status-bar"><a href="cdt_file_menu.html#status.bar">Status Bar</a></h3>
-<h1 id="cdt-input-data-format"><a href="cdt_data_input.html">CDT Input Data Format</a></h1>
-<h2 id="data-format-with-several-stations"><a href="cdt_data_input.html#cdt.format.data">Data format with several stations</a></h2>
-<h2 id="input-series-for-one-station"><a href="cdt_data_input.html#cdt.ts.data">Input series for one station</a></h2>
-<h2 id="coordinates-data"><a href="cdt_data_input.html#cdt.coords.data">Coordinates data</a></h2>
-<h2 id="netcdf-data"><a href="cdt_data_input.html#cdt.ncdf.data">NetCDF data</a></h2>
-<h1 id="format-cdt-input-data"><a href="format_cdt_data.html">Format CDT Input data</a></h1>
-<h2 id="multiple-files"><a href="format_cdt_data.html#multiple.files">Multiple Files</a></h2>
-<h2 id="single-file"><a href="format_cdt_data.html#single.file">Single File</a></h2>
-<h2 id="merge-two-cdt-data-format"><a href="format_cdt_data.html#merge.2cdt.data">Merge two CDT data format</a></h2>
-<h1 id="assess-data-availability"><a href="assess_data_availability.html">Assess Data Availability</a></h1>
-<h1 id="aggregating-time-series"><a href="aggregate_TS.html">Aggregating Time Series</a></h1>
+<p>The menu <span class="menuselection">Data Preparation ‣ Assess Data Availability</span>   provides a summary view of your data. It gives an informative graphics of the available observations and the proportion of missing values in the data.</p>
+<center>
+<div class="figure">
+<img src="images/data_prepraration/assess_data/asses_data_availab.png" style="width:60.0%" style="height:60.0%" />
+
 </div>
+</center>
+<p><br></p>
+<ol style="list-style-type: decimal">
+<li>Select the time step of your data, there are three choices available: daily, dekadal and monthly data.</li>
+<li>Select the file containing the station data, if the file is not loaded yet and therefore not listed, use the <span class="buttonclass"> … </span>   to open it.</li>
+<li>Click <span class="buttonclass"> Distance-Correlation </span>   to see the plot of correlation as a function of distance. The plot summarizes the spatial correlations for each station pair plotted against the corresponding inter-station distance.<br />
+
+<center>
+<img src="images/data_prepraration/assess_data/dist_cor.png" title="fig:" style="width:60.0%" style="height:60.0%" /></li>
+</ol>
+</center>
+<br><br />
+4. Click <span class="buttonclass"> Miss.Data Summary </span>   to have a plot summary of the available data: the number of working stations and the proportion of missing observations.<br />
+
+<center>
+<div class="figure">
+<img src="images/data_prepraration/assess_data/funct_stn.png" style="width:60.0%" style="height:60.0%" />
+
+</div>
+</center>
+<br><br />
+5. Select a station from drop-down combo box to get a plot of the available data per year during the operating period of the station. You can use <span class="buttonclass"> &lt;&lt; </span>   and <span class="buttonclass"> &gt;&gt; </span>   to easily switch between stations.<br />
+
+<center>
+<div class="figure">
+<img src="images/data_prepraration/assess_data/miss_summary.png" style="width:60.0%" style="height:60.0%" />
+
+</div>
+</center>
+<p><br></p>
 <hr />
 <p>Generated on : February 01, 2017, 23:32</p>
 
@@ -421,8 +332,6 @@ div.tocify {
 </footer>
 
 
-</div>
-</div>
 
 </div>
 

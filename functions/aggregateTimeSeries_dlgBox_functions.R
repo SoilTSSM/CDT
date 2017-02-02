@@ -138,8 +138,8 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 
 	infobulle(CbAggreFun, 'Function to be used to aggregate dekadal, monthly and yearly series')
 	status.bar.display(CbAggreFun, TextOutputVar, 'Function to be used to aggregate dekadal, monthly and yearly series')
-	infobulle(MissFracentr, 'Minimum fraction of available data\nthat must be present for the time period\nto compute')
-	status.bar.display(MissFracentr, TextOutputVar, 'Minimum fraction of available data that must be present for the time period to compute')
+	infobulle(MissFracentr, 'Minimum fraction of available data\nthat must be present within each output the time step')
+	status.bar.display(MissFracentr, TextOutputVar, 'Minimum fraction of available data that must be present within each output the time step')
 
 	#########################
 

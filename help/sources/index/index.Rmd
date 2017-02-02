@@ -45,6 +45,10 @@ output:
 
 ## [Merge two CDT data format](format_cdt_data.html#merge.2cdt.data)
 
+# [Assess Data Availability](assess_data_availability.html)
+
+# [Aggregating Time Series](aggregate_TS.html)
+
 </div>
 
 ```{r, child = '_generated_date.Rmd'}

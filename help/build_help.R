@@ -143,15 +143,17 @@ validate_front_matter <- function(front_matter) {
 ####################################################################
 
 help_dir <- '/Users/rijaf/Desktop/ECHANGE/github/CDT/help/html'
+setwd(help_dir)
+
 mathjax_dir <- '/Users/rijaf/Desktop/ECHANGE/MathJax'
 sources_dir <- '../sources'
 r_images <- 'images/R_images'
 
-setwd(help_dir)
 Sys.setenv(RMARKDOWN_MATHJAX_PATH = mathjax_dir)
 
 ## arrange files for toc
-toc.order <- c("index.Rmd", "cdt_file_menu.Rmd", "cdt_data_input.Rmd", "format_cdt_data.Rmd")
+toc.order <- c("index.Rmd", "cdt_file_menu.Rmd", "cdt_data_input.Rmd", "format_cdt_data.Rmd", 
+			"assess_data_availability.Rmd", "aggregate_TS.Rmd")
 
 #####
 all_src <- list.files(path = sources_dir, pattern = '.Rmd', full.names = TRUE, recursive = TRUE)
@@ -190,7 +192,9 @@ figure_files <- list.files(r_images, recursive = TRUE, full.names = TRUE)
 # html_files <- "cdt_file_menu.html"
 # figure_dir <- "cdt_file_menu_files"
 
-# html_files <- c("index.html", "format_cdt_data.html")
+###############
+### delete
+# html_files <- c("index.html", "aggregate_TS.html")
 
 ######
 exist_Rimage_fig <- sapply(strsplit(list.files(r_images), '\\.'), '[[', 1) %in% all_files
@@ -243,8 +247,8 @@ file.copy(index.path, '.')
 rmd_files <- c("index.Rmd", rmd_files)
 
 ###############
-
-# rmd_files <- c("index.Rmd", "format_cdt_data.Rmd")
+### delete
+# rmd_files <- c("index.Rmd", "aggregate_TS.Rmd")
 
 ###############
 

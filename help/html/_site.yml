@@ -1,0 +1,51 @@
+name: "CDT User Guide"
+navbar:
+  title: "CDT DOCUMENTATION"
+  type: inverse
+  left:
+    - text: "CDT GUI & Data"
+      menu:
+        - text: "CDT GUI"
+          href: cdt_file_menu.html
+        - text: "---------"
+        - text: "CDT Data"
+          href: cdt_data_input.html
+    - text: "Data Preparation"
+      menu:
+        - text: "Format CDTs Input Data"
+          href: format_cdt_data.html
+        - text: "---------"
+        - text: "Assess Data Availability"
+          href: assess_data_availability.html
+        - text: "---------"
+        - text: "Aggregating Time Series"
+          href: aggregate_TS.html
+        - text: "---------"
+        - text: "Download Data"
+          href: download_data.html
+    - text: "Quality Control"
+      menu:
+        - text: "Check Stations Coordinates"
+          href: check_stations_coords.html
+        - text: "---------"
+        - text: "Quality Control"
+          href: quality_control.html
+        - text: "---------"
+        - text: "Homogeneity Test"
+          href: homogeneity_test.html
+    - text: "Merging Data"
+      menu:
+        - text: "Merging Rainfall"
+          href: merging_rainfall.html
+        - text: "---------"
+        - text: "Merging Temperature"
+          href: merging_temperature.html
+        - text: "---------"
+        - text: "Updating Dekadal Rainfall"
+          href: update_dekadal_rainfall.html
+        - text: "---------"
+        - text: "Validation"
+          href: validation.html
+  right:
+    - icon: fa-github fa-lg
+      href: https://github.com/rijaf/CDT
