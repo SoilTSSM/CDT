@@ -715,7 +715,7 @@ ExtractDataPanelCmd <- function(){
 					outdir = tclvalue(file.save1),
 					is.cpt = switch(tclvalue(is.cpt), '0' = FALSE, '1' = TRUE))
 
-		# assign('retExtractParams', retExtractParams, envir = .GlobalEnv)
+		assign('retExtractParams', retExtractParams, envir = .GlobalEnv)
 
 		tkconfigure(main.win, cursor = 'watch')
 		InsertMessagesTxt(main.txt.out, "Extraction.................")

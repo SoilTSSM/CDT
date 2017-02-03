@@ -802,13 +802,13 @@ getExtractDataFun <- function(retExtractParams){
 		}
 
 		if(is.cpt){
-			xtmp <- outdonne$out$data
-			xtmp[is.na(xtmp)] <- miss.val
-			cptIn <- list(freqOut = period2, xdon = xtmp, xdates = outdonne$out$date,
+			outdonne$out$data[is.na(outdonne$out$data)] <- miss.val
+			cptIn <- list(freqOut = period2, xdon = outdonne$out$data, xdates = outdonne$out$date,
 							xlon = headinfo[, 2], xlat = headinfo[, 3], xid = headinfo[, 1],
 							varid = varid, units = units, miss.val = miss.val)
 			cptOut <- do.call(getDataCPT.Station, cptIn)
 			cat(cptOut, file = out2sav)
+			if(calc.climato == "1") xtmp <- t(cbind(t(cbind(capition, t(headinfo))), t(xtmp)))
 		}else{
 			xtmp[is.na(xtmp)] <- miss.val
 			xtmp <- t(cbind(t(cbind(capition, t(headinfo))), t(xtmp)))
