@@ -1285,4 +1285,112 @@ slope.aspect <- function(mat, xres, yres, filter = "sobel", smoothing = 1){
 	return(ret)
 }
 
+#################################################################################
+## CPT format
+
+dateCPT.daily <- function(date){
+	year <- substr(date, 1, 4)
+	mon <- substr(date, 5, 6)
+	day <- substr(date, 7, 8)
+	paste(year, mon, day, sep = '-')
+}
+
+dateCPT.dekadal <- function(date){
+	year <- substr(date, 1, 4)
+	mon <- substr(date, 5, 6)
+	dek <- as.numeric(substr(date, 7, 7))
+	eom <- sapply(seq_along(year), function(i){
+		daty <- as.Date(paste(year[i], mon[i], 28:31, sep = '-'))
+		rev((28:31)[which(!is.na(daty))])[1]
+	})
+	ddek <- dek
+	ddek[dek == 1] <- '01/10'
+	ddek[dek == 2] <- '11/20'
+	ddek[dek == 3] <- paste(21, eom[dek == 3], sep = '/')
+	paste(year, mon, ddek, sep = '-')
+}
+
+dateCPT.monthly <- function(date){
+	year <- substr(date, 1, 4)
+	mon <- substr(date, 5, 6)
+	paste(year, mon, sep = '-')
+}
+
+dateCPT.seasonal <- function(date) gsub("_", "/", date)
+
+dateCPT <- function(date, freq){
+	dateCPT <- match.fun(paste("dateCPT", freq, sep = "."))
+	dateCPT(date)
+}
+
+formatCPT.date <- function(date){
+	cptT <- paste(c("cpt:T", date), collapse = "\t")
+	paste(cptT, '\n', sep = '')
+}
+
+getCPT.tag.line <- function(cpt.tags){
+	cpt.tags <- paste(paste('cpt', names(cpt.tags), sep = ':'), do.call('c', cpt.tags), sep = '=')
+	tags <- paste(paste(cpt.tags, collapse = ', '), '\n', sep = '')
+	return(tags)
+}
+
+formatCPT.GRDdata <- function(x, y, z, width = 13, side = "both"){
+	z <- t(z)
+	xout <- formatC(c(z))
+	xout <- str_pad(xout, width = width, side = side)
+	xout <- paste("\t", xout, sep = '')
+	dim(xout) <- dim(z)
+	xout <- cbind(round(y, 6), xout)
+	xout <- xout[nrow(xout):1, ]
+	xout <- paste(apply(xout, 1, paste, collapse = ""), '\n', sep = '')
+	xout <- c(paste("\t", paste(round(x, 6), collapse = "\t"), "\n", sep = ""), xout)
+	return(xout)
+}
+
+getDataCPT.GRDdata <- function(freqOut, xdon, xdates, xlon, xlat, varid, units, miss.val){
+	xdon <- rapply(xdon, f = function(x) ifelse(is.na(x) | is.nan(x) | is.infinite(x), miss.val, x), how = "replace")
+	ncmax <- max(nchar(formatC(do.call(c, xdon))))
+	daty <- dateCPT(xdates, freqOut)
+	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
+	nfields <- paste("cpt:nfields=", 1, "\n", sep = '')
+	cpt.date <- formatCPT.date(daty)
+	cpt.data <- lapply(seq_along(daty), function(j){
+		cpt.tags <- list(field = varid, T = daty[j], nrow = length(xlat), ncol = length(xlon),
+							row = 'Y', col = 'X', units = units, missing = miss.val)
+		cpt.tags <- getCPT.tag.line(cpt.tags)
+		cpt.data <- formatCPT.GRDdata(xlon, xlat, xdon[[j]], width = ncmax, side = "both")
+		c(cpt.tags, cpt.data)
+	})
+	cpt.data <- do.call(c, cpt.data)
+	cpt.out <- c(xmlns, nfields, cpt.date, cpt.data)
+	return(cpt.out)
+}
+
+formatCPT.Station <-function(date, z, width = 13, side = "both"){
+	xout <- formatC(c(z))
+	xout <- str_pad(xout, width = width, side = side)
+	xout <- paste("\t", xout, sep = '')
+	dim(xout) <- dim(z)
+	xout <- cbind(date, xout)
+	xout <- paste(apply(xout, 1, paste, collapse = ""), '\n', sep = '')
+	return(xout)
+}
+
+getDataCPT.Station <- function(freqOut, xdon, xdates, xlon, xlat, xid, varid, units, miss.val){
+	ncmax <- max(nchar(formatC(c(xdon))))
+	daty <- dateCPT(xdates, freqOut)
+	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
+	# nfields <- paste("cpt:nfields=", 1, "\n", sep = '')
+	# cpt.date <- formatCPT.date(daty)
+	cpt.tags <- list(field = varid, nrow = length(xdates), ncol = length(xlon),
+					 row = 'T', col = 'station', units = units, missing = miss.val)
+	cpt.tags <- getCPT.tag.line(cpt.tags)
+	cpt.stn <- paste('\t', paste(xid, collapse = '\t'), '\n', sep = '')
+	cpt.lon <- paste('cpt:X', '\t', paste(xlon, collapse = '\t'), '\n', sep = '')
+	cpt.lat <- paste('cpt:Y', '\t', paste(xlat, collapse = '\t'), '\n', sep = '')
+	cpt.data <- formatCPT.Station(daty, xdon, width = ncmax)
+	# cpt.out <- c(xmlns, nfields, cpt.date, cpt.tags, cpt.stn, cpt.lon, cpt.lat, cpt.data)
+	cpt.out <- c(xmlns, cpt.tags, cpt.stn, cpt.lon, cpt.lat, cpt.data)
+	return(cpt.out)
+}
 

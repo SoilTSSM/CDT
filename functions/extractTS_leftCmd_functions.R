@@ -651,6 +651,7 @@ ExtractDataPanelCmd <- function(){
 	ChoixOutType <- tclVar('1')
 	fileORdir <- tclVar('File to save extracted data')
 	file.save1 <- tclVar()
+	is.cpt <- tclVar('0')
 
 	##########################
 	lab1.tab4 <- tklabel(subfr4, text = 'Saptially Average Over Selected Area', anchor = 'e', justify = 'right')
@@ -668,6 +669,10 @@ ExtractDataPanelCmd <- function(){
 	excute.tab4 <- tkbutton(subfr4, text = "EXTRACT TS")
 
 	##########################
+
+	outTypeCPT <- tkcheckbutton(outputype.tab4, variable = is.cpt, text = "CPT Format", anchor = 'w', justify = 'left')
+	sepCPT.tab4 <- ttkseparator(outputype.tab4)
+
 	outTypeRadio1 <- tkradiobutton(outputype.tab4, text = "Separate Files Matrix", anchor = 'w', justify = 'left')
 	outTypeRadio2 <- tkradiobutton(outputype.tab4, text = "One File Matrix", anchor = 'w', justify = 'left')
 	outTypeRadio3 <- tkradiobutton(outputype.tab4, text = "One File Time|Lat|Lon|Value", anchor = 'w', justify = 'left')
@@ -676,9 +681,12 @@ ExtractDataPanelCmd <- function(){
 	tkconfigure(outTypeRadio2, variable = ChoixOutType, value = "2")
 	tkconfigure(outTypeRadio3, variable = ChoixOutType, value = "3")
 
-	tkgrid(outTypeRadio1, row = 0, column = 0, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(outTypeRadio2, row = 1, column = 0, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(outTypeRadio3, row = 2, column = 0, sticky = 'ew', padx = 1, pady = 1)
+	tkgrid(outTypeCPT, row = 0, column = 0, sticky = 'ew', padx = 1, pady = 1)
+	tkgrid(sepCPT.tab4, row = 1, column = 0, sticky = 'ew', padx = 1, pady = 1)
+
+	tkgrid(outTypeRadio1, row = 2, column = 0, sticky = 'ew', padx = 1, pady = 1)
+	tkgrid(outTypeRadio2, row = 3, column = 0, sticky = 'ew', padx = 1, pady = 1)
+	tkgrid(outTypeRadio3, row = 4, column = 0, sticky = 'ew', padx = 1, pady = 1)
 
 	##########################
 
@@ -704,7 +712,8 @@ ExtractDataPanelCmd <- function(){
 					area.type = tclvalue(area_type),
 					sp.ave = tclvalue(spatAverage),
 					out.type = tclvalue(ChoixOutType),
-					outdir = tclvalue(file.save1))
+					outdir = tclvalue(file.save1),
+					is.cpt = switch(tclvalue(is.cpt), '0' = FALSE, '1' = TRUE))
 
 		# assign('retExtractParams', retExtractParams, envir = .GlobalEnv)
 

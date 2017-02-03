@@ -298,11 +298,13 @@ index_Season <- function(freqIn, freqOut = c(1, 3), dates){
 	annee <- substr(dates,1,4)
 	mois <- substr(dates, 5, 6)
 	month12 <- format(ISOdate(2014,1:12,1), "%b")
+	month12n <- str_pad(1:12, width = 2, pad = "0")
 	if(seasonLength < 12){
 		whichMon <- (startMonth:(startMonth+(seasonLength-1)))%%12
 		whichMon[whichMon == 0] <- 12
 		season <- paste(substr(month12, 1, 1)[whichMon], collapse='')
-		whichMon <- ifelse(whichMon < 10, paste(0, whichMon, sep = ''), as.character(whichMon))
+		se.season <- month12n[whichMon][c(1, seasonLength)]
+		whichMon <- str_pad(whichMon, width = 2, pad = "0")
 		id.season <- mois%in%whichMon
 		alt.season <- rle(id.season)
 		nbd <- alt.season$lengths[alt.season$values]
@@ -312,19 +314,24 @@ index_Season <- function(freqIn, freqOut = c(1, 3), dates){
 		if(freqIn == 'monthly') nbd[c(1, length(nbd))] <- seasonLength
 		year <- unique(annee[id.season])
 		if(length(nbd) > length(year)){
-			year <- c(as.numeric(year[1])-1, year)
+			yy0 <- as.numeric(year[1])-1
+			yy1 <- as.numeric(year[length(year)])+1
+			year <- c(yy0, year)
+			xdates <- cbind(year, c(year[-1], yy1))
+			xdates <- paste(paste(xdates[, 1], se.season[1], sep = '-'), '_',
+					paste(xdates[, 2], se.season[2], sep = '-'), sep = '')
 		}else{
-			sYear <- match(rle(mois)$values,whichMon)
+			sYear <- match(rle(mois)$values, whichMon)
 			if(sYear[!is.na(sYear)][1] != 1){
 				year <- c(as.numeric(year[1])-1, year[-length(year)])
 			}
+			xdates <- paste(year, paste(se.season, collapse = '_'), sep = '-')
 		}
-		xdates <- paste(season, year, sep = '-')
-		indx <- rep(xdates, times = nbd0)
+		indx <- rep(paste(season, year, sep = '-'), times = nbd0)
 	}else{
-		startMonth[startMonth < 10] <- paste(0, startMonth, sep = '')
+		startM <- str_pad(startMonth, width = 2, pad = "0")
 		id.mois <- rle(mois)
-		idx <- seq(which(id.mois$values%in%startMonth)[1],length(id.mois$values),seasonLength)
+		idx <- seq(which(id.mois$values%in%startM)[1], length(id.mois$values), seasonLength)
 		istart <- cumsum(id.mois$lengths)
 		istart <- istart-istart[1]+1
 		istart <- istart[idx]
@@ -336,19 +343,25 @@ index_Season <- function(freqIn, freqOut = c(1, 3), dates){
 		id.season[istart[1]:length(id.season)] <- TRUE
 		xndx <- paste(paste(month12[startMonth], seasonLength, sep=''), annee[istart], sep = '-')
 		indx <- rep(xndx, times = nbd0)
-		## add 4 pour sauter feb28 ou june30...
-		if(freqIn == 'daily') sdaty <- paste(month12[as.numeric(mois[istart+4])], annee[istart+4], sep = '')
-		else sdaty <- paste(month12[as.numeric(mois[istart])], annee[istart], sep = '')
-		edaty <- paste(month12[as.numeric(mois[iend[-length(iend)]])], annee[iend[-length(iend)]], sep = '')
-		edaty <- c(edaty, format(add.months(as.Date(paste('01', edaty[length(edaty)], sep = ''), '%d%b%Y'),seasonLength), '%b%Y'))
-		xdates <- paste(sdaty, edaty, sep = '-')
+
+		iis <- if(freqIn == 'daily') istart+4 else istart
+		s.an <- annee[iis]
+		s.mon <- month12n[as.numeric(mois[iis])]
+		e.an <- annee[iend[-length(iend)]]
+		e.mon <- month12n[as.numeric(mois[iend[-length(iend)]])]
+		e.dt <- as.Date(paste(e.an[length(e.an)], e.mon[length(e.an)], '01', sep = '-'), '%Y-%m-%d')
+		e.dt <- format(add.months(e.dt, seasonLength), '%Y%m')
+		e.an <- c(e.an, substr(e.dt, 1, 4))
+		e.mon <- c(e.mon, substr(e.dt, 5, 6))
+		xdates <- if(all(s.an == e.an)) paste(s.an, '-', s.mon, '_', e.mon, sep = '') else paste(s.an, '-', s.mon, '_', e.an, '-', e.mon, sep = '')
 	}
 	list(index = indx, nbOfPeriod = nbd, date = xdates, id.season =  id.season)
 }
 
 index_Season1 <- function(freqIn, freqOut = 3, dates){
 	seasonLength <- freqOut
-	month12 <- format(ISOdate(2014,1:12,1), "%b")
+	month12 <- str_pad(1:12, width = 2, pad = "0")
+
 	dmon <- substr(dates, 1, 6)
 	roll.mon <- rle(dmon)
 	ij <- 1:length(roll.mon$values)
@@ -372,10 +385,12 @@ index_Season1 <- function(freqIn, freqOut = 3, dates){
 	if(freqIn == 'dekadal') nbd[c(1, length(nbd))] <- 3*seasonLength
 	if(freqIn == 'monthly') nbd[c(1, length(nbd))] <- seasonLength
 	indx <- lapply(ij, function(j) which(dmon %in% roll.mon$values[j]))
+
 	xdates <- sapply(ij, function(j){
-			paste(paste(substr(month12[as.numeric(substr(roll.mon$values[j], 5, 6))], 1, 1), collapse = ''),
-			substr(roll.mon$values[j], 1, 4)[1], sep = '-')
-		})
+		mon <- month12[as.numeric(substr(roll.mon$values[j], 5, 6))]
+		an <- substr(roll.mon$values[j], 1, 4)
+		paste(paste(an[1], mon[1], sep = '-'), paste(an[length(j)], mon[length(j)], sep = '-'), sep = '_')
+	})
 	list(index = indx, nbOfPeriod = nbd, date = xdates)
 }
 

@@ -76,7 +76,7 @@ getExtractDataFun <- function(retExtractParams){
 					xclim <- data.frame(Season = as.character(xclim[1, 1]), Values = round(xclimv, 1))
 				}
 			}
-			xclim[is.na(xclim[, 2]) | is.nan(xclim[, 2]), 2] <- -99
+			xclim[is.na(xclim[, 2]) | is.nan(xclim[, 2]), 2] <- miss.val
 			writeFiles(xclim, out2sav.clim)
 		}
 	}
@@ -93,13 +93,23 @@ getExtractDataFun <- function(retExtractParams){
 				comp.fun <- match.fun(comp.fun)
 				xanom <- apply(xanom, 2, comp.fun, dates = xdates)
 				xanom <- xanom[as.numeric(substr(xdates, 5, 6))%in%id.mois, , drop = FALSE]
-				xtmp[-(1:3), -1] <- round(xanom, 1)
 			}else{
 				xanom <- t(t(xanom)-apply(xanom, 2, mean, na.rm = TRUE))
-				xtmp[-(1:3), -1] <- round(xanom, 1)
 			}
-			xtmp[is.na(xtmp) | is.nan(xtmp)] <- -9999
-			writeFiles(xtmp, out2sav.anom)
+
+			xanom <- round(xanom, 1)
+			xanom[is.na(xanom) | is.nan(xanom)] <- -9999
+
+			if(is.cpt){
+				cptIn <- list(freqOut = period2, xdon = xanom, xdates = xdates,
+								xlon = headinfo[, 2], xlat = headinfo[, 3], xid = headinfo[, 1],
+								varid = varid, units = units, miss.val = -9999)
+				cptOut <- do.call(getDataCPT.Station, cptIn)
+				cat(cptOut, file = out2sav.anom)
+			}else{
+				xtmp[-(1:3), -1] <- xanom
+				writeFiles(xtmp, out2sav.anom)
+			}
 		}
 
 		if(calc.stanomaly == "1"){
@@ -111,13 +121,23 @@ getExtractDataFun <- function(retExtractParams){
 				comp.fun <- match.fun(comp.fun)
 				xstanom <- apply(xstanom, 2, comp.fun, dates = xdates)
 				xstanom <- xstanom[as.numeric(substr(xdates, 5, 6))%in%id.mois, , drop = FALSE]
-				xtmp[-(1:3), -1] <- round(xstanom, 2)
 			}else{
 				xstanom <- t((t(xstanom)-apply(xstanom, 2, mean, na.rm = TRUE))/apply(xstanom, 2, sd, na.rm = TRUE))
-				xtmp[-(1:3), -1] <- round(xstanom, 2)
 			}
-			xtmp[is.na(xtmp) | is.nan(xtmp)] <- -9999
-			writeFiles(xstanom, out2sav.stanom)
+
+			xstanom[is.na(xstanom) | is.nan(xstanom)] <- -9999
+			xstanom <- round(xstanom, 2)
+
+			if(is.cpt){
+				cptIn <- list(freqOut = period2, xdon = xstanom, xdates = xdates,
+								xlon = headinfo[, 2], xlat = headinfo[, 3], xid = headinfo[, 1],
+								varid = varid, units = units, miss.val = -9999)
+				cptOut <- do.call(getDataCPT.Station, cptIn)
+				cat(cptOut, file = out2sav.stanom)
+			}else{
+				xtmp[-(1:3), -1] <- xstanom
+				writeFiles(xstanom, out2sav.stanom)
+			}
 		}
 
 		if(calc.climato == "1"){
@@ -133,15 +153,15 @@ getExtractDataFun <- function(retExtractParams){
 				if(period1 == 'dekadal') ijmo <- which(rep(1:12, each = 3)%in%id.mois)
 				if(period1 == 'monthly') ijmo <- id.mois
 				xclim <- xclim[ijmo, , drop = FALSE]
-				xclim <- rbind(xtmp[1:3, ], cbind(ijmo, xclim))
+				xclim <- t(cbind(t(xtmp[1:3, ]), t(cbind(ijmo, xclim))))
 			}else{
 				xclim <- apply(xclim, 2, mean, na.rm = TRUE)
 				xtmp[4, -1] <- round(xclim, 1)
 				xclim <- xtmp[1:4, ]
-				if(period1 == 'yearly') xclim[4, 1] <- 'Yearly.mean'
-				else xclim[4, 1] <- strsplit(xclim[4, 1], '-')[[1]][1]
+				xclim[4, 1] <- if(period1 == 'yearly') 'Yearly.mean' else strsplit(xclim[4, 1], '-')[[1]][1]
 			}
-			xclim[is.na(xclim) | is.nan(xclim)] <- -99
+
+			xclim[is.na(xclim) | is.nan(xclim)] <- miss.val
 			writeFiles(xclim, out2sav.clim)
 		}
 	}
@@ -162,12 +182,23 @@ getExtractDataFun <- function(retExtractParams){
 				xRVAL <- lapply(xRVAL, function(x) round(x-cmoy, 1))
 				rm(cmoy)
 			}
+
 			xRVAL <- lapply(xRVAL, function(x){
 				x[is.na(x) | is.nan(x)] <- -9999
 				x
 			})
+
 			fileout.anom <- file.path(dirname(fileout), paste('Anomalies_', basename(fileout), sep = ''))
-			writeFilesListData(xRVAL, daty, capdate, fileout.anom, out2sav.anom)
+
+			if(is.cpt){
+				cptIn <- list(freqOut = period2, xdon = xRVAL, xdates = outdonne$out$date,
+								xlon = rlon[, 1], xlat = rlat[1, ], 
+								varid = varid, units = units, miss.val = -9999)
+				cptOut <- do.call(getDataCPT.GRDdata, cptIn)
+				cat(cptOut, file = fileout.anom)
+			}else{
+				writeFilesListData(xRVAL, outdonne$out$date, capdate, fileout.anom, out2sav.anom)
+			}
 		}
 
 		if(calc.stanomaly == "1"){
@@ -184,12 +215,23 @@ getExtractDataFun <- function(retExtractParams){
 					xRVAL <- lapply(xRVAL, function(x) round((x-cmoy)/csd, 1))
 					rm(cmoy, csd)
 			}
+
 			xRVAL <- lapply(xRVAL, function(x){
 				x[is.na(x) | is.nan(x)] <- -9999
 				x
 			})
+
 			fileout.stanom <- file.path(dirname(fileout), paste('StandardizedAnomalies_', basename(fileout), sep = ''))
-			writeFilesListData(xRVAL, daty, capdate, fileout.stanom, out2sav.stanom)
+
+			if(is.cpt){
+				cptIn <- list(freqOut = period2, xdon = xRVAL, xdates = outdonne$out$date,
+								xlon = rlon[, 1], xlat = rlat[1, ], 
+								varid = varid, units = units, miss.val = -9999)
+				cptOut <- do.call(getDataCPT.GRDdata, cptIn)
+				cat(cptOut, file = fileout.stanom)
+			}else{
+				writeFilesListData(xRVAL, daty, capdate, fileout.stanom, out2sav.stanom)
+			}
 		}
 
 		if(calc.climato == "1"){
@@ -219,11 +261,11 @@ getExtractDataFun <- function(retExtractParams){
 			}
 			if(is.list(xRVAL)){
 				xRVAL <- lapply(xRVAL, function(x){
-					x[is.na(x) | is.nan(x)] <- -99
+					x[is.na(x) | is.nan(x)] <- miss.val
 					x
 				})
 			}else{
-				xRVAL[is.na(xRVAL) | is.nan(xRVAL)] <- -99
+				xRVAL[is.na(xRVAL) | is.nan(xRVAL)] <- miss.val
 			}
 			writeFilesListData(xRVAL, daty, capdate, fileout.clim, out2sav.clim)
 		}
@@ -241,7 +283,7 @@ getExtractDataFun <- function(retExtractParams){
 					writeFiles(rlat, file = fileout1[j], append = TRUE)
 					writeFiles(capdate[j], file = fileout1[j], append = TRUE)
 					xtmp <- round(RVAL[[j]], 1)
-					xtmp[is.na(xtmp)] <- -99
+					xtmp[is.na(xtmp)] <- miss.val
 					writeFiles(xtmp, file = fileout1[j], append = TRUE)
 				}
 			}else{
@@ -251,7 +293,7 @@ getExtractDataFun <- function(retExtractParams){
 				writeFiles(rlat, file = fileout1, append = TRUE)
 				writeFiles(capdate, file = fileout1, append = TRUE)
 				xtmp <- round(RVAL, 1)
-				xtmp[is.na(xtmp)] <- -99
+				xtmp[is.na(xtmp)] <- miss.val
 				writeFiles(xtmp, file = fileout1, append = TRUE)
 			}
 		}
@@ -265,13 +307,13 @@ getExtractDataFun <- function(retExtractParams){
 				for(j in seq_along(RVAL)){
 					writeFiles(capdate[j], file = out2sav1, append = TRUE)
 					xtmp <- round(RVAL[[j]], 1)
-					xtmp[is.na(xtmp)] <- -99
+					xtmp[is.na(xtmp)] <- miss.val
 					writeFiles(xtmp, file = out2sav1, append = TRUE)
 				}
 			}else{
 				writeFiles(capdate, file = out2sav1, append = TRUE)
 				xtmp <- round(RVAL, 1)
-				xtmp[is.na(xtmp)] <- -99
+				xtmp[is.na(xtmp)] <- miss.val
 				writeFiles(xtmp, file = out2sav1, append = TRUE)
 			}
 		}
@@ -283,7 +325,7 @@ getExtractDataFun <- function(retExtractParams){
 			xcrds <- xcrds[, 3:1]
 			if(is.list(RVAL)) xdata <- round(unlist(RVAL), 1)
 			else xdata <- round(c(RVAL), 1)
-			xdata[is.na(xdata)] <- -99
+			xdata[is.na(xdata)] <- miss.val
 			xtmp <- cbind(xcrds, xdata)
 			writeFiles(xtmp, out2sav1)
 		}
@@ -334,11 +376,19 @@ getExtractDataFun <- function(retExtractParams){
 	pts.int <- abs(as.numeric(retExtractParams$pts.int))
 	pmLon <- pts.int[1]
 	pmLat <- pts.int[2]
+	is.cpt <- retExtractParams$is.cpt
+
+	confpath <- file.path(apps.dir, 'configure', 'configure_user.json')
+	conffile <- fromJSON(confpath)
+	miss.val <- as.numeric(str_trim(conffile$missing.value))
+
+	if(is.cpt & extType%in%c('Rectangle', 'Polygon', 'Multiple Points', 'Multiple Polygons')) spAvrg <- '0'
 
 	####
 	outTsTable <- cbind(c('Daily', 'Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'),
 						c('daily', 'dekadal', 'monthly', 'season3', 'season6', 'yearly'))
 	period1 <- outTsTable[outTsTable[, 1] == outTS, 2]
+	if(is.cpt) period2 <- ifelse(period1%in%c('season3', 'season6'), 'seasonal', period1)
 
 	####
 	if(is.na(yrs1) | is.na(mon1) | is.na(day1) | is.na(yrs2) | is.na(mon2) | is.na(day2)){
@@ -463,16 +513,15 @@ getExtractDataFun <- function(retExtractParams){
 			if(extType == 'Multiple Polygons'){
 				shpf <- getShpOpenData(shpfl)[[2]]
 				if(!is.null(shpf)){
-					multiptspoly <- str_trim(multiptspoly)
 					shpf.union <- unionSpatialPolygons(shpf, as.character(shpf@data[, shpId]))
 					shpf.df <- aggregate(as(shpf, "data.frame")[, 1], list(as.character(shpf@data[, shpId])), identity)
 					shpf.df$x <- seq(shpf.union)
 					row.names(shpf.df) <- sapply(slot(shpf.union, "polygons"), function(x) slot(x, "ID"))
 					shpf.union <- SpatialPolygonsDataFrame(shpf.union, shpf.df)
-					regOI <- shpf.union[as.character(shpf.union@data$Group.1)%in%multiptspoly, ]
+					regOI <- shpf.union[str_trim(shpf.union@data$Group.1)%in%multiptspoly, ]
 					bbxregOI <- bbox(regOI)
 					headinfo <- cbind(as.character(regOI@data$Group.1), round(coordinates(regOI), 5))
-					headinfo[, 1] <- str_replace_all(headinfo[, 1], "[^[:alnum:]]", ".")
+					headinfo[, 1] <- substr(str_replace_all(headinfo[, 1], "[^[:alnum:]]", ""), 1, 15)
 				}
 			}
 		}else{
@@ -493,7 +542,9 @@ getExtractDataFun <- function(retExtractParams){
 	nc <- nc_open(ncpath[existFl][1])
 	xlon <- nc$dim[[1]]$vals
 	xlat <- nc$dim[[2]]$vals
-	xval <- ncvar_get(nc, varid = nc$var[[1]]$name)
+	varid <- nc$var[[1]]$name
+	units <- nc$var[[1]]$units
+	xval <- ncvar_get(nc, varid = varid)
 	nc_close(nc)
 
 	if(extType == 'Point'){
@@ -614,7 +665,7 @@ getExtractDataFun <- function(retExtractParams){
 
 	######################
 
-	if(doparallel & length(ncpath[existFl]) >= 90){
+	if(doparallel & length(ncpath[existFl]) >= 30){
 		klust <- makeCluster(nb_cores)
 		registerDoParallel(klust)
 		`%parLoop%` <- `%dopar%`
@@ -676,19 +727,19 @@ getExtractDataFun <- function(retExtractParams){
 		if(period0 == period1){
 			xtmp.clim <- cbind(dates0, xval[match(dates0, dates)])
 			xtmp <- round(xval, 1)
-			xtmp[is.na(xtmp)] <- -99
+			xtmp[is.na(xtmp)] <- miss.val
 			xtmp <- cbind(dates, xtmp)
 		}else{
 			if(period1 == 'season3'){
 				xtmp <- seasonal_fun(period0, xval, dates, smon = season1, lmon = 3, fun = aggfun, frac = missfrac)
 				xtmp.clim <- xtmp
 				xtmp[, 3] <- round(xtmp[, 3], 1)
-				xtmp[is.na(xtmp[, 3]), 3] <- -99
+				xtmp[is.na(xtmp[, 3]), 3] <- miss.val
 			}else if(period1 == 'season6'){
 				xtmp <- seasonal_fun(period0, xval, dates, smon = season1, lmon = 6, fun = aggfun, frac = missfrac)
 				xtmp.clim <- xtmp
 				xtmp[, 3] <- round(xtmp[, 3], 1)
-				xtmp[is.na(xtmp[, 3]), 3] <- -99
+				xtmp[is.na(xtmp[, 3]), 3] <- miss.val
 			}else{
 				comp.fun <- paste(period0, 2, period1, sep = '')
 				comp.fun <- match.fun(comp.fun)
@@ -696,7 +747,7 @@ getExtractDataFun <- function(retExtractParams){
 				daty.clim <- as.character(comp.fun(rep(1, length(dates0)), dates0, fun = aggfun)[, 1])
 				xtmp.clim <- cbind(daty.clim, xtmp[match(daty.clim, as.character(xtmp[, 1])), 2])
 				xtmp[, 2] <- round(xtmp[, 2], 1)
-				xtmp[is.na(xtmp[, 2]), 2] <- -99
+				xtmp[is.na(xtmp[, 2]), 2] <- miss.val
 			}
 		}
 
@@ -709,39 +760,60 @@ getExtractDataFun <- function(retExtractParams){
 		xval <- do.call('rbind', RVAL)
 		capition <- c('Stations', 'LON', 'DATE/LAT')
 
+		nona <- apply(xval, 2, function(x) sum(!is.na(x)) > 0)
+		if(!any(nona)){
+			InsertMessagesTxt(main.txt.out, "All data are missing", format = TRUE)
+			return(NULL)
+		}
+		xval <- xval[, nona, drop = FALSE]
+		headinfo <- headinfo[nona, , drop = FALSE]
+
 		if(period0 == period1){
+			outdonne <- NULL
+			outdonne$out$date <- dates
+			outdonne$out$data <- round(xval, 1)
+			xtmp <- data.frame(outdonne$out$date, outdonne$out$data)
 			xtmp.clim <- cbind(dates0, xval[match(dates0, dates), ])
-			xtmp <- round(xval, 1)
-			xtmp[is.na(xtmp)] <- -99
-			xtmp <- cbind(dates, xtmp)
 		}else{
 			if(period1 == 'season3'){
-				xtmp <- seasonal_funMat(period0, xval, dates, smon = season1, lmon = 3, fun = aggfun, frac = missfrac)
+				start.mon <- which(format(ISOdate(2014,1:12,1), "%b")%in%season1)
+				outdonne <- aggregateSeries(xval, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
+							time.step.In = period0, time.step.Out = c(start.mon, 3), type = 'matrix')
+				
+				xtmp <- data.frame(outdonne$out$date, round(outdonne$out$data, 1))
 				xtmp.clim <- xtmp
-				xtmp0 <- round(xtmp[, -1], 1)
-				xtmp0[is.na(xtmp0)] <- -99
-				xtmp[, -1] <- xtmp0
 			}else if(period1 == 'season6'){
-				xtmp <- seasonal_funMat(period0, xval, dates, smon = season1, lmon = 6, fun = aggfun, frac = missfrac)
+				start.mon <- which(format(ISOdate(2014,1:12,1), "%b")%in%season1)
+				outdonne <- aggregateSeries(xval, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
+							time.step.In = period0, time.step.Out = c(start.mon, 6), type = 'matrix')
+				xtmp <- data.frame(outdonne$out$date, round(outdonne$out$data, 1))
 				xtmp.clim <- xtmp
-				xtmp0 <- round(xtmp[, -1], 1)
-				xtmp0[is.na(xtmp0)] <- -99
-				xtmp[, -1] <- xtmp0
 			}else{
-				comp.fun <- paste(period0, 2, period1, sep = '')
-				comp.fun <- match.fun(comp.fun)
-				xtmp <- apply(xval, 2, comp.fun, dates = dates, fun = aggfun, frac = missfrac)
-				xtmp0 <- as.character(xtmp[[1]][, 1])
-				xtmp <- sapply(xtmp, function(x) x[, 2])
-				daty.clim <- as.character(comp.fun(rep(1, length(dates0)), dates0, fun = aggfun)[, 1])
-				xtmp.clim <- cbind(daty.clim, xtmp[match(daty.clim, xtmp0), ])
-				xtmp[is.na(xtmp)] <- -99
-				xtmp <- cbind(xtmp0, round(xtmp, 1))
+				outdonne <- aggregateSeries(xval, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
+							time.step.In = period0, time.step.Out = period1, type = 'matrix')
+				xmon <- as.numeric(substr(outdonne$out$date, 5, 6))%in%id.mois
+				outdonne$out$date <- outdonne$out$date[xmon]
+				outdonne$out$data <- outdonne$out$data[xmon, , drop = FALSE]
+				xtmp <- data.frame(outdonne$out$date, round(outdonne$out$data, 1))
+				daty.clim <- aggregateSeries(rep(1, length(dates0)), dates0, fun = aggfun, 
+							time.step.In = period0, time.step.Out = period1, type = 'vector')
+				xtmp.clim <- cbind(daty.clim$out$date, xtmp[match(daty.clim$out$date, outdonne$out$date), -1])
 			}
 		}
-		
-		xtmp <- t(cbind(t(cbind(capition, t(headinfo))), t(xtmp)))
-		writeFiles(xtmp, out2sav)
+
+		if(is.cpt){
+			xtmp <- outdonne$out$data
+			xtmp[is.na(xtmp)] <- miss.val
+			cptIn <- list(freqOut = period2, xdon = xtmp, xdates = outdonne$out$date,
+							xlon = headinfo[, 2], xlat = headinfo[, 3], xid = headinfo[, 1],
+							varid = varid, units = units, miss.val = miss.val)
+			cptOut <- do.call(getDataCPT.Station, cptIn)
+			cat(cptOut, file = out2sav)
+		}else{
+			xtmp[is.na(xtmp)] <- miss.val
+			xtmp <- t(cbind(t(cbind(capition, t(headinfo))), t(xtmp)))
+			writeFiles(xtmp, out2sav)
+		}
 		###### clim
 		CDTClimatologyFun()
 	}else{
@@ -752,19 +824,19 @@ getExtractDataFun <- function(retExtractParams){
 			
 			if(period0 == period1){
 				xtmp.clim <- cbind(dates0, xval[match(dates0, dates)])
-				xval[is.na(xval)] <- -99
+				xval[is.na(xval)] <- miss.val
 				xtmp <- cbind(dates, xval)
 			}else{
 				if(period1 == 'season3'){
 					xtmp <- seasonal_fun(period0, xval, dates, smon = season1, lmon = 3, fun = aggfun, frac = missfrac)
 					xtmp.clim <- xtmp
 					xtmp[, 3] <- round(xtmp[, 3], 1)
-					xtmp[is.na(xtmp[, 3]), 3] <- -99
+					xtmp[is.na(xtmp[, 3]), 3] <- miss.val
 				}else if(period1 == 'season6'){
 					xtmp <- seasonal_fun(period0, xval, dates, smon = season1, lmon = 6, fun = aggfun, frac = missfrac)
 					xtmp.clim <- xtmp
 					xtmp[, 3] <- round(xtmp[, 3], 1)
-					xtmp[is.na(xtmp[, 3]), 3] <- -99
+					xtmp[is.na(xtmp[, 3]), 3] <- miss.val
 				}else{
 					comp.fun <- paste(period0, 2, period1, sep = '')
 					comp.fun <- match.fun(comp.fun)
@@ -772,7 +844,7 @@ getExtractDataFun <- function(retExtractParams){
 					daty.clim <- as.character(comp.fun(rep(1, length(dates0)), dates0, fun = aggfun)[, 1])
 					xtmp.clim <- cbind(daty.clim, xtmp[match(daty.clim, as.character(xtmp[, 1])), 2])
 					xtmp[, 2] <- round(xtmp[, 2], 1)
-					xtmp[is.na(xtmp[, 2]), 2] <- -99
+					xtmp[is.na(xtmp[, 2]), 2] <- miss.val
 				}
 			}
 			
@@ -784,51 +856,60 @@ getExtractDataFun <- function(retExtractParams){
 			rlon <- matrix(round(rlon, 5), nrow = nrow(rval), ncol = ncol(rval))
 			rlat <- matrix(round(rlat, 5), nrow = nrow(rval), ncol = ncol(rval), byrow = TRUE)
 			if(period0 == period1){
-				daty <- dates
-				fileout <- file.path(out2sav, paste('Output_', daty, '.txt', sep = ''), fsep = .Platform$file.sep)
-				capdate <- paste('DATE:', daty)
+				outdonne <- NULL
+				outdonne$out$date <- dates
+				outdonne$out$data <- RVAL
+
 				daty.clim <- dates0
-				xtmp.clim <- RVAL[match(dates0, daty)]
+				xtmp.clim <- RVAL[match(dates0, dates)]
 				xtmp.clim[sapply(xtmp.clim, is.null)] <- list(matrix(NA, nrow = nrow(rval), ncol = ncol(rval)))
 			}else{
 				if(period1 == 'season3'){
-					lstOmat <- seasonal_lstOmat(period0, RVAL, dates, smon = season1, lmon = 3, fun = aggfun, minfrac = missfrac)
-					Season <- lstOmat[[1]]
-					Start_Year <- lstOmat[[2]]
-					daty <- paste(Season, Start_Year, sep = '-')
-					fileout <- file.path(out2sav, paste('Output_', Season, '_', Start_Year, '.txt', sep = ''), fsep = .Platform$file.sep)
-					capdate <- paste('Season:', Season, 'Start_Year:', Start_Year)
-					RVAL <- lstOmat[[3]]
-					daty.clim <- daty
-					xtmp.clim <- RVAL
+					start.mon <- which(format(ISOdate(2014,1:12,1), "%b")%in%season1)
+					outdonne <- aggregateSeries(RVAL, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
+								time.step.In = period0, time.step.Out = c(start.mon, 3), type = 'list')
+
+					fileout <- file.path(out2sav, paste('Output_', outdonne$out$date, '.txt', sep = ''))
+					capdate <- paste('DATE:', outdonne$out$date)
+
+					daty.clim <- outdonne$out$date
+					xtmp.clim <- outdonne$out$data
 				}else if(period1 == 'season6'){
-					lstOmat <- seasonal_lstOmat(period0, RVAL, dates, smon = season1, lmon = 6, fun = aggfun, minfrac = missfrac)
-					Season <- lstOmat[[1]]
-					Start_Year <- lstOmat[[2]]
-					daty <- paste(Season, Start_Year, sep = '-')
-					fileout <- file.path(out2sav, paste('Output_', Season, '_',Start_Year, '.txt', sep = ''), fsep = .Platform$file.sep)
-					capdate <- paste('Season:', Season, 'Start_Year:', Start_Year)
-					RVAL <- lstOmat[[3]]
-					daty.clim <- daty
-					xtmp.clim <- RVAL
+					start.mon <- which(format(ISOdate(2014,1:12,1), "%b")%in%season1)
+					outdonne <- aggregateSeries(RVAL, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
+								time.step.In = period0, time.step.Out = c(start.mon, 6), type = 'list')
+
+					daty.clim <- outdonne$out$date
+					xtmp.clim <- outdonne$out$data
 				}else{
-					comp.fun <- paste(period0, 2, period1, '_lstOmat', sep = '')
-					comp.fun <- match.fun(comp.fun)
-					lstOmat <- comp.fun(RVAL, dates, fun = aggfun, minfrac = missfrac)
-					daty <- lstOmat[[1]]
-					fileout <- file.path(out2sav, paste('Output_', daty, '.txt', sep = ''), fsep = .Platform$file.sep)
-					capdate <- paste('DATE:', daty)
-					RVAL <- lstOmat[[2]]
-					comp.fun <- paste(period0, 2, period1, sep = '')
-					comp.fun <- match.fun(comp.fun)
-					daty.clim <- as.character(comp.fun(rep(1, length(dates0)), dates0, fun = aggfun)[, 1])
-					xtmp.clim <- RVAL
-					xtmp.clim <- xtmp.clim[match(daty.clim, daty)]
+					outdonne <- aggregateSeries(RVAL, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
+											time.step.In = period0, time.step.Out = period1, type = 'list')
+					xmon <- as.numeric(substr(outdonne$out$date, 5, 6))%in%id.mois
+					outdonne$out$date <- outdonne$out$date[xmon]
+					outdonne$out$data <- outdonne$out$data[xmon]
+
+					daty.clim <- aggregateSeries(rep(1, length(dates0)), dates0, fun = aggfun, 
+								time.step.In = period0, time.step.Out = period1, type = 'vector')
+					xtmp.clim <- outdonne$out$data
+					xtmp.clim <- xtmp.clim[match(daty.clim$out$date, outdonne$out$date)]
 					xtmp.clim[sapply(xtmp.clim, is.null)] <- list(matrix(NA, nrow = nrow(rval), ncol = ncol(rval)))
+					daty.clim <- daty.clim$out$date
 				}
 			}
 
-			writeFilesListData(RVAL, daty, capdate, fileout, out2sav)
+			if(is.cpt){
+				fileout <- out2sav
+				cptIn <- list(freqOut = period2, xdon = outdonne$out$data, xdates = outdonne$out$date,
+								xlon = rlon[, 1], xlat = rlat[1, ], 
+								varid = varid, units = units, miss.val = miss.val)
+				cptOut <- do.call(getDataCPT.GRDdata, cptIn)
+				cat(cptOut, file = fileout)
+			}else{
+				fileout <- file.path(out2sav, paste('Output_', outdonne$out$date, '.txt', sep = ''))
+				capdate <- paste('DATE:', outdonne$out$date)
+				writeFilesListData(outdonne$out$data, outdonne$out$date, capdate, fileout, out2sav)
+			}
+
 			###### clim	
 			ListDataClimatologyFun()
 		}

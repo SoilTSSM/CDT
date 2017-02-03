@@ -1,10 +1,12 @@
 
 ##write files (table or csv)
-writeFiles <- function(dat2save, file2save, row.names = FALSE, col.names = FALSE, quote = FALSE, append = FALSE,...){
+writeFiles <- function(data2save, file2save, row.names = FALSE, col.names = FALSE,
+						quote = FALSE, append = FALSE, sep = " ", ...){
 	extFl <- tolower(str_trim(file_ext(basename(file2save))))
-	sep <- if(extFl == "csv") ',' else ' '
-	write.table(dat2save, file = file2save, row.names = row.names, col.names = col.names,
-							quote = quote, sep = sep, append = append,...)
+	sep <- if(extFl == "csv") ',' else sep
+	write.table(data2save, file = file2save,
+				row.names = row.names, col.names = col.names,
+				quote = quote, sep = sep, append = append, ...)
 }
 
 ########################
