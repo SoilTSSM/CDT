@@ -76,7 +76,7 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 
 	######
 	Cbdatatype <- ttkcombobox(labdatype, values = CbdatatypeVAL, textvariable = DataType, width = largeur2)
-	bt.opt.set <- tkbutton(labdatype, text = "Settings")
+	bt.opt.set <- ttkbutton(labdatype, text = "Settings")
 
 	######
 
@@ -233,7 +233,7 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 
 	############################################
 
-	tkbind(Cbdatatype,"<<ComboboxSelected>>", function(){
+	tkbind(Cbdatatype, "<<ComboboxSelected>>", function(){
 		tkdestroy(cb.stnfl)
 		tclvalue(file.stnfl) <- ''
 
@@ -325,6 +325,7 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 		
 		#######
 		tkgrid(cb.stnfl, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+		tkfocus(tt)
 	})
 
 	############################################

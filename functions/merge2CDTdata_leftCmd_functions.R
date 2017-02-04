@@ -79,7 +79,7 @@ merge2CDTDataPanelCmd <- function(){
 
 	#############
 
-	mrgDataBut <- tkbutton(merge.cmd, text = "Merge Data")
+	mrgDataBut <- ttkbutton(merge.cmd, text = "Merge Data")
 
 	tkconfigure(mrgDataBut, command = function(){
  		GeneralParameters <- list(file1 = tclvalue(file.stnfl1),

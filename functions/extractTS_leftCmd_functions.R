@@ -1,17 +1,18 @@
 
 ExtractDataPanelCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
-
-	largeur <- as.integer(w.scale(21)/sfont0)
-	wncdf_ff <- as.integer(w.scale(14)/sfont0)
-
-	#scrollable frame width
 	if(Sys.info()["sysname"] == "Windows"){
-		wscrlwin <- w.scale(20)
-		hscrlwin <- h.scale(31.5)
+		wscrlwin <- w.scale(24)
+		hscrlwin <- h.scale(45)
+		largeur <- as.integer(w.scale(27)/sfont0)
+		wncdf_ff <- as.integer(w.scale(14)/sfont0)
+		wcombo <- 32
 	}else{
 		wscrlwin <- w.scale(24)
-		hscrlwin <- h.scale(38.5)
+		hscrlwin <- h.scale(48)
+		largeur <- as.integer(w.scale(21)/sfont0)
+		wncdf_ff <- as.integer(w.scale(14)/sfont0)
+		wcombo <- 10
 	}
 
 	###################
@@ -33,7 +34,6 @@ ExtractDataPanelCmd <- function(){
 	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab4, 0, weight = 1)
 
-
 	#######################################################################################################
 
 	#Tab1
@@ -47,7 +47,8 @@ ExtractDataPanelCmd <- function(){
 	subfr1 <- bwScrollableFrame(scrw1, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr1, 0, weight = 1)
 
-	##############
+	##########################################
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
 	file.period <- tclVar()
 	tclvalue(file.period) <- 'Dekadal data'
 	dirNetCDF <- tclVar()
@@ -63,9 +64,9 @@ ExtractDataPanelCmd <- function(){
 	ZoomXYval0 <- NULL
 	notebookTab <- NULL
 
-	#######################
+	##########################################
 
-	cbprd.tab1 <- ttkcombobox(subfr1, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
+	cbprd.tab1 <- ttkcombobox(subfr1, values = cb.periodVAL, textvariable = file.period)
 	
 	sep1.tab1 <- ttkseparator(subfr1)
 	lab1.tab1 <- tklabel(subfr1, text = 'Directory of NetCDF files', anchor = 'w', justify = 'left')
@@ -82,8 +83,8 @@ ExtractDataPanelCmd <- function(){
 	adminVar.tab1 <<- ttkcombobox(subfr1, values = '', textvariable = Admin_var)
 	
 	sep3.tab1 <- ttkseparator(subfr1)
-	open.tab1 <- tkbutton(subfr1, text = "Open Attribute Table")
-	display.tab1 <- tkbutton(subfr1, text = "Display Map")
+	open.tab1 <- ttkbutton(subfr1, text = "Open Attribute Table")
+	display.tab1 <- ttkbutton(subfr1, text = "Display Map")
 
 	##########################################
 
@@ -148,7 +149,7 @@ ExtractDataPanelCmd <- function(){
 		}else InsertMessagesTxt(main.txt.out, 'Provide the ESRI shapfile for for administrative boundaries', format = TRUE)
 	})
 
-	#####################
+	##########################################
 	tkgrid(cbprd.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(sep1.tab1, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, pady = 5)
 
@@ -172,9 +173,65 @@ ExtractDataPanelCmd <- function(){
 	tkgrid(open.tab1, row = 11, column = 0, sticky = 'we', rowspan = 1, columnspan = 3)
 	tkgrid(display.tab1, row = 11, column = 3, sticky = 'we', rowspan = 1, columnspan = 3)
 
-	#####################
+	##########################################
+
 	infobulle(netCDFff.tab1, 'Enter the format of the NetCDF files names,\nexample: rr_mrg_1983011.nc')
 	status.bar.display(netCDFff.tab1, TextOutputVar, 'Enter the format of the NetCDF files names, example: rr_mrg_1983011.nc')
+
+	##########################################
+
+	tkbind(cbprd.tab1, "<<ComboboxSelected>>", function(){
+		if(tclvalue(file.period) == 'Daily data'){
+			tclvalue(netCDFff) <- "rr_mrg_%s%s%s.nc"
+			infobulle(netCDFff.tab1, 'Enter the format of the NetCDF files names,\nexample: rr_mrg_19830101.nc')
+			status.bar.display(netCDFff.tab1, TextOutputVar, 'Enter the format of the NetCDF files names, example: rr_mrg_19830101.nc')
+			tclvalue(dayLabTab2_Var) <- 'Day'
+			tkconfigure(day1.tab2, state = 'normal')
+			tkconfigure(day2.tab2, state = 'normal')
+			tkconfigure(cbOutTS.tab2, values = c('Daily', 'Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'))
+			tclvalue(output_TSformat) <- 'Daily'
+			tclvalue(iend_day) <- '31'
+		}
+		if(tclvalue(file.period) == 'Dekadal data'){
+			tclvalue(netCDFff) <- "rr_mrg_%s%s%s.nc"
+			infobulle(netCDFff.tab1, 'Enter the format of the NetCDF files names,\nexample: rr_mrg_1983011.nc')
+			status.bar.display(netCDFff.tab1, TextOutputVar, 'Enter the format of the NetCDF files names, example: rr_mrg_1983011.nc')
+			tclvalue(dayLabTab2_Var) <- 'Dek'
+			tkconfigure(day1.tab2, state = 'normal')
+			tkconfigure(day2.tab2, state = 'normal')
+			tkconfigure(cbOutTS.tab2, values = c('Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'))
+			tclvalue(output_TSformat) <- 'Dekadal'
+			tclvalue(iend_day) <- '3'
+		}
+		if(tclvalue(file.period) == 'Monthly data'){
+			tclvalue(netCDFff) <- "rr_mrg_%s%s.nc"
+			infobulle(netCDFff.tab1, 'Enter the format of the NetCDF files names,\nexample: rr_mrg_198301.nc')
+			status.bar.display(netCDFff.tab1, TextOutputVar, 'Enter the format of the NetCDF files names, example: rr_mrg_198301.nc')
+			tkconfigure(day1.tab2, state = 'disabled')
+			tkconfigure(day2.tab2, state = 'disabled')
+			tkconfigure(cbOutTS.tab2, values = c('Monthly', '3-Months', '6-Months', 'Yearly'))
+			tclvalue(output_TSformat) <- 'Monthly'
+		}
+	})
+
+	#######################
+	tkbind(cbSHP.tab1, "<<ComboboxSelected>>", function(){
+		shpf <- getShpOpenData(Admin_shp)
+		dat <- shpf[[2]]@data
+		shpAttr <- names(dat)
+		tclvalue(Admin_var) <- shpAttr[1]
+		tkconfigure(adminVar.tab1, values = shpAttr, textvariable = Admin_var)
+	})
+
+	#######################
+	tkbind(adminVar.tab1, "<<ComboboxSelected>>", function(){
+		shpf <- getShpOpenData(Admin_shp)
+		dat <- shpf[[2]]@data
+		adminN <- as.character(dat[, as.numeric(tclvalue(tcl(adminVar.tab1, 'current')))+1])
+		shpAttr <- levels(as.factor(adminN))
+		tclvalue(namePoly) <- shpAttr[1]
+		tkconfigure(cbpolyType.tab3, values = shpAttr, textvariable = namePoly)
+	})
 
 	#######################################################################################################
 
@@ -189,7 +246,7 @@ ExtractDataPanelCmd <- function(){
 	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr2, 0, weight = 1)
 
-	##############
+	##########################################
 	dayLabTab2_Var <- tclVar('Dek')
 
 	istart_yrs <- tclVar('1983')
@@ -198,6 +255,7 @@ ExtractDataPanelCmd <- function(){
 	iend_yrs <- tclVar('2014')
 	iend_mon <- tclVar('12')
 	iend_day <- tclVar('3')
+	output_TSvalues <- c('Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly')
 	output_TSformat <- tclVar('Dekadal')
 
 	# MonthsName <- format(ISOdate(2014,1:12,1), "%B")
@@ -214,7 +272,7 @@ ExtractDataPanelCmd <- function(){
 	calc.stanomaly <- tclVar(0)
 	calc.climato <- tclVar(0)
 
-	##############
+	##########################################
 	lab1.tab2 <- tklabel(subfr2, text = "Date Range", bg = 'green')
 	debLab.tab2 <- tklabel(subfr2, text = 'Start date', anchor = 'e', justify = 'right')
 	finLab.tab2 <- tklabel(subfr2, text = 'End date', anchor = 'e', justify = 'right')
@@ -238,7 +296,7 @@ ExtractDataPanelCmd <- function(){
 
 	sep1.tab2 <- ttkseparator(subfr2)
 	lab2.tab2 <- tklabel(subfr2, text = "Output time series frequency", anchor = 'w', justify = 'left')
-	cbOutTS.tab2 <- ttkcombobox(subfr2, values = c('Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'), textvariable = output_TSformat, width = largeur)
+	cbOutTS.tab2 <- ttkcombobox(subfr2, values = output_TSvalues, textvariable = output_TSformat, width = largeur)
 
 	sep2.tab2 <- ttkseparator(subfr2)
 	seasLab.tab2 <- tklabel(subfr2, text = 'Season months', anchor = 'w', justify = 'left')
@@ -255,7 +313,7 @@ ExtractDataPanelCmd <- function(){
 	calcStAnomaly.tab2 <- tkcheckbutton(subfr2, variable = calc.stanomaly, text = "Compute Standardized Anomalies", anchor = 'w', justify = 'left')
 	calcClimato.tab2 <- tkcheckbutton(subfr2, variable = calc.climato, text = "Compute Climatologies", anchor = 'w', justify = 'left')
 
-	##############
+	##########################################
 	tkgrid(lab1.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(yrsLab.tab2, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(monLab.tab2, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -291,7 +349,7 @@ ExtractDataPanelCmd <- function(){
 	tkgrid(calcStAnomaly.tab2, row = 13, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(calcClimato.tab2, row = 14, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	##############
+	##########################################
 
 	infobulle(CbAggreFun.tab2, 'Function to be used to compute dekadal, monthly and yearly series')
 	status.bar.display(CbAggreFun.tab2, TextOutputVar, 'Function to be used to convert dekadal, monthly and yearly series')
@@ -307,6 +365,28 @@ ExtractDataPanelCmd <- function(){
 	infobulle(calcClimato.tab2, 'Calculate Climatologies')
 	status.bar.display(calcClimato.tab2, TextOutputVar, 'Calculate Climatologies')
 
+	##########################################
+
+	tkbind(cbOutTS.tab2, "<<ComboboxSelected>>", function(){
+
+		if(tclvalue(output_TSformat) == '3-Months'){
+			tkconfigure(cbChoixM1.tab2, state = 'normal')
+			tclvalue(end_mois) <- cycleMonth(tclvalue(start_mois), 3)
+		}else if(tclvalue(output_TSformat) == '6-Months'){
+			tkconfigure(cbChoixM1.tab2, state = 'normal')
+			tclvalue(end_mois) <- cycleMonth(tclvalue(start_mois), 6)
+		}else{
+			tkconfigure(cbChoixM1.tab2, state = 'disabled')
+		}
+
+	})
+
+	############################
+	tkbind(cbChoixM1.tab2, "<<ComboboxSelected>>", function(){
+		if(tclvalue(output_TSformat) == '3-Months') tclvalue(end_mois) <- cycleMonth(tclvalue(start_mois), 3)
+		if(tclvalue(output_TSformat) == '6-Months') tclvalue(end_mois) <- cycleMonth(tclvalue(start_mois), 6)
+	})
+
 	######################################################################################################
 
 	#Tab3
@@ -320,7 +400,8 @@ ExtractDataPanelCmd <- function(){
 	subfr3 <- bwScrollableFrame(scrw3, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr3, 0, weight = 1)
 
-	##########################
+	##########################################
+	cbAreaType.values <- c('Point', 'Multiple Points', 'Rectangle', 'Polygon', 'Multiple Polygons')
 	area_type <<- tclVar('Point')
 
 	pointrect <- tclVar('Point')
@@ -337,7 +418,7 @@ ExtractDataPanelCmd <- function(){
 
 	namePoly <<- tclVar()
 
-	##########################
+	##########################################
 
 	xentr1.tab3 <- tkentry(subfr3, width = 7, justify = "left", textvariable = xx1)
 	xentr2.tab3 <- tkentry(subfr3, width = 7, justify = "left", textvariable = xx2)
@@ -354,7 +435,8 @@ ExtractDataPanelCmd <- function(){
 
 	sep1.tab3 <- ttkseparator(subfr3)
 	lab1.tab3 <- tklabel(subfr3, text = "Extract Type", anchor = 'w', justify = 'left')
-	cbAreaType.tab3 <- ttkcombobox(subfr3, values = c('Point', 'Multiple Points', 'Rectangle', 'Polygon', 'Multiple Polygons'), textvariable = area_type, width = 10)
+
+	cbAreaType.tab3 <- ttkcombobox(subfr3, values = cbAreaType.values, textvariable = area_type, width = wcombo)
 	getArea.tab3 <<- tkbutton(subfr3, text = "GET", relief = 'raised', bg = 'lightblue', state = 'normal')
 
 	sep2.tab3 <- ttkseparator(subfr3)
@@ -379,83 +461,10 @@ ExtractDataPanelCmd <- function(){
 
 	sep3.tab3 <- ttkseparator(subfr3)
 	lab3.tab3 <- tklabel(subfr3, text = "Polygon", anchor = 'w', justify = 'left', bg = 'green')
-	cbpolyType.tab3 <- ttkcombobox(subfr3, values = '', textvariable = namePoly, width = 10, state = 'disabled')
+	cbpolyType.tab3 <- ttkcombobox(subfr3, values = '', textvariable = namePoly, state = 'disabled', width = wcombo)
 
-	##########################
+	##########################################
 
-	tkgrid(xentr1.tab3, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(xentr2.tab3, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(yentr1.tab3, row = 2, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(yentr2.tab3, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(btCentre.tab3, row = 1, column = 1, sticky = 'nswe', rowspan = 1, columnspan = 1)
-
-	tkgrid(btReset.tab3, row = 0, column = 3, sticky = 'nswe', rowspan = 1, columnspan = 1)
-	tkgrid(btRedraw.tab3, row = 1, column = 3, sticky = 'nswe', rowspan = 1, columnspan = 1)
-	tkgrid(btPanImg.tab3, row = 2, column = 3, sticky = 'nswe', rowspan = 1, columnspan = 1)
-
-	tkgrid(btZoomP.tab3, row = 0, column = 4, sticky = 'nswe', rowspan = 1, columnspan = 1)
-	tkgrid(btZoomM.tab3, row = 1, column = 4, sticky = 'nswe', rowspan = 1, columnspan = 1)
-	tkgrid(btZoomRect.tab3, row = 2, column = 4, sticky = 'nswe', rowspan = 1, columnspan = 1)
-
-	tkgrid(sep1.tab3, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, pady = 5)
-	tkgrid(lab1.tab3, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 5)
-
-	tkgrid(cbAreaType.tab3, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 4)
-	tkgrid(getArea.tab3, row = 5, column = 4, rowspan = 1, columnspan = 1) #,sticky = 'we'
-
-	tkgrid(sep2.tab3, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, pady = 5)
-
-	tkgrid(lab2.tab3, row = 7, column = 0, sticky = 'w', rowspan = 1, columnspan = 1)
-	tkgrid(minLab.tab3, row = 7, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(maxLab.tab3, row = 7, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
-
-	tkgrid(addObjs.tab3, row = 7, column = 4, rowspan = 1, columnspan = 1) #,sticky = 'we'
-
-	tkgrid(lonLab.tab3, row = 8, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
-	tkgrid(minlon.tab3, row = 8, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(maxlon.tab3, row = 8, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
-
-	tkgrid(pmLab1.tab3, row = 8, column = 3, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(pmLon.tab3, row = 8, column = 4, sticky = 'we', rowspan = 1, columnspan = 1)
-
-	tkgrid(latLab.tab3, row = 9, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
-	tkgrid(minlat.tab3, row = 9, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(maxlat.tab3, row = 9, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
-
-	tkgrid(pmLab2.tab3, row = 9, column = 3, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(pmLat.tab3, row = 9, column = 4, sticky = 'we', rowspan = 1, columnspan = 1)
-
-	tkgrid(sep3.tab3, row = 10, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, pady = 5)
-	tkgrid(lab3.tab3, row = 11, column = 0, sticky = 'w', rowspan = 1, columnspan = 5)
-	tkgrid(cbpolyType.tab3, row = 11, column = 1, sticky = 'we', rowspan = 1, columnspan = 4)
-
-	##########################
-
-	infobulle(btZoomP.tab3, 'Zoom In')
-	status.bar.display(btZoomP.tab3, TextOutputVar, 'Zoom In')
-	infobulle(btZoomM.tab3, 'Zoom Out')
-	status.bar.display(btZoomM.tab3, TextOutputVar, 'Zoom Out')
-	infobulle(btZoomRect.tab3, 'Zoom Area')
-	status.bar.display(btZoomRect.tab3, TextOutputVar, 'Zoom Area')
-	infobulle(btPanImg.tab3, 'Pan Tool')
-	status.bar.display(btPanImg.tab3, TextOutputVar, 'Pan Tool')
-	infobulle(btRedraw.tab3, 'Redraw Map')
-	status.bar.display(btRedraw.tab3, TextOutputVar, 'Redraw Map')
-	infobulle(btReset.tab3,' Zoom Reset')
-	status.bar.display(btReset.tab3, TextOutputVar,' Zoom Reset')
-
-	infobulle(getArea.tab3, 'Before to click on the map to select object,\nclick here to activate the function')
-	status.bar.display(getArea.tab3, TextOutputVar, 'Before to click on the map to select object, click here to activate the function')
-
-	infobulle(addObjs.tab3, 'Multiple Points&Polygons: after selecting object from the map\nclick here to add the object to the list')
-	status.bar.display(addObjs.tab3, TextOutputVar, 'Multiple Points&Polygons: after selecting object from the map click here to add the object to the list')
-
-	infobulle(pmLon.tab3, 'Add value in decimal degree to get\nrectangle centered at the target points')
-	status.bar.display(pmLon.tab3, TextOutputVar, 'Add value in decimal degree to get rectangle centered at the target points')
-	infobulle(pmLat.tab3, 'Add value in decimal degree to get rectangle\ncentered at the target points')
-	status.bar.display(pmLat.tab3, TextOutputVar, 'Add value in decimal degree to get rectangle centered at the target points')
-
-	##########################
 	tkconfigure(btRedraw.tab3, command = function(){
 		ZoomXYval <<- as.numeric(c(tclvalue(xx1), tclvalue(xx2), tclvalue(yy1), tclvalue(yy2)))
 		tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
@@ -495,346 +504,116 @@ ExtractDataPanelCmd <- function(){
 		}
 	})
 
-	##########################
-	pressButP <<- tclVar('0')
-	pressButM <<- tclVar('0')
-	pressButRect <<- tclVar('0')
-	pressButDrag <<- tclVar('0')
-	pressGetCoords <<- tclVar('0')
-
-	tkbind(btRedraw.tab3, "<Button-1>", function(){
-		tclvalue(pressButP) <<- 0
-		tclvalue(pressButM) <<- 0
-		tclvalue(pressButRect) <<- 0
-		tclvalue(pressButDrag) <<- 0
-		tclvalue(pressGetCoords) <<- 0
-		tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
-		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-	})
-
-	tkbind(btReset.tab3, "<Button-1>", function(){
-		tclvalue(pressButP) <<- 0
-		tclvalue(pressButM) <<- 0
-		tclvalue(pressButRect) <<- 0
-		tclvalue(pressButDrag) <<- 0
-		tclvalue(pressGetCoords) <<- 0
-		tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
-		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-	})
-
-	tkbind(btZoomP.tab3, "<Button-1>", function(){
-		tclvalue(pressButP) <<- 1
-		tclvalue(pressButM) <<- 0
-		tclvalue(pressButRect) <<- 0
-		tclvalue(pressButDrag) <<- 0
-		tclvalue(pressGetCoords) <<- 0
-		tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
-		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'red', state = 'disabled')
-		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-	})
-
-	tkbind(btZoomM.tab3, "<Button-1>", function(){
-		tclvalue(pressButP) <<- 0
-		tclvalue(pressButM) <<- 1
-		tclvalue(pressButRect) <<- 0
-		tclvalue(pressButDrag) <<- 0
-		tclvalue(pressGetCoords) <<- 0
-		tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
-		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'red', state = 'disabled')
-		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-	})
-
-	tkbind(btZoomRect.tab3, "<Button-1>", function(){
-		tclvalue(pressButP) <<- 0
-		tclvalue(pressButM) <<- 0
-		tclvalue(pressButRect) <<- 1
-		tclvalue(pressButDrag) <<- 0
-		tclvalue(pressGetCoords) <<- 0
-		tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
-		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'red', state = 'disabled')
-		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-	})
-
-	tkbind(btPanImg.tab3, "<Button-1>", function(){
-		tclvalue(pressButP) <<- 0
-		tclvalue(pressButM) <<- 0
-		tclvalue(pressButRect) <<- 0
-		tclvalue(pressButDrag) <<- 1
-		tclvalue(pressGetCoords) <<- 0
-		tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
-		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'red', state = 'disabled')
-		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-	})
-
-	tkbind(getArea.tab3, "<Button-1>", function(){
-		tclvalue(pressButP) <<- 0
-		tclvalue(pressButM) <<- 0
-		tclvalue(pressButRect) <<- 0
-		tclvalue(pressButDrag) <<- 0
-		tclvalue(pressGetCoords) <<- 1
-		tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
-		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(getArea.tab3, relief = 'raised', bg = 'red', state = 'disabled')
-	})
-
-	#####
-	initializeButZoom <- function(){
-			initXYval0 <<- str_trim(c(tclvalue(xx1), tclvalue(xx2), tclvalue(yy1), tclvalue(yy2)))
-			tclvalue(pressButP) <<- 0
-			tclvalue(pressButM) <<- 0
-			tclvalue(pressButRect) <<- 0
-			tclvalue(pressButDrag) <<- 0
-			tclvalue(pressGetCoords) <<- 0
-			tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-			tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-			tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-			tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-			tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
-	}
-
-	activateButRedraw <- function(){
-		initXYval1 <- str_trim(c(tclvalue(xx1), tclvalue(xx2), tclvalue(yy1), tclvalue(yy2)))
-		if(!all(initXYval0 == initXYval1)) tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'red')
-	}
-
-	####
-	tkbind(xentr1.tab3, "<FocusIn>", initializeButZoom)
-	tkbind(xentr1.tab3, "<FocusOut>", activateButRedraw)
-
-	tkbind(xentr2.tab3, "<FocusIn>", initializeButZoom)
-	tkbind(xentr2.tab3, "<FocusOut>", activateButRedraw)
-
-	tkbind(yentr1.tab3, "<FocusIn>", initializeButZoom)
-	tkbind(yentr1.tab3, "<FocusOut>", activateButRedraw)
-
-	tkbind(yentr2.tab3, "<FocusIn>", initializeButZoom)
-	tkbind(yentr2.tab3, "<FocusOut>", activateButRedraw)
-
-	######################################################################################################
-	#Tab4
-	frTab4 <- tkframe(cmd.tab4)
-	tkgrid(frTab4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid.columnconfigure(frTab4, 0, weight = 1)
-
-	scrw4 <- bwScrolledWindow(frTab4)
-	tkgrid(scrw4)
-	tkgrid.columnconfigure(scrw4, 0, weight = 1)
-	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
-	tkgrid.columnconfigure(subfr4, 0, weight = 1)
-
-	##########################
-
-	spatAverage <- tclVar('1')
-	ChoixOutType <- tclVar('1')
-	fileORdir <- tclVar('File to save extracted data')
-	file.save1 <- tclVar()
-	is.cpt <- tclVar('0')
-
-	##########################
-	lab1.tab4 <- tklabel(subfr4, text = 'Saptially Average Over Selected Area', anchor = 'e', justify = 'right')
-	chkSpaAvrg.tab4 <- tkcheckbutton(subfr4, variable = spatAverage)
-
-	sep1.tab4 <- ttkseparator(subfr4)
-	outputype.tab4 <- ttklabelframe(subfr4, text = "Output File Formats", labelanchor = "nw", relief = "groove", borderwidth = 2)
-
-	sep2.tab4 <- ttkseparator(subfr4)
-	lab2.tab4 <- tklabel(subfr4, text = tclvalue(fileORdir), textvariable = fileORdir, anchor = 'w', justify = 'left')
-	fl2sav.tab4 <- tkentry(subfr4, textvariable = file.save1, width = largeur)
-	bfl2sav.tab4 <- tkbutton(subfr4, text = "...")
-
-	sep3.tab4 <- ttkseparator(subfr4)
-	excute.tab4 <- tkbutton(subfr4, text = "EXTRACT TS")
-
-	##########################
-
-	outTypeCPT <- tkcheckbutton(outputype.tab4, variable = is.cpt, text = "CPT Format", anchor = 'w', justify = 'left')
-	sepCPT.tab4 <- ttkseparator(outputype.tab4)
-
-	outTypeRadio1 <- tkradiobutton(outputype.tab4, text = "Separate Files Matrix", anchor = 'w', justify = 'left')
-	outTypeRadio2 <- tkradiobutton(outputype.tab4, text = "One File Matrix", anchor = 'w', justify = 'left')
-	outTypeRadio3 <- tkradiobutton(outputype.tab4, text = "One File Time|Lat|Lon|Value", anchor = 'w', justify = 'left')
-
-	tkconfigure(outTypeRadio1, variable = ChoixOutType, value = "1")
-	tkconfigure(outTypeRadio2, variable = ChoixOutType, value = "2")
-	tkconfigure(outTypeRadio3, variable = ChoixOutType, value = "3")
-
-	tkgrid(outTypeCPT, row = 0, column = 0, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(sepCPT.tab4, row = 1, column = 0, sticky = 'ew', padx = 1, pady = 1)
-
-	tkgrid(outTypeRadio1, row = 2, column = 0, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(outTypeRadio2, row = 3, column = 0, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(outTypeRadio3, row = 4, column = 0, sticky = 'ew', padx = 1, pady = 1)
-
-	##########################
-
-	tkconfigure(bfl2sav.tab4, command = function(){
-		fileORdir2Save(file.save1, isFile = TRUE)
-	})
-
-	tkconfigure(excute.tab4, command = function(){
-		# #si utiliser avec Run toolbar button ( <<- ) and initialize
- 		retExtractParams <- list(freq = tclvalue(file.period),
-					out.ts = tclvalue(output_TSformat),
-					ncdat = list(dir = tclvalue(dirNetCDF), format = tclvalue(netCDFff)),
-					shpdat = list(shpf = tclvalue(Admin_shp), attr = tclvalue(Admin_var), id = tclvalue(namePoly)),
-					dates = c(tclvalue(istart_yrs), tclvalue(istart_mon), tclvalue(istart_day),
-								tclvalue(iend_yrs), tclvalue(iend_mon), tclvalue(iend_day)),
-					usemon = list(start = tclvalue(use_mois1), end = tclvalue(use_mois2)),
-					seasmon = list(start = tclvalue(start_mois), end = tclvalue(end_mois)),
-					aggre = list(fun = tclvalue(aggrFun), missfrac = tclvalue(MissFrac)),
-					rect = c(tclvalue(minlonRect), tclvalue(maxlonRect), tclvalue(minlatRect),tclvalue(maxlatRect)),
-					climato = list(anom = tclvalue(calc.anomaly), stanom = tclvalue(calc.stanomaly), clim = tclvalue(calc.climato)),
-					pts.int = c(tclvalue(pmLon), tclvalue(pmLat)),
-					polyg = if(is.null(EnvMultiPP$multiptspoly)) NA else EnvMultiPP$multiptspoly,
-					area.type = tclvalue(area_type),
-					sp.ave = tclvalue(spatAverage),
-					out.type = tclvalue(ChoixOutType),
-					outdir = tclvalue(file.save1),
-					is.cpt = switch(tclvalue(is.cpt), '0' = FALSE, '1' = TRUE))
-
-		assign('retExtractParams', retExtractParams, envir = .GlobalEnv)
-
-		tkconfigure(main.win, cursor = 'watch')
-		InsertMessagesTxt(main.txt.out, "Extraction.................")
-		tcl('update')
-		ret <- tryCatch(getExtractDataFun(retExtractParams),
-		#warning = function(w) warningFun(w),
-		error = function(e) errorFun(e),
-		finally = {
-			tkconfigure(main.win, cursor = '')
-		})
-
-		if(!is.null(ret)){
-			if(ret == 0) InsertMessagesTxt(main.txt.out, "Extraction finished successfully")
-			else InsertMessagesTxt(main.txt.out, "Extraction failed", format = TRUE)
-		}else{
-			InsertMessagesTxt(main.txt.out, "Extraction failed", format = TRUE)
-		}
-	})
-
-	##########################
-	tkgrid(lab1.tab4, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(chkSpaAvrg.tab4, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(sep1.tab4, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
-	tkgrid(lab2.tab4, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(fl2sav.tab4, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(bfl2sav.tab4, row = 3, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(sep2.tab4, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
-	tkgrid(outputype.tab4, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(sep3.tab4, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
-	tkgrid(excute.tab4, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	##########################
-
-	infobulle(outputype.tab4, 'Select the file format to save result in case of Rectangle or Polygon')
-	status.bar.display(outputype.tab4, TextOutputVar, 'Select the file format to save result in case of Rectangle or Polygon')
-
-	infobulle(fl2sav.tab4, 'Enter the full path to the directory or file to save result')
-	status.bar.display(fl2sav.tab4, TextOutputVar, 'Enter the full path to the directory or file to save extracted data')
-	infobulle(bfl2sav.tab4, 'Browse here the full path to the directory or file to save result')
-	status.bar.display(bfl2sav.tab4, TextOutputVar, 'Browse here the full path to the directory or file to save extracted data')
-
-	######################################################################################################
-
-	tkbind(cbprd.tab1, "<<ComboboxSelected>>", function(){
-		if(tclvalue(file.period) == 'Daily data'){
-			tclvalue(netCDFff) <- "rr_mrg_%s%s%s.nc"
-			infobulle(netCDFff.tab1, 'Enter the format of the NetCDF files names,\nexample: rr_mrg_19830101.nc')
-			status.bar.display(netCDFff.tab1, TextOutputVar, 'Enter the format of the NetCDF files names, example: rr_mrg_19830101.nc')
-			tclvalue(dayLabTab2_Var) <- 'Day'
-			tkconfigure(day1.tab2, state = 'normal')
-			tkconfigure(day2.tab2, state = 'normal')
-			tkconfigure(cbOutTS.tab2, values = c('Daily', 'Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'))
-			tclvalue(output_TSformat) <- 'Daily'
-			tclvalue(iend_day) <- '31'
-		}
-		if(tclvalue(file.period) == 'Dekadal data'){
-			tclvalue(netCDFff) <- "rr_mrg_%s%s%s.nc"
-			infobulle(netCDFff.tab1, 'Enter the format of the NetCDF files names,\nexample: rr_mrg_1983011.nc')
-			status.bar.display(netCDFff.tab1, TextOutputVar, 'Enter the format of the NetCDF files names, example: rr_mrg_1983011.nc')
-			tclvalue(dayLabTab2_Var) <- 'Dek'
-			tkconfigure(day1.tab2, state = 'normal')
-			tkconfigure(day2.tab2, state = 'normal')
-			tkconfigure(cbOutTS.tab2, values = c('Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'))
-			tclvalue(output_TSformat) <- 'Dekadal'
-			tclvalue(iend_day) <- '3'
-		}
-		if(tclvalue(file.period) == 'Monthly data'){
-			tclvalue(netCDFff) <- "rr_mrg_%s%s.nc"
-			infobulle(netCDFff.tab1, 'Enter the format of the NetCDF files names,\nexample: rr_mrg_198301.nc')
-			status.bar.display(netCDFff.tab1, TextOutputVar, 'Enter the format of the NetCDF files names, example: rr_mrg_198301.nc')
-			tkconfigure(day1.tab2, state = 'disabled')
-			tkconfigure(day2.tab2, state = 'disabled')
-			tkconfigure(cbOutTS.tab2, values = c('Monthly', '3-Months', '6-Months', 'Yearly'))
-			tclvalue(output_TSformat) <- 'Monthly'
-		}
-	})
-
-
-	#######################
-	tkbind(cbSHP.tab1, "<<ComboboxSelected>>", function(){
-		shpf <- getShpOpenData(Admin_shp)
-		dat <- shpf[[2]]@data
-		shpAttr <- names(dat)
-		tclvalue(Admin_var) <- shpAttr[1]
-		tkconfigure(adminVar.tab1, values = shpAttr, textvariable = Admin_var)
-	})
-
 	#############################
-	tkbind(adminVar.tab1, "<<ComboboxSelected>>", function(){
-		shpf <- getShpOpenData(Admin_shp)
-		dat <- shpf[[2]]@data
-		adminN <- as.character(dat[, as.numeric(tclvalue(tcl(adminVar.tab1, 'current')))+1])
-		shpAttr <- levels(as.factor(adminN))
-		tclvalue(namePoly) <- shpAttr[1]
-		tkconfigure(cbpolyType.tab3, values = shpAttr, textvariable = namePoly)
-	})
-
-	#######################
-	tkbind(cbOutTS.tab2, "<<ComboboxSelected>>", function(){
-
-		if(tclvalue(output_TSformat) == '3-Months'){
-			tkconfigure(cbChoixM1.tab2, state = 'normal')
-			tclvalue(end_mois) <- cycleMonth(tclvalue(start_mois), 3)
-		}else if(tclvalue(output_TSformat) == '6-Months'){
-			tkconfigure(cbChoixM1.tab2, state = 'normal')
-			tclvalue(end_mois) <- cycleMonth(tclvalue(start_mois), 6)
-		}else{
-			tkconfigure(cbChoixM1.tab2, state = 'disabled')
+	nbpts <- 1
+	tkconfigure(addObjs.tab3, command = function(){
+		if(tclvalue(area_type) == 'Multiple Points'){			
+			tkinsert(retMultiP$textObj, "end", paste(paste('Pts', nbpts, sep = ''), tclvalue(minlonRect), tclvalue(minlatRect), "\n"))
+			nbpts <<- nbpts+1
 		}
-
+		if(tclvalue(area_type) == 'Multiple Polygons') tkinsert(retMultiP$textObj, "end", paste(tclvalue(namePoly), "\n"))
 	})
 
-	############################
-	tkbind(cbChoixM1.tab2, "<<ComboboxSelected>>", function(){
-		if(tclvalue(output_TSformat) == '3-Months') tclvalue(end_mois) <- cycleMonth(tclvalue(start_mois), 3)
-		if(tclvalue(output_TSformat) == '6-Months') tclvalue(end_mois) <- cycleMonth(tclvalue(start_mois), 6)
+	##########################################
+
+	tkgrid(xentr1.tab3, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(xentr2.tab3, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(yentr1.tab3, row = 2, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(yentr2.tab3, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(btCentre.tab3, row = 1, column = 1, sticky = 'nswe', rowspan = 1, columnspan = 1)
+
+	tkgrid(btReset.tab3, row = 0, column = 3, sticky = 'nswe', rowspan = 1, columnspan = 1)
+	tkgrid(btRedraw.tab3, row = 1, column = 3, sticky = 'nswe', rowspan = 1, columnspan = 1)
+	tkgrid(btPanImg.tab3, row = 2, column = 3, sticky = 'nswe', rowspan = 1, columnspan = 1)
+
+	tkgrid(btZoomP.tab3, row = 0, column = 4, sticky = 'nswe', rowspan = 1, columnspan = 1)
+	tkgrid(btZoomM.tab3, row = 1, column = 4, sticky = 'nswe', rowspan = 1, columnspan = 1)
+	tkgrid(btZoomRect.tab3, row = 2, column = 4, sticky = 'nswe', rowspan = 1, columnspan = 1)
+
+	tkgrid(sep1.tab3, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, pady = 5)
+	tkgrid(lab1.tab3, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 5)
+
+	tkgrid(cbAreaType.tab3, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 4)
+	tkgrid(getArea.tab3, row = 5, column = 4, sticky = 'we', rowspan = 1, columnspan = 1)
+
+	tkgrid(sep2.tab3, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, pady = 5)
+
+	tkgrid(lab2.tab3, row = 7, column = 0, sticky = 'w', rowspan = 1, columnspan = 1)
+	tkgrid(minLab.tab3, row = 7, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(maxLab.tab3, row = 7, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
+
+	tkgrid(addObjs.tab3, row = 7, column = 4, sticky = 'we', rowspan = 1, columnspan = 1)
+
+	tkgrid(lonLab.tab3, row = 8, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
+	tkgrid(minlon.tab3, row = 8, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(maxlon.tab3, row = 8, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
+
+	tkgrid(pmLab1.tab3, row = 8, column = 3, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(pmLon.tab3, row = 8, column = 4, sticky = 'we', rowspan = 1, columnspan = 1)
+
+	tkgrid(latLab.tab3, row = 9, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
+	tkgrid(minlat.tab3, row = 9, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(maxlat.tab3, row = 9, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
+
+	tkgrid(pmLab2.tab3, row = 9, column = 3, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(pmLat.tab3, row = 9, column = 4, sticky = 'we', rowspan = 1, columnspan = 1)
+
+	tkgrid(sep3.tab3, row = 10, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, pady = 5)
+	tkgrid(lab3.tab3, row = 11, column = 0, sticky = 'w', rowspan = 1, columnspan = 1)
+	tkgrid(cbpolyType.tab3, row = 11, column = 1, sticky = 'we', rowspan = 1, columnspan = 4)
+
+	##########################################
+
+	infobulle(btZoomP.tab3, 'Zoom In')
+	status.bar.display(btZoomP.tab3, TextOutputVar, 'Zoom In')
+	infobulle(btZoomM.tab3, 'Zoom Out')
+	status.bar.display(btZoomM.tab3, TextOutputVar, 'Zoom Out')
+	infobulle(btZoomRect.tab3, 'Zoom Area')
+	status.bar.display(btZoomRect.tab3, TextOutputVar, 'Zoom Area')
+	infobulle(btPanImg.tab3, 'Pan Tool')
+	status.bar.display(btPanImg.tab3, TextOutputVar, 'Pan Tool')
+	infobulle(btRedraw.tab3, 'Redraw Map')
+	status.bar.display(btRedraw.tab3, TextOutputVar, 'Redraw Map')
+	infobulle(btReset.tab3,' Zoom Reset')
+	status.bar.display(btReset.tab3, TextOutputVar,' Zoom Reset')
+
+	infobulle(getArea.tab3, 'Before to click on the map to select object,\nclick here to activate the function')
+	status.bar.display(getArea.tab3, TextOutputVar, 'Before to click on the map to select object, click here to activate the function')
+
+	infobulle(addObjs.tab3, 'Multiple Points&Polygons: after selecting object from the map\nclick here to add the object to the list')
+	status.bar.display(addObjs.tab3, TextOutputVar, 'Multiple Points&Polygons: after selecting object from the map click here to add the object to the list')
+
+	infobulle(pmLon.tab3, 'Add value in decimal degree to get\nrectangle centered at the target points')
+	status.bar.display(pmLon.tab3, TextOutputVar, 'Add value in decimal degree to get rectangle centered at the target points')
+	infobulle(pmLat.tab3, 'Add value in decimal degree to get rectangle\ncentered at the target points')
+	status.bar.display(pmLat.tab3, TextOutputVar, 'Add value in decimal degree to get rectangle centered at the target points')
+
+	##########################################
+
+	tkbind(cbpolyType.tab3, "<<ComboboxSelected>>", function(){
+		if(tclvalue(namePoly) != ''){
+			shpfopen <- getShpOpenData(Admin_shp)
+			shpf <- shpfopen[[2]]
+			ids <- as.numeric(tclvalue(tcl(adminVar.tab1, 'current')))+1
+			selectedPolygon <- getBoundaries(shpf[shpf@data[, ids] == tclvalue(namePoly), ])
+		}else{
+			selectedPolygon <- NULL
+		}
+		tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
+		if(length(AllOpenTabType) > 0){
+			if(AllOpenTabType[[tabid]] == "img" & !is.null(notebookTab)){
+				if(AllOpenTabData[[tabid]][[1]][[1]]$ID  == notebookTab[[2]]){
+					assign("selectedPolygon", selectedPolygon, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
+					refreshPlot1(W = AllOpenTabData[[tabid]][[2]][[1]],
+								img = AllOpenTabData[[tabid]][[2]][[2]],
+								hscale = as.numeric(tclvalue(tkget(spinH))),
+								vscale = as.numeric(tclvalue(tkget(spinV))))
+				}
+			}
+		}
 	})
 
-	############################
+	##########################################
 
 	retMultiP <- NULL
 
@@ -986,47 +765,278 @@ ExtractDataPanelCmd <- function(){
 		}
 	})
 
-	#############################
-	nbpts <- 1
-	tkconfigure(addObjs.tab3, command = function(){
-		if(tclvalue(area_type) == 'Multiple Points'){			
-			tkinsert(retMultiP$textObj, "end", paste(paste('Pts', nbpts, sep = ''), tclvalue(minlonRect), tclvalue(minlatRect), "\n"))
-			nbpts <<- nbpts+1
-		}
-		if(tclvalue(area_type) == 'Multiple Polygons') tkinsert(retMultiP$textObj, "end", paste(tclvalue(namePoly), "\n"))
+	##########################################
+
+	initializeButZoom <- function(){
+			initXYval0 <<- str_trim(c(tclvalue(xx1), tclvalue(xx2), tclvalue(yy1), tclvalue(yy2)))
+			tclvalue(pressButP) <<- 0
+			tclvalue(pressButM) <<- 0
+			tclvalue(pressButRect) <<- 0
+			tclvalue(pressButDrag) <<- 0
+			tclvalue(pressGetCoords) <<- 0
+			tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+			tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+			tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+			tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+			tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+	}
+
+	activateButRedraw <- function(){
+		initXYval1 <- str_trim(c(tclvalue(xx1), tclvalue(xx2), tclvalue(yy1), tclvalue(yy2)))
+		if(!all(initXYval0 == initXYval1)) tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'red')
+	}
+
+	##########################
+	tkbind(xentr1.tab3, "<FocusIn>", initializeButZoom)
+	tkbind(xentr1.tab3, "<FocusOut>", activateButRedraw)
+
+	tkbind(xentr2.tab3, "<FocusIn>", initializeButZoom)
+	tkbind(xentr2.tab3, "<FocusOut>", activateButRedraw)
+
+	tkbind(yentr1.tab3, "<FocusIn>", initializeButZoom)
+	tkbind(yentr1.tab3, "<FocusOut>", activateButRedraw)
+
+	tkbind(yentr2.tab3, "<FocusIn>", initializeButZoom)
+	tkbind(yentr2.tab3, "<FocusOut>", activateButRedraw)
+
+	##########################################
+
+	pressButP <<- tclVar('0')
+	pressButM <<- tclVar('0')
+	pressButRect <<- tclVar('0')
+	pressButDrag <<- tclVar('0')
+	pressGetCoords <<- tclVar('0')
+
+	tkbind(btRedraw.tab3, "<Button-1>", function(){
+		tclvalue(pressButP) <<- 0
+		tclvalue(pressButM) <<- 0
+		tclvalue(pressButRect) <<- 0
+		tclvalue(pressButDrag) <<- 0
+		tclvalue(pressGetCoords) <<- 0
+		tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
+		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
 	})
 
-	#############################
-	tkbind(cbpolyType.tab3, "<<ComboboxSelected>>", function(){
-		if(tclvalue(namePoly) != ''){
-			shpfopen <- getShpOpenData(Admin_shp)
-			shpf <- shpfopen[[2]]
-			ids <- as.numeric(tclvalue(tcl(adminVar.tab1, 'current')))+1
-			selectedPolygon <- getBoundaries(shpf[shpf@data[, ids] == tclvalue(namePoly), ])
+	tkbind(btReset.tab3, "<Button-1>", function(){
+		tclvalue(pressButP) <<- 0
+		tclvalue(pressButM) <<- 0
+		tclvalue(pressButRect) <<- 0
+		tclvalue(pressButDrag) <<- 0
+		tclvalue(pressGetCoords) <<- 0
+		tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
+		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+	})
+
+	tkbind(btZoomP.tab3, "<Button-1>", function(){
+		tclvalue(pressButP) <<- 1
+		tclvalue(pressButM) <<- 0
+		tclvalue(pressButRect) <<- 0
+		tclvalue(pressButDrag) <<- 0
+		tclvalue(pressGetCoords) <<- 0
+		tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
+		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'red', state = 'disabled')
+		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+	})
+
+	tkbind(btZoomM.tab3, "<Button-1>", function(){
+		tclvalue(pressButP) <<- 0
+		tclvalue(pressButM) <<- 1
+		tclvalue(pressButRect) <<- 0
+		tclvalue(pressButDrag) <<- 0
+		tclvalue(pressGetCoords) <<- 0
+		tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
+		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'red', state = 'disabled')
+		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+	})
+
+	tkbind(btZoomRect.tab3, "<Button-1>", function(){
+		tclvalue(pressButP) <<- 0
+		tclvalue(pressButM) <<- 0
+		tclvalue(pressButRect) <<- 1
+		tclvalue(pressButDrag) <<- 0
+		tclvalue(pressGetCoords) <<- 0
+		tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
+		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'red', state = 'disabled')
+		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+	})
+
+	tkbind(btPanImg.tab3, "<Button-1>", function(){
+		tclvalue(pressButP) <<- 0
+		tclvalue(pressButM) <<- 0
+		tclvalue(pressButRect) <<- 0
+		tclvalue(pressButDrag) <<- 1
+		tclvalue(pressGetCoords) <<- 0
+		tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
+		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'red', state = 'disabled')
+		tkconfigure(getArea.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+	})
+
+	tkbind(getArea.tab3, "<Button-1>", function(){
+		tclvalue(pressButP) <<- 0
+		tclvalue(pressButM) <<- 0
+		tclvalue(pressButRect) <<- 0
+		tclvalue(pressButDrag) <<- 0
+		tclvalue(pressGetCoords) <<- 1
+		tkconfigure(btRedraw.tab3, relief = 'raised', bg = 'lightblue')
+		tkconfigure(btZoomP.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomM.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btZoomRect.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(btPanImg.tab3, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(getArea.tab3, relief = 'raised', bg = 'red', state = 'disabled')
+	})
+
+	######################################################################################################
+
+	#Tab4
+	frTab4 <- tkframe(cmd.tab4)
+	tkgrid(frTab4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab4, 0, weight = 1)
+
+	scrw4 <- bwScrolledWindow(frTab4)
+	tkgrid(scrw4)
+	tkgrid.columnconfigure(scrw4, 0, weight = 1)
+	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr4, 0, weight = 1)
+
+	##########################################
+
+	spatAverage <- tclVar('1')
+	ChoixOutType <- tclVar('1')
+	fileORdir <- tclVar('File to save extracted data')
+	file.save1 <- tclVar()
+	is.cpt <- tclVar('0')
+
+	##########################################
+	lab1.tab4 <- tklabel(subfr4, text = 'Saptially Average Over Selected Area', anchor = 'e', justify = 'right')
+	chkSpaAvrg.tab4 <- tkcheckbutton(subfr4, variable = spatAverage)
+
+	sep1.tab4 <- ttkseparator(subfr4)
+	outputype.tab4 <- ttklabelframe(subfr4, text = "Output File Formats", labelanchor = "nw", relief = "groove", borderwidth = 2)
+
+	sep2.tab4 <- ttkseparator(subfr4)
+	lab2.tab4 <- tklabel(subfr4, text = tclvalue(fileORdir), textvariable = fileORdir, anchor = 'w', justify = 'left')
+	fl2sav.tab4 <- tkentry(subfr4, textvariable = file.save1, width = largeur)
+	bfl2sav.tab4 <- tkbutton(subfr4, text = "...")
+
+	sep3.tab4 <- ttkseparator(subfr4)
+	excute.tab4 <- ttkbutton(subfr4, text = "EXTRACT TS")
+
+	##########################
+	outTypeCPT <- tkcheckbutton(outputype.tab4, variable = is.cpt, text = "CPT Format", anchor = 'w', justify = 'left')
+	sepCPT.tab4 <- ttkseparator(outputype.tab4)
+
+	outTypeRadio1 <- tkradiobutton(outputype.tab4, text = "Separate Files Matrix", anchor = 'w', justify = 'left')
+	outTypeRadio2 <- tkradiobutton(outputype.tab4, text = "One File Matrix", anchor = 'w', justify = 'left')
+	outTypeRadio3 <- tkradiobutton(outputype.tab4, text = "One File Time|Lat|Lon|Value", anchor = 'w', justify = 'left')
+
+	tkconfigure(outTypeRadio1, variable = ChoixOutType, value = "1")
+	tkconfigure(outTypeRadio2, variable = ChoixOutType, value = "2")
+	tkconfigure(outTypeRadio3, variable = ChoixOutType, value = "3")
+
+	tkgrid(outTypeCPT, row = 0, column = 0, sticky = 'ew', padx = 1, pady = 1)
+	tkgrid(sepCPT.tab4, row = 1, column = 0, sticky = 'ew', padx = 1, pady = 1)
+
+	tkgrid(outTypeRadio1, row = 2, column = 0, sticky = 'ew', padx = 1, pady = 1)
+	tkgrid(outTypeRadio2, row = 3, column = 0, sticky = 'ew', padx = 1, pady = 1)
+	tkgrid(outTypeRadio3, row = 4, column = 0, sticky = 'ew', padx = 1, pady = 1)
+
+	##########################################
+
+	tkconfigure(bfl2sav.tab4, command = function(){
+		fileORdir2Save(file.save1, isFile = TRUE)
+	})
+
+	tkconfigure(excute.tab4, command = function(){
+		# #si utiliser avec Run toolbar button ( <<- ) and initialize
+ 		retExtractParams <- list(freq = tclvalue(file.period),
+					out.ts = tclvalue(output_TSformat),
+					ncdat = list(dir = tclvalue(dirNetCDF), format = tclvalue(netCDFff)),
+					shpdat = list(shpf = tclvalue(Admin_shp), attr = tclvalue(Admin_var), id = tclvalue(namePoly)),
+					dates = c(tclvalue(istart_yrs), tclvalue(istart_mon), tclvalue(istart_day),
+								tclvalue(iend_yrs), tclvalue(iend_mon), tclvalue(iend_day)),
+					usemon = list(start = tclvalue(use_mois1), end = tclvalue(use_mois2)),
+					seasmon = list(start = tclvalue(start_mois), end = tclvalue(end_mois)),
+					aggre = list(fun = tclvalue(aggrFun), missfrac = tclvalue(MissFrac)),
+					rect = c(tclvalue(minlonRect), tclvalue(maxlonRect), tclvalue(minlatRect),tclvalue(maxlatRect)),
+					climato = list(anom = tclvalue(calc.anomaly), stanom = tclvalue(calc.stanomaly), clim = tclvalue(calc.climato)),
+					pts.int = c(tclvalue(pmLon), tclvalue(pmLat)),
+					polyg = if(is.null(EnvMultiPP$multiptspoly)) NA else EnvMultiPP$multiptspoly,
+					area.type = tclvalue(area_type),
+					sp.ave = tclvalue(spatAverage),
+					out.type = tclvalue(ChoixOutType),
+					outdir = tclvalue(file.save1),
+					is.cpt = switch(tclvalue(is.cpt), '0' = FALSE, '1' = TRUE))
+
+		assign('retExtractParams', retExtractParams, envir = .GlobalEnv)
+
+		tkconfigure(main.win, cursor = 'watch')
+		InsertMessagesTxt(main.txt.out, "Extraction.................")
+		tcl('update')
+		ret <- tryCatch(getExtractDataFun(retExtractParams),
+		#warning = function(w) warningFun(w),
+		error = function(e) errorFun(e),
+		finally = {
+			tkconfigure(main.win, cursor = '')
+		})
+
+		if(!is.null(ret)){
+			if(ret == 0) InsertMessagesTxt(main.txt.out, "Extraction finished successfully")
+			else InsertMessagesTxt(main.txt.out, "Extraction failed", format = TRUE)
 		}else{
-			selectedPolygon <- NULL
-		}
-		tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
-		if(length(AllOpenTabType) > 0){
-			if(AllOpenTabType[[tabid]] == "img" & !is.null(notebookTab)){
-				if(AllOpenTabData[[tabid]][[1]][[1]]$ID  == notebookTab[[2]]){
-					assign("selectedPolygon", selectedPolygon, envir = environment(AllOpenTabData[[tabid]][[2]][[2]]$fun))
-					refreshPlot1(W = AllOpenTabData[[tabid]][[2]][[1]],
-								img = AllOpenTabData[[tabid]][[2]][[2]],
-								hscale = as.numeric(tclvalue(tkget(spinH))),
-								vscale = as.numeric(tclvalue(tkget(spinV))))
-				}
-			}
+			InsertMessagesTxt(main.txt.out, "Extraction failed", format = TRUE)
 		}
 	})
 
-	#############################
+	##########################################
+	tkgrid(lab1.tab4, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(chkSpaAvrg.tab4, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(sep1.tab4, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
+	tkgrid(lab2.tab4, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(fl2sav.tab4, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bfl2sav.tab4, row = 3, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(sep2.tab4, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
+	tkgrid(outputype.tab4, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(sep3.tab4, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
+	tkgrid(excute.tab4, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	##########################################
+
+	infobulle(outputype.tab4, 'Select the file format to save result in case of Rectangle or Polygon')
+	status.bar.display(outputype.tab4, TextOutputVar, 'Select the file format to save result in case of Rectangle or Polygon')
+
+	infobulle(fl2sav.tab4, 'Enter the full path to the directory or file to save result')
+	status.bar.display(fl2sav.tab4, TextOutputVar, 'Enter the full path to the directory or file to save extracted data')
+	infobulle(bfl2sav.tab4, 'Browse here the full path to the directory or file to save result')
+	status.bar.display(bfl2sav.tab4, TextOutputVar, 'Browse here the full path to the directory or file to save extracted data')
+
+	##########################################
+
 	tkbind(chkSpaAvrg.tab4, "<Button-1>", function(){
 		if(tclvalue(spatAverage) == '0'){
 			tclvalue(fileORdir) <- 'File to save extracted data'
 			tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
 		}else{
-			if((tclvalue(area_type) == 'Rectangle' | tclvalue(area_type) == 'Polygon') & tclvalue(ChoixOutType) == '1'){
+			if(tclvalue(area_type)%in%c('Rectangle', 'Polygon') & tclvalue(ChoixOutType) == '1'){
 				tclvalue(fileORdir) <- 'Directory to save extracted data'
 				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = FALSE))
 			}else{
@@ -1039,7 +1049,7 @@ ExtractDataPanelCmd <- function(){
 	#############################
 	tkbind(outTypeRadio1, "<Button-1>", function(){
 		if(tclvalue(spatAverage) == '0'){
-			if(tclvalue(area_type) == 'Rectangle' | tclvalue(area_type) == 'Polygon'){
+			if(tclvalue(area_type)%in%c('Rectangle', 'Polygon')){
 				tclvalue(fileORdir) <- 'Directory to save extracted data'
 				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = FALSE))
 			}else{
@@ -1074,20 +1084,34 @@ ExtractDataPanelCmd <- function(){
 
 previewWin <- function(parent.win, states, shpL){
 	listOpenFiles <- openFile_ttkcomboList()
+
+	if(Sys.info()["sysname"] == "Windows"){
+		largeur <- as.integer(w.scale(32)/sfont0)
+		wtext <- as.integer(w.scale(27)/sfont0)
+	}else{
+		largeur <- as.integer(w.scale(27)/sfont0)
+		wtext <- as.integer(w.scale(35)/sfont0)
+	}
+
+	#############################
+
 	tt <- tktoplevel()
 	frA <- tkframe(tt, relief = "raised", borderwidth = 2)
 	frB <- tkframe(tt)
 
-	########
-	frA1 <- ttklabelframe(frA, text = 'Multiple Points', relief = 'groove', borderwidth = 2)
+	#############################
 
 	coordsfiles <- tclVar()
 	coordsfrom <- tclVar('crd')
 
+	frA1 <- ttklabelframe(frA, text = 'Multiple Points', relief = 'groove', borderwidth = 2)
+
 	crdfrm1 <- tkradiobutton(frA1, variable = coordsfrom, value = "crd", text = "From coordinate file", anchor = 'w', justify = 'left', state = states[1])
 	crdfrm2 <- tkradiobutton(frA1, variable = coordsfrom, value = "cdt", text = "From CDT data", anchor = 'w', justify = 'left', state = states[1])
-	cbmltpts <- ttkcombobox(frA1, values = unlist(listOpenFiles), textvariable = coordsfiles, state = states[1], width = w.opfiles-5)
+	cbmltpts <- ttkcombobox(frA1, values = unlist(listOpenFiles), textvariable = coordsfiles, state = states[1], width = largeur)
 	btmltpts <- tkbutton(frA1, text = "...", state = states[1])
+
+	#############################
 
 	tkconfigure(btmltpts, command = function(){
 		tkdelete(textObj, "0.0", "end")
@@ -1107,10 +1131,14 @@ previewWin <- function(parent.win, states, shpL){
 		}
 	})
 
+	#############################
+
 	tkgrid(crdfrm1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
  	tkgrid(crdfrm2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cbmltpts, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(btmltpts, row = 2, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+
+	#############################
 
 	infobulle(crdfrm1, 'The coordinates come from a coordinate file')
 	status.bar.display(crdfrm1, TextOutputVar, 'The coordinates come from a coordinate file')
@@ -1121,9 +1149,7 @@ previewWin <- function(parent.win, states, shpL){
 	infobulle(btmltpts, 'Browse file if not listed')
 	status.bar.display(btmltpts, TextOutputVar, 'Browse file if not listed')
 
-	tkgrid(frA1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	########
+	#############################
 	tkbind(cbmltpts, "<<ComboboxSelected>>", function(){
 		tkdelete(textObj, "0.0", "end")
 		crds <- getStnOpenData(coordsfiles)
@@ -1132,10 +1158,12 @@ previewWin <- function(parent.win, states, shpL){
 		for(i in 1:nrow(crds))	tkinsert(textObj, "end", paste(crds[i, 1], crds[i, 2], crds[i, 3], "\n"))
  	})
 
-	########
-	frA2 <- ttklabelframe(frA, text = 'Multiple Polygons', relief = 'groove', borderwidth = 2)
+	#############################
 
-	btmpoly <- tkbutton(frA2, text = 'Get All Polygons', state = states[2])
+	frA2 <- ttklabelframe(frA, text = 'Multiple Polygons', relief = 'groove', borderwidth = 2)
+	btmpoly <- ttkbutton(frA2, text = 'Get All Polygons', state = states[2])
+
+	#############################
 
 	tkconfigure(btmpoly, command = function(){
 		tkdelete(textObj, "0.0", "end")
@@ -1148,33 +1176,34 @@ previewWin <- function(parent.win, states, shpL){
 		}
 	})
 
-	tkgrid(btmpoly, sticky = 'we', rowspan = 1, columnspan = 1, padx = 10, pady = 1, ipadx = 1, ipady = 1)
+	#############################
 
+	tkgrid(btmpoly, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#############################
 	infobulle(btmpoly, 'Get all the polygons from the shapefile')
 	status.bar.display(btmpoly, TextOutputVar, 'Get all the polygons from the shapefile')
 
-	tkgrid(frA2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 20, ipady = 1)
+	#############################
 
-	########
 	frA3 <- tkframe(frA, relief = 'groove', borderwidth = 2)
 
 	yscr <- tkscrollbar(frA3, repeatinterval = 4, command = function(...) tkyview(textObj,...))
-	textObj <- tktext(frA3, bg = "white", yscrollcommand = function(...) tkset(yscr,...), wrap = "none", height = 5, width = w.opfiles+5) #
+	textObj <- tktext(frA3, bg = "white", yscrollcommand = function(...) tkset(yscr,...), wrap = "none", height = 5, width = wtext)
 
 	tkgrid(textObj, yscr)
 	tkgrid.configure(yscr, sticky = "ns")
 	tkgrid.configure(textObj, sticky = 'nswe')
 
+	#############################
+	tkgrid(frA1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frA2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frA3, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	########################
+
 	btOK <- tkbutton(frB, text = "OK")
 	btCA <- tkbutton(frB, text = "Cancel")
-
-	tkgrid(btOK, row = 0, column = 0, padx = 5, pady = 5, ipadx = 5, sticky = 'w')
-	tkgrid(btCA, row = 0, column = 1, padx = 5, pady = 5, sticky = 'e')
-
-	########################
 
 	ret.params <- list(win = tt, textObj = textObj)
 
@@ -1191,6 +1220,12 @@ previewWin <- function(parent.win, states, shpL){
 		tkfocus(parent.win)
 		ret.params <<- NULL
 	})
+
+	########################
+	tkgrid(btOK, row = 0, column = 0, padx = 5, pady = 5, ipadx = 5, sticky = 'w')
+	tkgrid(btCA, row = 0, column = 1, padx = 5, pady = 5, sticky = 'e')
+
+	########################
 
 	tkgrid(frA, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frB, row = 1, column = 1, sticky = 'se', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)

@@ -5,11 +5,11 @@ AggregateInputStationData <- function(parent.win, GeneralParameters){
 	if (Sys.info()["sysname"] == "Windows"){
 		largeur <- 51
 		largeur1 <- 23
-		largeur2 <- 22
+		largeur2 <- 26
 	}else{
 		largeur <- 40
 		largeur1 <- 18
-		largeur2 <- 21
+		largeur2 <- 23
 	}
 
 	tt <- tktoplevel()
@@ -148,7 +148,7 @@ AggregateInputStationData <- function(parent.win, GeneralParameters){
 
 	txt.dataType <- tklabel(frData, text = 'Format of input files', anchor = 'w', justify = 'left')
 	cb.dataType <- ttkcombobox(frData, values = c("Multiple Files", "Single File"), textvariable = data.type, width = largeur1)
-	bt.dataType <- tkbutton(frData, text = "Input File Setting", width = largeur2)
+	bt.dataType <- ttkbutton(frData, text = "Input File Setting", width = largeur2)
 
 	if(tclvalue(data.type) == "Multiple Files") dataType.Fun <- "multipleFileCDTFormat"
 	if(tclvalue(data.type) == "Single File") dataType.Fun <- "singleFileCDTFormat"
@@ -254,7 +254,7 @@ AggregateInputStationData <- function(parent.win, GeneralParameters){
 
 multipleFileCDTFormat <- function(top.win, GeneralParameters, speriod){
 	listOpenFiles <- openFile_ttkcomboList()
-	largeur <- if (Sys.info()["sysname"] == "Windows") 25 else 25
+	largeur <- if (Sys.info()["sysname"] == "Windows") 33 else 26
 
 	tt1 <- tktoplevel()
 	tkgrab.set(tt1)
@@ -471,7 +471,7 @@ multipleFileCDTFormat <- function(top.win, GeneralParameters, speriod){
 
 singleFileCDTFormat <- function(top.win, GeneralParameters, speriod){
 	listOpenFiles <- openFile_ttkcomboList()
-	largeur <- if (Sys.info()["sysname"] == "Windows") 30 else 30
+	largeur <- if (Sys.info()["sysname"] == "Windows") 38 else 30
 
 	tt1 <- tktoplevel()
 	tkgrab.set(tt1)

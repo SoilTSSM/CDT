@@ -179,6 +179,7 @@ PlotCDTDataFormatCmd <- function(){
 
 	###############
 
+	preset.values <- c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors')
 	nb.color <- tclVar(PlotCDTdata$color.opt$nb.color)
 	preset.color <- tclVar(PlotCDTdata$color.opt$preset.color)
 	reverse.color <- tclVar(PlotCDTdata$color.opt$reverse.color)
@@ -188,7 +189,7 @@ PlotCDTDataFormatCmd <- function(){
 	###############
 
 	labPresetCol.tab2 <- tklabel(subfr2, text = 'Presets colorkey', anchor = 'w', justify = 'left')
-	combPresetCol.tab2 <- ttkcombobox(subfr2, values = c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors'), textvariable = preset.color, width = 13)
+	combPresetCol.tab2 <- ttkcombobox(subfr2, values = preset.values, textvariable = preset.color, width = 13)
 	nbPresetCol.tab2 <- tkentry(subfr2, width = 3, textvariable = nb.color, justify = "left")
 
 	labRevCol.tab2 <- tklabel(subfr2, text = 'Reverse', anchor = 'e', justify = 'right')
@@ -301,7 +302,7 @@ PlotCDTDataFormatCmd <- function(){
 	
 	#######################################################################################################
 	
-	plotDataBut <- tkbutton(plotBut.cmd, text = "Plot Data")
+	plotDataBut <- ttkbutton(plotBut.cmd, text = "Plot Data")
 
 	tkgrid(plotDataBut, row = 0, column = 0, sticky = 'e', padx = 5, pady = 5)
 

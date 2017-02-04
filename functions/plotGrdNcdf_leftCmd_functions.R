@@ -141,8 +141,10 @@ PlotGriddedNcdfCmd <- function(){
 	tkgrid.columnconfigure(scrw2, 0, weight = 1)
 
 	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
-	# tkgrid.columnconfigure(subfr2, 0, weight = 1)
 
+	##############################
+
+	preset.values <- c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors')
 	nb.color <- tclVar(PlotGrdNcdf$color.opt$nb.color)
 	preset.color <- tclVar(PlotGrdNcdf$color.opt$preset.color)
 	reverse.color <- tclVar(PlotGrdNcdf$color.opt$reverse.color)
@@ -151,7 +153,7 @@ PlotGriddedNcdfCmd <- function(){
 
 	########################
 	labPresetCol.tab2 <- tklabel(subfr2, text = 'Presets colorkey', anchor = 'w', justify = 'left')
-	combPresetCol.tab2 <- ttkcombobox(subfr2, values = c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors'), textvariable = preset.color, width = 13)
+	combPresetCol.tab2 <- ttkcombobox(subfr2, values = preset.values, textvariable = preset.color, width = 13)
 	nbPresetCol.tab2 <- tkentry(subfr2, width = 3, textvariable = nb.color, justify = "left")
 
 	labRevCol.tab2 <- tklabel(subfr2, text = 'Reverse', anchor = 'e', justify = 'right')
@@ -260,7 +262,7 @@ PlotGriddedNcdfCmd <- function(){
 	
 	#######################################################################################################
 	
-	plotDataBut <- tkbutton(plotBut.cmd, text = "Plot Data")
+	plotDataBut <- ttkbutton(plotBut.cmd, text = "Plot Data")
 
 	tkgrid(plotDataBut, row = 0, column = 0, sticky = 'e', padx = 5, pady = 5)
 

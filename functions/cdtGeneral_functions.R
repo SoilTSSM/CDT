@@ -1317,11 +1317,30 @@ dateCPT.monthly <- function(date){
 }
 
 dateCPT.seasonal <- function(date) gsub("_", "/", date)
+dateCPT.yearly <- function(date) date
 
+dateCPTclim.daily <- function(date) format(seq(as.Date('2014-1-1'), by = 'day', length.out = 365), '%m-%d')
+dateCPTclim.dekadal <- function(date){
+	mon <- str_pad(rep(1:12, each = 3), width = 2, pad = "0")
+	dek <- c(t(cbind("01/10", "11/20", paste(21, c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31), sep = '/'))))
+	paste(mon, dek, sep = "-")
+}
+dateCPTclim.monthly <- function(date) str_pad(1:12, width = 2, pad = "0")
+dateCPTclim.seasonal <- function(date) gsub("_", "/", date)
+dateCPTclim.yearly <- function(date) gsub("_", "/", date)
+
+########
 dateCPT <- function(date, freq){
 	dateCPT <- match.fun(paste("dateCPT", freq, sep = "."))
 	dateCPT(date)
 }
+
+dateCPTclim <- function(date, freq){
+	dateCPT <- match.fun(paste("dateCPTclim", freq, sep = "."))
+	dateCPT(date)
+}
+
+##################################
 
 formatCPT.date <- function(date){
 	cptT <- paste(c("cpt:T", date), collapse = "\t")
@@ -1347,6 +1366,18 @@ formatCPT.GRDdata <- function(x, y, z, width = 13, side = "both"){
 	return(xout)
 }
 
+formatCPT.Station <-function(date, z, width = 13, side = "both"){
+	xout <- formatC(c(z))
+	xout <- str_pad(xout, width = width, side = side)
+	xout <- paste("\t", xout, sep = '')
+	dim(xout) <- dim(z)
+	xout <- cbind(date, xout)
+	xout <- paste(apply(xout, 1, paste, collapse = ""), '\n', sep = '')
+	return(xout)
+}
+
+##################################
+
 getDataCPT.GRDdata <- function(freqOut, xdon, xdates, xlon, xlat, varid, units, miss.val){
 	xdon <- rapply(xdon, f = function(x) ifelse(is.na(x) | is.nan(x) | is.infinite(x), miss.val, x), how = "replace")
 	ncmax <- max(nchar(formatC(do.call(c, xdon))))
@@ -1366,15 +1397,61 @@ getDataCPT.GRDdata <- function(freqOut, xdon, xdates, xlon, xlat, varid, units, 
 	return(cpt.out)
 }
 
-formatCPT.Station <-function(date, z, width = 13, side = "both"){
-	xout <- formatC(c(z))
-	xout <- str_pad(xout, width = width, side = side)
-	xout <- paste("\t", xout, sep = '')
-	dim(xout) <- dim(z)
-	xout <- cbind(date, xout)
-	xout <- paste(apply(xout, 1, paste, collapse = ""), '\n', sep = '')
-	return(xout)
+getDataCPTclim.GRDdata <- function(freqOut, xdon, xdates, xlon, xlat, varid, units, miss.val){
+	xdon <- rapply(xdon, f = function(x) ifelse(is.na(x) | is.nan(x) | is.infinite(x), miss.val, x), how = "replace")
+	ncmax <- max(nchar(formatC(do.call(c, xdon))))
+	daty <- dateCPTclim(xdates, freqOut)
+	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
+	nfields <- paste("cpt:nfields=", 1, "\n", sep = '')
+	cpt.date <- formatCPT.date(daty)
+	cpt.data <- lapply(seq_along(daty), function(j){
+		cpt.tags <- list(field = varid, T = daty[j], nrow = length(xlat), ncol = length(xlon),
+							row = 'Y', col = 'X', units = units, missing = miss.val)
+		cpt.tags <- getCPT.tag.line(cpt.tags)
+		cpt.data <- formatCPT.GRDdata(xlon, xlat, xdon[[j]], width = ncmax, side = "both")
+		c(cpt.tags, cpt.data)
+	})
+	cpt.data <- do.call(c, cpt.data)
+	cpt.out <- c(xmlns, nfields, cpt.date, cpt.data)
+	return(cpt.out)
 }
+
+# getDataCPT.GRDdata <- function(freqOut, xdon, xdates, xlon, xlat, varid, units, miss.val, clim = FALSE){
+# 	xdon <- rapply(xdon, f = function(x) ifelse(is.na(x) | is.nan(x) | is.infinite(x), miss.val, x), how = "replace")
+# 	ncmax <- max(nchar(formatC(do.call(c, xdon))))
+# 	foo <- if(clim) dateCPTclim else dateCPT
+# 	daty <- foo(xdates, freqOut)
+# 	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
+# 	nfields <- paste("cpt:nfields=", 1, "\n", sep = '')
+# 	cpt.date <- formatCPT.date(daty)
+# 	cpt.data <- lapply(seq_along(daty), function(j){
+# 		cpt.tags <- list(field = varid, T = daty[j], nrow = length(xlat), ncol = length(xlon),
+# 							row = 'Y', col = 'X', units = units, missing = miss.val)
+# 		cpt.tags <- getCPT.tag.line(cpt.tags)
+# 		cpt.data <- formatCPT.GRDdata(xlon, xlat, xdon[[j]], width = ncmax, side = "both")
+# 		c(cpt.tags, cpt.data)
+# 	})
+# 	cpt.data <- do.call(c, cpt.data)
+# 	cpt.out <- c(xmlns, nfields, cpt.date, cpt.data)
+# 	return(cpt.out)
+# }
+
+##################################
+
+getDataCPTclim1.GRDdata <- function(freqOut, xdon, xdates, xlon, xlat, varid, units, miss.val){
+	ncmax <- max(nchar(formatC(c(xdon))))
+	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
+	nfields <- paste("cpt:nfields=", 1, "\n", sep = '')
+	cpt.tags <- list(field = varid, nrow = length(xlat), ncol = length(xlon),
+						row = 'Y', col = 'X', units = units, missing = miss.val)
+	cpt.tags <- getCPT.tag.line(cpt.tags)
+	cpt.data <- formatCPT.GRDdata(xlon, xlat, xdon, width = ncmax, side = "both")
+	cpt.out <- c(xmlns, nfields, cpt.tags, cpt.data)
+	return(cpt.out)
+}
+
+
+##################################
 
 getDataCPT.Station <- function(freqOut, xdon, xdates, xlon, xlat, xid, varid, units, miss.val){
 	ncmax <- max(nchar(formatC(c(xdon))))
@@ -1393,4 +1470,35 @@ getDataCPT.Station <- function(freqOut, xdon, xdates, xlon, xlat, xid, varid, un
 	cpt.out <- c(xmlns, cpt.tags, cpt.stn, cpt.lon, cpt.lat, cpt.data)
 	return(cpt.out)
 }
+
+getDataCPTclim.Station <- function(freqOut, xdon, xdates, xlon, xlat, xid, varid, units, miss.val){
+	ncmax <- max(nchar(formatC(c(xdon))))
+	daty <- dateCPTclim(xdates, freqOut)
+	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
+	cpt.tags <- list(field = varid, nrow = length(xdates), ncol = length(xlon),
+					 row = 'T', col = 'station', units = units, missing = miss.val)
+	cpt.tags <- getCPT.tag.line(cpt.tags)
+	cpt.stn <- paste('\t', paste(xid, collapse = '\t'), '\n', sep = '')
+	cpt.lon <- paste('cpt:X', '\t', paste(xlon, collapse = '\t'), '\n', sep = '')
+	cpt.lat <- paste('cpt:Y', '\t', paste(xlat, collapse = '\t'), '\n', sep = '')
+	cpt.data <- formatCPT.Station(daty, xdon, width = ncmax)
+	cpt.out <- c(xmlns, cpt.tags, cpt.stn, cpt.lon, cpt.lat, cpt.data)
+	return(cpt.out)
+}
+
+# getDataCPT.Station <- function(freqOut, xdon, xdates, xlon, xlat, xid, varid, units, miss.val, clim = FALSE){
+# 	ncmax <- max(nchar(formatC(c(xdon))))
+# 	foo <- if(clim) dateCPTclim else dateCPT
+# 	daty <- foo(xdates, freqOut)
+# 	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
+# 	cpt.tags <- list(field = varid, nrow = length(xdates), ncol = length(xlon),
+# 					 row = 'T', col = 'station', units = units, missing = miss.val)
+# 	cpt.tags <- getCPT.tag.line(cpt.tags)
+# 	cpt.stn <- paste('\t', paste(xid, collapse = '\t'), '\n', sep = '')
+# 	cpt.lon <- paste('cpt:X', '\t', paste(xlon, collapse = '\t'), '\n', sep = '')
+# 	cpt.lat <- paste('cpt:Y', '\t', paste(xlat, collapse = '\t'), '\n', sep = '')
+# 	cpt.data <- formatCPT.Station(daty, xdon, width = ncmax)
+# 	cpt.out <- c(xmlns, cpt.tags, cpt.stn, cpt.lon, cpt.lat, cpt.data)
+# 	return(cpt.out)
+# }
 

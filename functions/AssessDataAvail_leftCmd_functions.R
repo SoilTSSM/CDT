@@ -1,7 +1,8 @@
 
 AssessDataPanelCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
-	largeur <- as.integer(as.numeric(w.scale(23)*0.95)/9)
+	largeur <- as.integer(w.scale(24)/sfont0)
+	largeur1 <- as.integer(w.scale(16)/sfont0)
 
 	###################
 	cmd.frame <- tkframe(panel.left)
@@ -11,22 +12,23 @@ AssessDataPanelCmd <- function(){
 	chkframe1 <- ttklabelframe(cmd.frame, text = "Missing Data Summary for each Station", labelanchor = "nw", relief = 'groove', borderwidth = 2)
 
 	###################
-
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
 	file.period <- tclVar('Dekadal data')
 	file.stnfl <- tclVar()
 	stnSumNA.val <- tclVar()
 
-	cbperiod <- ttkcombobox(chkframe, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
+	cbperiod <- ttkcombobox(chkframe, values = cb.periodVAL, textvariable = file.period)
 	sep1 <- ttkseparator(chkframe)
 	labStn1 <- tklabel(chkframe, text = 'Station data file', anchor = 'w', justify = 'left')
 	cb.stnfl <- ttkcombobox(chkframe, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur)
 	bt.stnfl <- tkbutton(chkframe, text = "...")
 	sep2 <- ttkseparator(chkframe)
-	cmd.DistCor <- tkbutton(chkframe, text = "Distance-Correlation")
-	cmd.AllNA <- tkbutton(chkframe, text = "Miss.Data Summary")
-	stnSumNA.cb <- ttkcombobox(chkframe1, values = '', textvariable = stnSumNA.val, state = 'normal')
-	stnSumNA.prev <- tkbutton(chkframe1, text = "<<-")
-	stnSumNA.next <- tkbutton(chkframe1, text = "->>")
+	cmd.DistCor <- ttkbutton(chkframe, text = "Distance-Correlation")
+	cmd.AllNA <- ttkbutton(chkframe, text = "Miss.Data Summary")
+
+	stnSumNA.cb <- ttkcombobox(chkframe1, values = '', textvariable = stnSumNA.val, state = 'normal', width = largeur1)
+	stnSumNA.prev <- ttkbutton(chkframe1, text = "<<-", width = 5)
+	stnSumNA.next <- ttkbutton(chkframe1, text = "->>", width = 5)
 
 	###################
 

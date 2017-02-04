@@ -2,8 +2,8 @@
 mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
-		largeur <- 28
-		largeur1 <- 25
+		largeur <- 30
+		largeur1 <- 27
 	}else{
 		largeur <- 25
 		largeur1 <- 24
@@ -97,7 +97,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	txt.inrfeff <- tklabel(frRFE, text = 'Input RFE or ADJ-RFE filename format', anchor = 'w', justify = 'left')
 	en.inrfeff <- tkentry(frRFE, textvariable = inrfeff, width = largeur)
 	cb.newGrd <- tkcheckbutton(frRFE, variable = newGrd, text = 'Create Grid', anchor = 'w', justify = 'left')
-	bt.newGrd <- tkbutton(frRFE, text = "Set New Grid", state = statenewGrd)
+	bt.newGrd <- ttkbutton(frRFE, text = "Set New Grid", state = statenewGrd)
 
 	######
 	tkconfigure(bt.dir.rfe, command = function(){
@@ -1039,7 +1039,7 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 	grdRFE.rbt <- tkradiobutton(frGrid, text = "From RFE", anchor = 'w', justify = 'left')
 	grdDEM.rbt <- tkradiobutton(frGrid, text = "From DEM", anchor = 'w', justify = 'left')
 	grdNEW.rbt <- tkradiobutton(frGrid, text = "New Grid", anchor = 'w', justify = 'left')
-	bt.getNewgrid <- tkbutton(frGrid, text = "Create", state = stategrd)
+	bt.getNewgrid <- ttkbutton(frGrid, text = "Create", state = stategrd)
 
 	####
 	tkconfigure(grdRFE.rbt, variable = varCreateGrd, value = "1")
@@ -1614,7 +1614,7 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	grdRFE.rbt <- tkradiobutton(frGrid, text = "From RFE", anchor = 'w', justify = 'left')
 	grdDEM.rbt <- tkradiobutton(frGrid, text = "From DEM", anchor = 'w', justify = 'left')
 	grdNEW.rbt <- tkradiobutton(frGrid, text = "New Grid", anchor = 'w', justify = 'left')
-	bt.getNewgrid <- tkbutton(frGrid, text = "Create", state = stategrd)
+	bt.getNewgrid <- ttkbutton(frGrid, text = "Create", state = stategrd)
 
 	####
 	tkconfigure(grdRFE.rbt, variable = varCreateGrd, value = "1")

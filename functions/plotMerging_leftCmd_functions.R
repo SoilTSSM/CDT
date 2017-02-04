@@ -182,8 +182,8 @@ PlotMergingOutputCmd <- function(){
 
 	############################################################
 
-	save.tab1 <- tkbutton(saveload.frame, text = 'Save')
-	load.tab1 <- tkbutton(saveload.frame, text = 'Load')
+	save.tab1 <- ttkbutton(saveload.frame, text = 'Save')
+	load.tab1 <- ttkbutton(saveload.frame, text = 'Load')
 
 	##############################
 	tkconfigure(save.tab1, command = function(){
@@ -425,7 +425,7 @@ PlotMergingOutputCmd <- function(){
 	subfr3 <- bwScrollableFrame(scrw3, width = wscrlwin, height = hscrlwin)
 
 	##############################
-
+	preset.values <- c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors')
 	nb.color <- tclVar(PlotOutMrg$color.opt$nb.color)
 	preset.color <- tclVar(PlotOutMrg$color.opt$preset.color)
 	reverse.color <- tclVar(PlotOutMrg$color.opt$reverse.color)
@@ -434,7 +434,7 @@ PlotMergingOutputCmd <- function(){
 
 	########################
 	labPresetCol.tab3 <- tklabel(subfr3, text = 'Presets colorkey', anchor = 'w', justify = 'left')
-	combPresetCol.tab3 <- ttkcombobox(subfr3, values = c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors'), textvariable = preset.color, width = 13)
+	combPresetCol.tab3 <- ttkcombobox(subfr3, values = preset.values, textvariable = preset.color, width = 13)
 	nbPresetCol.tab3 <- tkentry(subfr3, width = 3, textvariable = nb.color, justify = "left")
 
 	labRevCol.tab3 <- tklabel(subfr3, text = 'Reverse', anchor = 'e', justify = 'right')
@@ -550,9 +550,9 @@ PlotMergingOutputCmd <- function(){
 	
 	#######################################################################################################
 
-	plot_prev <- tkbutton(plotBut.cmd, text = "<<-Prev")
-	plotDataBut <- tkbutton(plotBut.cmd, text = "Plot Data")
-	plot_next <- tkbutton(plotBut.cmd, text = "Next->>")
+	plot_prev <- ttkbutton(plotBut.cmd, text = "<<-Prev")
+	plotDataBut <- ttkbutton(plotBut.cmd, text = "Plot Data")
+	plot_next <- ttkbutton(plotBut.cmd, text = "Next->>")
 
 	tkgrid(plot_prev, row = 0, column = 0, sticky = 'w', padx = 2, pady = 5)
 	tkgrid(plotDataBut, row = 0, column = 1, sticky = 'we', padx = 2, pady = 5)

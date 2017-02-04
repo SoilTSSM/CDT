@@ -91,12 +91,12 @@ getExtractDataFun <- function(retExtractParams){
 			if(period1 %in% c('daily', 'dekadal', 'monthly')){
 				comp.fun <- paste('anomaly', period1 , sep = '.') 
 				comp.fun <- match.fun(comp.fun)
+
 				xanom <- apply(xanom, 2, comp.fun, dates = xdates)
 				xanom <- xanom[as.numeric(substr(xdates, 5, 6))%in%id.mois, , drop = FALSE]
 			}else{
 				xanom <- t(t(xanom)-apply(xanom, 2, mean, na.rm = TRUE))
 			}
-
 			xanom <- round(xanom, 1)
 			xanom[is.na(xanom) | is.nan(xanom)] <- -9999
 
@@ -119,12 +119,12 @@ getExtractDataFun <- function(retExtractParams){
 			if(period1 %in% c('daily', 'dekadal', 'monthly')){
 				comp.fun <- paste('standard', period1, sep = '.')
 				comp.fun <- match.fun(comp.fun)
+
 				xstanom <- apply(xstanom, 2, comp.fun, dates = xdates)
 				xstanom <- xstanom[as.numeric(substr(xdates, 5, 6))%in%id.mois, , drop = FALSE]
 			}else{
 				xstanom <- t((t(xstanom)-apply(xstanom, 2, mean, na.rm = TRUE))/apply(xstanom, 2, sd, na.rm = TRUE))
 			}
-
 			xstanom[is.na(xstanom) | is.nan(xstanom)] <- -9999
 			xstanom <- round(xstanom, 2)
 
@@ -136,7 +136,7 @@ getExtractDataFun <- function(retExtractParams){
 				cat(cptOut, file = out2sav.stanom)
 			}else{
 				xtmp[-(1:3), -1] <- xstanom
-				writeFiles(xstanom, out2sav.stanom)
+				writeFiles(xtmp, out2sav.stanom)
 			}
 		}
 
@@ -147,22 +147,43 @@ getExtractDataFun <- function(retExtractParams){
 			if(period1 %in% c('daily', 'dekadal', 'monthly')){
 				comp.fun <- paste('climato', period1, sep = '.')
 				comp.fun <- match.fun(comp.fun)
+
 				xclim <- apply(xclim, 2, comp.fun, dates = xdates, fun = 'mean')
 				xclim <- round(xclim, 1)
 				if(period1 == 'daily') ijmo <- which(as.numeric(format(seq(as.Date('2014-1-1'), by = 'day', length.out = 365), '%m'))%in%id.mois)
 				if(period1 == 'dekadal') ijmo <- which(rep(1:12, each = 3)%in%id.mois)
 				if(period1 == 'monthly') ijmo <- id.mois
-				xclim <- xclim[ijmo, , drop = FALSE]
-				xclim <- t(cbind(t(xtmp[1:3, ]), t(cbind(ijmo, xclim))))
+				
+				xclim[is.na(xclim) | is.nan(xclim)] <- miss.val
+				if(is.cpt){
+					cptIn <- list(freqOut = period2, xdon = xclim, xdates = ijmo,
+									xlon = headinfo[, 2], xlat = headinfo[, 3], xid = headinfo[, 1],
+									varid = varid, units = units, miss.val = miss.val)
+					cptOut <- do.call(getDataCPTclim.Station, cptIn)
+				}else{
+					xclim <- xclim[ijmo, , drop = FALSE]
+					xclim <- t(cbind(t(xtmp[1:3, ]), t(cbind(ijmo, xclim))))
+				}
 			}else{
 				xclim <- apply(xclim, 2, mean, na.rm = TRUE)
-				xtmp[4, -1] <- round(xclim, 1)
-				xclim <- xtmp[1:4, ]
-				xclim[4, 1] <- if(period1 == 'yearly') 'Yearly.mean' else strsplit(xclim[4, 1], '-')[[1]][1]
+				xclim <- round(xclim, 1)
+				xclim[is.na(xclim) | is.nan(xclim)] <- miss.val
+				if(period1 == 'yearly') ijdate <- paste(c(xdates[1], xdates[length(xdates)]), collapse = '_')
+				else ijdate <- paste(sapply(strsplit(strsplit(xdates[1], '_')[[1]], '-'), tail, n = 1), collapse = '_')
+				if(is.cpt){
+					cptIn <- list(freqOut = period2, xdon = matrix(xclim, nrow = 1), xdates = ijdate,
+									xlon = headinfo[, 2], xlat = headinfo[, 3], xid = headinfo[, 1],
+									varid = varid, units = units, miss.val = miss.val)
+					cptOut <- do.call(getDataCPTclim.Station, cptIn)
+				}else{
+					xtmp[4, -1] <- xclim
+					xclim <- xtmp[1:4, ]
+					xclim[4, 1] <- ijdate
+				}
 			}
 
-			xclim[is.na(xclim) | is.nan(xclim)] <- miss.val
-			writeFiles(xclim, out2sav.clim)
+			if(is.cpt) cat(cptOut, file = out2sav.clim)
+			else writeFiles(xclim, out2sav.clim)
 		}
 	}
 
@@ -174,6 +195,7 @@ getExtractDataFun <- function(retExtractParams){
 			if(period1 %in% c('daily', 'dekadal', 'monthly')){
 				comp.fun <- paste('anomaly.', period1, '_lstOmat', sep = '')
 				comp.fun <- match.fun(comp.fun)
+
 				xRVAL <- comp.fun(xRVAL, daty.clim)
 				xRVAL <- lapply(xRVAL, round, 1)
 				xRVAL <- xRVAL[as.numeric(substr(daty.clim, 5, 6))%in%id.mois]
@@ -206,6 +228,7 @@ getExtractDataFun <- function(retExtractParams){
 			if(period1 %in% c('daily', 'dekadal', 'monthly')){
 				comp.fun <- paste('standard.', period1, '_lstOmat', sep = '')
 				comp.fun <- match.fun(comp.fun)
+
 				xRVAL <- comp.fun(xRVAL, daty.clim)
 				xRVAL <- lapply(xRVAL, round, 2)
 				xRVAL <- xRVAL[as.numeric(substr(daty.clim, 5, 6))%in%id.mois]
@@ -230,7 +253,7 @@ getExtractDataFun <- function(retExtractParams){
 				cptOut <- do.call(getDataCPT.GRDdata, cptIn)
 				cat(cptOut, file = fileout.stanom)
 			}else{
-				writeFilesListData(xRVAL, daty, capdate, fileout.stanom, out2sav.stanom)
+				writeFilesListData(xRVAL, outdonne$out$date, capdate, fileout.stanom, out2sav.stanom)
 			}
 		}
 
@@ -239,35 +262,49 @@ getExtractDataFun <- function(retExtractParams){
 			if(period1 %in% c('daily', 'dekadal', 'monthly')){
 				comp.fun <- paste('climato.', period1, '_lstOmat', sep = '')
 				comp.fun <- match.fun(comp.fun)
+
 				xRVAL <- comp.fun(xRVAL, daty.clim, fun = 'mean')
+				xRVAL <- lapply(xRVAL, round, 1)
+
 				if(period1 == 'daily') ijmo <- which(as.numeric(format(seq(as.Date('2014-1-1'), by = 'day', length.out = 365), '%m'))%in%id.mois)
 				if(period1 == 'dekadal') ijmo <- which(rep(1:12, each = 3)%in%id.mois)
 				if(period1 == 'monthly') ijmo <- id.mois
-				daty <- ijmo
-				xRVAL <- lapply(xRVAL[ijmo], round, 1)
-				fileout.clim <- file.path(dirname(fileout[1]), paste('Climatologies_Output_', ijmo, '.', file_ext(basename(fileout[1])), sep = ''))
-				capdate <- paste('DATE:', ijmo)
-			}else{
-				xRVAL <- round(apply(simplify2array(xRVAL), 1:2, mean, na.rm = TRUE), 1)
-				if(period1 == 'yearly'){
-					daty <- 'Year'
-					fileout.clim <- file.path(dirname(fileout[1]), paste('Climatologies_Output_Year', file_ext(basename(fileout[1])), sep = '.'))
-					capdate <- paste('DATE:', 'Yearly.mean')
-				}else{
-					daty <- strsplit(daty.clim[1], '-')[[1]][1]
-					fileout.clim <- file.path(dirname(fileout[1]), paste('Climatologies_Output_', daty, '.', file_ext(basename(fileout[1])), sep = ''))
-					capdate <- paste('DATE:', daty)
-				}
-			}
-			if(is.list(xRVAL)){
 				xRVAL <- lapply(xRVAL, function(x){
 					x[is.na(x) | is.nan(x)] <- miss.val
 					x
 				})
+
+				if(is.cpt){
+					cptIn <- list(freqOut = period2, xdon = xRVAL, xdates = ijmo,
+									xlon = rlon[, 1], xlat = rlat[1, ], 
+									varid = varid, units = units, miss.val = -9999)
+					cptOut <- do.call(getDataCPTclim.GRDdata, cptIn)
+					cat(cptOut, file = out2sav.clim)
+				}else{
+					xRVAL <- xRVAL[ijmo]
+					fileout.clim <- file.path(dirname(fileout[1]), paste('Climatologies_Output_', ijmo, '.', file_ext(basename(fileout[1])), sep = ''))
+					capdate <- paste('DATE:', ijmo)
+					writeFilesListData(xRVAL, ijmo, capdate, fileout.clim, out2sav.clim)
+				}
 			}else{
+				xRVAL <- round(apply(simplify2array(xRVAL), 1:2, mean, na.rm = TRUE), 1)
 				xRVAL[is.na(xRVAL) | is.nan(xRVAL)] <- miss.val
+
+				if(period1 == 'yearly') daty <- paste(c(daty.clim[1], daty.clim[length(daty.clim)]), collapse = '_')
+				else daty <- paste(sapply(strsplit(strsplit(daty.clim[1], '_')[[1]], '-'), tail, n = 1), collapse = '_')
+				
+				if(is.cpt){
+					cptIn <- list(freqOut = period2, xdon = xRVAL, xdates = daty,
+									xlon = rlon[, 1], xlat = rlat[1, ], 
+									varid = varid, units = units, miss.val =miss.val)
+					cptOut <- do.call(getDataCPTclim1.GRDdata, cptIn)
+					cat(cptOut, file = out2sav.clim)
+				}else{
+					fileout.clim <- file.path(dirname(fileout), paste('Climatologies_', daty, '.', file_ext(fileout), sep = ''))[1]
+					capdate <- paste('DATE:', daty)
+					writeFilesListData(xRVAL, daty, capdate, fileout.clim, out2sav.clim)
+				}
 			}
-			writeFilesListData(xRVAL, daty, capdate, fileout.clim, out2sav.clim)
 		}
 	}
 
@@ -492,7 +529,7 @@ getExtractDataFun <- function(retExtractParams){
 		}
 	}
 
-	if(extType == 'Multiple Points' | extType == 'Multiple Polygons'){
+	if(extType%in%c('Multiple Points', 'Multiple Polygons')){
 		if(!is.na(multiptspoly)){
 			multiptspoly <- gsub("[\r]", "", multiptspoly)
 			multiptspoly <- str_trim(strsplit(multiptspoly, "[\n]")[[1]])
@@ -754,8 +791,7 @@ getExtractDataFun <- function(retExtractParams){
 		writeFiles(xtmp, out2sav)
 		###### clim
 		TSClimatologyFun()
-	}else if(extType == 'Multiple Points' | extType == 'Multiple Polygons'){
-
+	}else if(extType%in%c('Multiple Points', 'Multiple Polygons')){
 		RVAL[sapply(RVAL, is.null)] <- list(rep(NA, nrow(headinfo)))
 		xval <- do.call('rbind', RVAL)
 		capition <- c('Stations', 'LON', 'DATE/LAT')
@@ -791,9 +827,11 @@ getExtractDataFun <- function(retExtractParams){
 			}else{
 				outdonne <- aggregateSeries(xval, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
 							time.step.In = period0, time.step.Out = period1, type = 'matrix')
-				xmon <- as.numeric(substr(outdonne$out$date, 5, 6))%in%id.mois
-				outdonne$out$date <- outdonne$out$date[xmon]
-				outdonne$out$data <- outdonne$out$data[xmon, , drop = FALSE]
+				if(period1 != "yearly"){
+					xmon <- as.numeric(substr(outdonne$out$date, 5, 6))%in%id.mois
+					outdonne$out$date <- outdonne$out$date[xmon]
+					outdonne$out$data <- outdonne$out$data[xmon, , drop = FALSE]
+				}
 				xtmp <- data.frame(outdonne$out$date, round(outdonne$out$data, 1))
 				daty.clim <- aggregateSeries(rep(1, length(dates0)), dates0, fun = aggfun, 
 							time.step.In = period0, time.step.Out = period1, type = 'vector')
@@ -884,10 +922,11 @@ getExtractDataFun <- function(retExtractParams){
 				}else{
 					outdonne <- aggregateSeries(RVAL, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
 											time.step.In = period0, time.step.Out = period1, type = 'list')
-					xmon <- as.numeric(substr(outdonne$out$date, 5, 6))%in%id.mois
-					outdonne$out$date <- outdonne$out$date[xmon]
-					outdonne$out$data <- outdonne$out$data[xmon]
-
+					if(period1 != "yearly"){
+						xmon <- as.numeric(substr(outdonne$out$date, 5, 6))%in%id.mois
+						outdonne$out$date <- outdonne$out$date[xmon]
+						outdonne$out$data <- outdonne$out$data[xmon]
+					}
 					daty.clim <- aggregateSeries(rep(1, length(dates0)), dates0, fun = aggfun, 
 								time.step.In = period0, time.step.Out = period1, type = 'vector')
 					xtmp.clim <- outdonne$out$data
