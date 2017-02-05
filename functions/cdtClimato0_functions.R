@@ -658,7 +658,7 @@ seasonal_fun <- function(freq, var, dates, smon, lmon, fun, frac = 1){
 	seasL <- mois%in%im
 	rrL <- rle(seasL)
 	nbd <- rrL$lengths[rrL$values]
-	xsL <- rep(1:length(nbd), times = nbd)
+	xsL <- str_pad(rep(1:length(nbd), times = nbd), width = nchar(length(nbd)), pad = '0')
 	dtseas <- paste(seas, xsL, sep = '')
 
 	var <- var[seasL]
@@ -706,7 +706,7 @@ seasonal_funMat <- function(freq, var, dates, smon, lmon, fun, frac = 1){
 	seasL <- mois%in%im
 	rrL <- rle(seasL)
 	nbd <- rrL$lengths[rrL$values]
-	xsL <- rep(1:length(nbd), times = nbd)
+	xsL <- str_pad(rep(1:length(nbd), times = nbd), width = nchar(length(nbd)), pad = '0')
 	dtseas <- paste(seas, xsL, sep = '')
 
 	an <- sort(as.numeric(levels(as.factor(an[seasL]))))

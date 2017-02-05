@@ -634,6 +634,7 @@ ExtractDataPanelCmd <- function(){
 			selectedPolygon <- NULL
 
 			tclvalue(fileORdir) <- 'File to save extracted data'
+			tkconfigure(lab2.tab4, bg = 'lightblue')
 			tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
 		}
 
@@ -655,9 +656,11 @@ ExtractDataPanelCmd <- function(){
 
 			if(tclvalue(spatAverage) == '1'){
 				tclvalue(fileORdir) <- 'File to save extracted data'
+				tkconfigure(lab2.tab4, bg = 'lightblue')
 				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
 			}else{
 				tclvalue(fileORdir) <- 'Directory to save extracted data'
+				tkconfigure(lab2.tab4, bg = 'lightgreen')
 				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = FALSE))
 			}
 		}
@@ -678,9 +681,11 @@ ExtractDataPanelCmd <- function(){
 
 			if(tclvalue(spatAverage) == '1'){
 				tclvalue(fileORdir) <- 'File to save extracted data'
+				tkconfigure(lab2.tab4, bg = 'lightblue')
 				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
 			}else{
 				tclvalue(fileORdir) <- 'Directory to save extracted data'
+				tkconfigure(lab2.tab4, bg = 'lightgreen')
 				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = FALSE))
 			}
 
@@ -712,6 +717,7 @@ ExtractDataPanelCmd <- function(){
 			selectedPolygon <- NULL
 
 			tclvalue(fileORdir) <- 'File to save extracted data'
+			tkconfigure(lab2.tab4, bg = 'lightblue')
 			tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
 		}
 
@@ -731,6 +737,7 @@ ExtractDataPanelCmd <- function(){
 			tclvalue(maxrect) <- ''
 
 			tclvalue(fileORdir) <- 'File to save extracted data'
+			tkconfigure(lab2.tab4, bg = 'lightblue')
 			tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
 
 			if(tclvalue(namePoly) != ''){
@@ -927,17 +934,15 @@ ExtractDataPanelCmd <- function(){
 	is.cpt <- tclVar('0')
 
 	##########################################
-	lab1.tab4 <- tklabel(subfr4, text = 'Saptially Average Over Selected Area', anchor = 'e', justify = 'right')
-	chkSpaAvrg.tab4 <- tkcheckbutton(subfr4, variable = spatAverage)
 
-	sep1.tab4 <- ttkseparator(subfr4)
-	outputype.tab4 <- ttklabelframe(subfr4, text = "Output File Formats", labelanchor = "nw", relief = "groove", borderwidth = 2)
-
-	sep2.tab4 <- ttkseparator(subfr4)
-	lab2.tab4 <- tklabel(subfr4, text = tclvalue(fileORdir), textvariable = fileORdir, anchor = 'w', justify = 'left')
+	lab2.tab4 <- tklabel(subfr4, text = tclvalue(fileORdir), textvariable = fileORdir, anchor = 'w', justify = 'left', bg = 'lightblue')
 	fl2sav.tab4 <- tkentry(subfr4, textvariable = file.save1, width = largeur)
 	bfl2sav.tab4 <- tkbutton(subfr4, text = "...")
-
+	sep1.tab4 <- ttkseparator(subfr4)
+	outputype.tab4 <- ttklabelframe(subfr4, text = "Output File Formats", labelanchor = "nw", relief = "groove", borderwidth = 2)
+	sep2.tab4 <- ttkseparator(subfr4)
+	lab1.tab4 <- tklabel(subfr4, text = 'Saptially Average Over Selected Area', anchor = 'e', justify = 'right')
+	chkSpaAvrg.tab4 <- tkcheckbutton(subfr4, variable = spatAverage)
 	sep3.tab4 <- ttkseparator(subfr4)
 	excute.tab4 <- ttkbutton(subfr4, text = "EXTRACT TS")
 
@@ -1008,14 +1013,15 @@ ExtractDataPanelCmd <- function(){
 	})
 
 	##########################################
-	tkgrid(lab1.tab4, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(chkSpaAvrg.tab4, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(sep1.tab4, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
-	tkgrid(lab2.tab4, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(fl2sav.tab4, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(bfl2sav.tab4, row = 3, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	tkgrid(lab2.tab4, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(fl2sav.tab4, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bfl2sav.tab4, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(sep1.tab4, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
+	tkgrid(outputype.tab4, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(sep2.tab4, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
-	tkgrid(outputype.tab4, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(lab1.tab4, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(chkSpaAvrg.tab4, row = 5, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(sep3.tab4, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
 	tkgrid(excute.tab4, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
@@ -1034,13 +1040,17 @@ ExtractDataPanelCmd <- function(){
 	tkbind(chkSpaAvrg.tab4, "<Button-1>", function(){
 		if(tclvalue(spatAverage) == '0'){
 			tclvalue(fileORdir) <- 'File to save extracted data'
+			tkconfigure(lab2.tab4, bg = 'lightblue')
 			tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
 		}else{
-			if(tclvalue(area_type)%in%c('Rectangle', 'Polygon') & tclvalue(ChoixOutType) == '1'){
+			if(tclvalue(area_type)%in%c('Rectangle', 'Polygon') &
+				(tclvalue(ChoixOutType) == '1' | tclvalue(is.cpt) == '0')){
 				tclvalue(fileORdir) <- 'Directory to save extracted data'
+				tkconfigure(lab2.tab4, bg = 'lightgreen')
 				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = FALSE))
 			}else{
 				tclvalue(fileORdir) <- 'File to save extracted data'
+				tkconfigure(lab2.tab4, bg = 'lightblue')
 				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
 			}
 		}
@@ -1051,9 +1061,11 @@ ExtractDataPanelCmd <- function(){
 		if(tclvalue(spatAverage) == '0'){
 			if(tclvalue(area_type)%in%c('Rectangle', 'Polygon')){
 				tclvalue(fileORdir) <- 'Directory to save extracted data'
+				tkconfigure(lab2.tab4, bg = 'lightgreen')
 				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = FALSE))
 			}else{
 				tclvalue(fileORdir) <- 'File to save extracted data'
+				tkconfigure(lab2.tab4, bg = 'lightblue')
 				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
 			}
 		}
@@ -1062,13 +1074,35 @@ ExtractDataPanelCmd <- function(){
 	#############################
 	tkbind(outTypeRadio2, "<Button-1>", function(){
 		tclvalue(fileORdir) <- 'File to save extracted data'
+		tkconfigure(lab2.tab4, bg = 'lightblue')
 		tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
 	})
 
 	#############################
 	tkbind(outTypeRadio3, "<Button-1>", function(){
 		tclvalue(fileORdir) <- 'File to save extracted data'
+		tkconfigure(lab2.tab4, bg = 'lightblue')
 		tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
+	})
+
+	#############################
+
+	tkbind(outTypeCPT, "<Button-1>", function(){
+		if(tclvalue(is.cpt) == '0'){
+			tclvalue(fileORdir) <- 'File to save extracted data'
+			tkconfigure(lab2.tab4, bg = 'lightblue')
+			tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
+		}else{
+			if(tclvalue(area_type)%in%c('Rectangle', 'Polygon') & tclvalue(ChoixOutType) == '1'){
+				tclvalue(fileORdir) <- 'Directory to save extracted data'
+				tkconfigure(lab2.tab4, bg = 'lightgreen')
+				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = FALSE))
+			}else{
+				tclvalue(fileORdir) <- 'File to save extracted data'
+				tkconfigure(lab2.tab4, bg = 'lightblue')
+				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
+			}
+		}
 	})
 
 	#######################################################################################################
