@@ -512,7 +512,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 	meanBiasPrefix <- GeneralParameters$Format$Mean.Bias.Prefix
 
 	origdir <- interpBiasparams$origdir
-	
+
 	#############
 	auxvar <- c('dem', 'slp', 'asp')
 	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
@@ -544,7 +544,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 	grd.dem[grd.dem < 0] <- 0
 	demSp <- defSpatialPixels(list(lon = lon.dem, lat = lat.dem))
 	is.regridDEM <- is.diffSpatialPixelsObj(grdSp, demSp, tol = 1e-07)
-	
+
 	demGrid <- list(x = lon.dem, y = lat.dem, z = grd.dem)
 	if(is.regridDEM){
 		demGrid <- interp.surface.grid(demGrid, list(x = xy.grid$lon, y = xy.grid$lat))
@@ -613,6 +613,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 			if(length(locations.stn$pars) < min.stn) return(matrix(1, ncol = nlat0, nrow = nlon0))
 			if(!any(locations.stn$pars != 1)) return(matrix(1, ncol = nlat0, nrow = nlon0))
 
+			if(any(is.auxvar)) locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
 			if(interp.method == 'Kriging'){
 				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -1344,7 +1345,7 @@ ComputeLMCoefTemp <- function(comptLMparams){
 				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
 			}else vgm <- NULL
-			
+
 			xstn <- as.data.frame(locations.stn)
 			xadd <- as.data.frame(interp.grid$coords.grd)
 			xadd$pars <- if(jc == 1) 1 else 0
@@ -1369,7 +1370,10 @@ ComputeLMCoefTemp <- function(comptLMparams){
 				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)
 			}else{
 				coordinates(locations.stn) <- ~lon+lat
-				block <- if(any(is.auxvar)) NULL else bGrd
+				if(any(is.auxvar)){
+					locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+					block <- NULL
+				}else block <- bGrd
 				pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
 									block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 
@@ -1607,7 +1611,10 @@ MergingFunctionTemp <- function(paramsMRG){
 			coordinates(locations.stn) <- ~lon+lat
 
 			###########
-			block <- if(any(is.auxvar)) NULL else bGrd
+			if(any(is.auxvar)){
+				locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+				block <- NULL
+			}else block <- bGrd
 			res.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
 								block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 
