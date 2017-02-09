@@ -2,7 +2,6 @@
 ###Downscaling JRA
 GlmCoefDownscaling <- function(paramsGlmCoef){
 	InsertMessagesTxt(main.txt.out, 'Compute downscaling coefficients ...')
-	tcl("update")
 
 	GeneralParameters <- paramsGlmCoef$GeneralParameters
 	origdir <- paramsGlmCoef$origdir
@@ -81,7 +80,6 @@ GlmCoefDownscaling <- function(paramsGlmCoef){
 	write.table(coef, file = outfile, col.names = FALSE, row.names = FALSE)
 
 	InsertMessagesTxt(main.txt.out, 'Computing downscaling coefficients finished')
-	tcl("update")
 	rm(stnData, demData, grd.dem, data.stn)
 	gc()
 	return(0)
@@ -146,7 +144,6 @@ ReanalysisDownscaling <- function(paramsDownscl){
 
 	###############
 	InsertMessagesTxt(main.txt.out, "Downscale  Reanalysis ...")
-	tcl("update")
 
 	###############
 	xy.grid <- paramsDownscl$xy.grid
@@ -273,7 +270,6 @@ ReanalysisDownscaling <- function(paramsDownscl){
 	if(closeklust) stopCluster(klust)
 
 	InsertMessagesTxt(main.txt.out, 'Downscaling  Reanalysis finished')
-	tcl("update")
 	rm(demGrid, demStand, dem.reanl, interp.grid, ObjGrd, ObjStn)
 	if(paramsDownscl$memType == 2) rm(reanalData, data.reanl)
 	gc()
@@ -340,7 +336,6 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 
 	###############
 	InsertMessagesTxt(main.txt.out, 'Compute bias factors ...')
-	tcl("update")
 
 	if(bias.method == 'Multiplicative.Bias.Mon'){
 		date.bias <- date.bias[ibsdt]
@@ -474,7 +469,6 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 	save(bias.pars, file = file.path(comptMBiasparms$origdir, "BIAS_PARAMS.RData"))
 
 	InsertMessagesTxt(main.txt.out, 'Computing bias factors finished')
-	tcl("update")
 	rm(stnData, downData, data.stn, bias.pars)
 	gc()
 	return(bias)
@@ -484,7 +478,6 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 
 InterpolateMeanBiasTemp <- function(interpBiasparams){
 	InsertMessagesTxt(main.txt.out, 'Interpolate bias factors ...')
-	tcl("update")
 
 	GeneralParameters <- interpBiasparams$GeneralParameters
 	freqData <- GeneralParameters$period
@@ -613,7 +606,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 			if(length(locations.stn$pars) < min.stn) return(matrix(1, ncol = nlat0, nrow = nlon0))
 			if(!any(locations.stn$pars != 1)) return(matrix(1, ncol = nlat0, nrow = nlon0))
 
-			if(any(is.auxvar)) locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+			if(any(is.auxvar) & interp.method != 'NN') locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
 			if(interp.method == 'Kriging'){
 				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -782,7 +775,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 				locations.down <- locations.down[locations.down$pars > extrm[1] & locations.down$pars < extrm[2], ]
 				locations.down <- remove.duplicates(locations.down)
 
-				if(any(is.auxvar)) locations.down <- locations.down[Reduce("&", as.data.frame(!is.na(locations.down[, auxvar[is.auxvar]]))), ]
+				if(any(is.auxvar) & interp.method != 'NN') locations.down <- locations.down[Reduce("&", as.data.frame(!is.na(locations.down[, auxvar[is.auxvar]]))), ]
 				if(interp.method == 'Kriging'){
 					vgm <- try(autofitVariogram(formule, input_data = locations.down, model = vgm.model, cressie = TRUE), silent = TRUE)
 					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -865,7 +858,6 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 	rm(stnData, demData, demGrid, ObjStn, interp.grid)
 	gc()
 	InsertMessagesTxt(main.txt.out, 'Interpolating bias factors finished')
-	tcl("update")
 	return(0)
 }
 
@@ -924,7 +916,6 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 
 	###############
 	InsertMessagesTxt(main.txt.out, 'Correct Reanalysis Bias ...')
-	tcl("update")
 
 	if(bias.method == "Multiplicative.Bias.Mon"){
 		biasFile <- file.path(biasDir, paste(meanBiasPrefix, '_', months, '.nc', sep = ''))
@@ -934,7 +925,6 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 			for(j in seq_along(miss.bias)){
 				msg <- paste(meanBiasPrefix, '_', miss.bias[j], '.nc', sep = '')
 				InsertMessagesTxt(main.txt.out, paste(msg, "doesn't exist"), format = TRUE)
-				tcl("update")
 			}
 			return(NULL)
 		}
@@ -992,7 +982,6 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 			for(j in seq_along(miss.bias)){
 				msg <- paste(meanBiasPrefix, '_', miss.bias[j], '.nc', sep = '')
 				InsertMessagesTxt(main.txt.out, paste(msg, "doesn't exist"), format = TRUE)
-				tcl("update")
 			}
 			return(NULL)
 		}
@@ -1017,7 +1006,6 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 			for(j in seq_along(miss.pars.stn)){
 				msg <- paste('Gaussian_Pars.STN', '_', miss.pars.stn[j], '.nc', sep = '')
 				InsertMessagesTxt(main.txt.out, paste(msg, "doesn't exist"), format = TRUE)
-				tcl("update")
 			}
 			return(NULL)
 		}
@@ -1029,7 +1017,6 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 			for(j in seq_along(miss.pars.down)){
 				msg <- paste('Gaussian_Pars.REANAL', '_', miss.pars.down[j], '.nc', sep = '')
 				InsertMessagesTxt(main.txt.out, paste(msg, "doesn't exist"), format = TRUE)
-				tcl("update")
 			}
 			return(NULL)
 		}
@@ -1135,7 +1122,6 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 	rm(downData)
 	gc()
 	InsertMessagesTxt(main.txt.out, 'Bias Correction finished')
-	tcl("update")
 	return(0)
 }
 
@@ -1257,7 +1243,6 @@ ComputeLMCoefTemp <- function(comptLMparams){
 
 	#############
 	InsertMessagesTxt(main.txt.out, 'Compute LM Coefficients ...')
-	tcl("update")
 
 	dtadj <- date.adj%in%date.stn
 	dtstn <- date.stn%in%date.adj
@@ -1296,6 +1281,7 @@ ComputeLMCoefTemp <- function(comptLMparams){
 					   rsquared = sapply(xmod, function(x) x[4, ]),
 					   adj.rsquared = sapply(xmod, function(x) x[5, ]))
 	nommodcoef <- names(model.coef)
+	coef0 <- model.coef
 
 	islp <- !is.na(model.coef$slope) & model.coef$slope > 0
 	model.coef$slope[!islp] <- NA
@@ -1312,9 +1298,16 @@ ComputeLMCoefTemp <- function(comptLMparams){
 	names(model.coef) <- nommodcoef
 
 	##########
+	model.params <- list(model = model, coef0 = coef0, coef = model.coef, id.stn = id.stn,
+						lon.stn = lon.stn, lat.stn = lat.stn, date.stn = date.stn[iyear0],
+						data.stn = data.stn.reg, data.rfe = data.rfe.stn)
 	model.params <- list(model = model, coef = model.coef)
 	save(model.params, file = file.path(origdir, "LM_MODEL_PARS.RData"))
+
+	InsertMessagesTxt(main.txt.out, 'Computing LM Coefficients finished')
+
 	##########
+	InsertMessagesTxt(main.txt.out, 'Interpolate LM Coefficients ...')
 
 	if(doparallel & length(months) >= 3){
 		klust <- makeCluster(nb_cores)
@@ -1340,7 +1333,7 @@ ComputeLMCoefTemp <- function(comptLMparams){
 			extrm <- quantile(locations.stn$pars, probs = c(0.0001, 0.9999))
 			locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
-			if(any(is.auxvar)) locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+			if(any(is.auxvar) & interp.method != 'NN') locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
 			if(interp.method == 'Kriging'){
 				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -1364,7 +1357,7 @@ ComputeLMCoefTemp <- function(comptLMparams){
 			}
 			xadd <- xadd[iadd, ]
 			locations.stn <- rbind(xstn, xadd)
-			
+
 			if(interp.method == 'NN'){
 				coordinates(locations.stn) <- ~lon+lat+elv
 				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)
@@ -1395,6 +1388,9 @@ ComputeLMCoefTemp <- function(comptLMparams){
 	}
 	if(closeklust) stopCluster(klust)
 
+	InsertMessagesTxt(main.txt.out, 'Interpolating LM Coefficients finished')
+
+	###########
 	grd.slope <- ncvar_def("slope", "", xy.dim, NA, longname= "Linear model Coef: Slope", prec = "float")
 	grd.intercept <- ncvar_def("intercept", "", xy.dim, NA, longname= "Linear model Coef: Intercept", prec = "float")
 
@@ -1410,11 +1406,9 @@ ComputeLMCoefTemp <- function(comptLMparams){
 		nc_close(nc1)
 	}
 
-	InsertMessagesTxt(main.txt.out, 'Computing LM Coefficients finished')
-	tcl("update")
 	rm(adjData, stnData, demData, data.adj.stn, grd.dem,
 		data.stn, demGrid, interp.grid, data.stn.reg,
-		model, model.coef, MODEL.COEF)
+		model, model.coef, MODEL.COEF, coef0, xmod, model.params)
 	return(0)
 }
 
@@ -1422,7 +1416,6 @@ ComputeLMCoefTemp <- function(comptLMparams){
 
 MergingFunctionTemp <- function(paramsMRG){
 	InsertMessagesTxt(main.txt.out, 'Merging data ...')
-	tcl("update")
 
 	GeneralParameters <- paramsMRG$GeneralParameters
 	freqData <- GeneralParameters$period
@@ -1658,7 +1651,6 @@ MergingFunctionTemp <- function(paramsMRG){
 	if(closeklust) stopCluster(klust)
 
 	InsertMessagesTxt(main.txt.out, 'Merging finished')
-	tcl("update")
 
 	return(0)
 }

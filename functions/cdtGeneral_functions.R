@@ -129,6 +129,7 @@ InsertMessagesTxt <- function(wdgt, texta, format = FALSE, fgcolor = 'red', bgco
 	if(format) tkinsert(wdgt, "end", paste(texta, "\n"), txtformated)
 	else tkinsert(wdgt, "end", paste(texta, "\n"))
 	tcl(wdgt, 'yview', 'moveto', '1.0')
+	tcl("update")
 }
 
 ###############################################################################

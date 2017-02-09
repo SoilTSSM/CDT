@@ -13,8 +13,8 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 
 	
 	##X-Y Axis
-	toutLon <- c(ocrds[,1], unlist(lapply(allDATA, function(v) v[[1]]$x)))
-	toutLat <- c(ocrds[,2], unlist(lapply(allDATA, function(v) v[[1]]$y)))
+	toutLon <- c(ocrds[, 1], unlist(lapply(allDATA, function(v) v[[1]]$x)))
+	toutLat <- c(ocrds[, 2], unlist(lapply(allDATA, function(v) v[[1]]$y)))
 	parLon <- parAxisPlotFun(toutLon)
 	parLat <- parAxisPlotFun(toutLat)
 	grid.x <- parLon$axp
@@ -41,13 +41,13 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 			panel.levelplot(...)
 			panel.lines(ocrds, col = "black", lwd = 0.5)
 			panel.abline(h = grid.y, v = grid.x, col = "lightgray", lty = 3)
-		},colorkey = FALSE)
+		}, colorkey = FALSE)
 
 	# plotStn <- levelplot(donStn$value~donStn$x+donStn$y, at = ticks, prepanel = prepanel.default.xyplot, panel = function(x, y, z,...){
 	# 	panel.lines(ocrds, col = "black", lwd = 0.5)
 	# 	panel.abline(h = grid.y, v = grid.x, col = "lightgray", lty = 3)
 	# 	panel.levelplot.points(x, y, z, type = 'p', cex = 0.9,...)
-	# },colorkey = FALSE)
+	# }, colorkey = FALSE)
 
 	PlotObj0 <- plotStn
 	####
@@ -59,15 +59,14 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 	for(jj in 1:length(donNcdf2Plot)){
 		xydon <- donNcdf2Plot[[jj]]
 		donne1 <- data.frame(expand.grid(x = xydon$x, y = xydon$y), z = c(xydon$value))
-#		plotXYdon <- levelplot(xydon$value, row.values = xydon$x, column.values = xydon$y, at = ticks, 
+		# plotXYdon <- levelplot(xydon$value, row.values = xydon$x, column.values = xydon$y, at = ticks, 
 		plotXYdon <- levelplot(z~x+y, data = donne1, at = ticks, 
 								interpolate = TRUE, region = TRUE, 
 								panel = function(...){
 									panel.levelplot(...)
 									panel.lines(ocrds, col = "black", lwd = 0.5)
 									panel.abline(h = grid.y, v = grid.x, col = "lightgray", lty = 3)
-								},
-								colorkey = FALSE)
+								}, colorkey = FALSE)
 		PlotObj0 <- c(PlotObj0, plotXYdon)
 	}
 
@@ -115,7 +114,7 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 						gp = gpar(fontsize = 12, fontface = 'plain', col = "black", cex = 0.8))
 	
 	##add legend title
-	lezandyGrob <- packGrob(frame = colorkeyFrame, grob = grobObj, side = posTitle, dynamic = T)
+	lezandyGrob <- packGrob(frame = colorkeyFrame, grob = grobObj, side = posTitle, dynamic = TRUE)
 
 	##legend function
 	if(colorkeyPlace == 'bottom'){

@@ -60,7 +60,6 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 
 	###############
 	InsertMessagesTxt(main.txt.out, 'Compute bias factors ...')
-	tcl("update")
 
 	if(bias.method == 'Multiplicative.Bias.Mon'){
 		date.bias <- date.bias[ibsdt]
@@ -198,7 +197,6 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 	save(bias.pars, file = file.path(comptMBiasparms$origdir, "BIAS_PARAMS.RData"))
 
 	InsertMessagesTxt(main.txt.out, 'Computing bias factors finished')
-	tcl("update")
 	rm(stnData, rfeData, data.stn, data.rfe, bias.pars)
 	gc()
 	return(bias)
@@ -208,7 +206,6 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 
 InterpolateMeanBiasRain <- function(interpBiasparams){
 	InsertMessagesTxt(main.txt.out, 'Interpolate bias factors ...')
-	tcl("update")
 
 	GeneralParameters <- interpBiasparams$GeneralParameters
 	freqData <- GeneralParameters$period
@@ -521,7 +518,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				locations.rfe <- locations.rfe[locations.rfe$pars > extrm[1] & locations.rfe$pars < extrm[2], ]
 				locations.rfe <- remove.duplicates(locations.rfe)
 
-				if(any(is.auxvar)) locations.rfe <- locations.rfe[Reduce("&", as.data.frame(!is.na(locations.rfe@data[, auxvar[is.auxvar]]))), ]
+				if(any(is.auxvar) & interp.method != 'NN') locations.rfe <- locations.rfe[Reduce("&", as.data.frame(!is.na(locations.rfe@data[, auxvar[is.auxvar]]))), ]
 				if(interp.method == 'Kriging'){
 					vgm <- try(autofitVariogram(formule, input_data = locations.rfe, model = vgm.model, cressie = TRUE), silent = TRUE)
 					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -615,7 +612,6 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 	rm(stnData, demData, demGrid, ObjStn, interp.grid)
 	gc()
 	InsertMessagesTxt(main.txt.out, 'Interpolating bias factors finished')
-	tcl("update")
 	return(0)
 }
 
@@ -674,7 +670,6 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 
 	###############
 	InsertMessagesTxt(main.txt.out, 'Correct RFE Bias ...')
-	tcl("update")
 
 	if(bias.method == "Multiplicative.Bias.Mon"){
 		biasFile <- file.path(biasDir, paste(meanBiasPrefix, '_', months, '.nc', sep = ''))
@@ -684,7 +679,6 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 			for(j in seq_along(miss.bias)){
 				msg <- paste(meanBiasPrefix, '_', miss.bias[j], '.nc', sep = '')
 				InsertMessagesTxt(main.txt.out, paste(msg, "doesn't exist"), format = TRUE)
-				tcl("update")
 			}
 			return(NULL)
 		}
@@ -742,7 +736,6 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 			for(j in seq_along(miss.bias)){
 				msg <- paste(meanBiasPrefix, '_', miss.bias[j], '.nc', sep = '')
 				InsertMessagesTxt(main.txt.out, paste(msg, "doesn't exist"), format = TRUE)
-				tcl("update")
 			}
 			return(NULL)
 		}
@@ -767,7 +760,6 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 			for(j in seq_along(miss.pars.stn)){
 				msg <- paste('Bernoulli-Gamma_Pars.STN', '_', miss.pars.stn[j], '.nc', sep = '')
 				InsertMessagesTxt(main.txt.out, paste(msg, "doesn't exist"), format = TRUE)
-				tcl("update")
 			}
 			return(NULL)
 		}
@@ -779,7 +771,6 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 			for(j in seq_along(miss.pars.rfe)){
 				msg <- paste('Bernoulli-Gamma_Pars.RFE', '_', miss.pars.rfe[j], '.nc', sep = '')
 				InsertMessagesTxt(main.txt.out, paste(msg, "doesn't exist"), format = TRUE)
-				tcl("update")
 			}
 			return(NULL)
 		}
@@ -901,7 +892,6 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 	rm(rfeData)
 	gc()
 	InsertMessagesTxt(main.txt.out, 'Bias Correction finished')
-	tcl("update")
 	return(0)
 }
 
@@ -986,7 +976,7 @@ ComputeLMCoefRain <- function(comptLMparams){
 	grd.dem[grd.dem < 0] <- 0
 	demSp <- defSpatialPixels(list(lon = lon.dem, lat = lat.dem))
 	is.regridDEM <- is.diffSpatialPixelsObj(grdSp, demSp, tol = 1e-07)
-	
+
 	demGrid <- list(x = lon.dem, y = lat.dem, z = grd.dem)
 	if(is.regridDEM){
 		demGrid <- interp.surface.grid(demGrid, list(x = xy.grid$lon, y = xy.grid$lat))
@@ -1022,7 +1012,6 @@ ComputeLMCoefRain <- function(comptLMparams){
 
 	#############
 	InsertMessagesTxt(main.txt.out, 'Compute LM Coefficients ...')
-	tcl("update")
 
 	dtrfe <- date.rfe%in%date.stn
 	dtstn <- date.stn%in%date.rfe
@@ -1062,6 +1051,7 @@ ComputeLMCoefRain <- function(comptLMparams){
 					   rsquared = sapply(xmod, function(x) x[4, ]),
 					   adj.rsquared = sapply(xmod, function(x) x[5, ]))
 	nommodcoef <- names(model.coef)
+	coef0 <- model.coef
 
 	islp <- !is.na(model.coef$slope) & model.coef$slope > 0
 	model.coef$slope[!islp] <- NA
@@ -1078,9 +1068,15 @@ ComputeLMCoefRain <- function(comptLMparams){
 	names(model.coef) <- nommodcoef
 
 	##########
-	model.params <- list(model = model, coef = model.coef)
+	model.params <- list(model = model, coef0 = coef0, coef = model.coef, id.stn = id.stn,
+						lon.stn = lon.stn, lat.stn = lat.stn, date.stn = date.stn[iyear0],
+						data.stn = data.stn.reg, data.rfe = data.rfe.stn)
 	save(model.params, file = file.path(origdir, "LM_MODEL_PARS.RData"))
+
+	InsertMessagesTxt(main.txt.out, 'Computing LM Coefficients finished')
+
 	##########
+	InsertMessagesTxt(main.txt.out, 'Interpolate LM Coefficients ...')
 
 	if(doparallel & length(months) >= 3){
 		klust <- makeCluster(nb_cores)
@@ -1103,7 +1099,7 @@ ComputeLMCoefRain <- function(comptLMparams){
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
 			if(length(locations.stn$pars) < min.stn) return(NULL)
 
-			if(any(is.auxvar)) locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+			if(any(is.auxvar) & interp.method != 'NN') locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
 			if(interp.method == 'Kriging'){
 				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -1133,10 +1129,13 @@ ComputeLMCoefRain <- function(comptLMparams){
 				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)
 			}else{
 				coordinates(locations.stn) <- ~lon+lat
-				block <- if(any(is.auxvar)) NULL else bGrd
+				if(any(is.auxvar)){
+					locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+					block <- NULL 
+				}else block <- bGrd
 				pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
 									block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-				
+
 				extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
 				ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
 				pars.grd$var1.pred[ixtrm] <- NA
@@ -1153,6 +1152,10 @@ ComputeLMCoefRain <- function(comptLMparams){
 		pars.mon
 	}
 	if(closeklust) stopCluster(klust)
+
+	InsertMessagesTxt(main.txt.out, 'Interpolating LM Coefficients finished')
+
+	###########
 	grd.slope <- ncvar_def("slope", "", xy.dim, NA, longname= "Linear model Coef: Slope", prec = "float")
 	grd.intercept <- ncvar_def("intercept", "", xy.dim, NA, longname= "Linear model Coef: Intercept", prec = "float")
 
@@ -1171,11 +1174,9 @@ ComputeLMCoefRain <- function(comptLMparams){
 		nc_close(nc1)
 	}
 
-	InsertMessagesTxt(main.txt.out, 'Computing LM Coefficients finished')
-	tcl("update")
 	rm(rfeData, stnData, demData, data.rfe.stn, grd.dem,
 		data.stn, demGrid, interp.grid, data.stn.reg,
-		model, model.coef, MODEL.COEF)
+		model, model.coef, MODEL.COEF, coef0, xmod, model.params)
 	return(0)
 }
 
@@ -1184,7 +1185,6 @@ ComputeLMCoefRain <- function(comptLMparams){
 
 MergingFunctionRain <- function(paramsMRG){
 	InsertMessagesTxt(main.txt.out, 'Merging data ...')
-	tcl("update")
 
 	GeneralParameters <- paramsMRG$GeneralParameters
 	freqData <- GeneralParameters$period
@@ -1529,7 +1529,7 @@ MergingFunctionRain <- function(paramsMRG){
 
 	############
 	InsertMessagesTxt(main.txt.out, 'Scaling up daily data ...')
-	tcl("update")
+
 	dekdaty <- ncInfo$dates[ncInfo$exist]
 	if(freqData == "daily" & GeneralParameters$Scale.daily & length(dekdaty) > 7){
 		dekDataInfo <- getRFESampleData(GeneralParameters$IO.files$DEK.file)
@@ -1636,7 +1636,6 @@ MergingFunctionRain <- function(paramsMRG){
 	if(closeklust) stopCluster(klust)
 
 	InsertMessagesTxt(main.txt.out, 'Merging finished')
-	tcl("update")
 
 	return(0)
 }
