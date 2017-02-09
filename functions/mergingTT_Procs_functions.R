@@ -1477,10 +1477,16 @@ MergingFunctionTemp <- function(paramsMRG){
 	#############
 	auxvar <- c('dem', 'slp', 'asp')
 	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
+	# if(any(is.auxvar)){
+	# 	formule <- formula(paste('res', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
+	# }else formule <- formula(paste('res', '~', 1, sep = ''))
 	if(any(is.auxvar)){
 		formule <- formula(paste('res', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
-	}else formule <- formula(paste('res', '~', 1, sep = ''))
-
+		formuleRK <- formula(paste('stn', '~', 'tmp', '+', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
+	}else{
+		formule <- formula(paste('res', '~', 1, sep = ''))
+		formuleRK <- formula(paste('stn', '~', 'tmp', sep = ''))
+	}
 
 	#############
 	demData <- paramsMRG$demData
@@ -1569,7 +1575,8 @@ MergingFunctionTemp <- function(paramsMRG){
 				sp.trend <- xtmp * MODEL.COEF[[mo]]$slope + MODEL.COEF[[mo]]$intercept
 				locations.stn$res <- locations.stn$stn - sp.trend[ijGrd][noNA]
 			}else{
-				glm.stn <- glm(stn~tmp, data = locations.stn, family = gaussian)
+				# glm.stn <- glm(stn~tmp, data = locations.stn, family = gaussian)
+				glm.stn <- glm(formuleRK, data = locations.stn, family = gaussian)
 				sp.trend <- predict(glm.stn, newdata = interp.grid$newgrid)
 				sp.trend <- matrix(sp.trend, ncol = nlat0, nrow = nlon0)
 				locations.stn$res <- residuals(glm.stn)
