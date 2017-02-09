@@ -1270,7 +1270,11 @@ MergingFunctionRain <- function(paramsMRG){
 	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
 	if(any(is.auxvar)){
 		formule <- formula(paste('res', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
-	}else formule <- formula(paste('res', '~', 1, sep = ''))
+		formuleRK <- formula(paste('stn', '~', 'rfe', '+', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
+	}else{
+		formule <- formula(paste('res', '~', 1, sep = ''))
+		formuleRK <- formula(paste('stn', '~', 'rfe', sep = ''))
+	}
 
 	#############
 
@@ -1378,11 +1382,13 @@ MergingFunctionRain <- function(paramsMRG){
 					locations.stn$res <- locations.stn$stn - sp.trend[ijGrd][noNA]
 				}else{
 					simplediff <- if(var(locations.stn$stn) < 1e-07 | var(locations.stn$rfe) < 1e-07) TRUE else FALSE
-					glm.stn <- glm(stn~rfe, data = locations.stn, family = gaussian)
+					# glm.stn <- glm(stn~rfe, data = locations.stn, family = gaussian)
+					glm.stn <- glm(formuleRK, data = locations.stn, family = gaussian)
 					if(is.na(glm.stn$coefficients[2]) | glm.stn$coefficients[2] < 0) simplediff <- TRUE
 					if(!simplediff){
 						sp.trend <- predict(glm.stn, newdata = interp.grid$newgrid)
 						sp.trend <- matrix(sp.trend, ncol = nlat0, nrow = nlon0)
+						sp.trend[is.na(sp.trend)] <- xrfe[is.na(sp.trend)]
 						locations.stn$res <- residuals(glm.stn)
 					}else{
 						sp.trend <- xrfe
