@@ -145,7 +145,7 @@ Climatologies <- function(xvar, dates, fun = 'mean', ..., time.step = 'daily', t
 	}else if(time.step == 'dekadal'){
 		odates <- paste('Dekad', 1:36, sep = '-')
 	}else if(time.step == 'monthly'){
-		odates <- format(ISOdate(2014,1:12,1), "%b")
+		odates <- format(ISOdate(2014, 1:12, 1), "%b")
 	}else{
 		stop('Unknown time step input')
 	}
@@ -168,13 +168,14 @@ Anomalies <- function(xvar, dates, time.step = 'daily', type ='vector',
 }
 
 StandardizedAnomalies <- function(xvar, dates, time.step = 'daily', type ='vector',
-									clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL, clim.sd = NULL)
+								clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL, clim.sd = NULL)
 {
 	if(!time.step %in% c('daily', 'dekadal', 'monthly')) stop('Unknown time step input')
 	if(!type %in% c('vector', 'matrix', 'array', 'list')) stop('Unknown data type input')
 	funClim <- paste('StandardizedAnomalies.', time.step, '_', type, sep = '')
 	funClim <- match.fun(funClim)
-	xout <- funClim(xvar, dates, clim.range = clim.range, clim.nbyear.min = clim.nbyear.min, clim.mean = clim.mean, clim.sd = clim.sd)
+	xout <- funClim(xvar, dates, clim.range = clim.range, clim.nbyear.min = clim.nbyear.min,
+					clim.mean = clim.mean, clim.sd = clim.sd)
 	return(list(date = dates, data = xout))	
 }
 
@@ -193,7 +194,8 @@ DayDekMon2DekMonYear <- function(x, index, fun, ..., min.frac = 1.0){
 
 DayDekMon2Season <- function(x, index, fun, ..., min.frac = 1.0){
 	fun <- match.fun(fun)
-	nPeriod <- tapply(x[index$id.season], index$index, function(j) length(which(!is.na(j))))/index$nbOfPeriod
+	nPeriod <- tapply(x[index$id.season], index$index,
+						function(j) length(which(!is.na(j))))/index$nbOfPeriod
 	xval <- tapply(x[index$id.season], index$index, fun, ...)
 	xval[nPeriod < min.frac] <- NA
 	unname(xval)
@@ -213,7 +215,8 @@ nbDayOfDekad <- function(dates){
 	year <- substr(dates, 1, 4)
 	mon <- substr(dates, 5, 6)
 	day <- as.numeric(substr(dates, 7, 8))
-	ifelse(day <= 10, 10, ifelse(day > 10 & day <= 20, 10, rev((28:31)[!is.na(as.Date(paste(year, mon, 28:31, sep='-')))])[1] - 20))
+	ifelse(day <= 10, 10, ifelse(day > 10 & day <= 20, 10,
+		rev((28:31)[!is.na(as.Date(paste(year, mon, 28:31, sep='-')))])[1] - 20))
 }
 
 nbDayOfMonth <- function(dates){
@@ -228,25 +231,26 @@ nbDayOfYear <- function(dates){
 }
 
 cycleMonth1 <- function(start, n){
-	mois <- format(ISOdate(2014,1:12,1), "%b")
+	mois <- format(ISOdate(2014, 1:12, 1), "%b")
 	ix <- which(mois == start)
-	im<-(ix+(n-1))%%12
+	im <- (ix+(n-1))%%12
 	if(im == 0) im <- 12
 	return(mois[im])
 }
 
 add.months <- function(daty, n = 1){
 	date0 <- seq(daty, by = paste(n, "months"), length = 2)[2]
-	date1 <- seq(as.Date(paste(format(daty,'%Y-%m'),'01', sep = '-')), by = paste(n+1, "months"), length = 2)[2]-1
+	date1 <- seq(as.Date(paste(format(daty, '%Y-%m'), '01', sep = '-')),
+				by = paste(n+1, "months"), length = 2)[2]-1
 	daty <- if(date0 > date1) date1 else date0
 	return(daty)
 }
 
 add.dekads <- function(daty, n = 1){
-	idek <- as.numeric(substr(format(daty,'%Y%m%d'), 8,8))+n
+	idek <- as.numeric(substr(format(daty, '%Y%m%d'), 8, 8))+n
 	dek <- idek%%3
 	if(dek == 0) dek <- 3
-	daty <- format(add.months(daty, floor((idek-1)/3)),'%Y-%m')
+	daty <- format(add.months(daty, floor((idek-1)/3)), '%Y-%m')
 	daty <- as.Date(paste(daty, dek, sep = '-'))
 	return(daty)
 }
@@ -297,19 +301,20 @@ index_Season <- function(freqIn, freqOut = c(1, 3), dates){
 	seasonLength <- freqOut[2]
 	annee <- substr(dates,1,4)
 	mois <- substr(dates, 5, 6)
-	month12 <- format(ISOdate(2014,1:12,1), "%b")
+	month12 <- format(ISOdate(2014, 1:12, 1), "%b")
 	month12n <- str_pad(1:12, width = 2, pad = "0")
 	if(seasonLength < 12){
 		whichMon <- (startMonth:(startMonth+(seasonLength-1)))%%12
 		whichMon[whichMon == 0] <- 12
-		season <- paste(substr(month12, 1, 1)[whichMon], collapse='')
+		season <- paste(substr(month12, 1, 1)[whichMon], collapse = '')
 		se.season <- month12n[whichMon][c(1, seasonLength)]
 		whichMon <- str_pad(whichMon, width = 2, pad = "0")
 		id.season <- mois%in%whichMon
 		alt.season <- rle(id.season)
 		nbd <- alt.season$lengths[alt.season$values]
 		nbd0 <- nbd
-		if(freqIn == 'daily') nbd[c(1, length(nbd))] <- sum(sapply(whichMon, function(x) rev((28:31)[!is.na(as.Date(paste(2014, x, 28:31, sep = '-')))])[1]))
+		if(freqIn == 'daily') nbd[c(1, length(nbd))] <- sum(sapply(whichMon, 
+								function(x) rev((28:31)[!is.na(as.Date(paste(2014, x, 28:31, sep = '-')))])[1]))
 		if(freqIn == 'dekadal') nbd[c(1, length(nbd))] <- 3*seasonLength
 		if(freqIn == 'monthly') nbd[c(1, length(nbd))] <- seasonLength
 		year <- unique(annee[id.season])
@@ -341,7 +346,7 @@ index_Season <- function(freqIn, freqOut = c(1, 3), dates){
 		nbd[length(nbd)] <- nbd[length(nbd)-1]
 		id.season <- rep(FALSE, length(dates))
 		id.season[istart[1]:length(id.season)] <- TRUE
-		xndx <- paste(paste(month12[startMonth], seasonLength, sep=''), annee[istart], sep = '-')
+		xndx <- paste(paste(month12[startMonth], seasonLength, sep = ''), annee[istart], sep = '-')
 		indx <- rep(xndx, times = nbd0)
 
 		iis <- if(freqIn == 'daily') istart+4 else istart
@@ -389,7 +394,8 @@ index_Season1 <- function(freqIn, freqOut = 3, dates){
 	xdates <- sapply(ij, function(j){
 		mon <- month12[as.numeric(substr(roll.mon$values[j], 5, 6))]
 		an <- substr(roll.mon$values[j], 1, 4)
-		paste(paste(an[1], mon[1], sep = '-'), paste(an[length(j)], mon[length(j)], sep = '-'), sep = '_')
+		paste(paste(an[1], mon[1], sep = '-'),
+		paste(an[length(j)], mon[length(j)], sep = '-'), sep = '_')
 	})
 	list(index = indx, nbOfPeriod = nbd, date = xdates)
 }
@@ -399,9 +405,10 @@ index_Season1 <- function(freqIn, freqOut = 3, dates){
 ### Climatologies
 
 ## Clim vector
-Climatologies.monthly_vector <- function(xvar, dates, fun = 'mean', ..., clim.range = NULL, clim.nbyear.min = NA){
+Climatologies.monthly_vector <- function(xvar, dates, fun = 'mean', ...,
+										clim.range = NULL, clim.nbyear.min = NA){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
+	mois <- as.numeric(substr(dates, 5, 6))
 	slen <- mois[1]-1
 	elen <- 12-mois[length(mois)]
 
@@ -411,7 +418,7 @@ Climatologies.monthly_vector <- function(xvar, dates, fun = 'mean', ..., clim.ra
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- unique(as.numeric(substr(dates, 1,4)))
+		an <- unique(as.numeric(substr(dates, 1, 4)))
 		vtmp.clim <- xvar[, an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
@@ -426,9 +433,10 @@ Climatologies.monthly_vector <- function(xvar, dates, fun = 'mean', ..., clim.ra
 }
 
 ## Clim matrix
-Climatologies.monthly_matrix <- function(xvar, dates, fun = 'mean', ..., clim.range = NULL, clim.nbyear.min = NA){
+Climatologies.monthly_matrix <- function(xvar, dates, fun = 'mean', ...,
+										clim.range = NULL, clim.nbyear.min = NA){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
+	mois <- as.numeric(substr(dates, 5, 6))
 	slen <- mois[1]-1
 	elen <- 12-mois[length(mois)]
 
@@ -440,15 +448,15 @@ Climatologies.monthly_matrix <- function(xvar, dates, fun = 'mean', ..., clim.ra
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[an >= clim.range[1] & an <= clim.range[2], , drop = FALSE]
 	}
 	
 	fun <- match.fun(fun)
 	vtmp.clim <- array(vtmp.clim, c(12, nrow(vtmp.clim)/12, ncol(vtmp.clim)))
-	xvar <- apply(vtmp.clim, c(1,3), fun, ...)
+	xvar <- apply(vtmp.clim, c(1, 3), fun, ...)
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- apply(vtmp.clim, c(1,3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
+		ValToNA <- apply(vtmp.clim, c(1, 3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
 		xvar[ValToNA] <- NA
 	}
 	rm(vmat1, vmat2, vtmp.clim, dates)
@@ -456,9 +464,10 @@ Climatologies.monthly_matrix <- function(xvar, dates, fun = 'mean', ..., clim.ra
 }
 
 ## Clim array
-Climatologies.monthly_array <- function(xvar, dates, fun = 'mean', ..., clim.range = NULL, clim.nbyear.min = NA){
+Climatologies.monthly_array <- function(xvar, dates, fun = 'mean', ...,
+										clim.range = NULL, clim.nbyear.min = NA){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
+	mois <- as.numeric(substr(dates, 5, 6))
 	slen <- mois[1]-1
 	elen <- 12-mois[length(mois)]
 
@@ -470,14 +479,15 @@ Climatologies.monthly_array <- function(xvar, dates, fun = 'mean', ..., clim.ran
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[, , an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
 	fun <- match.fun(fun)
 	xvar <- sapply(1:12, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 12), drop = FALSE], 1:2, fun, ...), simplify = "array")
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- sapply(1:12, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 12), drop = FALSE], 1:2, function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
+		ValToNA <- sapply(1:12, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 12), drop = FALSE], 1:2,
+											function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
 		xvar[ValToNA] <- NA
 	}
 	rm(vtmp.clim, dates, vmat1, vmat2)
@@ -486,9 +496,10 @@ Climatologies.monthly_array <- function(xvar, dates, fun = 'mean', ..., clim.ran
 }
 
 ## Clim list
-Climatologies.monthly_list <- function(xvar, dates, fun = 'mean', ..., clim.range = NULL, clim.nbyear.min = NA){
+Climatologies.monthly_list <- function(xvar, dates, fun = 'mean', ...,
+										clim.range = NULL, clim.nbyear.min = NA){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
+	mois <- as.numeric(substr(dates, 5, 6))
 	slen <- mois[1]-1
 	elen <- 12-mois[length(mois)]
 
@@ -502,7 +513,7 @@ Climatologies.monthly_list <- function(xvar, dates, fun = 'mean', ..., clim.rang
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[an >= clim.range[1] & an <= clim.range[2]]
 	}
 
@@ -510,7 +521,8 @@ Climatologies.monthly_list <- function(xvar, dates, fun = 'mean', ..., clim.rang
 	xvar <- lapply(1:12, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 12)]), 1:2, fun, ...))
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <-  lapply(1:12, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 12)]), 1:2, function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
+		ValToNA <-  lapply(1:12, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 12)]), 1:2,
+												function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
 		xvar <- lapply(1:length(xvar), function(j){
 			x <- xvar[[j]]
 			toNA <- ValToNA[[j]]
@@ -528,9 +540,10 @@ Climatologies.monthly_list <- function(xvar, dates, fun = 'mean', ..., clim.rang
 ### Standardized Anomalies
 
 ## stAnom vector
-StandardizedAnomalies.monthly_vector <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL, clim.sd = NULL){
+StandardizedAnomalies.monthly_vector <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA,
+												clim.mean = NULL, clim.sd = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
+	mois <- as.numeric(substr(dates, 5, 6))
 	slen <- mois[1]-1
 	elen <- 12-mois[length(mois)]
 
@@ -540,7 +553,7 @@ StandardizedAnomalies.monthly_vector <- function(xvar, dates, clim.range = NULL,
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- unique(as.numeric(substr(dates, 1,4)))
+		an <- unique(as.numeric(substr(dates, 1, 4)))
 		vtmp.clim <- xvar[, an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
@@ -576,9 +589,10 @@ StandardizedAnomalies.monthly_vector <- function(xvar, dates, clim.range = NULL,
 }
 
 ## stAnom matrix
-StandardizedAnomalies.monthly_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL, clim.sd = NULL){
+StandardizedAnomalies.monthly_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA,
+												clim.mean = NULL, clim.sd = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
+	mois <- as.numeric(substr(dates, 5, 6))
 	slen <- mois[1]-1
 	elen <- 12-mois[length(mois)]
 
@@ -590,17 +604,17 @@ StandardizedAnomalies.monthly_matrix <- function(xvar, dates, clim.range = NULL,
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[an >= clim.range[1] & an <= clim.range[2], , drop = FALSE]
 	}
 	vtmp.clim <- array(vtmp.clim, c(12, nrow(vtmp.clim)/12, ncol(vtmp.clim)))
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- apply(vtmp.clim, c(1,3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
+		ValToNA <- apply(vtmp.clim, c(1, 3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
 	}
 	
 	if(is.null(clim.mean)){
-		cmoy <- apply(vtmp.clim, c(1,3), mean, na.rm = T)
+		cmoy <- apply(vtmp.clim, c(1, 3), mean, na.rm = T)
 		if(!is.na(clim.nbyear.min)) cmoy[ValToNA] <- NA
 	}else{
 		if(!is.matrix(clim.mean)) stop("Climatological values must be a matrix")
@@ -608,7 +622,7 @@ StandardizedAnomalies.monthly_matrix <- function(xvar, dates, clim.range = NULL,
 		cmoy <- clim.mean
 	}
 	if(is.null(clim.sd)){
-		csd <- apply(vtmp.clim, c(1,3), sd, na.rm = T)
+		csd <- apply(vtmp.clim, c(1, 3), sd, na.rm = T)
 		if(!is.na(clim.nbyear.min)) csd[ValToNA] <- NA
 	}else{
 		if(!is.matrix(clim.sd)) stop("Climatological standard deviation must be a matrix")
@@ -629,9 +643,10 @@ StandardizedAnomalies.monthly_matrix <- function(xvar, dates, clim.range = NULL,
 }
 
 ## stAnom array
-StandardizedAnomalies.monthly_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL, clim.sd = NULL){
+StandardizedAnomalies.monthly_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA,
+												clim.mean = NULL, clim.sd = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
+	mois <- as.numeric(substr(dates, 5, 6))
 	slen <- mois[1]-1
 	elen <- 12-mois[length(mois)]
 
@@ -648,7 +663,8 @@ StandardizedAnomalies.monthly_array <- function(xvar, dates, clim.range = NULL, 
 	}
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- sapply(1:12, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 12), drop = FALSE], 1:2, function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
+		ValToNA <- sapply(1:12, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 12), drop = FALSE], 1:2,
+											function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
 	}
 
 	if(is.null(clim.mean)){
@@ -683,9 +699,10 @@ StandardizedAnomalies.monthly_array <- function(xvar, dates, clim.range = NULL, 
 }
 
 ## stAnom list
-StandardizedAnomalies.monthly_list <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL, clim.sd = NULL){
+StandardizedAnomalies.monthly_list <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA,
+												clim.mean = NULL, clim.sd = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
+	mois <- as.numeric(substr(dates, 5, 6))
 	slen <- mois[1]-1
 	elen <- 12-mois[length(mois)]
 
@@ -699,12 +716,13 @@ StandardizedAnomalies.monthly_list <- function(xvar, dates, clim.range = NULL, c
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[an >= clim.range[1] & an <= clim.range[2]]
 	}
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <-  lapply(1:12, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 12)]), 1:2, function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
+		ValToNA <-  lapply(1:12, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 12)]), 1:2,
+												function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
 	}
 
 	if(is.null(clim.mean)){
@@ -758,7 +776,7 @@ StandardizedAnomalies.monthly_list <- function(xvar, dates, clim.range = NULL, c
 ## Anom vector
 Anomalies.monthly_vector <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
+	mois <- as.numeric(substr(dates, 5, 6))
 	slen <- mois[1]-1
 	elen <- 12-mois[length(mois)]
 
@@ -798,7 +816,7 @@ Anomalies.monthly_vector <- function(xvar, dates, clim.range = NULL, clim.nbyear
 ## Anom matrix
 Anomalies.monthly_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
+	mois <- as.numeric(substr(dates, 5, 6))
 	slen <- mois[1]-1
 	elen <- 12-mois[length(mois)]
 
@@ -810,17 +828,17 @@ Anomalies.monthly_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[an >= clim.range[1] & an <= clim.range[2], , drop = FALSE]
 	}
 	vtmp.clim <- array(vtmp.clim, c(12, nrow(vtmp.clim)/12, ncol(vtmp.clim)))
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- apply(vtmp.clim, c(1,3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
+		ValToNA <- apply(vtmp.clim, c(1, 3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
 	}
 	
 	if(is.null(clim.mean)){
-		cmoy <- apply(vtmp.clim, c(1,3), mean, na.rm = T)
+		cmoy <- apply(vtmp.clim, c(1, 3), mean, na.rm = T)
 		if(!is.na(clim.nbyear.min)) cmoy[ValToNA] <- NA
 	}else{
 		if(!is.matrix(clim.mean)) stop("Climatological values must be a matrix")
@@ -842,7 +860,7 @@ Anomalies.monthly_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear
 ## Anom array
 Anomalies.monthly_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
+	mois <- as.numeric(substr(dates, 5, 6))
 	slen <- mois[1]-1
 	elen <- 12-mois[length(mois)]
 
@@ -854,12 +872,13 @@ Anomalies.monthly_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[, , an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- sapply(1:12, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 12), drop = FALSE], 1:2, function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
+		ValToNA <- sapply(1:12, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 12), drop = FALSE], 1:2,
+											function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
 	}
 
 	if(is.null(clim.mean)){
@@ -888,7 +907,7 @@ Anomalies.monthly_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.
 ## Anom list
 Anomalies.monthly_list <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
+	mois <- as.numeric(substr(dates, 5, 6))
 	slen <- mois[1]-1
 	elen <- 12-mois[length(mois)]
 
@@ -902,12 +921,13 @@ Anomalies.monthly_list <- function(xvar, dates, clim.range = NULL, clim.nbyear.m
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[an >= clim.range[1] & an <= clim.range[2]]
 	}
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <-  lapply(1:12, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 12)]), 1:2, function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
+		ValToNA <-  lapply(1:12, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 12)]), 1:2,
+												function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
 	}
 
 	if(is.null(clim.mean)){
@@ -948,11 +968,11 @@ Anomalies.monthly_list <- function(xvar, dates, clim.range = NULL, clim.nbyear.m
 ## Clim vector
 Climatologies.dekadal_vector <- function(xvar, dates, fun = 'mean', ..., clim.range = NULL, clim.nbyear.min = NA){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
-	dek <- as.numeric(substr(dates, 7,7))
-	oneyrdek <- rev(expand.grid(1:3,1:12))
+	mois <- as.numeric(substr(dates, 5, 6))
+	dek <- as.numeric(substr(dates, 7, 7))
+	oneyrdek <- rev(expand.grid(1:3, 1:12))
 	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
-	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+	elen <- 36-which(oneyrdek[, 1] == mois[length(mois)] & oneyrdek[, 2] == dek[length(mois)])
 
 	xvar <- matrix(as.numeric(c(rep(NA, slen), xvar, rep(NA, elen))), nrow = 36)
 
@@ -960,7 +980,7 @@ Climatologies.dekadal_vector <- function(xvar, dates, fun = 'mean', ..., clim.ra
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- unique(as.numeric(substr(dates, 1,4)))
+		an <- unique(as.numeric(substr(dates, 1, 4)))
 		vtmp.clim <- xvar[, an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
@@ -975,13 +995,14 @@ Climatologies.dekadal_vector <- function(xvar, dates, fun = 'mean', ..., clim.ra
 }
 
 ## Clim matrix
-Climatologies.dekadal_matrix <- function(xvar, dates, fun = 'mean', ..., clim.range = NULL, clim.nbyear.min = NA){
+Climatologies.dekadal_matrix <- function(xvar, dates, fun = 'mean', ...,
+										clim.range = NULL, clim.nbyear.min = NA){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
-	dek <- as.numeric(substr(dates, 7,7))
-	oneyrdek <- rev(expand.grid(1:3,1:12))
+	mois <- as.numeric(substr(dates, 5, 6))
+	dek <- as.numeric(substr(dates, 7, 7))
+	oneyrdek <- rev(expand.grid(1:3, 1:12))
 	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
-	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+	elen <- 36-which(oneyrdek[, 1] == mois[length(mois)] & oneyrdek[, 2] == dek[length(mois)])
 
 	vmat1 <- matrix(NA, ncol = ncol(xvar), nrow = slen)
 	vmat2 <- matrix(NA, ncol = ncol(xvar), nrow = elen)
@@ -991,15 +1012,15 @@ Climatologies.dekadal_matrix <- function(xvar, dates, fun = 'mean', ..., clim.ra
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[an >= clim.range[1] & an <= clim.range[2], , drop = FALSE]
 	}
 	
 	fun <- match.fun(fun)
 	vtmp.clim <- array(vtmp.clim, c(36, nrow(vtmp.clim)/36, ncol(vtmp.clim)))
-	xvar <- apply(vtmp.clim, c(1,3), fun, ...)
+	xvar <- apply(vtmp.clim, c(1, 3), fun, ...)
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- apply(vtmp.clim, c(1,3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
+		ValToNA <- apply(vtmp.clim, c(1, 3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
 		xvar[ValToNA] <- NA
 	}
 	rm(vmat1, vmat2, vtmp.clim, dates)
@@ -1007,13 +1028,14 @@ Climatologies.dekadal_matrix <- function(xvar, dates, fun = 'mean', ..., clim.ra
 }
 
 ## Clim array
-Climatologies.dekadal_array <- function(xvar, dates, fun = 'mean', ..., clim.range = NULL, clim.nbyear.min = NA){
+Climatologies.dekadal_array <- function(xvar, dates, fun = 'mean', ...,
+										clim.range = NULL, clim.nbyear.min = NA){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
-	dek <- as.numeric(substr(dates, 7,7))
-	oneyrdek <- rev(expand.grid(1:3,1:12))
+	mois <- as.numeric(substr(dates, 5, 6))
+	dek <- as.numeric(substr(dates, 7, 7))
+	oneyrdek <- rev(expand.grid(1:3, 1:12))
 	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
-	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+	elen <- 36-which(oneyrdek[, 1] == mois[length(mois)] & oneyrdek[, 2] == dek[length(mois)])
 
 	vmat1 <- array(NA, dim = c(dim(xvar[, , 1]), slen))
 	vmat2 <- array(NA, dim = c(dim(xvar[, , 1]), elen))
@@ -1023,14 +1045,15 @@ Climatologies.dekadal_array <- function(xvar, dates, fun = 'mean', ..., clim.ran
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[, , an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
 	fun <- match.fun(fun)
 	xvar <- sapply(1:36, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 36), drop = FALSE], 1:2, fun, ...), simplify = "array")
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- sapply(1:36, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 36), drop = FALSE], 1:2, function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
+		ValToNA <- sapply(1:36, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 36), drop = FALSE], 1:2,
+											function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
 		xvar[ValToNA] <- NA
 	}
 	rm(vtmp.clim, dates, vmat1, vmat2)
@@ -1039,12 +1062,13 @@ Climatologies.dekadal_array <- function(xvar, dates, fun = 'mean', ..., clim.ran
 }
 
 ## Clim list
-Climatologies.dekadal_list <- function(xvar, dates, fun = 'mean', ..., clim.range = NULL, clim.nbyear.min = NA){
+Climatologies.dekadal_list <- function(xvar, dates, fun = 'mean', ...,
+										clim.range = NULL, clim.nbyear.min = NA){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
-	dek <- as.numeric(substr(dates, 7,7))
-	oneyrdek <- rev(expand.grid(1:3,1:12))
-	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
+	mois <- as.numeric(substr(dates, 5, 6))
+	dek <- as.numeric(substr(dates, 7, 7))
+	oneyrdek <- rev(expand.grid(1:3, 1:12))
+	slen <- which(oneyrdek[, 1] == mois[1] & oneyrdek[, 2] == dek[1])-1
 	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
 
 	vmat <- xvar[[1]]
@@ -1057,7 +1081,7 @@ Climatologies.dekadal_list <- function(xvar, dates, fun = 'mean', ..., clim.rang
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[an >= clim.range[1] & an <= clim.range[2]]
 	}
 
@@ -1065,7 +1089,8 @@ Climatologies.dekadal_list <- function(xvar, dates, fun = 'mean', ..., clim.rang
 	xvar <- lapply(1:36, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 36)]), 1:2, fun, ...))
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <-  lapply(1:36, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 36)]), 1:2, function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
+		ValToNA <-  lapply(1:36, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 36)]), 1:2,
+												function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
 		xvar <- lapply(1:length(xvar), function(j){
 			x <- xvar[[j]]
 			toNA <- ValToNA[[j]]
@@ -1083,13 +1108,14 @@ Climatologies.dekadal_list <- function(xvar, dates, fun = 'mean', ..., clim.rang
 ### Standardized Anomalies
 
 ## stAnom vector
-StandardizedAnomalies.dekadal_vector <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL, clim.sd = NULL){
+StandardizedAnomalies.dekadal_vector <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA,
+												clim.mean = NULL, clim.sd = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
-	dek <- as.numeric(substr(dates, 7,7))
-	oneyrdek <- rev(expand.grid(1:3,1:12))
+	mois <- as.numeric(substr(dates, 5, 6))
+	dek <- as.numeric(substr(dates, 7, 7))
+	oneyrdek <- rev(expand.grid(1:3, 1:12))
 	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
-	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+	elen <- 36-which(oneyrdek[, 1] == mois[length(mois)] & oneyrdek[, 2] == dek[length(mois)])
 
 	xvar <- matrix(as.numeric(c(rep(NA, slen), xvar, rep(NA, elen))), nrow = 36)
 	
@@ -1097,7 +1123,7 @@ StandardizedAnomalies.dekadal_vector <- function(xvar, dates, clim.range = NULL,
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- unique(as.numeric(substr(dates, 1,4)))
+		an <- unique(as.numeric(substr(dates, 1, 4)))
 		vtmp.clim <- xvar[, an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
@@ -1133,13 +1159,14 @@ StandardizedAnomalies.dekadal_vector <- function(xvar, dates, clim.range = NULL,
 }
 
 ## stAnom matrix
-StandardizedAnomalies.dekadal_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL, clim.sd = NULL){
+StandardizedAnomalies.dekadal_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA,
+												clim.mean = NULL, clim.sd = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
-	dek <- as.numeric(substr(dates, 7,7))
-	oneyrdek <- rev(expand.grid(1:3,1:12))
+	mois <- as.numeric(substr(dates, 5, 6))
+	dek <- as.numeric(substr(dates, 7, 7))
+	oneyrdek <- rev(expand.grid(1:3, 1:12))
 	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
-	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+	elen <- 36-which(oneyrdek[, 1] == mois[length(mois)] & oneyrdek[, 2] == dek[length(mois)])
 
 	vmat1 <- matrix(NA, ncol = ncol(xvar), nrow = slen)
 	vmat2 <- matrix(NA, ncol = ncol(xvar), nrow = elen)
@@ -1149,17 +1176,17 @@ StandardizedAnomalies.dekadal_matrix <- function(xvar, dates, clim.range = NULL,
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[an >= clim.range[1] & an <= clim.range[2], , drop = FALSE]
 	}
 	vtmp.clim <- array(vtmp.clim, c(36, nrow(vtmp.clim)/36, ncol(vtmp.clim)))
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- apply(vtmp.clim, c(1,3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
+		ValToNA <- apply(vtmp.clim, c(1, 3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
 	}
 	
 	if(is.null(clim.mean)){
-		cmoy <- apply(vtmp.clim, c(1,3), mean, na.rm = T)
+		cmoy <- apply(vtmp.clim, c(1, 3), mean, na.rm = T)
 		if(!is.na(clim.nbyear.min)) cmoy[ValToNA] <- NA
 	}else{
 		if(!is.matrix(clim.mean)) stop("Climatological values must be a matrix")
@@ -1167,7 +1194,7 @@ StandardizedAnomalies.dekadal_matrix <- function(xvar, dates, clim.range = NULL,
 		cmoy <- clim.mean
 	}
 	if(is.null(clim.sd)){
-		csd <- apply(vtmp.clim, c(1,3), sd, na.rm = T)
+		csd <- apply(vtmp.clim, c(1, 3), sd, na.rm = T)
 		if(!is.na(clim.nbyear.min)) csd[ValToNA] <- NA
 	}else{
 		if(!is.matrix(clim.sd)) stop("Climatological standard deviation must be a matrix")
@@ -1188,13 +1215,14 @@ StandardizedAnomalies.dekadal_matrix <- function(xvar, dates, clim.range = NULL,
 }
 
 ## stAnom array
-StandardizedAnomalies.dekadal_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL, clim.sd = NULL){
+StandardizedAnomalies.dekadal_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA,
+												clim.mean = NULL, clim.sd = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
-	dek <- as.numeric(substr(dates, 7,7))
-	oneyrdek <- rev(expand.grid(1:3,1:12))
-	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
-	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+	mois <- as.numeric(substr(dates, 5, 6))
+	dek <- as.numeric(substr(dates, 7, 7))
+	oneyrdek <- rev(expand.grid(1:3, 1:12))
+	slen <- which(oneyrdek[, 1] == mois[1] & oneyrdek[, 2] == dek[1])-1
+	elen <- 36-which(oneyrdek[, 1] == mois[length(mois)] & oneyrdek[, 2] == dek[length(mois)])
 
 	vmat1 <- array(NA, dim = c(dim(xvar[, , 1]), slen))
 	vmat2 <- array(NA, dim = c(dim(xvar[, , 1]), elen))
@@ -1204,12 +1232,13 @@ StandardizedAnomalies.dekadal_array <- function(xvar, dates, clim.range = NULL, 
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[, , an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- sapply(1:36, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 36), drop = FALSE], 1:2, function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
+		ValToNA <- sapply(1:36, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 36), drop = FALSE], 1:2,
+											function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
 	}
 
 	if(is.null(clim.mean)){
@@ -1244,13 +1273,14 @@ StandardizedAnomalies.dekadal_array <- function(xvar, dates, clim.range = NULL, 
 }
 
 ## stAnom list
-StandardizedAnomalies.dekadal_list <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL, clim.sd = NULL){
+StandardizedAnomalies.dekadal_list <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA,
+												clim.mean = NULL, clim.sd = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
-	dek <- as.numeric(substr(dates, 7,7))
-	oneyrdek <- rev(expand.grid(1:3,1:12))
+	mois <- as.numeric(substr(dates, 5, 6))
+	dek <- as.numeric(substr(dates, 7, 7))
+	oneyrdek <- rev(expand.grid(1:3, 1:12))
 	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
-	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+	elen <- 36-which(oneyrdek[, 1] == mois[length(mois)] & oneyrdek[, 2] == dek[length(mois)])
 
 	vmat <- xvar[[1]]
 	vmat[] <- NA
@@ -1262,12 +1292,13 @@ StandardizedAnomalies.dekadal_list <- function(xvar, dates, clim.range = NULL, c
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[an >= clim.range[1] & an <= clim.range[2]]
 	}
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <-  lapply(1:36, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 36)]), 1:2, function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
+		ValToNA <-  lapply(1:36, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 36)]), 1:2,
+												function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
 	}
 
 	if(is.null(clim.mean)){
@@ -1321,11 +1352,11 @@ StandardizedAnomalies.dekadal_list <- function(xvar, dates, clim.range = NULL, c
 ## Anom vector
 Anomalies.dekadal_vector <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
-	dek <- as.numeric(substr(dates, 7,7))
-	oneyrdek <- rev(expand.grid(1:3,1:12))
+	mois <- as.numeric(substr(dates, 5, 6))
+	dek <- as.numeric(substr(dates, 7, 7))
+	oneyrdek <- rev(expand.grid(1:3, 1:12))
 	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
-	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+	elen <- 36-which(oneyrdek[, 1] == mois[length(mois)] & oneyrdek[, 2] == dek[length(mois)])
 
 	xvar <- matrix(as.numeric(c(rep(NA, slen), xvar, rep(NA, elen))), nrow = 36)
 	
@@ -1333,7 +1364,7 @@ Anomalies.dekadal_vector <- function(xvar, dates, clim.range = NULL, clim.nbyear
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- unique(as.numeric(substr(dates, 1,4)))
+		an <- unique(as.numeric(substr(dates, 1, 4)))
 		vtmp.clim <- xvar[, an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
@@ -1363,11 +1394,11 @@ Anomalies.dekadal_vector <- function(xvar, dates, clim.range = NULL, clim.nbyear
 ## Anom matrix
 Anomalies.dekadal_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
-	dek <- as.numeric(substr(dates, 7,7))
-	oneyrdek <- rev(expand.grid(1:3,1:12))
+	mois <- as.numeric(substr(dates, 5, 6))
+	dek <- as.numeric(substr(dates, 7, 7))
+	oneyrdek <- rev(expand.grid(1:3, 1:12))
 	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
-	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+	elen <- 36-which(oneyrdek[, 1] == mois[length(mois)] & oneyrdek[, 2] == dek[length(mois)])
 
 	vmat1 <- matrix(NA, ncol = ncol(xvar), nrow = slen)
 	vmat2 <- matrix(NA, ncol = ncol(xvar), nrow = elen)
@@ -1377,17 +1408,17 @@ Anomalies.dekadal_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[an >= clim.range[1] & an <= clim.range[2], , drop = FALSE]
 	}
 	vtmp.clim <- array(vtmp.clim, c(36, nrow(vtmp.clim)/36, ncol(vtmp.clim)))
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- apply(vtmp.clim, c(1,3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
+		ValToNA <- apply(vtmp.clim, c(1, 3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
 	}
 	
 	if(is.null(clim.mean)){
-		cmoy <- apply(vtmp.clim, c(1,3), mean, na.rm = T)
+		cmoy <- apply(vtmp.clim, c(1, 3), mean, na.rm = T)
 		if(!is.na(clim.nbyear.min)) cmoy[ValToNA] <- NA
 	}else{
 		if(!is.matrix(clim.mean)) stop("Climatological values must be a matrix")
@@ -1409,11 +1440,11 @@ Anomalies.dekadal_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear
 ## Anom array
 Anomalies.dekadal_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
-	dek <- as.numeric(substr(dates, 7,7))
-	oneyrdek <- rev(expand.grid(1:3,1:12))
-	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
-	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+	mois <- as.numeric(substr(dates, 5, 6))
+	dek <- as.numeric(substr(dates, 7, 7))
+	oneyrdek <- rev(expand.grid(1:3, 1:12))
+	slen <- which(oneyrdek[, 1] == mois[1] & oneyrdek[, 2] == dek[1])-1
+	elen <- 36-which(oneyrdek[, 1] == mois[length(mois)] & oneyrdek[, 2] == dek[length(mois)])
 
 	vmat1 <- array(NA, dim = c(dim(xvar[, , 1]), slen))
 	vmat2 <- array(NA, dim = c(dim(xvar[, , 1]), elen))
@@ -1423,12 +1454,13 @@ Anomalies.dekadal_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[, , an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- sapply(1:36, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 36), drop = FALSE], 1:2, function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
+		ValToNA <- sapply(1:36, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 36), drop = FALSE], 1:2,
+											function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
 	}
 
 	if(is.null(clim.mean)){
@@ -1457,11 +1489,11 @@ Anomalies.dekadal_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.
 ## Anom list
 Anomalies.dekadal_list <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL){
 	dates <- as.character(dates)
-	mois <- as.numeric(substr(dates, 5,6))
-	dek <- as.numeric(substr(dates, 7,7))
-	oneyrdek <- rev(expand.grid(1:3,1:12))
-	slen <- which(oneyrdek[,1] == mois[1] & oneyrdek[,2] == dek[1])-1
-	elen <- 36-which(oneyrdek[,1] == mois[length(mois)] & oneyrdek[,2] == dek[length(mois)])
+	mois <- as.numeric(substr(dates, 5, 6))
+	dek <- as.numeric(substr(dates, 7, 7))
+	oneyrdek <- rev(expand.grid(1:3, 1:12))
+	slen <- which(oneyrdek[, 1] == mois[1] & oneyrdek[, 2] == dek[1])-1
+	elen <- 36-which(oneyrdek[, 1] == mois[length(mois)] & oneyrdek[, 2] == dek[length(mois)])
 
 	vmat <- xvar[[1]]
 	vmat[] <- NA
@@ -1473,12 +1505,13 @@ Anomalies.dekadal_list <- function(xvar, dates, clim.range = NULL, clim.nbyear.m
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(substr(dates, 1,4))
+		an <- as.numeric(substr(dates, 1, 4))
 		vtmp.clim <- xvar[an >= clim.range[1] & an <= clim.range[2]]
 	}
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <-  lapply(1:36, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 36)]), 1:2, function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
+		ValToNA <-  lapply(1:36, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 36)]), 1:2,
+												function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
 	}
 
 	if(is.null(clim.mean)){
@@ -1517,17 +1550,17 @@ Anomalies.dekadal_list <- function(xvar, dates, clim.range = NULL, clim.nbyear.m
 
 ## Clim vector
 Climatologies.daily_vector <- function(xvar, dates, fun = 'mean', clim.range = NULL, clim.nbyear.min = NA, ...){
-	dates <- as.Date(dates, format='%Y%m%d')
+	dates <- as.Date(dates, format = '%Y%m%d')
 	leap.year <- format(dates,'%m%d') == '0229'
 
 	xvar <- xvar[!leap.year]
 	dates <- dates[!leap.year]
 
-	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
+	dstart <- seq(as.Date(paste(format(dates[1], '%Y'), 1, 1, sep = '-')), dates[1], 'day')
 	dstart <- dstart[-length(dstart)]
-	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
-	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
-	elen <- length(dend[!format(dend,'%m%d') == '0229'])	
+	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12, 31, sep = '-')), 'day')[-1]
+	slen <- length(dstart[!format(dstart, '%m%d') == '0229'])
+	elen <- length(dend[!format(dend, '%m%d') == '0229'])	
 
 	xvar <- matrix(as.numeric(c(rep(NA, slen), xvar, rep(NA, elen))), nrow = 365)
 
@@ -1535,7 +1568,7 @@ Climatologies.daily_vector <- function(xvar, dates, fun = 'mean', clim.range = N
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- unique(as.numeric(format(dates,'%Y')))
+		an <- unique(as.numeric(format(dates, '%Y')))
 		vtmp.clim <- xvar[, an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
@@ -1551,17 +1584,17 @@ Climatologies.daily_vector <- function(xvar, dates, fun = 'mean', clim.range = N
 
 ## Clim matrix
 Climatologies.daily_matrix <- function(xvar, dates, fun = 'mean', clim.range = NULL, clim.nbyear.min = NA, ...){
-	dates <- as.Date(dates, format='%Y%m%d')
-	leap.year <- format(dates,'%m%d') == '0229'
+	dates <- as.Date(dates, format = '%Y%m%d')
+	leap.year <- format(dates, '%m%d') == '0229'
 
 	xvar <- xvar[!leap.year, ]
 	dates <- dates[!leap.year]
 	
-	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
+	dstart <- seq(as.Date(paste(format(dates[1], '%Y'), 1, 1, sep = '-')), dates[1], 'day')
 	dstart <- dstart[-length(dstart)]
-	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
-	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
-	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)], '%Y'), 12, 31, sep = '-')), 'day')[-1]
+	slen <- length(dstart[!format(dstart, '%m%d') == '0229'])
+	elen <- length(dend[!format(dend, '%m%d') == '0229'])
 
 	vmat1 <- matrix(NA, ncol = ncol(xvar), nrow = slen)
 	vmat2 <- matrix(NA, ncol = ncol(xvar), nrow = elen)
@@ -1571,15 +1604,15 @@ Climatologies.daily_matrix <- function(xvar, dates, fun = 'mean', clim.range = N
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(format(dates,'%Y'))
+		an <- as.numeric(format(dates, '%Y'))
 		vtmp.clim <- xvar[an >= clim.range[1] & an <= clim.range[2], , drop = FALSE]
 	}
 	
 	fun <- match.fun(fun)
 	vtmp.clim <- array(vtmp.clim, c(365, nrow(vtmp.clim)/365, ncol(vtmp.clim)))
-	xvar <- apply(vtmp.clim, c(1,3), fun, ...)
+	xvar <- apply(vtmp.clim, c(1, 3), fun, ...)
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- apply(vtmp.clim, c(1,3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
+		ValToNA <- apply(vtmp.clim, c(1, 3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
 		xvar[ValToNA] <- NA
 	}
 	rm(vmat1, vmat2, vtmp.clim, dates, dstart, dend)
@@ -1588,17 +1621,17 @@ Climatologies.daily_matrix <- function(xvar, dates, fun = 'mean', clim.range = N
 
 ## Clim array
 Climatologies.daily_array <- function(xvar, dates, fun = 'mean', clim.range = NULL, clim.nbyear.min = NA, ...){
-	dates <- as.Date(dates, format='%Y%m%d')
-	leap.year <- format(dates,'%m%d') == '0229'
+	dates <- as.Date(dates, format = '%Y%m%d')
+	leap.year <- format(dates, '%m%d') == '0229'
 	
 	xvar <- xvar[, , !leap.year]
 	dates <- dates[!leap.year]
 	
-	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
+	dstart <- seq(as.Date(paste(format(dates[1], '%Y'), 1, 1, sep = '-')), dates[1], 'day')
 	dstart <- dstart[-length(dstart)]
-	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
-	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
-	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)], '%Y'), 12, 31, sep = '-')), 'day')[-1]
+	slen <- length(dstart[!format(dstart, '%m%d') == '0229'])
+	elen <- length(dend[!format(dend, '%m%d') == '0229'])
 
 	vmat1 <- array(NA, dim = c(dim(xvar[, , 1]), slen))
 	vmat2 <- array(NA, dim = c(dim(xvar[, , 1]), elen))
@@ -1608,14 +1641,15 @@ Climatologies.daily_array <- function(xvar, dates, fun = 'mean', clim.range = NU
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(format(dates,'%Y'))
+		an <- as.numeric(format(dates, '%Y'))
 		vtmp.clim <- xvar[, , an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
 	fun <- match.fun(fun)
 	xvar <- sapply(1:365, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 365), drop = FALSE], 1:2, fun, ...), simplify = "array")
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- sapply(1:365, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 365), drop = FALSE], 1:2, function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
+		ValToNA <- sapply(1:365, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 365), drop = FALSE], 1:2,
+											function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
 		xvar[ValToNA] <- NA
 	}
 	rm(vtmp.clim, dates, dstart, dend, vmat1, vmat2)
@@ -1625,17 +1659,17 @@ Climatologies.daily_array <- function(xvar, dates, fun = 'mean', clim.range = NU
 
 ## Clim list
 Climatologies.daily_list <- function(xvar, dates, fun = 'mean', clim.range = NULL, clim.nbyear.min = NA, ...){
-	dates <- as.Date(dates, format='%Y%m%d')
-	leap.year <- format(dates,'%m%d') == '0229'
+	dates <- as.Date(dates, format = '%Y%m%d')
+	leap.year <- format(dates, '%m%d') == '0229'
 	
 	xvar <- xvar[!leap.year]
 	dates <- dates[!leap.year]
 	
-	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
+	dstart <- seq(as.Date(paste(format(dates[1], '%Y'), 1, 1, sep = '-')), dates[1], 'day')
 	dstart <- dstart[-length(dstart)]
-	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
-	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
-	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12, 31, sep = '-')), 'day')[-1]
+	slen <- length(dstart[!format(dstart, '%m%d') == '0229'])
+	elen <- length(dend[!format(dend, '%m%d') == '0229'])
 
 	vmat <- xvar[[1]]
 	vmat[] <- NA
@@ -1647,7 +1681,7 @@ Climatologies.daily_list <- function(xvar, dates, fun = 'mean', clim.range = NUL
 		vtmp.clim <- xvar
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(format(dates,'%Y'))
+		an <- as.numeric(format(dates, '%Y'))
 		vtmp.clim <- xvar[an >= clim.range[1] & an <= clim.range[2]]
 	}
 
@@ -1655,7 +1689,8 @@ Climatologies.daily_list <- function(xvar, dates, fun = 'mean', clim.range = NUL
 	xvar <- lapply(1:365, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 365)]), 1:2, fun, ...))
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <-  lapply(1:365, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 365)]), 1:2, function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
+		ValToNA <-  lapply(1:365, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 365)]), 1:2,
+												function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
 		xvar <- lapply(1:length(xvar), function(j){
 			x <- xvar[[j]]
 			toNA <- ValToNA[[j]]
@@ -1673,18 +1708,19 @@ Climatologies.daily_list <- function(xvar, dates, fun = 'mean', clim.range = NUL
 ### Standardized Anomalies
 
 ## stAnom vector
-StandardizedAnomalies.daily_vector <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL, clim.sd = NULL){
-	dates <- as.Date(dates, format='%Y%m%d')
-	leap.year <- format(dates,'%m%d') == '0229'
+StandardizedAnomalies.daily_vector <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA,
+												clim.mean = NULL, clim.sd = NULL){
+	dates <- as.Date(dates, format = '%Y%m%d')
+	leap.year <- format(dates, '%m%d') == '0229'
 
 	vtmp <- xvar[!leap.year]
 	dates <- dates[!leap.year]
 	
-	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
+	dstart <- seq(as.Date(paste(format(dates[1], '%Y'), 1, 1, sep = '-')), dates[1], 'day')
 	dstart <- dstart[-length(dstart)]
-	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
-	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
-	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)], '%Y'), 12, 31, sep = '-')), 'day')[-1]
+	slen <- length(dstart[!format(dstart, '%m%d') == '0229'])
+	elen <- length(dend[!format(dend, '%m%d') == '0229'])
 
 	vtmp <- matrix(as.numeric(c(rep(NA, slen), vtmp, rep(NA, elen))), nrow = 365)
 	
@@ -1692,7 +1728,7 @@ StandardizedAnomalies.daily_vector <- function(xvar, dates, clim.range = NULL, c
 		vtmp.clim <- vtmp
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- unique(as.numeric(format(dates,'%Y')))
+		an <- unique(as.numeric(format(dates, '%Y')))
 		vtmp.clim <- vtmp[, an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
@@ -1731,18 +1767,19 @@ StandardizedAnomalies.daily_vector <- function(xvar, dates, clim.range = NULL, c
 }
 
 ## stAnom matrix
-StandardizedAnomalies.daily_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL, clim.sd = NULL){
-	dates <- as.Date(dates, format='%Y%m%d')
-	leap.year <- format(dates,'%m%d') == '0229'
+StandardizedAnomalies.daily_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA,
+												clim.mean = NULL, clim.sd = NULL){
+	dates <- as.Date(dates, format = '%Y%m%d')
+	leap.year <- format(dates, '%m%d') == '0229'
 
 	vtmp <- xvar[!leap.year, ]
 	dates <- dates[!leap.year]
 	
-	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
+	dstart <- seq(as.Date(paste(format(dates[1], '%Y'), 1, 1, sep = '-')), dates[1], 'day')
 	dstart <- dstart[-length(dstart)]
-	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
-	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
-	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)], '%Y'), 12, 31, sep = '-')), 'day')[-1]
+	slen <- length(dstart[!format(dstart, '%m%d') == '0229'])
+	elen <- length(dend[!format(dend, '%m%d') == '0229'])
 
 	vmat1 <- matrix(NA, ncol = ncol(vtmp), nrow = slen)
 	vmat2 <- matrix(NA, ncol = ncol(vtmp), nrow = elen)
@@ -1752,17 +1789,17 @@ StandardizedAnomalies.daily_matrix <- function(xvar, dates, clim.range = NULL, c
 		vtmp.clim <- vtmp
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(format(dates,'%Y'))
+		an <- as.numeric(format(dates, '%Y'))
 		vtmp.clim <- vtmp[an >= clim.range[1] & an <= clim.range[2], , drop = FALSE]
 	}
 	vtmp.clim <- array(vtmp.clim, c(365, nrow(vtmp.clim)/365, ncol(vtmp.clim)))
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- apply(vtmp.clim, c(1,3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
+		ValToNA <- apply(vtmp.clim, c(1, 3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
 	}
 	
 	if(is.null(clim.mean)){
-		cmoy <- apply(vtmp.clim, c(1,3), mean, na.rm = T)
+		cmoy <- apply(vtmp.clim, c(1, 3), mean, na.rm = T)
 		if(!is.na(clim.nbyear.min)) cmoy[ValToNA] <- NA
 	}else{
 		if(!is.matrix(clim.mean)) stop("Climatological values must be a matrix")
@@ -1770,7 +1807,7 @@ StandardizedAnomalies.daily_matrix <- function(xvar, dates, clim.range = NULL, c
 		cmoy <- clim.mean
 	}
 	if(is.null(clim.sd)){
-		csd <- apply(vtmp.clim, c(1,3), sd, na.rm = T)
+		csd <- apply(vtmp.clim, c(1, 3), sd, na.rm = T)
 		if(!is.na(clim.nbyear.min)) csd[ValToNA] <- NA
 	}else{
 		if(!is.matrix(clim.sd)) stop("Climatological standard deviation must be a matrix")
@@ -1794,18 +1831,19 @@ StandardizedAnomalies.daily_matrix <- function(xvar, dates, clim.range = NULL, c
 }
 
 ## stAnom array
-StandardizedAnomalies.daily_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL, clim.sd = NULL){
-	dates <- as.Date(dates, format='%Y%m%d')
-	leap.year <- format(dates,'%m%d') == '0229'
+StandardizedAnomalies.daily_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA,
+												clim.mean = NULL, clim.sd = NULL){
+	dates <- as.Date(dates, format = '%Y%m%d')
+	leap.year <- format(dates, '%m%d') == '0229'
 	
 	vtmp <- xvar[, , !leap.year]
 	dates <- dates[!leap.year]
 	
-	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
+	dstart <- seq(as.Date(paste(format(dates[1], '%Y'), 1, 1, sep = '-')), dates[1], 'day')
 	dstart <- dstart[-length(dstart)]
-	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
-	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
-	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)], '%Y'), 12, 31, sep = '-')), 'day')[-1]
+	slen <- length(dstart[!format(dstart, '%m%d') == '0229'])
+	elen <- length(dend[!format(dend, '%m%d') == '0229'])
 
 	vmat1 <- array(NA, dim = c(dim(vtmp[, , 1]), slen))
 	vmat2 <- array(NA, dim = c(dim(vtmp[, , 1]), elen))
@@ -1815,12 +1853,13 @@ StandardizedAnomalies.daily_array <- function(xvar, dates, clim.range = NULL, cl
 		vtmp.clim <- vtmp
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(format(dates,'%Y'))
+		an <- as.numeric(format(dates, '%Y'))
 		vtmp.clim <- vtmp[, , an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- sapply(1:365, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 365), drop = FALSE], 1:2, function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
+		ValToNA <- sapply(1:365, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 365), drop = FALSE], 1:2,
+												function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
 	}
 
 	if(is.null(clim.mean)){
@@ -1858,18 +1897,19 @@ StandardizedAnomalies.daily_array <- function(xvar, dates, clim.range = NULL, cl
 }
 
 ## stAnom list
-StandardizedAnomalies.daily_list <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL, clim.sd = NULL){
-	dates <- as.Date(dates, format='%Y%m%d')
-	leap.year <- format(dates,'%m%d') == '0229'
+StandardizedAnomalies.daily_list <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA,
+												clim.mean = NULL, clim.sd = NULL){
+	dates <- as.Date(dates, format = '%Y%m%d')
+	leap.year <- format(dates, '%m%d') == '0229'
 	
 	vtmp <- xvar[!leap.year]
 	dates <- dates[!leap.year]
 	
-	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
+	dstart <- seq(as.Date(paste(format(dates[1], '%Y'), 1, 1, sep = '-')), dates[1], 'day')
 	dstart <- dstart[-length(dstart)]
-	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
-	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
-	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)], '%Y'), 12, 31, sep = '-')), 'day')[-1]
+	slen <- length(dstart[!format(dstart, '%m%d') == '0229'])
+	elen <- length(dend[!format(dend, '%m%d') == '0229'])
 
 	vmat <- vtmp[[1]]
 	vmat[] <- NA
@@ -1881,12 +1921,13 @@ StandardizedAnomalies.daily_list <- function(xvar, dates, clim.range = NULL, cli
 		vtmp.clim <- vtmp
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(format(dates,'%Y'))
+		an <- as.numeric(format(dates, '%Y'))
 		vtmp.clim <- vtmp[an >= clim.range[1] & an <= clim.range[2]]
 	}
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <-  lapply(1:365, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 365)]), 1:2, function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
+		ValToNA <-  lapply(1:365, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 365)]), 1:2,
+												function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
 	}
 
 	if(is.null(clim.mean)){
@@ -1942,17 +1983,17 @@ StandardizedAnomalies.daily_list <- function(xvar, dates, clim.range = NULL, cli
 
 ## Anom vector
 Anomalies.daily_vector <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL){
-	dates <- as.Date(dates, format='%Y%m%d')
-	leap.year <- format(dates,'%m%d') == '0229'
+	dates <- as.Date(dates, format = '%Y%m%d')
+	leap.year <- format(dates, '%m%d') == '0229'
 
 	vtmp <- xvar[!leap.year]
 	dates <- dates[!leap.year]
 	
-	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
+	dstart <- seq(as.Date(paste(format(dates[1], '%Y'), 1, 1, sep = '-')), dates[1], 'day')
 	dstart <- dstart[-length(dstart)]
-	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
-	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
-	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)], '%Y'), 12, 31, sep = '-')), 'day')[-1]
+	slen <- length(dstart[!format(dstart, '%m%d') == '0229'])
+	elen <- length(dend[!format(dend, '%m%d') == '0229'])
 
 	vtmp <- matrix(as.numeric(c(rep(NA, slen), vtmp, rep(NA, elen))), nrow = 365)
 	
@@ -1960,7 +2001,7 @@ Anomalies.daily_vector <- function(xvar, dates, clim.range = NULL, clim.nbyear.m
 		vtmp.clim <- vtmp
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- unique(as.numeric(format(dates,'%Y')))
+		an <- unique(as.numeric(format(dates, '%Y')))
 		vtmp.clim <- vtmp[, an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
@@ -1992,17 +2033,17 @@ Anomalies.daily_vector <- function(xvar, dates, clim.range = NULL, clim.nbyear.m
 
 ## Anom matrix
 Anomalies.daily_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL){
-	dates <- as.Date(dates, format='%Y%m%d')
-	leap.year <- format(dates,'%m%d') == '0229'
+	dates <- as.Date(dates, format = '%Y%m%d')
+	leap.year <- format(dates, '%m%d') == '0229'
 
 	vtmp <- xvar[!leap.year, ]
 	dates <- dates[!leap.year]
 	
-	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
+	dstart <- seq(as.Date(paste(format(dates[1], '%Y'), 1, 1, sep = '-')), dates[1], 'day')
 	dstart <- dstart[-length(dstart)]
-	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
-	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
-	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)], '%Y'), 12, 31, sep = '-')), 'day')[-1]
+	slen <- length(dstart[!format(dstart, '%m%d') == '0229'])
+	elen <- length(dend[!format(dend, '%m%d') == '0229'])
 
 	vmat1 <- matrix(NA, ncol = ncol(vtmp), nrow = slen)
 	vmat2 <- matrix(NA, ncol = ncol(vtmp), nrow = elen)
@@ -2012,17 +2053,17 @@ Anomalies.daily_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear.m
 		vtmp.clim <- vtmp
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(format(dates,'%Y'))
+		an <- as.numeric(format(dates, '%Y'))
 		vtmp.clim <- vtmp[an >= clim.range[1] & an <= clim.range[2], , drop = FALSE]
 	}
 	vtmp.clim <- array(vtmp.clim, c(365, nrow(vtmp.clim)/365, ncol(vtmp.clim)))
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- apply(vtmp.clim, c(1,3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
+		ValToNA <- apply(vtmp.clim, c(1, 3), function(j) length(which(!is.na(j)))) < clim.nbyear.min
 	}
 	
 	if(is.null(clim.mean)){
-		cmoy <- apply(vtmp.clim, c(1,3), mean, na.rm = T)
+		cmoy <- apply(vtmp.clim, c(1, 3), mean, na.rm = T)
 		if(!is.na(clim.nbyear.min)) cmoy[ValToNA] <- NA
 	}else{
 		if(!is.matrix(clim.mean)) stop("Climatological values must be a matrix")
@@ -2046,17 +2087,17 @@ Anomalies.daily_matrix <- function(xvar, dates, clim.range = NULL, clim.nbyear.m
 
 ## Anom array
 Anomalies.daily_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL){
-	dates <- as.Date(dates, format='%Y%m%d')
-	leap.year <- format(dates,'%m%d') == '0229'
+	dates <- as.Date(dates, format = '%Y%m%d')
+	leap.year <- format(dates, '%m%d') == '0229'
 	
 	vtmp <- xvar[, , !leap.year]
 	dates <- dates[!leap.year]
 	
-	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
+	dstart <- seq(as.Date(paste(format(dates[1], '%Y'), 1, 1, sep = '-')), dates[1], 'day')
 	dstart <- dstart[-length(dstart)]
-	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
-	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
-	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)], '%Y'), 12, 31, sep = '-')), 'day')[-1]
+	slen <- length(dstart[!format(dstart, '%m%d') == '0229'])
+	elen <- length(dend[!format(dend, '%m%d') == '0229'])
 
 	vmat1 <- array(NA, dim = c(dim(vtmp[, , 1]), slen))
 	vmat2 <- array(NA, dim = c(dim(vtmp[, , 1]), elen))
@@ -2066,12 +2107,13 @@ Anomalies.daily_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.mi
 		vtmp.clim <- vtmp
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(format(dates,'%Y'))
+		an <- as.numeric(format(dates, '%Y'))
 		vtmp.clim <- vtmp[, , an >= clim.range[1] & an <= clim.range[2], drop = FALSE]
 	}
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <- sapply(1:365, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 365), drop = FALSE], 1:2, function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
+		ValToNA <- sapply(1:365, function(j) apply(vtmp.clim[, , seq(j, dim(vtmp.clim)[3], 365), drop = FALSE], 1:2,
+												function(j) length(which(!is.na(j)))), simplify = "array")  < clim.nbyear.min
 	}
 
 	if(is.null(clim.mean)){
@@ -2102,17 +2144,17 @@ Anomalies.daily_array <- function(xvar, dates, clim.range = NULL, clim.nbyear.mi
 
 ## Anom list
 Anomalies.daily_list <- function(xvar, dates, clim.range = NULL, clim.nbyear.min = NA, clim.mean = NULL){
-	dates <- as.Date(dates, format='%Y%m%d')
-	leap.year <- format(dates,'%m%d') == '0229'
+	dates <- as.Date(dates, format = '%Y%m%d')
+	leap.year <- format(dates, '%m%d') == '0229'
 	
 	vtmp <- xvar[!leap.year]
 	dates <- dates[!leap.year]
 	
-	dstart <- seq(as.Date(paste(format(dates[1],'%Y'), 1,1, sep = '-')), dates[1],'day')
+	dstart <- seq(as.Date(paste(format(dates[1], '%Y'), 1, 1, sep = '-')), dates[1], 'day')
 	dstart <- dstart[-length(dstart)]
-	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)],'%Y'), 12,31, sep = '-')),'day')[-1]
-	slen <- length(dstart[!format(dstart,'%m%d') == '0229'])
-	elen <- length(dend[!format(dend,'%m%d') == '0229'])
+	dend <- seq(dates[length(dates)], as.Date(paste(format(dates[length(dates)], '%Y'), 12, 31, sep = '-')), 'day')[-1]
+	slen <- length(dstart[!format(dstart, '%m%d') == '0229'])
+	elen <- length(dend[!format(dend, '%m%d') == '0229'])
 
 	vmat <- vtmp[[1]]
 	vmat[] <- NA
@@ -2124,12 +2166,13 @@ Anomalies.daily_list <- function(xvar, dates, clim.range = NULL, clim.nbyear.min
 		vtmp.clim <- vtmp
 	}else{
 		if(length(clim.range) != 2) stop("Period range must be a vector of length 2")
-		an <- as.numeric(format(dates,'%Y'))
+		an <- as.numeric(format(dates, '%Y'))
 		vtmp.clim <- vtmp[an >= clim.range[1] & an <= clim.range[2]]
 	}
 
 	if(!is.na(clim.nbyear.min)){
-		ValToNA <-  lapply(1:365, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 365)]), 1:2, function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
+		ValToNA <-  lapply(1:365, function(j) apply(simplify2array(vtmp.clim[seq(j, length(vtmp.clim), 365)]), 1:2,
+												function(j) length(which(!is.na(j)))) < clim.nbyear.min)  
 	}
 
 	if(is.null(clim.mean)){

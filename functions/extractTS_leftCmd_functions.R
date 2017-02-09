@@ -618,50 +618,55 @@ ExtractDataPanelCmd <- function(){
 	retMultiP <- NULL
 
 	tkbind(cbAreaType.tab3, "<<ComboboxSelected>>", function(){
+		selectedPolygon <- NULL
 		if(tclvalue(area_type) == 'Point'){
 			if(!is.null(retMultiP$win)) tkdestroy(retMultiP$win)
 
-			tkconfigure(minlon.tab3, state = 'normal')
-			tkconfigure(maxlon.tab3, state = 'disabled')
-			tkconfigure(minlat.tab3, state = 'normal')
-			tkconfigure(maxlat.tab3, state = 'disabled')
-			tkconfigure(pmLon.tab3, state = 'normal')
-			tkconfigure(pmLat.tab3, state = 'normal')
-			tkconfigure(cbpolyType.tab3, state = 'disabled')
-			tclvalue(pointrect) <- 'Point'
-			tclvalue(minrect) <- ''
-			tclvalue(maxrect) <- ''
-			selectedPolygon <- NULL
+			InminXYstate <- 'normal'
+			InmaxXYstate <- 'disabled'
+			InpmXYstate <- 'normal'
+			InPolystate <- 'disabled'
 
-			tclvalue(fileORdir) <- 'File to save extracted data'
-			tkconfigure(lab2.tab4, bg = 'lightblue')
-			tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
+			tclvalue(pointrect) <- 'Point'
+			minrectVal <- maxrectVal <- ''
+
+			fl2save <- 'File to save extracted data'
+			labBG <- 'lightblue'
+			sav.isFile <- TRUE
+			SpaAvrgState <- 'disabled'
+			outTypeState <- 'disabled'
 		}
 
 		##
 		if(tclvalue(area_type) == 'Rectangle'){
 			if(!is.null(retMultiP$win)) tkdestroy(retMultiP$win)
 
-			tkconfigure(minlon.tab3, state = 'normal')
-			tkconfigure(maxlon.tab3, state = 'normal')
-			tkconfigure(minlat.tab3, state = 'normal')
-			tkconfigure(maxlat.tab3, state = 'normal')
-			tkconfigure(pmLon.tab3, state = 'disabled')
-			tkconfigure(pmLat.tab3, state = 'disabled')
-			tkconfigure(cbpolyType.tab3, state = 'disabled')
-			tclvalue(pointrect) <- 'Rectangle'
-			tclvalue(minrect) <- 'Min'
-			tclvalue(maxrect) <- 'Max'
-			selectedPolygon <- NULL
+			InminXYstate <- 'normal'
+			InmaxXYstate <- 'normal'
+			InpmXYstate <- 'disabled'
+			InPolystate <- 'disabled'
 
+			tclvalue(pointrect) <- 'Rectangle'
+			minrectVal <- 'Min'
+			maxrectVal <- 'Max'
+
+			SpaAvrgState <- 'normal'
 			if(tclvalue(spatAverage) == '1'){
-				tclvalue(fileORdir) <- 'File to save extracted data'
-				tkconfigure(lab2.tab4, bg = 'lightblue')
-				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
+				fl2save <- 'File to save extracted data'
+				labBG <- 'lightblue'
+				sav.isFile <- TRUE
+				outTypeState <- 'disabled'
 			}else{
-				tclvalue(fileORdir) <- 'Directory to save extracted data'
-				tkconfigure(lab2.tab4, bg = 'lightgreen')
-				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = FALSE))
+				if(tclvalue(ChoixOutType) == '1'){
+					fl2save <- 'Directory to save extracted data'
+					labBG <- 'lightgreen'
+					sav.isFile <- FALSE
+				}else{
+					fl2save <- 'File to save extracted data'
+					labBG <- 'lightblue'
+					sav.isFile <- TRUE
+				}
+				outTypeState <- 'normal'
 			}
 		}
 
@@ -669,24 +674,30 @@ ExtractDataPanelCmd <- function(){
 		if(tclvalue(area_type) == 'Polygon'){
 			if(!is.null(retMultiP$win)) tkdestroy(retMultiP$win)
 
-			tkconfigure(minlon.tab3, state = 'disabled')
-			tkconfigure(maxlon.tab3, state = 'disabled')
-			tkconfigure(minlat.tab3, state = 'disabled')
-			tkconfigure(maxlat.tab3, state = 'disabled')
-			tkconfigure(pmLon.tab3, state = 'disabled')
-			tkconfigure(pmLat.tab3, state = 'disabled')
-			tkconfigure(cbpolyType.tab3, state = 'normal')
-			tclvalue(minrect) <- ''
-			tclvalue(maxrect) <- ''
+			InminXYstate <- 'disabled'
+			InmaxXYstate <- 'disabled'
+			InpmXYstate <- 'disabled'
+			InPolystate <- 'normal'
 
+			minrectVal <- maxrectVal <- ''
+
+			SpaAvrgState <- 'normal'
 			if(tclvalue(spatAverage) == '1'){
-				tclvalue(fileORdir) <- 'File to save extracted data'
-				tkconfigure(lab2.tab4, bg = 'lightblue')
-				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
+				fl2save <- 'File to save extracted data'
+				labBG <- 'lightblue'
+				sav.isFile <- TRUE
+				outTypeState <- 'disabled'
 			}else{
-				tclvalue(fileORdir) <- 'Directory to save extracted data'
-				tkconfigure(lab2.tab4, bg = 'lightgreen')
-				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = FALSE))
+				if(tclvalue(ChoixOutType) == '1'){
+					fl2save <- 'Directory to save extracted data'
+					labBG <- 'lightgreen'
+					sav.isFile <- FALSE
+				}else{
+					fl2save <- 'File to save extracted data'
+					labBG <- 'lightblue'
+					sav.isFile <- TRUE
+				}
+				outTypeState <- 'normal'
 			}
 
 			if(tclvalue(namePoly) != ''){
@@ -694,8 +705,6 @@ ExtractDataPanelCmd <- function(){
 				shpf <- shpfopen[[2]]
 				ids <- as.numeric(tclvalue(tcl(adminVar.tab1, 'current')))+1
 				selectedPolygon <- getBoundaries(shpf[shpf@data[, ids] == tclvalue(namePoly), ])
-			}else{
-				selectedPolygon <- NULL
 			}
 		}
 
@@ -704,21 +713,19 @@ ExtractDataPanelCmd <- function(){
 			if(!is.null(retMultiP$win)) tkdestroy(retMultiP$win)
 			retMultiP <<- previewWin(main.win, c('normal', 'disabled'), list(adminVar.tab1, Admin_shp))
 
-			tkconfigure(minlon.tab3, state = 'normal')
-			tkconfigure(maxlon.tab3, state = 'disabled')
-			tkconfigure(minlat.tab3, state = 'normal')
-			tkconfigure(maxlat.tab3, state = 'disabled')
-			tkconfigure(pmLon.tab3, state = 'normal')
-			tkconfigure(pmLat.tab3, state = 'normal')
-			tkconfigure(cbpolyType.tab3, state = 'disabled')
-			tclvalue(pointrect) <- 'Point'
-			tclvalue(minrect) <- ''
-			tclvalue(maxrect) <- ''
-			selectedPolygon <- NULL
+			InminXYstate <- 'normal'
+			InmaxXYstate <- 'disabled'
+			InpmXYstate <- 'normal'
+			InPolystate <- 'disabled'
 
-			tclvalue(fileORdir) <- 'File to save extracted data'
-			tkconfigure(lab2.tab4, bg = 'lightblue')
-			tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
+			tclvalue(pointrect) <- 'Point'
+			minrectVal <- maxrectVal <- ''
+
+			fl2save <- 'File to save extracted data'
+			labBG <- 'lightblue'
+			sav.isFile <- TRUE
+			SpaAvrgState <- 'disabled'
+			outTypeState <- 'disabled'
 		}
 
 		##
@@ -726,29 +733,45 @@ ExtractDataPanelCmd <- function(){
 			if(!is.null(retMultiP$win)) tkdestroy(retMultiP$win)
 			retMultiP <<- previewWin(main.win, c('disabled', 'normal'), list(adminVar.tab1, Admin_shp))
 
-			tkconfigure(minlon.tab3, state = 'disabled')
-			tkconfigure(maxlon.tab3, state = 'disabled')
-			tkconfigure(minlat.tab3, state = 'disabled')
-			tkconfigure(maxlat.tab3, state = 'disabled')
-			tkconfigure(pmLon.tab3, state = 'disabled')
-			tkconfigure(pmLat.tab3, state = 'disabled')
-			tkconfigure(cbpolyType.tab3, state = 'normal')
-			tclvalue(minrect) <- ''
-			tclvalue(maxrect) <- ''
+			InminXYstate <- 'disabled'
+			InmaxXYstate <- 'disabled'
+			InpmXYstate <- 'disabled'
+			InPolystate <- 'normal'
 
-			tclvalue(fileORdir) <- 'File to save extracted data'
-			tkconfigure(lab2.tab4, bg = 'lightblue')
-			tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
+			minrectVal <- maxrectVal <- ''
+
+			fl2save <- 'File to save extracted data'
+			labBG <- 'lightblue'
+			sav.isFile <- TRUE
+			SpaAvrgState <- 'disabled'
+			outTypeState <- 'disabled'
 
 			if(tclvalue(namePoly) != ''){
 				shpfopen <- getShpOpenData(Admin_shp)
 				shpf <- shpfopen[[2]]
 				ids <- as.numeric(tclvalue(tcl(adminVar.tab1, 'current')))+1
 				selectedPolygon <- getBoundaries(shpf[shpf@data[, ids] == tclvalue(namePoly), ])
-			}else{
-				selectedPolygon <- NULL
 			}
 		}
+
+		tkconfigure(minlon.tab3, state = InminXYstate)
+		tkconfigure(minlat.tab3, state = InminXYstate)
+		tkconfigure(maxlon.tab3, state = InmaxXYstate)
+		tkconfigure(maxlat.tab3, state = InmaxXYstate)
+		tkconfigure(pmLon.tab3, state = InpmXYstate)
+		tkconfigure(pmLat.tab3, state = InpmXYstate)
+		tkconfigure(cbpolyType.tab3, state = InPolystate)
+
+		tclvalue(minrect) <- minrectVal
+		tclvalue(maxrect) <- maxrectVal
+
+		tclvalue(fileORdir) <- fl2save
+		tkconfigure(lab2.tab4, bg = labBG)
+		tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = sav.isFile))
+		tkconfigure(chkSpaAvrg.tab4, state = SpaAvrgState)
+		tkconfigure(outTypeRadio1, state = outTypeState)
+		tkconfigure(outTypeRadio2, state = outTypeState)
+		tkconfigure(outTypeRadio3, state = outTypeState)
 
 		##
 		tclvalue(minlonRect) <<- ''
@@ -808,11 +831,11 @@ ExtractDataPanelCmd <- function(){
 
 	##########################################
 
-	pressButP <<- tclVar('0')
-	pressButM <<- tclVar('0')
-	pressButRect <<- tclVar('0')
-	pressButDrag <<- tclVar('0')
-	pressGetCoords <<- tclVar('0')
+	pressButP <<- tclVar(0)
+	pressButM <<- tclVar(0)
+	pressButRect <<- tclVar(0)
+	pressButDrag <<- tclVar(0)
+	pressGetCoords <<- tclVar(0)
 
 	tkbind(btRedraw.tab3, "<Button-1>", function(){
 		tclvalue(pressButP) <<- 0
@@ -935,14 +958,15 @@ ExtractDataPanelCmd <- function(){
 
 	##########################################
 
-	lab2.tab4 <- tklabel(subfr4, text = tclvalue(fileORdir), textvariable = fileORdir, anchor = 'w', justify = 'left', bg = 'lightblue')
-	fl2sav.tab4 <- tkentry(subfr4, textvariable = file.save1, width = largeur)
-	bfl2sav.tab4 <- tkbutton(subfr4, text = "...")
+	sep0.tab4 <- ttkseparator(subfr4)
+	lab1.tab4 <- tklabel(subfr4, text = 'Saptially Average Over Selected Area', anchor = 'e', justify = 'right')
+	chkSpaAvrg.tab4 <- tkcheckbutton(subfr4, variable = spatAverage, state = 'disabled')
 	sep1.tab4 <- ttkseparator(subfr4)
 	outputype.tab4 <- ttklabelframe(subfr4, text = "Output File Formats", labelanchor = "nw", relief = "groove", borderwidth = 2)
 	sep2.tab4 <- ttkseparator(subfr4)
-	lab1.tab4 <- tklabel(subfr4, text = 'Saptially Average Over Selected Area', anchor = 'e', justify = 'right')
-	chkSpaAvrg.tab4 <- tkcheckbutton(subfr4, variable = spatAverage)
+	lab2.tab4 <- tklabel(subfr4, text = tclvalue(fileORdir), textvariable = fileORdir, anchor = 'w', justify = 'left', bg = 'lightblue')
+	fl2sav.tab4 <- tkentry(subfr4, textvariable = file.save1, width = largeur)
+	bfl2sav.tab4 <- tkbutton(subfr4, text = "...")
 	sep3.tab4 <- ttkseparator(subfr4)
 	excute.tab4 <- ttkbutton(subfr4, text = "EXTRACT TS")
 
@@ -950,9 +974,9 @@ ExtractDataPanelCmd <- function(){
 	outTypeCPT <- tkcheckbutton(outputype.tab4, variable = is.cpt, text = "CPT Format", anchor = 'w', justify = 'left')
 	sepCPT.tab4 <- ttkseparator(outputype.tab4)
 
-	outTypeRadio1 <- tkradiobutton(outputype.tab4, text = "Separate Files Matrix", anchor = 'w', justify = 'left')
-	outTypeRadio2 <- tkradiobutton(outputype.tab4, text = "One File Matrix", anchor = 'w', justify = 'left')
-	outTypeRadio3 <- tkradiobutton(outputype.tab4, text = "One File Time|Lat|Lon|Value", anchor = 'w', justify = 'left')
+	outTypeRadio1 <- tkradiobutton(outputype.tab4, text = "Separate Files Matrix", anchor = 'w', justify = 'left', state = 'disabled')
+	outTypeRadio2 <- tkradiobutton(outputype.tab4, text = "One File Matrix", anchor = 'w', justify = 'left', state = 'disabled')
+	outTypeRadio3 <- tkradiobutton(outputype.tab4, text = "One File Time|Lat|Lon|Value", anchor = 'w', justify = 'left', state = 'disabled')
 
 	tkconfigure(outTypeRadio1, variable = ChoixOutType, value = "1")
 	tkconfigure(outTypeRadio2, variable = ChoixOutType, value = "2")
@@ -1014,16 +1038,17 @@ ExtractDataPanelCmd <- function(){
 
 	##########################################
 
-	tkgrid(lab2.tab4, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(fl2sav.tab4, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(bfl2sav.tab4, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(sep0.tab4, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
+	tkgrid(lab1.tab4, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(chkSpaAvrg.tab4, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(sep1.tab4, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
 	tkgrid(outputype.tab4, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(sep2.tab4, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
-	tkgrid(lab1.tab4, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(chkSpaAvrg.tab4, row = 5, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(sep3.tab4, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
-	tkgrid(excute.tab4, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(lab2.tab4, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(fl2sav.tab4, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bfl2sav.tab4, row = 6, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(sep3.tab4, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
+	tkgrid(excute.tab4, row = 8, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	##########################################
 
@@ -1039,35 +1064,52 @@ ExtractDataPanelCmd <- function(){
 
 	tkbind(chkSpaAvrg.tab4, "<Button-1>", function(){
 		if(tclvalue(spatAverage) == '0'){
-			tclvalue(fileORdir) <- 'File to save extracted data'
-			tkconfigure(lab2.tab4, bg = 'lightblue')
-			tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
+			fl2save <- 'File to save extracted data'
+			labBG <- 'lightblue'
+			sav.isFile <- TRUE
+			outTypeState <- 'disabled'
 		}else{
-			if(tclvalue(area_type)%in%c('Rectangle', 'Polygon') &
-				(tclvalue(ChoixOutType) == '1' | tclvalue(is.cpt) == '0')){
-				tclvalue(fileORdir) <- 'Directory to save extracted data'
-				tkconfigure(lab2.tab4, bg = 'lightgreen')
-				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = FALSE))
+			if(tclvalue(area_type)%in%c('Rectangle', 'Polygon') & tclvalue(is.cpt) == '0'){
+				if(tclvalue(ChoixOutType) == '1'){
+					fl2save <- 'Directory to save extracted data'
+					labBG <- 'lightgreen'
+					sav.isFile <- FALSE
+				}else{
+					fl2save <- 'File to save extracted data'
+					labBG <- 'lightblue'
+					sav.isFile <- TRUE
+				}
+				outTypeState <- 'normal'
 			}else{
-				tclvalue(fileORdir) <- 'File to save extracted data'
-				tkconfigure(lab2.tab4, bg = 'lightblue')
-				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
+				fl2save <- 'File to save extracted data'
+				labBG <- 'lightblue'
+				sav.isFile <- TRUE
+				outTypeState <- 'disabled'
 			}
 		}
+		tclvalue(fileORdir) <- fl2save
+		tkconfigure(lab2.tab4, bg = labBG)
+		tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = sav.isFile))
+		tkconfigure(outTypeRadio1, state = outTypeState)
+		tkconfigure(outTypeRadio2, state = outTypeState)
+		tkconfigure(outTypeRadio3, state = outTypeState)
 	})
 
 	#############################
 	tkbind(outTypeRadio1, "<Button-1>", function(){
 		if(tclvalue(spatAverage) == '0'){
 			if(tclvalue(area_type)%in%c('Rectangle', 'Polygon')){
-				tclvalue(fileORdir) <- 'Directory to save extracted data'
-				tkconfigure(lab2.tab4, bg = 'lightgreen')
-				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = FALSE))
+				fl2save <- 'Directory to save extracted data'
+				labBG <- 'lightgreen'
+				sav.isFile <- FALSE
 			}else{
-				tclvalue(fileORdir) <- 'File to save extracted data'
-				tkconfigure(lab2.tab4, bg = 'lightblue')
-				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
+				fl2save <- 'File to save extracted data'
+				labBG <- 'lightblue'
+				sav.isFile <- TRUE
 			}
+			tclvalue(fileORdir) <- fl2save
+			tkconfigure(lab2.tab4, bg = labBG)
+			tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = sav.isFile))
 		}
 	})
 
@@ -1089,20 +1131,23 @@ ExtractDataPanelCmd <- function(){
 
 	tkbind(outTypeCPT, "<Button-1>", function(){
 		if(tclvalue(is.cpt) == '0'){
-			tclvalue(fileORdir) <- 'File to save extracted data'
-			tkconfigure(lab2.tab4, bg = 'lightblue')
-			tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
+			fl2save <- 'File to save extracted data'
+			labBG <- 'lightblue'
+			sav.isFile <- TRUE
 		}else{
-			if(tclvalue(area_type)%in%c('Rectangle', 'Polygon') & tclvalue(ChoixOutType) == '1'){
-				tclvalue(fileORdir) <- 'Directory to save extracted data'
-				tkconfigure(lab2.tab4, bg = 'lightgreen')
-				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = FALSE))
+			if(tclvalue(area_type)%in%c('Rectangle', 'Polygon') & tclvalue(ChoixOutType) == '1' & tclvalue(spatAverage) == '0'){
+				fl2save <- 'Directory to save extracted data'
+				labBG <- 'lightgreen'
+				sav.isFile <- FALSE
 			}else{
-				tclvalue(fileORdir) <- 'File to save extracted data'
-				tkconfigure(lab2.tab4, bg = 'lightblue')
-				tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = TRUE))
+				fl2save <- 'File to save extracted data'
+				labBG <- 'lightblue'
+				sav.isFile <- TRUE
 			}
 		}
+		tclvalue(fileORdir) <- fl2save
+		tkconfigure(lab2.tab4, bg = labBG)
+		tkconfigure(bfl2sav.tab4, command = function() fileORdir2Save(file.save1, isFile = sav.isFile))
 	})
 
 	#######################################################################################################

@@ -22,9 +22,9 @@ DownloadRFE <- function(parent.win){
 	frA1 <- tkframe(frA, relief = 'sunken', borderwidth = 2)
 
 	fileSource <- tclVar(str_trim(downrfe$rfe.data))
-	rfeChoix <- c('10-DAYS TAMSAT', '10-DAYS CHIRP',
+	rfeChoix <- c('10-DAYS TAMSATv3', '10-DAYS TAMSATv2', '10-DAYS CHIRPSv2.0', '10-DAYS CHIRPv1.0',
 				  '------------------',
-				  'DAILY TAMSAT', 'DAILY CHIRPS')
+				  'DAILY TAMSATv3', 'DAILY TAMSATv2', 'DAILY CHIRPSv2.0')
 
 	cb.period <- ttkcombobox(frA1, values = rfeChoix, textvariable = fileSource, width = largeur1)
 
@@ -36,7 +36,7 @@ DownloadRFE <- function(parent.win){
 
 	######
 	tkbind(cb.period, "<<ComboboxSelected>>", function(){
-		if(tclvalue(fileSource) == '10-DAYS TAMSAT' | tclvalue(fileSource) == '10-DAYS CHIRP'){
+		if(tclvalue(fileSource)%in%c('10-DAYS TAMSATv3', '10-DAYS TAMSATv2', '10-DAYS CHIRPSv2.0', '10-DAYS CHIRPv1.0')){
 			tclvalue(daytext) <- 'Dek'
 			tclvalue(iend.day) <- '3'
 		}else{
@@ -242,8 +242,9 @@ ExecDownload_SatData <- function(datasrc, istart, iend, minlon, maxlon, minlat, 
 ##########
 downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxlat, outdir){
 	outRet <- 0
-	if(datasrc == '10-DAYS TAMSAT'){
-		url <- 'http://tamsat.org.uk/public_data'
+	if(datasrc%in%c('10-DAYS TAMSATv3', '10-DAYS TAMSATv2')){
+		if(datasrc == '10-DAYS TAMSATv2') url <- 'http://www.tamsat.org.uk/public_data'
+		if(datasrc == '10-DAYS TAMSATv3') url <- 'http://www.tamsat.org.uk/public_data/TAMSAT3'
 		outdir0 <- file.path(outdir, 'Dekad_TAMSAT_Africa', fsep = .Platform$file.sep)
 		if(!file.exists(outdir0)) dir.create(outdir0, showWarnings = FALSE, recursive = TRUE)
 		outdir1 <- file.path(outdir, 'Dekad_TAMSAT_Extracted', fsep = .Platform$file.sep)
@@ -285,7 +286,8 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			year <- daty[[1]][1]
 			mon <- daty[[1]][2]
 			dek <- as.numeric(daty[[1]][3])
-			file0 <- paste('rfe', year, '_', mon, '-dk', dek, '.nc', sep = '')
+			if(datasrc == '10-DAYS TAMSATv2') file0 <- paste('rfe', year, '_', mon, '-dk', dek, '.nc', sep = '')
+			if(datasrc == '10-DAYS TAMSATv3') file0 <- paste('rfe', year, '_', mon, '-dk', dek, '.v3.nc', sep = '')
 			link <- paste(url, year, mon, file0, sep = '/')
 			destfile0 <- file.path(outdir0, file0, fsep = .Platform$file.sep)
 			test <- try(suppressWarnings(readLines(link, n = 1)), silent = TRUE)
@@ -301,9 +303,17 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 					next
 				}else{
 					InsertMessagesTxt(main.txt.out, paste('Download :', file0, 'done!'))
+					if(datasrc == '10-DAYS TAMSATv2'){
+						dim.xo <- 2
+						dim.yo <- 1
+					}
+					if(datasrc == '10-DAYS TAMSATv3'){
+						dim.xo <- 1
+						dim.yo <- 2
+					}
 					nc <- nc_open(destfile0)
-					xm <- nc$dim[[2]]$vals
-					ym <- nc$dim[[1]]$vals
+					xm <- nc$dim[[dim.xo]]$vals
+					ym <- nc$dim[[dim.yo]]$vals
 					xdat <- ncvar_get(nc, varid = nc$var[[1]]$name)
 					nc_close(nc)
 					xo <- order(xm)
@@ -333,8 +343,9 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 	}
 	#####################################################
 
-	if(datasrc == 'DAILY TAMSAT'){
-		url <- 'http://tamsat.org.uk/public_data'
+	if(datasrc%in%c('DAILY TAMSATv3', 'DAILY TAMSATv2')){
+		if(datasrc == 'DAILY TAMSATv2') url <- 'http://tamsat.org.uk/public_data'
+		if(datasrc == 'DAILY TAMSATv3') url <- 'http://www.tamsat.org.uk/public_data/TAMSAT3'
 		outdir0 <- file.path(outdir, 'Daily_TAMSAT_Africa', fsep = .Platform$file.sep)
 		if(!file.exists(outdir0)) dir.create(outdir0, showWarnings = FALSE, recursive = TRUE)
 		outdir1 <- file.path(outdir, 'Daily_TAMSAT_Extracted', fsep = .Platform$file.sep)
@@ -369,7 +380,8 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			year <- daty[[1]][1]
 			mon <- daty[[1]][2]
 			day <- daty[[1]][3]
-			file0 <- paste('rfe', year, '_', mon, '_', day, '.nc', sep = '')
+			if(datasrc == 'DAILY TAMSATv2') file0 <- paste('rfe', year, '_', mon, '_', day, '.nc', sep = '')
+			if(datasrc == 'DAILY TAMSATv3') file0 <- paste('rfe', year, '_', mon, '_', day, '.v3.nc', sep = '')
 			link <- paste(url, year, mon, file0, sep = '/')
 			destfile0 <- file.path(outdir0, file0, fsep = .Platform$file.sep)
 			test <- try(suppressWarnings(readLines(link, n = 1)), silent = TRUE)
@@ -385,9 +397,17 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 					next
 				}else{
 					InsertMessagesTxt(main.txt.out, paste('Download :', file0, 'done!'))
+					if(datasrc == 'DAILY TAMSATv2'){
+						dim.xo <- 2
+						dim.yo <- 1
+					}
+					if(datasrc == 'DAILY TAMSATv3'){
+						dim.xo <- 1
+						dim.yo <- 2
+					}
 					nc <- nc_open(destfile0)
-					xm <- nc$dim[[2]]$vals
-					ym <- nc$dim[[1]]$vals
+					xm <- nc$dim[[dim.xo]]$vals
+					ym <- nc$dim[[dim.yo]]$vals
 					xdat <- ncvar_get(nc, varid = nc$var[[1]]$name)
 					nc_close(nc)
 					xo <- order(xm)
@@ -418,8 +438,9 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 
 	#####################################################
 
-	if(datasrc == '10-DAYS CHIRP'){
-		url <- 'http://iridl.ldeo.columbia.edu/SOURCES/.UCSB/.CHIRP/.v1p0/.dekad/.prcp'
+	if(datasrc%in%c('10-DAYS CHIRPSv2.0', '10-DAYS CHIRPv1.0')){
+		if(datasrc == '10-DAYS CHIRPv1.0') url <- 'http://iridl.ldeo.columbia.edu/SOURCES/.UCSB/.CHIRP/.v1p0/.dekad/.prcp'
+		if(datasrc == '10-DAYS CHIRPSv2.0') url <- 'http://iridl.ldeo.columbia.edu/SOURCES/.UCSB/.CHIRPS/.v2p0/.dekad/.prcp'
 		mois <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 		if(!file.exists(outdir)) dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
@@ -448,8 +469,7 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 
 		dates <- seq(deb, fin, 'day')
 		dates <- do.call('rbind', strsplit(as.character(dates[which(as.numeric(format(dates, '%d')) <= 3)]), '-'))
-		dates <- dates[, c(1:3, 2:3)]
-		if(is.null(dim(dates))) dates <- matrix(dates, ncol = 5)
+		dates <- dates[, c(1:3, 2:3), drop = FALSE]
 		dates[, 4] <- mois[as.numeric(dates[, 2])]
 		dates[, 3] <- ifelse(dates[, 3] == '01', '1-10', ifelse(dates[, 3] == '02', '11-20', '03'))
 		if(length(which(dates[, 3] == '03')) > 0){
@@ -462,7 +482,8 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 		for(j in 1:nrow(dates)){
 			time <- paste('T/%28', dates[j, 3], '%20', dates[j, 4], '%20', dates[j, 1], '%29/VALUES', sep = '')
 			link <- paste(url, area, time, 'data.nc', sep = '/')
-			fileout <- paste('chirp_', dates[j, 1], dates[j, 2], as.numeric(dates[j, 5]), '.nc', sep = '')
+			if(datasrc == '10-DAYS CHIRPv1.0') fileout <- paste('chirpV1.0_', dates[j, 1], dates[j, 2], as.numeric(dates[j, 5]), '.nc', sep = '')
+			if(datasrc == '10-DAYS CHIRPSv2.0') fileout <- paste('chirpsV2.0_', dates[j, 1], dates[j, 2], as.numeric(dates[j, 5]), '.nc', sep = '')
 			destfile <- file.path(outdir, fileout, fsep = .Platform$file.sep)
 			ret <- try(download.file(link, destfile, mode = "wb", quiet = TRUE), silent = TRUE)
 			if(ret != 0){
@@ -479,8 +500,8 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 
 	#####################################################
 
-	if(datasrc == 'DAILY CHIRPS'){
-		url <- 'http://iridl.ldeo.columbia.edu/SOURCES/.UCSB/.CHIRPS/.v2p0/.daily/.global/.0p05/.prcp'
+	if(datasrc == 'DAILY CHIRPSv2.0'){
+		url <- 'http://iridl.ldeo.columbia.edu/SOURCES/.UCSB/.CHIRPS/.v2p0/.daily-improved/.global/.0p05/.prcp'
 		mois <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 		if(!file.exists(outdir)) dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
@@ -499,16 +520,14 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 
 		dates <- seq(deb, fin, 'day')
 		dates <- do.call('rbind', strsplit(as.character(dates), '-'))
-
-		dates <- dates[, c(1:3, 2)]
-		if(is.null(dim(dates))) dates <- matrix(dates, ncol = 4)
+		dates <- dates[, c(1:3, 2), drop = FALSE]
 		dates[, 4] <- mois[as.numeric(dates[, 2])]
 
 		tcl("update", "idletasks")
 		for(j in 1:nrow(dates)){
 			time <- paste('T/%28', as.numeric(dates[j, 3]), '%20', dates[j, 4], '%20', dates[j, 1], '%29/VALUES', sep = '')
 			link <- paste(url, area, time, 'data.nc', sep = '/')
-			fileout <- paste('chirps_', dates[j, 1], dates[j, 2], dates[j, 3], '.nc', sep = '')
+			fileout <- paste('chirpsV2.0_', dates[j, 1], dates[j, 2], dates[j, 3], '.nc', sep = '')
 			destfile <- file.path(outdir, fileout, fsep = .Platform$file.sep)
 			ret <- try(download.file(link, destfile, mode = "wb", quiet = TRUE), silent = TRUE)
 			if(ret != 0){
