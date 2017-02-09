@@ -76,7 +76,7 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 		bias <- t(do.call('rbind', bias))
 
 		##########
-		bias.pars <- list(bias.stn = bias, lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
+		bias.pars <- list(bias = bias, lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
 							data.stn = data.stn, date.rfe = data.rfe.stn, date = date.bias)
 		rm(data.rfe.stn, dataf)
 	}
@@ -121,7 +121,7 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 		bias <- t(do.call('rbind', bias))
 
 		##########
-		bias.pars <- list(bias.stn = bias, lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
+		bias.pars <- list(bias = bias, lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
 							data.stn = data.stn, date.rfe = data.rfe.stn, date = date.bias)
 		rm(data.rfe.stn, dataf)
 	}
@@ -185,7 +185,7 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 					pars.rfestn = pars.Rfestn, pars.rfe = pars.Rfe)
 
 		##########
-		bias.pars <- list(fit.stn = pars.Obs.Stn, fit.rfestn = pars.Obs.rfe, fit.rfe = pars.Crs.Rfe,
+		bias.pars <- list(bias = bias, fit.stn = pars.Obs.Stn, fit.rfestn = pars.Obs.rfe, fit.rfe = pars.Crs.Rfe,
 						lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
 						lon.rfe = comptMBiasparms$xy.rfe$lon[idcoarse$ix],
 						lat.rfe = comptMBiasparms$xy.rfe$lat[idcoarse$iy],
@@ -439,7 +439,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				if(j > 1) locations.stn$pars[!bias.pars$pars.ad.stn[[m]]] <- NA
 				locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
 				if(length(locations.stn$pars) < min.stn) return(NULL)
-				
+
 				if(interp.method == 'Kriging'){
 					vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -449,7 +449,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				xadd <- if(create.grd != '1' & is.regridRFE) as.data.frame(interp.grid$coords.rfe) else as.data.frame(interp.grid$coords.grd)
 				xadd$pars <- bias.pars$pars.rfe[[m]][, j]
 				if(j > 1) xadd$pars[!bias.pars$pars.ad.rfe[[m]]] <- NA
-				
+
 				xaddstn <- as.data.frame(interp.grid$coords.stn)
 				xaddstn$pars <- bias.pars$pars.rfestn[[m]][, j]
 				if(j > 1) xaddstn$pars[!bias.pars$pars.ad.stn[[m]]] <- NA
@@ -457,7 +457,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				xadd <- rbind(xadd, xaddstn)
 				xadd <- xadd[!is.na(xadd$pars), ]
 				if(length(xadd$pars) < min.stn) return(NULL)
-				
+
 				iadd <- rep(TRUE, nrow(xadd))
 				for(k in 1:nrow(xstn)){
 					if(interp.method == 'NN'){
@@ -1448,7 +1448,10 @@ MergingFunctionRain <- function(paramsMRG){
 			coordinates(locations.stn) <- ~lon+lat
 
 			###########
-			block <- if(any(is.auxvar)) NULL else bGrd
+			if(any(is.auxvar)){
+				locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+				block <- NULL
+			}else block <- bGrd
 			res.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
 								block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 

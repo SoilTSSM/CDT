@@ -76,6 +76,12 @@ execBiasRain <- function(origdir){
 							xy.rfe = xy.rfe, res.coarse = res.coarse, memType = memType, origdir = origdir)
 	bias.pars <- ComputeMeanBiasRain(comptMBiasparms)
 
+	###############
+	# load('~/Desktop/merging/ETH_ENACTS/RR_DEK/QM_IDW0.6_noDEM/BIAS_PARAMS.RData')
+	# bias.pars <- bias.pars$bias
+
+	###############
+
 	interpBiasparams <- list(GeneralParameters = GeneralParameters, bias.pars = bias.pars, stnData = stnData,
 							demData = demData, xy.grid = xy.grid, xy.rfe = xy.rfe, res.coarse = res.coarse, origdir = origdir)
 	ret <- InterpolateMeanBiasRain(interpBiasparams)

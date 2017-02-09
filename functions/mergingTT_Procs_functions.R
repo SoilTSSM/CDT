@@ -355,7 +355,7 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 		bias <- lapply(bias, function(x) sapply(x,'[[', 1))
 		bias <- t(do.call('rbind', bias))
 
-		bias.pars <- list(bias.stn = bias, lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
+		bias.pars <- list(bias = bias, lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
 							data.stn = data.stn, date.down = data.down.stn, date = date.bias)
 
 		rm(data.down.stn, dataf)
@@ -400,7 +400,7 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 		bias <- lapply(bias, function(x) sapply(x,'[[', 1))
 		bias <- t(do.call('rbind', bias))
 
-		bias.pars <- list(bias.stn = bias, lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
+		bias.pars <- list(bias = bias, lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
 							data.stn = data.stn, date.down = data.down.stn, date = date.bias)
 		rm(data.down.stn, dataf)
 	}
@@ -461,7 +461,7 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 					pars.downstn = pars.Downstn, pars.down = pars.Down)
 
 		##########
-		bias.pars <- list(fit.stn = pars.Obs.Stn, fit.downstn = pars.Obs.down, fit.down = pars.Crs.down,
+		bias.pars <- list(bias = bias, fit.stn = pars.Obs.Stn, fit.downstn = pars.Obs.down, fit.down = pars.Crs.down,
 						lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
 						lon.down = comptMBiasparms$xy.grid$lon[idcoarse$ix],
 						lat.down = comptMBiasparms$xy.grid$lat[idcoarse$iy],
