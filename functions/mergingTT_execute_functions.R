@@ -72,6 +72,7 @@ execDownscalingTemp <- function(origdir){
 	xy.grid <- list(lon = grd.lon, lat = grd.lat)
 
 	## DEM data  at new grid
+	demGrid <- demData$demMat
 	if(create.grd == '2'){
 		is.regridDEM <- is.diffSpatialPixelsObj(defSpatialPixels(xy.grid),
 						defSpatialPixels(list(lon = demData$lon, lat = demData$lat)), tol = 1e-07)
@@ -80,7 +81,7 @@ execDownscalingTemp <- function(origdir){
 			demGrid <- interp.surface.grid(demGrid, list(x = xy.grid$lon, y = xy.grid$lat))
 			demGrid <- demGrid$z
 		}
-	}else demGrid <- demData$demMat
+	}
 	demGrid[demGrid < 0] <- 0
 
 	################
@@ -352,14 +353,12 @@ execMergeTemp <- function(origdir){
 
 	## regrid DEM data
 	if(!is.null(demData)){
+		demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
 		if(grdblnk | auxvar){
-			demGrid <- defSpatialPixels(list(lon = demData$lon, lat = demData$lat))
+			demGrid <- defSpatialPixels(list(lon = demData$x, lat = demData$y))
 			is.regridDEM <- is.diffSpatialPixelsObj(newGrid, demGrid, tol = 1e-07)
-			if(is.regridDEM){
-				demData <- interp.surface.grid(list(x = demData$lon, y = demData$lat, z = demData$demMat),
-												list(x = grd.lon, y = grd.lat))
-			}
-		}else demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
+			if(is.regridDEM) demData <- interp.surface.grid(demData, list(x = grd.lon, y = grd.lat))
+		}
 	}
 
 	if(blank.grid == "1") outMask <- NULL

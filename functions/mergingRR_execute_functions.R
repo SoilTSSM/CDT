@@ -229,8 +229,9 @@ execLMCoefRain <- function(origdir){
 ####Merging
 
 execMergeRain <- function(origdir){
-	freqData <- GeneralParameters$period
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
+
+	freqData <- GeneralParameters$period
 
 	#######get data
 	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
@@ -298,14 +299,14 @@ execMergeRain <- function(origdir){
 
 	## regrid DEM data
 	if(!is.null(demData)){
+		demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
 		if(grdblnk | auxvar){
-			demGrid <- defSpatialPixels(list(lon = demData$lon, lat = demData$lat))
+			demGrid <- defSpatialPixels(list(lon = demData$x, lat = demData$y))
 			is.regridDEM <- is.diffSpatialPixelsObj(newGrid, demGrid, tol = 1e-07)
 			if(is.regridDEM){
-				demData <- interp.surface.grid(list(x = demData$lon, y = demData$lat, z = demData$demMat),
-												list(x = grd.lon, y = grd.lat))
+				demData <- interp.surface.grid(demData, list(x = grd.lon, y = grd.lat))
 			}
-		}else demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
+		}
 	}
 
 	## blank

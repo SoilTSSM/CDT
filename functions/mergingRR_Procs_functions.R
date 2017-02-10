@@ -836,10 +836,10 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 			nc <- nc_open(rfeData$files[jfl])
 			xrfe <- ncvar_get(nc, varid = rfeData$varid)
 			nc_close(nc)
-			xrfe <- xrfe[rfeData$xo, rfeData$yo]
 			if(rfeData$yorder == 1){
 				xrfe <- matrix(c(xrfe), nrow = length(rfeData$lon), ncol = length(rfeData$lat), byrow = TRUE)
 			}
+			xrfe <- xrfe[rfeData$xo, rfeData$yo]
 			drfe <- rfeData$dates[jfl]
 		}
 
@@ -1345,10 +1345,10 @@ MergingFunctionRain <- function(paramsMRG){
 			nc <- nc_open(ncInfo$nc.files[jj])
 			xrfe <- ncvar_get(nc, varid = rfeDataInfo$rfeVarid)
 			nc_close(nc)
-			xrfe <- xrfe[xo, yo]
 			if(rfeDataInfo$rfeILat == 1){
 				xrfe <- matrix(c(xrfe), nrow = length(xlon), ncol = length(xlat), byrow = TRUE)
 			}
+			xrfe <- xrfe[xo, yo]
 		}else return(NULL)
 
 		############
@@ -1534,10 +1534,11 @@ MergingFunctionRain <- function(paramsMRG){
 	}
 
 	############
-	InsertMessagesTxt(main.txt.out, 'Scaling up daily data ...')
 
 	dekdaty <- ncInfo$dates[ncInfo$exist]
 	if(freqData == "daily" & GeneralParameters$Scale.daily & length(dekdaty) > 7){
+		InsertMessagesTxt(main.txt.out, 'Scaling up daily data ...')
+
 		dekDataInfo <- getRFESampleData(GeneralParameters$IO.files$DEK.file)
 		dekDir <- GeneralParameters$IO.files$DEK.dir
 		dekfilefrmt <- GeneralParameters$FileFormat$DEK.File.Format
@@ -1608,10 +1609,10 @@ MergingFunctionRain <- function(paramsMRG){
 			nc <- nc_open(oper.dek[[jj]]$dek)
 			xdek <- ncvar_get(nc, varid = dekDataInfo$rfeVarid)
 			nc_close(nc)
-			xdek <- xdek[xo, yo]
 			if(dekDataInfo$rfeILat == 1){
 				xdek <- matrix(c(xdek), nrow = length(xlon), ncol = length(xlat), byrow = TRUE)
 			}
+			xdek <- xdek[xo, yo]
 
 			if(is.regridDEK){
 				dekGrid <- interp.surface.grid(list(x = xlon, y = xlat, z = xdek), list(x = dlon, y = dlat))

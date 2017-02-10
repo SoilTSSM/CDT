@@ -1,15 +1,17 @@
 PlotGriddedNcdfCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
 	if(Sys.info()["sysname"] == "Windows"){
-		wscrlwin <- w.scale(24)
-		hscrlwin <- h.scale(25)
+		wscrlwin <- w.scale(26)
+		hscrlwin <- h.scale(34)
 		wPreview <- w.scale(21)
-		largeur <- as.integer(w.scale(27)/sfont0)
+		largeur <- as.integer(w.scale(28)/sfont0)
+		largeur1 <- largeur-7
 	}else{
-		wscrlwin <- w.scale(24)
-		hscrlwin <- h.scale(23)
+		wscrlwin <- w.scale(26)
+		hscrlwin <- h.scale(32)
 		wPreview <- w.scale(22)
-		largeur <- as.integer(w.scale(21)/sfont0)
+		largeur <- as.integer(w.scale(22)/sfont0)
+		largeur1 <- largeur-4
 	}
 
 	PlotGrdNcdf <- fromJSON(file.path(apps.dir, 'init_params', 'Plot_Gridded_NetCDF.json'))
@@ -45,8 +47,6 @@ PlotGriddedNcdfCmd <- function(){
 	tkgrid.columnconfigure(scrw1, 0, weight = 1)
 
 	subfr1 <- bwScrollableFrame(scrw1, width = wscrlwin, height = hscrlwin)
-	# tkgrid.columnconfigure(subfr1, 0, weight = 1)
-	# otra? taille fixe ny wscrlwin sy hscrlwin ts mety resizable 
 
 	##############
 	file.netcdf <- tclVar(PlotGrdNcdf$ncdf$nc.file)
@@ -54,11 +54,23 @@ PlotGriddedNcdfCmd <- function(){
 	file.plotShp <- tclVar(PlotGrdNcdf$shp)
 	blankVal <- tclVar(PlotGrdNcdf$blank)
 
+	var.names <- c('Choose_Variable')
+	var.choix <- tclVar(var.names[1])
+	dim.names <- ''
+	X.choix <- tclVar()
+	Y.choix <- tclVar()
+
 	##############
 	frameNcdf <- ttklabelframe(subfr1, text = "NetCDF data file", relief = 'groove')
 
 	combNetcdf.tab1 <- ttkcombobox(frameNcdf, values = unlist(listOpenFiles), textvariable = file.netcdf, width = largeur)
 	btNetcdf.tab1 <- tkbutton(frameNcdf, text = "...") 
+	lab.choixVar.tab1 <- tklabel(frameNcdf, text = 'Variable:', anchor = 'e', justify = 'right')
+	cb.choixVar.tab1 <- ttkcombobox(frameNcdf, values = var.names, textvariable = var.choix, state = "readonly", width = largeur1)
+	lab.choixX.tab1 <- tklabel(frameNcdf, text = 'Longitude:', anchor = 'e', justify = 'right')
+	cb.choixX.tab1 <- ttkcombobox(frameNcdf, values = dim.names, textvariable = X.choix, state = 'disabled', width = largeur1)
+	lab.choixY.tab1 <- tklabel(frameNcdf, text = 'Latitude:', anchor = 'e', justify = 'right')
+	cb.choixY.tab1 <- ttkcombobox(frameNcdf, values = dim.names, textvariable = Y.choix, state = 'disabled', width = largeur1)
 	unitLab.tab1 <- tklabel(frameNcdf, text = 'Units', anchor = 'e', justify = 'right')
 	unitEd.tab1 <- tkentry(frameNcdf, width = 8, textvariable = unit_sym, justify = "left")
 
@@ -79,8 +91,19 @@ PlotGriddedNcdfCmd <- function(){
 	#######################
 	tkgrid(combNetcdf.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(btNetcdf.tab1, row = 0, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(unitLab.tab1, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(unitEd.tab1, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+
+	tkgrid(lab.choixVar.tab1, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(cb.choixVar.tab1, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+
+	tkgrid(lab.choixX.tab1, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(cb.choixX.tab1, row = 2, column = 1, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+
+	tkgrid(lab.choixY.tab1, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(cb.choixY.tab1, row = 3, column = 1, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+
+
+	tkgrid(unitLab.tab1, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(unitEd.tab1, row = 4, column = 1, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
 	infobulle(combNetcdf.tab1, 'Choose a NetCDF data in the list')
 	status.bar.display(combNetcdf.tab1, TextOutputVar, 'Choose the file containing the NetCDF data')
@@ -94,7 +117,7 @@ PlotGriddedNcdfCmd <- function(){
 	
 	combShp.tab1 <- ttkcombobox(frameShp, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur) 
 	btShp.tab1 <- tkbutton(frameShp, text = "...") 
-	cbBlank.tab1 <- tkcheckbutton(subfr1, variable = blankVal, text = 'Blank grid', anchor = 'w', justify = 'left')
+	cbBlank.tab1 <- tkcheckbutton(frameShp, variable = blankVal, text = 'Blank grid', anchor = 'w', justify = 'left')
 
 	##############
 	tkconfigure(btShp.tab1, command = function(){
@@ -113,6 +136,7 @@ PlotGriddedNcdfCmd <- function(){
 	###########
 	tkgrid(combShp.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(btShp.tab1, row = 0, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(cbBlank.tab1, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
 	infobulle(combShp.tab1, 'Choose the file containing the ESRI shapefiles')
 	status.bar.display(combShp.tab1, TextOutputVar, 'Choose the file containing the ESRI shapefiles')
@@ -124,10 +148,10 @@ PlotGriddedNcdfCmd <- function(){
 	#############################
 	tkgrid(frameNcdf, row = 0, column = 0, sticky = 'we', pady = 2)
 	tkgrid(frameShp, row = 1, column = 0, sticky = 'we', pady = 2)
-	tkgrid(cbBlank.tab1, row = 3, column = 0, sticky = 'we', ipady = 2)
-	tkgrid.columnconfigure(frameNcdf, 0, weight = 1)
-	tkgrid.columnconfigure(frameShp, 0, weight = 1)
-	tkgrid.columnconfigure(cbBlank.tab1, 0, weight = 1)
+	# tkgrid(cbBlank.tab1, row = 3, column = 0, sticky = 'we', ipady = 2)
+	# tkgrid.columnconfigure(frameNcdf, 0, weight = 1)
+	# tkgrid.columnconfigure(frameShp, 0, weight = 1)
+	# tkgrid.columnconfigure(cbBlank.tab1, 0, weight = 1)
 
 	#######################################################################################################
 

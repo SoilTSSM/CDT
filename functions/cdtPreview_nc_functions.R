@@ -16,7 +16,7 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 
 	####################################
 
-	nc <- try(nc <- nc_open(openncf), silent = TRUE)
+	nc <- try(nc_open(openncf), silent = TRUE)
 	if(inherits(nc, "try-error")){
 		InsertMessagesTxt(main.txt.out, paste("Unable to open file ", openncf), format = TRUE)
 		tkgrab.release(tt)
@@ -73,7 +73,7 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 		print.nc[[i+ncdim+3]] <- paste(nc$var[[i]]$prec, ' ', nc$var[[i]]$name, dimstring,
 								' Longname:', nc$var[[i]]$longname, ' Missval:', nc$var[[i]]$missval, sep = '')
 	}
-	
+
 	####################################
 
 	fr.haut <- tkframe(tt)
@@ -91,8 +91,8 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 	txtlb2 <- tklabel(dim.choose, text = 'Longitude:', anchor = 'e', justify = 'right')
 	txtlb3 <- tklabel(dim.choose, text = 'Latitude:', anchor = 'e', justify = 'right')
 
-	cb.var <- ttkcombobox( dim.choose, values = var.choix, textvariable = var.dim, state = "readonly", width = largeur)
-	cb.X <- ttkcombobox( dim.choose, values = X.choix, textvariable = X.dim, state = 'disabled', width = largeur)
+	cb.var <- ttkcombobox(dim.choose, values = var.choix, textvariable = var.dim, state = "readonly", width = largeur)
+	cb.X <- ttkcombobox(dim.choose, values = X.choix, textvariable = X.dim, state = 'disabled', width = largeur)
 	cb.Y <- ttkcombobox(dim.choose, values = Y.choix, textvariable = Y.dim, state = 'disabled', width = largeur)
 
 	tkgrid(txtlb1, row = 0, column = 0, sticky = 'we', padx = 5, pady = 5)
@@ -158,7 +158,8 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 
 			retval <<- list(x = lon, y = lat, value = dat, var.unit = v.unit,
 							dim.units = d.units, varid = as.character(var.info[ivar, 1]),
-							ilon = idx, ilat = idy, irevlat = irevlat)
+							ilon = idx, ilat = idy, irevlat = irevlat,
+							file = openncf)
 
 			tkgrab.release(tt)
 			tkdestroy(tt)

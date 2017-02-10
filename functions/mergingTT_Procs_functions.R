@@ -203,10 +203,10 @@ ReanalysisDownscaling <- function(paramsDownscl){
 				nc <- nc_open(paramsDownscl$reanalData$nc.files[jj])
 				tt.reanl <- ncvar_get(nc, varid = paramsDownscl$reanalData$ncinfo$varid)
 				nc_close(nc)
-				tt.reanl <- tt.reanl[xo, yo]
 				if(paramsDownscl$reanalData$ncinfo$yo == 1){
 					tt.reanl <- matrix(c(tt.reanl), nrow = length(lon.reanl), ncol = length(lat.reanl), byrow = TRUE)
 				}
+				tt.reanl <- tt.reanl[xo, yo]
 			}else return(NULL)
 			date.reanl <- paramsDownscl$reanalData$dates[[jj]]
 		}
@@ -1072,10 +1072,10 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 			nc <- nc_open(downData$files[jfl])
 			xtmp <- ncvar_get(nc, varid = downData$varid)
 			nc_close(nc)
-			xtmp <- xtmp[downData$xo, downData$yo]
 			if(downData$yorder == 1){
 				xtmp <- matrix(c(xtmp), nrow = length(downData$lon), ncol = length(downData$lat), byrow = TRUE)
 			}
+			xtmp <- xtmp[downData$xo, downData$yo]
 			dtmp <- downData$dates[jfl]
 		}
 

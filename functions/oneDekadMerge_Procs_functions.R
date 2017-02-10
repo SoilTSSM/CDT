@@ -47,9 +47,9 @@ mergeOneDekadRain <- function(){
 			url <- paste(url, file0, sep = '/')
 		}
 		destfile0 <- file.path(downrfeDir, paste('Africa_', file0, sep = ''))
-		testURL <- try(suppressWarnings(url(url, open='rb')), silent = TRUE)
+		testURL <- try(suppressWarnings(url(url, open = 'rb')), silent = TRUE)
 		if(inherits(testURL, "try-error")){
-			InsertMessagesTxt(main.txt.out, paste('Cannot open URL or file does not exist:',file0), format = TRUE)
+			InsertMessagesTxt(main.txt.out, paste('Cannot open URL or file does not exist:', file0), format = TRUE)
 			tcl("update")
 			close(testURL)
 			return(NULL)
