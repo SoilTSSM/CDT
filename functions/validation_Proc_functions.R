@@ -142,7 +142,7 @@ ValidationDataFun <- function(retValidParams){
 ###################
 
 validationStats <- function(x, y, retValidParams){
-	ferqData <- retValidParams$stn$donne$freq
+	freqData <- retValidParams$stn$donne$freq
 	clim.var <- retValidParams$clim.var
 	mn0 <- mean(x)
 	sum1 <- sum((y-x)^2)
@@ -157,7 +157,7 @@ validationStats <- function(x, y, retValidParams){
 	name_stat <- c("CORR", "NSE", "BIAS", "MAE", "ME")
 	descrip <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error', 'Mean Error')
 
-	if(ferqData == 'daily' & clim.var == 'RR'){
+	if(freqData == 'daily' & clim.var == 'RR'){
 		rnr <- 1.0
 		n1 <- length(which(x >= rnr & y >= rnr))  # Ht
 		n2 <- length(which(x < rnr & y >= rnr))  # Fa
@@ -185,7 +185,7 @@ validationStats <- function(x, y, retValidParams){
 	}
 	stat <- data.frame(Stat = name_stat, Value = round(stat, 3), Description = descrip)
 	return(stat)
-}	
+}
 
 ########################
 

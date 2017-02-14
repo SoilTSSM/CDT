@@ -1234,6 +1234,7 @@ ComputeLMCoefTemp <- function(comptLMparams){
 		nelv <- if(nelv > 1) nelv else 2
 		z.maxdist <- rad.elv*(diff(range(coordinates(interp.grid$newgrid)[, 'elv']))/(nelv-1))
 		xy.maxdist <- if(xy.maxdist < res.coarse) res.coarse else xy.maxdist
+		maxdist <- sqrt(xy.maxdist^2 + z.maxdist^2)
 	}else{
 		interp.grid <- createGrid(ObjStn, demGrid, as.dim.elv = FALSE, res.coarse = res.coarse)
 		maxdist <- if(maxdist < res.coarse) res.coarse else maxdist
@@ -1360,7 +1361,8 @@ ComputeLMCoefTemp <- function(comptLMparams){
 
 			if(interp.method == 'NN'){
 				coordinates(locations.stn) <- ~lon+lat+elv
-				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid, nmax = 1, debug.level = 0)
+				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid,
+									nmax = 1, maxdist = maxdist, debug.level = 0)
 			}else{
 				coordinates(locations.stn) <- ~lon+lat
 				if(any(is.auxvar)){
@@ -1370,16 +1372,19 @@ ComputeLMCoefTemp <- function(comptLMparams){
 				pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
 									block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 
-				extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
-				ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
-				pars.grd$var1.pred[ixtrm] <- NA
-
-				ina <- is.na(pars.grd$var1.pred)
-				if(any(ina)){
-					pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
-											block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-					pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
-				}
+				extrm1 <- min(locations.stn$pars, na.rm = TRUE)
+				pars.grd$var1.pred[pars.grd$var1.pred <= extrm1] <- extrm1
+				extrm2  <- max(locations.stn$pars, na.rm = TRUE)
+				pars.grd$var1.pred[pars.grd$var1.pred >= extrm2] <- extrm2
+				# extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
+				# ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
+				# pars.grd$var1.pred[ixtrm] <- NA
+				# ina <- is.na(pars.grd$var1.pred)
+				# if(any(ina)){
+				# 	pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
+				# 							block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+				# 	pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
+				# }
 			}
 			matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
 		})
@@ -1399,6 +1404,10 @@ ComputeLMCoefTemp <- function(comptLMparams){
 			MODEL.COEF[[jfl]]$slope <- matrix(1, ncol = nlat0, nrow = nlon0)
 			MODEL.COEF[[jfl]]$intercept <- matrix(0, ncol = nlat0, nrow = nlon0)
 		}
+		ina <- is.na(MODEL.COEF[[jfl]]$slope) | is.na(MODEL.COEF[[jfl]]$intercept)
+		MODEL.COEF[[jfl]]$slope[ina] <- 1
+		MODEL.COEF[[jfl]]$intercept[ina] <- 0
+
 		outnc1 <- file.path(origdir, paste('LM_Coefficient', '_', jfl, '.nc', sep = ''))
 		nc1 <- nc_create(outnc1, list(grd.slope, grd.intercept))
 		ncvar_put(nc1, grd.slope, MODEL.COEF[[jfl]]$slope)
@@ -1477,15 +1486,16 @@ MergingFunctionTemp <- function(paramsMRG){
 	#############
 	auxvar <- c('dem', 'slp', 'asp')
 	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
-	# if(any(is.auxvar)){
-	# 	formule <- formula(paste('res', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
-	# }else formule <- formula(paste('res', '~', 1, sep = ''))
 	if(any(is.auxvar)){
 		formule <- formula(paste('res', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
-		formuleRK <- formula(paste('stn', '~', 'tmp', '+', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
+		if(Mrg.Method == "Regression Kriging"){
+			sp.trend.aux <- GeneralParameters$sp.trend.aux
+			if(sp.trend.aux) formuleRK <- formula(paste('stn', '~', 'tmp', '+', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
+			else formuleRK <- formula(paste('stn', '~', 'tmp', sep = ''))
+		}
 	}else{
 		formule <- formula(paste('res', '~', 1, sep = ''))
-		formuleRK <- formula(paste('stn', '~', 'tmp', sep = ''))
+		if(Mrg.Method == "Regression Kriging") formuleRK <- formula(paste('stn', '~', 'tmp', sep = ''))
 	}
 
 	#############
@@ -1575,11 +1585,13 @@ MergingFunctionTemp <- function(paramsMRG){
 				sp.trend <- xtmp * MODEL.COEF[[mo]]$slope + MODEL.COEF[[mo]]$intercept
 				locations.stn$res <- locations.stn$stn - sp.trend[ijGrd][noNA]
 			}else{
-				# glm.stn <- glm(stn~tmp, data = locations.stn, family = gaussian)
 				glm.stn <- glm(formuleRK, data = locations.stn, family = gaussian)
 				sp.trend <- predict(glm.stn, newdata = interp.grid$newgrid)
 				sp.trend <- matrix(sp.trend, ncol = nlat0, nrow = nlon0)
-				locations.stn$res <- residuals(glm.stn)
+				sp.trend[is.na(sp.trend)] <- xrfe[is.na(sp.trend)]
+				# locations.stn$res <- residuals(glm.stn)
+				if(length(glm.stn$na.action) > 0) locations.stn$res[-glm.stn$na.action] <- glm.stn$residuals
+				else locations.stn$res <- glm.stn$residuals
 			}
 			
 			############
@@ -1619,7 +1631,7 @@ MergingFunctionTemp <- function(paramsMRG){
 								block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 
 			extrm <- c(min(locations.stn$res, na.rm = TRUE), max(locations.stn$res, na.rm = TRUE))
-			ixtrm <- is.na(res.grd$var1.pred) | (res.grd$var1.pred <= extrm[1] | res.grd$var1.pred >= extrm[2])
+			ixtrm <- is.na(res.grd$var1.pred) | (res.grd$var1.pred < extrm[1] | res.grd$var1.pred > extrm[2])
 			res.grd$var1.pred[ixtrm] <- NA
 
 			ina <- is.na(res.grd$var1.pred)

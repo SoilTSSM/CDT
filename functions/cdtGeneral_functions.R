@@ -962,7 +962,6 @@ ncFilesInfo <- function(freqData, start.date, end.date, months, ncDir, ncFileFor
 	existFl <- unlist(lapply(ncDataFiles, file.exists))
 	if(!any(existFl)){
 		InsertMessagesTxt(main.txt.out, error.msg, format = TRUE)
-		tcl("update")
 		return(NULL)
 	}
 	return(list(dates = dates, nc.files = ncDataFiles, exist = existFl))
@@ -977,7 +976,6 @@ ncFilesInfo <- function(freqData, start.date, end.date, months, ncDir, ncFileFor
 
 read.NetCDF.Data <- function(read.ncdf.parms){
 	InsertMessagesTxt(main.txt.out, read.ncdf.parms$msg$start)
-	tcl("update")
 
 	ncInfo <- ncFilesInfo(read.ncdf.parms$ncfiles$freqData, read.ncdf.parms$ncfiles$start.date,
 							read.ncdf.parms$ncfiles$end.date, read.ncdf.parms$ncfiles$months,
@@ -1025,7 +1023,6 @@ read.NetCDF.Data <- function(read.ncdf.parms){
 	# ncdata <- lapply(ncdata, '[[', 2)
 	ret <- list(lon = lon, lat = lat, dates = ncInfo$dates, data = ncdata)
 	InsertMessagesTxt(main.txt.out, read.ncdf.parms$msg$end)
-	tcl("update")
 	return(ret)
 }
 
@@ -1037,7 +1034,6 @@ read.NetCDF.Data <- function(read.ncdf.parms){
 
 read.NetCDF.Data2Points <- function(read.ncdf.parms, list.lonlat.pts){
 	InsertMessagesTxt(main.txt.out, read.ncdf.parms$msg$start)
-	tcl("update")
 
 	ncInfo <- ncFilesInfo(read.ncdf.parms$ncfiles$freqData, read.ncdf.parms$ncfiles$start.date,
 							read.ncdf.parms$ncfiles$end.date, read.ncdf.parms$ncfiles$months,
@@ -1085,7 +1081,6 @@ read.NetCDF.Data2Points <- function(read.ncdf.parms, list.lonlat.pts){
 	ret <- list(dates = ncInfo$dates, data = ncdata, lon = lon, lat = lat,
 				lon.pts = list.lonlat.pts$lon, lat.pts = list.lonlat.pts$lat)
 	InsertMessagesTxt(main.txt.out, read.ncdf.parms$msg$end)
-	tcl("update")
 	return(ret)
 }
 

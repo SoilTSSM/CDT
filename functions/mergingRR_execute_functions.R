@@ -130,7 +130,8 @@ execAdjBiasRain <- function(origdir){
 	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 
 	adjMeanBiasparms <- list(rfeData = read.ncdf.parms, GeneralParameters = GeneralParameters,
-								origdir = origdir, memType = memType)
+							origdir = origdir, memType = memType, readRFE = TRUE, RFEDATA = NULL)
+	# readRFE = FALSE, RFEDATA = rfeData # exec fonction ailleurs, multiple sources
 	ret <- AjdMeanBiasRain(adjMeanBiasparms)
 	rm(adjMeanBiasparms, rfeDataInfo)
 	gc()
@@ -216,7 +217,7 @@ execLMCoefRain <- function(origdir){
 	comptLMparams <- list(GeneralParameters = GeneralParameters, stnData = stnData, demData = demData, memType = memType,
 						rfeData = read.ncdf.parms, xy.grid = xy.grid, res.coarse = res.coarse, origdir = origdir)
 	ret <- ComputeLMCoefRain(comptLMparams)
-	
+
 	rm(comptLMparams, stnData, demData)
 	gc()
 	if(!is.null(ret)){
@@ -303,9 +304,7 @@ execMergeRain <- function(origdir){
 		if(grdblnk | auxvar){
 			demGrid <- defSpatialPixels(list(lon = demData$x, lat = demData$y))
 			is.regridDEM <- is.diffSpatialPixelsObj(newGrid, demGrid, tol = 1e-07)
-			if(is.regridDEM){
-				demData <- interp.surface.grid(demData, list(x = grd.lon, y = grd.lat))
-			}
+			if(is.regridDEM) demData <- interp.surface.grid(demData, list(x = grd.lon, y = grd.lat))
 		}
 	}
 

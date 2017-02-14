@@ -72,5 +72,7 @@
         "dem": false,
         "slope": false,
         "aspect": false
-    }]
+    }],
+    // Use auxiliary variables with GLM to calculate the spatial trend
+    "sp.trend.aux": false
 }

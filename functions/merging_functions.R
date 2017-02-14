@@ -94,6 +94,7 @@ quantile.mapping.BGamma <- function(x, pars.stn, pars.rfe, rfe.zero){
 	res[ip] <- qgamma(pp, scale = pars.stn$scale[ip], shape = pars.stn$shape[ip])
 	miss <- is.na(res) | is.nan(res) | is.infinite(res)
 	res[miss] <- x[miss]
+	res[is.na(x)] <- NA
 	if(rfe.zero) res[x == 0] <- 0
 	return(res)
 }
@@ -101,7 +102,8 @@ quantile.mapping.BGamma <- function(x, pars.stn, pars.rfe, rfe.zero){
 ##############################
 ## Fit linear model
 fitLM.fun.RR <- function(df, min.len){
-	df <- na.omit(df)
+	# df <- na.omit(df)
+	df <- df[!is.na(df$stn) & !is.na(df$rfe), , drop = FALSE]
 	if(nrow(df) >= min.len) lm(stn~rfe, data = df)
 	else return(NULL)
 }
