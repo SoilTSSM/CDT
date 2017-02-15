@@ -42,9 +42,7 @@
 	### Regression kriging no aux var pour spatial trend
 	RKcomb <- expand.grid(aux = aux.var[c(1, 2, 7, 8)], interp = c('IDW', 'OK'), adjdir = BScomb)
 	## reduire
-	xred1 <- as.character(RKcomb$aux) == sapply(strsplit(as.character(RKcomb$adjdir), "_"), '[[', 3)
-	xred2 <- as.character(RKcomb$interp) == sapply(strsplit(as.character(RKcomb$adjdir), "_"), '[[', 2)
-	xred <- xred1 & xred2
+	xred <- as.character(RKcomb$aux) == sapply(strsplit(as.character(RKcomb$adjdir), "_"), '[[', 3)
 	RKcomb <- RKcomb[xred, ]
 	RKcomb <- paste(as.character(RKcomb$adjdir), "RK_RK", paste('RK.noD.spT',
 				as.character(RKcomb$interp), as.character(RKcomb$aux), sep = '_'), sep = '-')
@@ -52,9 +50,7 @@
 	### Regression kriging avec aux var pour spatial trend
 	RK1comb <- expand.grid(aux = aux.var[c(2, 7, 8)], interp = c('IDW', 'OK'), adjdir = BScomb)
 	## reduire
-	xred1 <- as.character(RK1comb$aux) == sapply(strsplit(as.character(RK1comb$adjdir), "_"), '[[', 3)
-	xred2 <- as.character(RK1comb$interp) == sapply(strsplit(as.character(RK1comb$adjdir), "_"), '[[', 2)
-	xred <- xred1 & xred2
+	xred <- as.character(RK1comb$aux) == sapply(strsplit(as.character(RK1comb$adjdir), "_"), '[[', 3)
 	RK1comb <- RK1comb[xred, ]
 	RK1comb <-  paste(as.character(RK1comb$adjdir), paste("RK", as.character(RK1comb$aux), sep = '_'),
 				paste('RK.wD.spT', as.character(RK1comb$interp), as.character(RK1comb$aux), sep = '_'), sep = '-')
@@ -71,9 +67,7 @@
 	#####
 	SPLMcomb <- expand.grid(aux = aux.var[c(1, 2, 7, 8)], interp = c('IDW', 'OK'), tmp = SPLMCoef)
 	## reduire
-	xred1 <- as.character(SPLMcomb$aux) == sapply(strsplit(as.character(SPLMcomb$tmp), "_"), '[[', 4)
-	xred2 <- as.character(SPLMcomb$interp) == sapply(strsplit(as.character(SPLMcomb$tmp), "_"), '[[', 2)
-	xred <- xred1 & xred2
+	xred <- as.character(SPLMcomb$aux) == sapply(strsplit(as.character(SPLMcomb$tmp), "_"), '[[', 4)
 	SPLMcomb <- SPLMcomb[xred, ]
 	SPLMcomb <- paste(SPLMcomb$tmp, paste('SP.Temp.LM', SPLMcomb$interp, SPLMcomb$aux, sep = '_'), sep = '-')
 

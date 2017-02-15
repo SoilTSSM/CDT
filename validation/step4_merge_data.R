@@ -89,9 +89,7 @@
 	### Regression kriging no aux var pour spatial trend
 	RKcomb <- expand.grid(aux = aux.var[c(1, 2, 7, 8)], interp = c('IDW', 'OK'), adjdir = BScomb)
 	## reduire
-	xred1 <- as.character(RKcomb$aux) == sapply(strsplit(as.character(RKcomb$adjdir), "_"), '[[', 3)
-	xred2 <- as.character(RKcomb$interp) == sapply(strsplit(as.character(RKcomb$adjdir), "_"), '[[', 2)
-	xred <- xred1 & xred2
+	xred <- as.character(RKcomb$aux) == sapply(strsplit(as.character(RKcomb$adjdir), "_"), '[[', 3)
 	RKcomb <- RKcomb[xred, ]
 	RKadjDir <- file.path(adjDIR, as.character(RKcomb$adjdir))
 	RKcomb <- cbind(RKadjDir, "", paste(as.character(RKcomb$adjdir), "RK_RK", paste('RK.noD.spT',
@@ -101,9 +99,7 @@
 	### Regression kriging avec aux var pour spatial trend
 	RK1comb <- expand.grid(aux = aux.var[c(2, 7, 8)], interp = c('IDW', 'OK'), adjdir = BScomb)
 	## reduire
-	xred1 <- as.character(RK1comb$aux) == sapply(strsplit(as.character(RK1comb$adjdir), "_"), '[[', 3)
-	xred2 <- as.character(RK1comb$interp) == sapply(strsplit(as.character(RK1comb$adjdir), "_"), '[[', 2)
-	xred <- xred1 & xred2
+	xred <- as.character(RK1comb$aux) == sapply(strsplit(as.character(RK1comb$adjdir), "_"), '[[', 3)
 	RK1comb <- RK1comb[xred, ]
 	RK1adjDir <- file.path(adjDIR, as.character(RK1comb$adjdir))
 	RK1comb <- cbind(RK1adjDir, "", paste(as.character(RK1comb$adjdir), paste("RK", as.character(RK1comb$aux), sep = '_'),
@@ -127,9 +123,7 @@
 	SPLMtmp <- strsplit(as.character(SPLMcomb$tmp), ';')
 	SPLMtmp <- do.call(rbind, SPLMtmp)
 	## reduire
-	xred1 <- as.character(SPLMcomb$aux) == sapply(strsplit(SPLMtmp[, 3], "_"), '[[', 4)
-	xred2 <- as.character(SPLMcomb$interp) == sapply(strsplit(SPLMtmp[, 3], "_"), '[[', 2)
-	xred <- xred1 & xred2
+	xred <- as.character(SPLMcomb$aux) == sapply(strsplit(SPLMtmp[, 3], "_"), '[[', 4)
 	SPLMcomb <- SPLMcomb[xred, ]
 	SPLMtmp <- SPLMtmp[xred, ]
 
@@ -138,6 +132,7 @@
 		SPLMtmp[, 4], as.character(SPLMcomb$interp), as.character(SPLMcomb$aux))
 
 	combMering <- rbind(RKcomb, RK1comb, SPLMcomb)
+	# mthd <- do.call(rbind, lapply(strsplit(combMering[, 3], "-"), function(x) do.call(c, strsplit(x, "_"))))
 
 	#####################################################################################
 	## STN data
