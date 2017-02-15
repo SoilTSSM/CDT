@@ -76,7 +76,12 @@
 	errmsg <- "RFE data not found"
 	ncfiles <- list(freqData = freqData, start.date = start.date, end.date = end.date,
 					months = months, ncDir = rfeDir, ncFileFormat = rfeFFormat)
-	ncinfo <- list(xo = 1, yo = 2, varid = 'precip')
+	ncInfo <- ncFilesInfo(freqData, start.date, end.date, months, rfeDir, rfeFFormat, errmsg)
+	if(is.null(ncInfo)) return(NULL)
+	nc <- nc_open(ncInfo$nc.files[ncInfo$exist][1])
+	varid <- nc$var[[1]]$name
+	nc_close(nc)
+	ncinfo <- list(xo = 1, yo = 2, varid = varid)
 	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 
 	#####################################################################################

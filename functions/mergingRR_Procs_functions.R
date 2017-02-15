@@ -387,7 +387,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 									block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 
 				extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
-				ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
+				ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred < extrm[1] | pars.grd$var1.pred > extrm[2])
 				pars.grd$var1.pred[ixtrm] <- NA
 
 				ina <- is.na(pars.grd$var1.pred)
@@ -1942,7 +1942,7 @@ InterpolateMeanBiasRain.validation <- function(interpBiasparams){
 	grd.dem[grd.dem < 0] <- 0
 	demSp <- defSpatialPixels(list(lon = lon.dem, lat = lat.dem))
 	is.regridDEM <- is.diffSpatialPixelsObj(grdSp, demSp, tol = 1e-07)
-	
+
 	demGrid <- list(x = lon.dem, y = lat.dem, z = grd.dem)
 	if(is.regridDEM){
 		demGrid <- interp.surface.grid(demGrid, list(x = xy.grid$lon, y = xy.grid$lat))
@@ -2028,7 +2028,7 @@ InterpolateMeanBiasRain.validation <- function(interpBiasparams){
 			extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
 			ixtrm <- locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2]
 			locations.stn <- locations.stn[ixtrm, ]
-			
+
 			ijStn <- ijStn[ixtrm]
 			ijx <- ijStn0[!ijStn0%in%ijStn]
 			ijI <- c(ijInt, ijGrd[!ijStn0%in%ijStn])
@@ -2077,15 +2077,15 @@ InterpolateMeanBiasRain.validation <- function(interpBiasparams){
 									block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 
 				extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
-				ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
+				ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred < extrm[1] | pars.grd$var1.pred > extrm[2])
 				pars.grd$var1.pred[ixtrm] <- NA
 
-				ina <- is.na(pars.grd$var1.pred)
-				if(any(ina)){
-					pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ijI, ][ina, ], model = vgm,
-										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-					pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
-				}
+				# ina <- is.na(pars.grd$var1.pred)
+				# if(any(ina)){
+				# 	pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ijI, ][ina, ], model = vgm,
+				# 						block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+				# 	pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
+				# }
 			}
 			grdbias <- pars.grd$var1.pred
 			# grdbias <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
