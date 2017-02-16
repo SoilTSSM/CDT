@@ -58,18 +58,12 @@
 	#####################################################################################
 
 	#### COMBINAISON
-	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
-	aux.var <- apply(DAS, 1, function(j){
-		x <- c('D', 'S', 'A')[j]
-		if(length(x) > 0) paste(x, collapse = '')
-		else 'noD'
-	})
-	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
 
-	### Bias/adj comb
-	BScomb <- expand.grid(aux = aux.var[c(1, 2, 7, 8)], interp = c('NN', 'IDW', 'OK'), Bias = c('QM', 'MBVar', 'MBMon'))
-	BScomb <- cbind(paste(as.character(BScomb$Bias), as.character(BScomb$interp), as.character(BScomb$aux), sep = '_'),
-					apply(BScomb[, 3:1], 2, as.character))
+	BScomb <- Bias.combination()
+
+	##use "noD", "D", "SA", "DSA"
+	ix <- BScomb$bias.auxvar%in%c("noD", "D", "SA", "DSA")
+	BScomb <- BScomb[ix, ]
 
 	#####################################################################################
 	## STN data
@@ -112,6 +106,17 @@
 
 	#### validation interpolation coordinates
 	ijInt <- grid2pointINDEX(list(lon = coordsValid$lon, lat = coordsValid$lat), xy.grid)
+
+	#####################################################################################
+	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
+	aux.var <- apply(DAS, 1, function(j){
+		x <- c('D', 'S', 'A')[j]
+		if(length(x) > 0) paste(x, collapse = '')
+		else 'noD'
+	})
+	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
+	bs.mthd <- paste(BScomb$bias.method, BScomb$bias.interp, BScomb$bias.auxvar, sep = '_')
+	BScomb <- apply(cbind(bs.mthd, BScomb), 2, as.character)
 
 	#####################################################################################
 

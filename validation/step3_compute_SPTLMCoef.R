@@ -52,6 +52,21 @@
 	GeneralParameters$Interpolation.pars$vgm.model <- list(c("Sph", "Exp", "Gau"))
 
 	#####################################################################################
+	
+	#### COMBINAISON
+
+	LMcomb <- LMCoef.combination()
+
+	##same aux.var, "noD", "D", "SA", "DSA"
+	ix1 <- (LMcomb$bias.auxvar == LMcomb$LMcoef.auxvar) & LMcomb$bias.auxvar%in%c("noD", "D", "SA", "DSA")
+
+	## Bias and LMCoef same aux.var and interpolation
+	ix2 <- LMcomb$bias.interp == LMcomb$LMcoef.interp
+
+	ix <- ix1 & ix2
+	LMcomb <- LMcomb[ix, ]
+
+	#####################################################################################
 	if(doparallel){
 		klust <- makeCluster(nb_cores)
 		registerDoParallel(klust)
@@ -63,34 +78,6 @@
 	}
 	packages <- c('sp', 'gstat', 'automap', 'rgdal')
 	toExports <- c('GeneralParameters', 'fitLM.month.RR', 'fitLM.fun.RR')
-
-	#####################################################################################
-	
-	#### COMBINAISON
-	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
-	aux.var <- apply(DAS, 1, function(j){
-		x <- c('D', 'S', 'A')[j]
-		if(length(x) > 0) paste(x, collapse = '')
-		else 'noD'
-	})
-	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
-
-	### Bias/adj comb
-	BScomb <- expand.grid(aux = aux.var[c(1, 2, 7, 8)], interp = c('NN', 'IDW', 'OK'), Bias = c('QM', 'MBVar', 'MBMon'))
-	BScomb <- paste(as.character(BScomb$Bias), as.character(BScomb$interp), as.character(BScomb$aux), sep = '_')
-
-	### LM coef comb
-	LMcomb <- expand.grid(aux = aux.var[c(1, 2, 7, 8)], interp = c('NN', 'IDW', 'OK'), adjdir = BScomb)
-	## reduire
-	xred1 <- as.character(LMcomb$aux) == sapply(strsplit(as.character(LMcomb$adjdir), "_"), '[[', 3)
-	xred2 <- as.character(LMcomb$interp) == sapply(strsplit(as.character(LMcomb$adjdir), "_"), '[[', 2)
-	xred <- xred1 & xred2
-	LMcomb <- LMcomb[xred, ]
-
-	LMadjDir <- file.path(adjDIR, as.character(LMcomb$adjdir))
-	LMcomb <- cbind(LMadjDir, paste(as.character(LMcomb$adjdir), 
-				paste(as.character(LMcomb$interp), as.character(LMcomb$aux), sep = '_'), sep = '-'),
-				as.character(LMcomb$interp), as.character(LMcomb$aux))
 
 	#####################################################################################
 	## STN data
@@ -176,6 +163,22 @@
 						retGrid <- list(interp.grid = interp.grid, maxdist = maxdist, bGrd = bGrd)
 						return(retGrid)
 					})())
+
+	#####################################################################################
+
+	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
+	aux.var <- apply(DAS, 1, function(j){
+		x <- c('D', 'S', 'A')[j]
+		if(length(x) > 0) paste(x, collapse = '')
+		else 'noD'
+	})
+	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
+
+	bs.mthd <- paste(LMcomb$bias.method, LMcomb$bias.interp, LMcomb$bias.auxvar, sep = '_')
+	lm.mthd <- paste(LMcomb$LMcoef.interp, LMcomb$LMcoef.auxvar, sep = '_')
+	adj.dir <- file.path(adjDIR, bs.mthd)
+	out.LM <- paste(bs.mthd, lm.mthd, sep = '-')
+	LMcomb <- cbind(adj.dir, out.LM, LMcomb$LMcoef.interp, LMcomb$LMcoef.auxvar)
 
 	#####################################################################################
 

@@ -27,51 +27,26 @@
 	#####################################################################################
 
 	#### COMBINAISON
-	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
-	aux.var <- apply(DAS, 1, function(j){
-		x <- c('D', 'S', 'A')[j]
-		if(length(x) > 0) paste(x, collapse = '')
-		else 'noD'
-	})
-	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
 
-	### Bias/adj comb
-	BScomb <- expand.grid(aux = aux.var[c(1, 2, 7, 8)], interp = c('NN', 'IDW', 'OK'), Bias = c('QM', 'MBVar', 'MBMon'))
-	BScomb <- paste(as.character(BScomb$Bias), as.character(BScomb$interp), as.character(BScomb$aux), sep = '_')
+	MRGcomb <- merging.combination()
 
-	### Regression kriging no aux var pour spatial trend
-	RKcomb <- expand.grid(aux = aux.var[c(1, 2, 7, 8)], interp = c('IDW', 'OK'), adjdir = BScomb)
-	## reduire
-	xred <- as.character(RKcomb$aux) == sapply(strsplit(as.character(RKcomb$adjdir), "_"), '[[', 3)
-	RKcomb <- RKcomb[xred, ]
-	RKcomb <- paste(as.character(RKcomb$adjdir), "RK_RK", paste('RK.noD.spT',
-				as.character(RKcomb$interp), as.character(RKcomb$aux), sep = '_'), sep = '-')
+	##same aux.var, "noD", "D", "SA", "DSA"
+	ix1 <- (MRGcomb$bias.auxvar == MRGcomb$mrg.auxvar) & MRGcomb$bias.auxvar%in%c("noD", "D", "SA", "DSA")
+	ix2 <- MRGcomb$mrg.method == "Reg.Kriging"
 
-	### Regression kriging avec aux var pour spatial trend
-	RK1comb <- expand.grid(aux = aux.var[c(2, 7, 8)], interp = c('IDW', 'OK'), adjdir = BScomb)
-	## reduire
-	xred <- as.character(RK1comb$aux) == sapply(strsplit(as.character(RK1comb$adjdir), "_"), '[[', 3)
-	RK1comb <- RK1comb[xred, ]
-	RK1comb <-  paste(as.character(RK1comb$adjdir), paste("RK", as.character(RK1comb$aux), sep = '_'),
-				paste('RK.wD.spT', as.character(RK1comb$interp), as.character(RK1comb$aux), sep = '_'), sep = '-')
+	## Bias and LMCoef same aux.var and interpolation
+	ix3 <- (MRGcomb$mrg.method == "Saptio.Tempo.LM") & (MRGcomb$bias.interp == MRGcomb$sptrend.interp) & (MRGcomb$bias.auxvar == MRGcomb$sptrend.auxvar)
 
-	### Spatio-Temp LM coef comb
-	SPLMcomb <- expand.grid(aux = aux.var[c(1, 2, 7, 8)], interp = c('NN', 'IDW', 'OK'), adjdir = BScomb)
-	## reduire
-	xred1 <- as.character(SPLMcomb$aux) == sapply(strsplit(as.character(SPLMcomb$adjdir), "_"), '[[', 3)
-	xred2 <- as.character(SPLMcomb$interp) == sapply(strsplit(as.character(SPLMcomb$adjdir), "_"), '[[', 2)
-	xred <- xred1 & xred2
-	SPLMcomb <- SPLMcomb[xred, ]
-	SPLMCoef <- paste(SPLMcomb$adjdir, paste(SPLMcomb$interp, SPLMcomb$aux, sep = '_'), sep = '-')
+	ix <- ix1 & (ix2 | ix3)
+	MRGcomb <- MRGcomb[ix, ]
 
-	#####
-	SPLMcomb <- expand.grid(aux = aux.var[c(1, 2, 7, 8)], interp = c('IDW', 'OK'), tmp = SPLMCoef)
-	## reduire
-	xred <- as.character(SPLMcomb$aux) == sapply(strsplit(as.character(SPLMcomb$tmp), "_"), '[[', 4)
-	SPLMcomb <- SPLMcomb[xred, ]
-	SPLMcomb <- paste(SPLMcomb$tmp, paste('SP.Temp.LM', SPLMcomb$interp, SPLMcomb$aux, sep = '_'), sep = '-')
+	#####################################################################################
 
-	combMering <- c(RKcomb, RK1comb, SPLMcomb)
+	bs.mthd <- paste(MRGcomb$bias.method, MRGcomb$bias.interp, MRGcomb$bias.auxvar, sep = '_')
+	lm.mthd <- paste(MRGcomb$sptrend.interp, MRGcomb$sptrend.auxvar, sep = '_')
+	mrg.mthd <- paste(MRGcomb$mrg.method, MRGcomb$mrg.interp, MRGcomb$mrg.auxvar, sep = '_')
+
+	combMering <- paste(bs.mthd, lm.mthd, mrg.mthd, sep = '-')
 
 	#####################################################################################
 

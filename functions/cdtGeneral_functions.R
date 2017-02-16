@@ -1498,3 +1498,82 @@ getDataCPTclim.Station <- function(freqOut, xdon, xdates, xlon, xlat, xid, varid
 # 	return(cpt.out)
 # }
 
+#################################################################################
+### Merging Method combination
+
+merging.combination <- function(){
+	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
+	aux.var <- apply(DAS, 1, function(j){
+		x <- c('D', 'S', 'A')[j]
+		if(length(x) > 0) paste(x, collapse = '')
+		else 'noD'
+	})
+	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
+
+	### Bias/adj comb
+	BScomb <- expand.grid(aux = aux.var, interp = c('NN', 'IDW', 'OK'), Bias = c('QM', 'MBVar', 'MBMon'))
+	BScomb <- paste(as.character(BScomb$Bias), as.character(BScomb$interp), as.character(BScomb$aux), sep = '_')
+
+	RKcomb <- expand.grid(aux = aux.var, interp = c('IDW', 'OK'), adjdir = BScomb)
+	### Regression kriging no aux var pour spatial trend
+	RKcomb1 <- paste(as.character(RKcomb$adjdir), paste("RK.sp.trend", "noD", sep = '_'),
+				paste('Reg.Kriging', as.character(RKcomb$interp), as.character(RKcomb$aux), sep = '_'), sep = '-')
+	### Regression kriging avec aux var pour spatial trend
+	RKcomb2 <- paste(as.character(RKcomb$adjdir), paste("RK.sp.trend", as.character(RKcomb$aux), sep = '_'),
+				paste('Reg.Kriging', as.character(RKcomb$interp), as.character(RKcomb$aux), sep = '_'), sep = '-')
+
+	### Spatio-Temp LM coef comb
+	SPLMcomb <- expand.grid(aux = aux.var, interp = c('NN', 'IDW', 'OK'), adjdir = BScomb)
+	SPLMCoef <- paste(SPLMcomb$adjdir, paste(SPLMcomb$interp, SPLMcomb$aux, sep = '_'), sep = '-')
+
+	#####
+	SPLMcomb <- expand.grid(aux = aux.var, interp = c('IDW', 'OK'), tmp = SPLMCoef)
+	SPLMcomb <- paste(SPLMcomb$tmp, paste('Saptio.Tempo.LM', SPLMcomb$interp, SPLMcomb$aux, sep = '_'), sep = '-')
+
+	combMering <- c(RKcomb1, RKcomb2, SPLMcomb)
+	combMering <- combMering[!duplicated(combMering)]
+	mthd <- do.call(rbind, lapply(strsplit(combMering, "-"), function(x) do.call(c, strsplit(x, "_"))))
+	mthd <- data.frame(mthd, stringsAsFactors = FALSE)
+	names(mthd) <- c('bias.method', 'bias.interp', 'bias.auxvar', 'sptrend.interp', 'sptrend.auxvar', 'mrg.method', 'mrg.interp', 'mrg.auxvar')
+	return(mthd)
+}
+
+LMCoef.combination <- function(){
+	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
+	aux.var <- apply(DAS, 1, function(j){
+		x <- c('D', 'S', 'A')[j]
+		if(length(x) > 0) paste(x, collapse = '')
+		else 'noD'
+	})
+	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
+
+	### Bias/adj comb
+	BScomb <- expand.grid(aux = aux.var, interp = c('NN', 'IDW', 'OK'), Bias = c('QM', 'MBVar', 'MBMon'))
+	BScomb <- paste(as.character(BScomb$Bias), as.character(BScomb$interp), as.character(BScomb$aux), sep = '_')
+
+	### LM coef comb
+	LMcomb <- expand.grid(aux = aux.var, interp = c('NN', 'IDW', 'OK'), adjdir = BScomb)
+	LMcomb <- paste(as.character(LMcomb$adjdir), paste(as.character(LMcomb$interp), as.character(LMcomb$aux), sep = '_'), sep = '-')
+
+	mthd <- do.call(rbind, lapply(strsplit(LMcomb, "-"), function(x) do.call(c, strsplit(x, "_"))))
+	mthd <- data.frame(mthd, stringsAsFactors = FALSE)
+	names(mthd) <- c('bias.method', 'bias.interp', 'bias.auxvar', 'LMcoef.interp', 'LMcoef.auxvar')
+	return(mthd)
+}
+
+Bias.combination <- function(){
+	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
+	aux.var <- apply(DAS, 1, function(j){
+		x <- c('D', 'S', 'A')[j]
+		if(length(x) > 0) paste(x, collapse = '')
+		else 'noD'
+	})
+	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
+
+	### Bias/adj comb
+	BScomb <- expand.grid(bias.auxvar = aux.var, bias.interp = c('NN', 'IDW', 'OK'), bias.method = c('QM', 'MBVar', 'MBMon'))
+	BScomb <- data.frame(apply(BScomb[, 3:1], 2, as.character), stringsAsFactors = FALSE)
+	return(BScomb)
+}
+
+
