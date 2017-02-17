@@ -170,8 +170,7 @@ mergeOneDekadRain <- function(){
 
 		if(bias.method == "Quantile.Mapping"){
 			xadj <- quantile.mapping.BGamma(rfeData$z, pars.stn, pars.rfe, TRUE)
-			xadj[is.nan(xadj)] <- rfeData$z[is.nan(xadj)]
-			xadj[is.infinite(xadj)] <- rfeData$z[is.infinite(xadj)]
+			xadj[!is.na(xadj) & xadj > 1000] <- rfeData$z[!is.na(xadj) & xadj > 1000]
 		}else xadj <- rfeData$z * data.bias
 		xadj[xadj < 0] <- 0
 		rfeData <- list(x = lon.bias, y = lat.bias, z = xadj)
@@ -180,7 +179,7 @@ mergeOneDekadRain <- function(){
 		dx <- ncdim_def("Lon", "degreeE", lon.bias)
 		dy <- ncdim_def("Lat", "degreeN", lat.bias)
 
-		grd.bsadj <- ncvar_def("precip", "mm", list(dx, dy), -99, longname= " Mean Bias Adjusted RFE", prec = "short")
+		grd.bsadj <- ncvar_def("precip", "mm", list(dx, dy), -99, longname = " Mean Bias Adjusted RFE", prec = "short")
 		bias.outfl <- file.path(dir2save, paste('rr_adj', '_', daty,'.nc', sep = ''))
 		nc2 <- nc_create(bias.outfl, grd.bsadj)
 		ncvar_put(nc2, grd.bsadj, xadj)
@@ -307,15 +306,19 @@ mergeOneDekadRain <- function(){
 					sp.trend <- rfeData$z * coef1 + coef2
 					locations.stn$res <- locations.stn$stn - sp.trend[ijGrd][noNA]
 				}else{
-					simplediff <- if(var(locations.stn$stn) < 1e-07 | var(locations.stn$rfe) < 1e-07) TRUE else FALSE
+					simplediff <- if(var(locations.stn$stn) < 1e-07 | var(locations.stn$rfe, na.rm = TRUE) < 1e-07) TRUE else FALSE
 					glm.stn <- glm(stn~rfe, data = locations.stn, family = gaussian)
 					if(is.na(glm.stn$coefficients[2]) | glm.stn$coefficients[2] < 0) simplediff <- TRUE
 					if(!simplediff){
 						sp.trend <- predict(glm.stn, newdata = interp.grid$newgrid)
 						sp.trend <- matrix(sp.trend, ncol = nlat0, nrow = nlon0)
-						locations.stn$res <- residuals(glm.stn)
+						sp.trend[is.na(sp.trend)] <- rfeData$z[is.na(sp.trend)]
+						# locations.stn$res <- residuals(glm.stn)
+						locations.stn$res <- NA
+						if(length(glm.stn$na.action) > 0) locations.stn$res[-glm.stn$na.action] <- glm.stn$residuals
+						else locations.stn$res <- glm.stn$residuals
 					}else{
-						sp.trend <- xrfe
+						sp.trend <- rfeData$z
 						locations.stn$res <- locations.stn$stn - locations.stn$rfe
 					}
 				}
@@ -380,6 +383,10 @@ mergeOneDekadRain <- function(){
 			###########
 			res.grd <- krige(res~1, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
 								block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+			extrm <- c(min(locations.stn$res, na.rm = TRUE), max(locations.stn$res, na.rm = TRUE))
+			ixtrm <- is.na(res.grd$var1.pred) | (res.grd$var1.pred < extrm[1] | res.grd$var1.pred > extrm[2])
+			res.grd$var1.pred[ixtrm] <- NA
+
 			ina <- is.na(res.grd$var1.pred)
 			if(any(ina)){
 				res.grd.na <- krige(var1.pred~1, locations = res.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,

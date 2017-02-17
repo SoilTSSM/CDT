@@ -118,8 +118,8 @@ manageLayout <- function(nbPlot, transpose = FALSE){
 parAxisPlotFun <- function(x, factor = 0.04){
 	#factor = 0.04 par defaut pour R
 	x <- x[!is.na(x)]
-	if(length(x) > 1) 	xlim <- range(x) + factor * diff(range(x)) * c(-1,1)
-	else if(length(x) == 1 & x != 0) xlim <- x + factor * x * c(-1,1)
+	if(length(x) > 1) 	xlim <- range(x) + c(-1, 1) * factor * abs(range(x))
+	else if(length(x) == 1 & x != 0) xlim <- x + c(-1, 1) * factor * abs(x)
 	else  xlim <- factor * c(-1,1)
 	xtick <- pretty(x)
 	bInf <- min(xtick[xtick >= min(xlim)])

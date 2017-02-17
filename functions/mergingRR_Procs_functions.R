@@ -1408,6 +1408,7 @@ MergingFunctionRain <- function(paramsMRG){
 						sp.trend <- matrix(sp.trend, ncol = nlat0, nrow = nlon0)
 						sp.trend[is.na(sp.trend)] <- xrfe[is.na(sp.trend)]
 						# locations.stn$res <- residuals(glm.stn)
+						locations.stn$res <- NA
 						if(length(glm.stn$na.action) > 0) locations.stn$res[-glm.stn$na.action] <- glm.stn$residuals
 						else locations.stn$res <- glm.stn$residuals
 					}else{
