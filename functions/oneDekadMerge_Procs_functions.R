@@ -170,7 +170,6 @@ mergeOneDekadRain <- function(){
 
 		if(bias.method == "Quantile.Mapping"){
 			xadj <- quantile.mapping.BGamma(rfeData$z, pars.stn, pars.rfe, TRUE)
-			xadj[!is.na(xadj) & xadj > 1000] <- rfeData$z[!is.na(xadj) & xadj > 1000]
 		}else xadj <- rfeData$z * data.bias
 		xadj[xadj < 0] <- 0
 		rfeData <- list(x = lon.bias, y = lat.bias, z = xadj)

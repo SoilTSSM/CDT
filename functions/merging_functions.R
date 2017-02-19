@@ -96,6 +96,11 @@ quantile.mapping.BGamma <- function(x, pars.stn, pars.rfe, rfe.zero){
 	res[miss] <- x[miss]
 	res[is.na(x)] <- NA
 	if(rfe.zero) res[x == 0] <- 0
+	moy <- pars.rfe$shape*pars.rfe$scale
+	ssd <- sqrt(pars.rfe$shape*pars.rfe$scale^2)
+	ix <- (res-moy)/ssd > 3
+	ix[is.na(ix)] <- FALSE
+	res[ix] <- x[ix]
 	return(res)
 }
 

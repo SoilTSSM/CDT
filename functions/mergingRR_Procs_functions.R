@@ -136,25 +136,60 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 			closeklust <- FALSE
 		}
 
+		mplus.dekad.date <- function(daty){
+			dek1 <- as.character(daty)
+			dek2 <- sapply(lapply(as.Date(dek1, format = '%Y%m%d'), addDekads, n = 1),
+					function(x) paste(format(x, '%Y%m'), as.numeric(format(x, '%d')), sep = ''))
+			dek0 <- sapply(lapply(as.Date(dek1, format = '%Y%m%d'), addDekads, n = -1),
+					function(x) paste(format(x, '%Y%m'), as.numeric(format(x, '%d')), sep = ''))
+			unique(sort(c(dek0, dek1, dek2)))
+		}
+		mplus.month.date <- function(daty){
+			mon1 <- as.character(daty)
+			mon2 <- sapply(lapply(as.Date(paste(mon1, '01', sep = ''), format = '%Y%m%d'), addMonths, n = 1), format, '%Y%m')
+			mon0 <- sapply(lapply(as.Date(paste(mon1, '01', sep = ''), format = '%Y%m%d'), addMonths, n = -1), format, '%Y%m')
+			unique(sort(c(mon0, mon1, mon2)))
+		}
+
 		date.stn <- date.stn[istdt]
 		data.stn <- data.stn[istdt, , drop = FALSE]
 		month.stn <- as(substr(date.stn, 5, 6), 'numeric')
 		month.rfe <- as(substr(date.bias, 5, 6), 'numeric')
 
 		packages <- c('qmap', 'fitdistrplus', 'ADGofTest')
-		toExports <- c('data.rfe', 'data.rfe.stn', 'data.stn', 'fit.mixture.distr', 'min.len')
+		toExports <- c('data.rfe', 'data.rfe.stn', 'fit.mixture.distr', 'min.len',
+						'freqData', 'date.bias', 'addDekads', 'addMonths')
 
 		parsDistr <- vector(mode = 'list', length = 12)
 		parsDistr[months] <- foreach (m = months, .packages = packages, .export = toExports) %parLoop% {
-			xstn <- data.stn[month.stn == m, , drop = FALSE]
-			xrfestn <- data.rfe.stn[month.rfe == m, , drop = FALSE]
-			xrfe <- data.rfe[month.rfe == m, , drop = FALSE]
+			if(freqData == 'daily'){
+				xdt.stn <- month.stn == m
+				xdt.rfe <- month.rfe == m
+			}
+			if(freqData == 'dekadal'){
+				xdt.stn <- date.stn%in%mplus.dekad.date(date.stn[month.stn == m])
+				xdt.rfe <- date.bias%in%mplus.dekad.date(date.bias[month.rfe == m])
+			}
+			if(freqData == 'monthly'){
+				xdt.stn <- date.stn%in%mplus.month.date(date.stn[month.stn == m])
+				xdt.rfe <- date.bias%in%mplus.month.date(date.bias[month.rfe == m])
+			}
+			xstn <- data.stn[xdt.stn, , drop = FALSE]
+			xrfestn <- data.rfe.stn[xdt.rfe, , drop = FALSE]
+			xrfe <- data.rfe[xdt.rfe, , drop = FALSE]
 			xstn <- lapply(seq(ncol(xstn)), function(j) fit.mixture.distr(xstn[, j], min.len, distr.fun = "berngamma"))
 			xrfestn <- lapply(seq(ncol(xrfestn)), function(j) fit.mixture.distr(xrfestn[, j], min.len, distr.fun = "berngamma"))
 			xrfe <- lapply(seq(ncol(xrfe)), function(j) fit.mixture.distr(xrfe[, j], min.len, distr.fun = "berngamma"))
-			# xstn <- lapply(seq(ncol(xstn)), function(j) fit.mixture.distr(xstn[, j], min.len))
-			# xrfestn <- lapply(seq(ncol(xrfestn)), function(j) fit.mixture.distr(xrfestn[, j], min.len))
-			# xrfe <- lapply(seq(ncol(xrfe)), function(j) fit.mixture.distr(xrfe[, j], min.len))
+
+			# xstn <- data.stn[month.stn == m, , drop = FALSE]
+			# xrfestn <- data.rfe.stn[month.rfe == m, , drop = FALSE]
+			# xrfe <- data.rfe[month.rfe == m, , drop = FALSE]
+			# xstn <- lapply(seq(ncol(xstn)), function(j) fit.mixture.distr(xstn[, j], min.len, distr.fun = "berngamma"))
+			# xrfestn <- lapply(seq(ncol(xrfestn)), function(j) fit.mixture.distr(xrfestn[, j], min.len, distr.fun = "berngamma"))
+			# xrfe <- lapply(seq(ncol(xrfe)), function(j) fit.mixture.distr(xrfe[, j], min.len, distr.fun = "berngamma"))
+			# # xstn <- lapply(seq(ncol(xstn)), function(j) fit.mixture.distr(xstn[, j], min.len))
+			# # xrfestn <- lapply(seq(ncol(xrfestn)), function(j) fit.mixture.distr(xrfestn[, j], min.len))
+			# # xrfe <- lapply(seq(ncol(xrfe)), function(j) fit.mixture.distr(xrfe[, j], min.len))
 			list(stn = xstn, rfestn = xrfestn, rfe = xrfe)
 		}
 		if(closeklust) stopCluster(klust)
@@ -180,6 +215,27 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 
 		parsAD.Rfe <- lapply(parsAD, '[[', 1)
 		parsAD.Stn <- lapply(parsAD, '[[', 2)
+
+		####
+		# parBootstrapped <- vector(mode = 'list', length = 12)
+		# parBootstrapped[months] <- lapply(months, function(j){
+		# 	if(length(which(parsAD.Stn[[j]])) == 0) return(NULL)
+		# 	parallel <- if(.Platform$OS.type == "windows") "snow" else "multicore"
+		# 	stn <- sapply(pars.Obs.Stn[[j]][parsAD.Stn[[j]]], function(x){
+		# 		xpars <- bootdist(x$berngamma$fitted.distr, bootmethod = "param", niter = 30, parallel = parallel, ncpus = nb_cores)
+		# 		apply(xpars$estim, 2, median, na.rm = TRUE)
+		# 	})
+		# 	stnrfe <- sapply(pars.Obs.rfe[[j]][parsAD.Stn[[j]]], function(x){
+		# 		xpars <- bootdist(x$berngamma$fitted.distr, bootmethod = "param", niter = 30, parallel = parallel, ncpus = nb_cores)
+		# 		apply(xpars$estim, 2, median, na.rm = TRUE)
+		# 	})
+		# 	list(stn = t(stn), stnrfe = t(stnrfe))
+		# })
+		# for(j in months){
+		# 	pars.Stn1[[j]][parsAD.Stn[[j]], ] <- parBootstrapped[[j]]$stn
+		# 	pars.Rfestn[[j]][parsAD.Stn[[j]], ] <- parBootstrapped[[j]]$stnrfe
+		# }
+
 		bias <- list(pars.ad.stn = parsAD.Stn, pars.ad.rfe = parsAD.Rfe, pars.stn = pars.Stn,
 					pars.rfestn = pars.Rfestn, pars.rfe = pars.Rfe)
 
@@ -314,6 +370,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 		bGrd <- createBlock(cells@cellsize, 2, 5)
 	}
 
+	#######################################
 	## interpolation
 	if(bias.method != 'Quantile.Mapping'){
 		itimes <- as.numeric(rownames(bias.pars))
@@ -503,6 +560,55 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 		PARS.rfe <- vector(mode = 'list', length = 12)
 		PARS.rfe[months] <- foreach(m = months, .packages = packages, .export = toExports) %parLoop% {
 			pars.mon <- lapply(1:3, function(j){
+				# locations.rfestn <- interp.grid$coords.stn
+				# locations.rfestn$pars <- bias.pars$pars.rfestn[[m]][, j]
+				# if(j > 1) locations.rfestn$pars[!bias.pars$pars.ad.stn[[m]]] <- NA
+				# locations.rfestn <- locations.rfestn[!is.na(locations.rfestn$pars), ]
+
+				# extrm <- quantile(locations.rfestn$pars, probs = c(0.001, 0.99))
+				# locations.rfestn <- locations.rfestn[locations.rfestn$pars > extrm[1] & locations.rfestn$pars < extrm[2], ]
+				# if(length(locations.rfestn$pars) < min.stn) return(NULL)
+
+				# xstn <- as.data.frame(locations.rfestn)
+				# xadd <- as.data.frame(interp.grid$coords.grd)
+				# xadd$pars <- bias.pars$pars.rfe[[m]][, j]
+				# if(j > 1) xadd$pars[!bias.pars$pars.ad.rfe[[m]]] <- NA
+
+				# iadd <- rep(TRUE, nrow(xadd))
+				# for(k in 1:nrow(xstn)){
+				# 	if(interp.method == 'NN'){
+				# 		xy.dst <- sqrt((xstn$lon[k]-xadd$lon)^2+(xstn$lat[k]-xadd$lat)^2)*sqrt(2)
+				# 		z.dst <- abs(xstn$elv[k]-xadd$elv)
+				# 		z.iadd <- (z.dst < z.maxdist) & (xy.dst == min(xy.dst))
+				# 		iadd <- iadd & (xy.dst >= xy.maxdist) & !z.iadd
+				# 	}else{
+				# 		dst <- sqrt((xstn$lon[k]-xadd$lon)^2+(xstn$lat[k]-xadd$lat)^2)*sqrt(2)
+				# 		iadd <- iadd & (dst >= maxdist)
+				# 	}
+				# }
+				# xadd <- xadd[iadd, ]
+				# locations.rfestn <- rbind(xstn, xadd)
+				# locations.rfestn <- locations.rfestn[!is.na(locations.rfestn$pars), ]
+
+				# if(interp.method == 'NN'){
+				# 	locations.rfestn <- locations.rfestn[!duplicated(locations.rfestn[, c('lon', 'lat', 'elv')]), ]
+				# 	coordinates(locations.rfestn) <- ~lon+lat+elv
+				# 	pars.grd <- krige(pars~1, locations = locations.rfestn, newdata = interp.grid$newgrid,
+				# 						nmax = 1, maxdist = maxdist, debug.level = 0)
+				# }else{
+				# 	locations.rfestn <- locations.rfestn[!duplicated(locations.rfestn[, c('lon', 'lat')]), ]
+				# 	coordinates(locations.rfestn) <- ~lon+lat
+				# 	if(any(is.auxvar)){
+				# 		locations.rfestn <- locations.rfestn[Reduce("&", as.data.frame(!is.na(locations.rfestn@data[, auxvar[is.auxvar]]))), ]
+				# 		block <- NULL
+				# 	}else block <- bGrd
+				# 	pars.grd <- krige(formule, locations = locations.rfestn, newdata = interp.grid$newgrid, model = vgm,
+				# 						block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+				# }
+				# ret <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
+
+				#######################################
+
 				locations.rfe <- interp.grid$coords.grd
 				locations.rfe$pars <- bias.pars$pars.rfe[[m]][, j]
 				if(j > 1) locations.rfe$pars[!bias.pars$pars.ad.rfe[[m]]] <- NA
@@ -872,7 +978,6 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 
 		if(bias.method == "Quantile.Mapping"){
 			xadj <- quantile.mapping.BGamma(xrfe, PARS.stn[[ijt]], PARS.rfe[[ijt]], adjZero)
-			xadj[!is.na(xadj) & xadj > 5000] <- xrfe[!is.na(xadj) & xadj > 5000]
 		}else xadj <- xrfe * BIAS[[ijt]]
 
 		xadj[xadj < 0] <- 0

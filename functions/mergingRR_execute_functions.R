@@ -11,7 +11,7 @@ execBiasRain <- function(origdir){
 	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
 	stnData <- getCDTdataAndDisplayMsg(stnData, freqData)
 	if(is.null(stnData)) return(NULL)
-	
+
 	###get elevation data
 	demData <- getDemOpenDataSPDF(GeneralParameters$IO.files$DEM.file)
 	if(is.null(demData)) return(NULL)
@@ -77,7 +77,7 @@ execBiasRain <- function(origdir){
 	bias.pars <- ComputeMeanBiasRain(comptMBiasparms)
 
 	###############
-	# load('~/Desktop/merging/ETH_ENACTS/RR_DEK/QM_IDW0.6_noDEM/BIAS_PARAMS.RData')
+	# load('/Users/rijaf/Desktop/merging/MADA_ENACTS/OUT_TAMSATv3_dek/QM_NN_noD/BIAS_PARAMS.RData')
 	# bias.pars <- bias.pars$bias
 
 	###############
