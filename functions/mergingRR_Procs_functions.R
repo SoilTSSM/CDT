@@ -1925,15 +1925,34 @@ ComputeMeanBiasRain.validation <- function(comptMBiasparms){
 
 		parsDistr <- vector(mode = 'list', length = 12)
 		parsDistr[months] <- foreach (m = months, .packages = packages, .export = toExports) %parLoop% {
-			xstn <- data.stn[month.stn == m, , drop = FALSE]
-			xrfestn <- data.rfe.stn[month.rfe == m, , drop = FALSE]
-			xrfe <- data.rfe[month.rfe == m, , drop = FALSE]
+			if(freqData == 'daily'){
+				xdt.stn <- month.stn == m
+				xdt.rfe <- month.rfe == m
+			}
+			if(freqData == 'dekadal'){
+				xdt.stn <- date.stn%in%mplus.dekad.date(date.stn[month.stn == m])
+				xdt.rfe <- date.bias%in%mplus.dekad.date(date.bias[month.rfe == m])
+			}
+			if(freqData == 'monthly'){
+				xdt.stn <- date.stn%in%mplus.month.date(date.stn[month.stn == m])
+				xdt.rfe <- date.bias%in%mplus.month.date(date.bias[month.rfe == m])
+			}
+			xstn <- data.stn[xdt.stn, , drop = FALSE]
+			xrfestn <- data.rfe.stn[xdt.rfe, , drop = FALSE]
+			xrfe <- data.rfe[xdt.rfe, , drop = FALSE]
 			xstn <- lapply(seq(ncol(xstn)), function(j) fit.mixture.distr(xstn[, j], min.len, distr.fun = "berngamma"))
 			xrfestn <- lapply(seq(ncol(xrfestn)), function(j) fit.mixture.distr(xrfestn[, j], min.len, distr.fun = "berngamma"))
 			xrfe <- lapply(seq(ncol(xrfe)), function(j) fit.mixture.distr(xrfe[, j], min.len, distr.fun = "berngamma"))
-			# xstn <- lapply(seq(ncol(xstn)), function(j) fit.mixture.distr(xstn[, j], min.len))
-			# xrfestn <- lapply(seq(ncol(xrfestn)), function(j) fit.mixture.distr(xrfestn[, j], min.len))
-			# xrfe <- lapply(seq(ncol(xrfe)), function(j) fit.mixture.distr(xrfe[, j], min.len))
+
+			# xstn <- data.stn[month.stn == m, , drop = FALSE]
+			# xrfestn <- data.rfe.stn[month.rfe == m, , drop = FALSE]
+			# xrfe <- data.rfe[month.rfe == m, , drop = FALSE]
+			# xstn <- lapply(seq(ncol(xstn)), function(j) fit.mixture.distr(xstn[, j], min.len, distr.fun = "berngamma"))
+			# xrfestn <- lapply(seq(ncol(xrfestn)), function(j) fit.mixture.distr(xrfestn[, j], min.len, distr.fun = "berngamma"))
+			# xrfe <- lapply(seq(ncol(xrfe)), function(j) fit.mixture.distr(xrfe[, j], min.len, distr.fun = "berngamma"))
+			# # xstn <- lapply(seq(ncol(xstn)), function(j) fit.mixture.distr(xstn[, j], min.len))
+			# # xrfestn <- lapply(seq(ncol(xrfestn)), function(j) fit.mixture.distr(xrfestn[, j], min.len))
+			# # xrfe <- lapply(seq(ncol(xrfe)), function(j) fit.mixture.distr(xrfe[, j], min.len))
 			list(stn = xstn, rfestn = xrfestn, rfe = xrfe)
 		}
 		if(closeklust) stopCluster(klust)
@@ -2730,7 +2749,6 @@ AjdMeanBiasRain.validation <- function(adjMeanBiasparms){
 
 		if(bias.method == "Quantile.Mapping"){
 			xadj <- quantile.mapping.BGamma(xrfe, PARS.stn[[ijt]], PARS.rfe[[ijt]], adjZero)
-			xadj[!is.na(xadj) & xadj > 5000] <- xrfe[!is.na(xadj) & xadj > 5000]
 		}else xadj <- xrfe * BIAS[[ijt]]
 
 		xadj[xadj < 0] <- 0
