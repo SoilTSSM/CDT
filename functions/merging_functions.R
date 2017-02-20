@@ -197,6 +197,9 @@ quantile.mapping.Gau <- function(x, pars.stn, pars.reanal){
 	res <- qnorm(p.reanal, mean = pars.stn$mean, sd = pars.stn$sd)
 	miss <- is.na(res) | is.nan(res) | is.infinite(res)
 	res[miss] <- x[miss]
+	ix <- (res-pars.reanal$mean)/pars.reanal$sd > 3
+	ix[is.na(ix)] <- FALSE
+	res[ix] <- x[ix]	
     return(res)
 }
 
