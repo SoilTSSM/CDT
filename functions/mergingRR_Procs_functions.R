@@ -608,8 +608,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				# ret <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
 
 				#######################################
-
-				locations.rfe <- interp.grid$coords.grd
+				locations.rfe <- if(create.grd != '1' & is.regridRFE) interp.grid$coords.rfe else interp.grid$coords.grd
 				locations.rfe$pars <- bias.pars$pars.rfe[[m]][, j]
 				if(j > 1) locations.rfe$pars[!bias.pars$pars.ad.rfe[[m]]] <- NA
 

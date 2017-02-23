@@ -1,8 +1,8 @@
 ###Onglets manupilation
 
-.Tcl(paste("image create photo img_close -file ", '"', file.path(imgdir, "closeTabButton0.gif"), '"',sep = ""))
-.Tcl(paste("image create photo img_closeactive  -file ", '"', file.path(imgdir, "closeTabButton1.gif"), '"',sep = ""))
-.Tcl(paste("image create photo img_closepressed -file ", '"', file.path(imgdir, "closeTabButton2.gif"), '"',sep = ""))
+.Tcl(paste("image create photo img_close -file ", '"', file.path(imgdir, "closeTabButton0.gif"), '"', sep = ""))
+.Tcl(paste("image create photo img_closeactive  -file ", '"', file.path(imgdir, "closeTabButton1.gif"), '"', sep = ""))
+.Tcl(paste("image create photo img_closepressed -file ", '"', file.path(imgdir, "closeTabButton2.gif"), '"', sep = ""))
 
 try(.Tcl('ttk::style element create Fermer image [list img_close {active pressed !disabled} img_closepressed {active  !disabled} img_closeactive ] -border 4 -sticky e'), silent = TRUE)
 
@@ -132,18 +132,18 @@ DisplayQcHom <- function(parent, outqchom, title){
 }
 
 ########################################################################
-DisplayHomInfo <- function(parent, homInfo, title){
+DisplayHomInfo <- function(parent, homInfo, title, colwidth = '24'){
 	onglet <- addNewTab(parent, tab.title = title)
 	dtab <- tclArrayVar(homInfo)
-	table1 <- displayTable(onglet[[2]], tclArray = dtab, colwidth = '24')
+	table1 <- displayTable(onglet[[2]], tclArray = dtab, colwidth = colwidth)
 	return(list(onglet, table1))
 }
 
 ########################################################################
-DisplayInterpData <- function(parent, data, title){
+DisplayInterpData <- function(parent, data, title, colwidth = '15'){
 	onglet <- addNewTab(parent, tab.title = title)
 	dtab <- tclArrayVar(data[[2]])
-	table1 <- displayTable(onglet[[2]], tclArray = dtab, colwidth = '15')
+	table1 <- displayTable(onglet[[2]], tclArray = dtab, colwidth = colwidth)
 	return(list(onglet, table1, data[-2]))
 }
 
@@ -156,7 +156,7 @@ CloseNotebookTab <- function(index){
 		return(NULL)
 	}else{
 		arrTypes <- c("arr", "arrhom", "arrRHtest", "arrqc", "arrzc", "arrInterp",
-						"homInfo", "StnInfo", "arrValid")
+						"homInfo", "StnInfo", "arrValid", "arrAssess")
 		if(AllOpenTabType[[tabid]]%in%arrTypes){
 			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
 		}else if(AllOpenTabType[[tabid]] == "ctxt"){
@@ -173,6 +173,7 @@ CloseNotebookTab <- function(index){
 }
 
 ########################################################################
+
 SaveNotebookTabArray <- function(parent){
 	tabid <- as.numeric(tclvalue(tkindex(parent, 'current')))+1
 	if(length(AllOpenTabType) > 0){
@@ -268,7 +269,7 @@ SaveNotebookTabArray <- function(parent){
 							id = as.character(dat2sav$id),
 							z = as.numeric(as.character(dat2sav$z)),
 							elv = elvd)
-#			cat(AllOpenTabData[[tabid]][[3]][[2]],'\n')
+			# cat(AllOpenTabData[[tabid]][[3]][[2]],'\n')
 			assign('donnees', donnees, envir = EnvInterpolation)
 		}else if(AllOpenTabType[[tabid]] == "StnInfo"){
 			if(ReturnExecResults$action == 'chk.coords'){
@@ -283,6 +284,15 @@ SaveNotebookTabArray <- function(parent){
 			}else{
 				InsertMessagesTxt(main.txt.out, 'The table could not be saved correctly', format = TRUE)
 			}
+		}else if(AllOpenTabType[[tabid]] == "arrAssess"){
+			filetypes  <-  "{{CSV Files} {.csv .CSV}} {{Text Files} {.txt .TXT}} {{All files} *}"
+			if (Sys.info()["sysname"] == "Windows") f2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes, defaultextension = TRUE)
+			else f2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes)
+			Objarray <- AllOpenTabData[[tabid]][[2]]
+			tkconfigure(main.win, cursor = 'watch'); tcl('update')
+			dat2sav <- tclArray2dataframe(Objarray)
+			writeFiles(dat2sav, f2save)
+			tkconfigure(main.win, cursor = '')
 		}else{
 			return(NULL)
 		}

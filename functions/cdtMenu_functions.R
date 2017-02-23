@@ -67,15 +67,14 @@ tkadd(menu.file, "command", label = "Save table", command = function(){
 	if(!is.null(ReturnExecResults)){
 		tkconfigure(main.win, cursor = 'watch'); tcl('update')
 		tab2sav <- try(SaveNotebookTabArray(tknotes), silent = TRUE)
-		tkconfigure(main.win, cursor = '')
-		is.ok<- !inherits(tab2sav, "try-error")
-		if(is.ok){
+		if(!inherits(tab2sav, "try-error")){
 			InsertMessagesTxt(main.txt.out, "Table saved successfully")
 		}else{
 			InsertMessagesTxt(main.txt.out, "The table could not be saved", format = TRUE)
 			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', tab2sav[1]), format = TRUE)
 			return(NULL)
 		}
+		tkconfigure(main.win, cursor = '')
 	}else{
 		return(NULL)
 	}
@@ -85,16 +84,15 @@ tkadd(menu.file, "command", label = "Save table", command = function(){
 tkadd(menu.file, "command", label = "Save table As...        ", command = function(){
 	tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
 	if(!is.na(tabid)){
-		if(AllOpenTabType[[tabid]] == "arr"){
+		if(AllOpenTabType[[tabid]]%in%c("arr", "arrAssess")){
 			filetypes <- "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}"
 			if(Sys.info()["sysname"] == "Windows") file.to.save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes, defaultextension = TRUE))
 			else file.to.save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
 			Objarray <- AllOpenTabData[[tabid]][[2]]
 			tkconfigure(main.win, cursor = 'watch'); tcl('update')
 			dat2sav <- tclArray2dataframe(Objarray)
-			extFl <- file_ext(basename(file.to.save))
-			if(extFl == "csv" | extFl == "CSV") write.csv(dat2sav, file = file.to.save, row.names = FALSE, col.names = TRUE, quote = FALSE)
-			else write.table(dat2sav, file.to.save, row.names = FALSE, col.names = TRUE, quote = FALSE)
+			colnoms <- if(AllOpenTabType[[tabid]] == "arr") TRUE else FALSE
+			writeFiles(dat2sav, file.to.save, col.names = colnoms)
 			tkconfigure(main.win, cursor = '')
 		}else return(NULL)
 	}else return(NULL)

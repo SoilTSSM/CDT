@@ -9,8 +9,8 @@ if(Sys.info()["sysname"] == "Windows") {
 horizS <- round(horiz, 1)
 vertiS <- round(verti, 1)
 
-hRedraw <- tkimage.create('photo','-file', file.path(imgdir, 'RedrawButton24.gif', fsep = .Platform$file.sep))
-hRedraw1 <- tkimage.create('photo','-file', file.path(imgdir, 'RedrawButton-Change24.gif', fsep = .Platform$file.sep))
+hRedraw <- tkimage.create('photo', '-file', file.path(imgdir, 'RedrawButton24.gif', fsep = .Platform$file.sep))
+hRedraw1 <- tkimage.create('photo', '-file', file.path(imgdir, 'RedrawButton-Change24.gif', fsep = .Platform$file.sep))
 
 ####################################################################################################
 
@@ -23,14 +23,14 @@ tb.save.table <- tkbutton.toolbar(tools.frame, imgdir, "save_table24.gif", TextO
 tb.run <- tkbutton.toolbar(tools.frame, imgdir, "run24.gif", TextOutputVar, "Execute", "Execute the append task")
 
 ###
-lspinH <- tklabel.h(tools.frame, 'Width:',TextOutputVar, 'Horizontal scale factor for image size', 'Horizontal scale factor for image size')
+lspinH <- tklabel.h(tools.frame, 'Width:', TextOutputVar, 'Horizontal scale factor for image size', 'Horizontal scale factor for image size')
 spinH <- ttkspinbox(tools.frame, from = 0.5, to = 5.0, increment = 0.1, justify = 'center', width = 6, state = 'disabled')
 tkset(spinH, horizS)
 infobulle(spinH, 'Horizontal scale factor for image size')
 status.bar.display(spinH, TextOutputVar, 'Horizontal scale factor for image size')
 
 ###
-lspinV <- tklabel.h(tools.frame, 'Height:',TextOutputVar, 'Vertical scale factor for image size', 'Vertical scale factor for image size')
+lspinV <- tklabel.h(tools.frame, 'Height:', TextOutputVar, 'Vertical scale factor for image size', 'Vertical scale factor for image size')
 spinV <- ttkspinbox(tools.frame, from = 0.5, to = 5.0, increment = 0.1, justify = 'center', width = 6, state = 'disabled')
 tkset(spinV, vertiS)
 infobulle(spinV, 'Vertical scale factor for image size')
@@ -102,27 +102,27 @@ tkconfigure(plotRedraw, relief = 'raised', command = function(){
 })
 
 #######
-tkbind(plotRedraw,"<ButtonRelease>", function(){
+tkbind(plotRedraw, "<ButtonRelease>", function(){
 	tkconfigure(plotRedraw, image = hRedraw)
 })
 
-tkbind(spinH,"<<Increment>>", function(){
+tkbind(spinH, "<<Increment>>", function(){
 	tkconfigure(plotRedraw, image = hRedraw1)
 })
-tkbind(spinH,"<<Decrement>>", function(){
+tkbind(spinH, "<<Decrement>>", function(){
 	tkconfigure(plotRedraw, image = hRedraw1)
 })
-tkbind(spinV,"<<Increment>>", function(){
+tkbind(spinV, "<<Increment>>", function(){
 	tkconfigure(plotRedraw, image = hRedraw1)
 })
-tkbind(spinV,"<<Decrement>>", function(){
+tkbind(spinV, "<<Decrement>>", function(){
 	tkconfigure(plotRedraw, image = hRedraw1)
 })
 
 #####**************************** Configure command toolbars ************************######
 
 tkconfigure(tb.open.file, state = 'normal', command = function(){
-	tkconfigure(main.win, cursor = 'watch');tcl('update')
+	tkconfigure(main.win, cursor = 'watch'); tcl('update')
 	dat.opfiles <- getOpenFiles(main.win, all.opfiles)
 	tkconfigure(main.win, cursor = '')
 	if(!is.null(dat.opfiles)){
@@ -157,17 +157,16 @@ tkconfigure(tb.open.table, state = 'normal', command = function() {
 #######
 tkconfigure(tb.save.table, state = 'normal', command = function(){
 	if(!is.null(ReturnExecResults)){
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
+		tkconfigure(main.win, cursor = 'watch'); tcl('update')
 		tab2sav <- try(SaveNotebookTabArray(tknotes), silent = TRUE)
-		tkconfigure(main.win, cursor='')
-		is.ok<- !inherits(tab2sav, "try-error")
-		if(is.ok){
+		if(!inherits(tab2sav, "try-error")){
 			InsertMessagesTxt(main.txt.out, "Table saved successfully")
 		}else{
 			InsertMessagesTxt(main.txt.out, "The table could not be saved", format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]','',tab2sav[1]), format = TRUE)
+			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', tab2sav[1]), format = TRUE)
 			return(NULL)
 		}
+		tkconfigure(main.win, cursor = '')
 	}else{
 		return(NULL)
 	}
@@ -178,11 +177,11 @@ tkconfigure(tb.run, state = 'normal', command = function(){
 	if(is.null(GeneralParameters)){
 		return(NULL)
 	}else{
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
+		tkconfigure(main.win, cursor = 'watch'); tcl('update')
 		ReturnExecResults <<- tryCatch(Execute_All_Functions(tclvalue(lchoixStnFr$env$stn.choix.val)),
 			#warning = function(w) warningFun(w),
-			error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
+			error = function(e) errorFun(e), finally = {
+			tkconfigure(main.win, cursor = '')
 		})
 	}
 })

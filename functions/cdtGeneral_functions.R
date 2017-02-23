@@ -368,7 +368,7 @@ getIndex.AllOpenFiles <- function(nomfile){
 
 reshapeXYZ2Matrix <- function(df){
 	#require(reshape2)
-	df <- as.data.frame(df)
+	df <- as.data.frame(df, stringsAsFactors = FALSE)
 	names(df) <- c('x', 'y', 'z')
 	x <- sort(unique(df$x))
 	y <- sort(unique(df$y))
@@ -1497,6 +1497,53 @@ getDataCPTclim.Station <- function(freqOut, xdon, xdates, xlon, xlat, xid, varid
 # 	cpt.out <- c(xmlns, cpt.tags, cpt.stn, cpt.lon, cpt.lat, cpt.data)
 # 	return(cpt.out)
 # }
+
+cdtData2CPT <- function(timeStep, cdtFile, csv = FALSE, tsvFile,
+						missing.code, field, units){
+	if(csv) sep = ',' else sep = ''
+	stnData <- read.table(cdtFile, stringsAsFactors = FALSE, na.strings = str_trim(missing.code), sep = sep)
+	stnData <- getCDTdataAndDisplayMsg(stnData, timeStep)
+	stnData$data[is.na(stnData$data)] <- missing.code
+	cptIn <- list(freqOut = timeStep, xdon = stnData$data, xdates = stnData$dates,
+					xlon = stnData$lon, xlat = stnData$lat, xid = stnData$id,
+					varid = field, units = units, miss.val = missing.code)
+	cptOut <- do.call(getDataCPT.Station, cptIn)
+	cat(cptOut, file = tsvFile)
+	return(0)
+}
+
+netcdf2CPT <- function(timeStep, start.year, start.mon, start.day = 1,
+						end.year, end.mon, end.day = 1,
+						ncdfDIR, ncdfFORMAT, tsvFile, missing.code){
+	start.date <- as.Date(paste(start.year, start.mon, start.day, sep = '-'))
+	end.date <- as.Date(paste(end.year, end.mon, end.day, sep = '-'))
+	ncInfo <- ncFilesInfo(timeStep, start.date, end.date, 1:12, ncdfDIR, ncdfFORMAT, "NetCDF data not found")
+	if(is.null(ncInfo)) return(NULL)
+
+	nc <- nc_open(ncInfo$nc.files[ncInfo$exist][1])
+	xlon <- nc$dim[[1]]$vals
+	xlat <- nc$dim[[2]]$vals
+	varid <- nc$var[[1]]$name
+	units <- nc$var[[1]]$units
+	nc_close(nc)
+
+	ncdata <- lapply(seq_along(ncInfo$nc.files), function(j){
+		if(ncInfo$exist[j]){
+			nc <- nc_open(ncInfo$nc.files[j])
+			xdat <- ncvar_get(nc, varid = varid)
+			nc_close(nc)
+			xdat[is.na(xdat)] <- missing.code
+			xdat
+		}else return(NULL)
+	})
+	ncdata[sapply(ncdata, is.null)] <- matrix(missing.code, nrow = length(xlon), ncol = length(xlat))
+
+	cptIn <- list(freqOut = timeStep, xdon = ncdata, xdates = ncInfo$dates,
+					xlon = xlon, xlat = xlat, varid = varid, units = units, miss.val = missing.code)
+	cptOut <- do.call(getDataCPT.GRDdata, cptIn)
+	cat(cptOut, file = tsvFile)
+	return(0)
+}
 
 #################################################################################
 ### Merging Method combination
