@@ -6,9 +6,6 @@
 	year1 <- 1983
 	year2 <- 2010
 
-	## Output directory
-	outDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/LMCoef'
-
 	## Training data file (CDT data)
 	stnFile <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/Data/RR_DEK_83to14_Train.txt'
 
@@ -18,9 +15,6 @@
 	## Station missing values code
 	miss.val <- -99
 
-	## elevation data file
-	demFile <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/dem/DEM_1_Arc-Minute.nc'
-
 	## Bias corrected data directory
 	adjDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/ADJ'
 	## corrected data filename format
@@ -28,6 +22,12 @@
 
 	## RFE sample file
 	rfeFile <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/TAMSAT_dek/rfe_1983012.nc'
+
+	## elevation data file
+	demFile <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/dem/DEM_1_Arc-Minute.nc'
+
+	## Spatio-Temporal LM Coef Output directory
+	SPLM.coefDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/LMCoef'
 
 	#####################################################################################
 
@@ -58,7 +58,7 @@
 	LMcomb <- LMCoef.combination()
 
 	##same aux.var, "noD", "D", "SA", "DSA"
-	ix1 <- (LMcomb$bias.auxvar == LMcomb$LMcoef.auxvar) & LMcomb$bias.auxvar%in%c("noD", "D", "SA", "DSA")
+	ix1 <- (LMcomb$bias.auxvar == LMcomb$LMcoef.auxvar) & LMcomb$bias.auxvar%in%c("noD", "D", "SA", "DSA", "LoLa", "DLoLa", "DSALoLa")
 
 	## Bias and LMCoef same aux.var and interpolation
 	ix2 <- LMcomb$bias.interp == LMcomb$LMcoef.interp
@@ -147,6 +147,16 @@
 						xy.maxdist <- if(xy.maxdist < res.coarse) res.coarse else xy.maxdist
 						maxdist <- sqrt(xy.maxdist^2 + z.maxdist^2)
 						bGrd <- NULL
+						interp.grid$coords.stn$alon <- interp.grid$coords.stn@coords[, 'lon']
+						interp.grid$coords.stn$alat <- interp.grid$coords.stn@coords[, 'lat']
+						interp.grid$coords.grd$alon <- interp.grid$coords.grd@coords[, 'lon']
+						interp.grid$coords.grd$alat <- interp.grid$coords.grd@coords[, 'lat']
+						if(!is.null(interp.grid$coords.rfe)){
+							interp.grid$coords.rfe$alon <- interp.grid$coords.rfe@coords[, 'lon']
+							interp.grid$coords.rfe$alat <- interp.grid$coords.rfe@coords[, 'lat']
+						}
+						interp.grid$newgrid$alon <- interp.grid$newgrid@coords[, 'lon']
+						interp.grid$newgrid$alat <- interp.grid$newgrid@coords[, 'lat']
 						interp.grid$newgrid <- interp.grid$newgrid[c(ijTrain, ijInt), ]
 						retGrid <- list(interp.grid = interp.grid, xy.maxdist = xy.maxdist, z.maxdist = z.maxdist,
 										maxdist = maxdist, bGrd = bGrd)
@@ -159,6 +169,16 @@
 						maxdist <- if(maxdist < res.coarse) res.coarse else maxdist
 						cells <- SpatialPixels(points = interp.grid$newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)))@grid
 						bGrd <- createBlock(cells@cellsize, 2, 5)
+						interp.grid$coords.stn$alon <- interp.grid$coords.stn@coords[, 'lon']
+						interp.grid$coords.stn$alat <- interp.grid$coords.stn@coords[, 'lat']
+						interp.grid$coords.grd$alon <- interp.grid$coords.grd@coords[, 'lon']
+						interp.grid$coords.grd$alat <- interp.grid$coords.grd@coords[, 'lat']
+						if(!is.null(interp.grid$coords.rfe)){
+							interp.grid$coords.rfe$alon <- interp.grid$coords.rfe@coords[, 'lon']
+							interp.grid$coords.rfe$alat <- interp.grid$coords.rfe@coords[, 'lat']
+						}
+						interp.grid$newgrid$alon <- interp.grid$newgrid@coords[, 'lon']
+						interp.grid$newgrid$alat <- interp.grid$newgrid@coords[, 'lat']
 						interp.grid$newgrid <- interp.grid$newgrid[c(ijTrain, ijInt), ]
 						retGrid <- list(interp.grid = interp.grid, maxdist = maxdist, bGrd = bGrd)
 						return(retGrid)
@@ -166,14 +186,7 @@
 
 	#####################################################################################
 
-	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
-	aux.var <- apply(DAS, 1, function(j){
-		x <- c('D', 'S', 'A')[j]
-		if(length(x) > 0) paste(x, collapse = '')
-		else 'noD'
-	})
-	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
-
+	auxdf <- generateCombnation()
 	bs.mthd <- paste(LMcomb$bias.method, LMcomb$bias.interp, LMcomb$bias.auxvar, sep = '_')
 	lm.mthd <- paste(LMcomb$LMcoef.interp, LMcomb$LMcoef.auxvar, sep = '_')
 	adj.dir <- file.path(adjDIR, bs.mthd)
@@ -187,15 +200,17 @@
 	retfor <- foreach(ll = seq(nrow(LMcomb)), .packages = packages, .export = toExports) %parLoop% {
 		cblm <- LMcomb[ll, ]
 		GeneralParameters$Interpolation.pars$interp.method <- if(cblm[3] == 'OK') 'Kriging' else cblm[3]
-		auxv <- as.logical(auxdf[auxdf$l == cblm[4], c("dem", "slope", "aspect")])
+		auxv <- as.logical(auxdf[auxdf$l == cblm[4], c("dem", "slope", "aspect", "lon", "lat")])
 		GeneralParameters$auxvar$dem <- auxv[1]
 		GeneralParameters$auxvar$slope <- auxv[2]
 		GeneralParameters$auxvar$aspect <- auxv[3]
+		GeneralParameters$auxvar$lon <- auxv[4]
+		GeneralParameters$auxvar$lat <- auxv[5]
 
 		adjInfo <- ncFilesInfo(freqData, start.date, end.date, months, cblm[1], adjFFormat, errmsg)
 		if(is.null(adjInfo)) return(NULL)
 
-		origdir <- file.path(outDIR, cblm[2])
+		origdir <- file.path(SPLM.coefDIR, cblm[2])
 		dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
 		comptLMparams <- list(GeneralParameters = GeneralParameters, stnData = stnData, gridObj = gridObj,

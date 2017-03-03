@@ -10,9 +10,6 @@
 	end.mon <- 12
 	end.dek <- 3
 
-	## Output directory
-	outDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/Merged'
-
 	## Training data file (CDT data)
 	stnFile <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/Data/RR_DEK_83to14_Train.txt'
 
@@ -22,21 +19,24 @@
 	## Station missing values code
 	miss.val <- -99
 
-	## elevation data file
-	demFile <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/dem/DEM_1_Arc-Minute.nc'
-
 	## Bias corrected data directory
 	adjDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/ADJ'
 	## corrected data filename format
 	adjFFormat <- 'rr_adj_%s%s%s.txt'
 
-	## Spatio-Temporal LM Coef directory
-	SPLM.coefDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/LMCoef'
-
 	## RFE directory
 	rfeDir <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/TAMSAT_dek'
 	## RFE filename format
 	rfeFFormat <- 'rfe_%s%s%s.nc'
+
+	## Spatio-Temporal LM Coef directory
+	SPLM.coefDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/LMCoef'
+
+	## elevation data file
+	demFile <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/dem/DEM_1_Arc-Minute.nc'
+
+	## Merged data Output directory
+	mrgDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/Merged'
 
 	#####################################################################################
 	maxdist <- 0.6
@@ -65,7 +65,7 @@
 	MRGcomb <- merging.combination()
 
 	##same aux.var, "noD", "D", "SA", "DSA"
-	ix1 <- (MRGcomb$bias.auxvar == MRGcomb$mrg.auxvar) & MRGcomb$bias.auxvar%in%c("noD", "D", "SA", "DSA")
+	ix1 <- (MRGcomb$bias.auxvar == MRGcomb$mrg.auxvar) & MRGcomb$bias.auxvar%in%c("noD", "D", "SA", "DSA", "LoLa", "DLoLa", "DSALoLa")
 	ix2 <- MRGcomb$mrg.method == "Reg.Kriging"
 
 	## Bias and LMCoef same aux.var and interpolation
@@ -157,6 +157,17 @@
 	cells <- SpatialPixels(points = interp.grid$newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)))@grid
 	bGrd <- createBlock(cells@cellsize, 2, 5)
 
+	interp.grid$coords.stn$alon <- interp.grid$coords.stn@coords[, 'lon']
+	interp.grid$coords.stn$alat <- interp.grid$coords.stn@coords[, 'lat']
+	interp.grid$coords.grd$alon <- interp.grid$coords.grd@coords[, 'lon']
+	interp.grid$coords.grd$alat <- interp.grid$coords.grd@coords[, 'lat']
+	if(!is.null(interp.grid$coords.rfe)){
+		interp.grid$coords.rfe$alon <- interp.grid$coords.rfe@coords[, 'lon']
+		interp.grid$coords.rfe$alat <- interp.grid$coords.rfe@coords[, 'lat']
+	}
+	interp.grid$newgrid$alon <- interp.grid$newgrid@coords[, 'lon']
+	interp.grid$newgrid$alat <- interp.grid$newgrid@coords[, 'lat']
+
 	## RFE data
 	rfeData <- lapply(seq_along(ncInfo$nc.files), function(jj){
 		if(ncInfo$exist[jj]){
@@ -173,14 +184,7 @@
 
 	#####################################################################################
 
-	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
-	aux.var <- apply(DAS, 1, function(j){
-		x <- c('D', 'S', 'A')[j]
-		if(length(x) > 0) paste(x, collapse = '')
-		else 'noD'
-	})
-	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
-
+	auxdf <- generateCombnation()
 	bs.mthd <- paste(MRGcomb$bias.method, MRGcomb$bias.interp, MRGcomb$bias.auxvar, sep = '_')
 	lm.mthd <- paste(MRGcomb$sptrend.interp, MRGcomb$sptrend.auxvar, sep = '_')
 	mrg.mthd <- paste(MRGcomb$mrg.method, MRGcomb$mrg.interp, MRGcomb$mrg.auxvar, sep = '_')
@@ -206,15 +210,17 @@
 			GeneralParameters$IO.files$LMCoef.dir <- cbmrg[2]
 		}
 
-		auxv <- as.logical(auxdf[auxdf$l == cbmrg[7], c("dem", "slope", "aspect")])
+		auxv <- as.logical(auxdf[auxdf$l == cbmrg[7], c("dem", "slope", "aspect", "lon", "lat")])
 		GeneralParameters$auxvar$dem <- auxv[1]
 		GeneralParameters$auxvar$slope <- auxv[2]
 		GeneralParameters$auxvar$aspect <- auxv[3]
+		GeneralParameters$auxvar$lon <- auxv[4]
+		GeneralParameters$auxvar$lat <- auxv[5]
 
 		adjInfo <- ncFilesInfo(freqData, start.date, end.date, months, cbmrg[1], adjFFormat, errmsg.adj)
 		if(is.null(adjInfo)) return(NULL)
 
-		origdir <- file.path(outDIR, cbmrg[3])
+		origdir <- file.path(mrgDIR, cbmrg[3])
 		dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
 		paramsMRG <- list( GeneralParameters = GeneralParameters, stnData = stnData, ijInt = ijInt, adjInfo = adjInfo,

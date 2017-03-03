@@ -293,8 +293,10 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 	origdir <- interpBiasparams$origdir
 
 	#############
-	auxvar <- c('dem', 'slp', 'asp')
-	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
+	auxvar <- c('dem', 'slp', 'asp', 'alon', 'alat')
+	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope,
+					GeneralParameters$auxvar$aspect, GeneralParameters$auxvar$lon,
+					GeneralParameters$auxvar$lat)
 	if(any(is.auxvar)){
 		formule <- formula(paste('pars', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
 	}else formule <- formula(paste('pars', '~', 1, sep = ''))
@@ -369,6 +371,16 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 		cells <- SpatialPixels(points = interp.grid$newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)))@grid
 		bGrd <- createBlock(cells@cellsize, 2, 5)
 	}
+	interp.grid$coords.stn$alon <- interp.grid$coords.stn@coords[, 'lon']
+	interp.grid$coords.stn$alat <- interp.grid$coords.stn@coords[, 'lat']
+	interp.grid$coords.grd$alon <- interp.grid$coords.grd@coords[, 'lon']
+	interp.grid$coords.grd$alat <- interp.grid$coords.grd@coords[, 'lat']
+	if(!is.null(interp.grid$coords.rfe)){
+		interp.grid$coords.rfe$alon <- interp.grid$coords.rfe@coords[, 'lon']
+		interp.grid$coords.rfe$alat <- interp.grid$coords.rfe@coords[, 'lat']
+	}
+	interp.grid$newgrid$alon <- interp.grid$newgrid@coords[, 'lon']
+	interp.grid$newgrid$alat <- interp.grid$newgrid@coords[, 'lat']
 
 	#######################################
 	## interpolation
@@ -432,7 +444,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 			if(interp.method == 'NN'){
 				coordinates(locations.stn) <- ~lon+lat+elv
 				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid,
-									nmax = 1, maxdist = maxdist, debug.level = 0)	
+									nmax = 1, maxdist = maxdist, debug.level = 0)
 			}else{
 				coordinates(locations.stn) <- ~lon+lat
 				if(any(is.auxvar)){
@@ -835,7 +847,7 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 			times.stn <- months
 			BIAS <- vector(mode = 'list', length = 12)
 		}
-			
+
 		biasFile <- file.path(biasDir, paste(meanBiasPrefix, '_', times.stn, '.nc', sep = ''))
 		exist.bias <- unlist(lapply(biasFile, file.exists))
 
@@ -912,7 +924,7 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 	## RFE regrid?
 	biasSp <- defSpatialPixels(list(lon = lon, lat = lat))
 	is.regridRFE <- is.diffSpatialPixelsObj(biasSp, rfeSp, tol = 1e-07)
-	
+
 	########
 	#Defines netcdf output dims
 	dx <- ncdim_def("Lon", "degreeE", lon)
@@ -1033,8 +1045,10 @@ ComputeLMCoefRain <- function(comptLMparams){
 	res.coarse <- comptLMparams$res.coarse
 
 	#############
-	auxvar <- c('dem', 'slp', 'asp')
-	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
+	auxvar <- c('dem', 'slp', 'asp', 'alon', 'alat')
+	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope,
+					GeneralParameters$auxvar$aspect, GeneralParameters$auxvar$lon,
+					GeneralParameters$auxvar$lat)
 	if(any(is.auxvar)){
 		formule <- formula(paste('pars', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
 	}else formule <- formula(paste('pars', '~', 1, sep = ''))
@@ -1118,6 +1132,16 @@ ComputeLMCoefRain <- function(comptLMparams){
 		cells <- SpatialPixels(points = interp.grid$newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)))@grid
 		bGrd <- createBlock(cells@cellsize, 2, 5)
 	}
+	interp.grid$coords.stn$alon <- interp.grid$coords.stn@coords[, 'lon']
+	interp.grid$coords.stn$alat <- interp.grid$coords.stn@coords[, 'lat']
+	interp.grid$coords.grd$alon <- interp.grid$coords.grd@coords[, 'lon']
+	interp.grid$coords.grd$alat <- interp.grid$coords.grd@coords[, 'lat']
+	if(!is.null(interp.grid$coords.rfe)){
+		interp.grid$coords.rfe$alon <- interp.grid$coords.rfe@coords[, 'lon']
+		interp.grid$coords.rfe$alat <- interp.grid$coords.rfe@coords[, 'lat']
+	}
+	interp.grid$newgrid$alon <- interp.grid$newgrid@coords[, 'lon']
+	interp.grid$newgrid$alat <- interp.grid$newgrid@coords[, 'lat']
 
 	#############
 	InsertMessagesTxt(main.txt.out, 'Compute LM Coefficients ...')
@@ -1385,8 +1409,10 @@ MergingFunctionRain <- function(paramsMRG){
 
 	#############
 
-	auxvar <- c('dem', 'slp', 'asp')
-	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
+	auxvar <- c('dem', 'slp', 'asp', 'alon', 'alat')
+	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope,
+					GeneralParameters$auxvar$aspect, GeneralParameters$auxvar$lon,
+					GeneralParameters$auxvar$lat)
 	if(any(is.auxvar)){
 		formule <- formula(paste('res', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
 		if(Mrg.Method == "Regression Kriging"){
@@ -1427,6 +1453,17 @@ MergingFunctionRain <- function(paramsMRG){
 	interp.grid <- createGrid(ObjStn, demData, as.dim.elv = FALSE, res.coarse = res.coarse)
 	cells <- SpatialPixels(points = interp.grid$newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)))@grid
 	bGrd <- createBlock(cells@cellsize, 2, 5)
+
+	interp.grid$coords.stn$alon <- interp.grid$coords.stn@coords[, 'lon']
+	interp.grid$coords.stn$alat <- interp.grid$coords.stn@coords[, 'lat']
+	interp.grid$coords.grd$alon <- interp.grid$coords.grd@coords[, 'lon']
+	interp.grid$coords.grd$alat <- interp.grid$coords.grd@coords[, 'lat']
+	if(!is.null(interp.grid$coords.rfe)){
+		interp.grid$coords.rfe$alon <- interp.grid$coords.rfe@coords[, 'lon']
+		interp.grid$coords.rfe$alat <- interp.grid$coords.rfe@coords[, 'lat']
+	}
+	interp.grid$newgrid$alon <- interp.grid$newgrid@coords[, 'lon']
+	interp.grid$newgrid$alat <- interp.grid$newgrid@coords[, 'lat']
 
 	#############
 	if(Mrg.Method == "Spatio-Temporal LM"){
@@ -1914,13 +1951,28 @@ ComputeMeanBiasRain.validation <- function(comptMBiasparms){
 			closeklust <- FALSE
 		}
 
+		mplus.dekad.date <- function(daty){
+			dek1 <- as.character(daty)
+			dek2 <- sapply(lapply(as.Date(dek1, format = '%Y%m%d'), addDekads, n = 1),
+					function(x) paste(format(x, '%Y%m'), as.numeric(format(x, '%d')), sep = ''))
+			dek0 <- sapply(lapply(as.Date(dek1, format = '%Y%m%d'), addDekads, n = -1),
+					function(x) paste(format(x, '%Y%m'), as.numeric(format(x, '%d')), sep = ''))
+			unique(sort(c(dek0, dek1, dek2)))
+		}
+		mplus.month.date <- function(daty){
+			mon1 <- as.character(daty)
+			mon2 <- sapply(lapply(as.Date(paste(mon1, '01', sep = ''), format = '%Y%m%d'), addMonths, n = 1), format, '%Y%m')
+			mon0 <- sapply(lapply(as.Date(paste(mon1, '01', sep = ''), format = '%Y%m%d'), addMonths, n = -1), format, '%Y%m')
+			unique(sort(c(mon0, mon1, mon2)))
+		}
+
 		date.stn <- date.stn[istdt]
 		data.stn <- data.stn[istdt, , drop = FALSE]
 		month.stn <- as(substr(date.stn, 5, 6), 'numeric')
 		month.rfe <- as(substr(date.bias, 5, 6), 'numeric')
 
 		packages <- c('qmap', 'fitdistrplus', 'ADGofTest')
-		toExports <- c('data.rfe', 'data.rfe.stn', 'data.stn', 'fit.mixture.distr', 'min.len')
+		toExports <- c('data.rfe', 'data.rfe.stn', 'data.stn', 'fit.mixture.distr', 'min.len', 'addDekads', 'addMonths')
 
 		parsDistr <- vector(mode = 'list', length = 12)
 		parsDistr[months] <- foreach (m = months, .packages = packages, .export = toExports) %parLoop% {
@@ -2035,8 +2087,10 @@ InterpolateMeanBiasRain.validation <- function(interpBiasparams){
 	origdir <- interpBiasparams$origdir
 
 	#############
-	auxvar <- c('dem', 'slp', 'asp')
-	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
+	auxvar <- c('dem', 'slp', 'asp', 'alon', 'alat')
+	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope,
+					GeneralParameters$auxvar$aspect, GeneralParameters$auxvar$lon,
+					GeneralParameters$auxvar$lat)
 	if(any(is.auxvar)){
 		formule <- formula(paste('pars', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
 	}else formule <- formula(paste('pars', '~', 1, sep = ''))
@@ -2111,6 +2165,17 @@ InterpolateMeanBiasRain.validation <- function(interpBiasparams){
 		cells <- SpatialPixels(points = interp.grid$newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)))@grid
 		bGrd <- createBlock(cells@cellsize, 2, 5)
 	}
+
+	interp.grid$coords.stn$alon <- interp.grid$coords.stn@coords[, 'lon']
+	interp.grid$coords.stn$alat <- interp.grid$coords.stn@coords[, 'lat']
+	interp.grid$coords.grd$alon <- interp.grid$coords.grd@coords[, 'lon']
+	interp.grid$coords.grd$alat <- interp.grid$coords.grd@coords[, 'lat']
+	if(!is.null(interp.grid$coords.rfe)){
+		interp.grid$coords.rfe$alon <- interp.grid$coords.rfe@coords[, 'lon']
+		interp.grid$coords.rfe$alat <- interp.grid$coords.rfe@coords[, 'lat']
+	}
+	interp.grid$newgrid$alon <- interp.grid$newgrid@coords[, 'lon']
+	interp.grid$newgrid$alat <- interp.grid$newgrid@coords[, 'lat']
 
 	####################
 	ijInt <- interpBiasparams$ijInt
@@ -2807,8 +2872,10 @@ ComputeLMCoefRain.validation <- function(comptLMparams){
 	# res.coarse <- comptLMparams$res.coarse
 
 	#############
-	auxvar <- c('dem', 'slp', 'asp')
-	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
+	auxvar <- c('dem', 'slp', 'asp', 'alon', 'alat')
+	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope,
+					GeneralParameters$auxvar$aspect, GeneralParameters$auxvar$lon,
+					GeneralParameters$auxvar$lat)
 	if(any(is.auxvar)){
 		formule <- formula(paste('pars', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
 	}else formule <- formula(paste('pars', '~', 1, sep = ''))
@@ -3235,8 +3302,10 @@ MergingFunctionRain.validation <- function(paramsMRG){
 	# Mrg.file.format <- GeneralParameters$FileFormat$Mrg.file.format
 
 	#############
-	auxvar <- c('dem', 'slp', 'asp')
-	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
+	auxvar <- c('dem', 'slp', 'asp', 'alon', 'alat')
+	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope,
+					GeneralParameters$auxvar$aspect, GeneralParameters$auxvar$lon,
+					GeneralParameters$auxvar$lat)
 	if(any(is.auxvar)){
 		formule <- formula(paste('res', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
 		if(Mrg.Method == "Regression Kriging"){

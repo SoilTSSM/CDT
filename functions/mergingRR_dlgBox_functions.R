@@ -555,16 +555,22 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	dem.auxvar <- tclVar(GeneralParameters$auxvar$dem)
 	slope.auxvar <- tclVar(GeneralParameters$auxvar$slope)
 	aspect.auxvar <- tclVar(GeneralParameters$auxvar$aspect)
+	lon.auxvar <- tclVar(GeneralParameters$auxvar$lon)
+	lat.auxvar <- tclVar(GeneralParameters$auxvar$lat)
 
 	txt.auxvar <- tklabel(frauxvar, text = 'Include auxiliary variables', anchor = 'w', justify = 'left')
 	dem.chk.auxvar <- tkcheckbutton(frauxvar, variable = dem.auxvar, text = 'DEM', anchor = 'w', justify = 'left')
 	slope.chk.auxvar <- tkcheckbutton(frauxvar, variable = slope.auxvar, text = 'Slope', anchor = 'w', justify = 'left')
 	aspect.chk.auxvar <- tkcheckbutton(frauxvar, variable = aspect.auxvar, text = 'Aspect', anchor = 'w', justify = 'left')
+	lon.chk.auxvar <- tkcheckbutton(frauxvar, variable = lon.auxvar, text = 'Lon', anchor = 'w', justify = 'left')
+	lat.chk.auxvar <- tkcheckbutton(frauxvar, variable = lat.auxvar, text = 'Lat', anchor = 'w', justify = 'left')
 
-	tkgrid(txt.auxvar, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(dem.chk.auxvar, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(slope.chk.auxvar, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(aspect.chk.auxvar, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.auxvar, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(dem.chk.auxvar, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
+	tkgrid(slope.chk.auxvar, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
+	tkgrid(aspect.chk.auxvar, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
+	tkgrid(lon.chk.auxvar, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
+	tkgrid(lat.chk.auxvar, row = 1, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
 
 	infobulle(dem.chk.auxvar, 'Include elevation data as auxiliary variable')
 	status.bar.display(dem.chk.auxvar, TextOutputVar, 'Include elevation data as auxiliary variable')
@@ -572,6 +578,10 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	status.bar.display(slope.chk.auxvar, TextOutputVar, 'Include slope data as auxiliary variable')
 	infobulle(aspect.chk.auxvar, 'Include aspect data as auxiliary variable')
 	status.bar.display(aspect.chk.auxvar, TextOutputVar, 'Include aspect data as auxiliary variable')
+	infobulle(lon.chk.auxvar, 'Include longitude as auxiliary variable')
+	status.bar.display(lon.chk.auxvar, TextOutputVar, 'Include longitude as auxiliary variable')
+	infobulle(lat.chk.auxvar, 'Include latitude as auxiliary variable')
+	status.bar.display(lat.chk.auxvar, TextOutputVar, 'Include latitude as auxiliary variable')
 
 	############################################
 
@@ -728,6 +738,8 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 				GeneralParameters$auxvar$slope <<- switch(tclvalue(slope.auxvar), '0' = FALSE, '1' = TRUE)
 				GeneralParameters$auxvar$aspect <<- switch(tclvalue(aspect.auxvar), '0' = FALSE, '1' = TRUE)
 				GeneralParameters$Scale.daily <<- switch(tclvalue(scale.day), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$auxvar$lon <<- switch(tclvalue(lon.auxvar), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$auxvar$lat <<- switch(tclvalue(lat.auxvar), '0' = FALSE, '1' = TRUE)
 
 				tkgrab.release(tt)
 				tkdestroy(tt)
@@ -774,11 +786,11 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
-		largeur <- 28
-		largeur1 <- 25
+		largeur <- 40
+		largeur1 <- 37
 	}else{
-		largeur <- 25
-		largeur1 <- 24
+		largeur <- 29
+		largeur1 <- 27
 	}
 
 	tt <- tktoplevel()
@@ -959,16 +971,22 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 	dem.auxvar <- tclVar(GeneralParameters$auxvar$dem)
 	slope.auxvar <- tclVar(GeneralParameters$auxvar$slope)
 	aspect.auxvar <- tclVar(GeneralParameters$auxvar$aspect)
+	lon.auxvar <- tclVar(GeneralParameters$auxvar$lon)
+	lat.auxvar <- tclVar(GeneralParameters$auxvar$lat)
 
 	txt.auxvar <- tklabel(frauxvar, text = 'Include auxiliary variables', anchor = 'w', justify = 'left')
 	dem.chk.auxvar <- tkcheckbutton(frauxvar, variable = dem.auxvar, text = 'DEM', anchor = 'w', justify = 'left')
 	slope.chk.auxvar <- tkcheckbutton(frauxvar, variable = slope.auxvar, text = 'Slope', anchor = 'w', justify = 'left')
 	aspect.chk.auxvar <- tkcheckbutton(frauxvar, variable = aspect.auxvar, text = 'Aspect', anchor = 'w', justify = 'left')
+	lon.chk.auxvar <- tkcheckbutton(frauxvar, variable = lon.auxvar, text = 'Lon', anchor = 'w', justify = 'left')
+	lat.chk.auxvar <- tkcheckbutton(frauxvar, variable = lat.auxvar, text = 'Lat', anchor = 'w', justify = 'left')
 
-	tkgrid(txt.auxvar, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(dem.chk.auxvar, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(slope.chk.auxvar, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(aspect.chk.auxvar, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.auxvar, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(dem.chk.auxvar, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
+	tkgrid(slope.chk.auxvar, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
+	tkgrid(aspect.chk.auxvar, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
+	tkgrid(lon.chk.auxvar, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
+	tkgrid(lat.chk.auxvar, row = 1, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
 
 	infobulle(dem.chk.auxvar, 'Include elevation data as auxiliary variable')
 	status.bar.display(dem.chk.auxvar, TextOutputVar, 'Include elevation data as auxiliary variable')
@@ -976,6 +994,10 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 	status.bar.display(slope.chk.auxvar, TextOutputVar, 'Include slope data as auxiliary variable')
 	infobulle(aspect.chk.auxvar, 'Include aspect data as auxiliary variable')
 	status.bar.display(aspect.chk.auxvar, TextOutputVar, 'Include aspect data as auxiliary variable')
+	infobulle(lon.chk.auxvar, 'Include longitude as auxiliary variable')
+	status.bar.display(lon.chk.auxvar, TextOutputVar, 'Include longitude as auxiliary variable')
+	infobulle(lat.chk.auxvar, 'Include latitude as auxiliary variable')
+	status.bar.display(lat.chk.auxvar, TextOutputVar, 'Include latitude as auxiliary variable')
 
 	############################################
 	tkgrid(frSTN, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -1264,6 +1286,8 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 				GeneralParameters$auxvar$dem <<- switch(tclvalue(dem.auxvar), '0' = FALSE, '1' = TRUE)
 				GeneralParameters$auxvar$slope <<- switch(tclvalue(slope.auxvar), '0' = FALSE, '1' = TRUE)
 				GeneralParameters$auxvar$aspect <<- switch(tclvalue(aspect.auxvar), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$auxvar$lon <<- switch(tclvalue(lon.auxvar), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$auxvar$lat <<- switch(tclvalue(lat.auxvar), '0' = FALSE, '1' = TRUE)
 
 				tkgrab.release(tt)
 				tkdestroy(tt)
@@ -1308,11 +1332,11 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
-		largeur <- 28
-		largeur1 <- 25
+		largeur <- 40
+		largeur1 <- 37
 	}else{
-		largeur <- 25
-		largeur1 <- 24
+		largeur <- 29
+		largeur1 <- 27
 	}
 
 	tt <- tktoplevel()
@@ -1531,16 +1555,22 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	dem.auxvar <- tclVar(GeneralParameters$auxvar$dem)
 	slope.auxvar <- tclVar(GeneralParameters$auxvar$slope)
 	aspect.auxvar <- tclVar(GeneralParameters$auxvar$aspect)
+	lon.auxvar <- tclVar(GeneralParameters$auxvar$lon)
+	lat.auxvar <- tclVar(GeneralParameters$auxvar$lat)
 
 	txt.auxvar <- tklabel(frauxvar, text = 'Include auxiliary variables', anchor = 'w', justify = 'left')
 	dem.chk.auxvar <- tkcheckbutton(frauxvar, variable = dem.auxvar, text = 'DEM', anchor = 'w', justify = 'left')
 	slope.chk.auxvar <- tkcheckbutton(frauxvar, variable = slope.auxvar, text = 'Slope', anchor = 'w', justify = 'left')
 	aspect.chk.auxvar <- tkcheckbutton(frauxvar, variable = aspect.auxvar, text = 'Aspect', anchor = 'w', justify = 'left')
+	lon.chk.auxvar <- tkcheckbutton(frauxvar, variable = lon.auxvar, text = 'Lon', anchor = 'w', justify = 'left')
+	lat.chk.auxvar <- tkcheckbutton(frauxvar, variable = lat.auxvar, text = 'Lat', anchor = 'w', justify = 'left')
 
-	tkgrid(txt.auxvar, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(dem.chk.auxvar, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(slope.chk.auxvar, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(aspect.chk.auxvar, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.auxvar, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(dem.chk.auxvar, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
+	tkgrid(slope.chk.auxvar, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
+	tkgrid(aspect.chk.auxvar, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
+	tkgrid(lon.chk.auxvar, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
+	tkgrid(lat.chk.auxvar, row = 1, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 0, ipady = 1)
 
 	infobulle(dem.chk.auxvar, 'Include elevation data as auxiliary variable')
 	status.bar.display(dem.chk.auxvar, TextOutputVar, 'Include elevation data as auxiliary variable')
@@ -1548,6 +1578,10 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 	status.bar.display(slope.chk.auxvar, TextOutputVar, 'Include slope data as auxiliary variable')
 	infobulle(aspect.chk.auxvar, 'Include aspect data as auxiliary variable')
 	status.bar.display(aspect.chk.auxvar, TextOutputVar, 'Include aspect data as auxiliary variable')
+	infobulle(lon.chk.auxvar, 'Include longitude as auxiliary variable')
+	status.bar.display(lon.chk.auxvar, TextOutputVar, 'Include longitude as auxiliary variable')
+	infobulle(lat.chk.auxvar, 'Include latitude as auxiliary variable')
+	status.bar.display(lat.chk.auxvar, TextOutputVar, 'Include latitude as auxiliary variable')
 
 	############################################
 	tkgrid(frBias, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -1859,6 +1893,8 @@ coefBiasGetInfoRain <- function(parent.win, GeneralParameters){
 				GeneralParameters$auxvar$dem <<- switch(tclvalue(dem.auxvar), '0' = FALSE, '1' = TRUE)
 				GeneralParameters$auxvar$slope <<- switch(tclvalue(slope.auxvar), '0' = FALSE, '1' = TRUE)
 				GeneralParameters$auxvar$aspect <<- switch(tclvalue(aspect.auxvar), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$auxvar$lon <<- switch(tclvalue(lon.auxvar), '0' = FALSE, '1' = TRUE)
+				GeneralParameters$auxvar$lat <<- switch(tclvalue(lat.auxvar), '0' = FALSE, '1' = TRUE)
 
 				tkgrab.release(tt)
 				tkdestroy(tt)

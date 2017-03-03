@@ -18,6 +18,37 @@ PlotGriddedNcdfCmd <- function(){
 
 	###################
 
+	getNCVARS <- function(fileopen){
+		nc <- try(nc_open(fileopen), silent = TRUE)
+		if(inherits(nc, "try-error")){
+			InsertMessagesTxt(main.txt.out, paste("Unable to open file ", fileopen), format = TRUE)
+			return(NULL)
+		}
+		varInfo <- lapply(seq(nc$nvars), function(i){
+			dimInfo <- lapply(seq(nc$var[[i]]$ndims), function(j){
+				name <- nc$var[[i]]$dim[[j]]$name
+				len <- nc$var[[i]]$dim[[j]]$len
+				units <- nc$var[[i]]$dim[[j]]$units
+				# vals <- nc$var[[i]]$dim[[j]]$vals
+				# list(name = name, len = len, units = units, vals = vals)
+				list(name = name, len = len, units = units)
+			})
+			name <- nc$var[[i]]$name
+			ndims <- nc$var[[i]]$ndims
+			size <- nc$var[[i]]$size
+			dimids <- nc$var[[i]]$dimids
+			units <- nc$var[[i]]$units
+			longname <- nc$var[[i]]$longname
+			list(name = name, ndims = ndims, size = size, dimids = dimids, units = units,
+				longname = longname, dimInfo = dimInfo)
+		})
+		nc_close(nc)
+		ncvar.name <- paste(basename(fileopen), ".ncvar", sep = '')
+		return(list(ncvar.name, varInfo, fileopen))
+	}
+
+	###################
+
 	cmd.frame <- tkframe(panel.left)
 
 	tknote.cmd <- bwNoteBook(cmd.frame)
@@ -50,15 +81,15 @@ PlotGriddedNcdfCmd <- function(){
 
 	##############
 	file.netcdf <- tclVar(PlotGrdNcdf$ncdf$nc.file)
-	unit_sym <- tclVar(PlotGrdNcdf$ncdf$nc.unit)
 	file.plotShp <- tclVar(PlotGrdNcdf$shp)
 	blankVal <- tclVar(PlotGrdNcdf$blank)
 
-	var.names <- c('Choose_Variable')
+	var.names <- c('')
 	var.choix <- tclVar(var.names[1])
 	dim.names <- ''
 	X.choix <- tclVar()
 	Y.choix <- tclVar()
+	unit_sym <- tclVar()
 
 	##############
 	frameNcdf <- ttklabelframe(subfr1, text = "NetCDF data file", relief = 'groove')
@@ -75,17 +106,110 @@ PlotGriddedNcdfCmd <- function(){
 	unitEd.tab1 <- tkentry(frameNcdf, width = 8, textvariable = unit_sym, justify = "left")
 
 	#######################
+	# tkconfigure(btNetcdf.tab1, command = function(){
+	# 	nc.opfiles <- getOpenNetcdf(main.win, all.opfiles)
+	# 	if(!is.null(nc.opfiles)){
+	# 		nopf <- length(AllOpenFilesType)
+	# 		AllOpenFilesType[[nopf+1]] <<- 'netcdf'
+	# 		AllOpenFilesData[[nopf+1]] <<- nc.opfiles
+	# 		listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]] 
+	# 		tclvalue(file.netcdf) <- AllOpenFilesData[[nopf+1]][[1]]
+	# 		tkconfigure(combNetcdf.tab1, values = unlist(listOpenFiles), textvariable = file.netcdf)
+	# 		tkconfigure(combShp.tab1, values = unlist(listOpenFiles), textvariable = file.plotShp)
+	# 	}else return(NULL)
+	# })
+
+	ncvar <- NULL
+	var.names <- NULL
 	tkconfigure(btNetcdf.tab1, command = function(){
-		nc.opfiles <- getOpenNetcdf(main.win, all.opfiles)
-		if(!is.null(nc.opfiles)){
-			nopf <- length(AllOpenFilesType)
-			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
-			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
-			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]] 
-			tclvalue(file.netcdf) <- AllOpenFilesData[[nopf+1]][[1]]
-			tkconfigure(combNetcdf.tab1, values = unlist(listOpenFiles), textvariable = file.netcdf)
-			tkconfigure(combShp.tab1, values = unlist(listOpenFiles), textvariable = file.plotShp)
-		}else return(NULL)
+		filetypes <- "{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"
+		fileopen <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
+		if(fileopen == "" | is.na(fileopen)) return(NULL)
+
+		if(length(AllOpenFilesData) > 0){
+			existff <- unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]]))
+			if(basename(fileopen)%in%existff){
+				tkmessageBox(message = "File already exists", icon = "warning", type = "ok")
+				return(NULL)
+			}
+		}
+		ncvar <<- getNCVARS(fileopen)
+		if(is.null(ncvar)) return(NULL)
+		var.names <<- c('Choose Variable', paste(sapply(ncvar[[2]], function(x) x$name),
+						sapply(ncvar[[2]], function(x) x$longname), sep = '::'))
+		tclvalue(var.choix) <- var.names[1]
+		tclvalue(X.choix) <- ''
+		tclvalue(Y.choix) <- ''
+		tkconfigure(cb.choixVar.tab1, values = var.names)
+		
+		nopf <- length(AllOpenFilesType)
+		AllOpenFilesType[[nopf+1]] <<- 'netcdfvar'
+		AllOpenFilesData[[nopf+1]] <<- ncvar
+
+		tclvalue(file.netcdf) <- ncvar[[1]]
+		tkinsert(all.opfiles, "end", ncvar[[1]])
+		listOpenFiles[[length(listOpenFiles)+1]] <<- ncvar[[1]]
+
+		tkconfigure(combNetcdf.tab1, values = unlist(listOpenFiles), textvariable = file.netcdf)
+		tkconfigure(combShp.tab1, values = unlist(listOpenFiles), textvariable = file.plotShp)
+	})
+
+	tkbind(combNetcdf.tab1, "<<ComboboxSelected>>", function(){
+		jfile <- getIndex.AllOpenFiles(file.netcdf)
+		if(length(jfile) > 0){
+			if(AllOpenFilesType[[jfile]] == "netcdfvar"){
+				ncvar <<- AllOpenFilesData[[jfile]]
+			}
+			if(AllOpenFilesType[[jfile]] == "netcdf"){
+				ncdata <- AllOpenFilesData[[jfile]]
+				incvar <- getIndex.AllOpenFiles(paste(basename(ncdata[[3]]), ".ncvar", sep = ''))
+				if(length(incvar) > 0){
+					ncvar <<- AllOpenFilesData[[incvar]]
+					tclvalue(file.netcdf) <- ncvar[[1]]
+				}else{
+					ncvar <<- getNCVARS(ncdata[[3]])
+					if(is.null(ncvar)) return(NULL)
+
+					nopf <- length(AllOpenFilesType)
+					AllOpenFilesType[[nopf+1]] <<- 'netcdfvar'
+					AllOpenFilesData[[nopf+1]] <<- ncvar
+
+					tclvalue(file.netcdf) <- ncvar[[1]]
+					tkinsert(all.opfiles, "end", ncvar[[1]])
+					listOpenFiles[[length(listOpenFiles)+1]] <<- ncvar[[1]]
+
+					tkconfigure(combNetcdf.tab1, values = unlist(listOpenFiles), textvariable = file.netcdf)
+				}
+			}
+		}
+		var.names <<- c('Choose Variable', paste(sapply(ncvar[[2]], function(x) x$name),
+						sapply(ncvar[[2]], function(x) x$longname), sep = '::'))
+		tclvalue(var.choix) <- var.names[1]
+		tclvalue(X.choix) <- ''
+		tclvalue(Y.choix) <- ''
+		tclvalue(unit_sym) <- ''
+		tkconfigure(cb.choixVar.tab1, values = var.names)
+		tkconfigure(cb.choixX.tab1, state = 'disabled', values = dim.names)
+		tkconfigure(cb.choixY.tab1, state = 'disabled', values = dim.names)
+	})
+
+	tkbind(cb.choixVar.tab1, "<<ComboboxSelected>>", function(){
+		ichoix <- which(var.names == tclvalue(var.choix))
+		if(ichoix != 1){
+			ivar <<- ichoix-1
+			dim.names <- c('', sapply(ncvar[[2]][[ivar]]$dimInfo, function(x) x$name))
+			tkconfigure(cb.choixX.tab1, state = 'normal', values = dim.names)
+			tkconfigure(cb.choixY.tab1, state = 'normal', values = dim.names)
+			tclvalue(unit_sym) <- ncvar[[2]][[ivar]]$units
+		}else{
+			ivar <<- NULL
+			dim.names <- ''
+			tkconfigure(cb.choixX.tab1, state = 'disabled', values = dim.names)
+			tkconfigure(cb.choixY.tab1, state = 'disabled', values = dim.names)
+			tclvalue(X.choix) <- ''
+			tclvalue(Y.choix) <- ''
+			tclvalue(unit_sym) <- ''
+		}
 	})
 
 	#######################
@@ -100,7 +224,6 @@ PlotGriddedNcdfCmd <- function(){
 
 	tkgrid(lab.choixY.tab1, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(cb.choixY.tab1, row = 3, column = 1, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-
 
 	tkgrid(unitLab.tab1, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(unitEd.tab1, row = 4, column = 1, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 2, ipadx = 1, ipady = 1)
@@ -283,6 +406,25 @@ PlotGriddedNcdfCmd <- function(){
 		}
 		atLev <<- customLevels(main.win, atLev)
 	})
+
+	#######################################################################################################
+	# getNCDdon <- function(){
+	# 	nc <- nc_open(ncvar[[3]])
+
+	# 	ichoix <- which(var.names == tclvalue(var.choix))
+	# 	if(ichoix != 1){
+	# 		ivar <<- ichoix-1
+	# 		dim.names <- c('', sapply(ncvar[[2]][[ivar]]$dimInfo, function(x) x$name))
+	# 		idx <- which(dim.names == tclvalue(X.choix))
+	# 		idy <- which(dim.names == tclvalue(Y.choix))
+
+
+	# 	}
+
+
+	# }
+
+
 	
 	#######################################################################################################
 	

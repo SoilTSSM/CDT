@@ -109,7 +109,9 @@
     "auxvar": [{
         "dem": false,
         "slope": false,
-        "aspect": false
+        "aspect": false,
+        "lon": false,
+        "lat": false
     }],
     // Use auxiliary variables with GLM to calculate the spatial trend
     "sp.trend.aux": false

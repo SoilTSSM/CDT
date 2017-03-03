@@ -10,19 +10,6 @@
 	end.mon <- 12
 	end.dek <- 3
 
-	## Output directory
-	outDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/ADJ'
-	## corrected data filename format
-	adjFFormat <- 'rr_adj_%s%s%s.txt'
-
-	## Bias coefs directory
-	biasDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/BIAS'
-
-	## RFE directory
-	rfeDir <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/TAMSAT_dek'
-	## RFE filename format
-	rfeFFormat <- 'rfe_%s%s%s.nc'
-
 	## Training data file (CDT data)
 	stnFile <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/Data/RR_DEK_83to14_Train.txt'
 
@@ -31,6 +18,19 @@
 
 	## Station missing values code
 	miss.val <- -99
+
+	## RFE directory
+	rfeDir <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/TAMSAT_dek'
+	## RFE filename format
+	rfeFFormat <- 'rfe_%s%s%s.nc'
+
+	## Bias coefs directory
+	biasDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/BIAS'
+
+	## Adjusted data Output directory
+	adjDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/ADJ'
+	## corrected data filename format
+	adjFFormat <- 'rr_adj_%s%s%s.txt'
 
 	#####################################################################################
 	months <- 1:12
@@ -49,7 +49,7 @@
 	BScomb <- Bias.combination()
 
 	##use "noD", "D", "SA", "DSA"
-	ix <- BScomb$bias.auxvar%in%c("noD", "D", "SA", "DSA")
+	ix <- BScomb$bias.auxvar%in%c("noD", "D", "SA", "DSA", "LoLa", "DLoLa", "DSALoLa")
 	BScomb <- BScomb[ix, ]
 
 	#####################################################################################
@@ -119,13 +119,14 @@
 								list(lon = rfeData$lon, lat = rfeData$lat))
 
 	#####################################################################################
-	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
-	aux.var <- apply(DAS, 1, function(j){
-		x <- c('D', 'S', 'A')[j]
-		if(length(x) > 0) paste(x, collapse = '')
-		else 'noD'
-	})
-	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
+	# DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE),
+	# 					lon = c(FALSE, TRUE), lat = c(FALSE, TRUE))
+	# aux.var <- apply(DAS, 1, function(j){
+	# 	x <- c('D', 'S', 'A', 'Lo', 'La')[j]
+	# 	if(length(x) > 0) paste(x, collapse = '')
+	# 	else 'noD'
+	# })
+	# auxdf <- data.frame(n = 1:32, l = aux.var, DAS, stringsAsFactors = FALSE)
 	bs.mthd <- paste(BScomb$bias.method, BScomb$bias.interp, BScomb$bias.auxvar, sep = '_')
 	BScomb <- apply(cbind(bs.mthd, BScomb), 2, as.character)
 
@@ -137,15 +138,16 @@
 						'QM' = 'Quantile.Mapping',
 						'MBVar' = 'Multiplicative.Bias.Var',
 						'MBMon' = 'Multiplicative.Bias.Mon')
-		auxv <- as.logical(auxdf[auxdf$l == cbbs[4], c("dem", "slope", "aspect")])
+		# auxv <- as.logical(auxdf[auxdf$l == cbbs[4], c("dem", "slope", "aspect", "lon", "lat")])
+		# GeneralParameters$auxvar$dem <- auxv[1]
+		# GeneralParameters$auxvar$slope <- auxv[2]
+		# GeneralParameters$auxvar$aspect <- auxv[3]
+		# GeneralParameters$auxvar$lon <- auxv[4]
+		# GeneralParameters$auxvar$lat <- auxv[5]
 
 		GeneralParameters$Bias.Method <- bias.method
-		GeneralParameters$auxvar$dem <- auxv[1]
-		GeneralParameters$auxvar$slope <- auxv[2]
-		GeneralParameters$auxvar$aspect <- auxv[3]
-
 		Bias.dir <- file.path(biasDIR, cbbs[1])
-		origdir <- file.path(outDIR, cbbs[1])
+		origdir <- file.path(adjDIR, cbbs[1])
 		GeneralParameters$IO.files$Bias.dir <- Bias.dir
 		dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 

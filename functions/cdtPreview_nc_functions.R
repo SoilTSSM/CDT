@@ -104,7 +104,7 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 
 	####
 	tkbind(cb.var, "<<ComboboxSelected>>", function(){
-		ichoix <- which(var.choix == as.character(tclvalue(var.dim)))
+		ichoix <- which(var.choix == tclvalue(var.dim))
 		if(ichoix != 1){
 			ivar <<- ichoix-1
 			v.ndims <- var.info[ivar, 2]

@@ -401,7 +401,7 @@ defSpatialPixels <- function(grd_Coords){
 	coordinates(newgrid) <- ~lon+lat
 	newgrid <- SpatialPixels(points = newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
 	return(newgrid)
-}	
+}
 
 ##################################################################################
 ## Compare if 2 SpatialPixelsObjare have the same resolution
@@ -600,19 +600,19 @@ createBlock <- function(cellsize, fac = 0.5, len = 4){
 
 getStnOpenData <- function(file.stnfl){
 	jfile <- getIndex.AllOpenFiles(file.stnfl)
+	donne <- NULL
 	if(length(jfile) > 0){
 		if(AllOpenFilesType[[jfile]] == "ascii") donne <- AllOpenFilesData[[jfile]][[2]]
-		else donne <- NULL
-	}else donne <- NULL
+	}
 	return(donne)
 }
 
 getStnOpenDataInfo <- function(file.stnfl){
 	jfile <- getIndex.AllOpenFiles(file.stnfl)
+	info <- NULL
 	if(length(jfile) > 0){
 		if(AllOpenFilesType[[jfile]] == "ascii") info <- AllOpenFilesData[[jfile]][c(1, 3:4)]
-		else info <- NULL
-	}else info <- NULL
+	}
 	return(info)
 }
 
@@ -730,14 +730,15 @@ getCDTdata1Date <- function(donne, yrs, mon, day){
 
 getDemOpenData <- function(file.grddem, convertNeg2NA = TRUE){
 	jfile <- getIndex.AllOpenFiles(file.grddem)
+	dem <- NULL
 	if(length(jfile) > 0){
 		if(AllOpenFilesType[[jfile]] == "netcdf"){
 			fdem <- AllOpenFilesData[[jfile]][[2]]
 			demv <- fdem$value
 			if(convertNeg2NA) demv[demv < 0] <- NA
 			dem <- list(lon = fdem$x, lat = fdem$y, dem = demv)
-		}else dem <- NULL
-	}else dem <- NULL
+		}
+	}
 	return(dem)
 }
 
@@ -747,6 +748,7 @@ getDemOpenData <- function(file.grddem, convertNeg2NA = TRUE){
 
 getDemOpenDataSPDF <- function(file.grddem){
 	jncdf <- getIndex.AllOpenFiles(file.grddem)
+	demlist <- NULL
 	if(length(jncdf) > 0){
 		if(AllOpenFilesType[[jncdf]] == "netcdf"){
 			fdem <- AllOpenFilesData[[jncdf]][[2]]
@@ -758,8 +760,8 @@ getDemOpenDataSPDF <- function(file.grddem){
 			demdf <- data.frame(dem = c(dem))
 			demdf <- SpatialPointsDataFrame(coords = dem.coord, data = demdf, proj4string = CRS(as.character(NA)))
 			demlist <- list(lon = fdem$x, lat = fdem$y, demGrd = demdf, demMat = demMat)
-		}else demlist <- NULL
-	}else demlist <- NULL
+		}
+	}
 	return(demlist)
 }
 
@@ -838,10 +840,10 @@ regridDEMFun <- function(demObj, newgrd, regrid = c('BLW', 'IDW', 'RASTER'), ...
 
 getShpOpenData <- function(shp){
 	jfile <- getIndex.AllOpenFiles(shp)
+	shpf <- NULL
 	if(length(jfile) > 0){
 		if(AllOpenFilesType[[jfile]] == "shp") shpf <- AllOpenFilesData[[jfile]]
-		else shpf <- NULL
-	}else shpf <- NULL
+	}
 	return(shpf)
 }
 
@@ -854,10 +856,10 @@ getShpOpenData <- function(shp){
 
 getNcdfOpenData <- function(file.netcdf){
 	jfile <- getIndex.AllOpenFiles(file.netcdf)
+	nc <- NULL
 	if(length(jfile) > 0){
 		if(AllOpenFilesType[[jfile]] == "netcdf") nc <- AllOpenFilesData[[jfile]]
-		else nc <- NULL
-	}else nc <- NULL
+	}
 	return(nc)
 }
 
@@ -867,6 +869,7 @@ getNcdfOpenData <- function(file.netcdf){
 
 getRFESampleData <- function(file.netcdf){
 	jfile <- getIndex.AllOpenFiles(file.netcdf)
+	rfelist <- NULL
 	if(length(jfile) > 0){
 		if(AllOpenFilesType[[jfile]] == "netcdf"){
 			ncrfe <- AllOpenFilesData[[jfile]][[2]]
@@ -874,8 +877,8 @@ getRFESampleData <- function(file.netcdf){
 			coordinates(rfe.coord) <- ~lon+lat
 			rfelist <- list(lon = ncrfe$x, lat = ncrfe$y, rfeGrd = rfe.coord, rfeVarid = ncrfe$varid,
 							 rfeILon = ncrfe$ilon, rfeILat = ncrfe$ilat, irevlat = ncrfe$irevlat)
-		}else rfelist <- NULL
-	}else rfelist <- NULL
+		}
+	}
 	return(rfelist)
 }
 
@@ -1547,15 +1550,27 @@ netcdf2CPT <- function(timeStep, start.year, start.mon, start.day = 1,
 
 #################################################################################
 ### Merging Method combination
-
-merging.combination <- function(){
-	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
+generateCombnation <- function(){
+	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE),
+						lon = c(FALSE, TRUE), lat = c(FALSE, TRUE))
 	aux.var <- apply(DAS, 1, function(j){
-		x <- c('D', 'S', 'A')[j]
+		x <- c('D', 'S', 'A', 'Lo', 'La')[j]
 		if(length(x) > 0) paste(x, collapse = '')
 		else 'noD'
 	})
-	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
+	auxdf <- data.frame(n = 1:32, l = aux.var, DAS, stringsAsFactors = FALSE)
+	return(auxdf)
+}
+
+merging.combination <- function(){
+	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE),
+						lon = c(FALSE, TRUE), lat = c(FALSE, TRUE))
+	aux.var <- apply(DAS, 1, function(j){
+		x <- c('D', 'S', 'A', 'Lo', 'La')[j]
+		if(length(x) > 0) paste(x, collapse = '')
+		else 'noD'
+	})
+	auxdf <- data.frame(n = 1:32, l = aux.var, DAS, stringsAsFactors = FALSE)
 
 	### Bias/adj comb
 	BScomb <- expand.grid(aux = aux.var, interp = c('NN', 'IDW', 'OK'), Bias = c('QM', 'MBVar', 'MBMon'))
@@ -1586,13 +1601,14 @@ merging.combination <- function(){
 }
 
 LMCoef.combination <- function(){
-	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
+	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE),
+						lon = c(FALSE, TRUE), lat = c(FALSE, TRUE))
 	aux.var <- apply(DAS, 1, function(j){
-		x <- c('D', 'S', 'A')[j]
+		x <- c('D', 'S', 'A', 'Lo', 'La')[j]
 		if(length(x) > 0) paste(x, collapse = '')
 		else 'noD'
 	})
-	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
+	auxdf <- data.frame(n = 1:32, l = aux.var, DAS, stringsAsFactors = FALSE)
 
 	### Bias/adj comb
 	BScomb <- expand.grid(aux = aux.var, interp = c('NN', 'IDW', 'OK'), Bias = c('QM', 'MBVar', 'MBMon'))
@@ -1609,13 +1625,14 @@ LMCoef.combination <- function(){
 }
 
 Bias.combination <- function(){
-	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
+	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE),
+						lon = c(FALSE, TRUE), lat = c(FALSE, TRUE))
 	aux.var <- apply(DAS, 1, function(j){
-		x <- c('D', 'S', 'A')[j]
+		x <- c('D', 'S', 'A', 'Lo', 'La')[j]
 		if(length(x) > 0) paste(x, collapse = '')
 		else 'noD'
 	})
-	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
+	auxdf <- data.frame(n = 1:32, l = aux.var, DAS, stringsAsFactors = FALSE)
 
 	### Bias/adj comb
 	BScomb <- expand.grid(bias.auxvar = aux.var, bias.interp = c('NN', 'IDW', 'OK'), bias.method = c('QM', 'MBVar', 'MBMon'))

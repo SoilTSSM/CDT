@@ -1,7 +1,6 @@
 {
     "ncdf": [{
-        "nc.file": "",
-        "nc.unit": "mm"
+        "nc.file": ""
     }],
     "shp": "",
     "blank": false,

@@ -9,20 +9,20 @@
 	start.month <- 1
 	length.month <- 12
 
-	## Merged data directory
-	mrgDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/Merged'
-
 	## Validation data file (CDT data)
 	stnValidFile <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/Data/RR_DEK_83to14_Valid.txt'
-
-	## Station missing values code
-	miss.val <- -99
 
 	# ## Training data file (CDT data)
 	# stnFile <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/Data/RR_DEK_83to14_Train.txt'
 
+	## Station missing values code
+	miss.val <- -99
+
+	## Merged data directory
+	mrgDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/Merged'
+
 	## Statistics Output directory
-	outDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/Validation_Stat'
+	validationDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/Validation_Stat'
 
 	#####################################################################################
 
@@ -31,7 +31,7 @@
 	MRGcomb <- merging.combination()
 
 	##same aux.var, "noD", "D", "SA", "DSA"
-	ix1 <- (MRGcomb$bias.auxvar == MRGcomb$mrg.auxvar) & MRGcomb$bias.auxvar%in%c("noD", "D", "SA", "DSA")
+	ix1 <- (MRGcomb$bias.auxvar == MRGcomb$mrg.auxvar) & MRGcomb$bias.auxvar%in%c("noD", "D", "SA", "DSA", "LoLa", "DLoLa", "DSALoLa")
 	ix2 <- MRGcomb$mrg.method == "Reg.Kriging"
 
 	## Bias and LMCoef same aux.var and interpolation
@@ -106,45 +106,79 @@
 		list(dates = as.character(don[, 1]), data = don[, -1])
 	})
 
+	#####################################################################################
+
 	ix <- which(1:12 == start.month)
 	im <- (ix:(ix+(length.month-1)))%%12
 	im[im == 0] <- 12
 	im <- str_pad(im, width = 2, pad = '0')
 
-	seas <- substr(validStnData$dates, 1, 4)%in%as.character(year1:year2) & substr(validStnData$dates, 5, 6)%in%im
-	stnData <- data.frame(validStnData$data[seas, , drop = FALSE])
-	names(stnData) <- validStnData$id
-	validData <- lapply(validMrgData, function(x){
-		don <- x$data[substr(x$dates, 1, 4)%in%as.character(year1:year2) & substr(x$dates, 5, 6)%in%im, , drop = FALSE]
-		iNA<- is.na(don) | is.na(stnData)
-		stnData[iNA] <- NA
-		don[iNA] <- NA
-		stat.stn <- mapply(function(x, y) validation.Stats(x, y, freqData), stnData, don)
-		X <- apply(stnData, 1, mean, na.rm = TRUE)
-		Y <- apply(don, 1, mean, na.rm = TRUE)
+	## Get season
+	ix <- which(1:12 == start.month)
+	im <- (ix:(ix+(length.month-1)))%%12
+	im[im == 0] <- 12
+	im <- str_pad(im, width = 2, pad = '0')
+
+	seasSTN <- substr(validStnData$dates, 1, 4)%in%as.character(year1:year2) & substr(validStnData$dates, 5, 6)%in%im
+	seasMRG <- substr(validMrgData[[1]]$dates, 1, 4)%in%as.character(year1:year2) & substr(validMrgData[[1]]$dates, 5, 6)%in%im
+
+	Obs <- validStnData$data[seasSTN, , drop = FALSE]
+	Mrg <- lapply(validMrgData, function(x)x$data[seasMRG, , drop = FALSE])
+
+	#####################################################################################
+
+	## calculate statistics
+	validStat <- lapply(Mrg, function(x){
+		mod <- as.data.frame(x)
+		stn <- as.data.frame(Obs)
+		names(stn) <- names(mod) <- validStnData$id
+		iNA<- is.na(mod) | is.na(stn)
+		stn[iNA] <- NA
+		mod[iNA] <- NA
+		stat.stn <- mapply(function(x, y) validation.Stats(x, y, freqData), stn, mod)
+		X0 <- c(as.matrix(stn))
+		Y0 <- c(as.matrix(mod))
+		stat.allstn <- validation.Stats(X0, Y0, freqData)
+		X <- apply(stn, 1, mean, na.rm = TRUE)
+		Y <- apply(mod, 1, mean, na.rm = TRUE)
 		stat.smean <- validation.Stats(X, Y, freqData)
-		list(stn = stat.stn, stn.mean = stat.smean)
+		list(stn = stat.stn, all.stn = stat.allstn, stn.mean = stat.smean)
 	})
 
-	stat.mean <- apply(t(sapply(validData, '[[', 2)), 2, as.numeric)
-	stats.stn.average <- data.frame(Method = combMering, stat.mean, stringsAsFactors = FALSE)
-	stats.stn <- lapply(validData, '[[', 1)
-	names(stats.stn) <- combMering
-	stats.stn1 <- do.call(rbind, stats.stn)
-	rownom <- rownames(stats.stn1)
+	## statistics for each station
+	stats.by.stn <- lapply(validStat, '[[', 1)
+
+	## statistics for all stations
+	stats.all.stn <- apply(t(sapply(validStat, '[[', 2)), 2, as.numeric)
+
+	## statistics for stations average
+	stats.stn.avrg <- apply(t(sapply(validStat, '[[', 3)), 2, as.numeric)
+
+	#####################################################################################
+	dir.create(validationDIR, showWarnings = FALSE, recursive = TRUE)
+
+	stats.stn.average <- data.frame(Method = combMering, stats.stn.avrg, stringsAsFactors = FALSE)
+
+	write.table(stats.stn.average, file.path(validationDIR, 'STATS_STATIONS_AVERAGE.csv'),
+				col.names = TRUE, row.names = FALSE, quote = FALSE, sep = ',')
+
+	stats.stn.ALL <- data.frame(Method = combMering, stats.all.stn, stringsAsFactors = FALSE)
+
+	write.table(stats.stn.ALL, file.path(validationDIR, 'STATS_ALL_STATIONS.csv'),
+				col.names = TRUE, row.names = FALSE, quote = FALSE, sep = ',')
+
+	names(stats.by.stn) <- combMering
+	stats.by.stn1 <- do.call(rbind, stats.by.stn)
+	rownom <- rownames(stats.by.stn1)
 	mthd0 <- rep("", length(rownom))
 	mthd1 <- rep(FALSE, length(rownom))
 	mthd1[seq(1, length(rownom), length(unique(rownom)))] <- TRUE
 	mthd0[mthd1] <- combMering
-	stats.stn1 <- data.frame(Method = mthd0, Stats = rownom,
-					apply(stats.stn1, 2, as.numeric), stringsAsFactors = FALSE)
+	stats.by.stn1 <- data.frame(mthd0, rownom, apply(stats.by.stn1, 2, as.numeric), stringsAsFactors = FALSE)
+	names(stats.by.stn1) <- c("Method", "Stats", validStnData$id)
 
-	write.table(stats.stn.average, file.path(outDIR, 'STATS_STATIONS_AVERAGE.csv'),
-	col.names = TRUE, row.names = FALSE, quote = FALSE, sep = ',')
-
-	write.table(stats.stn1, file.path(outDIR, 'STATS_EACH_STATION.csv'),
-	col.names = TRUE, row.names = FALSE, quote = FALSE, sep = ',')
-
-	save(stats.stn, file = file.path(outDIR, 'STATS_EACH_STATION.RDATA'))
+	write.table(stats.by.stn1, file.path(validationDIR, 'STATS_EACH_STATION.csv'),
+				col.names = TRUE, row.names = FALSE, quote = FALSE, sep = ',')
+	save(stats.by.stn, file = file.path(validationDIR, 'STATS_EACH_STATION.RDATA'))
 
 

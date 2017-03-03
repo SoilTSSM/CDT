@@ -5,9 +5,6 @@
 	year1 <- 1983 
 	year2 <- 2010
 
-	## Output directory
-	outDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/BIAS'
-
 	## Training data file (CDT data)
 	stnFile <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/Data/RR_DEK_83to14_Train.txt'
 
@@ -24,6 +21,9 @@
 
 	## elevation data file
 	demFile <- '/Users/rijaf/Desktop/ECHANGE/CDT_WD/new_method_merging/data/ETH/dem/DEM_1_Arc-Minute.nc'
+
+	## Output Bias Coef directory
+	biasDIR <- '/Users/rijaf/Desktop/vETH_ENACTS/BIAS'
 
 	#####################################################################################
 	rad.lon <- 10
@@ -62,7 +62,7 @@
 	BScomb <- Bias.combination()
 
 	##use "noD", "D", "SA", "DSA"
-	ix <- BScomb$bias.auxvar%in%c("noD", "D", "SA", "DSA")
+	ix <- BScomb$bias.auxvar%in%c("noD", "D", "SA", "DSA", "LoLa", "DLoLa", "DSALoLa")
 	BScomb <- BScomb[ix, ]
 
 	#####################################################################################
@@ -108,13 +108,8 @@
 	ijInt <- grid2pointINDEX(list(lon = coordsValid$lon, lat = coordsValid$lat), xy.grid)
 
 	#####################################################################################
-	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE))
-	aux.var <- apply(DAS, 1, function(j){
-		x <- c('D', 'S', 'A')[j]
-		if(length(x) > 0) paste(x, collapse = '')
-		else 'noD'
-	})
-	auxdf <- data.frame(n = 1:8, l = aux.var, DAS, stringsAsFactors = FALSE)
+
+	auxdf <- generateCombnation()
 	bs.mthd <- paste(BScomb$bias.method, BScomb$bias.interp, BScomb$bias.auxvar, sep = '_')
 	BScomb <- apply(cbind(bs.mthd, BScomb), 2, as.character)
 
@@ -127,23 +122,25 @@
 						'QM' = 'Quantile.Mapping',
 						'MBVar' = 'Multiplicative.Bias.Var',
 						'MBMon' = 'Multiplicative.Bias.Mon')
-		auxv <- as.logical(auxdf[auxdf$l == cbbs[4], c("dem", "slope", "aspect")])
+		auxv <- as.logical(auxdf[auxdf$l == cbbs[4], c("dem", "slope", "aspect", "lon", "lat")])
 
 		GeneralParameters$Interpolation.pars$interp.method <- interp.method
 		GeneralParameters$Bias.Method <- bias.method
 		GeneralParameters$auxvar$dem <- auxv[1]
 		GeneralParameters$auxvar$slope <- auxv[2]
 		GeneralParameters$auxvar$aspect <- auxv[3]
+		GeneralParameters$auxvar$lon <- auxv[4]
+		GeneralParameters$auxvar$lat <- auxv[5]
 
 		res.coarse <- if(interp.method == 'NN') sqrt((rad.lon*mean(grd.lon[-1]-grd.lon[-nlon0]))^2 + (rad.lat*mean(grd.lat[-1]-grd.lat[-nlat0]))^2)/2 else maxdist/2
 		res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
-		origdir <- file.path(outDIR, cbbs[1])
+		origdir <- file.path(biasDIR, cbbs[1])
 		dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
-		listDir <- do.call(rbind, strsplit(list.files(outDIR), '_'))
+		listDir <- do.call(rbind, strsplit(list.files(biasDIR), '_'))
 		ix <- listDir[, 1] == cbbs[2]
 		ix <- if(cbbs[3] == 'NN') (ix & listDir[, 2] == 'NN') else (ix & listDir[, 2]%in%c('IDW', 'OK'))
-		bias.file <- file.path(outDIR, apply(listDir[ix, , drop = FALSE], 1, paste, collapse = "_"), 'BIAS_PARAMS.RData')
+		bias.file <- file.path(biasDIR, apply(listDir[ix, , drop = FALSE], 1, paste, collapse = "_"), 'BIAS_PARAMS.RData')
 		exbsfl <- file.exists(bias.file)
 		if(any(exbsfl)){
 			load(bias.file[exbsfl][1])

@@ -507,8 +507,10 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 	origdir <- interpBiasparams$origdir
 
 	#############
-	auxvar <- c('dem', 'slp', 'asp')
-	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
+	auxvar <- c('dem', 'slp', 'asp', 'alon', 'alat')
+	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope,
+					GeneralParameters$auxvar$aspect, GeneralParameters$auxvar$lon,
+					GeneralParameters$auxvar$lat)
 	if(any(is.auxvar)){
 		formule <- formula(paste('pars', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
 	}else formule <- formula(paste('pars', '~', 1, sep = ''))
@@ -571,7 +573,18 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 		cells <- SpatialPixels(points = interp.grid$newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)))@grid
 		bGrd <- createBlock(cells@cellsize, 2, 5)
 	}
+	interp.grid$coords.stn$alon <- interp.grid$coords.stn@coords[, 'lon']
+	interp.grid$coords.stn$alat <- interp.grid$coords.stn@coords[, 'lat']
+	interp.grid$coords.grd$alon <- interp.grid$coords.grd@coords[, 'lon']
+	interp.grid$coords.grd$alat <- interp.grid$coords.grd@coords[, 'lat']
+	if(!is.null(interp.grid$coords.rfe)){
+		interp.grid$coords.rfe$alon <- interp.grid$coords.rfe@coords[, 'lon']
+		interp.grid$coords.rfe$alat <- interp.grid$coords.rfe@coords[, 'lat']
+	}
+	interp.grid$newgrid$alon <- interp.grid$newgrid@coords[, 'lon']
+	interp.grid$newgrid$alat <- interp.grid$newgrid@coords[, 'lat']
 
+	########################################
 	## interpolation
 	if(bias.method != 'Quantile.Mapping'){
 		itimes <- as.numeric(rownames(bias.pars))
@@ -634,7 +647,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 			if(interp.method == 'NN'){
 				coordinates(locations.stn) <- ~lon+lat+elv
 				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid,
-									nmax = 1, maxdist = maxdist, debug.level = 0)	
+									nmax = 1, maxdist = maxdist, debug.level = 0)
 			}else{
 				coordinates(locations.stn) <- ~lon+lat
 				if(any(is.auxvar)){
@@ -1152,8 +1165,10 @@ ComputeLMCoefTemp <- function(comptLMparams){
 	origdir <- comptLMparams$origdir
 
 	#############
-	auxvar <- c('dem', 'slp', 'asp')
-	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
+	auxvar <- c('dem', 'slp', 'asp', 'alon', 'alat')
+	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope,
+					GeneralParameters$auxvar$aspect, GeneralParameters$auxvar$lon,
+					GeneralParameters$auxvar$lat)
 	if(any(is.auxvar)){
 		formule <- formula(paste('pars', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
 	}else formule <- formula(paste('pars', '~', 1, sep = ''))
@@ -1241,6 +1256,16 @@ ComputeLMCoefTemp <- function(comptLMparams){
 		cells <- SpatialPixels(points = interp.grid$newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)))@grid
 		bGrd <- createBlock(cells@cellsize, 2, 5)
 	}
+	interp.grid$coords.stn$alon <- interp.grid$coords.stn@coords[, 'lon']
+	interp.grid$coords.stn$alat <- interp.grid$coords.stn@coords[, 'lat']
+	interp.grid$coords.grd$alon <- interp.grid$coords.grd@coords[, 'lon']
+	interp.grid$coords.grd$alat <- interp.grid$coords.grd@coords[, 'lat']
+	if(!is.null(interp.grid$coords.rfe)){
+		interp.grid$coords.rfe$alon <- interp.grid$coords.rfe@coords[, 'lon']
+		interp.grid$coords.rfe$alat <- interp.grid$coords.rfe@coords[, 'lat']
+	}
+	interp.grid$newgrid$alon <- interp.grid$newgrid@coords[, 'lon']
+	interp.grid$newgrid$alat <- interp.grid$newgrid@coords[, 'lat']
 
 	#############
 	InsertMessagesTxt(main.txt.out, 'Compute LM Coefficients ...')
@@ -1484,8 +1509,10 @@ MergingFunctionTemp <- function(paramsMRG){
 	Mrg.file.format <- GeneralParameters$FileFormat$Mrg.file.format
 
 	#############
-	auxvar <- c('dem', 'slp', 'asp')
-	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
+	auxvar <- c('dem', 'slp', 'asp', 'alon', 'alat')
+	is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope,
+					GeneralParameters$auxvar$aspect, GeneralParameters$auxvar$lon,
+					GeneralParameters$auxvar$lat)
 	if(any(is.auxvar)){
 		formule <- formula(paste('res', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
 		if(Mrg.Method == "Regression Kriging"){
@@ -1525,6 +1552,17 @@ MergingFunctionTemp <- function(paramsMRG){
 	interp.grid <- createGrid(ObjStn, demData, as.dim.elv = FALSE, res.coarse = res.coarse)
 	cells <- SpatialPixels(points = interp.grid$newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)))@grid
 	bGrd <- createBlock(cells@cellsize, 2, 5)
+
+	interp.grid$coords.stn$alon <- interp.grid$coords.stn@coords[, 'lon']
+	interp.grid$coords.stn$alat <- interp.grid$coords.stn@coords[, 'lat']
+	interp.grid$coords.grd$alon <- interp.grid$coords.grd@coords[, 'lon']
+	interp.grid$coords.grd$alat <- interp.grid$coords.grd@coords[, 'lat']
+	if(!is.null(interp.grid$coords.rfe)){
+		interp.grid$coords.rfe$alon <- interp.grid$coords.rfe@coords[, 'lon']
+		interp.grid$coords.rfe$alat <- interp.grid$coords.rfe@coords[, 'lat']
+	}
+	interp.grid$newgrid$alon <- interp.grid$newgrid@coords[, 'lon']
+	interp.grid$newgrid$alat <- interp.grid$newgrid@coords[, 'lat']
 
 	#############
 	if(Mrg.Method == "Spatio-Temporal LM"){

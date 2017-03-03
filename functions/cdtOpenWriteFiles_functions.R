@@ -16,18 +16,18 @@ writeFiles <- function(data2save, file2save, row.names = FALSE, col.names = FALS
 openFiles <- function(parent.win, parent, fileopen){
 	if (!nchar(fileopen)) return(NULL)
 	else{
-		title.tab <- basename(fileopen)
-		delimter <- preview.data(parent.win, fileopen, title.tab)
+		delimter <- preview.data(parent.win, fileopen, basename(fileopen))
 		if(!is.null(delimter)){
-			dat.file <- try(read.table(fileopen, header = delimter$header, sep = delimter$sepr, skip = delimter$skip-1, 
-									na.strings = delimter$miss.val, quote = "\"'", strip.white = TRUE, stringsAsFactors = FALSE,
-									 colClasses = "character", comment.char = ""), silent = TRUE)
+			dat.file <- try(read.table(fileopen, header = delimter$header, sep = delimter$sepr,
+									skip = delimter$skip-1, na.strings = delimter$miss.val, quote = "\"'",
+									strip.white = TRUE, stringsAsFactors = FALSE,
+									colClasses = "character", comment.char = ""), silent = TRUE)
 			if(inherits(dat.file, "try-error")){
 				InsertMessagesTxt(main.txt.out, paste("Unable to read file ", fileopen), format = TRUE)
 				return(NULL)
 			}else{
-				tkinsert(parent, "end", title.tab)
-				return(list(title.tab, dat.file, fileopen, delimter))
+				tkinsert(parent, "end", basename(fileopen))
+				return(list(basename(fileopen), dat.file, fileopen, delimter))
 			}
 		}else return(NULL)
 	}
@@ -45,83 +45,54 @@ getOpenFiles <- function(parent.win, parent, filetype = 'txt', initialdir = getw
 		if(basename(fileopen)%in%existff){
 			tkmessageBox(message = "File already exists", icon = "warning", type = "ok")
 			return(NULL)
-		}else{
-			dat.opfiles <- openFiles(parent.win, parent, fileopen)
-			if(!is.null(dat.opfiles)) return(dat.opfiles)
-			else return(NULL)
 		}
-	}else{
-		dat.opfiles <- openFiles(parent.win, parent, fileopen)
-		if(!is.null(dat.opfiles)) return(dat.opfiles)
-		else return(NULL)
 	}
+	dat.opfiles <- openFiles(parent.win, parent, fileopen)
+	if(!is.null(dat.opfiles)) return(dat.opfiles)
+	else return(NULL)
 }
-
 
 ########################
 ##Open netcdf files
 getOpenNetcdf <- function(parent.win, parent, initialdir = getwd()){
-	fileopen <- tclvalue(tkgetOpenFile(initialdir = initialdir, initialfile = "",
-							filetypes = "{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"))
+	filetypes <- "{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"
+	fileopen <- tclvalue(tkgetOpenFile(initialdir = initialdir, initialfile = "", filetypes = filetypes))
 	if(fileopen == "" | is.na(fileopen)) return(NULL)
 	if(length(AllOpenFilesData) != 0){
 		existff <- unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]]))
 		if(basename(fileopen)%in%existff){
 			tkmessageBox(message = "File already exists", icon = "warning", type = "ok")
 			return(NULL)
-		}else{
-			title.tab <- basename(fileopen)
-			nc.opfiles <- preview.data.nc(parent.win, fileopen, title.tab)
-			if(!is.null(nc.opfiles)){
-				tkinsert(parent, "end", title.tab)
-				return(list(title.tab, nc.opfiles, fileopen))
-			}else{
-				return(NULL)
-			}
-		}
-	}else{
-		title.tab <- basename(fileopen)
-		nc.opfiles <- preview.data.nc(parent.win, fileopen, title.tab)
-		if(!is.null(nc.opfiles)){
-			tkinsert(parent, "end", title.tab)
-			return(list(title.tab, nc.opfiles, fileopen))
-		}else{
-			return(NULL)
 		}
 	}
+
+	nc.opfiles <- preview.data.nc(parent.win, fileopen, basename(fileopen))
+	if(!is.null(nc.opfiles)){
+		tkinsert(parent, "end", basename(fileopen))
+		return(list(basename(fileopen), nc.opfiles, fileopen))
+	}else return(NULL)
 }
 
 #########################
 getOpenShp <- function(parent.win, parent){
 	#parent.win don't use yet
-	fileopen <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes="{{ESRI Shapefile} {.shp}} {{All files} *}"))
+	filetypes <- "{{ESRI Shapefile} {.shp}} {{All files} *}"
+	fileopen <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
 	if(fileopen == "") return(NULL)
 	if(length(AllOpenFilesData) != 0){
 		existff <- unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]]))
 		if(basename(fileopen)%in%existff){
 			tkmessageBox(message = "File already exists", icon = "warning", type = "ok")
 			return(NULL)
-		}else{
-			title.tab <- basename(fileopen)
-			is.rdble <- !inherits(try(shp.opfiles <- readShapePoly(fileopen), silent = TRUE), "try-error")
-			if(!is.rdble){
-				InsertMessagesTxt(main.txt.out, paste("Unable to read file ", fileopen), format = TRUE)
-				return(NULL)
-			}else{
-				tkinsert(parent, "end", title.tab)
-				return(list(title.tab, shp.opfiles, fileopen))
-			}
-		}
-	}else{
-		title.tab <- basename(fileopen)
-		is.rdble <- !inherits(try(shp.opfiles <- readShapePoly(fileopen), silent = TRUE), "try-error")
-		if(!is.rdble){
-			InsertMessagesTxt(main.txt.out, paste("Unable to read file ", fileopen), format = TRUE)
-			return(NULL)
-		}else{
-			tkinsert(parent, "end", title.tab)
-			return(list(title.tab, shp.opfiles, fileopen))
 		}
 	}
-}
 
+	shp.opfiles <- try(readShapePoly(fileopen), silent = TRUE)
+	if(inherits(shp.opfiles, "try-error")){
+		InsertMessagesTxt(main.txt.out, paste("Unable to read file ", fileopen), format = TRUE)
+		return(NULL)
+	}else{
+		tkinsert(parent, "end", basename(fileopen))
+		return(list(basename(fileopen), shp.opfiles, fileopen))
+	}
+}
