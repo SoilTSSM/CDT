@@ -20,9 +20,8 @@ qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 
 	frIO <- tkframe(frMRG0, relief = 'sunken', borderwidth = 2)
 
-	file.stnfl <- tclVar()
-	tclvalue(file.stnfl) <- as.character(GeneralParameters$file.io$Values[1])
-	file.save1 <- tclVar(as.character(GeneralParameters$file.io$Values[2]))
+	file.stnfl <- tclVar(GeneralParameters$IO.files$STN.file)
+	file.save1 <- tclVar(GeneralParameters$IO.files$dir2save)
 
 	txt.stnfl <- tklabel(frIO, text = 'Input data file', anchor = 'w', justify = 'left')
 	cb.stnfl <- ttkcombobox(frIO, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur1)
@@ -49,8 +48,8 @@ qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 	})
 
 	tkconfigure(bt.file.save, command = function(){
-		file2save1 <- tk_choose.dir(as.character(GeneralParameters$file.io$Values[3]), "")
-			if(is.na(file2save1)) tclvalue(file.save1) <- as.character(GeneralParameters$file.io$Values[3])
+		file2save1 <- tk_choose.dir(default = str_trim(GeneralParameters$IO.files$dir2save), caption = "")
+			if(is.na(file2save1)) tclvalue(file.save1) <- str_trim(GeneralParameters$IO.files$dir2save)
 			else{
 				dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
 				tclvalue(file.save1) <- file2save1
@@ -77,18 +76,17 @@ qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 
 	frOpts <- tkframe(frMRG0, relief = 'sunken', borderwidth = 2)
 
-	min.nbrs <- tclVar(as.character(GeneralParameters$param.zero$Values[1]))
-	max.nbrs <- tclVar(as.character(GeneralParameters$param.zero$Values[2]))
-	min.days <- tclVar(as.character(GeneralParameters$param.zero$Values[3]))
-	max.dst <- tclVar(as.character(GeneralParameters$param.zero$Values[4]))
-	pct.trsh <- tclVar(as.character(GeneralParameters$param.zero$Values[5]))
-
+	min.nbrs <- tclVar(GeneralParameters$params.zero$min.nbrs)
+	max.nbrs <- tclVar(GeneralParameters$params.zero$max.nbrs)
+	min.days <- tclVar(GeneralParameters$params.zero$min.days)
+	max.dst <- tclVar(GeneralParameters$params.zero$max.dist)
+	pct.trsh <- tclVar(GeneralParameters$params.zero$min.thrs)
 
 	min.nbrsLab <- tklabel(frOpts, text = 'Min.ngbrs', anchor = 'e', justify = 'right')
 	max.nbrsLab <- tklabel(frOpts, text = 'Max.ngbrs', anchor = 'e', justify = 'right')
 	min.daysLab <- tklabel(frOpts, text = 'Min.days', anchor = 'e', justify = 'right')
 	max.dstLab <- tklabel(frOpts, text = 'Max.dist', anchor = 'e', justify = 'right')
-	pct.trshLab <- tklabel(frOpts, text = 'Pct.trsh', anchor = 'e', justify = 'right')
+	pct.trshLab <- tklabel(frOpts, text = 'Min.thrs', anchor = 'e', justify = 'right')
 
 	min.nbrsEn <- tkentry(frOpts, width = 6, textvariable = min.nbrs, justify = 'left')
 	max.nbrsEn <- tkentry(frOpts, width = 6, textvariable = max.nbrs, justify = 'left')
@@ -116,8 +114,8 @@ qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 	status.bar.display(min.daysEn, TextOutputVar, 'Minimum number of days in a month with observation')
 	infobulle(max.dstEn, 'Maximum search  distance [in km] for neighbors stations')
 	status.bar.display(max.dstEn, TextOutputVar, 'Maximum search  distance [in km] for neighbors stations')
-	infobulle(pct.trshEn, "Minimum threshold (% zero.station/%zero.neighbors)\nto flag that month's observation as problematic")
-	status.bar.display(pct.trshEn, TextOutputVar, "Minimum threshold (% zero.station/%zero.neighbors)\nto flag that month's observation as problematic")
+	infobulle(pct.trshEn, "Minimum threshold (% zero.station / % zero.neighbors)\nto flag that month's observation as problematic")
+	status.bar.display(pct.trshEn, TextOutputVar, "Minimum threshold (% zero.station / % zero.neighbors)\nto flag that month's observation as problematic")
 
 	##########################
 	tkgrid(frIO, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -147,8 +145,13 @@ qcGetZeroCheckInfo <- function(parent.win, GeneralParameters){
 			fileparams <- file.path(dirparams, 'Parameters.RData')
 
 			##
-			GeneralParameters$file.io$Values <<- c(tclvalue(file.stnfl), tclvalue(file.save1))
-			GeneralParameters$param.zero$Values <<- c(tclvalue(min.nbrs), tclvalue(max.nbrs), tclvalue(min.days), tclvalue(max.dst), tclvalue(pct.trsh))
+			GeneralParameters$IO.files$STN.file <<- str_trim(tclvalue(file.stnfl))
+			GeneralParameters$IO.files$dir2save <<- str_trim(tclvalue(file.save1))
+			GeneralParameters$params.zero$min.nbrs <<- as.numeric(str_trim(tclvalue(min.nbrs)))
+			GeneralParameters$params.zero$max.nbrs <<- as.numeric(str_trim(tclvalue(max.nbrs)))
+			GeneralParameters$params.zero$min.days <<- as.numeric(str_trim(tclvalue(min.days)))
+			GeneralParameters$params.zero$max.dist <<- as.numeric(str_trim(tclvalue(max.dst)))
+			GeneralParameters$params.zero$min.thrs <<- as.numeric(str_trim(tclvalue(pct.trsh)))
 
 			######
 			getInitDataParams <- function(GeneralParameters){

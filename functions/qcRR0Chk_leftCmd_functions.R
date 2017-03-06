@@ -58,7 +58,8 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 			}
 
 			if(ReturnExecResults$action == 'zero.check'){
-				retNBTab <- tableZeroCheckNotebookTab_unik(tknotes, paste(IJstation, '-Zero-Check'), pNddQcIdTab, AllOpenTabType, AllOpenTabData)
+				retNBTab <- tableZeroCheckNotebookTab_unik(tknotes, paste(IJstation, '-Zero-Check'),
+							pNddQcIdTab, AllOpenTabType, AllOpenTabData)
 				pNddQcIdTab <<- retNBTab$notebookTab
 				AllOpenTabType <<- retNBTab$AllOpenTabType
 				AllOpenTabData <<- retNBTab$AllOpenTabData
@@ -154,7 +155,8 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 					neibMonData <- QcOutZeroChk_Neighbors(IJstation, YYYYMM[ijsp])
 					neibMonData <- list(neibMonData, NA)
 
-					retNBTab <- tableZeroCheckNotebookTab_unik1(tknotes, neibMonData, paste(IJstation, '-Neighbors'), neighborsIdTab, AllOpenTabType, AllOpenTabData)
+					retNBTab <- tableZeroCheckNotebookTab_unik1(tknotes, neibMonData, paste(IJstation, '-Neighbors'),
+								neighborsIdTab, AllOpenTabType, AllOpenTabData)
 					neighborsIdTab <<- retNBTab$notebookTab
 					AllOpenTabType <<- retNBTab$AllOpenTabType
 					AllOpenTabData <<- retNBTab$AllOpenTabData
@@ -188,7 +190,8 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 					neibMonData <- QcOutZeroChk_Neighbors(IJstation, YYYYMM[ijsp])
 					neibMonData <- list(neibMonData, NA)
 
-					retNBTab <- tableZeroCheckNotebookTab_unik1(tknotes, neibMonData, paste(IJstation, '-Neighbors'), neighborsIdTab, AllOpenTabType, AllOpenTabData)
+					retNBTab <- tableZeroCheckNotebookTab_unik1(tknotes, neibMonData, paste(IJstation, '-Neighbors'),
+								neighborsIdTab, AllOpenTabType, AllOpenTabData)
 					neighborsIdTab <<- retNBTab$notebookTab
 					AllOpenTabType <<- retNBTab$AllOpenTabType
 					AllOpenTabData <<- retNBTab$AllOpenTabData
@@ -214,7 +217,8 @@ QcZeroCheckCmd <- function(stateReplaceAll){
 					neibMonData <- QcOutZeroChk_Neighbors(IJstation, YYYYMM[ijsp])
 					neibMonData <- list(neibMonData, NA)
 
-					retNBTab <- tableZeroCheckNotebookTab_unik1(tknotes, neibMonData, paste(IJstation, '-Neighbors'), neighborsIdTab, AllOpenTabType, AllOpenTabData)
+					retNBTab <- tableZeroCheckNotebookTab_unik1(tknotes, neibMonData, paste(IJstation, '-Neighbors'),
+								neighborsIdTab, AllOpenTabType, AllOpenTabData)
 					neighborsIdTab <<- retNBTab$notebookTab
 					AllOpenTabType <<- retNBTab$AllOpenTabType
 					AllOpenTabData <<- retNBTab$AllOpenTabData

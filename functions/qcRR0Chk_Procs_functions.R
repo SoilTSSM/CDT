@@ -14,29 +14,30 @@ ZeroCheckStn <- function(pos, rr.dat, dates, coords, Zparams){
 	ii[pos] <- FALSE
 	out.data <- data.frame(matrix(NA, ncol = 7, nrow = 1))
 	if(length(which(ii)) >= min.nbrs){
-		rr.nei <- rr.dat[,ii]
+		rr.nei <- rr.dat[, ii]
 		dst.nei <- dist[ii]
-		rr.stn <- rr.dat[,pos]
-		yymm <- substr(dates, 1,6)
+		rr.stn <- rr.dat[, pos]
+		yymm <- substr(dates, 1, 6)
 
 		outzero <- lapply(levels(as.factor(yymm)), function(im){
 			jmon <- yymm == im
 			x <- rr.stn[jmon]
 			x <- x[!is.na(x)]
-			rr.nbrs <- rr.nei[jmon,]
+			rr.nbrs <- rr.nei[jmon, ]
 			if(length(x) >= min.days){
-				pct.zero.stn <- round(100*sum(x == 0, na.rm = T)/sum(x >= 0, na.rm = T))
-				num.days2 <- as.numeric(apply(rr.nbrs, 2, function(x) sum(x >= 0, na.rm = T)))
+				pct.zero.stn <- round(100*sum(x == 0)/length(x))
+				num.days2 <- as.numeric(apply(rr.nbrs, 2, function(x) sum(x >= 0, na.rm = TRUE)))
 				ix <- which(num.days2 >= min.days)
 				n.nbrs <- length(ix)
 				if(n.nbrs >= min.nbrs){
 					dst.nbrs <- dst.nei[ix]
-					rr.nbrs <- rr.nbrs[,ix]
+					rr.nbrs <- rr.nbrs[, ix]
 					if(n.nbrs > max.nbrs) n.nbrs <- max.nbrs
-					idst <- sort(dst.nbrs, index.return = T)
+					idst <- sort(dst.nbrs, index.return = TRUE)
 					dst.nbrs <- idst$x[1:n.nbrs]
-					rr.nbrs <- rr.nbrs[,idst$ix][,1:n.nbrs]
-					pct.zero.nbrs <- as.numeric(apply(rr.nbrs, 2, function(x) round(100*sum(x == 0, na.rm = T)/sum(x >= 0, na.rm = T))))
+					rr.nbrs <- rr.nbrs[, idst$ix][, 1:n.nbrs]
+					pct.zero.nbrs <- as.numeric(apply(rr.nbrs, 2,
+								function(x) round(100*sum(x == 0, na.rm = TRUE)/sum(x >= 0, na.rm = TRUE))))
 
 					ix <- which(pct.zero.nbrs == max(pct.zero.nbrs))
 					if(length(ix) == n.nbrs) ix <- 1   #All stations have zero values #???
@@ -49,7 +50,8 @@ ZeroCheckStn <- function(pos, rr.dat, dates, coords, Zparams){
 					nrst.stn <- dst.nbrs[ix[1]]
 					nrst.val <- pct.zero.nbrs[ix[1]]
 					r.pct <- pct.zero.stn/(avg.pct+1)
-					if((r.pct >= pct.trsh) & (pct.zero.stn > 60)) c(im, pct.zero.stn, nrst.val, round(nrst.stn, 1), avg.pct, max(pct.zero.nbrs))
+					if((r.pct >= pct.trsh) & (pct.zero.stn > 60)) c(im, pct.zero.stn, nrst.val,
+																round(nrst.stn, 1), avg.pct, max(pct.zero.nbrs))
 				}
 			}
 		})
@@ -77,7 +79,7 @@ QcOutZeroChkFormat <- function(){
 		IJstation <- ReturnExecResults$res[[ijstn]]$station
 	}
 
-	fileout <- file.path(outputdir, IJstation, paste(IJstation, '.txt', sep = ''), fsep = .Platform$file.sep)
+	fileout <- file.path(outputdir, IJstation, paste(IJstation, '.txt', sep = ''))
 	if(!file.exists(fileout)) return(NULL)
 	zcdat <- read.table(fileout, header = TRUE, colClasses = 'character')
 	retdata <- list(zcdat, fileout)
@@ -90,7 +92,7 @@ replaceZeroChkbyNA <- function(IJstation, retRes){
 	outputdir <- retRes$outputdir
 	datadir <- retRes$datadir
 
-	filein <- file.path(outputdir, IJstation, paste(IJstation, '.txt', sep = ''), fsep = .Platform$file.sep)
+	filein <- file.path(outputdir, IJstation, paste(IJstation, '.txt', sep = ''))
 	if(!file.exists(filein)){
 		InsertMessagesTxt(main.txt.out, paste(IJstation, 'not checked'), format = TRUE)
 		return(NULL)
@@ -105,10 +107,10 @@ replaceZeroChkbyNA <- function(IJstation, retRes){
 	zcdaty <- str_trim(zcdaty)
 	notmonth <- which(nchar(zcdaty) != 6)
 	if(length(notmonth) > 0){
-		InsertMessagesTxt(main.txt.out, paste(paste(zcdaty[notmonth], collapse = ';'),'wrong date format'), format = TRUE)
+		InsertMessagesTxt(main.txt.out, paste(paste(zcdaty[notmonth], collapse = ';'), 'wrong date format'), format = TRUE)
 		return(NULL)
 	}
-	filein1 <- file.path(datadir, IJstation, paste(IJstation, '.txt', sep = ''), fsep = .Platform$file.sep)
+	filein1 <- file.path(datadir, IJstation, paste(IJstation, '.txt', sep = ''))
 	if(!file.exists(filein1)){
 		InsertMessagesTxt(main.txt.out, paste(filein1, 'not found'), format = TRUE)
 		return(NULL)
@@ -136,28 +138,30 @@ QcOutZeroChk_Neighbors <- function(IJstation, date_month){
 	coordStn <- matrix(c(lon[pos], lat[pos]), ncol = 2)
 	coordNei <- matrix(c(lon, lat), ncol = 2)
 	dist <- as.numeric(rdist.earth(coordStn, coordNei, miles = FALSE))
-	ii <- dist <= as.numeric(GeneralParameters$param.zero$Values[4])
+	ii <- dist <= GeneralParameters$params.zero$max.dist
 	ii[pos] <- FALSE
 	rr.nei <- rr.dat[imon, ii]
 	dst.nei <- dist[ii]
 	id.nei <- idstn[ii]
 	rr.stn <- rr.dat[imon, pos]
 
-	num.days2 <- as.numeric(apply(rr.nei, 2, function(x) sum(x >= 0, na.rm = T)))
-	ix <- which(num.days2 >= as.numeric(GeneralParameters$param.zero$Values[3]))
+	num.days2 <- as.numeric(apply(rr.nei, 2, function(x) sum(x >= 0, na.rm = TRUE)))
+	ix <- which(num.days2 >= GeneralParameters$params.zero$min.days)
 	dst.nei <- dst.nei[ix]
-	rr.nei <- rr.nei[,ix]
+	rr.nei <- rr.nei[, ix]
 	id.nei <- id.nei[ix]
-	nmax.nei <- if(length(ix) > as.numeric(GeneralParameters$param.zero$Values[2])) as.numeric(GeneralParameters$param.zero$Values[2]) else length(ix)
+	nmax.nei <- if(length(ix) > GeneralParameters$params.zero$max.nbrs) GeneralParameters$params.zero$max.nbrs else length(ix)
 	oo <- order(dst.nei)
 	dst.nei <- dst.nei[oo]
-	rr.nei <- rr.nei[,oo]
+	rr.nei <- rr.nei[, oo]
 	id.nei <- id.nei[oo]
 	dst.nei <- dst.nei[1:nmax.nei]
-	rr.nei <- rr.nei[,1:nmax.nei]
+	rr.nei <- rr.nei[, 1:nmax.nei]
 	id.nei <- id.nei[1:nmax.nei]
 
-	xdon <- cbind(c('Stations', 'Distance', dates[imon]), t(cbind(cbind(c(tclvalue(lchoixStnFr$env$stn.choix.val), id.nei), c(0, round(dst.nei, 1))), t(cbind(rr.stn, rr.nei)))))
+	xdon <- cbind(c('Stations', 'Distance', dates[imon]),
+				t(cbind(cbind(c(tclvalue(lchoixStnFr$env$stn.choix.val), id.nei),
+				c(0, round(dst.nei, 1))), t(cbind(rr.stn, rr.nei)))))
 	xdon <- data.frame(xdon)
 	names(xdon) <- NULL
 	return(xdon)

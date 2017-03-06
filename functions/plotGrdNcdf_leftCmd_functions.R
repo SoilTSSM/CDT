@@ -65,7 +65,7 @@ PlotGriddedNcdfCmd <- function(){
 
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
-	
+
 	#######################################################################################################
 
 	#Tab1
@@ -106,18 +106,6 @@ PlotGriddedNcdfCmd <- function(){
 	unitEd.tab1 <- tkentry(frameNcdf, width = 8, textvariable = unit_sym, justify = "left")
 
 	#######################
-	# tkconfigure(btNetcdf.tab1, command = function(){
-	# 	nc.opfiles <- getOpenNetcdf(main.win, all.opfiles)
-	# 	if(!is.null(nc.opfiles)){
-	# 		nopf <- length(AllOpenFilesType)
-	# 		AllOpenFilesType[[nopf+1]] <<- 'netcdf'
-	# 		AllOpenFilesData[[nopf+1]] <<- nc.opfiles
-	# 		listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]] 
-	# 		tclvalue(file.netcdf) <- AllOpenFilesData[[nopf+1]][[1]]
-	# 		tkconfigure(combNetcdf.tab1, values = unlist(listOpenFiles), textvariable = file.netcdf)
-	# 		tkconfigure(combShp.tab1, values = unlist(listOpenFiles), textvariable = file.plotShp)
-	# 	}else return(NULL)
-	# })
 
 	ncvar <- NULL
 	var.names <- NULL
@@ -234,10 +222,10 @@ PlotGriddedNcdfCmd <- function(){
 	status.bar.display(btNetcdf.tab1, TextOutputVar, 'Browse file if not listed')
 	infobulle(unitEd.tab1, 'Unit to display on colorscale')
 	status.bar.display(unitEd.tab1, TextOutputVar, 'Unit to display on colorscale')
-	
+
 	##############
 	frameShp <- ttklabelframe(subfr1, text = "Shapefiles for boundary", relief = 'groove')
-	
+
 	combShp.tab1 <- ttkcombobox(frameShp, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur) 
 	btShp.tab1 <- tkbutton(frameShp, text = "...") 
 	cbBlank.tab1 <- tkcheckbutton(frameShp, variable = blankVal, text = 'Blank grid', anchor = 'w', justify = 'left')
@@ -255,7 +243,7 @@ PlotGriddedNcdfCmd <- function(){
 			tkconfigure(combShp.tab1, values = unlist(listOpenFiles), textvariable = file.plotShp)
 		}
 	})
-	
+
 	###########
 	tkgrid(combShp.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(btShp.tab1, row = 0, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
@@ -267,18 +255,14 @@ PlotGriddedNcdfCmd <- function(){
 	status.bar.display(btShp.tab1, TextOutputVar, 'Browse file if not listed')
 	infobulle(cbBlank.tab1, 'Blank grid outside the country boundaries or over ocean')
 	status.bar.display(cbBlank.tab1, TextOutputVar, 'Blank grid outside the country boundaries  or over ocean given by the shapefile')
-	
+
 	#############################
 	tkgrid(frameNcdf, row = 0, column = 0, sticky = 'we', pady = 2)
 	tkgrid(frameShp, row = 1, column = 0, sticky = 'we', pady = 2)
-	# tkgrid(cbBlank.tab1, row = 3, column = 0, sticky = 'we', ipady = 2)
-	# tkgrid.columnconfigure(frameNcdf, 0, weight = 1)
-	# tkgrid.columnconfigure(frameShp, 0, weight = 1)
-	# tkgrid.columnconfigure(cbBlank.tab1, 0, weight = 1)
 
 	#######################################################################################################
 
-	#Tab2	
+	#Tab2
 	frTab2 <- tkframe(cmd.tab2)
 	tkgrid(frTab2, padx = 5, pady = 5, ipadx = 2, ipady = 2)
 	tkgrid.columnconfigure(frTab2, 0, weight = 1)
@@ -351,6 +335,7 @@ PlotGriddedNcdfCmd <- function(){
 
 	tkbind(combPresetCol.tab2, "<<ComboboxSelected>>", function(){
 		n <- as.numeric(tclvalue(nb.color))
+		if(is.na(n)) n <- 10
 		colFun <- match.fun(tclvalue(preset.color))
 		listCol <- colFun(n)
 		if(tclvalue(reverse.color) == '1') listCol <- rev(listCol)
@@ -363,6 +348,7 @@ PlotGriddedNcdfCmd <- function(){
 	tkbind(chkRevCol.tab2, "<Button-1>", function(){
 		if(tclvalue(custom.color) == '0'){
 			n <- as.numeric(tclvalue(nb.color))
+			if(is.na(n)) n <- 10
 			colFun <- match.fun(tclvalue(preset.color))
 			listCol <- colFun(n)
 			if(tclvalue(reverse.color) == '0') listCol <- rev(listCol)
@@ -390,44 +376,70 @@ PlotGriddedNcdfCmd <- function(){
 	})
 
 	########################
-	##Customized level	
+	##Customized level
 	tkbind(chkCustoLev.tab2, "<Button-1>", function(){
 		if(tclvalue(custom.level) == '0') tkconfigure(butCustoLev.tab2, state = 'normal')
 		else tkconfigure(butCustoLev.tab2, state = 'disabled')
 	})
-	
+
 	atLev <- NULL
 	tkconfigure(butCustoLev.tab2, command = function(){
 		if(is.null(atLev)){
-			donne <- getNcdfOpenData(file.netcdf)[[2]]
+			n <- as.numeric(tclvalue(nb.color))
+			if(is.na(n)) n <- 10
+			# donne <- getNCdonnnees.wrap()
+			donne <- getNCdonnnees()
 			if(!is.null(donne)){
-				atLev <- pretty(donne$value)
+				atLev <- pretty(donne$z, n = n+1)
 			}
 		}
 		atLev <<- customLevels(main.win, atLev)
 	})
 
 	#######################################################################################################
-	# getNCDdon <- function(){
-	# 	nc <- nc_open(ncvar[[3]])
 
-	# 	ichoix <- which(var.names == tclvalue(var.choix))
-	# 	if(ichoix != 1){
-	# 		ivar <<- ichoix-1
-	# 		dim.names <- c('', sapply(ncvar[[2]][[ivar]]$dimInfo, function(x) x$name))
-	# 		idx <- which(dim.names == tclvalue(X.choix))
-	# 		idy <- which(dim.names == tclvalue(Y.choix))
+	getNCdonnnees <- function(){
+		ichoix <- which(var.names == tclvalue(var.choix))
+		if(ichoix != 1){
+			ivar <- ichoix-1
+			dim.names <- c(sapply(ncvar[[2]][[ivar]]$dimInfo, function(x) x$name))
+			if(tclvalue(X.choix) == '' | tclvalue(Y.choix) == '') return(NULL)
+			idx <- which(dim.names == tclvalue(X.choix))
+			idy <- which(dim.names == tclvalue(Y.choix))
 
+			nc <- nc_open(ncvar[[3]])
+			xm <- nc$var[[ivar]]$dim[[idx]]$vals
+			ym <- nc$var[[ivar]]$dim[[idy]]$vals
+			zvar <- ncvar_get(nc, varid = ncvar[[2]][[ivar]]$name)
+			nc_close(nc)
 
-	# 	}
+			xo <- order(xm)
+			xm <- xm[xo]
+			yo <- order(ym)
+			ym <- ym[yo]
+			zvar <- if(idx < idy) zvar[xo, yo] else t(zvar)[xo, yo]
+			return(list(x = xm, y = ym, z = zvar))
+		}
+	}
 
+	DONNEES <- NULL
+	getNCdonnnees.wrap <- function(){
+		if(is.null(DONNEES)){
+			donne <- getNCdonnnees()
+			DONNEES <<- list(tclvalue(file.netcdf), tclvalue(var.choix), donne)
+		}else{
+			if((DONNEES[[1]] != tclvalue(file.netcdf)) | (DONNEES[[2]] != tclvalue(var.choix))){
+				donne <- getNCdonnnees()
+				DONNEES <<- list(tclvalue(file.netcdf), tclvalue(var.choix), donne)
+			}else{
+				donne <- DONNEES[[3]]
+			}
+		}
+		return(donne)
+	}
 
-	# }
-
-
-	
 	#######################################################################################################
-	
+
 	plotDataBut <- ttkbutton(plotBut.cmd, text = "Plot Data")
 
 	tkgrid(plotDataBut, row = 0, column = 0, sticky = 'e', padx = 5, pady = 5)
@@ -436,26 +448,29 @@ PlotGriddedNcdfCmd <- function(){
 
 	notebookTab <- NULL
 	#######
-	
+
 	tkconfigure(plotDataBut, command = function(){
+		n <- as.numeric(tclvalue(nb.color))
+		if(is.na(n)) n <- 10
+
+		# donne <- getNCdonnnees.wrap()
+		donne <- getNCdonnnees()
+		if(tclvalue(custom.level) == '0' | length(atLev) == 0){
+			if(!is.null(donne)) atLev <- pretty(donne$z, n = n+1)
+		}
+
 		if(tclvalue(custom.color) == '0' | length(listCol) == 0){
-			n <- as.numeric(tclvalue(nb.color))
-			if(is.na(n)) n <- 10
 			colFun <- match.fun(tclvalue(preset.color))
-			listCol <- colFun(n)
+			listCol <- colFun(length(atLev)-1)
 			if(tclvalue(reverse.color) == '1') listCol <- rev(listCol)
 		}
 
-		donne <- getNcdfOpenData(file.netcdf)
-
-		if(tclvalue(custom.level) == '0' | length(atLev) == 0){
-			if(!is.null(donne)) atLev <- pretty(donne[[2]]$value)
-		}
 		shpf <- getShpOpenData(file.plotShp)[[2]]
 		if(tclvalue(blankVal) == '1' & is.null(shpf)){
 			InsertMessagesTxt(main.txt.out, 'Need ESRI shapefile for blanking', format = TRUE)
 		}else{
-			imgContainer <- displayNetCDFdata(tknotes, notebookTab, donne, atLev, listCol, shpf, tclvalue(unit_sym), tclvalue(blankVal))
+			imgContainer <- displayNetCDFdata(tknotes, notebookTab, donne, atLev, listCol, shpf,
+									tclvalue(unit_sym), tclvalue(blankVal), tclvalue(file.netcdf))
 			if(!is.null(imgContainer)){
 				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, notebookTab, AllOpenTabType, AllOpenTabData)
 				notebookTab <<- retNBTab$notebookTab
@@ -465,9 +480,8 @@ PlotGriddedNcdfCmd <- function(){
 		}
 	})
 
-	
 	#######################################################################################################
-	
+
 	tcl('update')
 	tkgrid(cmd.frame, sticky = 'nswe', pady = 5)
 	tkgrid.columnconfigure(cmd.frame, 0, weight = 1)

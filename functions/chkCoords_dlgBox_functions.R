@@ -64,7 +64,7 @@ excludeOutStn <- function(parent.win, GeneralParameters){
 	})
 
 	tkconfigure(bt.file.save, command = function(){
-		file2save1 <- tk_choose.dir(as.character(GeneralParameters$file.io$Values[3]), "")
+		file2save1 <- tk_choose.dir(default = str_trim(GeneralParameters$IO.files$dir2save), caption = "")
 		if(!file.exists(file2save1)){
 			tkmessageBox(message = paste(file2save1, 'does not exist.\n It will be created.', sep = ' '), icon = "warning", type = "ok")
 			dir.create(file2save1, recursive = TRUE)

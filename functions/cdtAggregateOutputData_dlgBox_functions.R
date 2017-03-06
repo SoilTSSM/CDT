@@ -13,10 +13,10 @@ AggregateOutputStationData <- function(parent.win, GeneralParameters){
 	tkgrid(frA1, row = 0, column = 0, sticky = 'we', padx = 1, pady = 5, ipadx = 1, ipady = 1)
 	tkgrid(frA2, row = 1, column = 0, sticky = 'we', padx = 1, pady = 5, ipadx = 1, ipady = 1)
 
-	frA1.txt <- tklabel(frA1, text = 'Directory contaning the folders Outputs&OriginalData')
+	frA1.txt <- tklabel(frA1, text = 'Directory containing the folders Outputs&OriginalData')
 	tkgrid(frA1.txt)
 
-	file.save1 <- tclVar(as.character(GeneralParameters$file.io))
+	file.save1 <- tclVar(str_trim(GeneralParameters$file.io))
 	en.file.save <- tkentry(frA2, textvariable = file.save1, width = 45) #try dynamic width
 	infobulle(en.file.save, 'Enter the full path of the directory containing\nthe folders Outputs, OriginalData or CorrectedData')
 	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path of the directory containing the folders Outputs, OriginalData or CorrectedData')
@@ -25,7 +25,7 @@ AggregateOutputStationData <- function(parent.win, GeneralParameters){
 	tkgrid.configure(en.file.save, row = 0, column = 0, sticky = 'w')
 	tkgrid.configure(bt.file.save, row = 0, column = 1, sticky = 'e')
 	tkconfigure(bt.file.save, command = function(){
-		file2save1 <- tk_choose.dir(as.character(GeneralParameters$file.io), "")
+		file2save1 <- tk_choose.dir(str_trim(GeneralParameters$file.io), "")
 		if(!file.exists(file2save1)){
 			tkmessageBox(message = paste(file2save1, 'does not exist.\n It will be created.',sep = ' '), icon = "warning", type = "ok")
 			dir.create(file2save1, recursive = TRUE)

@@ -1,0 +1,23 @@
+{
+    // Input and Output files/directory
+    "IO.files": [{
+        // Station data filename
+        "STN.file": "",
+        // Full path to the directory to save results
+        "dir2save": ""
+    }],
+    // Date range to be used to compute the regression coefficients
+    "params.zero": [{
+        // Minimum number of neighbors stations to use
+        "min.nbrs": 3,
+        // Maximum number of neighbors stations to use
+        "max.nbrs": 6,
+        // Minimum number of days in a month with observation
+        "min.days": 22,
+        // Maximum search  distance [in km] for neighbors stations
+        "max.dist": 100,
+        // Minimum threshold (% zero.station / % zero.neighbors) to flag that month's observation as problematic
+        "min.thrs": 1.5
+    }],
+    "AllOrOne": "one"
+}

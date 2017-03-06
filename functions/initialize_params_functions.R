@@ -82,12 +82,16 @@ init.params <- function(action, period){
 	#qc.rainfall
 	##Zeros check
 	if(action == 'zero.check'){
-		file.io <- data.frame(c('input.rainfall', 'dir2save'), c('', getwd()))
-		names(file.io) <- c('Parameters', 'Values')
-		param.zero <- data.frame(c('min.nbrs', 'max.nbrs', 'min.days', 'max.dst', 'pct.trsh'), c('3', '6', '22', '100', '1.5'))
-		names(param.zero) <- c('Parameters', 'Values')
-		AllOrOne <- 'one'
-		ret.params <- list(action = action, period = period, file.io = file.io, param.zero = param.zero, AllOrOne = AllOrOne, retpar = 0)
+		# file.io <- data.frame(c('input.rainfall', 'dir2save'), c('', getwd()))
+		# names(file.io) <- c('Parameters', 'Values')
+		# param.zero <- data.frame(c('min.nbrs', 'max.nbrs', 'min.days', 'max.dst', 'pct.trsh'), c('3', '6', '22', '100', '1.5'))
+		# names(param.zero) <- c('Parameters', 'Values')
+		# AllOrOne <- 'one'
+		# ret.params <- list(action = action, period = period, file.io = file.io, param.zero = param.zero, AllOrOne = AllOrOne, retpar = 0)
+
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'False_Zero_Check.json'))
+		ret.params <- c(list(action = action, period = period), ret.params, list(retpar = 0))
+		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
 
 	##Outliers check

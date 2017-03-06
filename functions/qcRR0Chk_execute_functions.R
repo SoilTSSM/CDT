@@ -1,9 +1,9 @@
 execZeroCheck <- function(get.stn){
-	min.nbrs <- as.numeric(GeneralParameters$param.zero$Values[1])
-	max.nbrs <- as.numeric(GeneralParameters$param.zero$Values[2])
-	min.days <- as.numeric(GeneralParameters$param.zero$Values[3])
-	max.dst <- as.numeric(GeneralParameters$param.zero$Values[4])
-	pct.trsh <- as.numeric(GeneralParameters$param.zero$Values[5])
+	min.nbrs <- GeneralParameters$params.zero$min.nbrs
+	max.nbrs <- GeneralParameters$params.zero$max.nbrs
+	min.days <- GeneralParameters$params.zero$min.days
+	max.dst <- GeneralParameters$params.zero$max.dist
+	pct.trsh <- GeneralParameters$params.zero$min.thrs
 	Zparams <- c(max.dst, max.nbrs, min.nbrs, min.days, pct.trsh)
 
 	###
@@ -11,31 +11,33 @@ execZeroCheck <- function(get.stn){
 		status <- 0
 		msg <- NULL
 
-		zerochkdir <- file.path(EnvQcZeroChkData$baseDir, 'Outputs', fsep = .Platform$file.sep)
-		corrdir <- file.path(EnvQcZeroChkData$baseDir, 'CorrectedData', fsep = .Platform$file.sep)
+		zerochkdir <- file.path(EnvQcZeroChkData$baseDir, 'Outputs')
+		corrdir <- file.path(EnvQcZeroChkData$baseDir, 'CorrectedData')
 
-		corrdirstn <- file.path(corrdir, get.stn, fsep = .Platform$file.sep)
+		corrdirstn <- file.path(corrdir, get.stn)
 		if(!file.exists(corrdirstn)) dir.create(corrdirstn, showWarnings = FALSE, recursive = TRUE)
-		fileoutdat <- file.path(corrdirstn, paste(get.stn, '.txt', sep = ''), fsep = .Platform$file.sep)
+		fileoutdat <- file.path(corrdirstn, paste(get.stn, '.txt', sep = ''))
 
 		pos <- which(EnvQcZeroChkData$donnees$id == get.stn)
-		sdon <- data.frame(EnvQcZeroChkData$donnees$dates, EnvQcZeroChkData$donnees$data[,pos])
+		sdon <- data.frame(EnvQcZeroChkData$donnees$dates, EnvQcZeroChkData$donnees$data[, pos])
 		write.table(sdon, fileoutdat, col.names = FALSE, row.names = FALSE)
 
 		coords <- list(id = EnvQcZeroChkData$donnees$id, lon = EnvQcZeroChkData$donnees$lon, lat = EnvQcZeroChkData$donnees$lat)
 
 		zeroRet <- try(ZeroCheckStn(pos, EnvQcZeroChkData$donnees$data, EnvQcZeroChkData$donnees$dates, coords, Zparams), silent = TRUE)
 		if(!inherits(zeroRet, "try-error")){
-			outsdir <- file.path(zerochkdir, get.stn, fsep = .Platform$file.sep)
+			outsdir <- file.path(zerochkdir, get.stn)
 			if(!file.exists(outsdir)) dir.create(outsdir, showWarnings = FALSE, recursive = TRUE)
 
-			fileoutqc <- file.path(outsdir, paste(get.stn, '.txt', sep = ''), fsep = .Platform$file.sep)
+			fileoutqc <- file.path(outsdir, paste(get.stn, '.txt', sep = ''))
 			write.table(zeroRet, fileoutqc, col.names = TRUE, row.names = FALSE)
-			ret.res <- list(action = GeneralParameters$action, station = get.stn, res = zeroRet, AllOrOne = GeneralParameters$AllOrOne, outputdir = zerochkdir, datadir = corrdir)
+			ret.res <- list(action = GeneralParameters$action, station = get.stn, res = zeroRet,
+							AllOrOne = GeneralParameters$AllOrOne, outputdir = zerochkdir, datadir = corrdir)
 			msg <- paste("Zeros check finished successfully for", get.stn)
 			status <- 'ok'
 		}else{
-			ret.res <- list(action = GeneralParameters$action, station = get.stn, res = NULL, AllOrOne = GeneralParameters$AllOrOne, outputdir = zerochkdir, datadir = corrdir)
+			ret.res <- list(action = GeneralParameters$action, station = get.stn, res = NULL,
+							AllOrOne = GeneralParameters$AllOrOne, outputdir = zerochkdir, datadir = corrdir)
 			msg <- paste(paste("Zeros check failed for", get.stn), '\n', gsub('[\r\n]', '', zeroRet[1]), sep = '')
 			status <- 'no'
 		}
@@ -51,9 +53,9 @@ execZeroCheck <- function(get.stn){
 		status <- 0
 		msg <- NULL
 
-		corrdirstn <- file.path(corrdir, jlstn, fsep = .Platform$file.sep)
+		corrdirstn <- file.path(corrdir, jlstn)
 		if(!file.exists(corrdirstn)) dir.create(corrdirstn, showWarnings = FALSE, recursive = TRUE)
-		fileoutdat <- file.path(corrdirstn, paste(jlstn, '.txt', sep = ''), fsep = .Platform$file.sep)
+		fileoutdat <- file.path(corrdirstn, paste(jlstn, '.txt', sep = ''))
 
 		pos <- which(EnvQcZeroChkData$donnees$id == jlstn)
 		sdon <- data.frame(EnvQcZeroChkData$donnees$dates, EnvQcZeroChkData$donnees$data[, pos])
@@ -63,10 +65,10 @@ execZeroCheck <- function(get.stn){
 
 		zeroRet <- try(ZeroCheckStn(pos, EnvQcZeroChkData$donnees$data, EnvQcZeroChkData$donnees$dates, coords, Zparams), silent = TRUE)
 		if(!inherits(zeroRet, "try-error")){
-			outsdir <- file.path(zerochkdir, jlstn, fsep = .Platform$file.sep)
+			outsdir <- file.path(zerochkdir, jlstn)
 			if(!file.exists(outsdir)) dir.create(outsdir, showWarnings = FALSE, recursive = TRUE)
 
-			fileoutqc <- file.path(outsdir, paste(jlstn, '.txt', sep = ''), fsep = .Platform$file.sep)
+			fileoutqc <- file.path(outsdir, paste(jlstn, '.txt', sep = ''))
 			write.table(zeroRet, fileoutqc, col.names = TRUE, row.names = FALSE)
 			retResStn <- list(station = jlstn, res = zeroRet)
 			msg <- paste("Zeros check finished successfully for", jlstn)
@@ -86,14 +88,16 @@ execZeroCheck <- function(get.stn){
 
 	###
 	ALL_Stations <- function(Zparams){
-		zerochkdir <- file.path(EnvQcZeroChkData$baseDir, 'Outputs', fsep = .Platform$file.sep)
-		corrdir <- file.path(EnvQcZeroChkData$baseDir, 'CorrectedData', fsep = .Platform$file.sep)
+		zerochkdir <- file.path(EnvQcZeroChkData$baseDir, 'Outputs')
+		corrdir <- file.path(EnvQcZeroChkData$baseDir, 'CorrectedData')
 
 		tcl("update", "idletasks")
 
-		retResAllStn <- lapply(as.character(EnvQcZeroChkData$donnees$id), function(jlstn) ALL_StationsLoop(jlstn, Zparams, zerochkdir, corrdir))
+		retResAllStn <- lapply(as.character(EnvQcZeroChkData$donnees$id),
+								function(jlstn) ALL_StationsLoop(jlstn, Zparams, zerochkdir, corrdir))
 
-		ret.res <- list(action = GeneralParameters$action, res = retResAllStn, AllOrOne = GeneralParameters$AllOrOne, outputdir = zerochkdir, datadir = corrdir)
+		ret.res <- list(action = GeneralParameters$action, res = retResAllStn,
+						AllOrOne = GeneralParameters$AllOrOne, outputdir = zerochkdir, datadir = corrdir)
 		return(ret.res)
 	}
 

@@ -1,97 +1,22 @@
 
 plotNetCDFdata <- function(donne, atLev, listCol, ocrds, units){
 	##color and tick
-	loko <- colorRampPalette(listCol)
 	ticks <- as.numeric(atLev)
 	nticks <- length(ticks)
-	labticks <- ticks  #paste(ticks, expression(paste(degree, "C", sep = ''))) 
+	labticks <- ticks  #paste(ticks, expression(paste(degree, "C", sep = '')))
+	loko <- colorRampPalette(listCol)(nticks-1)
 	units <- str_trim(units)
 
-	if(!is.na(units)){
-		 colorkeyTitle <- if(units != "") paste('(', units, ')', sep = '') else ''
-	}else colorkeyTitle <- ''
-	
-	##X-Y Axis
-	toutLon <- c(ocrds[,1], donne$x)
-	toutLat <- c(ocrds[,2], donne$y)
-	parLon <- parAxisPlotFun(toutLon)
-	parLat <- parAxisPlotFun(toutLat)
-	grid.x <- parLon$axp
-	grid.y <- parLat$axp
-	axis.x <- grid.x
-	axis.y <- grid.y
-	xlim <- parLon$usr
-	ylim <- parLat$usr
-
-	##Axis lab
-	axlabs <- LatLonAxisLabels(axis.x, axis.y)
-	##X-axis
-	Xaxis = list(relation = "same", draw = T, alternating = 1, at = axis.x, labels = axlabs$xaxl, tck = c(1, 0))
-	###Y-axis
-	Yaxis = list(relation = "same", draw = T, alternating = 1, at = axis.y, labels = axlabs$yaxl, tck = c(1, 0))
-
-	###Colorkey position
-	colorkeyPlace <- if(diff(xlim) >= diff(ylim)) 'bottom' else 'right'
-
-	### Colorkey option
-	if(colorkeyPlace == 'bottom'){
-		layout.pad <- c(1, 1, 1, 2) #left, right, top, bottom
-		posTitle <- 'right'
-		xyposTitle <- c(1, 0.2)
-		justTitle <- c("center", "center")
-		rotTitle <- 0 
-	}else if(colorkeyPlace == 'right'){
-		layout.pad <- c(1, 2, 1, 1)
-		posTitle <- 'top'
-		xyposTitle <- c(1, 1.5)
-		justTitle <- c("right", "center")
-		rotTitle <- 0
-	}
-
-	##par.settings
-	parSettings <- list(background = list(alpha = 1, col = 'white'),
-						layout.widths = list(left.padding = layout.pad[1], right.padding = layout.pad[2]),
-						layout.heights = list(top.padding = layout.pad[3], bottom.padding = layout.pad[4]))
-
-	##Colorkey
-	colorkey <- list(space = colorkeyPlace, col = loko, width = 1.5, height = 1,
-					raster = TRUE, interpolate = TRUE, at = 1:nticks,
-					labels = list(labels = labticks, at = 1:nticks, cex = 0.8, col = 'black', rot = 0),
-					axis.line = list(alpha = 0.5, lty = 1, lwd = 1, col = 'black'))
-	colorkeyFrame <- draw.colorkey(key = colorkey, draw = FALSE, vp = NULL)
-	grobObj <- textGrob(colorkeyTitle, x = xyposTitle[1], y = xyposTitle[2], just = justTitle, rot = rotTitle,
-						gp = gpar(fontsize = 12, fontface = 'plain', col = "black", cex = 0.8))
-	
-	##add legend title
-	lezandyGrob <- packGrob(frame = colorkeyFrame, grob = grobObj, side = posTitle, dynamic = T)
-
-	##legend function
-	if(colorkeyPlace == 'bottom'){
-		lezandy <- list(bottom = list(fun = lezandyGrob))
-	}else if(colorkeyPlace == 'right'){
-		lezandy <- list(right = list(fun = lezandyGrob))
-	}
-
-	donne1 <- data.frame(expand.grid(x = donne$x, y = donne$y), z = c(donne$value))
-
-	# plotncdf <- levelplot(donne$value, row.values = donne$x, column.values = donne$y, at = ticks, 
-	plotncdf <- levelplot(z~x+y, data = donne1, at = ticks, 
-						interpolate = TRUE, region = TRUE, 
-						panel = function(...){
-							panel.levelplot(...)
-							panel.lines(ocrds, col = "black", lwd = 0.5)
-							panel.abline(h = grid.y, v = grid.x, col = "lightgray", lty = 3)
-						},
-						colorkey = FALSE, par.settings = parSettings, xlab = '', ylab = '',
-						xlim = xlim, ylim = ylim, col.regions = loko,
-						scales = list(x = Xaxis, y = Yaxis), legend = lezandy)
-	print(plotncdf)
+	ret <- PlotImage(donne, at = ticks, col = loko, shpd = ocrds, units = units, grid = TRUE,
+				colorKey = list(labels = labticks))
+	print(ret)
 }
 
 
 ####################################################################################
 
-displayNetCDFdata <- function(parent, notebookTab, donne, atLev, listCol, shpf, units, blank){
+displayNetCDFdata <- function(parent, notebookTab, donne, atLev, listCol, shpf,
+							units, blank, title.tab){
 	if(is.null(donne)){
 		InsertMessagesTxt(main.txt.out, 'No NetCDF data found', format = TRUE)
 		return(NULL)
@@ -104,24 +29,23 @@ displayNetCDFdata <- function(parent, notebookTab, donne, atLev, listCol, shpf, 
 	}
 	
 	ocrds <- getBoundaries(shpf)
-	donne2 <- donne[[2]]
 	if(blank == '1'){
-		plotgrd <- expand.grid(x = donne2$x, y = donne2$y)
+		plotgrd <- expand.grid(x = donne$x, y = donne$y)
 		coordinates(plotgrd) <- ~x+y
 		plotgrd <- SpatialPixels(points = plotgrd, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
 		shpf[['vtmp']] <- 1
 		shpMask <- over(plotgrd, shpf)[,'vtmp']
-		outMask <- matrix(shpMask, nrow = length(donne2$x), ncol = length(donne2$y))
-		donne2$value[is.na(outMask)] <- NA
+		outMask <- matrix(shpMask, nrow = length(donne$x), ncol = length(donne$y))
+		donne$value[is.na(outMask)] <- NA
 	}
 
 	plotIt <- function(){
-		plotNetCDFdata(donne2, atLev, listCol, ocrds, units)
+		plotNetCDFdata(donne, atLev, listCol, ocrds, units)
 	}
 	
 	###################################################################	
 
-	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitle = paste('Map -', donne[[1]]), AllOpenTabType, AllOpenTabData)
+	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitle = paste('Map -', substr(title.tab, 1, 16)), AllOpenTabType, AllOpenTabData)
 
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))

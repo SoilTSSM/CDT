@@ -36,7 +36,7 @@ Execute_All_Functions <- function(get.stn){
 				failedzc <- data.frame(failedzc)
 				names(failedzc) <- 'Zeros check failed: Stations not checked'
 				containertab <- displayConsOutputTabs(tknotes, failedzc,
-				title = paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), 'Failed'))
+								title = paste(getf.no.ext(GeneralParameters$IO.files$STN.file), 'Failed'))
 				ntab <- length(AllOpenTabType)
 				AllOpenTabType[[ntab+1]] <<- 'ctxt'
 				AllOpenTabData[[ntab+1]] <<- containertab
