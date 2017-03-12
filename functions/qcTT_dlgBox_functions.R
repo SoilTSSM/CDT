@@ -28,32 +28,32 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 
 	file.period <- tclVar()
 	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
-	tclvalue(file.period) <- switch(as.character(GeneralParameters$period), 
+	tclvalue(file.period) <- switch(GeneralParameters$period, 
 									'daily' = cb.periodVAL[1], 
 									'dekadal' = cb.periodVAL[2],
 									'monthly' = cb.periodVAL[3])
 
-	file.choix1a <- tclVar(as.character(GeneralParameters$file.io$Values[1]))
-	file.choix1b <- tclVar(as.character(GeneralParameters$file.io$Values[2]))
-	file.choix2 <- tclVar(as.character(GeneralParameters$file.io$Values[3]))
-	file.save1 <- tclVar(as.character(GeneralParameters$file.io$Values[4]))
-	vartxtn <- tclVar(GeneralParameters$test.tx)
+	file.choix1a <- tclVar(GeneralParameters$IO.files$STN.file1)
+	file.choix1b <- tclVar(GeneralParameters$IO.files$STN.file2)
+	file.choix2 <- tclVar(GeneralParameters$IO.files$DEM.file)
+	file.save1 <- tclVar(GeneralParameters$IO.files$dir2save)
+	vartxtn <- tclVar(GeneralParameters$is.TX)
 
 	txtntxt1 <- tclVar("Tmax")
 	txtntxt2 <- tclVar("Tmin")
 
 	################
 
-	temp.state <- if(as.character(GeneralParameters$use.method$Values[2]) == '0') 'disabled' else 'normal'
+	temp.state <- if(GeneralParameters$consist.check) 'normal' else 'disabled'
 
-	if(as.character(GeneralParameters$use.method$Values[1]) == '0' & as.character(GeneralParameters$use.method$Values[3]) == '0'){
+	if(!GeneralParameters$stn.type$single.series & !GeneralParameters$dem$use.elv){
 		state <- c('disabled', 'normal', 'disabled')
 		state1 <- 'disabled'
-	}else if(as.character(GeneralParameters$use.method$Values[1]) == '1'){
+	}else if(GeneralParameters$stn.type$single.series){
 		state <- c('disabled', 'normal', 'disabled')
 		state1 <- 'normal'
-	}else if(as.character(GeneralParameters$use.method$Values[3]) == '1'){
-		state <- if(as.character(GeneralParameters$use.method$Values[4]) == '0') c('normal', 'normal', 'normal') else c('disabled', 'normal', 'normal')
+	}else if(GeneralParameters$dem$use.elv){
+		state <- if(GeneralParameters$dem$interp.dem == '0') c('normal', 'normal', 'normal') else c('disabled', 'normal', 'normal')
 		state1 <- 'disabled'
 	}
 
@@ -138,9 +138,9 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 	})
 
 	tkconfigure(bt.file.save, command = function(){
-		file2save1 <- tk_choose.dir(as.character(GeneralParameters$file.io$Values[4]), "")
+		file2save1 <- tk_choose.dir(str_trim(GeneralParameters$IO.files$dir2save), "")
 		if(!file.exists(file2save1)){
-			tkmessageBox(message = paste(file2save1, 'does not exist. It will be created.', sep = ' '), icon = "warning", type = "ok")
+			tkmessageBox(message = paste(file2save1, 'does not exist. It will be created.'), icon = "warning", type = "ok")
 			dir.create(file2save1, recursive = TRUE)
 			tclvalue(file.save1) <- file2save1
 		}else tclvalue(file.save1) <- file2save1
@@ -192,6 +192,21 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 
 	################
 
+	tkbind(cb.period, "<<ComboboxSelected>>", function(){
+		if(tclvalue(file.period) == 'Daily data'){
+			tclvalue(vdtfrmt1) <- "YYYYMMDD"
+			tclvalue(vdtfrmt2) <- "YYYY MM DD"
+		}
+		if(tclvalue(file.period) == 'Dekadal data'){
+			tclvalue(vdtfrmt1) <- "YYYYMMD"
+			tclvalue(vdtfrmt2) <- "YYYY MM D"
+		}
+		if(tclvalue(file.period) == 'Monthly data'){
+			tclvalue(vdtfrmt1) <- "YYYYMM"
+			tclvalue(vdtfrmt2) <- "YYYY MM"
+		}
+	})
+
 	tkbind(rb.vartxtn1, "<Button-1>", function(){
 		tclvalue(txtntxt1) <- 'Tmax'
 		tclvalue(txtntxt2) <- 'Tmin'
@@ -229,10 +244,10 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 
 	frSeries <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
-	cb.1series.val <- tclVar(as.character(GeneralParameters$use.method$Values[1]))
-	cb.const.val <- tclVar(as.character(GeneralParameters$use.method$Values[2]))
-	cb.1uselv.val <- tclVar(as.character(GeneralParameters$use.method$Values[3]))
-	uselv.ch <- tclVar(as.character(GeneralParameters$use.method$Values[4]))
+	cb.1series.val <- tclVar(GeneralParameters$stn.type$single.series)
+	cb.const.val <- tclVar(GeneralParameters$consist.check)
+	cb.1uselv.val <- tclVar(GeneralParameters$dem$use.elv)
+	uselv.ch <- tclVar(GeneralParameters$dem$interp.dem)
 
 	state1s <- if(GeneralParameters$AllOrOne == 'one') 'normal' else 'disabled'
 
@@ -263,76 +278,6 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 
 	##################
 
-	frflfrmt <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
-
-	rbffrmt <- tclVar(as.character(GeneralParameters$file.date.format$Values[1]))
-
-	txtffrmt <- ttklabel(frflfrmt, text = "File Format", anchor = 'w', justify = 'left')
-	ffrmt1 <- tkradiobutton(frflfrmt, text = "One variable", anchor = 'w', justify = 'left', state = state1)
-	ffrmt2 <- tkradiobutton(frflfrmt, text = "Rain Tmax Tmin", anchor = 'w', justify = 'left', state = state1)
-	tkconfigure(ffrmt1, variable = rbffrmt, value = "1")
-	tkconfigure(ffrmt2, variable = rbffrmt, value = "0")
-
-	tkgrid(txtffrmt, row = 0, column = 0, sticky = "we", padx = 1, ipadx = 1, pady = spady)
-	tkgrid(ffrmt1, row = 1, column = 0, sticky = "we", padx = 1, ipadx = 1, pady = spady)
-	tkgrid(ffrmt2, row = 2, column = 0, sticky = "we", padx = 1, ipadx = 1, pady = spady)
-
-	infobulle(ffrmt1, 'In case of single series: The file contains 1 variable')
-	status.bar.display(ffrmt1, TextOutputVar, 'In case of single series: The file contains 1 variable')
-	infobulle(ffrmt2, 'In case of single series: The file contains Rain, Tmax and Tmin in this order')
-	status.bar.display(ffrmt2, TextOutputVar, 'In case of single series: The file contains Rain, Tmax and Tmin in this order')		
-
-	##################
-
-	frdtfrmt <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
-
-	vdtfrmt1 <- tclVar("YYYYMMDD")
-	vdtfrmt2 <- tclVar("YYYY MM DD")
-	rbdtfrmt <- tclVar(as.character(GeneralParameters$file.date.format$Values[2]))
-
-	txtdtfrmt <- ttklabel(frdtfrmt, text = "Date Format", anchor = 'w', justify = 'left')
-	dtfrmt1 <- tkradiobutton(frdtfrmt, text = tclvalue(vdtfrmt1), textvariable = vdtfrmt1, anchor = 'w', justify = 'left', state = state1)
-	dtfrmt2 <- tkradiobutton(frdtfrmt, text = tclvalue(vdtfrmt2), textvariable = vdtfrmt2, anchor = 'w', justify = 'left', state = state1)
-	tkconfigure(dtfrmt1, variable = rbdtfrmt, value = "1")
-	tkconfigure(dtfrmt2, variable = rbdtfrmt, value = "0")
-
-	tkgrid(txtdtfrmt, row = 0, column = 0, sticky = "we", padx = 1, ipadx = 1, pady = spady)
-	tkgrid(dtfrmt1, row = 1, column = 0, sticky = "we", padx = 1, ipadx = 1, pady = spady)
-	tkgrid(dtfrmt2, row = 2, column = 0, sticky = "we", padx = 1, ipadx = 1, pady = spady)	
-
-	infobulle(dtfrmt1, 'In case of single series: dates are merged')
-	status.bar.display(dtfrmt1, TextOutputVar, 'In case of single series: dates are merged')
-	infobulle(dtfrmt2, 'In case of single series: dates are separated by space or tabulation')
-	status.bar.display(dtfrmt2, TextOutputVar, 'In case of single series:dates are separated by space or tabulation')
-
-	############################################
-	tkgrid(frSeries, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frflfrmt, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frdtfrmt, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	############################################
-	
-	tkgrid(frLeft, row = 0, column = 0, sticky = 'news', padx = 5, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frRight, row = 0, column = 1, sticky = 'news', padx = 5, pady = 1, ipadx = 1, ipady = 1)
-
-	################################################################
-
-	tkbind(cb.period, "<<ComboboxSelected>>", function(){
-		if(tclvalue(file.period) == 'Daily data'){
-			tclvalue(vdtfrmt1) <- "YYYYMMDD"
-			tclvalue(vdtfrmt2) <- "YYYY MM DD"
-		}
-		if(tclvalue(file.period) == 'Dekadal data'){
-			tclvalue(vdtfrmt1) <- "YYYYMMD"
-			tclvalue(vdtfrmt2) <- "YYYY MM D"
-		}
-		if(tclvalue(file.period) == 'Monthly data'){
-			tclvalue(vdtfrmt1) <- "YYYYMM"
-			tclvalue(vdtfrmt2) <- "YYYY MM"
-		}
-	})
-	
-	####
 	tkbind(cb.1series, "<Button-1>", function(){
 		if(GeneralParameters$AllOrOne == 'one'){
 			tkconfigure(cb.file.elv, state = 'disabled')
@@ -403,26 +348,83 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 			tkconfigure(bt.file.stn2, state = 'normal')
 		}
 	})
+
+	##################
+
+	frflfrmt <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
+
+	rbffrmt <- tclVar(GeneralParameters$stn.type$file.format)
+
+	txtffrmt <- ttklabel(frflfrmt, text = "File Format", anchor = 'w', justify = 'left')
+	ffrmt1 <- tkradiobutton(frflfrmt, text = "One variable", anchor = 'w', justify = 'left', state = state1)
+	ffrmt2 <- tkradiobutton(frflfrmt, text = "Rain Tmax Tmin", anchor = 'w', justify = 'left', state = state1)
+	tkconfigure(ffrmt1, variable = rbffrmt, value = "1")
+	tkconfigure(ffrmt2, variable = rbffrmt, value = "0")
+
+	tkgrid(txtffrmt, row = 0, column = 0, sticky = "we", padx = 1, ipadx = 1, pady = spady)
+	tkgrid(ffrmt1, row = 1, column = 0, sticky = "we", padx = 1, ipadx = 1, pady = spady)
+	tkgrid(ffrmt2, row = 2, column = 0, sticky = "we", padx = 1, ipadx = 1, pady = spady)
+
+	infobulle(ffrmt1, 'In case of single series: The file contains 1 variable')
+	status.bar.display(ffrmt1, TextOutputVar, 'In case of single series: The file contains 1 variable')
+	infobulle(ffrmt2, 'In case of single series: The file contains Rain, Tmax and Tmin in this order')
+	status.bar.display(ffrmt2, TextOutputVar, 'In case of single series: The file contains Rain, Tmax and Tmin in this order')
+
+	##################
+
+	frdtfrmt <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
+
+	vdtfrmt1 <- tclVar("YYYYMMDD")
+	vdtfrmt2 <- tclVar("YYYY MM DD")
+	rbdtfrmt <- tclVar(GeneralParameters$stn.type$date.format)
+
+	txtdtfrmt <- ttklabel(frdtfrmt, text = "Date Format", anchor = 'w', justify = 'left')
+	dtfrmt1 <- tkradiobutton(frdtfrmt, text = tclvalue(vdtfrmt1), textvariable = vdtfrmt1, anchor = 'w', justify = 'left', state = state1)
+	dtfrmt2 <- tkradiobutton(frdtfrmt, text = tclvalue(vdtfrmt2), textvariable = vdtfrmt2, anchor = 'w', justify = 'left', state = state1)
+	tkconfigure(dtfrmt1, variable = rbdtfrmt, value = "1")
+	tkconfigure(dtfrmt2, variable = rbdtfrmt, value = "0")
+
+	tkgrid(txtdtfrmt, row = 0, column = 0, sticky = "we", padx = 1, ipadx = 1, pady = spady)
+	tkgrid(dtfrmt1, row = 1, column = 0, sticky = "we", padx = 1, ipadx = 1, pady = spady)
+	tkgrid(dtfrmt2, row = 2, column = 0, sticky = "we", padx = 1, ipadx = 1, pady = spady)
+
+	infobulle(dtfrmt1, 'In case of single series: dates are merged')
+	status.bar.display(dtfrmt1, TextOutputVar, 'In case of single series: dates are merged')
+	infobulle(dtfrmt2, 'In case of single series: dates are separated by space or tabulation')
+	status.bar.display(dtfrmt2, TextOutputVar, 'In case of single series: dates are separated by space or tabulation')
+
+	############################################
+	tkgrid(frSeries, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frflfrmt, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frdtfrmt, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	############################################
 	
+	tkgrid(frLeft, row = 0, column = 0, sticky = 'news', padx = 5, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frRight, row = 0, column = 1, sticky = 'news', padx = 5, pady = 1, ipadx = 1, ipady = 1)
+
 	###################################################
 
 	bt.opt.OK <- tkbutton(frButt, text = "OK") 
 	bt.opt.CA <- tkbutton(frButt, text = "Cancel")
-	
+
 	tkconfigure(bt.opt.OK, command = function(){
 		if(tclvalue(file.choix1a) == ""){
 			tkmessageBox(message = "Choose the file to control", icon = "warning", type = "ok")
-		}else if(tclvalue(cb.1series.val) == "1" & tclvalue(rbffrmt) == "1" & tclvalue(cb.const.val) == "1" & tclvalue(file.choix1b) == ""){
+		}else if(tclvalue(cb.1series.val) == "1" & tclvalue(rbffrmt) == "1" &
+					tclvalue(cb.const.val) == "1" & tclvalue(file.choix1b) == ""){
 			msgtxtn <- if(tclvalue(vartxtn) == "1") 'Tmin' else  'Tmax'
-			tkmessageBox(message = paste("Provide the file contaning", msgtxtn,' for the consistency check'), icon = "warning", type = "ok")
+			tkmessageBox(message = paste("Provide the file contaning", msgtxtn, 'for the consistency check'),
+						icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else if(tclvalue(cb.1series.val) == "0" & tclvalue(cb.const.val) == "1" & tclvalue(file.choix1b) == ""){
 			msgtxtn <- if(tclvalue(vartxtn) == "1") 'Tmin' else  'Tmax'
-			tkmessageBox(message = paste("Provide the file contaning", msgtxtn,' for the consistency check'), icon = "warning", type = "ok")
+			tkmessageBox(message = paste("Provide the file contaning", msgtxtn, 'for the consistency check'),
+						icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else if(tclvalue(cb.1uselv.val) == "1" & tclvalue(uselv.ch) == "0" & tclvalue(file.choix2) == ""){
 			tkmessageBox(message = "You have to choose DEM data in NetCDF format if you want to extract elevation from DEM",
-			icon = "warning", type = "ok")
+						icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else if(tclvalue(file.save1) == "" | tclvalue(file.save1) == "NA"){
 			tkmessageBox(message = "Choose a directory to save results", icon = "warning", type = "ok")
@@ -452,14 +454,24 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 			if(!file.exists(dirparams)) dir.create(dirparams, showWarnings = FALSE, recursive = TRUE)
 			fileparams <- file.path(dirparams, 'Parameters.RData')
 
-			GeneralParameters$file.io$Values <<- c(tclvalue(file.choix1a), tclvalue(file.choix1b), tclvalue(file.choix2), tclvalue(file.save1))
-			GeneralParameters$file.date.format$Values <<- c(tclvalue(rbffrmt), tclvalue(rbdtfrmt))
-			GeneralParameters$use.method$Values <<- c(tclvalue(cb.1series.val), tclvalue(cb.const.val), tclvalue(cb.1uselv.val), tclvalue(uselv.ch))
-			GeneralParameters$test.tx <<- tclvalue(vartxtn)
 			GeneralParameters$period <<- switch(tclvalue(file.period), 
 			 									'Daily data' = 'daily',
 												'Dekadal data' =  'dekadal',
 												'Monthly data' = 'monthly')
+			GeneralParameters$IO.files$STN.file1 <<- str_trim(tclvalue(file.choix1a))
+			GeneralParameters$IO.files$STN.file2 <<- str_trim(tclvalue(file.choix1b))
+			GeneralParameters$IO.files$DEM.file <<- str_trim(tclvalue(file.choix2))
+			GeneralParameters$IO.files$dir2save <<- str_trim(tclvalue(file.save1))
+
+			GeneralParameters$is.TX <<- switch(tclvalue(vartxtn), '0' = FALSE, '1' = TRUE)
+			GeneralParameters$consist.check <<- switch(tclvalue(cb.const.val), '0' = FALSE, '1' = TRUE)
+
+			GeneralParameters$dem$use.elv <<- switch(tclvalue(cb.1uselv.val), '0' = FALSE, '1' = TRUE)
+			GeneralParameters$dem$interp.dem <<- tclvalue(uselv.ch)
+
+			GeneralParameters$stn.type$single.series <<- switch(tclvalue(cb.1series.val), '0' = FALSE, '1' = TRUE)
+			GeneralParameters$stn.type$file.format <<- tclvalue(rbffrmt)
+			GeneralParameters$stn.type$date.format <<- tclvalue(rbdtfrmt)
 
 			######
 			getInitDataParams <- function(GeneralParameters){
@@ -471,15 +483,16 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 						donstn1 <-  getCDTdataAndDisplayMsg(donne1, GeneralParameters$period)
 						donOut <- list(donstn, donstn1)
 						parsFile <- list(infoDonne, infoDonne1)
-					} 
+					}
 					xycrds <- NULL
 					if(!is.null(donstn)){
-						limControl <- data.frame(donstn$id, -40, 60, donstn$lon, donstn$lat)
-						names(limControl) <- c('Station ID', 'Lower Bounds', 'Upper Bounds', 'Lon', 'Lat')
-						GeneralParameters$parameter[[2]] <- limControl
-						#GeneralParameters$parameter[[2]] <- getTempInitParams(donstn)
+						limControl <- data.frame(donstn$id, GeneralParameters$limits$Lower.Bounds,
+												GeneralParameters$limits$Upper.Bounds, donstn$lon, donstn$lat)
+						names(limControl) <- c('Station.ID', 'Lower.Bounds', 'Upper.Bounds', 'Lon', 'Lat')
+						GeneralParameters$stnInfo <- limControl
+						# GeneralParameters$stnInfo <- getTempInitParams(donstn)
 						lchoixStnFr$env$stn.choix <- as.character(donstn$id)
-						xycrds <- paste(c(as.character(donstn$lon), as.character(donstn$lat)), sep = '',collapse = ' ')
+						xycrds <- paste(c(as.character(donstn$lon), as.character(donstn$lat)), sep = '', collapse = ' ')
 					}else tkwait.window(tt)
 				}else{
 					donstn <- getCDTTSdataAndDisplayMsg(donne, GeneralParameters$period, tclvalue(rbffrmt), tclvalue(rbdtfrmt))
@@ -492,9 +505,10 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 					} 
 					if(!is.null(donstn)){
 						lchoixStnFr$env$stn.choix <- getf.no.ext(tclvalue(file.choix1a))
-						limControl <- data.frame(lchoixStnFr$env$stn.choix, -40, 60)
-						names(limControl) <- c('Station ID', 'Lower Bounds', 'Upper Bounds')
-						GeneralParameters$parameter[[2]] <- limControl
+						limControl <- data.frame(lchoixStnFr$env$stn.choix, GeneralParameters$limits$Lower.Bounds,
+												GeneralParameters$limits$Upper.Bounds)
+						names(limControl) <- c('Station.ID', 'Lower.Bounds', 'Upper.Bounds')
+						GeneralParameters$stnInfo <- limControl
 					}else tkwait.window(tt)
 					xycrds <- NULL
 				}
@@ -538,11 +552,10 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 						} 
 						donstn1 <- paramsGAL$data[[2]]
 					}
-					GeneralParameters$parameter[[2]] <<- paramsGAL$inputPars$parameter[[2]]
-					lchoixStnFr$env$stn.choix <<- as.character(GeneralParameters$parameter[[2]][, 1])
+					GeneralParameters$stnInfo <<- paramsGAL$inputPars$stnInfo
+					lchoixStnFr$env$stn.choix <<- as.character(GeneralParameters$stnInfo$Station.ID)
 					if(tclvalue(cb.1series.val) == "0"){ 
-						tclvalue(XYCoordinates) <<- paste(c(as.character(GeneralParameters$parameter[[2]][, 4]),
-													as.character(GeneralParameters$parameter[[2]][, 5])), sep = '', collapse = ' ')
+						tclvalue(XYCoordinates) <<- paste(c(GeneralParameters$stnInfo$Lon, GeneralParameters$stnInfo$Lat), sep = '', collapse = ' ')
 					}
 					rm(paramsGAL)
 				}else{
@@ -642,6 +655,7 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 
 ###################################################################################################
 ##Edit parameter temperature
+
 get.param.temperature <- function(tt, GeneralParameters, state.parm){
 	tt1 <- tktoplevel()
 	tkgrab.set(tt1)
@@ -654,21 +668,21 @@ get.param.temperature <- function(tt, GeneralParameters, state.parm){
 
 	frOpt <- tkframe(frDialog, relief = "sunken", borderwidth = 2)
 
-	min.stn <- tclVar(as.character(GeneralParameters$parameter[[1]]$Values[1]))
-	max.stn <- tclVar(as.character(GeneralParameters$parameter[[1]]$Values[2]))
-	win.len <- tclVar(as.character(GeneralParameters$parameter[[1]]$Values[3]))
-	CInt <- tclVar(as.character(GeneralParameters$parameter[[1]]$Values[4]))
-	max.dist <- tclVar(as.character(GeneralParameters$parameter[[1]]$Values[5]))
-	elv.diff <- tclVar(as.character(GeneralParameters$parameter[[1]]$Values[6]))
-	limInf <- tclVar(-40)
-	limSup <- tclVar(60)
+	min.stn <- tclVar(GeneralParameters$select.pars$min.stn)
+	max.stn <- tclVar(GeneralParameters$select.pars$max.stn)
+	win.len <- tclVar(GeneralParameters$select.pars$win.len)
+	CInt <- tclVar(GeneralParameters$select.pars$conf.lev)
+	max.dist <- tclVar(GeneralParameters$select.pars$max.dist)
+	elv.diff <- tclVar(GeneralParameters$select.pars$elv.diff)
+	limInf <- tclVar(GeneralParameters$limits$Lower.Bounds)
+	limSup <- tclVar(GeneralParameters$limits$Upper.Bounds)
 
 	file.period <- get("file.period", parent.frame())
 	xper <- switch(tclvalue(file.period),
 					'Daily data' = 'days',
 					'Dekadal data' = 'dekad',
 					'Monthly data' = 'months')
-	xperHelp <- paste('Time window: number of', xper, 'applied to form a regression')
+	xperHelp <- paste('Time window: number of', xper, 'to be used for regression')
 
 	min.stn.l <- tklabel(frOpt, text = 'Min.stn', anchor = 'e', justify = 'right')
 	max.stn.l <- tklabel(frOpt, text = 'Max.stn', anchor = 'e', justify = 'right')
@@ -730,17 +744,22 @@ get.param.temperature <- function(tt, GeneralParameters, state.parm){
 
 	####################################################
 
-	bt.prm.OK <- tkbutton(frButt, text=" OK ") 
-	bt.prm.CA <- tkbutton(frButt, text = "Cancel") 
+	bt.prm.OK <- tkbutton(frButt, text = "OK")
+	bt.prm.CA <- tkbutton(frButt, text = "Cancel")
 
 	######################
 	ret.param.temp1 <<- NULL
 
 	tkconfigure(bt.prm.OK, command = function(){
-		GeneralParameters$parameter[[1]][, 2] <<- c(as.character(tclvalue(min.stn)), as.character(tclvalue(max.stn)), as.character(tclvalue(win.len)),
-													as.character(tclvalue(CInt)), as.character(tclvalue(max.dist)), as.character(tclvalue(elv.diff)))
-		GeneralParameters$limInf <<- tclvalue(limInf)
-		GeneralParameters$limSup <<- tclvalue(limSup)
+		GeneralParameters$select.pars$min.stn <<- as.numeric(str_trim(tclvalue(min.stn)))
+		GeneralParameters$select.pars$max.stn <<- as.numeric(str_trim(tclvalue(max.stn)))
+		GeneralParameters$select.pars$win.len <<- as.numeric(str_trim(tclvalue(win.len)))
+		GeneralParameters$select.pars$max.dist <<- as.numeric(str_trim(tclvalue(max.dist)))
+		GeneralParameters$select.pars$elv.diff <<- as.numeric(str_trim(tclvalue(elv.diff)))
+		GeneralParameters$select.pars$conf.lev <<- as.numeric(str_trim(tclvalue(CInt)))
+
+		GeneralParameters$limits$Lower.Bounds <<- as.numeric(str_trim(tclvalue(limInf)))
+		GeneralParameters$limits$Upper.Bounds <<- as.numeric(str_trim(tclvalue(limSup)))
 
 		ret.param.temp1 <<- 0
 		tkgrab.release(tt1)

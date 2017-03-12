@@ -1,15 +1,15 @@
 
 AggregateQcData <- function(){
 	outdirs <- as.character(GeneralParameters$file.io)
-	datfin <- file.path(outdirs, 'AggregateData', fsep = .Platform$file.sep)
+	datfin <- file.path(outdirs, 'AggregateData')
 	if(!file.exists(datfin)) dir.create(datfin, showWarnings = FALSE, recursive = TRUE)
 
-	outputdir <- file.path(outdirs, 'Outputs', fsep = .Platform$file.sep)
+	outputdir <- file.path(outdirs, 'Outputs')
 	outptID <- list.files(outputdir)
-	chkdir <- file.path(outdirs, 'CorrectedData', fsep = .Platform$file.sep)
+	chkdir <- file.path(outdirs, 'CorrectedData')
 	corrctID <- list.files(chkdir)
 
-	load(file.path(outdirs, 'OriginalData', 'Parameters.RData', fsep = .Platform$file.sep))
+	load(file.path(outdirs, 'OriginalData', 'Parameters.RData'))
 	if(paramsGAL$inputPars$action == "qc.rain"){	
 		infohead <- cbind(paramsGAL$data$id, paramsGAL$data$lon, paramsGAL$data$lat, paramsGAL$data$elv)
 		stnID <- as.character(paramsGAL$data$id)
@@ -21,9 +21,9 @@ AggregateQcData <- function(){
 	existStn <- stnID%in%corrctID
 	noChck <- !stnID%in%outptID
 	stnID <- stnID[existStn]
-	noTraiteStn <- infohead[!existStn,]
-	noQcChkStn <- infohead[noChck,]
-	infohead <- infohead[existStn,]
+	noTraiteStn <- infohead[!existStn, ]
+	noQcChkStn <- infohead[noChck, ]
+	infohead <- infohead[existStn, ]
 	if(length(stnID) == 0){
 		InsertMessagesTxt(main.txt.out, 'No checked stations found or Wrong directory', format = TRUE)
 		return(NULL)
@@ -42,13 +42,13 @@ AggregateQcData <- function(){
 		tkselect(tknotes, ntab)
 	}
 
-	stn.don <- read.table(file.path(chkdir, stnID[1], paste(stnID[1], '.txt', sep = ''), fsep = .Platform$file.sep))
-	aggData <- stn.don[,1]
+	stn.don <- read.table(file.path(chkdir, stnID[1], paste(stnID[1], '.txt', sep = '')))
+	aggData <- stn.don[, 1]
 
 	for(jj in stnID){
-		filein <- file.path(chkdir, jj, paste(jj, '.txt', sep = ''), fsep = .Platform$file.sep)
+		filein <- file.path(chkdir, jj, paste(jj, '.txt', sep = ''))
 		stn.don <- read.table(filein)
-		aggData <- cbind(aggData, stn.don[,2])
+		aggData <- cbind(aggData, stn.don[, 2])
 	}
 
 	period <- paramsGAL$inputPars$period
@@ -60,10 +60,16 @@ AggregateQcData <- function(){
 	else capition <- c('Stations', 'LON', 'LAT', paste(pdate, 'ELV', sep = '/'))
 	infohead <- cbind(capition, t(infohead))
 	aggData <- t(cbind(t(infohead), t(aggData)))
-	if(paramsGAL$inputPars$action == "qc.rain") aggData[is.na(aggData)] <- paramsGAL$dataPars[[2]]$miss.val
-	if(paramsGAL$inputPars$action == "qc.temp") aggData[is.na(aggData)] <- paramsGAL$dataPars[[1]][[2]]$miss.val
+	if(paramsGAL$inputPars$action == "qc.rain"){
+		aggData[is.na(aggData)] <- paramsGAL$dataPars[[2]]$miss.val
+		stnfile <- paramsGAL$inputPars$IO.files$STN.file
+	}
+	if(paramsGAL$inputPars$action == "qc.temp"){
+		aggData[is.na(aggData)] <- paramsGAL$dataPars[[1]][[2]]$miss.val
+		stnfile <- paramsGAL$inputPars$IO.files$STN.file1
+	}
 
-	fileout <- file.path(datfin, paste('Checked', paramsGAL$inputPars$file.io$Values[1], sep = '_'), fsep = .Platform$file.sep)
+	fileout <- file.path(datfin, paste('Checked', stnfile, sep = '_'))
 	writeFiles(aggData, fileout)
 	return(0)	
 }
@@ -72,12 +78,12 @@ AggregateQcData <- function(){
 
 AggregateHomData0 <- function(){
 	outdirs <- as.character(GeneralParameters$file.io)
-	datfin <- file.path(outdirs, 'AggregateData', fsep = .Platform$file.sep)
+	datfin <- file.path(outdirs, 'AggregateData')
 	if(!file.exists(datfin)) dir.create(datfin, showWarnings = FALSE, recursive = TRUE)
 
-	chkdir <- file.path(outdirs, 'AdjustedData', fsep = .Platform$file.sep)
+	chkdir <- file.path(outdirs, 'AdjustedData')
 
-	load(file.path(outdirs, 'OriginalData', 'Parameters.RData', fsep = .Platform$file.sep))
+	load(file.path(outdirs, 'OriginalData', 'Parameters.RData'))
 	infohead0 <- cbind(paramsGAL$data[[1]]$id, paramsGAL$data[[1]]$lon, paramsGAL$data[[1]]$lat, paramsGAL$data[[1]]$elv)
 	StnId <- as.character(paramsGAL$data[[1]]$id)
 	ggid <- list.files(chkdir)
@@ -96,12 +102,12 @@ AggregateHomData0 <- function(){
 		donne3 <- donne2 <- donne1
 		for(j in 1:length(ggid)){
 			xpos <- StnId%in%ggid[j]
-			filein2 <- file.path(chkdir, ggid[j], fsep = .Platform$file.sep)
-			fileChoix <- file.path(filein2, paste(ggid[j], '_CHOICE.txt', sep = ''), fsep = .Platform$file.sep)
-			filein2 <- file.path(filein2, paste(ggid[j], '_', suffix[xfl], '.txt', sep = ''), fsep = .Platform$file.sep)
+			filein2 <- file.path(chkdir, ggid[j])
+			fileChoix <- file.path(filein2, paste(ggid[j], '_CHOICE.txt', sep = ''))
+			filein2 <- file.path(filein2, paste(ggid[j], '_', suffix[xfl], '.txt', sep = ''))
 			dat <- read.table(filein2)
 			chx <- read.table(fileChoix)
-			idx <- chx[,1]
+			idx <- chx[, 1]
 			donne1[,xpos] <- dat[, 3]
 			donne2[,xpos] <- dat[, 4]
 			if(idx == 1){
@@ -124,9 +130,9 @@ AggregateHomData0 <- function(){
 		donne1[is.na(donne1)] <- paramsGAL$dataPars[[1]][[2]]$miss.val
 		donne2[is.na(donne2)] <- paramsGAL$dataPars[[1]][[2]]$miss.val
 		donne3[is.na(donne3)] <- paramsGAL$dataPars[[1]][[2]]$miss.val
-		writeFiles(donne1, file.path(datfin, paste('AdjMean_', suffix[xfl], '_', paramsGAL$inputPars$file.io$Values[1], sep = ''), fsep = .Platform$file.sep))
-		writeFiles(donne2, file.path(datfin, paste('AdjQM_', suffix[xfl], '_', paramsGAL$inputPars$file.io$Values[1], sep = ''), fsep = .Platform$file.sep))
-		writeFiles(donne3, file.path(datfin, paste('Combined-Adj_', suffix[xfl], '_', paramsGAL$inputPars$file.io$Values[1], sep = ''), fsep = .Platform$file.sep))
+		writeFiles(donne1, file.path(datfin, paste('AdjMean_', suffix[xfl], '_', paramsGAL$inputPars$IO.files$Cand.file, sep = '')))
+		writeFiles(donne2, file.path(datfin, paste('AdjQM_', suffix[xfl], '_', paramsGAL$inputPars$IO.files$Cand.file, sep = '')))
+		writeFiles(donne3, file.path(datfin, paste('Combined-Adj_', suffix[xfl], '_', paramsGAL$inputPars$IO.files$Cand.file, sep = '')))
 	}
 
 	noTraiteStn <- StnId[!StnId%in%ggid]
@@ -145,17 +151,17 @@ AggregateHomData0 <- function(){
 
 AggregateHomData <- function(){
 	outdirs <- as.character(GeneralParameters$file.io)
-	datfin <- file.path(outdirs, 'AggregateData', fsep = .Platform$file.sep)
+	datfin <- file.path(outdirs, 'AggregateData')
 	if(!file.exists(datfin)) dir.create(datfin, showWarnings = FALSE, recursive = TRUE)
 
-	chkdir <- file.path(outdirs, 'AdjustedData', fsep = .Platform$file.sep)
-	orgdir <- file.path(outdirs, 'Data', fsep = .Platform$file.sep)
+	chkdir <- file.path(outdirs, 'AdjustedData')
+	orgdir <- file.path(outdirs, 'Data')
 
 	xfile <- list.files(orgdir)
 	info <- grep('Infos_', xfile)
 	pars <- grep('RefSeries_Data', xfile)
 
-	filein <- file.path(orgdir, xfile[info], fsep = .Platform$file.sep)
+	filein <- file.path(orgdir, xfile[info])
 	gginfo <- read.table(filein, header = TRUE)
 	ggid <- as.character(gginfo$IDs)
 	ggelv <- gginfo$Elv
@@ -172,16 +178,16 @@ AggregateHomData <- function(){
 	fdonne <- xfile[-c(info, pars)]
 	for(xfl in fdonne){
 		period <- strsplit(xfl, '_')[[1]][1]
-		filein1 <- file.path(orgdir, xfl, fsep = .Platform$file.sep)
+		filein1 <- file.path(orgdir, xfl)
 		ggdates <- read.table(filein1, header = FALSE)
 		ggdates3 <- ggdates2 <- ggdates1 <- ggdates[, 1]
 		miss <- NULL
 		for(j in 1:length(ggid)){
-			filein2 <- file.path(chkdir, ggid[j], fsep = .Platform$file.sep)
-			fileChoix <- file.path(filein2, paste(ggid[j], '_CHOICE.txt', sep = ''), fsep = .Platform$file.sep)
-			if(period == 'DAILY') filein2 <- file.path(filein2, paste(ggid[j], '_DLY.txt', sep = ''), fsep = .Platform$file.sep)
-			if(period == 'DEKADAL') filein2 <- file.path(filein2, paste(ggid[j], '_DEK.txt', sep = ''), fsep = .Platform$file.sep)
-			if(period == 'MONTHLY') filein2 <- file.path(filein2, paste(ggid[j], '_MON.txt', sep = ''), fsep = .Platform$file.sep)
+			filein2 <- file.path(chkdir, ggid[j])
+			fileChoix <- file.path(filein2, paste(ggid[j], '_CHOICE.txt', sep = ''))
+			if(period == 'DAILY') filein2 <- file.path(filein2, paste(ggid[j], '_DLY.txt', sep = ''))
+			if(period == 'DEKADAL') filein2 <- file.path(filein2, paste(ggid[j], '_DEK.txt', sep = ''))
+			if(period == 'MONTHLY') filein2 <- file.path(filein2, paste(ggid[j], '_MON.txt', sep = ''))
 			if(file.exists(filein2)){
 				dat <- read.table(filein2)
 				chx <- read.table(fileChoix)
@@ -202,7 +208,7 @@ AggregateHomData <- function(){
 		}
 
 		if(!is.null(miss)){
-			infohead1 <- infohead[,- miss]	
+			infohead1 <- infohead[, -miss]	
 			faileds <- list('Not Tested Stations', infohead[1, miss])
 			containertab <- displayConsOutputTabs(tknotes, faileds, title = 'Not Tested Stations')
 			ntab <- length(AllOpenTabType)
@@ -219,9 +225,9 @@ AggregateHomData <- function(){
 		donne1[is.na(donne1)]<- -99
 		donne2[is.na(donne2)]<- -99
 		donne3[is.na(donne3)]<- -99
-		writeFiles(donne1, file.path(datfin, paste('AdjMean', xfl, sep = '-'), fsep = .Platform$file.sep))
-		writeFiles(donne2, file.path(datfin, paste('AdjQM', xfl, sep = '-'), fsep = .Platform$file.sep))
-		writeFiles(donne3, file.path(datfin, paste('Combined-Adj', xfl, sep = '-'), fsep = .Platform$file.sep))
+		writeFiles(donne1, file.path(datfin, paste('AdjMean', xfl, sep = '-')))
+		writeFiles(donne2, file.path(datfin, paste('AdjQM', xfl, sep = '-')))
+		writeFiles(donne3, file.path(datfin, paste('Combined-Adj', xfl, sep = '-')))
 	}
 	return(0)
 }
@@ -230,15 +236,15 @@ AggregateHomData <- function(){
 
 AggregateZeroChkData <- function(){
 	outdirs <- as.character(GeneralParameters$file.io)
-	datfin <- file.path(outdirs, 'AggregateData', fsep = .Platform$file.sep)
+	datfin <- file.path(outdirs, 'AggregateData')
 	if(!file.exists(datfin)) dir.create(datfin, showWarnings = FALSE, recursive = TRUE)
 
-	outputdir <- file.path(outdirs, 'Outputs', fsep = .Platform$file.sep)
+	outputdir <- file.path(outdirs, 'Outputs')
 	outptID <- list.files(outputdir)
-	zchkdir <- file.path(outdirs, 'CorrectedData', fsep = .Platform$file.sep)
+	zchkdir <- file.path(outdirs, 'CorrectedData')
 	corrctID <- list.files(zchkdir)
 
-	load(file.path(outdirs, 'OriginalData', 'Parameters.RData', fsep = .Platform$file.sep))
+	load(file.path(outdirs, 'OriginalData', 'Parameters.RData'))
 	infohead <- cbind(paramsGAL$data$id, paramsGAL$data$lon, paramsGAL$data$lat, paramsGAL$data$elv)
 	stnID <- as.character(paramsGAL$data$id)
 
@@ -266,13 +272,13 @@ AggregateZeroChkData <- function(){
 		tkselect(tknotes, ntab)
 	}
 
-	stn.don <- read.table(file.path(zchkdir, stnID[1], paste(stnID[1], '.txt', sep = ''), fsep = .Platform$file.sep))
+	stn.don <- read.table(file.path(zchkdir, stnID[1], paste(stnID[1], '.txt', sep = '')))
 	aggData <- stn.don[, 1]
 
 	for(jj in stnID){
-		filein <- file.path(zchkdir, jj, paste(jj, '.txt', sep = ''), fsep = .Platform$file.sep)
+		filein <- file.path(zchkdir, jj, paste(jj, '.txt', sep = ''))
 		stn.don <- read.table(filein)
-		aggData <- cbind(aggData, stn.don[,2])
+		aggData <- cbind(aggData, stn.don[, 2])
 	}
 
 	if(is.null(paramsGAL$data$elv)) capition <- c('Stations', 'LON', paste('DAILY', 'LAT', sep = '/'))
@@ -281,7 +287,7 @@ AggregateZeroChkData <- function(){
 	aggData <- t(cbind(t(infohead), t(aggData)))
 	aggData[is.na(aggData)] <- paramsGAL$dataPars[[2]]$miss.val
 
-	fileout <- file.path(datfin, paste('ZeroChecked', paramsGAL$inputPars$file.io$Values[1], sep = '_'), fsep = .Platform$file.sep)
+	fileout <- file.path(datfin, paste('ZeroChecked', paramsGAL$inputPars$IO.files$STN.file, sep = '_'))
 	writeFiles(aggData, fileout)
 	return(0)
 }

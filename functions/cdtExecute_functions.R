@@ -3,17 +3,18 @@ Execute_All_Functions <- function(get.stn){
 	if(GeneralParameters$action == 'qc.rain'){
 		sortieqc <- ExecQcRain(get.stn)
 		if(GeneralParameters$AllOrOne == 'all'){
-			outpdir <- file.path(EnvQcOutlierData$baseDir, 'Outputs', fsep = .Platform$file.sep)
+			outpdir <- file.path(EnvQcOutlierData$baseDir, 'Outputs')
 			ggdir <- list.files(outpdir)
 			failedqc <- lapply(ggdir, function(lstn){
-				ggfileout <- file.path(outpdir, lstn, paste(lstn, '.txt', sep = ''), fsep = .Platform$file.sep)
+				ggfileout <- file.path(outpdir, lstn, paste(lstn, '.txt', sep = ''))
 				file.exists(ggfileout)
 			})
 			failedqc <- ggdir[!unlist(failedqc)]
 			if(length(failedqc) > 0){
 				failedqc <- data.frame(failedqc)
 				names(failedqc) <- 'QC failed: Stations not checked'
-				containertab <- displayConsOutputTabs(tknotes, failedqc, title = paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), 'Failed'))
+				containertab <- displayConsOutputTabs(tknotes, failedqc,
+								title = paste(getf.no.ext(GeneralParameters$IO.files$STN.file), 'Failed'))
 				ntab <- length(AllOpenTabType)
 				AllOpenTabType[[ntab+1]] <<- 'ctxt'
 				AllOpenTabData[[ntab+1]] <<- containertab
@@ -52,10 +53,10 @@ Execute_All_Functions <- function(get.stn){
 	if(GeneralParameters$action == 'qc.temp'){
 		sortieqc <- ExecQcTemp(get.stn)
 		if(GeneralParameters$AllOrOne == 'all'){
-			outpdir <- file.path(EnvQcOutlierData$baseDir, 'Outputs', fsep = .Platform$file.sep)
+			outpdir <- file.path(EnvQcOutlierData$baseDir, 'Outputs')
 			ggdir <- list.files(outpdir)
 			failedqc <- lapply(ggdir, function(lstn){
-				ggfileout <- file.path(outpdir, lstn, paste(lstn, '.txt', sep = ''), fsep = .Platform$file.sep)
+				ggfileout <- file.path(outpdir, lstn, paste(lstn, '.txt', sep = ''))
 				file.exists(ggfileout)
 			})
 			failedqc <- ggdir[!unlist(failedqc)]
@@ -63,7 +64,8 @@ Execute_All_Functions <- function(get.stn){
 			if(length(failedqc) > 0){
 				failedqc <- data.frame(failedqc)
 				names(failedqc) <- 'QC failed: Stations not checked'
-				containertab <- displayConsOutputTabs(tknotes, failedqc, title = paste(getf.no.ext(as.character(GeneralParameters$file.io$Values[1])), 'Failed'))
+				containertab <- displayConsOutputTabs(tknotes, failedqc,
+								title = paste(getf.no.ext(GeneralParameters$IO.files$STN.file), 'Failed'))
 				ntab <- length(AllOpenTabType)
 				AllOpenTabType[[ntab+1]] <<- 'ctxt'
 				AllOpenTabData[[ntab+1]] <<- containertab
@@ -80,32 +82,32 @@ Execute_All_Functions <- function(get.stn){
 		RetHom <- try(ExecHomData(get.stn), silent = TRUE)
 		if(inherits(RetHom, "try-error")){
 			InsertMessagesTxt(main.txt.out, paste("Homogeneity test failed for", get.stn), format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '',RetHom[1]), format = TRUE)
+			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', RetHom[1]), format = TRUE)
 			return(NULL)
 		}else{
 			freqdata <- GeneralParameters$period
-			outsdir <- file.path(EnvHomogzData$baseDir, 'Outputs', get.stn, fsep = .Platform$file.sep)
+			outsdir <- file.path(EnvHomogzData$baseDir, 'Outputs', get.stn)
 			if(!file.exists(outsdir)) dir.create(outsdir, showWarnings = FALSE, recursive = TRUE)
 
-			fileout <- file.path(outsdir, paste(get.stn, '.Rdata', sep = ''), fsep = .Platform$file.sep)
+			fileout <- file.path(outsdir, paste(get.stn, '.Rdata', sep = ''))
 			ReturnExecResults <- list(action = GeneralParameters$action, period = GeneralParameters$period,
 										station = get.stn, res = RetHom$breakpts, outputdir = outsdir,
 										refSerie = list(dyref = RetHom$dyref, dkref = RetHom$dkref, moref = RetHom$moref))
 			breakpts <- getBreakpointsData(ReturnExecResults)
 			save(ReturnExecResults, file = fileout)
 
-			monfileout <- file.path(outsdir, paste(get.stn, '_MON.txt', sep = ''), fsep = .Platform$file.sep)
-			monfileout0 <- file.path(outsdir, paste(get.stn, '_MON0.txt', sep = ''), fsep = .Platform$file.sep)
+			monfileout <- file.path(outsdir, paste(get.stn, '_MON.txt', sep = ''))
+			monfileout0 <- file.path(outsdir, paste(get.stn, '_MON0.txt', sep = ''))
 			write.table(breakpts$monbreakpts, monfileout0, col.names = TRUE, row.names = FALSE)
 			file.copy(monfileout0, monfileout, overwrite = TRUE)
 			if(freqdata != 'monthly'){
-				dekfileout <- file.path(outsdir, paste(get.stn, '_DEK.txt', sep = ''), fsep = .Platform$file.sep)
-				dekfileout0 <- file.path(outsdir, paste(get.stn, '_DEK0.txt', sep = ''), fsep = .Platform$file.sep)
+				dekfileout <- file.path(outsdir, paste(get.stn, '_DEK.txt', sep = ''))
+				dekfileout0 <- file.path(outsdir, paste(get.stn, '_DEK0.txt', sep = ''))
 				write.table(breakpts$dekbreakpts, dekfileout0, col.names = TRUE, row.names = FALSE)
 				file.copy(dekfileout0, dekfileout, overwrite = TRUE)
 				if(freqdata == 'daily'){
-					dlyfileout <- file.path(outsdir, paste(get.stn, '_DLY.txt', sep = ''), fsep = .Platform$file.sep)
-					dlyfileout0 <- file.path(outsdir, paste(get.stn, '_DLY0.txt', sep = ''), fsep = .Platform$file.sep)
+					dlyfileout <- file.path(outsdir, paste(get.stn, '_DLY.txt', sep = ''))
+					dlyfileout0 <- file.path(outsdir, paste(get.stn, '_DLY0.txt', sep = ''))
 					write.table(breakpts$dlybreakpts, dlyfileout0, col.names = TRUE, row.names = FALSE)
 					file.copy(dlyfileout0, dlyfileout, overwrite = TRUE)
 				}
@@ -141,7 +143,8 @@ Execute_All_Functions <- function(get.stn){
 
 	##compute mean Gauge-RFE bias
 	if(GeneralParameters$action == 'coefbias.rain'){
-		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('STN_RFE_Bias', getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'))
+		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('STN_RFE_Bias',
+								getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'))
 		mrg2run <- try(execBiasRain(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Computing Gauge-RFE bias finished successfully", "Computing Gauge-RFE bias failed")
 	}
@@ -165,7 +168,8 @@ Execute_All_Functions <- function(get.stn){
 	###############################
 	##compute spatio-temporal LM coeff
 	if(GeneralParameters$action == 'coefLM.rain'){
-		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('LMCoef', getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'))
+		origdir <- file.path(GeneralParameters$IO.files$dir2save,
+							paste('LMCoef', getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'))
 		mrg2run <- try(execLMCoefRain(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Computing LM Coefficients finished successfully", "Computing LM Coefficients failed")
 	}
@@ -331,7 +335,7 @@ Execute_All_Functions <- function(get.stn){
 
 	#####
 	if(GeneralParameters$action == "agg.hom"){
-		orgdir <- file.path(as.character(GeneralParameters$file.io),'Data', fsep = .Platform$file.sep)
+		orgdir <- file.path(as.character(GeneralParameters$file.io),'Data')
 		if(file.exists(orgdir)) agg2run <- try(AggregateHomData(), silent = TRUE)
 		else agg2run <- try(AggregateHomData0(), silent = TRUE)
 

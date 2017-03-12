@@ -11,11 +11,11 @@ saveCurrentCDTtask <- function(){
 		lastStnChoix <- tclvalue(lchoixStnFr$env$stn.choix.val)
 		listStnChoix <- lchoixStnFr$env$stn.choix
 		save(AllOpenFilesType, AllOpenFilesData,
-		GeneralParameters, ReturnExecResults,
-		listStnChoix, lastStnChoix,
-		EnvQcOutlierData, EnvQcZeroChkData,
-		EnvHomogzData, adjDon,
-		file = filename)
+			GeneralParameters, ReturnExecResults,
+			listStnChoix, lastStnChoix,
+			EnvQcOutlierData, EnvQcZeroChkData,
+			EnvHomogzData, adjDon,
+			file = filename)
 	}
 }
 
@@ -25,8 +25,9 @@ OpenOldCDTtask <- function(){
 	AllOpenFilesType <<- vector(mode = 'list', length = 0)
 	tkdelete(all.opfiles, 0, as.numeric(tclvalue(tksize(all.opfiles)))-1)
 
-	fileOpenCDT <- tkgetOpenFile(initialdir = getwd(), initialfile = "",
-								filetypes = "{{CDT Files} {.cdt}} {{All files} {*.*}}")
+	filetypes <- "{{CDT Files} {.cdt}} {{All files} {*.*}}"
+	fileOpenCDT <- tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes)
+	
 	if(tclvalue(fileOpenCDT) != '' | !is.na(tclvalue(fileOpenCDT))) load(tclvalue(fileOpenCDT))
 	if(GeneralParameters$action == 'qc.rain' | GeneralParameters$action == 'qc.temp' |
 		GeneralParameters$action == 'homog' | GeneralParameters$action == 'zero.check'){
@@ -43,20 +44,17 @@ OpenOldCDTtask <- function(){
 				tkconfigure(lchoixStnFr$env$setting.button, state = 'disabled')
 				stateReplaceAll <- 'normal'
 			} 
-			if(as.character(GeneralParameters$use.method$Values[1]) == '0'){
+			if(!GeneralParameters$stn.type$single.series){
 				tkconfigure(lchoixStnFr$env$stn.choix.prev, state = 'normal')
 				tkconfigure(lchoixStnFr$env$stn.choix.next, state = 'normal')
 			}
-			if(GeneralParameters$action == 'qc.temp') tclvalue(XYCoordinates) <<- paste(c(as.character(GeneralParameters$parameter[[2]][, 4]),
-																				as.character(GeneralParameters$parameter[[2]][, 5])), sep = '', collapse = ' ')
-			if(GeneralParameters$action == 'qc.rain') tclvalue(XYCoordinates) <<- paste(c(as.character(GeneralParameters$parameter[[2]][, 3]),
-																				as.character(GeneralParameters$parameter[[2]][, 4])), sep = '', collapse = ' ')
+			tclvalue(XYCoordinates) <<- paste(c(GeneralParameters$stnInfo$Lon, GeneralParameters$stnInfo$Lat), sep = '', collapse = ' ')
 			lcmd.frame <<- QcCmdBut(stateReplaceAll)
 			lcmd.frame_qc <<- 1
 		}else if(GeneralParameters$action == 'homog'){
 			EnvHomogzData <<- EnvHomogzData
 			tkconfigure(lchoixStnFr$env$setting.button, state = 'normal')
-			if(as.character(GeneralParameters$use.method$Values[2]) == '0'){
+			if(!GeneralParameters$stn.type$single.series){
 				tkconfigure(lchoixStnFr$env$stn.choix.prev, state = 'normal')
 				tkconfigure(lchoixStnFr$env$stn.choix.next, state = 'normal')
 			}

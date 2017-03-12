@@ -1,5 +1,5 @@
 ##detection of breakpoints
-MultiBreaks.detection <- function(x, min.int, fun,...){
+MultiBreaks.detection <- function(x, min.int, fun, ...){
 	ret <- list()
 	foo <- match.fun(fun)
 	n <- length(x)
@@ -11,14 +11,14 @@ MultiBreaks.detection <- function(x, min.int, fun,...){
 		len <- e-s+1
 		len1 <- length(x[!is.na(x)])
 
-		if((len >= min.int) & (len1 >= min.int)) is.change <- foo(x,...)
+		if((len >= min.int) & (len1 >= min.int)) is.change <- foo(x, ...)
 		else is.change <- NULL
 		if(!is.null(is.change)){
 			kk <- is.change$index.change
 			val <- list(c(rang[1], rang[len], kk+rang[1]-1), is.change)
 			s1 <- 1
-			e1 <- kk-sample(0:3,1)
-			s2 <- kk+1+sample(0:3,1)
+			e1 <- kk-sample(0:3, 1)
+			s2 <- kk+1+sample(0:3, 1)
 			e2 <- len
 			change.detectionF(x[s1:e1], s1, e1, rang[s1:e1], change.res)
 			change.detectionF(x[s2:e2], s2, e2, rang[s2:e2], change.res)
@@ -33,7 +33,7 @@ MultiBreaks.detection <- function(x, min.int, fun,...){
 		ret$res <- NULL
 	}else{
 		res <- data.frame(change.bounds, change.stats)
-		res <- res[,-4]
+		res <- res[, -4]
 		names(res) <- c('start', 'end', 'cpt.index', 'statistics', 'max.conf.lev')
 		ret$res <- res
 	}
@@ -49,7 +49,7 @@ changepoints <- function(x, obj, cpt.max = 10, conf.lev = NULL){
 		ints <- c(1, sort(cpt), length(x))
 		nt <- length(ints)
 		mns <- numeric(length(x))
-		for(i in 1:(nt-1)) 	mns[ints[i]:ints[i+1]] <- rep(mean(x[ints[i]:ints[i+1]], na.rm = T), ints[i+1]-ints[i]+1)
+		for(i in 1:(nt-1)) 	mns[ints[i]:ints[i+1]] <- rep(mean(x[ints[i]:ints[i+1]], na.rm = TRUE), ints[i+1]-ints[i]+1)
 		mns[is.na(x)] <- NA
 		return(mns)
 	}
@@ -61,16 +61,20 @@ changepoints <- function(x, obj, cpt.max = 10, conf.lev = NULL){
 	changepoints$cpt$number <- 0
 	}else{
 		n <- length(x)
-		tobj <- obj$res[order(obj$res$statistics, decreasing = TRUE),]
-		if(!is.null(conf.lev)) tobj <- tobj[tobj$max.conf.lev >= conf.lev,]
+		tobj <- obj$res[order(obj$res$statistics, decreasing = TRUE), ]
+		if(!is.null(conf.lev)) tobj <- tobj[tobj$max.conf.lev >= conf.lev, ]
 		kmax <- min(cpt.max, nrow(tobj))
-		tobj <- tobj[1:kmax,]
+		tobj <- tobj[1:kmax, ]
 		cpt <- tobj$cpt.index
 		ncpt <- length(cpt)
 		mbic.curve <- numeric(ncpt+1)
-		mbic.curve[1] <- n/2 * log(var(x, na.rm = T))
-		for(i in ncpt:1) mbic.curve[i+1]<- (n/2)*log(sum((x-mean.cpt(x, cpt[1:i]))^2, na.rm = TRUE)/n)+
-		ifelse(length(cpt[1:i])>0,1.5*length(cpt[1:i])*log(n)+0.5*sum(log(diff(c(0, sort(cpt[1:i]), n))/n)), 0.5*sum(log(diff(c(0, n))/n)))
+		mbic.curve[1] <- n/2 * log(var(x, na.rm = TRUE))
+		for(i in ncpt:1){
+			mbic.curve[i+1] <- (n/2)*log(sum((x-mean.cpt(x, cpt[1:i]))^2, na.rm = TRUE)/n)+
+								ifelse(length(cpt[1:i]) > 0,
+								1.5*length(cpt[1:i])*log(n)+0.5*sum(log(diff(c(0, sort(cpt[1:i]), n))/n)),
+								0.5*sum(log(diff(c(0, n))/n)))
+		}
 		pmin <- as.integer(median(which.min(mbic.curve)))
 		if(pmin > 1){
 			changepoints$res <- tobj
@@ -91,9 +95,9 @@ changepoints <- function(x, obj, cpt.max = 10, conf.lev = NULL){
 ###############################################################################################3
 getMean.cptSeg <- function(obj, x){
 	n <- length(x)
-#	if(!is.null(obj$res)){
-#		if(class(obj) == "breakpoints") cpt <- sort(obj$res$cpt.index)
-#		if(class(obj) == "changepoints") cpt <- sort(obj$cpt$index)
+	# if(!is.null(obj$res)){
+	# 	if(class(obj) == "breakpoints") cpt <- sort(obj$res$cpt.index)
+	# 	if(class(obj) == "changepoints") cpt <- sort(obj$cpt$index)
 	if(!is.null(obj$cpt$index)){
 		cpt <- sort(obj$cpt$index)
 		ints <- c(1, cpt, n+1)
@@ -101,10 +105,10 @@ getMean.cptSeg <- function(obj, x){
 		st <- ints[1:(nt-1)]
 		ed <- ints[2:nt]-1
 		mns <- numeric(n)
-		for(i in 1:(nt-1)) 	mns[st[i]:ed[i]] <- rep(mean(x[st[i]:ed[i]], na.rm = T), ed[i]-st[i]+1)
+		for(i in 1:(nt-1)) mns[st[i]:ed[i]] <- rep(mean(x[st[i]:ed[i]], na.rm = TRUE), ed[i]-st[i]+1)
 		# mns[is.na(x)] <- NA
 	}else{
-		mns <- rep(mean(x, na.rm = T), n)
+		mns <- rep(mean(x, na.rm = TRUE), n)
 		# mns[is.na(x)] <- NA
 	}
 	return(mns)
@@ -120,10 +124,10 @@ getMean.cptSeg1 <- function(obj, x){
 		st <- ints[1:(nt-1)]
 		ed <- ints[2:nt]-1
 		mns <- numeric(n)
-		for(i in 1:(nt-1)) 	mns[st[i]:ed[i]] <- rep(mean(x[st[i]:ed[i]], na.rm = T), ed[i]-st[i]+1)
+		for(i in 1:(nt-1)) mns[st[i]:ed[i]] <- rep(mean(x[st[i]:ed[i]], na.rm = TRUE), ed[i]-st[i]+1)
 		# mns[is.na(x)] <- NA
 	}else{
-		mns <- rep(mean(x, na.rm = T), n)
+		mns <- rep(mean(x, na.rm = TRUE), n)
 		# mns[is.na(x)] <- NA
 	}
 	return(mns)
@@ -132,10 +136,10 @@ getMean.cptSeg1 <- function(obj, x){
 ####################
 getTrend.cptSeg <- function(obj, x){
 	n <- length(x)
-	beta <- 12*sum(x*((1:n)-((n+1)/2)), na.rm = T)/(n*(n+1)*(n-1))
-#	if(!is.null(obj$res)){
-#		if(class(obj) == "breakpoints") cpt <- sort(obj$res$cpt.index)
-#		if(class(obj) == "changepoints") cpt <- sort(obj$cpt$index)
+	beta <- 12*sum(x*((1:n)-((n+1)/2)), na.rm = TRUE)/(n*(n+1)*(n-1))
+	# if(!is.null(obj$res)){
+	# 	if(class(obj) == "breakpoints") cpt <- sort(obj$res$cpt.index)
+	# 	if(class(obj) == "changepoints") cpt <- sort(obj$cpt$index)
 	if(!is.null(obj$cpt$index)){
 		cpt <- sort(obj$cpt$index)
 		ints <- c(1, cpt, n+1)
@@ -143,10 +147,10 @@ getTrend.cptSeg <- function(obj, x){
 		st <- ints[1:(nt-1)]
 		ed <- ints[2:nt]-1
 		mns <- numeric(n)
-		for(i in 1:(nt-1)) mns[st[i]:ed[i]] <- mean(x[st[i]:ed[i]], na.rm = T)-beta*(((ed[i]-st[i]+1)+1)/2)+beta*(1:(ed[i]-st[i]+1))
+		for(i in 1:(nt-1)) mns[st[i]:ed[i]] <- mean(x[st[i]:ed[i]], na.rm = TRUE)-beta*(((ed[i]-st[i]+1)+1)/2)+beta*(1:(ed[i]-st[i]+1))
 		# mns[is.na(x)] <- NA
 	}else{
-		mns <- mean(x, na.rm = T)-(beta*((n+1)/2))+beta*(1:n)
+		mns <- mean(x, na.rm = TRUE)-(beta*((n+1)/2))+beta*(1:n)
 		# mns[is.na(x)] <- NA
 	}
 	return(mns)
@@ -155,7 +159,7 @@ getTrend.cptSeg <- function(obj, x){
 #################
 getTrend.cptSeg1 <- function(obj, x){
 	n <- length(x)
-	beta <- 12*sum(x*((1:n)-((n+1)/2)), na.rm = T)/(n*(n+1)*(n-1))
+	beta <- 12*sum(x*((1:n)-((n+1)/2)), na.rm = TRUE)/(n*(n+1)*(n-1))
 	if(length(obj) > 0){
 		cpt <- sort(obj)
 		ints <- c(1, cpt, n+1)
@@ -163,10 +167,10 @@ getTrend.cptSeg1 <- function(obj, x){
 		st <- ints[1:(nt-1)]
 		ed <- ints[2:nt]-1
 		mns <- numeric(n)
-		for(i in 1:(nt-1)) mns[st[i]:ed[i]] <- mean(x[st[i]:ed[i]], na.rm = T)-beta*(((ed[i]-st[i]+1)+1)/2)+beta*(1:(ed[i]-st[i]+1))
+		for(i in 1:(nt-1)) mns[st[i]:ed[i]] <- mean(x[st[i]:ed[i]], na.rm = TRUE)-beta*(((ed[i]-st[i]+1)+1)/2)+beta*(1:(ed[i]-st[i]+1))
 		# mns[is.na(x)] <- NA
 	}else{
-		mns <- mean(x, na.rm = T)-(beta*((n+1)/2))+beta*(1:n)
+		mns <- mean(x, na.rm = TRUE)-(beta*((n+1)/2))+beta*(1:n)
 		# mns[is.na(x)] <- NA
 	}
 	return(mns)
@@ -182,7 +186,7 @@ AdjustM.byMean <- function(x, cpt, SegAdj = 0, min.adj){
 	ed <- ints[2:nt]-1
 	mus <- numeric(nt-1)
 	res <- numeric(n)
-	for(i in 1:(nt-1)) 	mus[i] <- mean(x[st[i]:ed[i]], na.rm = T)
+	for(i in 1:(nt-1)) mus[i] <- mean(x[st[i]:ed[i]], na.rm = TRUE)
 	if(SegAdj == 0){
 		if(length(na.omit(x[st[nt-1]:ed[nt-1]])) >= min.adj){
 			for(i in 1:(nt-1)) res[st[i]:ed[i]] <- x[st[i]:ed[i]]-(mus[i]-mus[nt-1])
@@ -209,14 +213,14 @@ AdjustM.byMean <- function(x, cpt, SegAdj = 0, min.adj){
 ###############
 AdjustT.byMean <- function(x, cpt, SegAdj = 0, min.adj){
 	n <- length(x)
-	beta <- 12*sum(x*((1:n)-((n+1)/2)), na.rm = T)/(n*(n+1)*(n-1))
+	beta <- 12*sum(x*((1:n)-((n+1)/2)), na.rm = TRUE)/(n*(n+1)*(n-1))
 	ints <- c(1, cpt, n+1)
 	nt <- length(ints)
 	st <- ints[1:(nt-1)]
 	ed <- ints[2:nt]-1
 	mus <- numeric(nt-1)
 	res <- numeric(n)
-	for(i in 1:(nt-1)) 	mus[i] <- mean(x[st[i]:ed[i]], na.rm = T)-beta*(((ed[i]-st[i]+1)+1)/2)
+	for(i in 1:(nt-1)) mus[i] <- mean(x[st[i]:ed[i]], na.rm = TRUE)-beta*(((ed[i]-st[i]+1)+1)/2)
 	if(SegAdj == 0){
 		if(length(na.omit(x[st[nt-1]:ed[nt-1]])) >= min.adj){
 			for(i in 1:(nt-1)) res[st[i]:ed[i]] <- x[st[i]:ed[i]]-((mus[i]-mus[nt-1])-beta*(st[i]-st[nt-1]))
@@ -250,7 +254,7 @@ AdjustM.byQM <- function(x, cpt, SegAdj = 0, min.adj){
 	st <- ints[1:(nt-1)]
 	ed <- ints[2:nt]-1
 	res <- numeric(n)
-	for(i in 1:(nt-1)) 	assign(paste('F', i, sep = ''), ecdf(x[st[i]:ed[i]]))
+	for(i in 1:(nt-1)) assign(paste('F', i, sep = ''), ecdf(x[st[i]:ed[i]]))
 	if(SegAdj == 0){
 		if(length(na.omit(x[st[nt-1]:ed[nt-1]])) >= min.adj){
 			fy <- function(t) quantile(get(paste('F', nt-1, sep = '')), t)
@@ -283,14 +287,14 @@ AdjustM.byQM <- function(x, cpt, SegAdj = 0, min.adj){
 AdjustT.byQM <- function(x, cpt, SegAdj = 0, min.adj){
 	n <- length(x)
 	beta <- 12*sum(x*((1:n)-((n+1)/2)), na.rm = T)/(n*(n+1)*(n-1))
-	trend<-(mean(x, na.rm = T)-(beta*((n+1)/2))+beta*(1:n))
+	trend<-(mean(x, na.rm = TRUE)-(beta*((n+1)/2))+beta*(1:n))
 	xt = x-trend
 	ints <- c(1, cpt, n+1)
 	nt <- length(ints)
 	st <- ints[1:(nt-1)]
 	ed <- ints[2:nt]-1
 	res <- numeric(n)
-	for(i in 1:(nt-1)) 	assign(paste('F', i, sep = ''), ecdf(xt[st[i]:ed[i]]))
+	for(i in 1:(nt-1)) assign(paste('F', i, sep = ''), ecdf(xt[st[i]:ed[i]]))
 	if(SegAdj == 0){
 		if(length(na.omit(x[st[nt-1]:ed[nt-1]])) >= min.adj){
 			fy <- function(t) quantile(get(paste('F', nt-1, sep = '')), t)

@@ -23,16 +23,22 @@ tb.save.table <- tkbutton.toolbar(tools.frame, imgdir, "save_table24.gif", TextO
 tb.run <- tkbutton.toolbar(tools.frame, imgdir, "run24.gif", TextOutputVar, "Execute", "Execute the append task")
 
 ###
-lspinH <- tklabel.h(tools.frame, 'Width:', TextOutputVar, 'Horizontal scale factor for image size', 'Horizontal scale factor for image size')
+lspinH <- tklabel(tools.frame, text = 'Width:')
 spinH <- ttkspinbox(tools.frame, from = 0.5, to = 5.0, increment = 0.1, justify = 'center', width = 6, state = 'disabled')
 tkset(spinH, horizS)
+
+infobulle(lspinH, 'Horizontal scale factor for image size')
+status.bar.display(lspinH, TextOutputVar, 'Horizontal scale factor for image size')
 infobulle(spinH, 'Horizontal scale factor for image size')
 status.bar.display(spinH, TextOutputVar, 'Horizontal scale factor for image size')
 
 ###
-lspinV <- tklabel.h(tools.frame, 'Height:', TextOutputVar, 'Vertical scale factor for image size', 'Vertical scale factor for image size')
+lspinV <- tklabel(tools.frame, text = 'Height:')
 spinV <- ttkspinbox(tools.frame, from = 0.5, to = 5.0, increment = 0.1, justify = 'center', width = 6, state = 'disabled')
 tkset(spinV, vertiS)
+
+infobulle(lspinV, 'Vertical scale factor for image size')
+status.bar.display(lspinV, TextOutputVar, 'Vertical scale factor for image size')
 infobulle(spinV, 'Vertical scale factor for image size')
 status.bar.display(spinV, TextOutputVar, 'Vertical scale factor for image size')
 

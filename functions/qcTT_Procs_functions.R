@@ -116,7 +116,8 @@ txtnQcSingleSeriesCalc <- function(idstn, Tsdata, xparams, testpars){
 	outQc1 <- merge(outQc0, outQcCI, by.x = 'dates', by.y = 'dates', all = TRUE)
 	outQc1 <- outQc1[!is.na(outQc1$dates), ]
 	if(nrow(outQc1) > 0){
-		outQc1 <- data.frame(idstn, outQc1[, 1], mergeQcValues(outQc1[, 2], outQc1[, 4]), outQc1[, 3], outQc1[, 5], outQc1[, 6])
+		outQc1 <- data.frame(idstn, outQc1[, 1], mergeQcValues(outQc1[, 2], outQc1[, 4]),
+							outQc1[, 3], outQc1[, 5], outQc1[, 6])
 		ids <- order(as.character(outQc1[, 2]))
 		outQc1 <- outQc1[ids,]
 	}else outQc1 <- data.frame(NA, NA, NA, NA, NA, NA)
@@ -208,8 +209,8 @@ txtnSpatialQc <- function(loopT, xpos, idstn, Tsdata, xparams){
 			for(j in 1:12){
 				mois <- dt == j
 				IDm <- which(mois)
-				ixinf <- IDm[which(xvar[mois] < quantile(xvar[mois], prob = 0.02, na.rm = T, names = F))]
-				ixsup <- IDm[which(xvar[mois] > quantile(xvar[mois], prob = 0.98, na.rm = T, names = F))]
+				ixinf <- IDm[which(xvar[mois] < quantile(xvar[mois], prob = 0.02, na.rm = TRUE, names = FALSE))]
+				ixsup <- IDm[which(xvar[mois] > quantile(xvar[mois], prob = 0.98, na.rm = TRUE, names = FALSE))]
 				loops <- c(loops, c(ixinf, ixsup))
 			}
 		}
@@ -269,9 +270,8 @@ txtnQcSpatialCheck <- function(xpos, idstn, Tsdata, xparams, testpars){
 	if(length(outTs) > 0) loopT <- which(Tsdata$date%in%outTs)
 	outQc1 <- txtnSpatialQc(loopT, xpos, idstn, Tsdata, xparams)
 	outQc <- merge(outQc0, outQc1, by.x = 'dates', by.y = 'dates', all = TRUE)
-	outQc <- outQc[!is.na(outQc$dates),]
+	outQc <- outQc[!is.na(outQc$dates), ]
 	if(nrow(outQc) > 0){
-
 		stat1 <- outQc$outlier.check.stat
 		stat1 <- ifelse(is.na(stat1), 0, stat1)
 		stat2 <- outQc$spatial.reg.stat
@@ -280,14 +280,16 @@ txtnQcSpatialCheck <- function(xpos, idstn, Tsdata, xparams, testpars){
 		stat <- 3*(stat-min(stat))/(max(stat)-min(stat))
 		stat <- ifelse(is.nan(stat), 3.0, stat)
 
-		outQc <- data.frame(idstn, outQc$dates, mergeQcValues(outQc$values.x, outQc$values.y), outQc$tx_LT_tn.check,
-							outQc$outlier.check, outQc$spatial.reg.check, round(stat, 3), outQc$estimated.values)
+		outQc <- data.frame(idstn, outQc$dates, mergeQcValues(outQc$values.x, outQc$values.y),
+							outQc$tx_LT_tn.check, outQc$outlier.check, outQc$spatial.reg.check,
+							round(stat, 3), outQc$estimated.values)
 		ids <- order(as.character(outQc[, 2]))
-		outQc <- outQc[ids,]
+		outQc <- outQc[ids, ]
 	}else{
 		outQc <- data.frame(NA, NA, NA, NA, NA, NA, NA, NA)
 	}
-	names(outQc) <- c('stn', 'dates', 'values', 'consistency.check', 'outlier.check',	'spatial.reg.check', 'statistic', 'estimated.values')
+	names(outQc) <- c('stn', 'dates', 'values', 'consistency.check', 'outlier.check',
+						'spatial.reg.check', 'statistic', 'estimated.values')
 	if(!testpars$int.check & testpars$omit) outQc <- outQc[, -4]
 	return(outQc)
 }

@@ -1,0 +1,91 @@
+{
+    // Input and Output files/directory
+    "IO.files": [{
+        // Candidate series data filename
+        "Cand.file": "",
+        // Reference series data filename
+        "Ref.file": "",
+        // Elevation data filename
+        "DEM.file": "",
+        // Full path to the directory to save results
+        "dir2save": ""
+    }],
+    // Detection statistic
+    // "Pettitt" = "Pettitt Test"
+    // "SNHT" = "SNHT (Alexandersson & Moberg, 1997)"
+    // "CUSUM" = "CUSUM-type (Gallagher et al., 2013)"
+    // "CUSUMtr" = "CUSUM-type with Trend (Gallagher et al., 2013)"
+    "hom.stats": "SNHT",
+    // Homogenization statistics settings
+    "hom.stats.opts": [{
+        // Cropping the head and tail of the series
+        "crop.bounds": false,
+        // Cropping the first and last [h x 100%] percent of the series
+        "h": 0.025,
+        // Confidence level (%)
+        "conf.lev": 95.0,
+        // Maximum number of change-points to be detected
+        "Kmax": 10,
+        // Minimum segment length to carry out the test
+        "min.int": 24
+    }],
+
+    // Use reference series
+    "use.refSeries": false,
+    // Reference series will be created from stations chosen by user
+    "refSeries.by.user": false,
+
+    "refSeries.choix": [{
+        // Constitution of relative comparison series,  Difference: "1", Ratio: "2", LogRatio: "3"
+        "diff.ratio": "1",
+        // Weighting method to built a reference series, Correlation: "1", Distance: "2", Optimal: "3"
+        "weight.mean": "1",
+        // use elevetation data to select stations to built a reference series
+        "use.elv": false,
+        // Elevation data from STN data: "1", interpolate from dem: "0" 
+        "interp.dem": "1",
+        // Minimum number of neighbor stations to use
+        "min.stn": 2,
+        // Maximum number of neighbor stations to use
+        "max.stn": 7,
+        // Maximum distance of neighbor stations to use (km)
+        "max.dist": 100,
+        // Maximum altitude difference of neighbor stations to use (m)
+        "elv.diff": 200,
+        // Minimum correlation coef between candidate and neighbor series
+        "min.rho": 0.5
+    }],
+
+    "stn.type": [{
+        // series from one station
+        "single.series": false,
+        // one variable: "1", 3 variables: "0" 
+        "file.format": "1",
+        // grouped date: "1", separated: "0" 
+        "date.format": "1",
+        // Variable to test, Rain: "1", Tmax: "2", Tmin: "3"
+        "vars": "2"
+    }],
+
+    "adjust.pars": [{
+        // Minimum number of non-missing values to be used to adjust the series (in month)
+        "minAdjmo": 32,
+        // Minimum number of non-missing values to be used to adjust the series (in month)
+        "minAdjdk": 32,
+        // Minimum number of non-missing values to be used to adjust the series (in month)
+        "minAdjdy": 32,
+        // The segment to which the series is to be adjusted (0: last segment)
+        "SegAdjmo": 0,
+        // The segment to which the series is to be adjusted (0: last segment)
+        "SegAdjdk": 0,
+        // The segment to which the series is to be adjusted (0: last segment)
+        "SegAdjdy": 0
+    }],
+
+    "aggr.var": [{
+        // Function to be used to aggregate data to dekadal and monthly series
+        "fonction": "mean",
+        // Minimum fraction of available data that must be present for the time period to compute
+        "miss.frac": 0.95
+    }]
+}

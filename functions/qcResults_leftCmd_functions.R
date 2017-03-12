@@ -47,8 +47,7 @@ QcCmdBut <- function(stateReplaceAll){
 	tkgrid.columnconfigure(scrw1, 0, weight = 1)
 
 	subfr1 <- bwScrollableFrame(scrw1, width = wscrlwin, height = hscrlwin)
-	# tkgrid.columnconfigure(subfr1, 0, weight = 1)
-
+	
 	##############################
 
 	stats <- tclVar('0.0')
@@ -103,7 +102,7 @@ QcCmdBut <- function(stateReplaceAll){
 
 	##############################
 
-	value.mois <- format(ISOdate(2014,1:12,1), "%B")
+	value.mois <- format(ISOdate(2014, 1:12, 1), "%B")
 	choix.mois <- tclVar(value.mois[1])
 	spchkQcDateVal <- tclVar()
 
@@ -167,10 +166,10 @@ QcCmdBut <- function(stateReplaceAll){
 		xycrd <- matrix(as.numeric(strsplit(tclvalue(XYCoordinates), ' ')[[1]]), ncol = 2)
 		stn_lon <- xycrd[, 1]
 		stn_lat <- xycrd[, 2]
-		xminlo <- round(min(stn_lon, na.rm = T)-0.1, 4)
-		xmaxlo <- round(max(stn_lon, na.rm = T)+0.1, 4)
-		xminla <- round(min(stn_lat, na.rm = T)-0.1, 4)
-		xmaxla <- round(max(stn_lat, na.rm = T)+0.1, 4)
+		xminlo <- round(min(stn_lon, na.rm = TRUE)-0.1, 4)
+		xmaxlo <- round(max(stn_lon, na.rm = TRUE)+0.1, 4)
+		xminla <- round(min(stn_lat, na.rm = TRUE)-0.1, 4)
+		xmaxla <- round(max(stn_lat, na.rm = TRUE)+0.1, 4)
 		ZoomXYval0 <- c(xminlo, xmaxlo, xminla, xmaxla)
 	}else{
 		xminlo <- ''
@@ -623,14 +622,15 @@ QcCmdBut <- function(stateReplaceAll){
 				todisplay <- ReturnExecResults
 			}
 			if(GeneralParameters$AllOrOne == 'all'){
-				ijstn <- which(as.character(GeneralParameters$parameter[[2]][, 1]) == tclvalue(lchoixStnFr$env$stn.choix.val))
+				ijstn <- which(as.character(GeneralParameters$stnInfo$Station.ID) == tclvalue(lchoixStnFr$env$stn.choix.val))
 				IJstation <- ReturnExecResults$station[[ijstn]]
 				todisplay <- list(action = ReturnExecResults$action, period = ReturnExecResults$period,
 								station = ReturnExecResults$station[[ijstn]], res = ReturnExecResults$res[[ijstn]], 
 								outputdir = ReturnExecResults$outputdir[[ijstn]], AllOrOne = ReturnExecResults$AllOrOne)
 			}
 
-			retNBTab <- consolOutNotebookTab_unik(tknotes, todisplay, paste(IJstation, '_QC-Output Preview', sep = ''), PrevwQcIdTab, AllOpenTabType, AllOpenTabData)
+			retNBTab <- consolOutNotebookTab_unik(tknotes, todisplay, paste(IJstation, '_QC-Output Preview', sep = ''),
+												PrevwQcIdTab, AllOpenTabType, AllOpenTabData)
 			PrevwQcIdTab <<- retNBTab$notebookTab
 			AllOpenTabType <<- retNBTab$AllOpenTabType
 			AllOpenTabData <<- retNBTab$AllOpenTabData
@@ -648,11 +648,12 @@ QcCmdBut <- function(stateReplaceAll){
 				IJstation <- ReturnExecResults$station
 			}
 			if(GeneralParameters$AllOrOne == 'all'){
-				ijstn <- which(as.character(GeneralParameters$parameter[[2]][,1]) == tclvalue(lchoixStnFr$env$stn.choix.val))
+				ijstn <- which(as.character(GeneralParameters$stnInfo$Station.ID) == tclvalue(lchoixStnFr$env$stn.choix.val))
 				IJstation <- ReturnExecResults$station[[ijstn]]
 			}
 			
-			retNBTab <- tableQcEditNotebookTab_unik(tknotes, paste(IJstation, '_QC-Output Edit', sep = ''), QcEditSetTab, AllOpenTabType, AllOpenTabData)
+			retNBTab <- tableQcEditNotebookTab_unik(tknotes, paste(IJstation, '_QC-Output Edit', sep = ''),
+													QcEditSetTab, AllOpenTabType, AllOpenTabData)
 			QcEditSetTab <<- retNBTab$notebookTab
 			AllOpenTabType <<- retNBTab$AllOpenTabType
 			AllOpenTabData <<- retNBTab$AllOpenTabData
@@ -667,7 +668,7 @@ QcCmdBut <- function(stateReplaceAll){
 				IJstation <- ReturnExecResults$station
 			}
 			if(GeneralParameters$AllOrOne == 'all'){
-				ijstn <- which(as.character(GeneralParameters$parameter[[2]][, 1]) == tclvalue(lchoixStnFr$env$stn.choix.val))
+				ijstn <- which(as.character(GeneralParameters$stnInfo$Station.ID) == tclvalue(lchoixStnFr$env$stn.choix.val))
 				IJstation <- ReturnExecResults$station[[ijstn]]
 			}
 			isOK <- try(replaceOutlier(IJstation, tclvalue(stats), isReplace = FALSE), silent = TRUE)
@@ -688,7 +689,7 @@ QcCmdBut <- function(stateReplaceAll){
 				IJstation <- ReturnExecResults$station
 			}
 			if(GeneralParameters$AllOrOne == 'all'){
-				ijstn <- which(as.character(GeneralParameters$parameter[[2]][, 1]) == tclvalue(lchoixStnFr$env$stn.choix.val))
+				ijstn <- which(as.character(GeneralParameters$stnInfo$Station.ID) == tclvalue(lchoixStnFr$env$stn.choix.val))
 				IJstation <- ReturnExecResults$station[[ijstn]]
 			}
 			isOK <- try(replaceOutlier(IJstation, tclvalue(stats), isReplace = TRUE), silent = TRUE)

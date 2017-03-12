@@ -1,24 +1,19 @@
 
 getElevationData1 <- function(){
-	single.series <- as.character(GeneralParameters$use.method$Values[1])
-	uselv <- as.character(GeneralParameters$use.method$Values[3])
-	interp.dem <- as.character(GeneralParameters$use.method$Values[4])
-	file.pars <- as.character(GeneralParameters$file.io$Values)
-
 	if(!is.null(EnvQcOutlierData$donnees1)){
 		###get elevation data
 		msg <- NULL
 		elv_dem <- NULL
-		if(single.series == "0"){
+		if(!GeneralParameters$stn.type$single.series){
 			elv_stn <- EnvQcOutlierData$donnees1$elv
 
-			if(uselv == "1"){
-				if(interp.dem == "0"){
-					if(file.pars[3] == "") msg <- 'There is no elevation data in format NetCDF'
+			if(GeneralParameters$dem$use.elv){
+				if(GeneralParameters$dem$interp.dem == "0"){
+					if(GeneralParameters$IO.files$DEM.file == "") msg <- 'There is no elevation data in format NetCDF'
 					else{
-						demData <- getDemOpenDataSPDF(file.pars[3])
+						demData <- getDemOpenDataSPDF(GeneralParameters$IO.files$DEM.file)
 						ijGrd <- grid2pointINDEX(list(lon = EnvQcOutlierData$donnees1$lon, lat = EnvQcOutlierData$donnees1$lat),
-							list(lon = demData$lon, lat = demData$lat))
+												list(lon = demData$lon, lat = demData$lat))
 						elv_dem <- demData$demGrd@data[ijGrd, 1]
 					}
 				}else{
@@ -27,7 +22,7 @@ getElevationData1 <- function(){
 			}
 		}
 	}else msg <- 'No station data found'
-	return(list(elv_stn, elv_dem, msg, file.pars[3]))
+	return(list(elv_stn, elv_dem, msg, GeneralParameters$IO.files$DEM.file))
 }
 
 #####################################################
@@ -35,38 +30,32 @@ getElevationData1 <- function(){
 execQctempFun <- function(get.stn){
 	status <- 0
 	msg <- NULL
-	regparams <- as.character(GeneralParameters$parameter[[1]]$Values)
-	min.stn <- as.numeric(regparams[1])
-	max.stn <- as.numeric(regparams[2])
-	win <- as.numeric(regparams[3])
-	win <- as.integer(win/2)
-	thres <- as.numeric(regparams[4])
-	R <- as.numeric(regparams[5])
-	elv.diff <- as.numeric(regparams[6])
 
-	test.tx <- as.character(GeneralParameters$test.tx)
-	single.series <- as.character(GeneralParameters$use.method$Values[1])
-	const.chk <- as.character(GeneralParameters$use.method$Values[2])
-	uselv <- as.character(GeneralParameters$use.method$Values[3])
-	interp.dem <- as.character(GeneralParameters$use.method$Values[4])
+	min.stn <- GeneralParameters$select.pars$min.stn
+	max.stn <- GeneralParameters$select.pars$max.stn
+	win <- as.integer(GeneralParameters$select.pars$win.len/2)
+	thres <- GeneralParameters$select.pars$conf.lev
+	R <- GeneralParameters$select.pars$max.dist
+	elv.diff <- GeneralParameters$select.pars$elv.diff
 
-	bounds <- GeneralParameters$parameter[[2]]
 	spregpar <- c(thres, max.stn)
 	spthres <- c(min.stn, R, elv.diff)
+	bounds <- GeneralParameters$stnInfo
 
-	if(single.series == "0"){
-		ijstn <- which(as.character(bounds[, 1]) == get.stn)
+	if(!GeneralParameters$stn.type$single.series){
+		ijstn <- which(as.character(bounds$Station.ID) == get.stn)
 		limsup <- as.numeric(bounds[ijstn, 2:3])
 
-		if(uselv == '1'){
+		if(GeneralParameters$dem$use.elv){
 			if(is.null(EnvQcOutlierData$r_elv)){
 				r_elv <- getElevationData1()
 				assign('r_elv', r_elv, envir = EnvQcOutlierData)
 			}else{
-				if(interp.dem == "0" & (is.null(EnvQcOutlierData$r_elv[[2]]) | EnvQcOutlierData$r_elv[[4]] != as.character(GeneralParameters$file.io$Values[3]))){
+				if(GeneralParameters$dem$interp.dem == "0" & (is.null(EnvQcOutlierData$r_elv[[2]]) |
+					EnvQcOutlierData$r_elv[[4]] != GeneralParameters$IO.files$DEM.file)){
 					r_elv <- getElevationData1()
 					EnvQcOutlierData$r_elv[2:4] <- r_elv[2:4]
-				}else if(interp.dem == "1" & is.null(EnvQcOutlierData$r_elv[[1]])){
+				}else if(GeneralParameters$dem$interp.dem == "1" & is.null(EnvQcOutlierData$r_elv[[1]])){
 					elv_stn <- EnvQcOutlierData$donnees1$elv
 					if(!is.null(elv_stn)){
 						EnvQcOutlierData$r_elv[[1]] <- r_elv[[1]] <- elv_stn
@@ -83,117 +72,113 @@ execQctempFun <- function(get.stn){
 				elv <- NULL
 				return(NULL)
 			}else{
-				if(interp.dem == "0") elv <- r_elv[[2]]
+				if(GeneralParameters$dem$interp.dem == "0") elv <- r_elv[[2]]
 				else elv <- r_elv[[1]]
 			}
 		}else elv <- NULL
 
 		coords <- cbind(EnvQcOutlierData$donnees1$lon, EnvQcOutlierData$donnees1$lat)
 
-		if(const.chk == "1"){ #with c.check
-			jstn1 <- which(as.character(EnvQcOutlierData$donnees1$id) == get.stn)
-			jstn2 <- which(as.character(EnvQcOutlierData$donnees2$id) == get.stn)
+		donne <- EnvQcOutlierData$donnees1$data
+		dates <- EnvQcOutlierData$donnees1$dates
 
-			idstn <- as.character(EnvQcOutlierData$donnees1$id)[jstn1]
-			donne <- EnvQcOutlierData$donnees1$data
-			dates <- EnvQcOutlierData$donnees1$dates
-			if(test.tx == "1"){
-				TxData <- EnvQcOutlierData$donnees1$data[, jstn1]
-				TxDate <- EnvQcOutlierData$donnees1$dates
+		if(GeneralParameters$consist.check){ #with c.check
+			jstn <- which(as.character(EnvQcOutlierData$donnees1$id) == get.stn)
+			jstn2 <- which(as.character(EnvQcOutlierData$donnees2$id) == get.stn)
+			idstn <- as.character(EnvQcOutlierData$donnees1$id)[jstn]
+
+			donne2 <- EnvQcOutlierData$donnees2$data
+			dates2 <- EnvQcOutlierData$donnees2$dates
+
+			if(GeneralParameters$is.TX){
+				TxData <- donne[, jstn]
+				TxDate <- dates
 				if(length(jstn2) > 0){
-					TnData <- EnvQcOutlierData$donnees2$data[, jstn2]
-					TnDate <- EnvQcOutlierData$donnees2$dates
+					TnData <- donne2[, jstn2]
+					TnDate <- dates2
 					int.check <- TRUE
 				}else{
 					TnData <- NULL
 					TnDate <- NULL
 					int.check <- FALSE
 				}
-				tx.test <- TRUE
 			}else{
-				TnData <- EnvQcOutlierData$donnees1$data[, jstn1]
-				TnDate <- EnvQcOutlierData$donnees1$dates
 				if(length(jstn2) > 0){
-					TxData <- EnvQcOutlierData$donnees2$data[, jstn2]
-					TxDate <- EnvQcOutlierData$donnees2$dates
+					TxData <- donne2[, jstn2]
+					TxDate <- dates2
 					int.check <- TRUE
 				}else{
 					TxData <- NULL
 					TxDate <- NULL
 					int.check <- FALSE
 				}
-				tx.test <- FALSE
+				TnData <- donne[, jstn]
+				TnDate <- dates
 			}
-			testpars <- list(tx.test = tx.test, int.check = int.check, omit = FALSE, period = GeneralParameters$period)
-			xparams <- list(coords = coords, elv = elv, win = win, thres = thres, spthres = spthres, spregpar = spregpar, limsup = limsup)
-			Tsdata <- list(data = donne, date = dates, tx.data = TxData, tx.date = TxDate, tn.data = TnData, tn.date = TnDate)
-			res.qc.txtn <- txtnQcSpatialCheck(jstn1, idstn, Tsdata, xparams = xparams, testpars = testpars)
+			omit <- FALSE
 		}else{
 			jstn <- which(as.character(EnvQcOutlierData$donnees1$id) == get.stn)
 			idstn <- as.character(EnvQcOutlierData$donnees1$id)[jstn]
-			if(test.tx == "1"){
-				ddonne <- donne <- EnvQcOutlierData$donnees1$data
-				ddates <- dates <- EnvQcOutlierData$donnees1$dates
-				donne1 <- dates1 <- NULL
-				tx.test <- TRUE
+
+			if(GeneralParameters$is.TX){
+				TxData <- donne[, jstn]
+				TxDate <- dates
+				TnData <- NULL
+				TnDate <- NULL
 			}else{
-				donne <- dates <- NULL
-				ddonne <- donne1 <- EnvQcOutlierData$donnees1$data
-				ddates <- dates1 <- EnvQcOutlierData$donnees1$dates
-				tx.test <- FALSE
+				TxData <- NULL
+				TxDate <- NULL
+				TnData <- donne[, jstn]
+				TnDate <- dates
 			}
-			testpars <- list(tx.test = tx.test, int.check = FALSE, omit = TRUE, period = GeneralParameters$period)
-			xparams <- list(coords = coords, elv = elv, win = win, thres = thres, spthres = spthres, spregpar = spregpar, limsup = limsup)
-			Tsdata <- list(data = ddonne, date = ddates, tx.data = donne[,jstn], tx.date = dates, tn.data = donne1[,jstn], tn.date = dates1)
-			res.qc.txtn <- txtnQcSpatialCheck(jstn, idstn, Tsdata, xparams = xparams, testpars = testpars)
+			int.check <- FALSE
+			omit <- TRUE
 		}
+
+		Tsdata <- list(data = donne, date = dates, tx.data = TxData, tx.date = TxDate, tn.data = TnData, tn.date = TnDate)
+		testpars <- list(tx.test = GeneralParameters$is.TX, int.check = int.check, omit = omit, period = GeneralParameters$period)
+		xparams <- list(coords = coords, elv = elv, win = win, thres = thres, spthres = spthres, spregpar = spregpar, limsup = limsup)
+		res.qc.txtn <- txtnQcSpatialCheck(jstn, idstn, Tsdata, xparams = xparams, testpars = testpars)
 	}else{ #a single series
-		idstn <- as.character(bounds[1, 1])
+		idstn <- as.character(bounds$Station.ID[1])
 		limsup <- as.numeric(bounds[1, 2:3])
-		if(const.chk == "1"){ #with c.check
+		if(GeneralParameters$consist.check){ #with c.check
 			if(EnvQcOutlierData$donnees1$nbvar == 3){
 				TxData <- EnvQcOutlierData$donnees1$var$tx
+				TxDate <- EnvQcOutlierData$donnees1$dates
 				TnData <- EnvQcOutlierData$donnees1$var$tn
-				TnDate <- TxDate <- EnvQcOutlierData$donnees1$dates
-				tx.test <- if(test.tx == "1") TRUE else FALSE
+				TnDate <- EnvQcOutlierData$donnees1$dates
 			}else{
-				if(test.tx == "1"){
+				if(GeneralParameters$is.TX){
 					TxData <- EnvQcOutlierData$donnees1$var$var
 					TxDate <- EnvQcOutlierData$donnees1$dates
 					TnData <- EnvQcOutlierData$donnees2$var$var
 					TnDate <- EnvQcOutlierData$donnees2$dates
-					tx.test <- TRUE
 				}else{
 					TxData <- EnvQcOutlierData$donnees2$var$var
 					TxDate <- EnvQcOutlierData$donnees2$dates
 					TnData <- EnvQcOutlierData$donnees1$var$var
 					TnDate <- EnvQcOutlierData$donnees1$dates
-					tx.test <- FALSE
 				}
 			}
-			Tsdata <- list(tx.data = TxData, tx.date = TxDate, tn.data = TnData, tn.date = TnDate)
-			xparams <- list(thres = thres, limsup = limsup)
-			testpars <- list(tx.test = tx.test, int.check = TRUE, period = GeneralParameters$period)
-			res.qc.txtn <- txtnQcSingleSeries(idstn, Tsdata, xparams = xparams, testpars = testpars)
 		}else{
-			if(test.tx == "1"){
-				tx.test <- TRUE
-				if(EnvQcOutlierData$donnees1$nbvar == 3) TxData <- EnvQcOutlierData$donnees1$var$tx
-				else TxData <- EnvQcOutlierData$donnees1$var$var
+			if(GeneralParameters$is.TX){
+				TxData <- if(EnvQcOutlierData$donnees1$nbvar == 3) EnvQcOutlierData$donnees1$var$tx else EnvQcOutlierData$donnees1$var$var
 				TxDate <- EnvQcOutlierData$donnees1$dates
-				TnData <- TnDate <- NULL
+				TnData <- NULL
+				TnDate <- NULL
 			}else{
-				tx.test <- FALSE
-				TxData <- TxDate <- NULL
-				if(EnvQcOutlierData$donnees1$nbvar == 3) TnData <- EnvQcOutlierData$donnees1$var$tn
-				else TnData <- EnvQcOutlierData$donnees1$var$var
+				TxData <- NULL
+				TxDate <- NULL
+				TnData <- if(EnvQcOutlierData$donnees1$nbvar == 3) EnvQcOutlierData$donnees1$var$tn else EnvQcOutlierData$donnees1$var$var
 				TnDate <- EnvQcOutlierData$donnees1$dates
 			}
-			Tsdata <- list(tx.data = TxData, tx.date = TxDate, tn.data = TnDate, tn.date = TnDate)
-			xparams <- list(thres = thres, limsup = limsup)
-			testpars <- list(tx.test = tx.test, int.check = FALSE, period = GeneralParameters$period)
-			res.qc.txtn <- txtnQcSingleSeries(idstn, Tsdata, xparams = xparams, testpars = testpars)
 		}
+
+		Tsdata <- list(tx.data = TxData, tx.date = TxDate, tn.data = TnData, tn.date = TnDate)
+		xparams <- list(thres = thres, limsup = limsup)
+		testpars <- list(tx.test = GeneralParameters$is.TX, int.check = GeneralParameters$consist.check, period = GeneralParameters$period)
+		res.qc.txtn <- txtnQcSingleSeries(idstn, Tsdata, xparams = xparams, testpars = testpars)
 	}
 	on.exit({
 		if(status == 'ok') InsertMessagesTxt(main.txt.out, msg)
@@ -209,36 +194,38 @@ ExecQcTemp <- function(get.stn){
 		status <- 0
 		msg <- NULL
 		dates <- EnvQcOutlierData$donnees1$dates
-		if(as.character(GeneralParameters$use.method$Values[1]) == "0"){
+		if(!GeneralParameters$stn.type$single.series){
 			xpos <- which(as.character(EnvQcOutlierData$donnees1$id) == jlstn)
 			xdat <- EnvQcOutlierData$donnees1$data[,xpos]
 		}else{
 			if(EnvQcOutlierData$donnees1$nbvar == 3){
-				if(as.character(GeneralParameters$test.tx) == '1') xdat <- EnvQcOutlierData$donnees1$var$tx
+				if(GeneralParameters$is.TX) xdat <- EnvQcOutlierData$donnees1$var$tx
 				else xdat <- EnvQcOutlierData$donnees1$var$tn
 			}else xdat <- EnvQcOutlierData$donnees1$var$var
 		}
 
-		outsdir <- file.path(EnvQcOutlierData$baseDir, 'Outputs', jlstn, fsep = .Platform$file.sep)
+		outsdir <- file.path(EnvQcOutlierData$baseDir, 'Outputs', jlstn)
 		# ##create by default
-		corrdirstn <- file.path(EnvQcOutlierData$baseDir, 'CorrectedData', jlstn, fsep = .Platform$file.sep)
+		corrdirstn <- file.path(EnvQcOutlierData$baseDir, 'CorrectedData', jlstn)
 		if(!file.exists(corrdirstn)) dir.create(corrdirstn, showWarnings = FALSE, recursive = TRUE)
-		file_corrected <- file.path(corrdirstn, paste(jlstn, '.txt', sep = ''), fsep = .Platform$file.sep)
+		file_corrected <- file.path(corrdirstn, paste(jlstn, '.txt', sep = ''))
 
 		qcout <- try(execQctempFun(jlstn), silent = TRUE)
 		if(!inherits(qcout, "try-error")){
 			if(!is.null(qcout)){
 				if(!file.exists(outsdir)) dir.create(outsdir, showWarnings = FALSE, recursive = TRUE)
-				fileoutRdata <- file.path(outsdir, paste(jlstn, '.Rdata', sep = ''), fsep = .Platform$file.sep)
-				fileoutTXT <- file.path(outsdir, paste(jlstn, '.txt', sep = ''), fsep = .Platform$file.sep)
+				fileoutRdata <- file.path(outsdir, paste(jlstn, '.Rdata', sep = ''))
+				fileoutTXT <- file.path(outsdir, paste(jlstn, '.txt', sep = ''))
 				if(GeneralParameters$AllOrOne == 'all') ret.qcout <- qcout
-				ret.res <- list(action = GeneralParameters$action, period = GeneralParameters$period, station = jlstn, res = qcout, outputdir = outsdir, AllOrOne = GeneralParameters$AllOrOne)
+				ret.res <- list(action = GeneralParameters$action, period = GeneralParameters$period,
+								station = jlstn, res = qcout, outputdir = outsdir,
+								AllOrOne = GeneralParameters$AllOrOne)
 				save(ret.res, file = fileoutRdata)
 
 				## Default: not replace outliers if less/greater than limsup
 				lenNoRepl <- rep(NA, nrow(qcout))
 				resqc <- as.numeric(qcout$values)
-				limsup <- as.numeric(GeneralParameters$parameter[[2]][as.character(GeneralParameters$parameter[[2]][, 1]) == jlstn, 2:3])
+				limsup <- as.numeric(GeneralParameters$stnInfo[as.character(GeneralParameters$stnInfo$Station.ID) == jlstn, 2:3])
 				lenNoRepl[resqc > limsup[1] & resqc < limsup[2]] <- 1
 
 				qcout <- data.frame(qcout, not.replace = lenNoRepl, change.values = NA)
@@ -278,7 +265,7 @@ ExecQcTemp <- function(get.stn){
 
 	#############
 	ExecTempALLStations <- function(){
-		allstn2loop <- as.character(GeneralParameters$parameter[[2]][,1])
+		allstn2loop <- as.character(GeneralParameters$stnInfo$Station.ID)
 
 		# if(doparallel & length(allstn2loop) >= 20){
 		# 	klust <- makeCluster(nb_cores)
@@ -303,7 +290,9 @@ ExecQcTemp <- function(get.stn){
 		ret.qcout <- lapply(retAllRun, '[[', 1)
 		ret.stnid <- lapply(retAllRun, '[[', 2)
 		ret.outdir <- lapply(retAllRun, '[[', 3)
-		ret.res <- list(action = GeneralParameters$action, period = GeneralParameters$period, station = ret.stnid, res = ret.qcout, outputdir = ret.outdir, AllOrOne = GeneralParameters$AllOrOne)
+		ret.res <- list(action = GeneralParameters$action, period = GeneralParameters$period,
+						station = ret.stnid, res = ret.qcout, outputdir = ret.outdir,
+						AllOrOne = GeneralParameters$AllOrOne)
 		return(ret.res)
 	}
 

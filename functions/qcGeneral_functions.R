@@ -45,7 +45,7 @@ repartCheck <- function(x0, y0, x, y){
 	above <- length(id1a) > 0 & length(id2a) > 0 & length(id3a) > 0
 
 	##Below
-	ang <- ifelse(ang == 0,2*pi, ang)
+	ang <- ifelse(ang == 0, 2*pi, ang)
 	id1b <- which(ang >= pi & ang < 4*pi/3) #I
 	id2b <- which(ang >= 4*pi/3 & ang < 5*pi/3) #II
 	id3b <- which(ang >= 5*pi/3 & ang <= 2*pi) #III
@@ -89,8 +89,10 @@ limBoundsQc <- function(x, dates, xup, xlow){
 		datLimUp <- cbind(dates[idLimBd[[2]][, 1]], x[idLimBd[[2]][, 1]], 2, round(idLimBd[[2]][, 2], 4))
 		outQcLim <- rbind(outQcLim, datLimUp)
 	}
-	if(nrow(outQcLim) > 0) outQcLim <- data.frame(as.character(outQcLim[, 1]), as.numeric(as.character(outQcLim[, 2])),
-											as.numeric(as.character(outQcLim[, 3])), as.numeric(as.character(outQcLim[, 4])))
+	if(nrow(outQcLim) > 0) outQcLim <- data.frame(as.character(outQcLim[, 1]),
+												as.numeric(as.character(outQcLim[, 2])),
+												as.numeric(as.character(outQcLim[, 3])),
+												as.numeric(as.character(outQcLim[, 4])))
 	else outQcLim <- data.frame(NA, NA, NA, NA)
 	names(outQcLim) <- c('dates', 'values', 'extreme.outlier', 'extreme.outlier.stat')
 	idLm <- c(idLimBd[[1]][, 1], idLimBd[[2]][, 1])
@@ -103,7 +105,7 @@ quantilef <- function(x, prob){
 	x <- x[!is.na(x) & x > 0]
 	ret <- NULL
 	#au moins 4 stations non zero
-	if(length(x) > 3) ret <- quantile(x, prob = prob, names = F)
+	if(length(x) > 3) ret <- quantile(x, prob = prob, names = FALSE)
 	return(ret)
 }
 
@@ -113,7 +115,7 @@ quantilef1 <- function(x, prob, period){
 	if(period == 'daily') minMonNonNA <- 30
 	if(period == 'dekadal') minMonNonNA <- 10
 	if(period == 'monthly') minMonNonNA <- 5
-	if(length(x) >= minMonNonNA) ret <- quantile(x, prob = prob, names = F)
+	if(length(x) >= minMonNonNA) ret <- quantile(x, prob = prob, names = FALSE)
 	return(ret)
 }
 
@@ -146,9 +148,9 @@ indepStationParams <- function(jst, donne, months, period){
 	names(isdq1) <- c('mo', 'isdq1')
 
 	tmp <- data.frame(mo = 1:12)
-	tmp <- merge(tmp, ispmax, by = 'mo', all = T)
-	tmp <- merge(tmp, isdmin, by = 'mo', all = T)
-	tmp <- merge(tmp, isdq1, by = 'mo', all = T)
+	tmp <- merge(tmp, ispmax, by = 'mo', all = TRUE)
+	tmp <- merge(tmp, isdmin, by = 'mo', all = TRUE)
+	tmp <- merge(tmp, isdq1, by = 'mo', all = TRUE)
 	#names(tmp) <- c('mo', 'ispmax', 'isdmin', 'isdq1')
 	return(tmp)
 }
@@ -172,8 +174,8 @@ depStationParams <- function(jst, idst, donne, months){
 	names(isdobs) <- c('mo', 'isdobs')
 	names(ispobs) <- c('mo', 'ispobs')
 	tmp <- data.frame(mo = 1:12)
-	tmp <- merge(tmp, ispobs, by = 'mo', all = T)
-	tmp <- merge(tmp, isdobs, by = 'mo', all = T)
+	tmp <- merge(tmp, ispobs, by = 'mo', all = TRUE)
+	tmp <- merge(tmp, isdobs, by = 'mo', all = TRUE)
 	#names(tmp) <- c('mo', 'ispobs', 'isdobs')
 	return(tmp)
 }

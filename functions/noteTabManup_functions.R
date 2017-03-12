@@ -64,14 +64,9 @@ imageNotebookTab_open <- function(parent, notebookTab, tabTitle, tabType, tabDat
 					#new (scorllWin)
 					else tcl('destroy', tkwinfo('children', tabData[[idTabs]][[1]][[2]]))
 				}
-
 				tcl(parent, 'tab', tabData[[idTabs]][[1]][[1]], '-text', tabTitle)
-			}else{
-				onglet <- addNewTab(parent, tab.title = tabTitle)
-			}
-		}else{
-			onglet <- addNewTab(parent, tab.title = tabTitle)
-		}
+			}else onglet <- addNewTab(parent, tab.title = tabTitle)
+		}else onglet <- addNewTab(parent, tab.title = tabTitle)
 	}
 	return(onglet)
 }
@@ -130,8 +125,8 @@ tableQcEditNotebookTab_unik <- function(parent, titleTab, notebookTab, tabType, 
 	}
 
 	if(ReturnExecResults$action == 'qc.temp'){
-		if(as.character(GeneralParameters$use.method$Values[1]) == "0"){
-			if(as.character(GeneralParameters$use.method$Values[2]) == "1"){
+		if(!GeneralParameters$stn.type$single.series){
+			if(GeneralParameters$consist.check){
 				.Tcl(paste(table1, 'tag', 'celltag', 'ttestval',
 					paste(1:as.numeric(tclvalue(tkindex(table1, 'end', 'row'))), 8, sep = ',', collapse = ' ')))
 				tcl(table1, "tag", "configure", "ttestval", bg = "aquamarine")
@@ -153,7 +148,7 @@ tableQcEditNotebookTab_unik <- function(parent, titleTab, notebookTab, tabType, 
 				tcl(table1, "tag", "configure", "ttchgval", bg = "darkolivegreen1")
 			}
 		}else{
-			if(as.character(GeneralParameters$use.method$Values[2]) == "1"){
+			if(GeneralParameters$consist.check){
 				.Tcl(paste(table1, 'tag', 'celltag', 'ttnreplace',
 					paste(1:as.numeric(tclvalue(tkindex(table1, 'end', 'row'))), 7, sep = ',', collapse = ' ')))
 				tcl(table1, "tag", "configure", "ttnreplace", bg = "lightgoldenrod1")
@@ -171,7 +166,7 @@ tableQcEditNotebookTab_unik <- function(parent, titleTab, notebookTab, tabType, 
 		}
 	}
 	if(ReturnExecResults$action == 'qc.rain'){
-		if(as.character(GeneralParameters$use.method$Values[1]) == "0"){
+		if(!GeneralParameters$stn.type$single.series){
 			.Tcl(paste(table1, 'tag', 'celltag', 'ttnreplace',
 				paste(1:as.numeric(tclvalue(tkindex(table1, 'end', 'row'))), 8, sep = ',', collapse = ' ')))
 			tcl(table1, "tag", "configure", "ttnreplace", bg = "lightgoldenrod1")
@@ -360,7 +355,7 @@ tableHomogNotebookTab_unik <- function(parent, titleTab, notebookTab, tabType, t
 	}
 
 	idp <- which(!is.na(as.character(HomFormat[[1]]$Period)))
-	.Tcl(paste(table1, 'tag', 'celltag', 'KolCol1', paste(idp, 1, sep = ',',collapse=' ')))
+	.Tcl(paste(table1, 'tag', 'celltag', 'KolCol1', paste(idp, 1, sep = ',', collapse = ' ')))
 	tcl(table1, "tag", "configure", "KolCol1", bg = "lightcyan1")
 	.Tcl(paste(table1, 'tag', 'celltag', 'KolCol3',
 		paste(1:as.numeric(tclvalue(tkindex(table1, 'end', 'row'))), 3, sep = ',', collapse = ' ')))

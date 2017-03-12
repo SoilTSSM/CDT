@@ -4,7 +4,7 @@ plotSpatialCheck <- function(ijsp, dem, rfedat, shpf, ZoomXYval, showval){
 		IJstation <- ReturnExecResults$station
 	}
 	if(GeneralParameters$AllOrOne == 'all'){
-		ijstn <- which(as.character(GeneralParameters$parameter[[2]][,1]) == tclvalue(lchoixStnFr$env$stn.choix.val))
+		ijstn <- which(as.character(GeneralParameters$stnInfo$Station.ID) == tclvalue(lchoixStnFr$env$stn.choix.val))
 		IJoutputdir <- ReturnExecResults$outputdir[[ijstn]]
 		IJstation <- ReturnExecResults$station[[ijstn]]
 	}
@@ -32,18 +32,18 @@ plotSpatialCheck <- function(ijsp, dem, rfedat, shpf, ZoomXYval, showval){
 		outdates <- as.character(outqcf$dates)
 		outlq <- as.character(outqcf$spatial.reg.check)
 		outlv <- as.numeric(outqcf$estimated.values)
-		#testv<-!is.na(outlq) & as.numeric(outlq) > 0
-		testv<-!is.na(outlq)
+		#testv <- !is.na(outlq) & as.numeric(outlq) > 0
+		testv <- !is.na(outlq)
 		outdates1 <- outdates[testv]
 		outlv1 <- outlv[testv]
 	}
 
-	if(length(outdates1) > 0){  #inutile deja tester sur button next et prev
+	if(length(outdates1) > 0){
 		ijDate <- outdates1[ijsp]
 		ijSpat <- which(xdates == ijDate)
-		valm <- as.vector(arrData[ijSpat,])
+		valm <- as.vector(arrData[ijSpat, ])
 
-		ix<-!is.na(valm)
+		ix <- !is.na(valm)
 		lon <- lon[ix]
 		lat <- lat[ix]
 		idStn <- idStn[ix]
@@ -135,7 +135,7 @@ DisplaySpatialCheck <- function(parent, ijsp, ZoomXYval, dem, rfedat, shpf, show
 		IJstation <- ReturnExecResults$station
 	}
 	if(GeneralParameters$AllOrOne == 'all'){
-		ijstn <- which(as.character(GeneralParameters$parameter[[2]][, 1]) == tclvalue(lchoixStnFr$env$stn.choix.val))
+		ijstn <- which(as.character(GeneralParameters$stnInfo$Station.ID) == tclvalue(lchoixStnFr$env$stn.choix.val))
 		IJstation <- ReturnExecResults$station[[ijstn]]
 	}
 

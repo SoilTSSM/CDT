@@ -788,7 +788,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 				locations.down <- locations.down[locations.down$pars > extrm[1] & locations.down$pars < extrm[2], ]
 				locations.down <- remove.duplicates(locations.down)
 
-				if(any(is.auxvar) & interp.method != 'NN') locations.down <- locations.down[Reduce("&", as.data.frame(!is.na(locations.down[, auxvar[is.auxvar]]))), ]
+				if(any(is.auxvar) & interp.method != 'NN') locations.down <- locations.down[Reduce("&", as.data.frame(!is.na(locations.down@data[, auxvar[is.auxvar]]))), ]
 				if(interp.method == 'Kriging'){
 					vgm <- try(autofitVariogram(formule, input_data = locations.down, model = vgm.model, cressie = TRUE), silent = TRUE)
 					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -1326,7 +1326,7 @@ ComputeLMCoefTemp <- function(comptLMparams){
 	##########
 	model.params <- list(model = model, coef0 = coef0, coef = model.coef, id.stn = id.stn,
 						lon.stn = lon.stn, lat.stn = lat.stn, date.stn = date.stn[iyear0],
-						data.stn = data.stn.reg, data.rfe = data.rfe.stn)
+						data.stn = data.stn.reg, data.tt = data.adj.stn)
 	model.params <- list(model = model, coef = model.coef)
 	save(model.params, file = file.path(origdir, "LM_MODEL_PARS.RData"))
 
@@ -1626,7 +1626,7 @@ MergingFunctionTemp <- function(paramsMRG){
 				glm.stn <- glm(formuleRK, data = locations.stn, family = gaussian)
 				sp.trend <- predict(glm.stn, newdata = interp.grid$newgrid)
 				sp.trend <- matrix(sp.trend, ncol = nlat0, nrow = nlon0)
-				sp.trend[is.na(sp.trend)] <- xrfe[is.na(sp.trend)]
+				sp.trend[is.na(sp.trend)] <- xtmp[is.na(sp.trend)]
 				# locations.stn$res <- residuals(glm.stn)
 				if(length(glm.stn$na.action) > 0) locations.stn$res[-glm.stn$na.action] <- glm.stn$residuals
 				else locations.stn$res <- glm.stn$residuals

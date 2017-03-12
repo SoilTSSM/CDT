@@ -1,23 +1,23 @@
 
 plotCPTFun <- function(ReturnExecResults, stat.fun, replotBreak){
 
-		dydates <- EnvHomogzData$dly_data[[1]]$date
-		dkdates <- EnvHomogzData$dek_data[[1]]$date
-		modates <- EnvHomogzData$mon_data[[1]]$date
+	dydates <- EnvHomogzData$dly_data[[1]]$date
+	dkdates <- EnvHomogzData$dek_data[[1]]$date
+	modates <- EnvHomogzData$mon_data[[1]]$date
 
+	## Base series or series composite
 	##base series
-	#if(as.character(GeneralParameters$use.method$Values[2]) == "0"){
+	#if(!GeneralParameters$stn.type$single.series){
 	#	get.stn <- ReturnExecResults$station
 	#	xpos <- which(as.character(EnvHomogzData$donnees1$id) == get.stn)
-	#	dyx <- EnvHomogzData$dly_data[[1]]$data[,xpos]
-	#	dkx <- EnvHomogzData$dek_data[[1]]$data[,xpos]
-	#	mox <- EnvHomogzData$mon_data[[1]]$data[,xpos]
+	#	dyx <- EnvHomogzData$dly_data[[1]]$data[, xpos]
+	#	dkx <- EnvHomogzData$dek_data[[1]]$data[, xpos]
+	#	mox <- EnvHomogzData$mon_data[[1]]$data[, xpos]
 	#}else{
 	#	dyx <- EnvHomogzData$dly_data[[1]]$data
 	#	dkx <- EnvHomogzData$dek_data[[1]]$data
 	#	mox <- EnvHomogzData$mon_data[[1]]$data
 	#}
-
 	##series composite used for the test
 	dyx <- ReturnExecResults$refSerie$dyref
 	dkx <- ReturnExecResults$refSerie$dkref
@@ -26,15 +26,15 @@ plotCPTFun <- function(ReturnExecResults, stat.fun, replotBreak){
 	##cpt obj
 	if(replotBreak){
 		dyobj <- dkobj <- moobj <- NULL
-		monfileout <- file.path(ReturnExecResults$outputdir, paste(ReturnExecResults$station, '_MON.txt', sep = ''), fsep = .Platform$file.sep)
+		monfileout <- file.path(ReturnExecResults$outputdir, paste(ReturnExecResults$station, '_MON.txt', sep = ''))
 		modat <- read.table(monfileout, header = TRUE, colClasses = 'character')
 		moobj <- na.omit(as.numeric(as.character(modat$Breakpoints.Index)))
 		if(ReturnExecResults$period != 'monthly'){
-			dekfileout <- file.path(ReturnExecResults$outputdir, paste(ReturnExecResults$station, '_DEK.txt', sep = ''), fsep = .Platform$file.sep)
+			dekfileout <- file.path(ReturnExecResults$outputdir, paste(ReturnExecResults$station, '_DEK.txt', sep = ''))
 			dkdat <- read.table(dekfileout, header = TRUE, colClasses = 'character')
 			dkobj <- na.omit(as.numeric(as.character(dkdat$Breakpoints.Index)))
 			if(ReturnExecResults$period == 'daily'){
-				dlyfileout <- file.path(ReturnExecResults$outputdir, paste(ReturnExecResults$station, '_DLY.txt', sep = ''), fsep = .Platform$file.sep)
+				dlyfileout <- file.path(ReturnExecResults$outputdir, paste(ReturnExecResults$station, '_DLY.txt', sep = ''))
 				dydat <- read.table(dlyfileout, header = TRUE, colClasses = 'character')
 				dyobj <- na.omit(as.numeric(as.character(dydat$Breakpoints.Index)))
 			}
@@ -61,7 +61,7 @@ plotCPTFun <- function(ReturnExecResults, stat.fun, replotBreak){
 	}
 
 	##get segment
-	if(stat.fun == "CUSUM-type with Trend(Gallagher et al.,2013)"){
+	if(stat.fun == "CUSUMtr"){
 		if(testIfList){
 			if(!is.null(dyobj)) dyseg <- getTrend.cptSeg(dyobj, dyx)
 			if(!is.null(dkobj)) dkseg <- getTrend.cptSeg(dkobj, dkx)
@@ -94,22 +94,23 @@ plotCPTFun <- function(ReturnExecResults, stat.fun, replotBreak){
 	mocptm <- moseg[modx]
 	moseg[is.na(mox)] <- NA
 
-
 	#######
 	if(ReturnExecResults$period == 'daily'){
 		##format dates
-		dydates <- as.Date(dydates, format='%Y%m%d')
+		dydates <- as.Date(dydates, format = '%Y%m%d')
 		dycptd <- dydates[dydx]
-		dkdates <- as.Date(paste(substr(dkdates, 1,6), ifelse(substr(dkdates, 7,7) == "1", "05", ifelse(substr(dkdates, 7,7) == "2", "15", "25")), sep = ''), format='%Y%m%d')
+		dkdates <- as.Date(paste(substr(dkdates, 1, 6), ifelse(substr(dkdates, 7, 7) == "1", "05",
+					ifelse(substr(dkdates, 7, 7) == "2", "15", "25")), sep = ''), format = '%Y%m%d')
 		dkcptd <- dkdates[dkdx]
-		modates <- as.Date(paste(modates, 16, sep = ''), format='%Y%m%d')
+		modates <- as.Date(paste(modates, 16, sep = ''), format = '%Y%m%d')
 		mocptd <- modates[modx]
 
 		xlim <- c(min(c(dydates, dkdates, modates)), max(c(dydates, dkdates, modates)))
-		vgrid <- seq(as.Date(paste(format(dydates[1],'%Y'), 1,1, sep = '-')), as.Date(paste(format(dydates[length(dyx)],'%Y'), 12,31, sep = '-'))+1, 'year')
+		vgrid <- seq(as.Date(paste(format(dydates[1], '%Y'), 1, 1, sep = '-')),
+					as.Date(paste(format(dydates[length(dyx)], '%Y'), 12, 31, sep = '-'))+1, 'year')
 
-		layout(matrix(1:3, ncol = 1), widths = 1, heights = c(1,1,1), respect = FALSE)
-		op <- par(mar = c(0,4,2,2))
+		layout(matrix(1:3, ncol = 1), widths = 1, heights = c(1, 1, 1), respect = FALSE)
+		op <- par(mar = c(0, 4, 2, 2))
 		plot(modates, mox, type = 'n', xaxt = 'n', ylab = 'Monthly', xlim = xlim)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 		abline(v = vgrid, col = "lightgray", lty = "dotted")
@@ -121,7 +122,7 @@ plotCPTFun <- function(ReturnExecResults, stat.fun, replotBreak){
 		usrmo <- par("usr")
 		par(op)
 
-		op <- par(mar = c(0,4,0,2))
+		op <- par(mar = c(0, 4, 0, 2))
 		plot(dkdates, dkx, type = 'n', xaxt = 'n', ylab = 'Dekadal', xlim = xlim)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 		abline(v = vgrid, col = "lightgray", lty = "dotted")
@@ -133,7 +134,7 @@ plotCPTFun <- function(ReturnExecResults, stat.fun, replotBreak){
 		usrdk <- par("usr")
 		par(op)
 
-		op <- par(mar = c(3,4,0,2))
+		op <- par(mar = c(3, 4, 0, 2))
 		plot(dydates, dyx, type = 'n', ylab = 'Daily', xlim = xlim)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 		abline(v = vgrid, col = "lightgray", lty = "dotted")
@@ -148,16 +149,18 @@ plotCPTFun <- function(ReturnExecResults, stat.fun, replotBreak){
 	}
 	if(ReturnExecResults$period == 'dekadal'){
 		##format dates
-		dkdates <- as.Date(paste(substr(dkdates, 1,6), ifelse(substr(dkdates, 7,7) == "1", "05", ifelse(substr(dkdates, 7,7) == "2", "15", "25")), sep = ''), format='%Y%m%d')
+		dkdates <- as.Date(paste(substr(dkdates, 1, 6), ifelse(substr(dkdates, 7, 7) == "1", "05",
+					ifelse(substr(dkdates, 7, 7) == "2", "15", "25")), sep = ''), format = '%Y%m%d')
 		dkcptd <- dkdates[dkdx]
-		modates <- as.Date(paste(modates, 16, sep = ''), format='%Y%m%d')
+		modates <- as.Date(paste(modates, 16, sep = ''), format = '%Y%m%d')
 		mocptd <- modates[modx]
 
 		xlim <- c(min(c(dkdates, modates)), max(c(dkdates, modates)))
-		vgrid <- seq(as.Date(paste(format(dkdates[1],'%Y'), 1,1, sep = '-')), as.Date(paste(format(dkdates[length(dkx)],'%Y'), 12,31, sep = '-'))+1, 'year')
+		vgrid <- seq(as.Date(paste(format(dkdates[1], '%Y'), 1, 1, sep = '-')),
+					as.Date(paste(format(dkdates[length(dkx)], '%Y'), 12, 31, sep = '-'))+1, 'year')
 
 		layout(matrix(1:2, ncol = 1), widths = 1, heights = c(1,1), respect = FALSE)
-		op <- par(mar = c(0,4,2,2))
+		op <- par(mar = c(0, 4, 2, 2))
 		plot(modates, mox, type = 'n', xaxt = 'n', ylab = 'Monthly', xlim = xlim)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 		abline(v = vgrid, col = "lightgray", lty = "dotted")
@@ -169,7 +172,7 @@ plotCPTFun <- function(ReturnExecResults, stat.fun, replotBreak){
 		usrmo <- par("usr")
 		par(op)
 
-		op <- par(mar = c(3,4,0,2))
+		op <- par(mar = c(3, 4, 0, 2))
 		plot(dkdates, dkx, type = 'n', ylab = 'Dekadal', xlim = xlim)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 		abline(v = vgrid, col = "lightgray", lty = "dotted")
@@ -184,13 +187,14 @@ plotCPTFun <- function(ReturnExecResults, stat.fun, replotBreak){
 	}
 	if(ReturnExecResults$period == 'monthly'){
 		##format dates
-		modates <- as.Date(paste(modates, 16, sep = ''), format='%Y%m%d')
+		modates <- as.Date(paste(modates, 16, sep = ''), format = '%Y%m%d')
 		mocptd <- modates[modx]
 
 		xlim <- c(min(modates), max(modates))
-		vgrid <- seq(as.Date(paste(format(modates[1],'%Y'), 1,1, sep = '-')), as.Date(paste(format(modates[length(mox)],'%Y'), 12,31, sep = '-'))+1, 'year')
+		vgrid <- seq(as.Date(paste(format(modates[1], '%Y'), 1, 1, sep = '-')),
+					as.Date(paste(format(modates[length(mox)], '%Y'), 12, 31, sep = '-'))+1, 'year')
 
-		op <- par(mar = c(3,4,2,2))
+		op <- par(mar = c(3, 4, 2, 2))
 		plot(modates, mox, type = 'n', ylab = 'Monthly', xlim = xlim)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 		abline(v = vgrid, col = "lightgray", lty = "dotted")
@@ -213,7 +217,7 @@ plotHomogBreakPts <- function(parent, notebookTab, replotBreak){
 	pltusr <- NULL
 
 	if(ReturnExecResults$action == 'homog' & GeneralParameters$action == 'homog'){
-		stat.fun <- as.character(GeneralParameters$use.method$Values[1])
+		stat.fun <- GeneralParameters$hom.stats
 		plotIt <- function(){
 			op1 <- par(bg = 'white')
 			pltusr <<- plotCPTFun(ReturnExecResults, stat.fun, replotBreak)
@@ -239,7 +243,6 @@ plotHomogBreakPts <- function(parent, notebookTab, replotBreak){
 	tkgrid.rowconfigure(img, 0, weight = 1)
 	tkgrid.columnconfigure(img, 0, weight = 1)
 
-
 	display.cursor.type <- function(x, y){
 		xmouse <- as.numeric(x)
 		ymouse <- as.numeric(y)
@@ -252,10 +255,10 @@ plotHomogBreakPts <- function(parent, notebookTab, replotBreak){
 
 		posimgx <- round((imgmw-imgw)/2)
 		posimgy <- round((imgmh-imgh)/2)
-		orgx <- ifelse(posimgx < 0,0, posimgx)
-		orgy <- ifelse(posimgy < 0,0, posimgy)
+		orgx <- ifelse(posimgx < 0, 0, posimgx)
+		orgy <- ifelse(posimgy < 0, 0, posimgy)
 
-		xpos<-(xmouse-orgx)/imgw
+		xpos <- (xmouse-orgx)/imgw
 		ypos <- 1-(ymouse-orgy)/imgh
 
 		if(ReturnExecResults$period == 'daily'){
@@ -270,7 +273,7 @@ plotHomogBreakPts <- function(parent, notebookTab, replotBreak){
 			rangeYmo <- pltusr$usrmo[4]-pltusr$usrmo[3]
 			xcoordmo <- minXmo+(xpos-xpltmo1)*rangeXmo/(xpltmo2-xpltmo1)
 			#change scale:layout (2/3 to 1)
-			yposmo<-(ypos-2/3)/(1-2/3)
+			yposmo <- (ypos-2/3)/(1-2/3)
 			ycoordmo <- minYmo+(yposmo-ypltmo1)*rangeYmo/(ypltmo2-ypltmo1)
 
 			xpltdk1 <- pltusr$pltdk[1]
@@ -282,7 +285,7 @@ plotHomogBreakPts <- function(parent, notebookTab, replotBreak){
 			minYdk <- pltusr$usrdk[3]
 			rangeYdk <- pltusr$usrdk[4]-pltusr$usrdk[3]
 			xcoorddk <- minXdk+(xpos-xpltdk1)*rangeXdk/(xpltdk2-xpltdk1)
-			yposdk<-(ypos-1/3)/(2/3-1/3)
+			yposdk <- (ypos-1/3)/(2/3-1/3)
 			ycoorddk <- minYdk+(yposdk-ypltdk1)*rangeYdk/(ypltdk2-ypltdk1)
 
 			xpltdy1 <- pltusr$pltdy[1]
@@ -294,25 +297,26 @@ plotHomogBreakPts <- function(parent, notebookTab, replotBreak){
 			minYdy <- pltusr$usrdy[3]
 			rangeYdy <- pltusr$usrdy[4]-pltusr$usrdy[3]
 			xcoorddy <- minXdy+(xpos-xpltdy1)*rangeXdy/(xpltdy2-xpltdy1)
-			yposdy<-(ypos-0)/(1/3-0)
+			yposdy <- (ypos-0)/(1/3-0)
 			ycoorddy <- minYdy+(yposdy-ypltdy1)*rangeYdy/(ypltdy2-ypltdy1)
 
 			if(ypos >= 0 & ypos < 1/3){
-				frxcoord <- format(as.Date(xcoorddy, origin = '1970-1-1'),'%d-%b-%Y')
+				frxcoord <- format(as.Date(xcoorddy, origin = '1970-1-1'), '%d-%b-%Y')
 				frycoord <- round(ycoorddy, 1)
 			}else if(ypos >= 1/3 & ypos < 2/3){
 				dtdk <- as.Date(xcoorddk, origin = '1970-1-1')
-				dek <- ifelse(as.numeric(format(dtdk,'%d')) <= 10,1, ifelse(as.numeric(format(dtdk,'%d'))>20,3,2))
-				moyr <- format(dtdk,'%b-%Y')
+				dek <- ifelse(as.numeric(format(dtdk, '%d')) <= 10, 1,
+						ifelse(as.numeric(format(dtdk, '%d')) > 20, 3, 2))
+				moyr <- format(dtdk, '%b-%Y')
 				frxcoord <- paste(dek, moyr, sep = '-')
 				frycoord <- round(ycoorddk, 1)
 			}else if(ypos >= 2/3 & ypos < 1){
-				frxcoord <- format(as.Date(xcoordmo, origin = '1970-1-1'),'%b-%Y')
+				frxcoord <- format(as.Date(xcoordmo, origin = '1970-1-1'), '%b-%Y')
 				frycoord <- round(ycoordmo, 1)
 			}
 			if(xcoordmo < pltusr$usrmo[1] | xcoordmo > pltusr$usrmo[2] | ycoorddy < pltusr$usrdy[3] | ycoordmo > pltusr$usrmo[4]){
-				frxcoord<-''
-				frycoord<-''
+				frxcoord <- ''
+				frycoord <- ''
 			}
 		}else if(ReturnExecResults$period == 'dekadal'){
 			xpltmo1 <- pltusr$pltmo[1]
@@ -324,7 +328,7 @@ plotHomogBreakPts <- function(parent, notebookTab, replotBreak){
 			minYmo <- pltusr$usrmo[3]
 			rangeYmo <- pltusr$usrmo[4]-pltusr$usrmo[3]
 			xcoordmo <- minXmo+(xpos-xpltmo1)*rangeXmo/(xpltmo2-xpltmo1)
-			yposmo<-(ypos-1/2)/(1-1/2)
+			yposmo <- (ypos-1/2)/(1-1/2)
 			ycoordmo <- minYmo+(yposmo-ypltmo1)*rangeYmo/(ypltmo2-ypltmo1)
 
 			xpltdk1 <- pltusr$pltdk[1]
@@ -337,22 +341,23 @@ plotHomogBreakPts <- function(parent, notebookTab, replotBreak){
 			rangeYdk <- pltusr$usrdk[4]-pltusr$usrdk[3]
 			xcoorddk <- minXdk+(xpos-xpltdk1)*rangeXdk/(xpltdk2-xpltdk1)
 			#scale
-			yposdk<-(ypos-0)/(1/2-0)
+			yposdk <- (ypos-0)/(1/2-0)
 			ycoorddk <- minYdk+(yposdk-ypltdk1)*rangeYdk/(ypltdk2-ypltdk1)
 
 			if(ypos >= 0 & ypos < 1/2){
 				dtdk <- as.Date(xcoorddk, origin = '1970-1-1')
-				dek <- ifelse(as.numeric(format(dtdk,'%d')) <= 10,1, ifelse(as.numeric(format(dtdk,'%d'))>20,3,2))
-				moyr <- format(dtdk,'%b-%Y')
+				dek <- ifelse(as.numeric(format(dtdk, '%d')) <= 10, 1,
+						ifelse(as.numeric(format(dtdk, '%d')) > 20, 3, 2))
+				moyr <- format(dtdk, '%b-%Y')
 				frxcoord <- paste(dek, moyr, sep = '-')
 				frycoord <- round(ycoorddk, 1)
 			}else if(ypos >= 1/2 & ypos < 1){
-				frxcoord <- format(as.Date(xcoordmo, origin = '1970-1-1'),'%b-%Y')
+				frxcoord <- format(as.Date(xcoordmo, origin = '1970-1-1'), '%b-%Y')
 				frycoord <- round(ycoordmo, 1)
 			}
 			if(xcoordmo < pltusr$usrmo[1] | xcoordmo > pltusr$usrmo[2] | ycoorddk < pltusr$usrdk[3] | ycoordmo > pltusr$usrmo[4]){
-				frxcoord<-''
-				frycoord<-''
+				frxcoord <- ''
+				frycoord <- ''
 			}
 		}else if(ReturnExecResults$period == 'monthly'){
 			xpltmo1 <- pltusr$pltmo[1]
@@ -365,27 +370,26 @@ plotHomogBreakPts <- function(parent, notebookTab, replotBreak){
 			rangeYmo <- pltusr$usrmo[4]-pltusr$usrmo[3]
 			xcoordmo <- minXmo+(xpos-xpltmo1)*rangeXmo/(xpltmo2-xpltmo1)
 			#scale
-			yposmo<-(ypos-0)/(1-0)
+			yposmo <- (ypos-0)/(1-0)
 			ycoordmo <- minYmo+(yposmo-ypltmo1)*rangeYmo/(ypltmo2-ypltmo1)
-			frxcoord <- format(as.Date(xcoordmo, origin = '1970-1-1'),'%b-%Y')
+			frxcoord <- format(as.Date(xcoordmo, origin = '1970-1-1'), '%b-%Y')
 			frycoord <- round(ycoordmo, 1)
 			if(xcoordmo < pltusr$usrmo[1] | xcoordmo > pltusr$usrmo[2] | ycoordmo < pltusr$usrmo[3] | ycoordmo > pltusr$usrmo[4]){
-				frxcoord<-''
-				frycoord<-''
+				frxcoord <- ''
+				frycoord <- ''
 			}
 		}
 
-
-	tclvalue(xpcoord) <- frxcoord
-	tclvalue(ypcoord) <- frycoord
+		tclvalue(xpcoord) <- frxcoord
+		tclvalue(ypcoord) <- frycoord
 	}
 
 	tkbind(img, "<Motion>", function(x, y){
 		display.cursor.type(x, y)
 	})
+	tkbind(img, "<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
+	tkbind(img, "<Leave>", function() tkconfigure(img, cursor = ''))
 
-	tkbind(img,"<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
-	tkbind(img,"<Leave>", function() tkconfigure(img, cursor=''))
 	return(list(onglet, img))
 }
 

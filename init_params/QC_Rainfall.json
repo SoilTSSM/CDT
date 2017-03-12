@@ -1,0 +1,54 @@
+{
+    // Input and Output files/directory
+    "IO.files": [{
+        // Station data filename
+        "STN.file": "",
+        // Elevation data filename
+        "DEM.file": "",
+        // Full path to the directory to save results
+        "dir2save": ""
+    }],
+    "dem": [{
+        // use elevation data to select neighbor stations
+        "use.elv": false,
+        // Elevation data from STN data: "1", interpolate from dem: "0" 
+        "interp.dem": "0"
+    }],
+    "stn.type": [{
+        // series from one station
+        "single.series": false,
+        // one variable: "1", 3 variables: "0" 
+        "file.format": "1",
+        // grouped date: "1", separated: "0" 
+        "date.format": "1"
+    }],
+    "select.pars": [{
+        // Minimum number of neighbor stations to use
+        "min.stn": 5,
+        // Maximum distance of neighbor stations to use (km)
+        "max.dist": 45,
+        // Maximum altitude difference of neighbor stations to use (m)
+        "elv.diff": 200,
+        // Confidence level (%)
+        "conf.lev": 99.73
+    }],
+    "sp.check": [{
+        // Maximum value of the neighbors stations is less than ispmax
+        "ispmax": 1.0,
+        // Value of target station is greater ispobs
+        "ispobs": 10.0,
+        // Minimum value of the  neighbors stations is greater isdmin
+        "isdmin": 3.0,
+        // Value of target station is less than isdobs
+        "isdobs": 1.0,
+        // The first quartile value of the neighbors stations is greater than isdq1
+        "isdq1": 10.0,
+        // Outliers factor value between 2 and 4, multiplier of IQR
+        "ftldev": 2.8
+    }],
+    "limits": [{
+        "Lower.Bounds": 0,
+        "Upper.Bounds": 300
+    }],
+    "AllOrOne": "one"
+}
