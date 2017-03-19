@@ -2,18 +2,20 @@
 QcCmdBut <- function(stateReplaceAll){
 	listOpenFiles <- openFile_ttkcomboList()
 	if(Sys.info()["sysname"] == "Windows"){
-		wscrlwin <- w.scale(20)
-		hscrlwin <- h.scale(31.5)
-		wttkcombo <- as.integer(as.numeric(w.scale(19)*0.95)/9)
-		largeur1 <- wttkcombo+2
-		largeur <- 17
-		largeur2 <- 14
+		wscrlwin <- w.scale(26)
+		hscrlwin <- h.scale(34.5)
+		largeur0 <- as.integer(w.scale(27)/sfont0)
+		largeur <- 29
+		wttkcombo <- as.integer(as.numeric(w.scale(28)*0.95)/9)
+		largeur1 <- wttkcombo+3
+		largeur2 <- 16
 	}else{
-		wscrlwin <- w.scale(24)
-		hscrlwin <- h.scale(38.5)
-		wttkcombo <- as.integer(as.numeric(w.scale(19)*0.95)/9)
-		largeur1 <- wttkcombo+2
-		largeur <- 17
+		wscrlwin <- w.scale(26)
+		hscrlwin <- h.scale(37)
+		largeur0 <- as.integer(w.scale(23)/sfont0)
+		largeur <- 19
+		wttkcombo <- as.integer(as.numeric(w.scale(20)*0.95)/9)
+		largeur1 <- wttkcombo+1
 		largeur2 <- 14
 	}
 
@@ -52,7 +54,7 @@ QcCmdBut <- function(stateReplaceAll){
 
 	stats <- tclVar('0.0')
 
-	btPreview.tab1 <- tkbutton(subfr1, text = "Output Preview")
+	btPreview.tab1 <- tkbutton(subfr1, text = "Output Preview", width = largeur0)
 	btSetting.tab1 <- tkbutton(subfr1, text = "Outlier-Settings")
 	btReplace.tab1 <- tkbutton(subfr1, text = "Replace")
 	labThresReplace.tab1 <- tklabel(subfr1, text = 'Statistic threshold', anchor = 'e', justify = 'right')
@@ -71,7 +73,7 @@ QcCmdBut <- function(stateReplaceAll){
 	tkgrid(sep2.tab1, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, pady = 5)
 	tkgrid(labThresReplace.tab1, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(enThresReplace.tab1, row = 4, column = 3, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(btThresReplace.tab1, row = 4, column = 5, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(btThresReplace.tab1, row = 4, column = 5, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(sep3.tab1, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, pady = 5)
 	tkgrid(btAllReplace.tab1, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
@@ -98,7 +100,6 @@ QcCmdBut <- function(stateReplaceAll){
 	tkgrid.columnconfigure(scrw2, 0, weight = 1)
 
 	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
-	# tkgrid.columnconfigure(subfr2, 0, weight = 1)
 
 	##############################
 
@@ -236,7 +237,6 @@ QcCmdBut <- function(stateReplaceAll){
 	tkgrid.columnconfigure(scrw4, 0, weight = 1)
 
 	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
-	# tkgrid.columnconfigure(subfr4, 0, weight = 1)
 
 	################################
 
@@ -707,7 +707,8 @@ QcCmdBut <- function(stateReplaceAll){
 	tkconfigure(btAllReplace.tab1, command = function(){
 		if(!is.null(ReturnExecResults)){
 			stns <- unlist(ReturnExecResults$station)
-			tkconfigure(main.win, cursor = 'watch');tcl("update", "idletasks")
+			tkconfigure(main.win, cursor = 'watch')
+			tcl("update", "idletasks")
 			lapply(stns, function(IJstation){
 				isOK <- try(replaceOutlier(IJstation, tclvalue(stats), isReplace = TRUE), silent = TRUE)
 				if(!inherits(isOK, "try-error")){
@@ -725,7 +726,7 @@ QcCmdBut <- function(stateReplaceAll){
 
 	######################################################################################################
 	##plot outliers by month
-	nmois <- format(ISOdate(2014,1:12,1), "%B")
+	nmois <- format(ISOdate(2014, 1:12, 1), "%B")
 	ncmois <- 1:12
 	ncmois <- ifelse(ncmois < 10, paste('0', ncmois, sep = ''), ncmois)
 	xnmois <- data.frame(nmois, ncmois)

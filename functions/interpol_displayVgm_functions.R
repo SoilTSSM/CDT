@@ -1,9 +1,9 @@
 plotVariogramFun <- function(odata, vgmChx, VgmMod, vgmModList, useELV){
 	if(vgmChx == '0'){
-		if(useELV == '1') evgm <- variogram(z~elv, odata)
-		else evgm <- variogram(z~1, odata)
-		#fvgm <- fit.variogram(evgm, model = vgm(psill = max(evgm$gamma, na.rm = T), model = VgmMod, range = max(evgm$dist, na.rm = T), nugget = min(evgm$gamma, na.rm = T)))
-		fvgm <- fit.variogram(evgm, model = vgm(psill = var(odata$z, na.rm = T), model = VgmMod, range = quantile(evgm$dist, probs = 0.8, na.rm = T), nugget = min(evgm$gamma, na.rm = T)))
+		evgm <- if(useELV == '1') variogram(z~elv, odata) else variogram(z~1, odata)
+		fvgm <- fit.variogram(evgm, model = vgm(psill = var(odata$z, na.rm = TRUE), model = VgmMod,
+									range = quantile(evgm$dist, probs = 0.8, na.rm = TRUE),
+									nugget = min(evgm$gamma, na.rm = TRUE)))
 		p1 <- plot(evgm, fvgm, plot.numbers = TRUE, main = "Experimental variogram and fitted variogram model", xlab = 'Distance')
 	}
 
@@ -14,7 +14,6 @@ plotVariogramFun <- function(odata, vgmChx, VgmMod, vgmModList, useELV){
 	}
 	print(p1)
 }
-
 
 ###############################
 displayVariogramFun <- function(parent, notebookTab, donne, vgmChx, VgmMod, vgmModList, useELV){
@@ -47,16 +46,14 @@ displayVariogramFun <- function(parent, notebookTab, donne, vgmChx, VgmMod, vgmM
 
 	coordinates(odata)<- ~lon+lat
 	proj4string(odata) <- CRS("+proj=longlat +datum=WGS84 +ellps=WGS84")
-	#odata <- SpatialPointsDataFrame(coords = odata[,c('lon', 'lat')],data = data.frame(z = odata[,'z']), proj4string = CRS("+proj=longlat +datum=WGS84 +ellps=WGS84"))
-
 
 	plotIt <- function(){
 		plotVariogramFun(odata, vgmChx, VgmMod, vgmModList, useELV)
 	}
 
 	###################################################################
-
-	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitle = paste('Variogram -',donne$date), AllOpenTabType, AllOpenTabData)
+	titre <- paste('Variogram -',donne$date)
+	onglet <- imageNotebookTab_open(parent, notebookTab, titre, AllOpenTabType, AllOpenTabData)
 
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))

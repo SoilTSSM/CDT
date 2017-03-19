@@ -100,7 +100,7 @@ displayConsOutput <- function(parent, out2disp, rhtests = FALSE){
 	if(rhtests){
 		tkinsert(txta, "end", out2disp)
 	}else{
-		tempfile <- file.path(apps.dir, 'tmp_display', fsep = .Platform$file.sep)
+		tempfile <- file.path(apps.dir, 'tmp_display')
 		sink(tempfile)
 		op <- options()
 		options(width = 160)

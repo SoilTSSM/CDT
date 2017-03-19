@@ -94,7 +94,6 @@ plotOutliers <- function(jmo){
 
 #################################################################################################
 
-
 DisplayOutliers <- function(parent, jmo, noteQcOutlierCheck){
 
 	if(GeneralParameters$AllOrOne == 'one'){
@@ -113,33 +112,9 @@ DisplayOutliers <- function(parent, jmo, noteQcOutlierCheck){
 		par(op)
 	}
 	###################################################################
-		if(is.null(noteQcOutlierCheck)){
-			onglet <- addNewTab(parent, tab.title = paste(IJstation, format(ISOdate(2014, jmo, 1), "%b"),
-													'Outliers Check', sep = '-'))
-		}else{
-			ntab <- length(AllOpenTabType)
-			if(ntab > 0){
-				AllNoteTab <- sapply(1:ntab, function(j){
-					if(!is.null(attributes(AllOpenTabData[[j]][[1]][[1]]))) AllOpenTabData[[j]][[1]][[1]]$ID
-					else AllOpenTabData[[j]][[1]][[1]]
-				})
-				idTabs <- which(AllNoteTab == noteQcOutlierCheck[[2]])
 
-				if(length(idTabs) > 0){
-					onglet <- noteQcOutlierCheck[[1]]
-					tkdestroy(AllOpenTabData[[idTabs]][[2]])
-					tcl(tknotes, 'tab', AllOpenTabData[[idTabs]][[1]][[1]], '-text',
-							paste(IJstation, format(ISOdate(2014, jmo, 1), "%b"),
-							'Outliers Check ', sep = '-'))
-				}else{
-					onglet <- addNewTab(parent, tab.title = paste(IJstation, format(ISOdate(2014, jmo, 1), "%b"),
-															'Outliers Check', sep = '-'))
-				}
-			}else{
-				onglet <- addNewTab(parent, tab.title = paste(IJstation, format(ISOdate(2014, jmo, 1), "%b"),
-														'Outliers Check', sep = '-'))
-			}
-		}
+	titre <- paste(IJstation, format(ISOdate(2014, jmo, 1), "%b"), 'Outliers Check ', sep = '-')
+	onglet <- imageNotebookTab_open(parent, noteQcOutlierCheck, titre, AllOpenTabType, AllOpenTabData)
 
 	#########
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
@@ -154,11 +129,8 @@ DisplayOutliers <- function(parent, jmo, noteQcOutlierCheck){
 	parPlotSize <- pltusr$plt
 	usrCoords <- pltusr$usr
 
-	if(GeneralParameters$period == 'monthly'){
-		dates <- as.Date(paste(pltusr$dates, '15', sep = ''), format = '%Y%m%d')
-	}else{
-		dates <- as.Date(pltusr$dates, format = '%Y%m%d')
-	}
+	dates <- if(GeneralParameters$period != 'monthly') as.Date(pltusr$dates, format = '%Y%m%d')
+			else as.Date(paste(pltusr$dates, '15', sep = ''), format = '%Y%m%d')
 
 	display.cursor.type <- function(x, y){
 		xmouse <- as.numeric(x)
@@ -175,7 +147,7 @@ DisplayOutliers <- function(parent, jmo, noteQcOutlierCheck){
 		orgx <- ifelse(posimgx < 0, 0, posimgx)
 		orgy <- ifelse(posimgy < 0, 0, posimgy)
 
-		xpos<-(xmouse-orgx)/imgw
+		xpos <- (xmouse-orgx)/imgw
 		ypos <- 1-(ymouse-orgy)/imgh
 
 		xplt1 <- parPlotSize[1]

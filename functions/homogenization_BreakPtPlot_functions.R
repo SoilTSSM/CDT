@@ -230,9 +230,9 @@ plotHomogBreakPts <- function(parent, notebookTab, replotBreak){
 
 	###################################################################
 
-	if(replotBreak) tabTitre <- paste(ReturnExecResults$station, 'Changed-Breakpoints', sep = '-')
-	else tabTitre <- paste(ReturnExecResults$station, 'Breakpoints', sep = '-')
-	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitle = tabTitre, AllOpenTabType, AllOpenTabData)
+	tabTitre <- if(replotBreak) paste(ReturnExecResults$station, 'Changed-Breakpoints', sep = '-')
+				else paste(ReturnExecResults$station, 'Breakpoints', sep = '-')
+	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitre, AllOpenTabType, AllOpenTabData)
 
 	#########
 	hscale <- as.numeric(tclvalue(tkget(spinH)))

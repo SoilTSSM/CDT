@@ -109,8 +109,9 @@ plotSpatialCheck <- function(ijsp, dem, rfedat, shpf, ZoomXYval, showval){
 				text(lon[-ijStn], lat[-ijStn], labels = valm[-ijStn], pos = 1, cex = 0.6, col = 'blue')
 			}
 		}
-		if(Sys.info()["sysname"] == "Windows") axlabs <- LatLonAxisLabels(axTicks(1), axTicks(2))
-		else axlabs <- LatLonAxisLabels1(axTicks(1), axTicks(2))
+		axlabsFun <- if(Sys.info()["sysname"] == "Windows") LatLonAxisLabels else LatLonAxisLabels1
+		axlabs <- axlabsFun(axTicks(1), axTicks(2))
+
 		axis(side = 1, at = axTicks(1), labels = axlabs$xaxl, tck = -0.01, cex.axis = 0.8)
 		axis(side = 2, at = axTicks(2), labels = axlabs$yaxl, tck = -0.01, las = 1, cex.axis = 0.8)
 		title(main = paste('STN:', idStn[ijStn], 'Date:', ijDate), cex.main = 1, font.main = 1)
@@ -169,7 +170,10 @@ DisplaySpatialCheck <- function(parent, ijsp, ZoomXYval, dem, rfedat, shpf, show
 						usrCoords3 = usrCoords3, usrCoords4 = usrCoords4)
 
 	###################################################################
-	onglet <- imageNotebookTab_open(parent, noteQcSpatCheck, tabTitle = paste(IJstation, 'Spatial Check', sep = '-'), AllOpenTabType, AllOpenTabData)
+
+	titre <- paste(IJstation, 'Spatial Check', sep = '-')
+	onglet <- imageNotebookTab_open(parent, noteQcSpatCheck, titre, AllOpenTabType, AllOpenTabData)
+
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
 
@@ -196,7 +200,6 @@ DisplaySpatialCheck <- function(parent, ijsp, ZoomXYval, dem, rfedat, shpf, show
 	})
 
 	tkbind(canvas, "<Leave>", function() tkconfigure(canvas, cursor = ''))
-
 
 	#####
 	##draw rectangle initial value

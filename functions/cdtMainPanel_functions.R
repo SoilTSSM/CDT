@@ -1,26 +1,4 @@
 
-#####**************************** LEFT ************************######
-###Widgets left panel
-
-frame.opfiles <- ttklabelframe(panel.left, text = "Open Files", relief = 'groove', width = wpanel.left)
-
-lchoixStnFr <- ttklabelframe(panel.left, text = "Choose station", relief = 'groove')
-cmd.frame <- tkframe(panel.left, relief = 'groove', bd = 2)
-lcmd.frame <- cmd.frame
-
-##### List open files 
-scr.opfiles <- tkscrollbar(frame.opfiles, repeatinterval = 5, command = function(...) tkyview(all.opfiles, ...))
-all.opfiles <- tklistbox(frame.opfiles, selectmode = "single", height = 5, width = w.opfiles,
-						 selectbackground = "yellow", selectforeground = "blue", background = "white",
-						 yscrollcommand = function(...) tkset(scr.opfiles, ...))
-tkgrid(all.opfiles, row = 0, column = 0, sticky = "nwe")
-tkgrid(scr.opfiles, row = 0, column = 1, rowspan = 4, sticky = "ns")
-
-#######
-tkgrid(frame.opfiles, sticky = 'nwe')
-tkgrid.columnconfigure(frame.opfiles, 0, weight = 1)
-
-#######
 
 selectStationCmd <- function(){
 	# GeneralParameters, main.win, panel.left, wframe.choix.stn
@@ -29,8 +7,10 @@ selectStationCmd <- function(){
 	choixStnFr$env$stn.choix <- c('')
 	choixStnFr$env$stn.choix.val <- tclVar(choixStnFr$env$stn.choix[1])
 
-	choixStnFr$env$stn.choix.cb <- ttkcombobox(choixStnFr, values = choixStnFr$env$stn.choix, textvariable = choixStnFr$env$stn.choix.val, state = 'normal', width = wframe.choix.stn)
-	choixStnFr$env$stn.choix.prev <- tkbutton(choixStnFr, text=" <<- Prev", state = 'disabled')
+	choixStnFr$env$stn.choix.cb <- ttkcombobox(choixStnFr, values = choixStnFr$env$stn.choix,
+											 textvariable = choixStnFr$env$stn.choix.val,
+											 state = 'normal', width = wframe.choix.stn)
+	choixStnFr$env$stn.choix.prev <- tkbutton(choixStnFr, text = "<<- Prev", state = 'disabled')
 	choixStnFr$env$stn.choix.next <- tkbutton(choixStnFr, text = "Next ->>", state = 'disabled')
 	choixStnFr$env$setting.button <- tkbutton(choixStnFr, text = "Options", state = 'disabled')
 
@@ -67,9 +47,30 @@ selectStationCmd <- function(){
 	tkgrid(choixStnFr, sticky = 'nwe', pady = 5)
 	for(i in 0:3) tkgrid.columnconfigure(choixStnFr, i, weight = 1)
 	tcl('update')
-		
+
 	return(choixStnFr)
 }
+
+#####**************************** LEFT ************************######
+###Widgets left panel
+
+frame.opfiles <- ttklabelframe(panel.left, text = "Open Files", relief = 'groove', width = wpanel.left)
+
+lchoixStnFr <- ttklabelframe(panel.left, text = "Choose station", relief = 'groove')
+cmd.frame <- tkframe(panel.left, relief = 'groove', bd = 2)
+lcmd.frame <- cmd.frame
+
+##### List open files 
+scr.opfiles <- tkscrollbar(frame.opfiles, repeatinterval = 5, command = function(...) tkyview(all.opfiles, ...))
+all.opfiles <- tklistbox(frame.opfiles, selectmode = "single", height = 5, width = w.opfiles,
+						 selectbackground = "yellow", selectforeground = "blue", background = "white",
+						 yscrollcommand = function(...) tkset(scr.opfiles, ...))
+tkgrid(all.opfiles, row = 0, column = 0, sticky = "nwe")
+tkgrid(scr.opfiles, row = 0, column = 1, rowspan = 4, sticky = "ns")
+
+#######
+tkgrid(frame.opfiles, sticky = 'nwe')
+tkgrid.columnconfigure(frame.opfiles, 0, weight = 1)
 
 
 #####**************************** RIGHT ************************######
@@ -90,6 +91,6 @@ tkgrid.rowconfigure(area.frame, 0, weight = 1)
 
 #####
 pressed_index <- tclVar('')
-tkbind(tknotes,"<ButtonPress-1>", function(x, y, W) btn_press(x, y, W))
-tkbind(tknotes,"<ButtonRelease-1>", function(x, y, W) btn_releases(x, y, W))
+tkbind(tknotes, "<ButtonPress-1>", function(x, y, W) btn_press(x, y, W))
+tkbind(tknotes, "<ButtonRelease-1>", function(x, y, W) btn_releases(x, y, W))
 

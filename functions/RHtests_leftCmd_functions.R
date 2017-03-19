@@ -1,18 +1,18 @@
 
 RHtestsV4Cmd <- function(){
-
 	listOpenFiles <- openFile_ttkcomboList()
-
-	###################
-
-	largeur <- as.integer(w.scale(21)/sfont0)
-	wncdf_ff <- as.integer(w.scale(14)/sfont0)
 	if(Sys.info()["sysname"] == "Windows"){
-		wscrlwin <- w.scale(20)
-		hscrlwin <- h.scale(30)
+		wscrlwin <- w.scale(26)
+		hscrlwin <- h.scale(34)
+		lfindu <- as.integer(w.scale(13)/sfont0)
+		largeur <- as.integer(w.scale(27)/sfont0)
+		largeur1 <- as.integer(w.scale(25)/sfont0)
 	}else{
-		wscrlwin <- w.scale(24)
-		hscrlwin <- h.scale(37)
+		wscrlwin <- w.scale(26)
+		hscrlwin <- h.scale(36)
+		lfindu <- as.integer(w.scale(11)/sfont0)
+		largeur <- as.integer(w.scale(22)/sfont0)
+		largeur1 <- as.integer(w.scale(25)/sfont0)
 	}
 
 	###################
@@ -23,23 +23,23 @@ RHtestsV4Cmd <- function(){
 	tkgrid(tknote.cmd, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 1)
 	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
 
-	cmd.tab1 <- bwAddTab(tknote.cmd, text = "RHtestsV4")
-	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Parameters")
-	cmd.tab3 <- bwAddTab(tknote.cmd, text = "RefSerCreation")
+	cmd.tab1 <- bwAddTab(tknote.cmd, text = "Data&Params")
+	cmd.tab2 <- bwAddTab(tknote.cmd, text = "RefSerCreation")
+	cmd.tab3 <- bwAddTab(tknote.cmd, text = "RHtestsV4")
 	cmd.tab4 <- bwAddTab(tknote.cmd, text = "Output")
 
-	bwRaiseTab(tknote.cmd, cmd.tab2)
+	bwRaiseTab(tknote.cmd, cmd.tab1)
 
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab4, 0, weight = 1)
 
-#######################################################################################################
+	#######################################################################################################
 
 	#Tab1
 	frTab1 <- tkframe(cmd.tab1)
-	tkgrid(frTab1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frTab1, padx = 5, pady = 5, ipadx = 2, ipady = 2)
 	tkgrid.columnconfigure(frTab1, 0, weight = 1)
 
 	scrw1 <- bwScrolledWindow(frTab1)
@@ -48,143 +48,249 @@ RHtestsV4Cmd <- function(){
 	subfr1 <- bwScrollableFrame(scrw1, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr1, 0, weight = 1)
 
-	findU.tab1 <- tkbutton(subfr1, text = "FindU")
-	findUD.tab1 <- tkbutton(subfr1, text = "FindUD")
-	stepsize.tab1 <- tkbutton(subfr1, text = "StepSize")
-	qmadj.tab1 <- tkbutton(subfr1, text = "QMadj")
+	##############
 
-	findUr.tab1 <- tkbutton(subfr1, text = "FindU.wRef")
-	findUDr.tab1 <- tkbutton(subfr1, text = "FindUD.wRef")
-	stepsizer.tab1 <- tkbutton(subfr1, text = "StepSize.wRef")
-	qmadjr.tab1 <- tkbutton(subfr1, text = "QMadj.wRef")
+	prcpdata.val <- tclVar(GeneralParameters$prcp.data$rr.data)
+	prcplog.val <- tclVar(GeneralParameters$prcp.data$rr.log)
+	p.levStr <- tclVar(sprintf("%1.4f", GeneralParameters$rhtests.pars$p.lev))
+	IadjStr <- tclVar(GeneralParameters$rhtests.pars$Iadj)
+	MqStr <- tclVar(GeneralParameters$rhtests.pars$Mq)
+	Ny4aStr <- tclVar(GeneralParameters$rhtests.pars$Ny4a)
+	pthrStr <- tclVar(GeneralParameters$rhtests.pars$pthr)
+
+	PLEV <- sprintf("%1.4f", c(0.75, 0.80, 0.90, 0.95, 0.99, 0.9999))
+	ChoixAjustment <- tclVar('3')
+
+	getData.tab1 <- tkbutton(subfr1, text = "Input Data", bg = 'lightgreen', width = largeur)
 
 	sep1.tab1 <- ttkseparator(subfr1)
-	dlyPrcpLb.tab1 <- tklabel(subfr1, text = 'Homogenization of daily precipitation', anchor = 'w', justify = 'left')
+	framePrcp.tab1 <- ttklabelframe(subfr1, text = 'Precipitation Data', relief = 'groove', borderwidth = 2)
+	prcpdata.tab1 <- tkcheckbutton(framePrcp.tab1, variable = prcpdata.val, text = 'Precipitation series', anchor = 'w', justify = 'left')
+	prcplog.tab1 <- tkcheckbutton(framePrcp.tab1, variable = prcplog.val, text = 'Use log-transformed series', anchor = 'w', justify = 'left')
 
-	findUp.tab1 <- tkbutton(subfr1, text = "FindU.dlyPrcp")
-	findUDp.tab1 <- tkbutton(subfr1, text = "FindUD.dlyPrcp")
-	stepsizep.tab1 <- tkbutton(subfr1, text = "StepSize.dlyPrcp")
-	qmadjp.tab1 <- tkbutton(subfr1, text = "getAdjusted Data")
+	framePars.tab1 <- ttklabelframe(subfr1, text = 'Parameters', relief = 'groove', borderwidth = 2)
+	plevLb.tab1 <- tklabel(framePars.tab1, text = 'p.lev', anchor = 'e', justify = 'right')
+	plevEd.tab1 <- ttkcombobox(framePars.tab1, values = PLEV, textvariable = p.levStr, width = 6)
+	iadjLb.tab1 <- tklabel(framePars.tab1, text = 'Iadj', anchor = 'e', justify = 'right')
+	iadjEd.tab1 <- tkentry(framePars.tab1, textvariable = IadjStr, width = 6)
+	mqLb.tab1 <- tklabel(framePars.tab1, text = 'Mq', anchor = 'e', justify = 'right')
+	mqEd.tab1 <- tkentry(framePars.tab1, textvariable = MqStr, width = 5)
+	ny4aLb.tab1 <- tklabel(framePars.tab1, text = 'Ny4a', anchor = 'e', justify = 'right')
+	ny4aEd.tab1 <- tkentry(framePars.tab1, textvariable = Ny4aStr, width = 5)
+	pthrLb.tab1 <- tklabel(framePars.tab1, text = 'pthr', anchor = 'e', justify = 'right')
+	pthrEd.tab1 <- tkentry(framePars.tab1, textvariable = pthrStr, width = 5)
 
+	homAdjframe.tab1 <- ttklabelframe(subfr1, text = "Adjusted series selection", labelanchor = "nw",
+												relief = "groove", borderwidth = 2)
+	AdjMthdRadio1 <- tkradiobutton(homAdjframe.tab1, text = "By Mean", anchor = 'w', justify = 'left')
+	AdjMthdRadio2 <- tkradiobutton(homAdjframe.tab1, text = "By Quantile Matching", anchor = 'w', justify = 'left')
+	AdjMthdRadio3 <- tkradiobutton(homAdjframe.tab1, text = "Base Series", anchor = 'w', justify = 'left')
+	tkconfigure(AdjMthdRadio1, variable = ChoixAjustment, value = "1")
+	tkconfigure(AdjMthdRadio2, variable = ChoixAjustment, value = "2")
+	tkconfigure(AdjMthdRadio3, variable = ChoixAjustment, value = "3")
+
+	##########
+	donnees <- NULL
+
+	tkconfigure(getData.tab1, command = function(){
+		GeneralParameters <<- rhtests_inputData(main.win, GeneralParameters)
+		if(GeneralParameters$IO.files$Cand.file != "" & GeneralParameters$getdata) {
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			donnees <<- tryCatch(getRHtestsData(GeneralParameters),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e), finally = {
+				tkconfigure(main.win, cursor = '')
+			})
+			if(GeneralParameters$use.refSeries){
+				tcl(userefS.tab2, 'select')
+				tkconfigure(nghbStnBt.tab2, state = 'normal')
+			}else{
+				tcl(userefS.tab2, 'deselect')
+				tkconfigure(nghbStnBt.tab2, state = 'disabled')
+			}
+		}
+	})
 
 	#############################################
-	tkgrid(findU.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(findUr.tab1, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	tkgrid(findUD.tab1, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(findUDr.tab1, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(getData.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 1)
 
-	tkgrid(stepsize.tab1, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(stepsizer.tab1, row = 2, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(sep1.tab1, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 2)
+	tkgrid(framePrcp.tab1, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 3, ipady = 2)
+	tkgrid(prcpdata.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(prcplog.tab1, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	tkgrid(qmadj.tab1, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(qmadjr.tab1, row = 3, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(framePars.tab1, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 2)
+	tkgrid(plevLb.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(plevEd.tab1, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(mqLb.tab1, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(mqEd.tab1, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(ny4aLb.tab1, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(ny4aEd.tab1, row = 0, column = 5, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(iadjLb.tab1, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(iadjEd.tab1, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(pthrLb.tab1, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(pthrEd.tab1, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	tkgrid(sep1.tab1, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 5)
-	tkgrid(dlyPrcpLb.tab1, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 5)
+	tkgrid(homAdjframe.tab1, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 2)
+	tkgrid(AdjMthdRadio1, row = 0, column = 0, sticky = 'ew', padx = 1, pady = 0)
+	tkgrid(AdjMthdRadio2, row = 1, column = 0, sticky = 'ew', padx = 1, pady = 0)
+	tkgrid(AdjMthdRadio3, row = 2, column = 0, sticky = 'ew', padx = 1, pady = 0)
 
-	tkgrid(findUp.tab1, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(findUDp.tab1, row = 6, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	infobulle(prcpdata.tab1, 'Must be checked in case of precipitation data')
+	status.bar.display(prcpdata.tab1, TextOutputVar, 'Must be checked in case of precipitation data')
+	infobulle(prcplog.tab1, 'Check if applying a log transformation to monthly  precipitation series')
+	status.bar.display(prcplog.tab1, TextOutputVar, 'Check if applying a log transformation to monthly precipitation series')
+	infobulle(plevEd.tab1, 'Select the nominal conf. level p.lev value.')
+	status.bar.display(plevEd.tab1, TextOutputVar, 'Select the nominal conf. level p.lev value.')
+	infobulle(iadjEd.tab1, 'Enter Iadj (Integer between 0 to 10000 inclusive)')
+	status.bar.display(iadjEd.tab1, TextOutputVar, 'Enter Iadj (Integer between 0 to 10000 inclusive)')
+	infobulle(mqEd.tab1, 'Enter Mq (integer # of points for evaluating PDF)')
+	status.bar.display(mqEd.tab1, TextOutputVar, 'Enter Mq (integer # of points for evaluating PDF)')
+	infobulle(ny4aEd.tab1, 'Enter Ny4a (integer >= 5, or 0 for choosing the whole segment)')
+	status.bar.display(ny4aEd.tab1, TextOutputVar, 'Enter Ny4a (integer >= 5, or 0 for choosing the whole segment)')
+	infobulle(pthrEd.tab1, 'Enter the lower precipitation threshold pthr (>= 0) [for .dlyPrcp only]')
+	status.bar.display(pthrEd.tab1, TextOutputVar, 'Enter the lower precipitation threshold pthr (>= 0) [for .dlyPrcp only]')
+	infobulle(homAdjframe.tab1, 'Select the adjusted series to be retained')
+	status.bar.display(homAdjframe.tab1, TextOutputVar, 'Select the adjusted series to be retained')
 
-	tkgrid(stepsizep.tab1, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(qmadjp.tab1, row = 7, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-
-#######################################################################################################
+	#######################################################################################################
 
 	#Tab2
-	frTab2 <- tkframe(cmd.tab2) #,relief = 'sunken', bd = 2
+	frTab2 <- tkframe(cmd.tab2)
 	tkgrid(frTab2, padx = 5, pady = 5, ipadx = 2, ipady = 2)
 	tkgrid.columnconfigure(frTab2, 0, weight = 1)
 
 	scrw2 <- bwScrolledWindow(frTab2)
 	tkgrid(scrw2)
 	tkgrid.columnconfigure(scrw2, 0, weight = 1)
-	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
-	tkgrid.columnconfigure(subfr2, 0, weight = 1)
+	subfr1 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr1, 0, weight = 1)
+	##############
 
-	getData.tab2 <- tkbutton(subfr2, text = "Input Data", bg = 'lightgreen')
+	use.rfseries.val <- tclVar(GeneralParameters$use.refSeries)
+	use.elv <- tclVar(GeneralParameters$refSeries.choix$use.elv)
+	weight.mean <- tclVar(GeneralParameters$refSeries.choix$weight.mean)
+	usr.rfseries.val <- tclVar(GeneralParameters$refSeries.by.user)
 
-	sep1.tab2 <- ttkseparator(subfr2)
-	framePrcp.tab2 <- ttklabelframe(subfr2, text = 'Precipitation Data', relief = 'groove', borderwidth = 2)
+	stateStn <- if(GeneralParameters$use.refSeries) 'normal' else 'disabled'
+	stateRef <- if(GeneralParameters$refSeries.choix$use.elv) 'normal' else 'disabled'
+	stateElv <- if(GeneralParameters$refSeries.by.user) 'normal' else 'disabled'
 
-	prcpdata.val <- tclVar(as.character(GeneralParameters$prcpdata$Values[1]))
-	prcpdata.tab2 <- tkcheckbutton(framePrcp.tab2, variable = prcpdata.val, text = 'Precipitation series', anchor = 'w', justify = 'left')
-	infobulle(prcpdata.tab2, 'Must be checked in case of precipitation data')
-	status.bar.display(prcpdata.tab2, TextOutputVar, 'Must be checked in case of precipitation data')
+	Weight.Factors <- c('Distance', 'Correlation', 'Optimal', 'Average')
 
-	prcplog.val <- tclVar(as.character(GeneralParameters$prcpdata$Values[2]))
-	prcplog.tab2 <- tkcheckbutton(framePrcp.tab2, variable = prcplog.val, text = 'Use log-transformed series', anchor = 'w', justify = 'left')
-	infobulle(prcplog.tab2, 'Check if applying a log transformation to monthly  precipitation series')
-	status.bar.display(prcplog.tab2, TextOutputVar, 'Check if applying a log transformation to monthly precipitation series')
+	userefS.tab2 <- tkcheckbutton(subfr1, variable = use.rfseries.val, text = 'Use reference series',
+									anchor = 'w', justify = 'left', bg = 'lightgreen', width = largeur1)
 
-	sep2.tab2 <- ttkseparator(subfr2)
-	framePars.tab2 <- ttklabelframe(subfr2, text = 'Parameters', relief = 'groove', borderwidth = 2)
+	sep1.tab2 <- ttkseparator(subfr1)
+	nghbStnLb.tab2 <- tklabel(subfr1, text = 'Neighbor stations selection', anchor = 'w', justify = 'right')
+	nghbStnBt.tab2 <- tkbutton(subfr1, text = "Options", state = stateStn)
 
-	p.levStr <- tclVar(as.character(GeneralParameters$rhtests.pars$Values[1]))
-	plevLb.tab2 <- tklabel(framePars.tab2, text = 'p.lev', anchor = 'e', justify = 'right')
-#	plevEd.tab2 <- tkentry(framePars.tab2, textvariable = p.levStr, width = 6)
-	plevEd.tab2 <- ttkcombobox(framePars.tab2, values = as.character(c(0.75, 0.80, 0.90, 0.95, 0.99, 0.9999)), textvariable = p.levStr, width = 6)
-	infobulle(plevEd.tab2, 'Choose the nominal conf. level p.lev value.')
-	status.bar.display(plevEd.tab2, TextOutputVar, 'Choose the nominal conf. level p.lev value.')
+	sep2.tab2 <- ttkseparator(subfr1)
+	useElv.tab2 <- tkcheckbutton(subfr1, text = 'Use Elevation', variable = use.elv, anchor = 'w', justify = 'left')
+	useElvBt.tab2 <- tkbutton(subfr1, text = "Settings", state = stateRef)
 
-	IadjStr <- tclVar(as.character(GeneralParameters$rhtests.pars$Values[2]))
-	iadjLb.tab2 <- tklabel(framePars.tab2, text = 'Iadj', anchor = 'e', justify = 'right')
-	iadjEd.tab2 <- tkentry(framePars.tab2, textvariable = IadjStr, width = 6)
-	infobulle(iadjEd.tab2, 'Please enter integer Iadj (0 to 10000 inclusive)')
-	status.bar.display(iadjEd.tab2, TextOutputVar, 'Please enter integer Iadj (0 to 10000 inclusive)')
+	sep3.tab2 <- ttkseparator(subfr1)
+	wghtfacLb.tab2 <- tklabel(subfr1, text = "Weighting Factors", anchor = 'w', justify = 'left')
+	wghtfacCmb.tab2 <- ttkcombobox(subfr1, values = Weight.Factors, textvariable = weight.mean, width = 9)
 
-	MqStr <- tclVar(as.character(GeneralParameters$rhtests.pars$Values[3]))
-	mqLb.tab2 <- tklabel(framePars.tab2, text = 'Mq', anchor = 'e', justify = 'right')
-	mqEd.tab2 <- tkentry(framePars.tab2, textvariable = MqStr, width = 6)
-	infobulle(mqEd.tab2, 'Please enter integer Mq (# of points for evaluating PDF)')
-	status.bar.display(mqEd.tab2, TextOutputVar, 'Please enter integer Mq (# of points for evaluating PDF)')
+	sep4.tab2 <- ttkseparator(subfr1)
+	usr.rfseries.tab2 <- tkcheckbutton(subfr1, variable = usr.rfseries.val, text = "Stations selected by User", anchor = 'w', justify = 'left')
+	usrbt.rfseries.tab2 <- tkbutton(subfr1, text = "Select", state = stateElv)
 
-	Ny4aStr <- tclVar(as.character(GeneralParameters$rhtests.pars$Values[4]))
-	ny4aLb.tab2 <- tklabel(framePars.tab2, text = 'Ny4a', anchor = 'e', justify = 'right')
-	ny4aEd.tab2 <- tkentry(framePars.tab2, textvariable = Ny4aStr, width = 6)
-	infobulle(ny4aEd.tab2, 'Please enter integer Ny4a ( >= 5, or 0 for choosing the whole segment)')
-	status.bar.display(ny4aEd.tab2, TextOutputVar, 'Please enter integer Ny4a ( >= 5, or 0 for choosing the whole segment)')
+	##############
 
-	pthrStr <- tclVar(as.character(GeneralParameters$rhtests.pars$Values[5]))
-	pthrLb.tab2 <- tklabel(framePars.tab2, text = 'pthr', anchor = 'e', justify = 'right')
-	pthrEd.tab2 <- tkentry(framePars.tab2, textvariable = pthrStr, width = 6)
-	infobulle(pthrEd.tab2, 'Please enter the lower precipitation threshold pthr ( >= 0) [for .dlyPrcp only]')
-	status.bar.display(pthrEd.tab2, TextOutputVar, 'Please enter the lower precipitation threshold pthr ( >= 0)  [for .dlyPrcp only]')
+	tkconfigure(nghbStnBt.tab2, command = function(){
+		GeneralParameters <<- rhtests_nghbStnOpts(main.win, GeneralParameters)
+	})
 
+	tkconfigure(useElvBt.tab2, command = function(){
+		GeneralParameters <<- rhtests_useElv(main.win, GeneralParameters)
+	})
 
+	tkconfigure(usrbt.rfseries.tab2, command = function(){
+		file2test <- GeneralParameters$IO.files$Cand.file
+		if(file2test != ""){
+			donstn <- getStnOpenData(file2test)
+			if(is.null(donstn)){
+				tkmessageBox(message = "File not found or in the wrong format", icon = "warning", type = "ok")
+				return(NULL)
+			}else{
+				donstn <- getCDTdataAndDisplayMsg(donstn, GeneralParameters$period)
+				GeneralParameters <<- refSeriesUsersChoice(main.win, donstn$id, GeneralParameters)
+			}
+		}else tkmessageBox(message = "Provide the file to test", icon = "warning", type = "ok")
+	})
 
-	#############################################
+	##############
 
-	tkgrid(getData.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 1)
-	#tkgrid(txtsep.tab2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 1)
+	tkgrid(userefS.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(sep1.tab2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, pady = 5)
+	tkgrid(nghbStnLb.tab2, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(nghbStnBt.tab2, row = 2, column = 6, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(sep2.tab2, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, pady = 5)
+	tkgrid(useElv.tab2, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(useElvBt.tab2, row = 4, column = 6, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(sep3.tab2, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, pady = 5)
+	tkgrid(wghtfacLb.tab2, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(wghtfacCmb.tab2, row = 6, column = 5, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(sep4.tab2, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, pady = 5)
+	tkgrid(usr.rfseries.tab2, row = 8, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(usrbt.rfseries.tab2, row = 8, column = 6, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	tkgrid(sep1.tab2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 5)
-	tkgrid(framePrcp.tab2, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 3, ipady = 2)
+	infobulle(userefS.tab2, 'Using a reference series to perform the homogenization test')
+	status.bar.display(userefS.tab2, TextOutputVar, 'Using a reference series to perform the homogenization test')
+	infobulle(nghbStnBt.tab2, 'Set options to select neighbor stations')
+	status.bar.display(nghbStnBt.tab2, TextOutputVar, 'Set options to select neighbor stations')
+	infobulle(useElv.tab2, 'Check to use elevation data to choose neighbors stations')
+	status.bar.display(useElv.tab2, TextOutputVar, 'Check for using elevation data to choose neighbor stations')
+	infobulle(useElvBt.tab2, 'Select elevation data')
+	status.bar.display(useElvBt.tab2, TextOutputVar, 'Select elevation data')
+	infobulle(wghtfacLb.tab2, 'Method to build weights for linear combinations')
+	status.bar.display(wghtfacLb.tab2, TextOutputVar, 'Method to build weights for linear combinations')
+	infobulle(wghtfacCmb.tab2, 'Method to build weights for linear combinations')
+	status.bar.display(wghtfacCmb.tab2, TextOutputVar, 'Method to build weights for linear combinations')
+	infobulle(usr.rfseries.tab2, 'The reference series will be created from stations chosen by user')
+	status.bar.display(usr.rfseries.tab2, TextOutputVar, "The reference series will be created from stations chosen by user")
+	infobulle(usrbt.rfseries.tab2, 'Select the stations to create the reference series')
+	status.bar.display(usrbt.rfseries.tab2, TextOutputVar, 'Select the stations to create the reference series')
 
-	tkgrid(prcpdata.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(prcplog.tab2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	########################################
 
-	tkgrid(sep2.tab2, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 5)
-	tkgrid(framePars.tab2, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 5)
+	tkbind(userefS.tab2, "<Button-1>", function(){
+		if(tclvalue(use.rfseries.val) == "0"){
+			tkconfigure(nghbStnBt.tab2, state = 'normal')
+			if(tclvalue(use.elv) == "1") tkconfigure(useElvBt.tab2, state = 'normal')
+			if(tclvalue(usr.rfseries.val) == "1") tkconfigure(usrbt.rfseries.tab2, state = 'normal')
+		}else{
+			tkconfigure(nghbStnBt.tab2, state = 'disabled')
+			tkconfigure(useElvBt.tab2, state = 'disabled')
+			tkconfigure(usrbt.rfseries.tab2, state = 'disabled')
+			tclvalue(use.elv) <- "0"
+			tclvalue(usr.rfseries.val) <- "0"
+		}
+	})
 
-	tkgrid(plevLb.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(plevEd.tab2, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(iadjLb.tab2, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(iadjEd.tab2, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(mqLb.tab2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(mqEd.tab2, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(ny4aLb.tab2, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(ny4aEd.tab2, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(pthrLb.tab2, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(pthrEd.tab2, row = 2, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkbind(useElv.tab2, "<Button-1>", function(){
+		if(tclvalue(use.rfseries.val) == "1"){
+			state <- if(tclvalue(use.elv) == "0") 'normal' else 'disabled'
+			tkconfigure(useElvBt.tab2, state = state)
+		}
+	})
 
+	tkbind(usr.rfseries.tab2, "<Button-1>", function(){
+		if(tclvalue(use.rfseries.val) == "1"){
+			state <- if(tclvalue(usr.rfseries.val) == "0") 'normal' else 'disabled'
+			tkconfigure(usrbt.rfseries.tab2, state = state)
+		}
+	})
 
-#######################################################################################################
+	#######################################################################################################
 
 	#Tab3
-	frTab3 <- tkframe(cmd.tab3) #,relief = 'sunken', bd = 2
-	tkgrid(frTab3, padx = 5, pady = 5, ipadx = 2, ipady = 2)
+	frTab3 <- tkframe(cmd.tab3)
+	tkgrid(frTab3, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid.columnconfigure(frTab3, 0, weight = 1)
 
 	scrw3 <- bwScrolledWindow(frTab3)
@@ -193,128 +299,53 @@ RHtestsV4Cmd <- function(){
 	subfr3 <- bwScrollableFrame(scrw3, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr3, 0, weight = 1)
 
-	use.rfseries.val <- tclVar(as.character(GeneralParameters$use.ref.series))
-	userefS.tab3 <- tkcheckbutton(subfr3, variable = use.rfseries.val, text = 'Use reference series', anchor = 'w', justify = 'left', bg = 'lightgreen') #,width = largeur1-1
-	infobulle(userefS.tab3, 'Using a reference series to\nperform the homogenization test')
-	status.bar.display(userefS.tab3, TextOutputVar, 'Using a reference series to perform the homogenization test')
-
 	##############
+
+	findU.tab3 <- tkbutton(subfr3, text = "FindU", width = lfindu)
+	findUD.tab3 <- tkbutton(subfr3, text = "FindUD")
+	stepsize.tab3 <- tkbutton(subfr3, text = "StepSize")
+	qmadj.tab3 <- tkbutton(subfr3, text = "QMadj")
+
+	findUr.tab3 <- tkbutton(subfr3, text = "FindU.wRef", width = lfindu)
+	findUDr.tab3 <- tkbutton(subfr3, text = "FindUD.wRef")
+	stepsizer.tab3 <- tkbutton(subfr3, text = "StepSize.wRef")
+	qmadjr.tab3 <- tkbutton(subfr3, text = "QMadj.wRef")
+
 	sep1.tab3 <- ttkseparator(subfr3)
+	dlyPrcpLb.tab3 <- tklabel(subfr3, text = 'Homogenization of daily precipitation', anchor = 'w', justify = 'left')
 
-	if(as.character(GeneralParameters$use.ref.series) == '0') stateStn <- 'disabled'
-	if(as.character(GeneralParameters$use.ref.series) == '1') stateStn <- 'normal'
+	findUp.tab3 <- tkbutton(subfr3, text = "FindU.dlyPrcp")
+	findUDp.tab3 <- tkbutton(subfr3, text = "FindUD.dlyPrcp")
+	stepsizep.tab3 <- tkbutton(subfr3, text = "StepSize.dlyPrcp")
+	qmadjp.tab3 <- tkbutton(subfr3, text = "getAdjusted Data")
 
-	nghbStnLb.tab3 <- tklabel(subfr3, text = 'Neighbor stations selection', anchor = 'w', justify = 'right')
-	nghbStnBt.tab3 <- tkbutton(subfr3, text = "Options")
-	infobulle(nghbStnBt.tab3, 'Set options to select neighbor stations')
-	status.bar.display(nghbStnBt.tab3, TextOutputVar, 'Set options to select neighbor stations')
+	#############################################
 
-	tkconfigure(nghbStnBt.tab3, state = stateStn, command = function(){
-		GeneralParameters <<- rhtests_nghbStnOpts(main.win, GeneralParameters)
-	})
+	tkgrid(findU.tab3, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(findUr.tab3, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
+	tkgrid(findUD.tab3, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(findUDr.tab3, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	##############
-	sep2.tab3 <- ttkseparator(subfr3)
+	tkgrid(stepsize.tab3, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(stepsizer.tab3, row = 2, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	if(as.character(GeneralParameters$ref.series.choix$Values[2]) == '0') stateRef <- 'disabled'
-	if(as.character(GeneralParameters$ref.series.choix$Values[2]) == '1') stateRef <- 'normal'
+	tkgrid(qmadj.tab3, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(qmadjr.tab3, row = 3, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	use.elv <- tclVar(as.character(GeneralParameters$ref.series.choix$Values[2]))
-	useElv.tab3 <- tkcheckbutton(subfr3, text = 'Use Elevation', variable = use.elv, anchor = 'w', justify = 'left')
-	infobulle(useElv.tab3, 'Check to use elevation data\nto choose neighbors stations')
-	status.bar.display(useElv.tab3, TextOutputVar, 'Check for using elevation data to choose neighbor stations')
-	useElvBt.tab3 <- tkbutton(subfr3, text = "Settings")
-	infobulle(useElvBt.tab3, 'Select elevation data')
-	status.bar.display(useElvBt.tab3, TextOutputVar, 'Select elevation data')
+	tkgrid(sep1.tab3, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 5)
+	tkgrid(dlyPrcpLb.tab3, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, pady = 5)
 
-	tkconfigure(useElvBt.tab3, state = stateRef, command = function(){
-		GeneralParameters <<- rhtests_useElv(main.win, GeneralParameters)
-	})
+	tkgrid(findUp.tab3, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(findUDp.tab3, row = 6, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
+	tkgrid(stepsizep.tab3, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(qmadjp.tab3, row = 7, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	#############
-	sep3.tab3 <- ttkseparator(subfr3)
-
-	weight.mean <- tclVar(as.character(GeneralParameters$ref.series.choix$Values[1]))
-	wghtfacLb.tab3 <- tklabel(subfr3, text = "Weighting Factors", anchor = 'w', justify = 'left')
-	infobulle(wghtfacLb.tab3, 'Method to build weights for linear combinations')
-	status.bar.display(wghtfacLb.tab3, TextOutputVar, 'Method to build weights for linear combinations')
-	wghtfacCmb.tab3 <- ttkcombobox(subfr3, values = c('Distance', 'Correlation', 'Optimal', 'Average'), textvariable = weight.mean, width = 9)
-	infobulle(wghtfacCmb.tab3, 'Method to build weights for linear combinations')
-	status.bar.display(wghtfacCmb.tab3, TextOutputVar, 'Method to build weights for linear combinations')
-
-	#############
-	sep4.tab3 <- ttkseparator(subfr3)
-
-	if(as.character(GeneralParameters$ref.series.user) == '0') stateElv <- 'disabled'
-	if(as.character(GeneralParameters$ref.series.user) == '1') stateElv <- 'normal'
-
-	usr.rfseries.val <- tclVar(as.character(GeneralParameters$ref.series.user))
-	usr.rfseries.tab3 <- tkcheckbutton(subfr3, variable = usr.rfseries.val, text = "Stations'Choice by User", anchor = 'w', justify = 'left', width = 19)
-	infobulle(usr.rfseries.tab3, 'The reference series will be created\nfrom stations chosen by user')
-	status.bar.display(usr.rfseries.tab3, TextOutputVar, "The reference series will be created from stations chosen by user")
-	usrbt.rfseries.tab3 <- tkbutton(subfr3, text = "Select")
-	infobulle(usrbt.rfseries.tab3, 'Select the stations to create the reference series')
-	status.bar.display(usrbt.rfseries.tab3, TextOutputVar, 'Select the stations to create the reference series')
-
-	tkconfigure(usrbt.rfseries.tab3, state = stateElv, command = function(){
-		file2test <- as.character(GeneralParameters$file.io$Values[1])
-		if(file2test != ""){
-			idsstn <- which(unlist(lapply(1:length(AllOpenFilesData), function(j) AllOpenFilesData[[j]][[1]])) == file2test)
-			if(length(idsstn) == 0){
-				tkmessageBox(message = "File not found or in the wrong format", icon = "warning", type = "ok")
-				#return(NULL)
-			}else{
-				donstn <- AllOpenFilesData[[idsstn]][[2]]
-				stnId <- as.character(donstn[1,-1])
-				GeneralParameters <<- refSeriesUsersChoice(main.win, stnId, GeneralParameters)
-			}
-		}else{
-			tkmessageBox(message = "Provide the file to test", icon = "warning", type = "ok")
-		}
-	})
-
-########################################
-	tkbind(userefS.tab3,"<Button-1>", function(){
-		if(tclvalue(use.rfseries.val) == "0") tkconfigure(nghbStnBt.tab3, state = 'normal')
-		else tkconfigure(nghbStnBt.tab3, state = 'disabled')
-	})
-
-	tkbind(useElv.tab3,"<Button-1>", function(){
-		if(tclvalue(use.rfseries.val) == "1"){
-			if(tclvalue(use.elv) == "0") tkconfigure(useElvBt.tab3, state = 'normal')
-			else tkconfigure(useElvBt.tab3, state = 'disabled')
-		}
-	})
-
-	tkbind(usr.rfseries.tab3,"<Button-1>", function(){
-		if(tclvalue(use.rfseries.val) == "1"){
-			if(tclvalue(usr.rfseries.val) == "0") tkconfigure(usrbt.rfseries.tab3, state = 'normal')
-			else tkconfigure(usrbt.rfseries.tab3, state = 'disabled')
-		}
-	})
-
-########################################
-
-	tkgrid(userefS.tab3, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(sep1.tab3, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, pady = 5)
-	tkgrid(nghbStnLb.tab3, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(nghbStnBt.tab3, row = 2, column = 6, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(sep2.tab3, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, pady = 5)
-	tkgrid(useElv.tab3, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(useElvBt.tab3, row = 4, column = 6, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(sep3.tab3, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, pady = 5)
-	tkgrid(wghtfacLb.tab3, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(wghtfacCmb.tab3, row = 6, column = 4, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(sep4.tab3, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, pady = 5)
-	tkgrid(usr.rfseries.tab3, row = 8, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(usrbt.rfseries.tab3, row = 8, column = 6, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-#######################################################################################################
+	#######################################################################################################
 
 	#Tab4
-	frTab4 <- tkframe(cmd.tab4) #,relief = 'sunken', bd = 2
+	frTab4 <- tkframe(cmd.tab4)
 	tkgrid(frTab4, padx = 5, pady = 5, ipadx = 2, ipady = 2)
 	tkgrid.columnconfigure(frTab4, 0, weight = 1)
 
@@ -323,328 +354,290 @@ RHtestsV4Cmd <- function(){
 	tkgrid.columnconfigure(scrw4, 0, weight = 1)
 	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr4, 0, weight = 1)
+	##############
 
-	preview.tab4 <- tkbutton(subfr4, text = "Output Preview")
-	infobulle(preview.tab4, 'View results <_*Cs.txt > and <_*stat.txt > files')
-	status.bar.display(preview.tab4, TextOutputVar, 'View results <_*Cs.txt > and <_*stat.txt > files')
-
-	viewplot.tab4 <- tkbutton(subfr4, text = "Display Output")
-	infobulle(viewplot.tab4, 'Display result plots in pdf file format')
-	status.bar.display(viewplot.tab4, TextOutputVar, 'Display result plots in pdf file format')
-
+	preview.tab4 <- tkbutton(subfr4, text = "Output Preview", width = lfindu)
+	viewplot.tab4 <- tkbutton(subfr4, text = "Display Output", width = lfindu)
 	change.tab4 <- tkbutton(subfr4, text = "Edit Breakpoints")
-	infobulle(change.tab4, 'Edit <_mCs.txt > file')
-	status.bar.display(change.tab4, TextOutputVar, 'Edit <_mCs.txt > file')
-
 	undo.tab4 <- tkbutton(subfr4, text = "Undo Change")
-	infobulle(undo.tab4, 'Reinitialize <_mCs.txt > file')
-	status.bar.display(undo.tab4, TextOutputVar, 'Reinitialize <_mCs.txt > file')
 
-	sep1.tab4 <- ttkseparator(subfr4)
-
-	homAdjframe.tab4 <- ttklabelframe(subfr4, text = "Adjusted series selection", labelanchor = "nw", relief = "groove", borderwidth = 2)
-	infobulle(homAdjframe.tab4, 'Select the adjusted series to be retained')
-	status.bar.display(homAdjframe.tab4, TextOutputVar, 'Select the adjusted series to be retained')
-
-
-	AdjMthdRadio1 <- tkradiobutton(homAdjframe.tab4, text = "By Mean", anchor = 'w', justify = 'left')
-	AdjMthdRadio2 <- tkradiobutton(homAdjframe.tab4, text = "By Quantile Matching", anchor = 'w', justify = 'left')
-	AdjMthdRadio3 <- tkradiobutton(homAdjframe.tab4, text = "Base Series", anchor = 'w', justify = 'left')
-	ChoixAjustment <- tclVar('3')
-	tkconfigure(AdjMthdRadio1, variable = ChoixAjustment, value = "1")
-	tkconfigure(AdjMthdRadio2, variable = ChoixAjustment, value = "2")
-	tkconfigure(AdjMthdRadio3, variable = ChoixAjustment, value = "3")
-
-	#############################################
 	tkgrid(preview.tab4, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(viewplot.tab4, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(change.tab4, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(undo.tab4, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	tkgrid(sep1.tab4, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, pady = 5)
-	tkgrid(homAdjframe.tab4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	infobulle(preview.tab4, 'View results <_*Cs.txt > and <_*stat.txt > files')
+	status.bar.display(preview.tab4, TextOutputVar, 'View results <_*Cs.txt > and <_*stat.txt > files')
+	infobulle(viewplot.tab4, 'Display result plots in pdf file format')
+	status.bar.display(viewplot.tab4, TextOutputVar, 'Display result plots in pdf file format')
+	infobulle(change.tab4, 'Edit <_mCs.txt > file')
+	status.bar.display(change.tab4, TextOutputVar, 'Edit <_mCs.txt > file')
+	infobulle(undo.tab4, 'Reinitialize <_mCs.txt > file')
+	status.bar.display(undo.tab4, TextOutputVar, 'Reinitialize <_mCs.txt > file')
 
-	tkgrid(AdjMthdRadio1, row = 0, column = 0, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(AdjMthdRadio2, row = 1, column = 0, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(AdjMthdRadio3, row = 2, column = 0, sticky = 'ew', padx = 1, pady = 1)
+	#######################################################################################################
 
-#######################################################################################################
+	ReturnExecResults <- NULL
+	dem_data <- NULL
 
-donnees <- NULL
-ReturnExecResults <- NULL
+	##########
+	getParamsRHtests <- function(GeneralParameters){
+		GeneralParameters$rhtests.pars$p.lev <- as.numeric(str_trim(tclvalue(p.levStr)))
+		GeneralParameters$rhtests.pars$Iadj <- as.integer(str_trim(tclvalue(IadjStr)))
+		GeneralParameters$rhtests.pars$Mq <- as.integer(str_trim(tclvalue(MqStr)))
+		GeneralParameters$rhtests.pars$Ny4a <- as.numeric(str_trim(tclvalue(Ny4aStr)))
+		GeneralParameters$rhtests.pars$pthr <- as.numeric(str_trim(tclvalue(pthrStr)))
+		GeneralParameters$prcp.data$rr.data <- switch(tclvalue(prcpdata.val), '0' = FALSE, '1' = TRUE)
+		GeneralParameters$prcp.data$rr.log <- switch(tclvalue(prcplog.val), '0' = FALSE, '1' = TRUE)
+		return(GeneralParameters)
+	}
 
-##########
-tkconfigure(getData.tab2, command = function(){
-	GeneralParameters <<- rhtests_inputData(main.win, GeneralParameters)
-	if(as.character(GeneralParameters$file.io$Values[1]) != "" & GeneralParameters$getdata) {
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		donnees <<- tryCatch(getRHtestsData(GeneralParameters),
-			#warning = function(w) warningFun(w),
-			error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
-		})
-		#assign("donnees", donnees, envir = .GlobalEnv)
+	########
+	getRefparsRHtests <- function(GeneralParameters){
+		GeneralParameters$use.refSeries <- switch(tclvalue(use.rfseries.val), '0' = FALSE, '1' = TRUE)
+		GeneralParameters$refSeries.choix$weight.mean <- str_trim(tclvalue(weight.mean))
+		GeneralParameters$refSeries.choix$use.elv <- switch(tclvalue(use.elv), '0' = FALSE, '1' = TRUE)
+		GeneralParameters$refSeries.by.user <- switch(tclvalue(usr.rfseries.val), '0' = FALSE, '1' = TRUE)
+		return(GeneralParameters)
+	}
 
-		useRefs <- as.character(GeneralParameters$use.ref.series)
-		if(useRefs == '1'){
-			tcl(userefS.tab3, 'select')
-			tkconfigure(nghbStnBt.tab3, state = 'normal')
-		}else{
-			tcl(userefS.tab3, 'deselect')
-			tkconfigure(nghbStnBt.tab3, state = 'disabled')
+	########
+	getpars.wRef <- function(){
+		GeneralParameters <<- getParamsRHtests(GeneralParameters)
+		GeneralParameters <<- getRefparsRHtests(GeneralParameters)
+		assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
+		gDemData <- !GeneralParameters$stn.type$single.series & GeneralParameters$refSeries.choix$use.elv & is.null(dem_data)
+		if(gDemData) dem_data <<- getRHtestsDEM(donnees, GeneralParameters)
+	}
+
+	##########  without reference series
+	tkconfigure(findU.tab3, command = function(){
+		GeneralParameters <<- getParamsRHtests(GeneralParameters)
+		assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
+		if(!is.null(donnees)){
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			ReturnExecResults <<- tryCatch(executeOnFindU(donnees, GeneralParameters),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e), finally = {
+				tkconfigure(main.win, cursor = '')
+			})
+			assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
 		}
-	}
-})
+	})
 
+	##########
+	tkconfigure(findUD.tab3, command = function(){
+		GeneralParameters <<- getParamsRHtests(GeneralParameters)
+		assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
+		if(!is.null(donnees)){
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			ReturnExecResults <<- tryCatch(executeOnFindUD(donnees, GeneralParameters),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e), finally = {
+				tkconfigure(main.win, cursor = '')
+			})
+			assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
+		}
+	})
 
-##########
-getParamsRHtests <- function(GeneralParameters){
-	p.lev <- tclvalue(p.levStr)
-	Iadj <- tclvalue(IadjStr)
-	Mq <- tclvalue(MqStr)
-	Ny4a <- tclvalue(Ny4aStr)
-	pthr <- tclvalue(pthrStr)
-	GeneralParameters$rhtests.pars$Values <- c(p.lev, Iadj, Mq, Ny4a, pthr)
-	GeneralParameters$prcpdata$Values <- c(tclvalue(prcpdata.val), tclvalue(prcplog.val))
-	return(GeneralParameters)
-}
+	##########
+	tkconfigure(stepsize.tab3, command = function(){
+		GeneralParameters <<- getParamsRHtests(GeneralParameters)
+		assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
+		if(!is.null(donnees)){
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			ReturnExecResults <<- tryCatch(executeOnStepSize(donnees, GeneralParameters),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e), finally = {
+				tkconfigure(main.win, cursor = '')
+			})
+			assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
+		}
+	})
 
+	##########
+	tkconfigure(qmadj.tab3, command = function(){
+		GeneralParameters <<- getParamsRHtests(GeneralParameters)
+		assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
+		if(!is.null(donnees)){
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			ReturnExecResults <<- tryCatch(executeOnQMadj(donnees, GeneralParameters, as.numeric(tclvalue(ChoixAjustment))),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e), finally = {
+				tkconfigure(main.win, cursor = '')
+			})
+			assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
+		}
+	})
 
-########
-getRefparsRHtests <- function(GeneralParameters){
-	GeneralParameters$use.ref.series <- tclvalue(use.rfseries.val)
-	GeneralParameters$ref.series.choix$Values <- c(tclvalue(weight.mean), tclvalue(use.elv), as.character(GeneralParameters$ref.series.choix$Values[3:8]))
-	GeneralParameters$ref.series.user <- tclvalue(usr.rfseries.val)
-	return(GeneralParameters)
-}
+	########## with reference series
+	tkconfigure(findUr.tab3, command = function(){
+		getpars.wRef()
+		if(!is.null(donnees)){
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			ReturnExecResults <<- tryCatch(executeOnFindU.wRef(donnees, dem_data, GeneralParameters),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e), finally = {
+				tkconfigure(main.win, cursor = '')
+			})
+			assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
+		}
+	})
 
+	##########
+	tkconfigure(findUDr.tab3, command = function(){
+		getpars.wRef()
+		if(!is.null(donnees)){
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			ReturnExecResults <<- tryCatch(executeOnFindUD.wRef(donnees, dem_data, GeneralParameters),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e), finally = {
+				tkconfigure(main.win, cursor = '')
+			})
+			assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
+		}
+	})
 
-##########  without reference series
-tkconfigure(findU.tab1, command = function(){
-	GeneralParameters <<- getParamsRHtests(GeneralParameters)
-	assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
-	if(!is.null(donnees)){
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnFindU(donnees, GeneralParameters),
-			#warning = function(w) warningFun(w),
-			error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
-		})
-		assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
-	}
-})
+	##########
+	tkconfigure(stepsizer.tab3, command = function(){
+		getpars.wRef()
+		if(!is.null(donnees)){
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			ReturnExecResults <<- tryCatch(executeOnStepSize.wRef(donnees, dem_data, GeneralParameters),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e), finally = {
+				tkconfigure(main.win, cursor = '')
+			})
+			assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
+		}
+	})
 
-##########
-tkconfigure(findUD.tab1, command = function(){
-	GeneralParameters <<- getParamsRHtests(GeneralParameters)
-	assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
-	if(!is.null(donnees)){
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnFindUD(donnees, GeneralParameters),
-			#warning = function(w) warningFun(w),
-			error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
-		})
-		assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
-	}
-})
+	##########
+	tkconfigure(qmadjr.tab3, command = function(){
+		getpars.wRef()
+		if(!is.null(donnees)){
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			ReturnExecResults <<- tryCatch(executeOnQMadj.wRef(donnees, dem_data, GeneralParameters, as.numeric(tclvalue(ChoixAjustment))),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e), finally = {
+				tkconfigure(main.win, cursor = '')
+			})
+			assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
+		}
+	})
 
-##########
-tkconfigure(stepsize.tab1, command = function(){
-	GeneralParameters <<- getParamsRHtests(GeneralParameters)
-	assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
-	if(!is.null(donnees)){
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnStepSize(donnees, GeneralParameters),
-			#warning = function(w) warningFun(w),
-			error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
-		})
-		assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
-	}
-})
+	##########  daily precipitation
+	tkconfigure(findUp.tab3, command = function(){
+		GeneralParameters <<- getParamsRHtests(GeneralParameters)
+		assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
+		if(!is.null(donnees)){
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			ReturnExecResults <<- tryCatch(executeOnFindU.dlyPrcp(donnees, GeneralParameters),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e), finally = {
+				tkconfigure(main.win, cursor = '')
+			})
+			assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
+		}
+	})
 
-##########
-tkconfigure(qmadj.tab1, command = function(){
-	GeneralParameters <<- getParamsRHtests(GeneralParameters)
-	assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
-	if(!is.null(donnees)){
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnQMadj(donnees, GeneralParameters, as.numeric(tclvalue(ChoixAjustment))),
-			#warning = function(w) warningFun(w),
-			error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
-		})
-		assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
-	}
-})
+	##########
+	tkconfigure(findUDp.tab3, command = function(){
+		GeneralParameters <<- getParamsRHtests(GeneralParameters)
+		assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
+		if(!is.null(donnees)){
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			ReturnExecResults <<- tryCatch(executeOnFindUD.dlyPrcp(donnees, GeneralParameters),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e), finally = {
+				tkconfigure(main.win, cursor = '')
+			})
+			assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
+		}
+	})
 
-########################################################
+	##########
+	tkconfigure(stepsizep.tab3, command = function(){
+		GeneralParameters <<- getParamsRHtests(GeneralParameters)
+		assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
+		if(!is.null(donnees)){
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			ReturnExecResults <<- tryCatch(executeOnStepSize.dlyPrcp(donnees, GeneralParameters),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e), finally = {
+				tkconfigure(main.win, cursor = '')
+			})
+			assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
+		}
+	})
 
-dem_data <- NULL
-getpars.wRef <- function(){
-	GeneralParameters <<- getParamsRHtests(GeneralParameters)
-	GeneralParameters <<- getRefparsRHtests(GeneralParameters)
-	assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
-	gDemData <- GeneralParameters$single.series == '0' & as.character(GeneralParameters$ref.series.choix$Values[2]) == '1' & is.null(dem_data)
-	if(gDemData) dem_data <<- getRHtestsDEM(donnees, GeneralParameters)
-}
+	##########
+	tkconfigure(qmadjp.tab3, command = function(){
+		GeneralParameters <<- getParamsRHtests(GeneralParameters)
+		assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
+		if(!is.null(donnees)){
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			tryCatch(executeOnadjDLY.dlyPrcp(donnees, GeneralParameters, as.numeric(tclvalue(ChoixAjustment))),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e), finally = {
+				tkconfigure(main.win, cursor = '')
+			})
+		}
+	})
 
-########## with reference series
-tkconfigure(findUr.tab1, command = function(){
-	getpars.wRef()
-	if(!is.null(donnees)){
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnFindU.wRef(donnees, dem_data, GeneralParameters),
-			#warning = function(w) warningFun(w),
-			error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
-		})
-		assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
-	}
-})
+	########################################################
+	##########  Outputs
+	PrevwRHtestsIdTab <- NULL
 
-##########
-tkconfigure(findUDr.tab1, command = function(){
-	getpars.wRef()
-	if(!is.null(donnees)){
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnFindUD.wRef(donnees, dem_data, GeneralParameters),
-			#warning = function(w) warningFun(w),
-			error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
-		})
-		assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
-	}
-})
+	tkconfigure(preview.tab4, command = function(){
+		if(!is.null(ReturnExecResults)){
+			res2disp <- RHtestsPreviewOutput(ReturnExecResults)
 
-##########
-tkconfigure(stepsizer.tab1, command = function(){
-	getpars.wRef()
-	if(!is.null(donnees)){
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnStepSize.wRef(donnees, dem_data, GeneralParameters),
-			#warning = function(w) warningFun(w),
-			error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
-		})
-		assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
-	}
-})
+			retNBTab <- consolOutNotebookTab_unik(tknotes, res2disp, paste(ReturnExecResults$stn, '-Output Preview'),
+													PrevwRHtestsIdTab, AllOpenTabType, AllOpenTabData, rhtests = TRUE)
+			PrevwRHtestsIdTab <<- retNBTab$notebookTab
+			AllOpenTabType <<- retNBTab$AllOpenTabType
+			AllOpenTabData <<- retNBTab$AllOpenTabData
+		}else InsertMessagesTxt(main.txt.out, 'There is no RHtests output', format = TRUE)
+	})
 
-##########
-tkconfigure(qmadjr.tab1, command = function(){
-	getpars.wRef()
-	if(!is.null(donnees)){
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnQMadj.wRef(donnees, dem_data, GeneralParameters, as.numeric(tclvalue(ChoixAjustment))),
-			#warning = function(w) warningFun(w),
-			error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
-		})
-		assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
-	}
-})
+	##########
+	tkconfigure(viewplot.tab4, command = function() RHtestsDisplayPdfPlot(ReturnExecResults))
 
-########################################################
-##########  daily precipitation
-tkconfigure(findUp.tab1, command = function(){
-	GeneralParameters <<- getParamsRHtests(GeneralParameters)
-	assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
-	if(!is.null(donnees)){
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnFindU.dlyPrcp(donnees, GeneralParameters),
-			#warning = function(w) warningFun(w),
-			error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
-		})
-		assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
-	}
-})
+	##########
+	RHtestEditTab <- NULL
 
-##########
-tkconfigure(findUDp.tab1, command = function(){
-	GeneralParameters <<- getParamsRHtests(GeneralParameters)
-	assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
-	if(!is.null(donnees)){
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnFindUD.dlyPrcp(donnees, GeneralParameters),
-			#warning = function(w) warningFun(w),
-			error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
-		})
-		assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
-	}
-})
+	tkconfigure(change.tab4, command = function(){
+		if(!is.null(ReturnExecResults)){
+			retNBTab <- tableRHtestNotebookTab_unik(tknotes, paste(ReturnExecResults$stn, 'mCs.txt', sep = '_'),
+													RHtestEditTab, AllOpenTabType, AllOpenTabData)
+			RHtestEditTab <<- retNBTab$notebookTab
+			AllOpenTabType <<- retNBTab$AllOpenTabType
+			AllOpenTabData <<- retNBTab$AllOpenTabData
+		}else InsertMessagesTxt(main.txt.out, 'There is no RHtests output', format = TRUE)
+	})
 
-##########
-tkconfigure(stepsizep.tab1, command = function(){
-	GeneralParameters <<- getParamsRHtests(GeneralParameters)
-	assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
-	if(!is.null(donnees)){
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		ReturnExecResults <<- tryCatch(executeOnStepSize.dlyPrcp(donnees, GeneralParameters),
-			#warning = function(w) warningFun(w),
-			error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
-		})
-		assign("ReturnExecResults", ReturnExecResults, envir = .GlobalEnv)
-	}
-})
+	##########
+	tkconfigure(undo.tab4, command = function(){
+		if(!is.null(ReturnExecResults)){
+			RHtestsUndoChange(ReturnExecResults)
+			InsertMessagesTxt(main.txt.out, paste('File', paste(ReturnExecResults$stn, '_mCs.txt', sep = ''), 'has been reinitialized'))
+		}else InsertMessagesTxt(main.txt.out, 'There is no RHtests output', format = TRUE)
+	})
 
-##########
-tkconfigure(qmadjp.tab1, command = function(){
-	GeneralParameters <<- getParamsRHtests(GeneralParameters)
-	assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
-	if(!is.null(donnees)){
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
-		tryCatch(executeOnadjDLY.dlyPrcp(donnees, GeneralParameters, as.numeric(tclvalue(ChoixAjustment))),
-			#warning = function(w) warningFun(w),
-			error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
-		})
-	}
-})
-
-########################################################
-##########  Outputs
-PrevwRHtestsIdTab <- NULL
-tkconfigure(preview.tab4, command = function(){
-	if(!is.null(ReturnExecResults)){
-		res2disp <- RHtestsPreviewOutput(ReturnExecResults)
-
-		retNBTab <- consolOutNotebookTab_unik(tknotes, res2disp, paste(ReturnExecResults$stn,'-Output Preview'), PrevwRHtestsIdTab, AllOpenTabType, AllOpenTabData, rhtests = TRUE)
-		PrevwRHtestsIdTab <<- retNBTab$notebookTab
-		AllOpenTabType <<- retNBTab$AllOpenTabType
-		AllOpenTabData <<- retNBTab$AllOpenTabData
-	}else InsertMessagesTxt(main.txt.out, 'There is no RHtests output', format = TRUE)
-})
-
-
-##########
-tkconfigure(viewplot.tab4, command = function() RHtestsDisplayPdfPlot(ReturnExecResults))
-
-##########
-RHtestEditTab <- NULL
-tkconfigure(change.tab4, command = function(){
-	if(!is.null(ReturnExecResults)){
-		retNBTab <- tableRHtestNotebookTab_unik(tknotes, paste(ReturnExecResults$stn, 'mCs.txt', sep = '_'), RHtestEditTab, AllOpenTabType, AllOpenTabData)
-		RHtestEditTab <<- retNBTab$notebookTab
-		AllOpenTabType <<- retNBTab$AllOpenTabType
-		AllOpenTabData <<- retNBTab$AllOpenTabData
-	}else InsertMessagesTxt(main.txt.out, 'There is no RHtests output', format = TRUE)
-})
-
-##########
-tkconfigure(undo.tab4, command = function(){
-	if(!is.null(ReturnExecResults)){
-		RHtestsUndoChange(ReturnExecResults)
-		InsertMessagesTxt(main.txt.out, paste('File', paste(ReturnExecResults$stn, '_mCs.txt', sep = ''),'has been reinitialized'))
-	}else InsertMessagesTxt(main.txt.out, 'There is no RHtests output', format = TRUE)
-})
-
-
-#######################################################################################################
+	#######################################################################################################
 
 	tcl('update')
 	tkgrid(cmd.frame, sticky = 'nswe', pady = 5)

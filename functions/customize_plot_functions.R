@@ -2,6 +2,7 @@
 ##get boundaries from shapefile
 
 getBoundaries <- function(shpf){
+	ocrds <- matrix(NA, nrow = 1, ncol = 2)
 	if(!is.null(shpf)){
 		retPolygon <- lapply(slot(shpf, "polygons"), function(i) slot(i, "Polygons"))
 		polys <- lapply(retPolygon, function(x){
@@ -12,10 +13,7 @@ getBoundaries <- function(shpf){
 			}
 			ret
 		})
-
 		ocrds <- do.call('rbind', polys)
-	}else{
-		ocrds <- matrix(NA, nrow = 1, ncol = 2)
 	}
 	return(ocrds)
 }
@@ -23,22 +21,22 @@ getBoundaries <- function(shpf){
 ######################################
 ##format lat-lon axis label
 LatLonAxisLabels <- function(axis.x, axis.y){
-	axis.x <- ifelse(axis.x > 180, -360 +axis.x, axis.x)
-	sym1 <- ifelse(axis.x < 0 & axis.x> -180, 'W', ifelse(axis.x > 0 & axis.x < 180, 'E',''))
-	sym1 <- paste("paste(", paste(abs(axis.x), "*degree") ,",", sym1,")", collapse=',')
-	lon_lab <- eval(parse(text = paste("expression(", sym1,")", sep = "")))
-	sym2 <- ifelse(axis.y < 0, 'S', ifelse(axis.y > 0, 'N',''))
-	sym2 <- paste("paste(", paste(abs(axis.y), "*degree") ,",", sym2,")", collapse=',')
-	lat_lab <- eval(parse(text = paste("expression(", sym2,")", sep = "")))
+	axis.x <- ifelse(axis.x > 180, -360 + axis.x, axis.x)
+	sym1 <- ifelse(axis.x < 0 & axis.x > -180, 'W', ifelse(axis.x > 0 & axis.x < 180, 'E', ''))
+	sym1 <- paste("paste(", paste(abs(axis.x), "*degree"), ",", sym1, ")", collapse = ',')
+	lon_lab <- eval(parse(text = paste("expression(", sym1, ")", sep = "")))
+	sym2 <- ifelse(axis.y < 0, 'S', ifelse(axis.y > 0, 'N', ''))
+	sym2 <- paste("paste(", paste(abs(axis.y), "*degree"), ",", sym2, ")", collapse = ',')
+	lat_lab <- eval(parse(text = paste("expression(", sym2, ")", sep = "")))
 	return(list(xaxl = lon_lab, yaxl = lat_lab))
 }
 
 #######################
 LatLonAxisLabels1 <- function(axis.x, axis.y){
-	axis.x <- ifelse(axis.x > 180, -360 +axis.x, axis.x)
-	sym1 <- ifelse(axis.x < 0 & axis.x> -180, 'W', ifelse(axis.x > 0 & axis.x < 180, 'E',''))
+	axis.x <- ifelse(axis.x > 180, -360 + axis.x, axis.x)
+	sym1 <- ifelse(axis.x < 0 & axis.x > -180, 'W', ifelse(axis.x > 0 & axis.x < 180, 'E', ''))
 	lon_lab <- paste(abs(axis.x), "°", sym1, sep = '')
-	sym2 <- ifelse(axis.y < 0, 'S', ifelse(axis.y > 0, 'N',''))
+	sym2 <- ifelse(axis.y < 0, 'S', ifelse(axis.y > 0, 'N', ''))
 	lat_lab <- paste(abs(axis.y), "°", sym2, sep = '')
 	return(list(xaxl = lon_lab, yaxl = lat_lab))
 }
@@ -46,21 +44,21 @@ LatLonAxisLabels1 <- function(axis.x, axis.y){
 #######################
 LatLonAxisLabels2 <- function(axis.x, axis.y){
 	frac <- function(x) abs(x - trunc(x))
-	axis.x <- ifelse(axis.x > 180, -360 +axis.x, axis.x)
+	axis.x <- ifelse(axis.x > 180, -360 + axis.x, axis.x)
 	degLo <- abs(trunc(axis.x))
 	degLa <- abs(trunc(axis.y))
 	xm <- frac(axis.x)*60
 	ym <- frac(axis.y)*60
 	minLo <- trunc(xm)
 	minLa <- trunc(ym)
-	secLo <- round(frac(axis.x)*60,2)
-	secLa <- round(frac(axis.y)*60,2)
-	sym1 <- ifelse(axis.x < 0 & axis.x> -180, 'W', ifelse(axis.x > 0 & axis.x < 180, 'E',''))
-	sym1 <- paste("paste(", paste(degLo,"*degree",",", minLo,"*minute",",", secLo,"*second") ,",", sym1,")", collapse=',')
-	lon_lab <- eval(parse(text = paste("expression(", sym1,")", sep = "")))
-	sym2 <- ifelse(axis.y < 0, 'S', ifelse(axis.y > 0, 'N',''))
-	sym2 <- paste("paste(", paste(degLa,"*degree",",", minLa,"*minute",",", secLa,"*second") ,",", sym2,")", collapse=',')
-	lat_lab <- eval(parse(text = paste("expression(", sym2,")", sep = "")))
+	secLo <- round(frac(axis.x)*60, 2)
+	secLa <- round(frac(axis.y)*60, 2)
+	sym1 <- ifelse(axis.x < 0 & axis.x > -180, 'W', ifelse(axis.x > 0 & axis.x < 180, 'E', ''))
+	sym1 <- paste("paste(", paste(degLo, "*degree", ",", minLo, "*minute", ",", secLo, "*second"), ",", sym1, ")", collapse = ',')
+	lon_lab <- eval(parse(text = paste("expression(", sym1, ")", sep = "")))
+	sym2 <- ifelse(axis.y < 0, 'S', ifelse(axis.y > 0, 'N', ''))
+	sym2 <- paste("paste(", paste(degLa, "*degree", ",", minLa, "*minute", ",", secLa, "*second"), ",", sym2, ")", collapse = ',')
+	lat_lab <- eval(parse(text = paste("expression(", sym2, ")", sep = "")))
 	return(list(xaxl = lon_lab, yaxl = lat_lab))
 }
 
@@ -69,23 +67,22 @@ LatLonAxisLabels2 <- function(axis.x, axis.y){
 
 LatLonLabels <- function(xlon, xlat){
 	frac <- function(x) abs(x - trunc(x))
-	xlon <- ifelse(xlon > 180, -360 +xlon, xlon)
+	xlon <- ifelse(xlon > 180, -360 + xlon, xlon)
 	degLo <- abs(trunc(xlon))
 	degLa <- abs(trunc(xlat))
 	xm <- frac(xlon)*60
 	ym <- frac(xlat)*60
 	minLo <- trunc(xm)
 	minLa <- trunc(ym)
-	secLo <- round(frac(xm)*60,2)
-	secLa <- round(frac(ym)*60,2)
-	sLon <- ifelse(xlon > 0 & xlon < 180, 'E', ifelse(xlon> -180 & xlon < 0, 'W',''))
-	sLat <- ifelse(xlat > 0, 'N', ifelse(xlat < 0, 'S',''))
-	if(Sys.info()["sysname"] == "Windows") degsym <- "\xb0 "
-	else degsym<-"° "
+	secLo <- round(frac(xm)*60, 2)
+	secLa <- round(frac(ym)*60, 2)
+	sLon <- ifelse(xlon > 0 & xlon < 180, 'E', ifelse(xlon > -180 & xlon < 0, 'W', ''))
+	sLat <- ifelse(xlat > 0, 'N', ifelse(xlat < 0, 'S', ''))
+	degsym <- if(Sys.info()["sysname"] == "Windows") "\xb0 " else  "° "
 	lon_lab <- paste(sprintf("%03d", degLo), degsym, sprintf("%02d", minLo), "' ",
-	paste(sprintf("%02d", trunc(secLo)), substr(sprintf("%.2f", frac(secLo)), 3,4), sep = '.'),'" ',sLon, sep = '')
+				paste(sprintf("%02d", trunc(secLo)), substr(sprintf("%.2f", frac(secLo)), 3, 4), sep = '.'), '" ', sLon, sep = '')
 	lat_lab <- paste(sprintf("%03d", degLa), degsym, sprintf("%02d", minLa), "' ",
-	paste(sprintf("%02d", trunc(secLa)), substr(sprintf("%.2f", frac(secLa)), 3,4), sep = '.'),'" ',sLat, sep = '')
+				paste(sprintf("%02d", trunc(secLa)), substr(sprintf("%.2f", frac(secLa)), 3, 4), sep = '.'), '" ', sLat, sep = '')
 	return(list(xdisp = lon_lab, ydisp = lat_lab))
 }
 

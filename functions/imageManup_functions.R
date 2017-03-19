@@ -11,14 +11,14 @@ CountImgIndex <- local({
 
 tkrplot.win <- function(parent, fun, hscale = 1, vscale = 1) {
 	image <- paste("RImage", CountImgIndex(), sep = "")
-	tmpfl <- paste(tempfile(),'.jpg', sep = '')
+	tmpfl <- paste(tempfile(), '.jpg', sep = '')
 	jpeg(tmpfl, width = 385*hscale, height = 385*vscale, quality = 100, restoreConsole = FALSE)
 	try(fun())
 	dev.off()
 	tcl('image', 'create', 'photo', image, file = tmpfl)
 	unlink(tmpfl)
 	lab <- tklabel(parent, image = image)
-	tkbind(lab,"<Destroy>", function() tcl('image', 'delete', image))
+	tkbind(lab, "<Destroy>", function() tcl('image', 'delete', image))
 	lab$image <- image
 	lab$fun <- fun
 	lab$hscale <- hscale
@@ -27,7 +27,7 @@ tkrplot.win <- function(parent, fun, hscale = 1, vscale = 1) {
 }
 
 tkrreplot.win <- function(lab, fun = lab$fun, hscale = lab$hscale, vscale = lab$vscale) {
-	tmpfl <- paste(tempfile(),'.jpg', sep = '')
+	tmpfl <- paste(tempfile(), '.jpg', sep = '')
 	jpeg(tmpfl, width = 385*hscale, height = 385*vscale, quality = 100, restoreConsole = FALSE)
 	try(fun())
 	dev.off()
@@ -37,8 +37,8 @@ tkrreplot.win <- function(lab, fun = lab$fun, hscale = lab$hscale, vscale = lab$
 
 #########
 tkrplot1 <- function(...){
-	if (Sys.info()["sysname"] == "Windows") lab <- tkrplot.win(...)
-	else lab <- tkrplot(...)
+	if (Sys.info()["sysname"] == "Windows") tkrplot.win(...) 
+	else tkrplot(...)
 }
 
 tkrreplot1 <- function(...){
@@ -70,11 +70,11 @@ refreshPlot1 <- function(W, img, hscale, vscale){
 ## 'rect' the tagged rectangle
 
 #####
-pPressRect <- function(W, x, y,...){
+pPressRect <- function(W, x, y, ...){
 	x <- as.numeric(x)
 	y <- as.numeric(y)
 	tkdelete(W, 'rect')
-	tkcreate(W, "rectangle", x, y, x, y, tag = 'rect',...)
+	tkcreate(W, "rectangle", x, y, x, y, tag = 'rect', ...)
 	lastX <<- x
 	lastY <<- y
 }
@@ -126,10 +126,10 @@ mouseMouvment <- function(W, x, y, parPltCrd) {
 	imgmh <- as.numeric(tclvalue(tkwinfo("height", W)))
 	posimgx <- round((imgmw-imgw)/2)
 	posimgy <- round((imgmh-imgh)/2)
-	orgx <- ifelse(posimgx < 0,0, posimgx)
-	orgy <- ifelse(posimgy < 0,0, posimgy)
+	orgx <- ifelse(posimgx < 0, 0, posimgx)
+	orgy <- ifelse(posimgy < 0, 0, posimgy)
 
-	xpos<-(xmouse-orgx)/imgw
+	xpos <- (xmouse-orgx)/imgw
 	ypos <- 1-(ymouse-orgy)/imgh
 
 	xplt1 <- as.numeric(tclvalue(parPltCrd$parPlotSize1))
@@ -166,7 +166,7 @@ getXYCoords <- function(W, x, y, parPltCrd) {
 ##Display coordinates on status bar
 ##display.cursor.type <= old
 
-displayCursorPosition3Var <- function(W, x, y, parPltCrd, xpcrd, ypcrd, zpcrd, FUN,...){
+displayCursorPosition3Var <- function(W, x, y, parPltCrd, xpcrd, ypcrd, zpcrd, FUN, ...){
 	xyMouse <- mouseMouvment(W, x, y, parPltCrd)
 	xcoord <- xyMouse$x
 	ycoord <- xyMouse$y
@@ -176,7 +176,7 @@ displayCursorPosition3Var <- function(W, x, y, parPltCrd, xpcrd, ypcrd, zpcrd, F
 	frxcoord <- ifelse(outsideArea, '', xydisp$xdisp)
 	frycoord <- ifelse(outsideArea, '', xydisp$ydisp)
 	FUN <- match.fun(FUN)
-	frzcoord <- FUN(xcoord, ycoord,...)
+	frzcoord <- FUN(xcoord, ycoord, ...)
 
 	tclvalue(xpcrd) <- frxcoord
 	tclvalue(ypcrd) <- frycoord
@@ -196,9 +196,9 @@ displayCursorPosition3Var <- function(W, x, y, parPltCrd, xpcrd, ypcrd, zpcrd, F
 
 getAdminLabel <- function(xx, yy, shp, idField){
 	xypts <- data.frame(x = xx, y = yy)
-	coordinates(xypts)=~x+y
+	coordinates(xypts) <- ~x+y
 	admin_name <- over(xypts, shp)
-	admin_name <- c(t(admin_name[1,]))
+	admin_name <- c(t(admin_name[1, ]))
 
 	if(tclvalue(tkwinfo('exists', idField$ID)) == "1"){
 		admin_name <- admin_name[as.numeric(tclvalue(tcl(idField, 'current')))+1]
@@ -224,10 +224,10 @@ getStnIDLabel <- function(xx, yy, pltusr, inout){
 	usrcrd1 <- as.numeric(pltusr$usr[1])
 	usrcrd2 <- as.numeric(pltusr$usr[2])
 
-	sdist<-(xx-lon)^2+(yy-lat)^2
+	sdist <- (xx-lon)^2+(yy-lat)^2
 	inear <- which.min(sdist)
 	rayondisp <- sdist[inear] > fdispIdStn(usrcrd2-usrcrd1)
-	labstn <- ifelse(inout | rayondisp,'',idStn[inear])
+	labstn <- ifelse(inout | rayondisp, '', idStn[inear])
 	return(labstn)
 }
 
@@ -238,7 +238,7 @@ getStnIDLabel <- function(xx, yy, pltusr, inout){
 reScaleC <- function(x, newrange){
 	xrange <- range(x)
 	if(xrange[1] == xrange[2]) return(x)
-	mfac<-(newrange[2]-newrange[1])/(xrange[2]-xrange[1])
+	mfac <- (newrange[2]-newrange[1])/(xrange[2]-xrange[1])
 	retScaled <- newrange[1]+(x-xrange[1])*mfac
 	return(retScaled)
 }
@@ -247,9 +247,9 @@ getGradientColor <- function(listCol, cW){
 	ncolors <- length(cW)
 	xrange <- range(cW)
 	rgbC <- col2rgb(listCol)
-	rouge <- rgbC[1,]
-	verte <- rgbC[2,]
-	bleue <- rgbC[3,]
+	rouge <- rgbC[1, ]
+	verte <- rgbC[2, ]
+	bleue <- rgbC[3, ]
 	nCl <- length(rouge)
 	if(nCl > 1){
 		rEd <- rep(rouge[nCl], ncolors)
@@ -264,21 +264,21 @@ getGradientColor <- function(listCol, cW){
 		   bEd[segindex] <- reScaleC(cW[segindex], bleue[c(seg, seg+1)])
 		   xstart <- xstart+xinc
 		}
-		rEd <- ifelse(rEd < 0,0, rEd)
-		rEd <- ifelse(rEd > 255,255, rEd)
+		rEd <- ifelse(rEd < 0, 0, rEd)
+		rEd <- ifelse(rEd > 255, 255, rEd)
 		rEd <- as.integer(rEd)
-		gEd <- ifelse(gEd < 0,0, gEd)
-		gEd <- ifelse(gEd > 255,255, gEd)
+		gEd <- ifelse(gEd < 0, 0, gEd)
+		gEd <- ifelse(gEd > 255, 255, gEd)
 		gEd <- as.integer(gEd)
-		bEd <- ifelse(bEd < 0,0, bEd)
-		bEd <- ifelse(bEd > 255,255, bEd)
+		bEd <- ifelse(bEd < 0, 0, bEd)
+		bEd <- ifelse(bEd > 255, 255, bEd)
 		bEd <- as.integer(bEd)
 	}else{
 		rEd <- rep(rouge, ncolors)
 		gEd <- rep(verte, ncolors)
 		bEd <- rep(bleue, ncolors)
 	}
-	gradientColor <- paste('#',sprintf("%2.2x", rEd), sprintf("%2.2x", gEd), sprintf("%2.2x", bEd), sep = '')
+	gradientColor <- paste('#', sprintf("%2.2x", rEd), sprintf("%2.2x", gEd), sprintf("%2.2x", bEd), sep = '')
 	return(gradientColor)
 }
 

@@ -150,7 +150,7 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 				xypts <- data.frame(x = ret$xc, y = ret$yc)
 				coordinates(xypts)=~x+y
 				admin_name <- over(xypts, shpf)
-				admin_name <- c(t(admin_name[1,]))
+				admin_name <- c(t(admin_name[1, ]))
 
 				ids <- as.numeric(tclvalue(tcl(adminVar.tab1, 'current')))+1
 				admin_name <- admin_name[ids]

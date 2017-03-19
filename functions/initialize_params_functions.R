@@ -39,26 +39,30 @@ init.params <- function(action, period){
 
 	#RHtestsV4
 	if(action == 'rhtests'){
-		file.io <- data.frame(c('candidate', 'reference', 'DEM.netcdf', 'dir2save'), c('', '', '', getwd()))
-		names(file.io) <- c('Parameters', 'Values')
-		file.date.format <- data.frame(c('file.format', 'date.format', 'vars'), c("1", "1", "2"))
-		names(file.date.format) <- c('Parameters', 'Values')
-		compute.var <- data.frame(c('function', 'miss.frac'), c('mean', '0.95'))
-		names(compute.var) <- c('Parameters', 'Values')
-		rhtests.pars <- data.frame(c('p.lev', 'Iadj', 'Mq', 'Ny4a', 'pthr'), c("0.95", "10000", "12", "0", "0"))
-		names(rhtests.pars) <- c('Parameters', 'Values')
-		single.series <- '0'
-		use.ref.series <- '0'
-		ref.series.choix <- data.frame(c('weight.mean', 'use.elv', 'interp.dem', 'min.stn', 'max.stn', 'max.dist', 'elv.diff', 'min.rho'),
-										c('Distance', '0', '1', '2', '7', '100', '200', '0.5'))
-		names(ref.series.choix) <- c('Parameters', 'Values')
-		ref.series.user <- '0'
-		stn.user.choice <- NULL
-		prcpdata <- data.frame(c('rr.data', 'rr.log'), c('0', '0'))
-		names(prcpdata) <- c('Parameters', 'Values')
-		ret.params <- list(action = action, period = period, file.io = file.io, file.date.format = file.date.format, single.series = single.series,
-							rhtests.pars = rhtests.pars, compute.var = compute.var, prcpdata = prcpdata, ref.series.choix = ref.series.choix,
-							use.ref.series = use.ref.series, ref.series.user = ref.series.user, stn.user.choice = stn.user.choice, getdata = FALSE)
+		# file.io <- data.frame(c('candidate', 'reference', 'DEM.netcdf', 'dir2save'), c('', '', '', getwd()))
+		# names(file.io) <- c('Parameters', 'Values')
+		# file.date.format <- data.frame(c('file.format', 'date.format', 'vars'), c("1", "1", "2"))
+		# names(file.date.format) <- c('Parameters', 'Values')
+		# compute.var <- data.frame(c('function', 'miss.frac'), c('mean', '0.95'))
+		# names(compute.var) <- c('Parameters', 'Values')
+		# rhtests.pars <- data.frame(c('p.lev', 'Iadj', 'Mq', 'Ny4a', 'pthr'), c("0.95", "10000", "12", "0", "0"))
+		# names(rhtests.pars) <- c('Parameters', 'Values')
+		# single.series <- '0'
+		# use.ref.series <- '0'
+		# ref.series.choix <- data.frame(c('weight.mean', 'use.elv', 'interp.dem', 'min.stn', 'max.stn', 'max.dist', 'elv.diff', 'min.rho'),
+		# 								c('Distance', '0', '1', '2', '7', '100', '200', '0.5'))
+		# names(ref.series.choix) <- c('Parameters', 'Values')
+		# ref.series.user <- '0'
+		# stn.user.choice <- NULL
+		# prcpdata <- data.frame(c('rr.data', 'rr.log'), c('0', '0'))
+		# names(prcpdata) <- c('Parameters', 'Values')
+		# ret.params <- list(action = action, period = period, file.io = file.io, file.date.format = file.date.format, single.series = single.series,
+		# 					rhtests.pars = rhtests.pars, compute.var = compute.var, prcpdata = prcpdata, ref.series.choix = ref.series.choix,
+		# 					use.ref.series = use.ref.series, ref.series.user = ref.series.user, stn.user.choice = stn.user.choice, getdata = FALSE)
+
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Homogenization_RHtests.json'))
+		ret.params <- c(list(action = action, period = period), ret.params, list(stn.user.choice = NULL, getdata = FALSE))
+		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
 	
 	##########

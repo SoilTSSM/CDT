@@ -81,29 +81,29 @@ tkbutton.toolbar <- function(frame, img.dir, img.file, txtvar.status, txt.toolti
 	return(button)
 }
 
-##Create button with help
-tkbutton.h <- function(frame, text, txtvar.status, txt.tooltip, txt.status){
-	button <- tkbutton(frame, text = text)
-	infobulle(button, txt.tooltip)
-	status.bar.display(button, txtvar.status, txt.status)
-	return(button)
-}
+# ##Create button with help
+# tkbutton.h <- function(frame, text, txtvar.status, txt.tooltip, txt.status){
+# 	button <- tkbutton(frame, text = text)
+# 	infobulle(button, txt.tooltip)
+# 	status.bar.display(button, txtvar.status, txt.status)
+# 	return(button)
+# }
 
-##Create entry with help
-tkentry.h <- function(frame, txtvar.status, txt.tooltip, txt.status){
-	entry <- tkentry(frame)
-	infobulle(entry, txt.tooltip)
-	status.bar.display(entry, txtvar.status, txt.status)
-	return(entry)
-}
+# ##Create entry with help
+# tkentry.h <- function(frame, txtvar.status, txt.tooltip, txt.status){
+# 	entry <- tkentry(frame)
+# 	infobulle(entry, txt.tooltip)
+# 	status.bar.display(entry, txtvar.status, txt.status)
+# 	return(entry)
+# }
 
-##Create label with help
-tklabel.h <- function(frame, text, txtvar.status, txt.tooltip, txt.status){
-	labl <- tklabel(frame, text = text)
-	infobulle(labl, txt.tooltip)
-	status.bar.display(labl, txtvar.status, txt.status)
-	return(labl)
-}
+# ##Create label with help
+# tklabel.h <- function(frame, text, txtvar.status, txt.tooltip, txt.status){
+# 	labl <- tklabel(frame, text = text)
+# 	infobulle(labl, txt.tooltip)
+# 	status.bar.display(labl, txtvar.status, txt.status)
+# 	return(labl)
+# }
 
 ####################################################################
 ##spinbox
@@ -885,7 +885,7 @@ getRFESampleData <- function(file.netcdf){
 #################################################################################
 ## get NetCDF data plot merging outputs menu
 
-getNcdfData2Plot <- function(dataNCDF, freqData, yrs, mon, day, ncOrder = c(1,2)){
+getNcdfData2Plot <- function(dataNCDF, freqData, yrs, mon, day, ncOrder = c(1, 2)){
 	ilon <- ncOrder[1]
 	ilat <- ncOrder[2]
 	if(freqData == 'Monthly data') daty <- try(format(as.Date(paste(as.numeric(yrs), as.numeric(mon), 15, sep = '-')), '%Y%m%d'), silent = TRUE)
@@ -919,11 +919,12 @@ getSatelliteData <- function(dir_ncdf, ff_ncdf, spchkQcDateVal){
 		spchkoutdates <- isSpatialCheckOk()
 		if(nrow(spchkoutdates) != 0){
 			dataNCDF <- list(dir_ncdf, ff_ncdf)
-			freqData <- ifelse(ReturnExecResults$period == 'daily', 'Daily data', ifelse(ReturnExecResults$period == 'dekadal', 'Dekadal data', 'Monthly data'))
+			freqData <- ifelse(ReturnExecResults$period == 'daily', 'Daily data',
+						ifelse(ReturnExecResults$period == 'dekadal', 'Dekadal data', 'Monthly data'))
 			spdaty <- tclvalue(spchkQcDateVal)
-			year <- as.numeric(substr(spdaty, 1,4))
-			mon <- as.numeric(substr(spdaty, 5,6))
-			day <- as.numeric(substr(spdaty, 7,8))
+			year <- as.numeric(substr(spdaty, 1, 4))
+			mon <- as.numeric(substr(spdaty, 5, 6))
+			day <- as.numeric(substr(spdaty, 7, 8))
 			rfedat <- getNcdfData2Plot(dataNCDF, freqData, year, mon, day)
 			return(rfedat)
 		}else{

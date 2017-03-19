@@ -331,7 +331,7 @@ tkadd(menu.qchom, "cascade", label = "Homogeneity Test", menu = menu.homog)
 ##########
 ###RHtestsV4
 tkadd(menu.homog, "command", label = "RHtestsV4", command = function(){
-	agreementfl <- file.path(apps.dir, 'configure', 'RHtestsV4_User_Agreement', fsep = .Platform$file.sep)
+	agreementfl <- file.path(apps.dir, 'configure', 'RHtestsV4_User_Agreement')
 	if(file.exists(agreementfl)) proceed <- TRUE
 	else{
 		yesAgree <- RHtests_license()

@@ -1,15 +1,20 @@
 
 InterpolationPanelCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
-
-	largeur <- as.integer(w.scale(20)/sfont0)
-	wncdf_ff <- as.integer(w.scale(14)/sfont0)
 	if(Sys.info()["sysname"] == "Windows"){
-		wscrlwin <- w.scale(20)
-		hscrlwin <- h.scale(35)
+		wscrlwin <- w.scale(26)
+		hscrlwin <- h.scale(45)
+		wPreview <- w.scale(21)
+		largeur <- as.integer(w.scale(27)/sfont0)
+		largeur1 <- as.integer(w.scale(29)/sfont0)
+		wbutton <- 26
 	}else{
-		wscrlwin <- w.scale(24)
-		hscrlwin <- h.scale(40)
+		wscrlwin <- w.scale(26)
+		hscrlwin <- h.scale(46.5)
+		wPreview <- w.scale(22)
+		largeur <- as.integer(w.scale(22)/sfont0)
+		largeur1 <- as.integer(w.scale(23)/sfont0)
+		wbutton <- 24
 	}
 
 	###################
@@ -17,7 +22,7 @@ InterpolationPanelCmd <- function(){
 	cmd.frame <- tkframe(panel.left)
 
 	tknote.cmd <- bwNoteBook(cmd.frame)
-	tkgrid(tknote.cmd, sticky = 'nwes')
+	tkgrid(tknote.cmd, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 1)
 	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "General")
@@ -47,15 +52,29 @@ InterpolationPanelCmd <- function(){
 	##############
 	frameStn <- ttklabelframe(subfr1, text = "Station data file", relief = 'groove')
 
-	#######################
-	file.period <- tclVar()
-	tclvalue(file.period) <- 'Dekadal data'
-	combPrd.tab1 <- ttkcombobox(frameStn, values = c('Daily data', 'Dekadal data', 'Monthly data'), textvariable = file.period)
-
-	#######################
+	file.period <- tclVar('Dekadal data')
+	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
 	file.stnfl <- tclVar()
+	dayLabTab1_Var <- tclVar('Dek')
+	idate_yrs <- tclVar('1983')
+	idate_mon <- tclVar('1')
+	idate_day <- tclVar('1')
+
+	combPrd.tab1 <- ttkcombobox(frameStn, values = cb.periodVAL, textvariable = file.period)
 	combStnfl.tab1 <- ttkcombobox(frameStn, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur)
 	btStnfl.tab1 <- tkbutton(frameStn, text = "...")
+
+	labDate.tab1 <- tklabel(frameStn, text = "Date", anchor = 'e', justify = 'right')
+	yrsLab.tab1 <- tklabel(frameStn, text = 'Year', anchor = 'w', justify = 'left')
+	monLab.tab1 <- tklabel(frameStn, text = 'Month', anchor = 'w', justify = 'left')
+	dayLab.tab1 <- tklabel(frameStn, text = tclvalue(dayLabTab1_Var), textvariable = dayLabTab1_Var, anchor = 'w', justify = 'left')
+
+	yrs1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_yrs, justify = "left")
+	mon1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_mon, justify = "left")
+	day1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_day, justify = "left")
+
+	#######################
+
 	tkconfigure(btStnfl.tab1, command = function(){
 		dat.opfiles <- getOpenFiles(main.win, all.opfiles)
 		if(!is.null(dat.opfiles)){
@@ -68,25 +87,6 @@ InterpolationPanelCmd <- function(){
 			tkconfigure(combgrdCDF.tab1, values = unlist(listOpenFiles), textvariable = file.grdCDF)
 		}else return(NULL)
 	})
-	infobulle(combStnfl.tab1, 'Choose the station data in the list')
-	status.bar.display(combStnfl.tab1, TextOutputVar, 'Choose the file containing the station data in CDT format')
-	infobulle(btStnfl.tab1, 'Browse file if not listed')
-	status.bar.display(btStnfl.tab1, TextOutputVar, 'Browse file if not listed')
-
-	#######################
-	labDate.tab1 <- tklabel(frameStn, text = "Date", anchor = 'e', justify = 'right')
-	yrsLab.tab1 <- tklabel(frameStn, text = 'Year', anchor = 'w', justify = 'left')
-	monLab.tab1 <- tklabel(frameStn, text = 'Month', anchor = 'w', justify = 'left')
-	dayLabTab1_Var <- tclVar('Dek')
-	dayLab.tab1 <- tklabel(frameStn, text = tclvalue(dayLabTab1_Var), textvariable = dayLabTab1_Var, anchor = 'w', justify = 'left')
-
-	idate_yrs <- tclVar('1983')
-	idate_mon <- tclVar('1')
-	idate_day <- tclVar('1')
-
-	yrs1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_yrs, justify = "left")
-	mon1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_mon, justify = "left")
-	day1.tab1 <- tkentry(frameStn, width = 4, textvariable = idate_day, justify = "left")
 
 	#############################
 	tkgrid(combPrd.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
@@ -100,31 +100,42 @@ InterpolationPanelCmd <- function(){
 	tkgrid(mon1.tab1, row = 3, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
 	tkgrid(day1.tab1, row = 3, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
 
+	infobulle(combStnfl.tab1, 'Choose the station data in the list')
+	status.bar.display(combStnfl.tab1, TextOutputVar, 'Choose the file containing the station data in CDT format')
+	infobulle(btStnfl.tab1, 'Browse file if not listed')
+	status.bar.display(btStnfl.tab1, TextOutputVar, 'Browse file if not listed')
+
 	#############################
 	frameInterp <- ttklabelframe(subfr1, text = "Interpolation Method", relief = 'groove')
 
-	Interp.Method <- tclVar()
-	tclvalue(Interp.Method) <- 'IDW'
-	combInterp.tab1 <- ttkcombobox(frameInterp, values = c('Nearest Neighbor', 'IDW', 'Kriging'), textvariable = Interp.Method, width = largeur)
+	Interp.Method <- tclVar('IDW')
+	Interp.Choix <- c('Nearest Neighbor', 'IDW', 'Kriging')
 
-	#############################
+	combInterp.tab1 <- ttkcombobox(frameInterp, values = Interp.Choix, textvariable = Interp.Method, width = largeur)
+
 	tkgrid(combInterp.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
 	#############################
 	frameGrid <- ttklabelframe(subfr1, text = "Grid for interpolation", relief = 'groove')
 
 	varCreateGrd <- tclVar('1')
-	grdCDF.tab1 <- tkradiobutton(frameGrid, text = "From gridded NetCDF data", anchor = 'w', justify = 'left')
-
-
-	###from CDF
 	file.grdCDF <- tclVar()
+	new.grid <- data.frame(c('minLon', 'maxLon', 'resLon', 'minLat', 'maxLat', 'resLat'),
+							c('42', '52', '0.1','-26','-12', '0.1'))
+	names(new.grid) <- c('Parameters', 'Values')
+	newgrdPars <- list(new.grid = new.grid)
+
+	grdCDF.tab1 <- tkradiobutton(frameGrid, text = "From gridded NetCDF data", anchor = 'w', justify = 'left')
 	combgrdCDF.tab1 <- ttkcombobox(frameGrid, values = unlist(listOpenFiles), textvariable = file.grdCDF, state = 'disabled', width = largeur)
-	infobulle(combgrdCDF.tab1, 'Choose the file in the list')
-	status.bar.display(combgrdCDF.tab1, TextOutputVar, 'File containing a gridded data in netcdf')
 	btgrdCDF.tab1 <- tkbutton(frameGrid, text = "...")
-	infobulle(btgrdCDF.tab1, 'Browse file if not listed')
-	status.bar.display(btgrdCDF.tab1, TextOutputVar, 'Browse file if not listed')
+
+	grdNEW.tab1 <- tkradiobutton(frameGrid, text = "Create new grid", anchor = 'w', justify = 'left')
+	btNewgrid.tab1 <- tkbutton(frameGrid, text = "Create", state = 'normal')
+
+	tkconfigure(grdCDF.tab1, variable = varCreateGrd, value = "0")
+	tkconfigure(grdNEW.tab1, variable = varCreateGrd, value = "1")
+
+	###############
 	tkconfigure(btgrdCDF.tab1, state = 'disabled', command = function(){
 		nc.opfiles <- getOpenNetcdf(main.win, all.opfiles)
 		if(!is.null(nc.opfiles)){
@@ -141,31 +152,23 @@ InterpolationPanelCmd <- function(){
 		}else return(NULL)
 	})
 
-	grdNEW.tab1 <- tkradiobutton(frameGrid, text = "Create new grid", anchor = 'w', justify = 'left')
-
-	new.grid <- data.frame(c('minLon', 'maxLon', 'resLon', 'minLat', 'maxLat', 'resLat'), c('42', '52', '0.1','-26','-12', '0.1'))
-	names(new.grid) <- c('Parameters', 'Values')
-	newgrdPars <- list(new.grid = new.grid)
-
-	btNewgrid.tab1 <- tkbutton(frameGrid, text = "Create", state = 'normal')
-	infobulle(btNewgrid.tab1, 'Set the new grid')
-	status.bar.display(btNewgrid.tab1, TextOutputVar, 'Set the new grid')
-
 	tkconfigure(btNewgrid.tab1, command = function(){
 		newgrdPars <<- getParamNewGrid(main.win, newgrdPars)
 	})
 
-
-	tkconfigure(grdCDF.tab1, variable = varCreateGrd, value = "0")
-	tkconfigure(grdNEW.tab1, variable = varCreateGrd, value = "1")
-
-	#############################
+	##############
 	tkgrid(grdCDF.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(combgrdCDF.tab1, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(btgrdCDF.tab1, row = 1, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(grdNEW.tab1, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(btNewgrid.tab1, row = 2, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
+	infobulle(combgrdCDF.tab1, 'Choose the file in the list')
+	status.bar.display(combgrdCDF.tab1, TextOutputVar, 'File containing a gridded data in netcdf')
+	infobulle(btgrdCDF.tab1, 'Browse file if not listed')
+	status.bar.display(btgrdCDF.tab1, TextOutputVar, 'Browse file if not listed')
+	infobulle(btNewgrid.tab1, 'Set the new grid')
+	status.bar.display(btNewgrid.tab1, TextOutputVar, 'Set the new grid')
 
 	#############################
 	tkgrid(frameStn, row = 0, column = 0, sticky = 'we')
@@ -173,13 +176,14 @@ InterpolationPanelCmd <- function(){
 	tkgrid(frameGrid, row = 2, column = 0, sticky = 'we', pady = 3)
 
 	#######################################################################################################
-	tkbind(combPrd.tab1,"<<ComboboxSelected>>", function(){
+
+	tkbind(combPrd.tab1, "<<ComboboxSelected>>", function(){
 		if(tclvalue(file.period) == 'Daily data'){
-			tclvalue(dayLabTab1_Var)<-'Day'
+			tclvalue(dayLabTab1_Var) <- 'Day'
 			tkconfigure(day1.tab1, state = 'normal')
 		}
 		if(tclvalue(file.period) == 'Dekadal data'){
-			tclvalue(dayLabTab1_Var)<-'Dek'
+			tclvalue(dayLabTab1_Var) <- 'Dek'
 			tkconfigure(day1.tab1, state = 'normal')
 		}
 		if(tclvalue(file.period) == 'Monthly data'){
@@ -187,18 +191,17 @@ InterpolationPanelCmd <- function(){
 		}
 	})
 
-	#############################
-	tkbind(grdCDF.tab1,"<Button-1>", function(){
+	tkbind(grdCDF.tab1, "<Button-1>", function(){
 		tkconfigure(btNewgrid.tab1, state = 'disabled')
 		tkconfigure(combgrdCDF.tab1, state = 'normal')
 		tkconfigure(btgrdCDF.tab1, state = 'normal')
 	})
-	tkbind(grdNEW.tab1,"<Button-1>", function(){
+
+	tkbind(grdNEW.tab1, "<Button-1>", function(){
 		tkconfigure(btNewgrid.tab1, state = 'normal')
 		tkconfigure(combgrdCDF.tab1, state = 'disabled')
 		tkconfigure(btgrdCDF.tab1, state = 'disabled')
 	})
-
 
 	#######################################################################################################
 
@@ -216,13 +219,6 @@ InterpolationPanelCmd <- function(){
 	##############
 	frameOpt1 <- ttklabelframe(subfr2, text = "General Options", relief = 'groove')
 
-	maxdistL.tab2 <- tklabel(frameOpt1, text = "Maxdist", anchor = 'e', justify = 'right')
-	nminL.tab2 <- tklabel(frameOpt1, text = "Nmin", anchor = 'e', justify = 'right')
-	nmaxL.tab2 <- tklabel(frameOpt1, text = "Nmax", anchor = 'e', justify = 'right')
-	idpL.tab2 <- tklabel(frameOpt1, text = "Power", anchor = 'e', justify = 'right')
-	elvdiffL.tab2 <- tklabel(frameOpt1, text = "ElvDiff", anchor = 'e', justify = 'right')
-	omaxL.tab2 <- tklabel(frameOpt1, text = "Omax", anchor = 'e', justify = 'right')
-
 	maxdist_vars <- tclVar('100')
 	nmin_vars <- tclVar('1')
 	nmax_vars <- tclVar('4')
@@ -230,12 +226,32 @@ InterpolationPanelCmd <- function(){
 	elvdiff_vars <- tclVar('200')
 	omax_vars <- tclVar('0')
 
+	maxdistL.tab2 <- tklabel(frameOpt1, text = "Maxdist", anchor = 'e', justify = 'right')
+	nminL.tab2 <- tklabel(frameOpt1, text = "Nmin", anchor = 'e', justify = 'right')
+	nmaxL.tab2 <- tklabel(frameOpt1, text = "Nmax", anchor = 'e', justify = 'right')
+	idpL.tab2 <- tklabel(frameOpt1, text = "Power", anchor = 'e', justify = 'right')
+	elvdiffL.tab2 <- tklabel(frameOpt1, text = "ElvDiff", anchor = 'e', justify = 'right')
+	omaxL.tab2 <- tklabel(frameOpt1, text = "Omax", anchor = 'e', justify = 'right')
+
 	maxdist.tab2 <- tkentry(frameOpt1, width = 6, textvariable = maxdist_vars, justify = "left")
 	nmin.tab2 <- tkentry(frameOpt1, width = 6, textvariable = nmin_vars, justify = "left")
 	nmax.tab2 <- tkentry(frameOpt1, width = 6, textvariable = nmax_vars, justify = "left")
 	idp.tab2 <- tkentry(frameOpt1, width = 6, textvariable = idp_vars, justify = "left")
 	elvdiff.tab2 <- tkentry(frameOpt1, width = 6, textvariable = elvdiff_vars, justify = "left")
 	omax.tab2 <- tkentry(frameOpt1, width = 6, textvariable = omax_vars, justify = "left")
+
+	tkgrid(maxdistL.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(maxdist.tab2, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(nminL.tab2, row = 0, column = 2, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(nmin.tab2, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(nmaxL.tab2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(nmax.tab2, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(idpL.tab2, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(idp.tab2, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(elvdiffL.tab2, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(elvdiff.tab2, row = 2, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	# tkgrid(omaxL.tab2, row = 2, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	# tkgrid(omax.tab2, row = 2, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
 	infobulle(maxdist.tab2, 'Radius of search (in km)')
 	status.bar.display(maxdist.tab2, TextOutputVar, 'Only data within a distance of ‘maxdist’ from the prediction location are used')
@@ -251,63 +267,54 @@ InterpolationPanelCmd <- function(){
 	status.bar.display(omax.tab2, TextOutputVar, 'Maximum number of data to use from each quadrant, (0 means option not used)')
 
 	#############################
-	tkgrid(maxdistL.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(maxdist.tab2, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(nminL.tab2, row = 0, column = 2, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(nmin.tab2, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(nmaxL.tab2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(nmax.tab2, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(idpL.tab2, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(idp.tab2, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(elvdiffL.tab2, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(elvdiff.tab2, row = 2, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	# tkgrid(omaxL.tab2, row = 2, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	# tkgrid(omax.tab2, row = 2, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
-	##############
 	frameOpt2 <- ttklabelframe(subfr2, text = "Fitting a variogram", relief = 'groove')
 
 	fitVgmChx <- tclVar('0')
+	fitVgmMod <- tclVar('Sph')
+	vgmModList <- c("Sph", "Exp", "Gau", "Log", "Ste", "Mat")
+
 	fitvgm.tab2 <- tkradiobutton(frameOpt2, text = "Fit a variogram", anchor = 'w', justify = 'left', state = 'disabled')
 	fitAvgm.tab2 <- tkradiobutton(frameOpt2, text = "Automatic fitting", anchor = 'w', justify = 'left', state = 'disabled')
 	tkconfigure(fitvgm.tab2, variable = fitVgmChx, value = "0")
 	tkconfigure(fitAvgm.tab2, variable = fitVgmChx, value = "1")
 
-	fitVgmMod <- tclVar('Sph')
-	combfitVgm.tab2 <- ttkcombobox(frameOpt2, values = c("Sph", "Exp", "Gau", "Log", "Ste", "Mat"), textvariable = fitVgmMod, state = 'disabled', width = 6)
+	combfitVgm.tab2 <- ttkcombobox(frameOpt2, values = vgmModList, textvariable = fitVgmMod, state = 'disabled', width = 6)
 	btfitAVgm.tab2 <- tkbutton(frameOpt2, text = "Models", state = 'disabled')
 
-	vgmModList <- c("Sph", "Exp", "Gau", "Log", "Ste", "Mat")
+	##############
+
 	tkconfigure(btfitAVgm.tab2, command = function(){
 		vgmModList <<- editVgmModel(main.win, vgmModList)
 	})
 
-	infobulle(fitvgm.tab2, 'Fit a variogram by choosing a model')
-	status.bar.display(fitvgm.tab2, TextOutputVar, 'Fit a variogram by choosing a model')
-	infobulle(combfitVgm.tab2, 'Fit a variogram by choosing a model')
-	status.bar.display(combfitVgm.tab2, TextOutputVar, 'Fit a variogram by choosing a model')
-
-	infobulle(fitAvgm.tab2, 'Automatically fit a variogram')
-	status.bar.display(fitAvgm.tab2, TextOutputVar, 'Automatically fit a variogram')
-	infobulle(btfitAVgm.tab2, 'Edit the models to use')
-	status.bar.display(btfitAVgm.tab2, TextOutputVar, 'Edit the models to use, see list provided by gstat packages')
-
 	##############
+
 	tkgrid(fitvgm.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(combfitVgm.tab2, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(fitAvgm.tab2, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(btfitAVgm.tab2, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
+	infobulle(fitvgm.tab2, 'Fit a variogram by choosing a model')
+	status.bar.display(fitvgm.tab2, TextOutputVar, 'Fit a variogram by choosing a model')
+	infobulle(combfitVgm.tab2, 'Fit a variogram by choosing a model')
+	status.bar.display(combfitVgm.tab2, TextOutputVar, 'Fit a variogram by choosing a model')
+	infobulle(fitAvgm.tab2, 'Automatically fit a variogram')
+	status.bar.display(fitAvgm.tab2, TextOutputVar, 'Automatically fit a variogram')
+	infobulle(btfitAVgm.tab2, 'Edit the models to use')
+	status.bar.display(btfitAVgm.tab2, TextOutputVar, 'Edit the models to use, see list provided by gstat packages')
+
 	#############################
 	frameOpt3 <- ttklabelframe(subfr2, text = "Elevation data", relief = 'groove')
 
 	useELV <- tclVar("0")
-	useELV.tab2 <- tkcheckbutton(frameOpt3, text = "Use elevation to interpolate the data", variable = useELV, anchor = 'w', justify = 'left')
-
-
 	file.plotDem <- tclVar()
-	combDem.tab2 <- ttkcombobox(frameOpt3, values = unlist(listOpenFiles), textvariable = file.plotDem, width = largeur, state = 'disabled')
+
+	useELV.tab2 <- tkcheckbutton(frameOpt3, text = "Use elevation to interpolate the data", variable = useELV, anchor = 'w', justify = 'left')
+	combDem.tab2 <- ttkcombobox(frameOpt3, values = unlist(listOpenFiles), textvariable = file.plotDem, width = largeur-1, state = 'disabled')
 	btDem.tab2 <- tkbutton(frameOpt3, state = 'disabled', text = "...")
+
+	##############
 	tkconfigure(btDem.tab2, command = function(){
 		nc.opfiles <- getOpenNetcdf(main.win, all.opfiles)
 		if(!is.null(nc.opfiles)){
@@ -335,7 +342,8 @@ InterpolationPanelCmd <- function(){
 	tkgrid(frameOpt3, row = 2, column = 0, sticky = 'we', pady = 3)
 
 	#######################################################################################################
-	tkbind(combInterp.tab1,"<<ComboboxSelected>>", function(){
+
+	tkbind(combInterp.tab1, "<<ComboboxSelected>>", function(){
 		if(tclvalue(Interp.Method) == 'Nearest Neighbor'){
 			tkconfigure(maxdist.tab2, state = 'normal')
 			tkconfigure(nmin.tab2, state = 'disabled')
@@ -386,13 +394,13 @@ InterpolationPanelCmd <- function(){
 	})
 
 	######
-	tkbind(fitvgm.tab2,"<Button-1>", function(){
+	tkbind(fitvgm.tab2, "<Button-1>", function(){
 		if(tclvalue(Interp.Method) == 'Kriging'){
 			tkconfigure(combfitVgm.tab2, state = 'normal')
 			tkconfigure(btfitAVgm.tab2, state = 'disabled')
 		}
 	})
-	tkbind(fitAvgm.tab2,"<Button-1>", function(){
+	tkbind(fitAvgm.tab2, "<Button-1>", function(){
 		if(tclvalue(Interp.Method) == 'Kriging'){
 			tkconfigure(combfitVgm.tab2, state = 'disabled')
 			tkconfigure(btfitAVgm.tab2, state = 'normal')
@@ -400,7 +408,7 @@ InterpolationPanelCmd <- function(){
 	})
 
 	######
-	tkbind(useELV.tab2,"<Button-1>", function(){
+	tkbind(useELV.tab2, "<Button-1>", function(){
 		if(tclvalue(useELV) == '0'){
 			tkconfigure(combDem.tab2, state = 'normal')
 			tkconfigure(btDem.tab2, state = 'normal')
@@ -423,18 +431,40 @@ InterpolationPanelCmd <- function(){
 	subfr3 <- bwScrollableFrame(scrw3, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr3, 0, weight = 1)
 
-	plotData.tab3 <- tkbutton(subfr3, text = "Plot Data")
-	plotVgm.tab3 <- tkbutton(subfr3, text = "Plot Variogram", state = 'disabled')
-	InterpData.tab3 <- tkbutton(subfr3, text = "Interpolate")
-	plotInterpVal.tab3 <- tkbutton(subfr3, text = "Plot Interpolated values")
-	remData.tab3 <- tkbutton(subfr3, text = "Delete some observations")
+	#############################
+
+	file.save1 <- tclVar()
+	file.plotShp <- tclVar()
+	blankVal <- tclVar('0')
+
+	plotData.tab3 <- tkbutton(subfr3, text = "Plot Data", width = wbutton)
+	plotVgm.tab3 <- tkbutton(subfr3, text = "Plot Variogram", state = 'disabled', width = wbutton)
+	InterpData.tab3 <- tkbutton(subfr3, text = "Interpolate", width = wbutton)
+	plotInterpVal.tab3 <- tkbutton(subfr3, text = "Plot Interpolated values", width = wbutton)
+	remData.tab3 <- tkbutton(subfr3, text = "Delete some observations", width = wbutton)
+
+	frameSaveInt <- ttklabelframe(subfr3, text = "File to save interpolated data", relief = 'groove')
+	fl2sav.tab3 <- tkentry(frameSaveInt, textvariable = file.save1, width = largeur1) 
+	bfl2sav.tab3 <- tkbutton(frameSaveInt, text = "...")
+
+	frameShp <- ttklabelframe(subfr3, text = "Shapefiles for boundary", relief = 'groove')
+	combShp.tab3 <- ttkcombobox(frameShp, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur) 
+	btShp.tab3 <- tkbutton(frameShp, text = "...")
+
+	cbBlank.tab3 <- tkcheckbutton(subfr3, variable = blankVal, text = 'Blank grid', anchor = 'w', justify = 'left')
+
+	# #############
+	sep1.tab3 <- ttkseparator(subfr3)
+	sep2.tab3 <- ttkseparator(subfr3)
+	sep3.tab3 <- ttkseparator(subfr3)
+	sep4.tab3 <- ttkseparator(subfr3)
+	sep5.tab3 <- ttkseparator(subfr3)
+
+	txt.space1 <- tklabel(subfr3, text = ' ', width = 3)
+	txt.space2 <- tklabel(subfr3, text = ' ', width = 3)
 
 	#############################
-	frameSaveInt <- ttklabelframe(subfr3, text = "File to save interpolated data", relief = 'groove')
-	
-	file.save1 <- tclVar()
-	fl2sav.tab3 <- tkentry(frameSaveInt, textvariable = file.save1, width = largeur) 
-	bfl2sav.tab3 <- tkbutton(frameSaveInt, text = "...")
+
 	tkconfigure(bfl2sav.tab3, command = function(){
 		filetypes <- "{{NetCDF Files} {.nc .NC .cdf .CDF}} {{All files} *}"
 		if(Sys.info()["sysname"] == "Windows")  file2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes, defaultextension = TRUE)
@@ -443,16 +473,6 @@ InterpolationPanelCmd <- function(){
 		else tclvalue(file.save1) <- file2save
 	})
 
-	#############################
-	tkgrid(fl2sav.tab3, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(bfl2sav.tab3, row = 0, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	#############################
-	frameShp <- ttklabelframe(subfr3, text = "Shapefiles for boundary", relief = 'groove')
-
-	file.plotShp <- tclVar()
-	combShp.tab3 <- ttkcombobox(frameShp, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur - 1) 
-	btShp.tab3 <- tkbutton(frameShp, text = "...")
 	tkconfigure(btShp.tab3, command = function(){
 		shp.opfiles <- getOpenShp(main.win, all.opfiles)
 		if(!is.null(shp.opfiles)){
@@ -469,27 +489,18 @@ InterpolationPanelCmd <- function(){
 	})
 
 	#############################
-	blankVal <- tclVar('0')
-	cbBlank.tab3 <- tkcheckbutton(subfr3, variable = blankVal, text = 'Blank grid', anchor = 'w', justify = 'left')
-	infobulle(cbBlank.tab3, 'Blank grid outside the country boundaries or over ocean')
-	status.bar.display(cbBlank.tab3, TextOutputVar, 'Blank grid outside the country boundaries  or over ocean given by the shapefile')
+	tkgrid(fl2sav.tab3, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bfl2sav.tab3, row = 0, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#############################
 	tkgrid(combShp.tab3, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(btShp.tab3, row = 0, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	#############
-	sep1.tab3 <- ttkseparator(subfr3)
-	sep2.tab3 <- ttkseparator(subfr3)
-	sep3.tab3 <- ttkseparator(subfr3)
-	sep4.tab3 <- ttkseparator(subfr3)
-	sep5.tab3 <- ttkseparator(subfr3)
+	#############################
 
-	#############
-
-	tkgrid(tklabel(subfr3, text=' ',width = 3), row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.space1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(plotData.tab3, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(tklabel(subfr3, text=' ',width = 3), row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.space2, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(sep1.tab3, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, pady = 1)
 	tkgrid(plotVgm.tab3, row = 2, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(sep2.tab3, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, pady = 1)
@@ -505,15 +516,18 @@ InterpolationPanelCmd <- function(){
 	tkgrid(frameShp, row = 11, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, pady = 1)
 	tkgrid(cbBlank.tab3, row = 12, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, ipady = 2)
 
+	#############################
+	infobulle(cbBlank.tab3, 'Blank grid outside the country boundaries or over ocean')
+	status.bar.display(cbBlank.tab3, TextOutputVar, 'Blank grid outside the country boundaries  or over ocean given by the shapefile')
+
 	#######################################################################################################
 
 	##Used to change some obs
 	assign('donnees', NULL, envir = EnvInterpolation)
 	assign('getDEMFirst', NULL, envir = EnvInterpolation)
-	assign('filechange','',envir = EnvInterpolation)
+	assign('filechange', '', envir = EnvInterpolation)
 	atLev <- NULL
 
-	###############
 	getDONNE <- function(){
 		if(is.null(EnvInterpolation$donnees)){
 			donne <- getCDTdata(file.stnfl, file.period)
@@ -570,7 +584,6 @@ InterpolationPanelCmd <- function(){
 		return(donne)
 	}
 
-
 	#############
 	notebookTab0 <- NULL
 
@@ -601,15 +614,13 @@ InterpolationPanelCmd <- function(){
 		}
 	})
 
-
 	#############
 	notebookTab1 <- NULL
 
 	tkconfigure(plotVgm.tab3, command = function(){
-
 		donne <- getDONNE()
-
-		imgContainer <- displayVariogramFun(tknotes, notebookTab1, donne, tclvalue(fitVgmChx), tclvalue(fitVgmMod), vgmModList, tclvalue(useELV))
+		imgContainer <- displayVariogramFun(tknotes, notebookTab1, donne, tclvalue(fitVgmChx),
+											tclvalue(fitVgmMod), vgmModList, tclvalue(useELV))
 		if(!is.null(imgContainer)){
 			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, notebookTab1, AllOpenTabType, AllOpenTabData)
 			notebookTab1 <<- retNBTab$notebookTab
@@ -623,19 +634,24 @@ InterpolationPanelCmd <- function(){
 	outNCdata <- NULL
 
 	tkconfigure(InterpData.tab3, command = function(){
-
 		donne <- getDONNE()
 		demdata <- getNcdfOpenData(file.plotDem)[[2]]
+		interpolParams <- list(mthd = tclvalue(Interp.Method), grdChx = tclvalue(varCreateGrd),
+								ncfila = tclvalue(file.grdCDF), grdCR = newgrdPars,
+								file2save = tclvalue(file.save1), vgmChx = tclvalue(fitVgmChx),
+								VgmMod = tclvalue(fitVgmMod), vgmModList = vgmModList,
+								useELV = tclvalue(useELV), maxdist = tclvalue(maxdist_vars),
+								nmin = tclvalue(nmin_vars), nmax = tclvalue(nmax_vars),
+								idp = tclvalue(idp_vars), omax = tclvalue(omax_vars),
+								elvdiff = tclvalue(elvdiff_vars))
 
-		interpolParams <- list(mthd = tclvalue(Interp.Method), grdChx = tclvalue(varCreateGrd), ncfila = tclvalue(file.grdCDF), grdCR = newgrdPars, file2save = tclvalue(file.save1), vgmChx = tclvalue(fitVgmChx), VgmMod = tclvalue(fitVgmMod), vgmModList = vgmModList, useELV = tclvalue(useELV),
-		maxdist = tclvalue(maxdist_vars), nmin = tclvalue(nmin_vars), nmax = tclvalue(nmax_vars), idp = tclvalue(idp_vars), omax = tclvalue(omax_vars), elvdiff = tclvalue(elvdiff_vars))
-
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
+		tkconfigure(main.win, cursor = 'watch')
+		tcl('update')
 
 		tryCatch(outNCdata <<- interpolationProc(donne, demdata, interpolParams),
 		#warning = function(w) warningFun(w),
-		error = function(e) errorFun(e), finally={
-			tkconfigure(main.win, cursor='')
+		error = function(e) errorFun(e), finally = {
+			tkconfigure(main.win, cursor = '')
 		})
 
 		if(!is.null(outNCdata)) InsertMessagesTxt(main.txt.out, "Interpolation finished successfully")
@@ -674,7 +690,6 @@ InterpolationPanelCmd <- function(){
 
 	tkconfigure(remData.tab3, command = function(){
 		donne <- getDONNE()
-
 		if(!is.null(donne)){
 			# retNBTab <- tableInterpNotebookTab_unik(tknotes, donne, notebookTab3, AllOpenTabType, AllOpenTabData)
 			# notebookTab3 <<- retNBTab$notebookTab
@@ -685,7 +700,7 @@ InterpolationPanelCmd <- function(){
 			if(is.null(donne$elv)) elv <- NA
 			else elv <- donne$elv
 			dat2disp <- data.frame(id = donne$id, lon = donne$lon, lat = donne$lat, z = donne$z, elv = elv)
-			dat2disp <- dat2disp[!is.na(dat2disp$z),]
+			dat2disp <- dat2disp[!is.na(dat2disp$z), ]
 			dat2disp <- list(donne$date, dat2disp,'/may/be/file/to/save/table')
 			retdata <- DisplayInterpData(tknotes, dat2disp, paste('Obs', donne$date, sep = '_'))
 
@@ -698,7 +713,6 @@ InterpolationPanelCmd <- function(){
 			ReturnExecResults <<- donne
 		}else InsertMessagesTxt(main.txt.out, 'No station data found', format = TRUE)
 	})
-
 
 	#######################################################################################################
 
@@ -713,38 +727,33 @@ InterpolationPanelCmd <- function(){
 	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr4, 0, weight = 1)
 
-	wPreview <- wscrlwin-20
+	#############
 	nb.color <- tclVar('10')
-	preset.color <- tclVar()
-	tclvalue(preset.color) <- 'tim.colors'
+	preset.color <- tclVar('tim.colors')
+	reverse.color <- tclVar(0)
+	custom.color <- tclVar(0)
+	custom.level <- tclVar(0)
+	preset.values <- c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors')
+
 
 	labPresetCol.tab4 <- tklabel(subfr4, text = 'Presets colorkey', anchor = 'w', justify = 'left')
-	combPresetCol.tab4 <- ttkcombobox(subfr4, values = c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors'), textvariable = preset.color, width = 13)
+	combPresetCol.tab4 <- ttkcombobox(subfr4, values = preset.values, textvariable = preset.color, width = 13)
 	nbPresetCol.tab4 <- tkentry(subfr4, width = 3, textvariable = nb.color, justify = "left")
 
-	reverse.color <- tclVar(0)
 	labRevCol.tab4 <- tklabel(subfr4, text = 'Reverse', anchor = 'e', justify = 'right')
 	chkRevCol.tab4 <- tkcheckbutton(subfr4, variable = reverse.color, anchor = 'w', justify = 'left')
 
-	sep1.tab4 <- ttkseparator(subfr4)
 	previewPresetCol.tab4 <- tkcanvas(subfr4, width = wPreview, height = 20, bg = 'white')
 
-	sep2.tab4 <- ttkseparator(subfr4)
-	custom.color <- tclVar(0)
 	chkCustoCol.tab4 <- tkcheckbutton(subfr4, variable = custom.color, text = 'User customized  colorkey', anchor = 'w', justify = 'left')
 	butCustoCol.tab4 <- tkbutton(subfr4, text = "Custom", state = 'disabled')
 
-	sep3.tab4 <- ttkseparator(subfr4)
-	custom.level <- tclVar(0)
 	chkCustoLev.tab4 <- tkcheckbutton(subfr4, variable = custom.level, text = 'User customized  levels', anchor = 'w', justify = 'left')
 	butCustoLev.tab4 <- tkbutton(subfr4, text = "Custom", state = 'disabled')
 
-	infobulle(combPresetCol.tab4, 'Predefined color palettes')
-	status.bar.display(combPresetCol.tab4, TextOutputVar, 'Predefined color palettes')
-	infobulle(nbPresetCol.tab4, 'Number of color levels to be in the palette')
-	status.bar.display(nbPresetCol.tab4, TextOutputVar, 'Number of color levels to be in the palette')
-	infobulle(chkRevCol.tab4, 'Reverse the color palettes')
-	status.bar.display(chkRevCol.tab4, TextOutputVar, 'Reverse the color palettes')
+	sep1.tab4 <- ttkseparator(subfr4)
+	sep2.tab4 <- ttkseparator(subfr4)
+	sep3.tab4 <- ttkseparator(subfr4)
 
 	#####
 	tkgrid(labPresetCol.tab4, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -762,14 +771,23 @@ InterpolationPanelCmd <- function(){
 	tkgrid(chkCustoLev.tab4, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(butCustoLev.tab4, row = 7, column = 4, sticky = 'w', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
+
+	infobulle(combPresetCol.tab4, 'Predefined color palettes')
+	status.bar.display(combPresetCol.tab4, TextOutputVar, 'Predefined color palettes')
+	infobulle(nbPresetCol.tab4, 'Number of color levels to be in the palette')
+	status.bar.display(nbPresetCol.tab4, TextOutputVar, 'Number of color levels to be in the palette')
+	infobulle(chkRevCol.tab4, 'Reverse the color palettes')
+	status.bar.display(chkRevCol.tab4, TextOutputVar, 'Reverse the color palettes')
+
 	########################
 	##Preview Color
 	kolor <- getGradientColor(tim.colors(10), 0:wPreview)
 	tkdelete(previewPresetCol.tab4, 'gradlines0')
 	for(i in 0:wPreview) tkcreate(previewPresetCol.tab4, "line", i, 0, i, 20, fill = kolor[i], tags = 'gradlines0')
 
-	tkbind(combPresetCol.tab4,"<<ComboboxSelected>>", function(){
+	tkbind(combPresetCol.tab4, "<<ComboboxSelected>>", function(){
 		n <- as.numeric(tclvalue(nb.color))
+		if(is.na(n)) n <- 10
 		colFun <- match.fun(tclvalue(preset.color))
 		listCol <- colFun(n)
 		if(tclvalue(reverse.color) == '1') listCol <- rev(listCol)
@@ -779,9 +797,10 @@ InterpolationPanelCmd <- function(){
 	})
 
 	#reverse
-	tkbind(chkRevCol.tab4,"<Button-1>", function(){
+	tkbind(chkRevCol.tab4, "<Button-1>", function(){
 		if(tclvalue(custom.color) == '0'){
 			n <- as.numeric(tclvalue(nb.color))
+			if(is.na(n)) n <- 10
 			colFun <- match.fun(tclvalue(preset.color))
 			listCol <- colFun(n)
 			if(tclvalue(reverse.color) == '0') listCol <- rev(listCol)
@@ -793,7 +812,7 @@ InterpolationPanelCmd <- function(){
 	
 	########################
 	##Customized color	
-	tkbind(chkCustoCol.tab4,"<Button-1>", function(){
+	tkbind(chkCustoCol.tab4, "<Button-1>", function(){
 		if(tclvalue(custom.color) == '0') tkconfigure(butCustoCol.tab4, state = 'normal')
 		else tkconfigure(butCustoCol.tab4, state = 'disabled')
 	})
@@ -810,17 +829,19 @@ InterpolationPanelCmd <- function(){
 
 	########################
 	##Customized level	
-	tkbind(chkCustoLev.tab4,"<Button-1>", function(){
+	tkbind(chkCustoLev.tab4, "<Button-1>", function(){
 		if(tclvalue(custom.level) == '0') tkconfigure(butCustoLev.tab4, state = 'normal')
 		else tkconfigure(butCustoLev.tab4, state = 'disabled')
 	})
 	
 	tkconfigure(butCustoLev.tab4, command = function(){
 		if(is.null(atLev)){
+			n <- as.numeric(tclvalue(nb.color))
+			if(is.na(n)) n <- 10
 			donne <- getCDTdata(file.stnfl, file.period)
 			donne <- getCDTdata1Date(donne, tclvalue(idate_yrs), tclvalue(idate_mon), tclvalue(idate_day))
 			if(!is.null(donne)){
-				atLev <- pretty(donne$z)
+				atLev <- pretty(donne$z, n = n+1)
 			}
 		}
 		atLev <<- customLevels(main.win, atLev)
@@ -834,9 +855,7 @@ InterpolationPanelCmd <- function(){
 	return(cmd.frame)
 }
 
-
 #######################################################################################################
-
 
 editVgmModel <- function(tt, vgmModList){
 	tt1 <- tktoplevel()
@@ -846,27 +865,26 @@ editVgmModel <- function(tt, vgmModList){
 	frGrd0 <- tkframe(tt1, relief = 'raised', borderwidth = 2)
 	frGrd1 <- tkframe(tt1)
 
-	yscr <- tkscrollbar(frGrd0, repeatinterval = 4, command = function(...) tkyview(textObj,...))
-	textObj <- tktext(frGrd0, bg = "white", yscrollcommand = function(...) tkset(yscr,...), wrap = "word", height = 5, width = w.opfiles+5) #
+	yscr <- tkscrollbar(frGrd0, repeatinterval = 4, command = function(...) tkyview(textObj, ...))
+	textObj <- tktext(frGrd0, bg = "white", wrap = "word", height = 5, width = w.opfiles+5,
+								yscrollcommand = function(...) tkset(yscr, ...))
 	tkgrid(textObj, yscr)
 	tkgrid.configure(yscr, sticky = "ns")
 	tkgrid.configure(textObj, sticky = 'nswe')
 
 	tcl("update", "idletasks")
-	if(length(vgmModList) > 0)	 tkinsert(textObj, "end", paste(vgmModList, collapse=', '))
+	if(length(vgmModList) > 0)	 tkinsert(textObj, "end", paste(vgmModList, collapse = ', '))
 
 	################################
 
-	bt.prm.OK <- tkbutton(frGrd1, text=" OK ")
+	bt.prm.OK <- tkbutton(frGrd1, text = "OK")
 	bt.prm.CA <- tkbutton(frGrd1, text = "Cancel")
-	tkgrid(bt.prm.OK, row = 0, column = 0, sticky = 'w', padx = 5, pady = 1, ipadx = 5, ipady = 1)
-	tkgrid(bt.prm.CA, row = 0, column = 1, sticky = 'e', padx = 5, pady = 1, ipadx = 1, ipady = 1)
 
 	tkconfigure(bt.prm.OK, command = function(){
 		retvars <- tclvalue(tkget(textObj, "0.0", "end"))
 		retvars <- gsub("[\t\r\n]", "", retvars)
 		retvars <- gsub('\\s+', '',retvars)
-		retvars <- strsplit(retvars,",")[[1]]
+		retvars <- strsplit(retvars, ",")[[1]]
 		retvars <- retvars[!is.na(retvars) & retvars != '']
 		vgmModList <<- retvars
 
@@ -881,6 +899,11 @@ editVgmModel <- function(tt, vgmModList){
 		tkfocus(tt)
 	})
 
+	tkgrid(bt.prm.OK, row = 0, column = 0, sticky = 'w', padx = 5, pady = 1, ipadx = 10, ipady = 1)
+	tkgrid(bt.prm.CA, row = 0, column = 1, sticky = 'e', padx = 5, pady = 1, ipadx = 1, ipady = 1)
+
+	################################
+
 	tkgrid(frGrd0, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 2, padx = 2, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(frGrd1, row = 1, column = 1, sticky = 'se', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
@@ -890,7 +913,7 @@ editVgmModel <- function(tt, vgmModList){
 	tt.h <- as.integer(tkwinfo("reqheight", tt1))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt1, paste('+',tt.x,'+',tt.y, sep = ''))
+	tkwm.geometry(tt1, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt1)
 	tkwm.title(tt1, 'Edit Variogram Model')
 	tkwm.deiconify(tt1)

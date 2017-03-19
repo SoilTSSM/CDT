@@ -114,9 +114,8 @@ plotadjusted <- function(parent, iselect, noteHomAdjPlot){
 	}
 
 	###################################################################
-	onglet <- imageNotebookTab_open(parent, noteHomAdjPlot,
-				tabTitle = paste(ReturnExecResults$station, 'Adjusted Series', sep = '-'),
-				AllOpenTabType, AllOpenTabData)
+	titre <- paste(ReturnExecResults$station, 'Adjusted Series', sep = '-')
+	onglet <- imageNotebookTab_open(parent, noteHomAdjPlot, titre, AllOpenTabType, AllOpenTabData)
 
 	##########
 	hscale <- as.numeric(tclvalue(tkget(spinH)))

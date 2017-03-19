@@ -29,7 +29,7 @@ getOutlier.params <- function(IJstation, IJoutputdir){
 		dates <- EnvQcOutlierData$donnees$dates
 		if(!GeneralParameters$stn.type$single.series){
 			pos <- which(as.character(EnvQcOutlierData$donnees$id) == IJstation)
-			xdat <- EnvQcOutlierData$donnees$data[,pos]
+			xdat <- EnvQcOutlierData$donnees$data[, pos]
 		}else{
 			if(EnvQcOutlierData$donnees$nbvar == 3) xdat <- EnvQcOutlierData$donnees$var$rr
 			else xdat <- EnvQcOutlierData$donnees$var$var
@@ -41,7 +41,7 @@ getOutlier.params <- function(IJstation, IJoutputdir){
 		if(!GeneralParameters$stn.type$single.series){#not 1series
 			dates <- EnvQcOutlierData$donnees1$dates
 			pos <- which(as.character(EnvQcOutlierData$donnees1$id) == IJstation)
-			xdat <- EnvQcOutlierData$donnees1$data[,pos]
+			xdat <- EnvQcOutlierData$donnees1$data[, pos]
 		}else{
 			dates <- EnvQcOutlierData$donnees1$dates
 			if(EnvQcOutlierData$donnees1$nbvar == 3){
@@ -72,7 +72,7 @@ replaceOutlier <- function(IJstation, thresStat, isReplace){
 	outlparams <- getOutlier.params(IJstation, IJoutputdir)
 
 	corrdir <- file.path(paste(head(unlist(strsplit(IJoutputdir, .Platform$file.sep)), n = -2),
-						sep = '', collapse = .Platform$file.sep), 'CorrectedData')
+								sep = '', collapse = .Platform$file.sep), 'CorrectedData')
 	if(!file.exists(corrdir)) dir.create(corrdir, showWarnings = FALSE, recursive = TRUE)
 	corrdirstn <- file.path(corrdir, IJstation)
 	if(!file.exists(corrdirstn)) dir.create(corrdirstn, showWarnings = FALSE, recursive = TRUE)

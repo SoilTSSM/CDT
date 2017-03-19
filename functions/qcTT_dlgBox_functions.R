@@ -1,7 +1,6 @@
 qc.get.info.txtn <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	##tkentry width, file path
-	if (Sys.info()["sysname"] == "Windows"){
+	if(Sys.info()["sysname"] == "Windows"){
 		largeur <- 28
 		largeur1 <- 26
 		spady <- 0
@@ -169,7 +168,6 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 	tkgrid(en.file.save, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 	tkgrid(bt.file.save, row = 7, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 
-
 	infobulle(cb.period, 'Select the time step of the data')
 	status.bar.display(cb.period, TextOutputVar, 'Select the time step of the data')
 	infobulle(cb.file.stn1, 'Select the file containing the data to control')
@@ -271,10 +269,10 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 	status.bar.display(cb.const.chk, TextOutputVar, 'Check this box to verify if Tmin is greater than Tmax for the same observation period')
 	infobulle(cb.1uselv, 'Check this box if you want to use elevation data to choose neighbors stations')
 	status.bar.display(cb.1uselv, TextOutputVar, 'Check this box if you want to use elevation data to choose neighbors stations')
-	infobulle(cb.1intelv, 'Tick this box if the elevation data will be extracted from DEM')
-	status.bar.display(cb.1intelv, TextOutputVar, 'Tick this box if the elevation data will be extracted from DEM')
-	infobulle(cb.1datelv, 'Tick this box if the elevation data from CDT station data')
-	status.bar.display(cb.1datelv, TextOutputVar, 'Tick this box if the elevation data from CDT station data')
+	infobulle(cb.1intelv, 'Check this box if the elevation data will be extracted from DEM')
+	status.bar.display(cb.1intelv, TextOutputVar, 'Check this box if the elevation data will be extracted from DEM')
+	infobulle(cb.1datelv, 'Check this box if the elevation data from CDT station data')
+	status.bar.display(cb.1datelv, TextOutputVar, 'Check this box if the elevation data from CDT station data')
 
 	##################
 
