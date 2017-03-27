@@ -37,6 +37,8 @@ output:
 
 ## [NetCDF data](cdt_data_input.html#cdt.ncdf.data)
 
+## [NetCDF filename format](cdt_data_input.html#cdt.ncdf.ffrmt)
+
 # [Format CDT Input data](format_cdt_data.html)
 
 ## [Multiple Files](format_cdt_data.html#multiple.files)
@@ -48,6 +50,32 @@ output:
 # [Assess Data Availability](assess_data_availability.html)
 
 # [Aggregating Time Series](aggregate_TS.html)
+
+# [Merging Rainfall](merging_rainfall.html)
+
+## [ Bias calculation](merging_rainfall.html#rr.calc.bias)
+
+## [ Apply bias correction](merging_rainfall.html#rr.apply.bias)
+
+## [ Compute Spatio-temporal Trend Coefficients](merging_rainfall.html#rr.calc.lmcoef)
+
+## [ Merging Data](merging_rainfall.html#rr.merge.data)
+
+# [Merging Temperatures](merging_temperature.html)
+
+## [Compute Downscaling Coefficients](merging_temperature.html#tt.calc.dcoef)
+
+## [Reanalysis Downscaling](merging_temperature.html#tt.downscale)
+
+## [Bias calculation](merging_temperature.html#tt.calc.bias)
+
+## [Apply bias correction](merging_temperature.html#tt.apply.bias)
+
+## [Compute Spatio-temporal Trend Coefficients](merging_temperature.html#tt.calc.lmcoef)
+
+## [Merging Data](merging_temperature.html#tt.merge.data)
+
+# [Updating dekadal rainfall](update_dekadal_rainfall.html)
 
 </div>
 

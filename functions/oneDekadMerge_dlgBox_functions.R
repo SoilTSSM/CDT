@@ -1,7 +1,5 @@
 mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
-	# largeur <- if(Sys.info()["sysname"] == "Windows") 29 else 27
-
 	if (Sys.info()["sysname"] == "Windows"){
 		largeur <- 28
 		largeur0 <- 33
@@ -15,7 +13,6 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 		largeur2 <- 15
 		largeur3 <- 28
 	}
-
 
 	##
 	tt <- tktoplevel()
@@ -114,6 +111,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 			tkconfigure(bt.dir.LM, state = 'disabled')
 			tkconfigure(min.nbrs.stn.v, state = 'disabled')
 			tkconfigure(min.non.zero.v, state = 'disabled')
+			tkconfigure(max.rnr.dst.v, state = 'disabled')
 			tkconfigure(cb.RnoR, state = 'disabled')
 			tkconfigure(cb.RnoRs, state = 'disabled')
 			tkconfigure(cb.Interp, state = 'disabled')
@@ -139,6 +137,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 			}
 			tkconfigure(min.nbrs.stn.v, state = 'normal')
 			tkconfigure(min.non.zero.v, state = 'normal')
+			tkconfigure(max.rnr.dst.v, state = 'normal')
 			tkconfigure(cb.RnoR, state = 'normal')
 			tkconfigure(cb.RnoRs, state = 'normal')
 			tkconfigure(cb.Interp, state = 'normal')
@@ -344,7 +343,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 		}
 	})
 
-	tkbind(cb.mth.bias,"<<ComboboxSelected>>", function(){
+	tkbind(cb.mth.bias, "<<ComboboxSelected>>", function(){
 		if(tclvalue(adj.bias) == '1'){
 			stateBSM <- if(tclvalue(bias.method) == "Quantile.Mapping") 'disabled' else 'normal'
 			tkconfigure(en.prf.bias, state = stateBSM)
@@ -358,6 +357,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	min.non.zero <- tclVar(str_trim(GeneralParameters$Merging.pars$min.non.zero))
 	use.RnoR <- tclVar(GeneralParameters$Merging.pars$use.RnoR)
 	smooth.RnoR <- tclVar(GeneralParameters$Merging.pars$smooth.RnoR)
+	max.rnr.dst <- tclVar(GeneralParameters$Merging.pars$maxdist.RnoR)
 
 	mrg.method <- tclVar(str_trim(GeneralParameters$Mrg.Method))
 	cb.MrgMthd <- c("Regression Kriging", "Spatio-Temporal LM")
@@ -375,10 +375,12 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	bt.dir.LM <- tkbutton(frMrg, text = "...", state = stateLMCoef)
 	frMrgPars <- ttklabelframe(frMrg, text = "Merging parameters", relief = 'groove')
 
-	min.nbrs.stn.l <- tklabel(frMrgPars, text = 'Min.Nb.Stn', anchor = 'w', justify = 'left')
+	min.nbrs.stn.l <- tklabel(frMrgPars, text = 'Min.Nb.Stn', anchor = 'e', justify = 'right')
 	min.nbrs.stn.v <- tkentry(frMrgPars, width = 4, textvariable = min.stn, justify = 'right', state = stateMrg)
-	min.non.zero.l <- tklabel(frMrgPars, text = 'Min.No.Zero', anchor = 'w', justify = 'left')
+	min.non.zero.l <- tklabel(frMrgPars, text = 'Min.No.Zero', anchor = 'e', justify = 'right')
 	min.non.zero.v <- tkentry(frMrgPars, width = 4, textvariable = min.non.zero, justify = 'right', state = stateMrg)
+	max.rnr.dst.l <- tklabel(frMrgPars, text = 'Maxdist.RnR', anchor = 'e', justify = 'right')
+	max.rnr.dst.v <- tkentry(frMrgPars, width = 4, textvariable = max.rnr.dst, justify = 'right')
 	cb.RnoR <- tkcheckbutton(frMrgPars, variable = use.RnoR, text = 'Apply Rain-no-Rain mask', anchor = 'w', justify = 'left', state = stateMrg)
 	cb.RnoRs <- tkcheckbutton(frMrgPars, variable = smooth.RnoR, text = 'Smooth Rain-no-Rain mask', anchor = 'w', justify = 'left', state = stateMrg)
 
@@ -396,12 +398,14 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	tkgrid(bt.dir.LM, row = 2, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frMrgPars, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	tkgrid(min.nbrs.stn.l, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(min.nbrs.stn.v, row = 0, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(min.non.zero.l, row = 0, column = 2, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(min.non.zero.v, row = 0, column = 3, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cb.RnoR, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cb.RnoRs, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(min.nbrs.stn.l, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
+	tkgrid(min.nbrs.stn.v, row = 0, column = 1, sticky = 'w', rowspan = 1, columnspan = 1)
+	tkgrid(min.non.zero.l, row = 0, column = 2, sticky = 'e', rowspan = 1, columnspan = 1)
+	tkgrid(min.non.zero.v, row = 0, column = 3, sticky = 'w', rowspan = 1, columnspan = 1)
+	tkgrid(max.rnr.dst.l, row = 1, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
+	tkgrid(max.rnr.dst.v, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1)
+	tkgrid(cb.RnoR, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.RnoRs, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(cb.mrg, 'Method to be used to perform merging')
 	status.bar.display(cb.mrg, TextOutputVar, 'Method to be used to perform merging')
@@ -418,6 +422,9 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	status.bar.display(min.non.zero.l, TextOutputVar, 'Minimum number of non-zero gauge values to perform the merging')
 	infobulle(min.non.zero.v, 'Minimum number of non-zero gauge values to perform the merging')
 	status.bar.display(min.non.zero.v, TextOutputVar, 'Minimum number of non-zero gauge values to perform the merging')
+	infobulle(max.rnr.dst.v, 'Maximum distance (in decimal degrees) for interpolating Rain-noRain mask')
+	status.bar.display(max.rnr.dst.v, TextOutputVar, 'Maximum distance (in decimal degrees) for interpolating Rain-noRain mask')
+
 	#####
 
 	tkbind(cb.mrg, "<<ComboboxSelected>>", function(){
@@ -561,7 +568,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	infobulle(bt.blkshp, 'Browse file if not listed')
 	status.bar.display(bt.blkshp, TextOutputVar, 'Browse file if not listed')
 
-	tkbind(cb.blankGrd,"<<ComboboxSelected>>", function(){
+	tkbind(cb.blankGrd, "<<ComboboxSelected>>", function(){
 		if(tclvalue(blankGrd) == "None"){
 			tkconfigure(cb.grddem, state = 'disabled')
 			tkconfigure(bt.grddem, state = 'disabled')
@@ -698,6 +705,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 			GeneralParameters$Merging.pars$min.non.zero <<- as.numeric(str_trim(tclvalue(min.non.zero)))
 			GeneralParameters$Merging.pars$use.RnoR <<- switch(str_trim(tclvalue(use.RnoR)), '0' = FALSE, '1' = TRUE)
 			GeneralParameters$Merging.pars$smooth.RnoR <<- switch(str_trim(tclvalue(smooth.RnoR)), '0' = FALSE, '1' = TRUE)
+			GeneralParameters$Merging.pars$maxdist.RnoR <<- as.numeric(str_trim(tclvalue(max.rnr.dst)))
 
 			tkgrab.release(tt)
 			tkdestroy(tt)

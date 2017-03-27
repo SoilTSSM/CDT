@@ -173,7 +173,7 @@ $(document).ready(function () {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">CDT DOCUMENTATION</a>
+      <a class="navbar-brand" href="index.html">CDT User Guide</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -306,7 +306,7 @@ $(document).ready(function () {
 <li>Select the type of data to be aggregated. There are three choices available: <code>One station series</code>, <code>CDT data format</code> and <code>NetCDF gridded data</code>. The case of <code>One station series</code> and <code>NetCDF gridded data</code> are described in more detail in the sections below.</li>
 <li>Select the function to be used to aggregate the series. For temperature, select <code>mean</code> and <code>sum</code> for precipitation.</li>
 <li>Enter the minimum fraction of non-missing values that must be present within each output time step. If the fraction of non-missing values within the output time step is less than this fraction a missing value is returned.</li>
-<li>In the case of <code>One station series</code> and <code>CDT data format</code>, select the file containing the station data, and for <code>NetCDF gridded data</code>, enter the full path to directory containing the NetCDF data, or use the <span class="buttonclass"> … </span>   to browse it.</li>
+<li>In the case of <code>One station series</code> and <code>CDT data format</code>, select the file containing the station data, and for <code>NetCDF gridded data</code>, enter the full path to directory containing the NetCDF data, or use <span class="buttonclass"> … </span>   to browse it.</li>
 <li>In the case of <code>One station series</code> and <code>CDT data format</code>, enter the name of the file or the full path of the file to save the aggregated data. For <code>NetCDF gridded data</code>, enter the full path to directory to save result.</li>
 </ol>
 <p>Click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> to aggregate the data.</p>
@@ -336,59 +336,21 @@ $(document).ready(function () {
 </center>
 <p><br></p>
 <ol style="list-style-type: decimal">
-<li>Enter the date range of the series you want to aggregate, makes sure the date is valid, meaning that dates like 2016-06-31 and 2015-02-29 will throw an error.</li>
-<li>Enter the format of the file name for the input netcdf files</li>
-<li>Enter the format of the file name for the output netcdf files</li>
+<li>Enter the date range of the series you want to aggregate, make sure the date is valid, meaning that dates like 2016-06-31 and 2015-02-29 will throw an error.</li>
+<li>Enter the filename format of the input netcdf files</li>
+<li>Enter the filename format of the output netcdf files</li>
 </ol>
-<p><strong><em>NetCDF filename format</em></strong></p>
-<p>CDT uses a specific encoding to represent netcdf file names. Since each file only contains the data for a single date (one file per date), then it is necessary to encode the file names to have a time series.</p>
-<p>CDT uses <code>%s</code> to represent the year, month, dekad or day.</p>
-<p><em>Examples:</em></p>
-<p>Here are some examples of how to format a netcdf file names</p>
-<table>
-<thead>
-<tr class="header">
-<th>Time step</th>
-<th>netcdf file name</th>
-<th>CDT format</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>daily</td>
-<td>rfe_20160626.nc</td>
-<td>rfe_%s%s%s.nc</td>
-</tr>
-<tr class="even">
-<td>daily</td>
-<td>tmax_mrg_2016-06-26_ALL.nc</td>
-<td>tmax_mrg_%s-%s-%s_ALL.nc</td>
-</tr>
-<tr class="odd">
-<td>dekadal</td>
-<td>precip_2016063.nc</td>
-<td>precip_%s%s%s.nc</td>
-</tr>
-<tr class="even">
-<td>dekadal</td>
-<td>rfe_2016-06-dk3.nc</td>
-<td>rfe_%s-%s-dk%s.nc</td>
-</tr>
-<tr class="odd">
-<td>monthly</td>
-<td>tmin_2016-06.nc</td>
-<td>tmin_%s-%s.nc</td>
-</tr>
-<tr class="even">
-<td>monthly</td>
-<td>tmax_201606_CLM.nc</td>
-<td>tmax_%s%s_CLM.nc</td>
-</tr>
-</tbody>
-</table>
-<p>Click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> to aggregate the data.</p>
-<hr />
-<p>Generated on : February 01, 2017, 23:32</p>
+<blockquote>
+<p>Go to the section <a href="cdt_data_input.html#cdt.ncdf.ffrmt">NetCDF filename format</a> for more details on the format of the NetCDF file names.</p>
+</blockquote>
+<p>Click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> to aggregate the data.<br />
+<!-- 
+
+
+-----------
+
+Generated on : March 24, 2017, 13:49
+--></p>
 
 <footer class="navbar navbar-inverse  navbar-fixed-bottom">
     <p>

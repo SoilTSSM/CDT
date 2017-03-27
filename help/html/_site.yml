@@ -1,6 +1,6 @@
 name: "CDT User Guide"
 navbar:
-  title: "CDT DOCUMENTATION"
+  title: "CDT User Guide"
   type: inverse
   left:
     - text: "CDT GUI & Data"

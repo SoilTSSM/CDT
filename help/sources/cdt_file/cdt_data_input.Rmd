@@ -11,6 +11,8 @@ output:
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(fig.path = 'images/R_images/cdt_data_input.')
 ```
+```{r, child = "cdtMenuToolbar.Rmd"}
+```
 
 CDT can handle daily, dekadal (10-days) or monthly series. A file can contains one station or several stations series. Input data series for one station can contains one or three variables (precipitation-maximum temperature-minimum temperature in this order). Each input data series should be stored in a text/ASCII or CSV (Comma-separated values) format file.
 
@@ -184,6 +186,32 @@ nc
 nc_close(nc)
 ```  
 
+## NetCDF filename format `r anchor.point('cdt.ncdf.ffrmt')`
 
+CDT uses a specific encoding to represent netcdf file names. Since each file only contains the data for a single date (one file per date), then it is necessary to encode the file names to have a time series.
+
+CDT uses `%s` to represent the year, month, dekad or day.
+
+*Examples:*
+
+Suppose your file names are of the form *rfe_2016-06-dk3.nc*, then you must represent the years, months and dekads by **_%s_**. So you need to encode your file names  when you specify them on CDT as following:
+
+$$rfe\_\underbrace{\%s}_\textrm{year}-\underbrace{\%s}_\textrm{month}-dk\underbrace{\%s}_\textrm{dekad}.nc$$
+
+Here are some examples of how to format a netcdf file names.
+
+Time step |  netcdf file name | CDT format
+--------- |  ---------------- | ----------
+daily     |  rfe_20160626.nc    | rfe_%s%s%s.nc
+daily     |  tmax_mrg_2016-06-26_ALL.nc  | tmax_mrg_%s-%s-%s_ALL.nc
+dekadal  | precip_2016063.nc  | precip_%s%s%s.nc
+dekadal | rfe_2016-06-dk3.nc  | rfe_%s-%s-dk%s.nc
+monthly  | tmin_2016-06.nc | tmin_%s-%s.nc
+monthly | tmax_201606_CLM.nc | tmax_%s%s_CLM.nc
+
+
+
+<!--
 ```{r, child = "_generated_date.Rmd"}
 ```
+-->

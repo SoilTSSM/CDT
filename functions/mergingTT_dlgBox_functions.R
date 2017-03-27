@@ -2257,7 +2257,7 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 	frInterp <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
 	interp.method <- tclVar()
-	cb.InterpVAL <- c('Ordinary Kriging', 'Inverse Distance Weighted')
+	cb.InterpVAL <- c('Kriging', 'Inverse Distance Weighted')
 	tclvalue(interp.method) <- switch(GeneralParameters$Interpolation.pars$interp.method, 
 										'Kriging' = cb.InterpVAL[1], 
 										'IDW' = cb.InterpVAL[2])
@@ -2624,7 +2624,7 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 
 				GeneralParameters$Interpolation.pars$interp.method <<- switch(str_trim(tclvalue(interp.method)),
 																			'Inverse Distance Weighted' = 'IDW',
-																			'Ordinary Kriging' = 'Kriging')
+																			'Kriging' = 'Kriging')
 				GeneralParameters$Interpolation.pars$nmin <<- as.numeric(str_trim(tclvalue(nmin)))
 				GeneralParameters$Interpolation.pars$nmax <<- as.numeric(str_trim(tclvalue(nmax)))
 				GeneralParameters$Interpolation.pars$maxdist <<- as.numeric(str_trim(tclvalue(maxdist)))

@@ -108,6 +108,7 @@ span.menuselection {
     color: #217AEC;
     padding-left: 3px;
     padding-right: 3px;
+    white-space: nowrap;
 }
 
 #cdtIcons {
@@ -146,6 +147,7 @@ span.buttonclass {
     padding: 1px 3px;
     border-style: solid;
     border-color: #f2f2f2 #d9d9d9 #d9d9d9 #f2f2f2;
+    white-space: nowrap;
 }
 
 span.ongletclass {

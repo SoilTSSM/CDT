@@ -81,7 +81,7 @@ And the coordinates of the stations are put in a separate file.
 
 1. Enter the full path to directory containing the station files, or browse through ![][browsebutf].
 2. Provide a sample of the data.
-3. Select the file containing the station coordinates, if the file is not loaded yet and therefore not listed, use the ![][browsebutf] to open it.
+3. Select the file containing the station coordinates, if the file is not loaded yet and therefore not listed, use ![][browsebutf] to open it.
 4. Check this box, if you want to include the elevation data to the final CDT data output,  provided that your coordinates file has non-missing elevation data.
 5. Choose the number of climate variables in the file. On our example, we have only one variable (daily rainfall).
 6. Choose the format of date (grouped or separated). On our example, the date is separated with the format YYYY MM DD.
@@ -94,9 +94,9 @@ This time, all station data are already put together in a single file with a spe
 
 `r put.image("images/data_prepraration/format_cdt_data/format_cdt_input_data2.png", height = 50, width = 50)`
 
-1. Select the file containing the station data to be formated, if the file is not loaded yet and therefore not listed, use the ![][browsebutf] to open it.
+1. Select the file containing the station data to be formated, if the file is not loaded yet and therefore not listed, use ![][browsebutf] to open it.
 2. Check this box, if the coordinates of the station are included in the data.
-3. Select the file containing the station coordinates, if it is not included in the file containing the data. If the file is not loaded yet and therefore not listed, use the ![][browsebutf] to open it.
+3. Select the file containing the station coordinates, if it is not included in the file containing the data. If the file is not loaded yet and therefore not listed, use ![][browsebutf] to open it.
 4. Check this box, if you want to include the elevation data to the final CDT data output,  provided that the data file contains an elevation data or the elevation data is not missing on the coordinates file.
 5. Specify the column number for:
 	* __COL.ID__: stations IDs
@@ -153,5 +153,7 @@ If you want to combine two CDT data formats from two different files into one fi
 
 To combine the two files, click on the button `r button('Merge Data')`
 
+<!-- 
 ```{r, child="_generated_date.Rmd"}
 ```
+ -->

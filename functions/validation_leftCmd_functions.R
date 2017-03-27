@@ -1,16 +1,20 @@
 
 ValidationPanelCmd <- function(clim.var){
 	listOpenFiles <- openFile_ttkcomboList()
-	largeur <- as.integer(w.scale(21)/sfont0)
-	wncdf_ff <- as.integer(w.scale(14)/sfont0)
 	if(Sys.info()["sysname"] == "Windows"){
-		wscrlwin <- w.scale(20)
-		hscrlwin <- h.scale(31.5)
-		wttkcombo <- as.integer(as.numeric(w.scale(20)*0.95)/9)
+		wscrlwin <- w.scale(26)
+		hscrlwin <- h.scale(45)
+		wttkcombo <- as.integer(w.scale(30)/sfont0)
+		largeur <- as.integer(w.scale(28)/sfont0)
+		largeur1 <- as.integer(w.scale(30)/sfont0)
+		wncdf_ff <- as.integer(w.scale(20)/sfont0)
 	}else{
-		wscrlwin <- w.scale(24)
-		hscrlwin <- h.scale(38.5)
-		wttkcombo <- as.integer(as.numeric(w.scale(24)*0.95)/9)
+		wscrlwin <- w.scale(26)
+		hscrlwin <- h.scale(46)
+		wttkcombo <- as.integer(w.scale(26)/sfont0)
+		largeur <- as.integer(w.scale(22)/sfont0)
+		largeur1 <- as.integer(w.scale(23)/sfont0)
+		wncdf_ff <- as.integer(w.scale(16)/sfont0)
 	}
 
 	###################
@@ -92,13 +96,13 @@ ValidationPanelCmd <- function(clim.var){
 	file.grdCDF <- tclVar()
 
 	labNcdir.tab1 <- tklabel(frameNcdf, text = "Directory of NetCDF files", anchor = 'w', justify = 'left')
-	dirCDF.tab1 <- tkentry(frameNcdf, textvariable = dirNetCDF, width = largeur) #
+	dirCDF.tab1 <- tkentry(frameNcdf, textvariable = dirNetCDF, width = largeur1)
 	bdirCDF.tab1 <- tkbutton(frameNcdf, text = "...")
-	cap1.tab1 <- tklabel(frameNcdf, text = "NetCDF file format", anchor = 'e', justify = 'right')
-	netCDFff.tab1 <- tkentry(frameNcdf, textvariable = netCDFff, width = wncdf_ff)
 	labRFE.tab1 <- tklabel(frameNcdf, text = "NetCDF's sample file", anchor = 'w', justify = 'left')
 	combgrdCDF.tab1 <- ttkcombobox(frameNcdf, values = unlist(listOpenFiles), textvariable = file.grdCDF, width = largeur)
 	btgrdCDF.tab1 <- tkbutton(frameNcdf, text = "...")
+	cap1.tab1 <- tklabel(frameNcdf, text = "NetCDF file format", anchor = 'e', justify = 'right')
+	netCDFff.tab1 <- tkentry(frameNcdf, textvariable = netCDFff, width = wncdf_ff)
 
 	#######################
 	tkconfigure(bdirCDF.tab1, command = function(){
@@ -124,11 +128,11 @@ ValidationPanelCmd <- function(clim.var){
 	tkgrid(labNcdir.tab1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(dirCDF.tab1, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(bdirCDF.tab1, row = 1, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cap1.tab1, row = 2, column = 0, sticky = 'e', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(netCDFff.tab1, row = 2, column = 2, sticky = 'w', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(labRFE.tab1, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(combgrdCDF.tab1, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(btgrdCDF.tab1, row = 4, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(labRFE.tab1, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(combgrdCDF.tab1, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(btgrdCDF.tab1, row = 3, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cap1.tab1, row = 4, column = 0, sticky = 'e', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(netCDFff.tab1, row = 4, column = 2, sticky = 'w', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(netCDFff.tab1, 'Enter the format of the NetCDF files names,\nexample: rfe1983_01-dk1.nc')
 	status.bar.display(netCDFff.tab1, TextOutputVar, 'Enter the format of the NetCDF files names, example: rfe1983_01-dk1.nc')
@@ -140,7 +144,7 @@ ValidationPanelCmd <- function(clim.var){
 	#######################
 	file.save1 <- tclVar()
 
-	fl2sav.tab1 <- tkentry(frameDirSav, textvariable = file.save1, width = largeur) #
+	fl2sav.tab1 <- tkentry(frameDirSav, textvariable = file.save1, width = largeur1)
 	bfl2sav.tab1 <- tkbutton(frameDirSav, text = "...")
 	#######################
 
@@ -174,136 +178,14 @@ ValidationPanelCmd <- function(clim.var){
 	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr2, 0, weight = 1)
 
-	#####
-	frameZoom <- ttklabelframe(subfr2, text = "ZOOM", relief = 'groove')
-
-	btZoomP.tab2 <<- tkbutton(frameZoom, image = pikZoomPlus, relief = 'raised', bg = 'lightblue', state = 'normal')
-	btZoomM.tab2 <<- tkbutton(frameZoom, image = pikZoomMinus, relief = 'raised', bg = 'lightblue', state = 'normal')
-	btZoomRect.tab2 <<- tkbutton(frameZoom, image = pikZoomRect, relief = 'raised', bg = 'lightblue', state = 'normal')
-	btPanImg.tab2 <<- tkbutton(frameZoom, image = pikPanImg, relief = 'raised', bg = 'lightblue', state = 'normal')
-	btRedraw.tab2 <- tkbutton(frameZoom, image = pikRedraw, relief = 'raised', state = 'disabled')
-	btReset.tab2 <- tkbutton(frameZoom, image = pikReset, relief = 'raised')
-
-	#######################
-	tkgrid(btZoomP.tab2, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 1)
-	tkgrid(btZoomM.tab2, row = 0, column = 1, sticky = 'nswe', rowspan = 1, columnspan = 1)
-	tkgrid(btZoomRect.tab2, row = 0, column = 2, sticky = 'nswe', rowspan = 1, columnspan = 1)
-	tkgrid(btReset.tab2, row = 1, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 1)
-	tkgrid(btRedraw.tab2, row = 1, column = 1, sticky = 'nswe', rowspan = 1, columnspan = 1)
-	tkgrid(btPanImg.tab2, row = 1, column = 2, sticky = 'nswe', rowspan = 1, columnspan = 1)
-
-	infobulle(btZoomP.tab2, 'Zoom In')
-	status.bar.display(btZoomP.tab2, TextOutputVar, 'Zoom In')
-	infobulle(btZoomM.tab2, 'Zoom Out')
-	status.bar.display(btZoomM.tab2, TextOutputVar, 'Zoom Out')
-	infobulle(btZoomRect.tab2, 'Zoom Area')
-	status.bar.display(btZoomRect.tab2, TextOutputVar, 'Zoom Area')
-	infobulle(btPanImg.tab2, 'Pan Tool')
-	status.bar.display(btPanImg.tab2, TextOutputVar, 'Pan Tool')
-	infobulle(btRedraw.tab2, 'Redraw Map')
-	status.bar.display(btRedraw.tab2, TextOutputVar, 'Redraw Map')
-	infobulle(btReset.tab2,' Zoom Reset')
-	status.bar.display(btReset.tab2, TextOutputVar,' Zoom Reset')
-
-	#######################
-
-	frameDisp <- tkframe(subfr2)
-
-	minlonRect <<- tclVar()
-	maxlonRect <<- tclVar()
-	minlatRect <<- tclVar()
-	maxlatRect <<- tclVar()
-
-	xx1 <<- tclVar()
-	xx2 <<- tclVar()
-	yy1 <<- tclVar()
-	yy2 <<- tclVar()
-	ZoomXYval0 <- NULL
-	notebookTab <- NULL
-	#######################
-
-	bdisp.tab2 <- tkbutton(frameDisp, text = "Display Map")
-	bselect.tab2 <<- tkbutton(frameDisp, text = "Select", relief = 'raised', bg = 'lightblue')
-
-	minLab.tab2 <- tklabel(frameDisp, text = 'Min')
-	maxLab.tab2 <- tklabel(frameDisp, text = 'Max')
-	lonLab.tab2 <- tklabel(frameDisp, text = 'Lon', anchor = 'e', justify = 'right')
-	latLab.tab2 <- tklabel(frameDisp, text = 'Lat', anchor = 'e', justify = 'right')
-	minlon.tab2 <- tkentry(frameDisp, width = 4, textvariable = minlonRect, justify = "left", state = 'disabled')
-	maxlon.tab2 <- tkentry(frameDisp, width = 4, textvariable = maxlonRect, justify = "left", state = 'disabled')
-	minlat.tab2 <- tkentry(frameDisp, width = 4, textvariable = minlatRect, justify = "left", state = 'disabled')
-	maxlat.tab2 <- tkentry(frameDisp, width = 4, textvariable = maxlatRect, justify = "left", state = 'disabled')
-
-	#######################
-
-	tkconfigure(bdisp.tab2, command = function(){
-		donne <- getStnOpenData(file.stnfl)
-		shpofile <- getShpOpenData(file.plotShp)
-		if(!is.null(donne)){
-			idStn <- as.character(donne[1, -1])
-			lonStn <- as.numeric(donne[2, -1])
-			latStn <- as.numeric(donne[3, -1])
-			donne <- donne[1:3, -1]
-			lo1 <- min(lonStn, na.rm = TRUE)
-			lo2 <- max(lonStn, na.rm = TRUE)
-			la1 <- min(latStn, na.rm = TRUE)
-			la2 <- max(latStn, na.rm = TRUE)
-			plotOK <- TRUE
-			shpf <- shpofile[[2]]
-		}else{
-			plotOK <- FALSE
-			InsertMessagesTxt(main.txt.out, 'Provide the station data', format = TRUE)
-		}	
-		if(tclvalue(select_type) == 'Polygons' & plotOK){
-			if(!is.null(shpofile)){
-				shpf <- shpofile[[2]]
-				lo1 <- min(lo1, round(bbox(shpf)[1, 1], 4))
-				lo2 <- max(lo2, round(bbox(shpf)[1, 2], 4))
-				la1 <- min(la1, round(bbox(shpf)[2, 1], 4))
-				la2 <- max(la2, round(bbox(shpf)[2, 2], 4))
-				plotOK <- TRUE
-			}else{
-				plotOK <- FALSE
-				InsertMessagesTxt(main.txt.out, 'Provide the ESRI shapfile for for administrative boundaries', format = TRUE)
-			}
-		}
-
-		if(plotOK){
-			ZoomXYval0 <<- c(lo1, lo2, la1, la2)
-			tclvalue(xx1) <<- lo1
-			tclvalue(xx2) <<- lo2
-			tclvalue(yy1) <<- la1
-			tclvalue(yy2) <<- la2
-			ZoomXYval <- as.numeric(c(tclvalue(xx1), tclvalue(xx2), tclvalue(yy1), tclvalue(yy2)))
-
-			imgContainer <- displayMap4Validation(tknotes, donne, shpf, ZoomXYval, notebookTab)
-			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, notebookTab, AllOpenTabType, AllOpenTabData)
-			notebookTab <<- retNBTab$notebookTab
-			AllOpenTabType <<- retNBTab$AllOpenTabType
-			AllOpenTabData <<- retNBTab$AllOpenTabData
-		}
-	})
-
-	#######################
-
-	tkgrid(bdisp.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2)
-	tkgrid(bselect.tab2, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(minLab.tab2, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(maxLab.tab2, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(lonLab.tab2, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(latLab.tab2, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(minlon.tab2, row = 2, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(maxlon.tab2, row = 2, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(minlat.tab2, row = 3, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
-	tkgrid(maxlat.tab2, row = 3, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
-
 	#######################
 
 	frameSelect <- ttklabelframe(subfr2, text = "Selection Type", relief = 'groove')
 	
+	Select.ALL <- c('All Stations', 'Rectangle', 'Polygons')
 	select_type <<- tclVar('All Stations')
 	
-	cbAreaType.tab2 <- ttkcombobox(frameSelect, values = c('All Stations', 'Rectangle', 'Polygons'), textvariable = select_type, width = wttkcombo)
+	cbAreaType.tab2 <- ttkcombobox(frameSelect, values = Select.ALL, textvariable = select_type, width = wttkcombo)
 
 	tkgrid(cbAreaType.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
 
@@ -378,7 +260,7 @@ ValidationPanelCmd <- function(clim.var){
 	Admin_var <- tclVar()
 	namePoly <<- tclVar()
 
-	combShp.tab2 <- ttkcombobox(frameShp, values = unlist(listOpenFiles), textvariable = file.plotShp, width = wttkcombo-4)
+	combShp.tab2 <- ttkcombobox(frameShp, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur)
 	btShp.tab2 <- tkbutton(frameShp, text = "...")
 	attrLab.tab2 <- tklabel(frameShp, text = "Attribute field to be used and displayed", anchor = 'w', justify = 'left')
 	adminVar.tab2 <<- ttkcombobox(frameShp, values='', textvariable = Admin_var, width = wttkcombo, state = 'disabled')
@@ -477,14 +359,137 @@ ValidationPanelCmd <- function(clim.var){
 		}
 	})
 
+
 	#######################
 
-	tkgrid(frameZoom, row = 0, column = 0, sticky = 'we')
-	tkgrid(frameDisp, row = 0, column = 1, sticky = 'we')
-	tkgrid(frameSelect, row = 1, column = 0, sticky = 'we', columnspan = 2, pady = 5)
-	tkgrid(frameShp, row = 2, column = 0, sticky = 'we', columnspan = 2)
-	# tkgrid(frameDirSav, row = 2, column = 0, sticky = 'we', pady = 3)
+	frameZoom <- ttklabelframe(subfr2, text = "ZOOM", relief = 'groove')
 
+	btZoomP.tab2 <<- tkbutton(frameZoom, image = pikZoomPlus, relief = 'raised', bg = 'lightblue', state = 'normal')
+	btZoomM.tab2 <<- tkbutton(frameZoom, image = pikZoomMinus, relief = 'raised', bg = 'lightblue', state = 'normal')
+	btZoomRect.tab2 <<- tkbutton(frameZoom, image = pikZoomRect, relief = 'raised', bg = 'lightblue', state = 'normal')
+	btPanImg.tab2 <<- tkbutton(frameZoom, image = pikPanImg, relief = 'raised', bg = 'lightblue', state = 'normal')
+	btRedraw.tab2 <- tkbutton(frameZoom, image = pikRedraw, relief = 'raised', state = 'disabled')
+	btReset.tab2 <- tkbutton(frameZoom, image = pikReset, relief = 'raised')
+
+	#######################
+	tkgrid(btZoomP.tab2, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 1)
+	tkgrid(btZoomM.tab2, row = 0, column = 1, sticky = 'nswe', rowspan = 1, columnspan = 1)
+	tkgrid(btZoomRect.tab2, row = 0, column = 2, sticky = 'nswe', rowspan = 1, columnspan = 1)
+	tkgrid(btReset.tab2, row = 1, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 1)
+	tkgrid(btRedraw.tab2, row = 1, column = 1, sticky = 'nswe', rowspan = 1, columnspan = 1)
+	tkgrid(btPanImg.tab2, row = 1, column = 2, sticky = 'nswe', rowspan = 1, columnspan = 1)
+
+	infobulle(btZoomP.tab2, 'Zoom In')
+	status.bar.display(btZoomP.tab2, TextOutputVar, 'Zoom In')
+	infobulle(btZoomM.tab2, 'Zoom Out')
+	status.bar.display(btZoomM.tab2, TextOutputVar, 'Zoom Out')
+	infobulle(btZoomRect.tab2, 'Zoom Area')
+	status.bar.display(btZoomRect.tab2, TextOutputVar, 'Zoom Area')
+	infobulle(btPanImg.tab2, 'Pan Tool')
+	status.bar.display(btPanImg.tab2, TextOutputVar, 'Pan Tool')
+	infobulle(btRedraw.tab2, 'Redraw Map')
+	status.bar.display(btRedraw.tab2, TextOutputVar, 'Redraw Map')
+	infobulle(btReset.tab2,' Zoom Reset')
+	status.bar.display(btReset.tab2, TextOutputVar,' Zoom Reset')
+
+	#######################
+
+	frameDisp <- tkframe(subfr2)
+
+	minlonRect <<- tclVar()
+	maxlonRect <<- tclVar()
+	minlatRect <<- tclVar()
+	maxlatRect <<- tclVar()
+
+	xx1 <<- tclVar()
+	xx2 <<- tclVar()
+	yy1 <<- tclVar()
+	yy2 <<- tclVar()
+	ZoomXYval0 <- NULL
+	notebookTab <- NULL
+
+	bdisp.tab2 <- tkbutton(frameDisp, text = "Display Map")
+	bselect.tab2 <<- tkbutton(frameDisp, text = "Select", relief = 'raised', bg = 'lightblue')
+
+	minLab.tab2 <- tklabel(frameDisp, text = 'Min')
+	maxLab.tab2 <- tklabel(frameDisp, text = 'Max')
+	lonLab.tab2 <- tklabel(frameDisp, text = 'Lon', anchor = 'e', justify = 'right')
+	latLab.tab2 <- tklabel(frameDisp, text = 'Lat', anchor = 'e', justify = 'right')
+	minlon.tab2 <- tkentry(frameDisp, width = 4, textvariable = minlonRect, justify = "left", state = 'disabled')
+	maxlon.tab2 <- tkentry(frameDisp, width = 4, textvariable = maxlonRect, justify = "left", state = 'disabled')
+	minlat.tab2 <- tkentry(frameDisp, width = 4, textvariable = minlatRect, justify = "left", state = 'disabled')
+	maxlat.tab2 <- tkentry(frameDisp, width = 4, textvariable = maxlatRect, justify = "left", state = 'disabled')
+
+	#######################
+
+	tkconfigure(bdisp.tab2, command = function(){
+		donne <- getStnOpenData(file.stnfl)
+		shpofile <- getShpOpenData(file.plotShp)
+		if(!is.null(donne)){
+			idStn <- as.character(donne[1, -1])
+			lonStn <- as.numeric(donne[2, -1])
+			latStn <- as.numeric(donne[3, -1])
+			donne <- donne[1:3, -1]
+			lo1 <- min(lonStn, na.rm = TRUE)
+			lo2 <- max(lonStn, na.rm = TRUE)
+			la1 <- min(latStn, na.rm = TRUE)
+			la2 <- max(latStn, na.rm = TRUE)
+			plotOK <- TRUE
+			shpf <- shpofile[[2]]
+		}else{
+			plotOK <- FALSE
+			InsertMessagesTxt(main.txt.out, 'Provide the station data', format = TRUE)
+		}	
+		if(tclvalue(select_type) == 'Polygons' & plotOK){
+			if(!is.null(shpofile)){
+				shpf <- shpofile[[2]]
+				lo1 <- min(lo1, round(bbox(shpf)[1, 1], 4))
+				lo2 <- max(lo2, round(bbox(shpf)[1, 2], 4))
+				la1 <- min(la1, round(bbox(shpf)[2, 1], 4))
+				la2 <- max(la2, round(bbox(shpf)[2, 2], 4))
+				plotOK <- TRUE
+			}else{
+				plotOK <- FALSE
+				InsertMessagesTxt(main.txt.out, 'Provide the ESRI shapfile for for administrative boundaries', format = TRUE)
+			}
+		}
+
+		if(plotOK){
+			ZoomXYval0 <<- c(lo1, lo2, la1, la2)
+			tclvalue(xx1) <<- lo1
+			tclvalue(xx2) <<- lo2
+			tclvalue(yy1) <<- la1
+			tclvalue(yy2) <<- la2
+			ZoomXYval <- as.numeric(c(tclvalue(xx1), tclvalue(xx2), tclvalue(yy1), tclvalue(yy2)))
+
+			imgContainer <- displayMap4Validation(tknotes, donne, shpf, ZoomXYval, notebookTab)
+			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, notebookTab, AllOpenTabType, AllOpenTabData)
+			notebookTab <<- retNBTab$notebookTab
+			AllOpenTabType <<- retNBTab$AllOpenTabType
+			AllOpenTabData <<- retNBTab$AllOpenTabData
+		}
+	})
+
+	#######################
+
+	tkgrid(bdisp.tab2, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2)
+	tkgrid(bselect.tab2, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(minLab.tab2, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(maxLab.tab2, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(lonLab.tab2, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(latLab.tab2, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(minlon.tab2, row = 2, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(maxlon.tab2, row = 2, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(minlat.tab2, row = 3, column = 1, sticky = 'we', rowspan = 1, columnspan = 1)
+	tkgrid(maxlat.tab2, row = 3, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
+
+
+	#######################
+
+	tkgrid(frameSelect, row = 0, column = 0, sticky = 'we', columnspan = 6, pady = 5)
+	tkgrid(frameShp, row = 1, column = 0, sticky = 'we', columnspan = 6)
+	tkgrid(frameZoom, row = 2, column = 0, sticky = 'ns', columnspan = 2, ipady = 5)
+	tkgrid(frameDisp, row = 2, column = 2, sticky = 'we', columnspan = 4)
 
 	##########################
 	tkconfigure(btReset.tab2, command = function(){
@@ -618,8 +623,8 @@ ValidationPanelCmd <- function(clim.var){
 
 	mon1Lab.tab3 <- tklabel(frameSeason, text = 'Start month', anchor = 'w', justify = 'left')
 	mon2Lab.tab3 <- tklabel(frameSeason, text = 'End month', anchor = 'w', justify = 'left')
-	cbChoixM1.tab3 <- ttkcombobox(frameSeason, values = MonthsName, textvariable = start_mois, width = 10) #
-	cbChoixM2.tab3 <- ttkcombobox(frameSeason, values = MonthsName, textvariable = end_mois, width = 10) #
+	cbChoixM1.tab3 <- ttkcombobox(frameSeason, values = MonthsName, textvariable = start_mois, width = 10)
+	cbChoixM2.tab3 <- ttkcombobox(frameSeason, values = MonthsName, textvariable = end_mois, width = 10)
 	years1Lab.tab3 <- tklabel(frameSeason, text = 'Start year', anchor = 'e', justify = 'right')
 	years2Lab.tab3 <- tklabel(frameSeason, text = 'End year', anchor = 'w', justify = 'left')
 	years1En.tab3 <- tkentry(frameSeason, width = 5, textvariable = start_year, justify = 'right')
@@ -640,13 +645,14 @@ ValidationPanelCmd <- function(clim.var){
 	status.bar.display(years2En.tab3, TextOutputVar, 'End year to be used for validation')
 
 	#######################
+	dataType.val <- c('All Data', 'Spatial Average')
 	dataType <- tclVar('All Data')
 
-	dataType.tab3 <- ttkcombobox(subfr3, values = c('All Data', 'Spatial Average'), textvariable = dataType)
+	dataType.tab3 <- ttkcombobox(subfr3, values = dataType.val, textvariable = dataType, width = wttkcombo)
 	validate.tab3 <- tkbutton(subfr3, text = "EXECUTE")
 	stats.tab3 <- tkbutton(subfr3, text = "Statistics")
-	scatt.tab3 <- tkbutton(subfr3, text = "Gauge-RFE Plot")
-	ecdf.tab3 <- tkbutton(subfr3, text = "CDF Plot")
+	scatt.tab3 <- tkbutton(subfr3, text = "STATION-MERGED Plot")
+	ecdf.tab3 <- tkbutton(subfr3, text = " Empirical CDF Plot")
 
 	sep1.tab3 <- ttkseparator(subfr3)
 	sep2.tab3 <- ttkseparator(subfr3)
@@ -656,34 +662,31 @@ ValidationPanelCmd <- function(clim.var){
 
 	#############################
 	tkgrid(frameSeason, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
 	tkgrid(sep1.tab3, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, pady = 3)
-	tkgrid(tklabel(subfr3, text=' ',width = 6), row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(dataType.tab3, row = 2, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(tklabel(subfr3, text=' ',width = 6), row = 2, column = 5, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(dataType.tab3, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(sep2.tab3, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, pady = 3)
-	tkgrid(validate.tab3, row = 4, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(validate.tab3, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(sep3.tab3, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, pady = 3)
-	tkgrid(stats.tab3, row = 6, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(stats.tab3, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(sep4.tab3, row = 7, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, pady = 3)
-	tkgrid(scatt.tab3, row = 8, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(scatt.tab3, row = 8, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(sep5.tab3, row = 9, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, pady = 3)
-	tkgrid(ecdf.tab3, row = 10, column = 2, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(ecdf.tab3, row = 10, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#############################
 
 	outValiddata <- NULL
 	tkconfigure(validate.tab3, command = function(){
-		Inputs <- c(tclvalue(file.period), tclvalue(file.stnfl), tclvalue(dirNetCDF), tclvalue(netCDFff))
+		Inputs <- str_trim(c(tclvalue(file.period), tclvalue(file.stnfl), tclvalue(dirNetCDF), tclvalue(netCDFff)))
 		if(is.null(EnvRainValidation$Inputs)){
 			do_extr <- 1
 			assign('Inputs', Inputs, envir = EnvRainValidation)
 		}else{
 			if(all(EnvRainValidation$Inputs == Inputs)){
 				imois0 <- sort(EnvRainValidation$MONTH)
-				imois1 <- sort(getMonthsInSeason(tclvalue(start_mois), tclvalue(end_mois), full = TRUE))
+				imois1 <- sort(getMonthsInSeason(str_trim(tclvalue(start_mois)), str_trim(tclvalue(end_mois)), full = TRUE))
 				iyear0 <- sort(EnvRainValidation$YEAR)
-				iyear1 <- as.numeric(tclvalue(start_year)):as.numeric(tclvalue(end_year))
+				iyear1 <- as.numeric(str_trim(tclvalue(start_year))):as.numeric(str_trim(tclvalue(end_year)))
 				do_extr <- if(identical(imois0, imois1) & identical(iyear0, iyear1)) 0 else 1
 			}else{
 				do_extr <- 1
@@ -695,13 +698,13 @@ ValidationPanelCmd <- function(clim.var){
 		donne <- getCDTdata(file.stnfl, file.period)
 		rfedata <- getNcdfOpenData(file.grdCDF)
 		shpf <- getShpOpenData(file.plotShp)
-		retValidParams <- list(clim.var = clim.var, stn = list(donne = donne, filestn = tclvalue(file.stnfl)),
-						rfe = list(rfedata = rfedata, ncdir = tclvalue(dirNetCDF), ncformat = tclvalue(netCDFff)),
-						dates = list(start_mois = tclvalue(start_mois), end_mois = tclvalue(end_mois),
-									start_year = tclvalue(start_year), end_year = tclvalue(end_year)),
-						shp = list(shpf = shpf, attr = tclvalue(Admin_var), id = tclvalue(namePoly)),
-						rect = c(tclvalue(minlonRect), tclvalue(maxlonRect), tclvalue(minlatRect), tclvalue(maxlatRect)),
-						select_type = tclvalue(select_type), dir2sav = tclvalue(file.save1), do_extr = do_extr)
+		retValidParams <- list(clim.var = clim.var, stn = list(donne = donne, filestn = str_trim(tclvalue(file.stnfl))),
+						rfe = list(rfedata = rfedata, ncdir = str_trim(tclvalue(dirNetCDF)), ncformat = str_trim(tclvalue(netCDFff))),
+						dates = list(start_mois = str_trim(tclvalue(start_mois)), end_mois = str_trim(tclvalue(end_mois)),
+									start_year = str_trim(tclvalue(start_year)), end_year = str_trim(tclvalue(end_year))),
+						shp = list(shpf = shpf, attr = str_trim(tclvalue(Admin_var)), id = str_trim(tclvalue(namePoly))),
+						rect = str_trim(c(tclvalue(minlonRect), tclvalue(maxlonRect), tclvalue(minlatRect), tclvalue(maxlatRect))),
+						select_type = str_trim(tclvalue(select_type)), dir2sav = str_trim(tclvalue(file.save1)), do_extr = do_extr)
 
 		tkconfigure(main.win, cursor = 'watch')
 		InsertMessagesTxt(main.txt.out, "Validation.................")
@@ -709,7 +712,11 @@ ValidationPanelCmd <- function(clim.var){
 
 		tryCatch(outValiddata <<- ValidationDataFun(retValidParams),
 		#warning = function(w) warningFun(w),
-		error = function(e) errorFun(e), finally = {
+		error = function(e){
+			errorFun(e)
+			InsertMessagesTxt(main.txt.out, "Validation failed")
+			return(NULL)
+		}, finally = {
 			tkconfigure(main.win, cursor = '')
 		})
 		if(!is.null(outValiddata)) InsertMessagesTxt(main.txt.out, "Validation finished successfully")

@@ -288,7 +288,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	frInterp <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
 	interp.method <- tclVar()
-	cb.InterpVAL <- c('Ordinary Kriging', 'Inverse Distance Weighted')
+	cb.InterpVAL <- c('Kriging', 'Inverse Distance Weighted')
 	tclvalue(interp.method) <- switch(GeneralParameters$Interpolation.pars$interp.method, 
 										'Kriging' = cb.InterpVAL[1], 
 										'IDW' = cb.InterpVAL[2])
@@ -352,7 +352,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 
 	min.stn <- tclVar(GeneralParameters$Mrg.set$min.stn)
 	min.non.zero <- tclVar(GeneralParameters$Mrg.set$min.non.zero)
-	# max.rnr.dst <- tclVar(GeneralParameters$Mrg.set$maxdist.RnoR)
+	max.rnr.dst <- tclVar(GeneralParameters$Mrg.set$maxdist.RnoR)
 	use.RnoR <- tclVar(GeneralParameters$Mrg.set$use.RnoR)
 	smooth.RnoR <- tclVar(GeneralParameters$Mrg.set$smooth.RnoR)
 
@@ -360,20 +360,20 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	txt.mrg.pars <- tklabel(frMrgPars, text = 'Merging parameters', anchor = 'w', justify = 'left')
 	min.nbrs.stn.l <- tklabel(frMrgPars, text = 'Min.Nb.Stn', anchor = 'e', justify = 'right')
 	min.non.zero.l <- tklabel(frMrgPars, text = 'Min.No.Zero', anchor = 'e', justify = 'right')
-	# max.rnr.dst.l <- tklabel(frMrgPars, text = 'Max.RnR.Dist', anchor = 'e', justify = 'right')
+	max.rnr.dst.l <- tklabel(frMrgPars, text = 'Maxdist.RnR', anchor = 'e', justify = 'right')
 	min.nbrs.stn.v <- tkentry(frMrgPars, width = 4, textvariable = min.stn, justify = 'right')
 	min.non.zero.v <- tkentry(frMrgPars, width = 4, textvariable = min.non.zero, justify = 'right')
-	# max.rnr.dst.v <- tkentry(frMrgPars, width = 4, textvariable = max.rnr.dst, justify = 'right')
+	max.rnr.dst.v <- tkentry(frMrgPars, width = 4, textvariable = max.rnr.dst, justify = 'right')
 	cb.RnoR <- tkcheckbutton(frMrgPars, variable = use.RnoR, text = 'Apply Rain-no-Rain mask', anchor = 'w', justify = 'left')
 	cb.RnoRs <- tkcheckbutton(frMrgPars, variable = smooth.RnoR, text = 'Smooth Rain-no-Rain mask', anchor = 'w', justify = 'left')
 
-	tkgrid(txt.mrg.pars, row = 0, column = 0, sticky = 'ew', rowspan = 1, columnspan = 4, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(min.nbrs.stn.l, row = 1, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(min.nbrs.stn.v, row = 1, column = 1, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(min.non.zero.l, row = 2, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(min.non.zero.v, row = 2, column = 1, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	# tkgrid(max.rnr.dst.l, row = 3, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	# tkgrid(max.rnr.dst.v, row = 3, column = 1, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(txt.mrg.pars, row = 0, column = 0, sticky = 'ew', rowspan = 1, columnspan = 4)
+	tkgrid(min.nbrs.stn.l, row = 1, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1)
+	tkgrid(min.nbrs.stn.v, row = 1, column = 1, sticky = 'ew', rowspan = 1, columnspan = 1)
+	tkgrid(min.non.zero.l, row = 1, column = 2, sticky = 'ew', rowspan = 1, columnspan = 1)
+	tkgrid(min.non.zero.v, row = 1, column = 3, sticky = 'ew', rowspan = 1, columnspan = 1)
+	tkgrid(max.rnr.dst.l, row = 2, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1)
+	tkgrid(max.rnr.dst.v, row = 2, column = 1, sticky = 'ew', rowspan = 1, columnspan = 1)
 	tkgrid(cb.RnoR, row = 3, column = 0, sticky = 'ew', rowspan = 1, columnspan = 4, padx = 1, pady = 0, ipadx = 1, ipady = 1)
 	tkgrid(cb.RnoRs, row = 4, column = 0, sticky = 'ew', rowspan = 1, columnspan = 4, padx = 1, pady = 0, ipadx = 1, ipady = 1)
 
@@ -381,8 +381,8 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	status.bar.display(min.nbrs.stn.v, TextOutputVar, 'Minimum number of gauges with data to be used to do the merging')
 	infobulle(min.non.zero.v, 'Minimum number of non-zero gauge values to perform the merging')
 	status.bar.display(min.non.zero.v, TextOutputVar, 'Minimum number of non-zero gauge values to perform the merging')
-	# infobulle(max.rnr.dst.v, 'Maximum distance (in decimal degrees) for interpolating Rain-noRain mask')
-	# status.bar.display(max.rnr.dst.v, TextOutputVar, 'Maximum distance (in decimal degrees) for interpolating Rain-noRain mask')
+	infobulle(max.rnr.dst.v, 'Maximum distance (in decimal degrees) to be used to interpolate Rain-noRain mask')
+	status.bar.display(max.rnr.dst.v, TextOutputVar, 'Maximum distance (in decimal degrees) to be used to interpolate Rain-noRain mask')
 
 	############################################
 	tkgrid(frDate, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -717,7 +717,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 
 				GeneralParameters$Interpolation.pars$interp.method <<- switch(str_trim(tclvalue(interp.method)),
 																			'Inverse Distance Weighted' = 'IDW',
-																			'Ordinary Kriging' = 'Kriging')
+																			'Kriging' = 'Kriging')
 				GeneralParameters$Interpolation.pars$nmin <<- as.numeric(str_trim(tclvalue(nmin)))
 				GeneralParameters$Interpolation.pars$nmax <<- as.numeric(str_trim(tclvalue(nmax)))
 				GeneralParameters$Interpolation.pars$maxdist <<- as.numeric(str_trim(tclvalue(maxdist)))
@@ -726,7 +726,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 
 				GeneralParameters$Mrg.set$min.stn <<- as.numeric(str_trim(tclvalue(min.stn)))
 				GeneralParameters$Mrg.set$min.non.zero <<- as.numeric(str_trim(tclvalue(min.non.zero)))
-				# GeneralParameters$Mrg.set$maxdist.RnoR <<- as.numeric(str_trim(tclvalue(max.rnr.dst)))
+				GeneralParameters$Mrg.set$maxdist.RnoR <<- as.numeric(str_trim(tclvalue(max.rnr.dst)))
 				GeneralParameters$Mrg.set$use.RnoR <<- switch(tclvalue(use.RnoR), '0' = FALSE, '1' = TRUE)
 				GeneralParameters$Mrg.set$smooth.RnoR <<- switch(tclvalue(smooth.RnoR), '0' = FALSE, '1' = TRUE)
 
@@ -2591,13 +2591,13 @@ getDekadalData2ScaleDaily <- function(tt, GeneralParameters){
 	file.grdrfe <- tclVar(GeneralParameters$IO.files$DEK.file)
 	inrfeff <- tclVar(GeneralParameters$FileFormat$DEK.File.Format)
 
-	txt.dir.rfe <- tklabel(frRFE, text = 'Directory of merged dekadal files', anchor = 'w', justify = 'left')
+	txt.dir.rfe <- tklabel(frRFE, text = 'Directory of dekadal merged files', anchor = 'w', justify = 'left')
 	en.dir.rfe <- tkentry(frRFE, textvariable = dir.rfe, width = largeur)
 	bt.dir.rfe <- tkbutton(frRFE, text = "...")
-	txt.grdrfe <- tklabel(frRFE, text = "Merged dekadal sample file", anchor = 'w', justify = 'left')
+	txt.grdrfe <- tklabel(frRFE, text = "Dekadal merged sample file", anchor = 'w', justify = 'left')
 	cb.grdrfe <- ttkcombobox(frRFE, values = unlist(listOpenFiles), textvariable = file.grdrfe, width = largeur1)
 	bt.grdrfe <- tkbutton(frRFE, text = "...")
-	txt.inrfeff <- tklabel(frRFE, text = 'Merged dekadal filename format', anchor = 'w', justify = 'left')
+	txt.inrfeff <- tklabel(frRFE, text = 'Dekadal merged filename format', anchor = 'w', justify = 'left')
 	en.inrfeff <- tkentry(frRFE, textvariable = inrfeff, width = largeur)
 
 	######
@@ -2630,16 +2630,16 @@ getDekadalData2ScaleDaily <- function(tt, GeneralParameters){
 	tkgrid(txt.inrfeff, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 0, ipadx = 1, ipady = 1)
 	tkgrid(en.inrfeff, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 
-	infobulle(en.dir.rfe, 'Enter the full path to directory containing\nthe merged dekadal files')
-	status.bar.display(en.dir.rfe, TextOutputVar, 'Enter the full path to directory containing the merged dekadal files')
+	infobulle(en.dir.rfe, 'Enter the full path to directory containing\nthe dekadal merged files')
+	status.bar.display(en.dir.rfe, TextOutputVar, 'Enter the full path to directory containing the dekadal merged files')
 	infobulle(bt.dir.rfe, 'or browse here')
 	status.bar.display(bt.dir.rfe, TextOutputVar, 'or browse here')
 	infobulle(cb.grdrfe, 'Choose the file in the list')
-	status.bar.display(cb.grdrfe, TextOutputVar, 'File containing a sample of merged dekadal data in netcdf')
+	status.bar.display(cb.grdrfe, TextOutputVar, 'File containing a sample of dekadal merged data in netcdf')
 	infobulle(bt.grdrfe, 'Browse file if not listed')
 	status.bar.display(bt.grdrfe, TextOutputVar, 'Browse file if not listed')
-	infobulle(en.inrfeff, 'Enter the format of the merged dekadal files names in NetCDF,\nexample: rfe1983_01-dk2.nc or rr_adj_%s%s%s.nc')
-	status.bar.display(en.inrfeff, TextOutputVar, 'Enter the format of the merged dekadal files names in NetCDF,\nexample: rfe1983_01-dk2.nc or rr_adj_%s%s%s.nc')
+	infobulle(en.inrfeff, 'Enter the format of the dekadal merged files names in NetCDF,\nexample: rfe1983_01-dk2.nc or rr_adj_%s%s%s.nc')
+	status.bar.display(en.inrfeff, TextOutputVar, 'Enter the format of the dekadal merged files names in NetCDF,\nexample: rfe1983_01-dk2.nc or rr_adj_%s%s%s.nc')
 
 	################################
 
@@ -2652,7 +2652,7 @@ getDekadalData2ScaleDaily <- function(tt, GeneralParameters){
 
 	tkconfigure(bt.prm.OK, command = function(){
 		if(str_trim(tclvalue(dir.rfe)) == "" | str_trim(tclvalue(dir.rfe)) == "NA"){
-			tkmessageBox(message = "Choose or enter the  directory containing the merged dekadal files", icon = "warning", type = "ok")
+			tkmessageBox(message = "Choose or enter the  directory containing the dekadal merged files", icon = "warning", type = "ok")
 			tkwait.window(tt1)
 		}else if(str_trim(tclvalue(file.grdrfe)) == ""){
 			tkmessageBox(message = "You have to provide a sample file", icon = "warning", type = "ok")
@@ -2690,7 +2690,7 @@ getDekadalData2ScaleDaily <- function(tt, GeneralParameters){
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
 	tkwm.geometry(tt1, paste('+', tt.x, '+', tt.y, sep = ''))
 	tkwm.transient(tt1)
-	tkwm.title(tt1, 'Merged dekadal data')
+	tkwm.title(tt1, 'Dekadal merged data')
 	tkwm.deiconify(tt1)
 
 	tkfocus(tt1)

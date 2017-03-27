@@ -1400,7 +1400,7 @@ MergingFunctionRain <- function(paramsMRG){
  	use.RnoR <- GeneralParameters$Mrg.set$use.RnoR
  	smooth.RnoR <- GeneralParameters$Mrg.set$smooth.RnoR
 	wet.day <- GeneralParameters$Mrg.set$wet.day
-	# maxdist.RnoR <- GeneralParameters$Mrg.set$maxdist.RnoR
+	maxdist.RnoR <- GeneralParameters$Mrg.set$maxdist.RnoR
 	# maxdist.RnoR <- if(maxdist.RnoR < res.coarse) res.coarse else maxdist.RnoR
 
 	outMask <- paramsMRG$outMask
@@ -1546,6 +1546,8 @@ MergingFunctionRain <- function(paramsMRG){
 					if(is.na(glm.stn$coefficients[2]) | glm.stn$coefficients[2] < 0) simplediff <- TRUE
 					if(!simplediff){
 						sp.trend <- predict(glm.stn, newdata = interp.grid$newgrid)
+						# sp.trend <- krige(formuleRK, locations = locations.stn, newdata = interp.grid$newgrid)
+						# sp.trend <- sp.trend$var1.pred
 						sp.trend <- matrix(sp.trend, ncol = nlat0, nrow = nlon0)
 						sp.trend[is.na(sp.trend)] <- xrfe[is.na(sp.trend)]
 						# locations.stn$res <- residuals(glm.stn)
@@ -1641,11 +1643,11 @@ MergingFunctionRain <- function(paramsMRG){
 			############
 			if(use.RnoR){
 				rnr.res.grd <- krige(rnr.res~1, locations = locations.stn, newdata = interp.grid$newgrid,
-									maxdist = maxdist, block = bGrd,  debug.level = 0)
+										maxdist = maxdist.RnoR, block = bGrd,  debug.level = 0)
 				ina <- is.na(rnr.res.grd$var1.pred)
 				if(any(ina)){
 					rnr.res.grd.na <- krige(var1.pred~1, locations = rnr.res.grd[!ina, ], newdata = interp.grid$newgrid[ina, ],
-											block = bGrd, maxdist = maxdist, debug.level = 0)
+												block = bGrd, maxdist = maxdist.RnoR, debug.level = 0)
 					rnr.res.grd$var1.pred[ina] <- rnr.res.grd.na$var1.pred
 				}
 

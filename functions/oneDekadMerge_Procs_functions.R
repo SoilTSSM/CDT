@@ -205,6 +205,7 @@ mergeOneDekadRain <- function(){
 	 	use.RnoR <- GeneralParameters$Merging.pars$use.RnoR
 	 	smooth.RnoR <- GeneralParameters$Merging.pars$smooth.RnoR
 		wet.day <- GeneralParameters$Merging.pars$wet.day
+		maxdist.RnoR <- GeneralParameters$Merging.pars$maxdist.RnoR
 
 		if(Mrg.Method == "Spatio-Temporal LM"){
 			coeffl <- paste('LM_Coefficient_', as.numeric(dmon), '.nc', sep = '')
@@ -398,11 +399,11 @@ mergeOneDekadRain <- function(){
 			############
 			if(use.RnoR){
 				rnr.res.grd <- krige(rnr.res~1, locations = locations.stn, newdata = interp.grid$newgrid,
-									maxdist = maxdist, block = bGrd,  debug.level = 0)
+										maxdist = maxdist.RnoR, block = bGrd,  debug.level = 0)
 				ina <- is.na(rnr.res.grd$var1.pred)
 				if(any(ina)){
 					rnr.res.grd.na <- krige(var1.pred~1, locations = rnr.res.grd[!ina, ], newdata = interp.grid$newgrid[ina, ],
-											block = bGrd, maxdist = maxdist, debug.level = 0)
+												block = bGrd, maxdist = maxdist.RnoR, debug.level = 0)
 					rnr.res.grd$var1.pred[ina] <- rnr.res.grd.na$var1.pred
 				}
 

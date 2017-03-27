@@ -1,5 +1,5 @@
 ---
-title: "Rainfall Merging"
+title: "Merging Rainfall"
 output:
   html_document:
     toc: true
@@ -8,14 +8,205 @@ output:
       collapsed: false
 ---
 
-Rainfall Merging
+```{r, child = "cdtMenuToolbar.Rmd"}
+```
 
-## Compute mean bias
+The menu `r menuselection('Merging Data','Merging Rainfall')` allows to combine a rain gauge and gridded satellite-based rainfall estimates (RFE) data. There are 4 sequential steps required to merge rainfall data.
 
-## Bias correction
+`r put.image("images/merging_data/merging_rr/menu_merge.rr.png", height = 40, width = 40)`
+<!-- 
+The first step is to compute the bias between gauge and RFE data. The gridded data are extracted at each station location, a mean bias coefficients are calculated on these points for each month of the year or for each time steps of the input data, then the mean bias coefficients are interpolated to the RFE grid. The second step is simply to apply the mean bias coefficients to the RFE data. Step 3 computes a spatio-temporal trend coefficients from a linear regression. Step 4 consists in the combination of the station data and RFE at each time step of the input data.
+ -->
 
-## Merging data
+ >  The menu colored in lightblue indicates that this step does not need to repeat several times, you just run it only once, and you can use it later with the same source of RFE data.
+
+##  Bias calculation `r anchor.point('rr.calc.bias')`
+
+The sub-menu `r menuselection('Compute mean Gauge-RFE bias')` opens a dialog where you can select the method to compute the mean bias coefficients or estimate the parameters of the distribution and specify the required input.
+
+`r put.image("images/merging_data/merging_rr/compute_bias.png", height = 80, width = 80)`
+
+1. Select the method to correct the bias in RFE data using historical observed station data. There are three methods available: 
+	* __Quantile.Mapping__: the correction of bias in the RFE data is performed by quantile mapping using distribution derived transformations to adjust the probability distribution of the RFE data such that it matches the probability distribution of the station data. A mixture of the Bernoulli and the Gamma distribution is chosen to fit the series from station data and RFE data. For each month of the year, the parameters of the distribution are calculated from station and RFE data series.
+	* __Multiplicative.Bias.Var__: this method consists to apply a multiplicative bias correction to the RFE data. A mean bias coefficients are computed for each day, dekad or month of the year according to the time step of the input data.
+	* __Multiplicative.Bias.Mon__: same as __Multiplicative.Bias.Var__, but the mean bias coefficients are computed for each month of the year regardless of the time step of the data.
+
+2. Select the file containing the station data to be used to calculate the mean bias coefficients or the parameters of the distribution. If the file is not yet listed, use the button `r button('...')` to open it.
+3. Enter the full path to directory containing the RFE files, or use `r button('...')` to browse it.
+4. Provide a sample file from the RFE data by selecting it from the drop-down list or open it by using the button `r button('...')`.
+5. Specify the RFE filename format. See the section [NetCDF filename format](cdt_data_input.html#cdt.ncdf.ffrmt) for more details on the format of NetCDF file names.
+6. Provide the elevation data as a Digital Elevation Model (DEM) from a NetCDF file.
+7. Enter the full path to directory to save the interpolated mean bias coefficients or parameters of the distribution, or browse it from `r button('...')`.
+8. Use auxiliary variables to explain the trend-part of spatial variation when interpolating from inverse distance weighting or kriging, see below (12) for more details. Check the box corresponding to the variable to use.
+	- __DEM__: include elevation data as auxiliary variable.
+	- __Slope__: include slope data as auxiliary variable.
+	- __Aspect__: include aspect data as auxiliary variable.
+	- __Lon__: include longitude as auxiliary variable.
+	- __Lat__: include latitude as auxiliary variable.
+9. Select the time step of your data, there are three choices available: daily, dekadal and monthly data.
+10. Enter the start and end year of the period to be used to compute the mean bias coefficients or to estimate the parameters of the distribution.
+11. Select the source of data to create a grid onto which the mean bias coefficients or distribution parameters will be interpolated.
+	- __From RFE__: the RFE grid will be used
+	- __From DEM__: the DEM grid will be used
+	- __New Grid__: you can create your own grid with different resolution and extent, by selecting this option and clicking the button `r button('Create')`, which will display a dialog box allowing you to specify the resolution and the bounding box of the grid.
+
+	`r put.image("images/merging_data/merging_rr/create_grid.png", height = 35, width = 35)`
+
+12. Select the interpolation method to interpolate the mean bias coefficients or distribution parameters. You can select one of the following three interpolation methods on the drop-down list:
+	- __Nearest Neighbor__: this method does not use an auxiliary variables but takes the elevation as a third coordinate.
+	- __Inverse Distance Weighted__: with no auxiliary variables are used the interpolation is done with a simple inverse distance weighting, in the case where auxiliary variables are included the interpolation method becomes a weighted least squares prediction.
+	- __Kriging__: with no auxiliary variables are used the interpolation is performed with an ordinary kriging, in the case where auxiliary variables are included the interpolation method becomes a kriging with external drift.
+
+13. Define the neighborhood size in terms of number of nearest points for the Nearest Neighbor interpolation method.
+	- __Multi.Lon__: Maximum distance belong to longitude, it is represented as a multiplier of grid interpolation resolution. For example, suppose that the grid resolution is equal to 0.05 degree, if Multi.Lon is set to 10, then the maximum distance of points to be used belong to longitude is 0.5 degree, only observations within this distance from the prediction location are used to select the interpolated value.
+	- __Multi.Lat__: Maximum distance belong to latitude. 
+	- __Multi.Elv__: Maximum height for elevation. The elevation data are divided into an interval of 100m. If Multi.Elv is set to 4, then maximum vertical distance to search the interpolated value is 400m.
+
+14. Define the neighborhood for the inverse distance weighted and kriging method.
+	- __nmin__: the maximum number of nearest observations that should be used to interpolate a point.
+	- __nmax__: the minimum number of nearest observations that should be used to interpolate a point.
+	- __maxdist__: maximum distance (in  decimal degree) to be used to interpolate a point (search radius). __maxdist__ specifies a circular search range to select the point.
+
+15. In case of **Multiplicative.Bias.Var** or **Multiplicative.Bias.Mon**, specify the prefix for the output file names.
+
+Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
+
+ >  **OUTPUT:** Under the directory you specified to save the result (7), a directory called **STN\_RFE\_Bias\_**<*Input station data filename without extension*> has been created.
+ >  
+ >  * __Quantile.Mapping__: 24 files have bean created under this directory. 
+ >  	* An RData file named **BIAS\_PARAMS.RData** containing all the data necessary to estimate the parameters of the distribution,  and the fitted model and parameters at each station  location and resampled RFE grid points for each month.
+ >  	* 12 NetCDF files **Bernoulli-Gamma\_Pars.STN\_**<*month*>**.nc** containing the interpolated parameters for the station data. Here <*month*> is an integer from 1 to 12 representing the months of the year.
+ >  	*  12 NetCDF files **Bernoulli-Gamma\_Pars.RFE\_**<*month*>**.nc** containing the interpolated parameters for the RFE data. Here <*month*> is an integer from 1 to 12 representing the months of the year.
+ > 
+ >  * __Multiplicative.Bias.Var__: 
+ >  	* for daily data: 366 files have bean created under this directory, an RData file named **BIAS\_PARAMS.RData** containing all the data necessary to calculate the mean bias factor, and the mean bias factor at each station location. 365 NetCDF files <**filename prefix (15)**>\_<*day*>**.nc** containing the interpolated mean bias coefficients. Here <*day*> is an integer from 1 to 365 representing the days of the year.
+ >  	* for dekadal data: 37 files have bean created under this directory, an RData file named **BIAS\_PARAMS.RData** containing all the data necessary to calculate the mean bias factor, and the mean bias factor at each station location. 36 NetCDF files <**filename prefix (15)**>\_<*dekad*>**.nc** containing the interpolated mean bias coefficients. Here <*dekad*> is an integer from 1 to 36 representing the dekads of the year.
+ >  	* for monthly data: 13 files have bean created under this directory, an RData file named **BIAS\_PARAMS.RData** containing all the data necessary to calculate the mean bias factor, and the mean bias factor at each station location. 12 NetCDF files <**filename prefix (15)**>\_<*month*>**.nc** containing the interpolated mean bias coefficients. Here <*month*> is an integer from 1 to 12 representing the months of the year.
+ > 
+ >  * __Multiplicative.Bias.Mon__: 13 files have bean created under this directory, an RData file named **BIAS\_PARAMS.RData** containing all the data necessary to calculate the mean bias factor, and the mean bias factor at each station location. 12 NetCDF files <**filename prefix (15)**>\_<*month*>**.nc** containing the interpolated mean bias coefficients. Here <*month*> is an integer from 1 to 12 representing the months of the year.
 
 
+##  Apply bias correction `r anchor.point('rr.apply.bias')`
+
+The sub-menu `r menuselection('Apply bias correction')` allows to apply the bias correction to the RFE data.
+
+`r put.image("images/merging_data/merging_rr/apply_bias.png", height = 80, width = 80)`
+
+1. Select the method used to calculate the mean bias coefficients or distribution parameters.
+2. Enter the full path to directory containing the RFE files, or use `r button('...')` to browse it.
+3. Provide a sample file from the RFE data by selecting it from the drop-down list or open it by using the button `r button('...')`.
+4. Specify the RFE filename format. See the section [NetCDF filename format](cdt_data_input.html#cdt.ncdf.ffrmt) for more details on the format of NetCDF file names.
+5. Enter the full path to directory containing the mean bias or distribution parameters files.
+6. In case of **Multiplicative.Bias.Var** or **Multiplicative.Bias.Mon**, specify the prefix for the file name of the mean bias coefficients.
+7. Select the time step of the data.
+8. Enter the date range of the RFE data you want to adjust, make sure the date is valid, meaning that dates like 2016-06-31 and 2015-02-29 will throw an error.
+9. Specify the filename format of the adjusted RFE files.
+10. Enter the full path to directory to save the adjusted RFE files.
+
+Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
+
+>  **OUTPUT:** Under the directory you specified to save the result (5), a directory called **Adjusted\_RFE\_Data\_**<*start date*>\_<*end date*> has been created. The names of the files containing the adjusted RFE data had to be the same format as you provided in (9). 
+
+
+##  Compute Spatio-temporal Trend Coefficients `r anchor.point('rr.calc.lmcoef')`
+
+To estimate the parameters of the linear regression to be used on the [Spatio-Temporal LM](merging_rainfall.html#rr.merge.data) method when merging data, go to the sub-menu `r menuselection('Compute Spatio-temporal Trend Coefficients')`.
+
+`r put.image("images/merging_data/merging_rr/LMCoef.png", height = 80, width = 80)`
+
+1. Select the file containing the station data to be used to estimate the parameters of the linear regression. If the file is not yet listed, use the button `r button('...')` to open it.
+2. Enter the full path to directory containing the RFE or the adjusted RFE files, or use `r button('...')` to browse it.
+3. Provide a sample file from the RFE or adjusted RFE data by selecting it from the drop-down list or open it by using the button `r button('...')`.
+4. Specify the RFE  or adjusted RFE filename format. See the section [NetCDF filename format](cdt_data_input.html#cdt.ncdf.ffrmt) for more details on the format of NetCDF file names.
+5. Provide the elevation data as a Digital Elevation Model (DEM) from a NetCDF file.
+6. Enter the full path to directory to save the interpolated parameters, or browse it from `r button('...')`.
+7. Use auxiliary variables to explain the trend-part of spatial variation when interpolating from inverse distance weighting or kriging. Check the box corresponding to the variable to use.
+8. Select the time step of the data.
+9. Enter the start and end year of the period to be used to estimate parameters.
+10. Select the source of data to create a grid onto which the coefficients will be interpolated.
+11. Select the interpolation method to interpolate the parameters. You can select one of the following three interpolation methods on the drop-down list:
+	- __Nearest Neighbor__: this method does not use an auxiliary variables but takes the elevation as a third coordinate.
+	- __Inverse Distance Weighted__: with no auxiliary variables are used the interpolation is done with a simple inverse distance weighting, in the case where auxiliary variables are included the interpolation method becomes a weighted least squares prediction.
+	- __Kriging__: with no auxiliary variables are used the interpolation is performed with an ordinary kriging, in the case where auxiliary variables are included the interpolation method becomes a kriging with external drift.
+
+12. Define the neighborhood size in terms of number of nearest points for the Nearest Neighbor interpolation method.
+	- __Multi.Lon__: Maximum distance belong to longitude, it is represented as a multiplier of grid interpolation resolution. For example, suppose that the grid resolution is equal to 0.05 degree, if Multi.Lon is set to 10, then the maximum distance of points to be used belong to longitude is 0.5 degree, only observations within this distance from the prediction location are used to select the interpolated value.
+	- __Multi.Lat__: Maximum distance belong to latitude. 
+	- __Multi.Elv__: Maximum height for elevation. The elevation data are divided into an interval of 100m. If Multi.Elv is set to 4, then maximum vertical distance to search the interpolated value is 400m.
+
+13. Define the neighborhood for the inverse distance weighted and kriging method.
+	- __nmin__: the maximum number of nearest observations that should be used to interpolate a point.
+	- __nmax__: the minimum number of nearest observations that should be used to interpolate a point.
+	- __maxdist__: maximum distance (in  decimal degree) to be used to interpolate a point (search radius). __maxdist__ specifies a circular search range to select the point.
+
+Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
+
+ >  **OUTPUT:** Under the directory you specified to save the result (6), a directory called **LMCoef**\_<*Input station data filename without extension*> has been created. 13 files have bean created under this directory, an RData file named **LM\_MODEL\_PARS.RData** containing all the data necessary to estimate the parameters of the linear regression, and the fitted model and parameters at each station location for each month. 12 NetCDF files <**LM\_Coefficient**>\_<*month*>**.nc** containing the interpolated parameters. Here <*month*> is an integer from 1 to 12 representing the months of the year.
+ 
+
+##  Merging Data `r anchor.point('rr.merge.data')`
+
+To perform the merging, go to the sub-menu `r menuselection('Merging Data')`. 
+
+`r put.image("images/merging_data/merging_rr/merging.png", height = 90, width = 90)`
+
+1. Select the method to be used to merge station and RFE data. There are two ways to perform the merging.
+	- __Regression Kriging__: the regression kriging approach adopted here is performed by modeling the deterministic (spatial trend) and stochastic (residuals) part separately. It first fits a regression model (Generalized Linear Model) to predict the spatial trend, then interpolate the residuals by usign the inverse distance weighted method or kriging method by fitting a variogram for residuals.
+	- __Spatio-Temporal LM__: in this approach the deterministic part is fitted by a simple linear regression by taking into account the temporal components, i.e, it fits a linear regression between the station data and the RFE data extracted at the station locations for each  month of the year, these models are used to predict the spatial trend, then interpolate the residuals. 
+2. Select the file containing the station data.
+3. Enter the full path to directory containing the RFE or adjusted RFE files, or use `r button('...')` to browse it.
+
+	 >  __Note__: You can directly combine the RFE data without bias correction with the station data.
+
+4. Provide a sample file from the RFE or adjusted RFE data by selecting it from the drop-down list or open it by using the button `r button('...')`.
+5. Specify the RFE  or adjusted RFE filename format.
+6. If you want to change the grid resolution and the extent of the merged data, check on `r checkbox('Create Grid')` box,  then click the `r button('Set New Grid')` button to set the required input to define the new grid.
+`r put.image("images/merging_data/merging_rr/setnew_grid.png", height = 40, width = 40)`
+
+7. In case of __Spatio-Temporal LM__, enter the full path to directory containing the interpolated regression parameters.
+8. Select the time step of the data.
+9. Enter the date range of the data you want to merge, make sure the date is valid, meaning that dates like 2016-06-31 and 2015-02-29 will throw an error.
+10. Select the interpolation method. You can select one of the following two interpolation methods on the drop-down list:
+	- __Inverse Distance Weighted__: with no auxiliary variables are used the interpolation is done with a simple inverse distance weighting, in the case where auxiliary variables are included the interpolation method becomes a weighted least squares prediction.
+	- __Kriging__: with no auxiliary variables are used the interpolation is performed with an ordinary kriging, in the case where auxiliary variables are included the interpolation method becomes a kriging with external drift.
+
+11. Define the neighborhood for the inverse distance weighted and kriging method.
+	- __nmin__: the maximum number of nearest observations that should be used to interpolate a point.
+	- __nmax__: the minimum number of nearest observations that should be used to interpolate a point.
+	- __maxdist__: maximum distance (in  decimal degree) to be used to interpolate a point (search radius). __maxdist__ specifies a circular search range to select the point.
+12. Set the minimum number of stations to perform the merging. If the number of stations is less than these given values no mering will be performed.
+	- __Min.Nb.Stn__: Minimum number of stations with data to be used to do the merging.
+	- __Min.No.Zero__: Minimum number of non-zero station values to perform the merging.
+13. Applying Rain-no-Rain mask to the merged data.
+	- check on `r checkbox('Apply Rain-no-Rain mask')` if a Rain-no-Rain mask will be applied to the merged data.
+	- check on `r checkbox('Smooth Rain-no-Rain mask')` to smooth the gradient from the area with rain to the dry area. It will avoid a steep gradient between dry and high rainfall amount area.
+	- __Maxdist.RnR__: Maximum distance (in decimal degrees) to be used to interpolate Rain-noRain mask.
+14. Enter the full path to directory to save the merged data.
+15. Specify the merged data filename format.
+16. Select the method to blank the merged data, so that the values outside of a specified area are replaced by missing values.
+	- __None__: no mask will be applied.
+	- __Use DEM__: DEM data are used create a grid mask (1s over the land and NAs over the ocean). This mask is only useful for islands.
+	- __Use ESRI shapefile__: a shapefile are used to mask the data outside the administrative boundary by replacing with missing values.
+17. Provide the elevation data as a Digital Elevation Model (DEM) from a NetCDF file, if this field is enabled.
+18.  Select the ESRI shapefiles in the list if __Use ESRI shapefile__ is selected for blanking,  or use `r button('...')` to open it if not yet listed.
+19. Use auxiliary variables to explain the trend-part of spatial variation when interpolating. Check the box corresponding to the variable to include.
+	- __DEM__: include elevation data as auxiliary variable.
+	- __Slope__: include slope data as auxiliary variable.
+	- __Aspect__: include aspect data as auxiliary variable.
+	- __Lon__: include longitude as auxiliary variable.
+	- __Lat__: include latitude as auxiliary variable.
+20. In case of daily rainfall data, check  on `r checkbox('Scale daily data')` box to scale the daily merged data relative to a dekadal merged data. This implies to equalize the daily aggregated to dekadal rainfall with a dekadal merged rainfall, then calculate a ratio which will be multiplied with the daily merged data. Click on the button `r button('Dekadal data')` to set up the dekadal data input files.
+ 
+`r put.image("images/merging_data/merging_rr/scale_daily.png", height = 40, width = 40)`
+
+Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
+
+ >  **OUTPUT:** Under the directory you specified to save the result (14), a directory called **Merged\_RR\_Data**\_<*start date*>\_<*end date*> has been created. The names of the files containing the merged rainfall data had to be the same format as you provided in (15).
+
+
+
+
+<!-- 
 ```{r, child="_generated_date.Rmd"}
 ```
+-->

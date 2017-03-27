@@ -153,7 +153,8 @@ Sys.setenv(RMARKDOWN_MATHJAX_PATH = mathjax_dir)
 
 ## arrange files for toc
 toc.order <- c("index.Rmd", "cdt_file_menu.Rmd", "cdt_data_input.Rmd", "format_cdt_data.Rmd", 
-			"assess_data_availability.Rmd", "aggregate_TS.Rmd")
+			"assess_data_availability.Rmd", "aggregate_TS.Rmd",
+			"merging_rainfall.Rmd", "merging_temperature.Rmd", "update_dekadal_rainfall.Rmd")
 
 #####
 all_src <- list.files(path = sources_dir, pattern = '.Rmd', full.names = TRUE, recursive = TRUE)
@@ -186,11 +187,11 @@ figure_files <- list.files(r_images, recursive = TRUE, full.names = TRUE)
 # html_files <- paste(all_files, '.html', sep = '')
 # figure_dir <- paste(all_files, '_files', sep = '')
 
-# all_files <- "cdt_file_menu"
-# rmd_files <- "cdt_file_menu.Rmd"
-# parent_dir <- "cdt_file"
-# html_files <- "cdt_file_menu.html"
-# figure_dir <- "cdt_file_menu_files"
+# all_files <- "merging_rainfall"
+# rmd_files <- "merging_rainfall.Rmd"
+# parent_dir <- "merging_data"
+# html_files <- "merging_rainfall.html"
+# figure_dir <- "merging_rainfall_files"
 
 ###############
 ### delete
@@ -244,14 +245,8 @@ cat("\n\n</div>\n", file = index.path, append = TRUE)
 cat("\n```{r, child = '_generated_date.Rmd'}\n```\n", file = index.path, append = TRUE)
 file.copy(index.path, '.')
 
+###############
 rmd_files <- c("index.Rmd", rmd_files)
-
-###############
-### delete
-# rmd_files <- c("index.Rmd", "aggregate_TS.Rmd")
-
-###############
-
 for(jj in seq_along(rmd_files)) render(rmd_files[jj])
 
 exist_rmd_wd_files <- file.exists(rmd_files)

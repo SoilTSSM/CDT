@@ -1,11 +1,56 @@
 ---
 title: "Updating dekadal rainfall"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
 ---
 
-Update dekadal rainfall
+The menu `r menuselection('Merging Data','Updating dekadal Rainfall')` allows to download RFE data, correct the bias from the RFE data,  and perform the combination of station and RFE data.
+
+`r put.image("images/merging_data/merging_1dek/merging_1dek.png", height = 80, width = 80)`
+
+1. Enter the date for the dekad to update.
+2. Check `r checkbox('No station data available')` box if there is no station data for this dekad. This will disable all the input fields corresponding to the merging except the RFE's download and the bias correction if you already have the mean bias factor.
+3. Select the station data to merge if it was already open, or browse it from the right button `r button('...')`.
+4. Uncheck `r checkbox('RFE data already downloaded')` box if you don't have yet downloaded the RFE data. This will enable all the input fields corresponding to the download in (6) and (7).
+5. If you have already downloaded the RFE data in NetCDF file format in your local disk, select it from the drop-down list or open it by using the button `r button('...')`.
+6. Select the source of data to be downloaded. You have two choices: __TAMSAT__ and __CHIRP__.
+7. Set the bounding box corresponding to the region to be treated.
+8. Leave `r checkbox('Perform bias correction')` box checked, if you want to perform a bias correction and if you have the [mean bias coefficients or distribution parameters calculated](merging_rainfall.html#rr.calc.bias) from the menu `r menuselection('Merging Data', 'Merging Rainfall', 'Compute mean Gauge-RFE bias')`. Otherwise,  uncheck this box.
+9. Select the method used to calculate the mean bias coefficients or distribution parameters.
+10. Enter the full path to directory containing the mean bias or distribution parameters files.
+11. In case of __Multiplicative.Bias.Mon__ or __Multiplicative.Bias.Var__, enter here the prefix of the bias coefficients filename. Example, if your file looks like this *STN_RFE_MeanBias_1.nc*, the filename prefix must be *STN_RFE_MeanBias*.
+12. Select the merging method to be used. There are two choices: __Regression Kriging__ and __Spatio-Temporal LM__.
+13. In case of __Spatio-Temporal LM__, provide the full path to the LM coefficients files (in netcdf format).
+14. Set up the merging parameters:
+	- **Min.Nb.Stn**: minimum number of stations containing non-missing values to be considered to perform the merging. If the number of stations of non-missing values is less than this value, no merging will be performed.
+	- **Min.No.Zero**: minimum number of stations value non zeros to be considered.
+
+15. Rain-no-Rain mask:
+	- Check the `r checkbox('Apply Rain-no-Rain mask')` box , if you want to apply a mask to the area which have not rain.
+	- Check the  `r checkbox('Smooth Rain-no-Rain')` box, it will avoid a steep gradient between dry and high rainfall amount area.
+	- __Maxdist.RnR__: Maximum distance (in decimal degrees) to be used to interpolate Rain-noRain mask.
+
+16. Select the interpolation method: __Inverse Distance Weighted__ or __Ordinary Kriging__.
+17. Set up the interpolation parameters:
+	- __nmin__: the maximum number of nearest observations that should be used to interpolate a point.
+	- __nmax__: the minimum number of nearest observations that should be used to interpolate a point.
+	- __maxdist__: maximum distance (in  decimal degree) to be used to interpolate a point (search radius). __maxdist__ specifies a circular search range to select the point.
+18. Select the method to blank the merged data, so that the values outside of a specified area are replaced by missing values.
+	- __None__: no mask will be applied.
+	- __Use DEM__: DEM data are used create a grid mask (1s over the land and NAs over the ocean). This mask is only useful for islands.
+	- __Use ESRI shapefile__: a shapefile are used to mask the data outside the administrative boundary by replacing with missing values.
+19. Provide the elevation data as a Digital Elevation Model (DEM) from a NetCDF file, if this field is enabled.
+20. Select the ESRI shapefiles in the list if __Use ESRI shapefile__ is selected for blanking,  or use `r button('...')` to open it if not yet listed.
+21. Enter the full path to directory to save the merged data.
 
 
+ >  **OUTPUT:** The output will be stored in a directory named **DEKAD**\_<*YYYYMMD*> under the directory you specified to save the result (21). <*YYYYMMD*> represents the year,  month and dekad you entered in (1).
+ >  If the RFE data has been downloaded, a directory named **downloaded\_RFE** has been created under **DEKAD**\_<*YYYYMMD*>, two files containing the RFE data for Africa **Africa\_rfe**<*YYYY*>\_<*MM*>-**dk**<*D*>**.nc**  and the data extracted on the area you have defined **rfe**<*YYYY*>\_<*MM*>-**dk**<*D*>**.nc**.
+ >  If you chose to do a bias correction, the adjusted data was put in the file **rr\_adj\_**<*YYYYMMD*>**.nc**.
+ >  If the mering was performed, the merged data was put in the file **rr\_mrg\_**<*YYYYMMD*>\_**MON.nc**.
+ 
 
-
-```{r, child="_generated_date.Rmd"}
-```

@@ -13,7 +13,7 @@ The menu `r menuselection('Data Preparation','Assess Data Availability')` provid
 `r put.image("images/data_prepraration/assess_data/asses_data_availab.png", height = 60, width = 60)`
 
 1. Select the time step of your data, there are three choices available: daily, dekadal and monthly data.
-2. Select the file containing the station data, if the file is not loaded yet and therefore not listed, use the `r button('...')` to open it.
+2. Select the file containing the station data, if the file is not loaded yet and therefore not listed, use the button `r button('...')` to open it.
 3. Click `r button('Distance-Correlation')` to see the plot of correlation as a function of distance. The plot summarizes the spatial correlations for each station pair plotted against the corresponding inter-station distance.
 `r put.image("images/data_prepraration/assess_data/dist_cor.png", height = 60, width = 60)`
 4. Click `r button('Miss.Data Summary')` to have a plot summary of the available data: the number of working stations and the proportion of missing observations.
@@ -21,6 +21,7 @@ The menu `r menuselection('Data Preparation','Assess Data Availability')` provid
 5. Select a station from drop-down combo box to get a plot of the available data per year during the operating period of the station. You can use  `r button('<<')` and `r button('>>')` to easily switch between stations.
  `r put.image("images/data_prepraration/assess_data/miss_summary.png", height = 60, width = 60)`
 
-
+<!-- 
 ```{r, child="_generated_date.Rmd"}
 ```
+ -->

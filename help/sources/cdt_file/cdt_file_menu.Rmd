@@ -167,7 +167,7 @@ When a map and graph are displayed, the right side of the status bar shows the c
 
 `r put.image("images/cdt_file/status_bar2.png", height = 150)`
 
-
+<!-- 
 ```{r, child = "_generated_date.Rmd"}
 ```
-
+ -->

@@ -59,9 +59,8 @@
         "smooth.RnoR": true,
         // wet day definition, rainfall >= wet.day
         "wet.day": 1.0,
-
         // Maximum distance (in decimal degrees) for interpolating Rain-no-Rain mask
-        "maxdist.RnoR": 0.5
+        "maxdist.RnoR": 0.25
     }],
     // Interpolation Parameters,  gstat arguments
     "Interpolation.pars": [{

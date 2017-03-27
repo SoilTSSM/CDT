@@ -491,27 +491,12 @@ tkadd(menu.mrg, "command", label = "Updating dekadal Rainfall", command = functi
 	GeneralParameters <<- mergeDekadInfoRain(main.win, initpars)
 })
 
-##########xxxxxxxxxxxxxxxxxx Menu Data Processing xxxxxxxxxxxxxxxxxx##########
-
-menu.dataproc <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
-tkadd(top.menu, "cascade", label = "Data Processing", menu = menu.dataproc)
-
 ##########
-tkadd(menu.dataproc, "command", label = "Spatial  Interpolation", command = function(){
-	refreshCDT.lcmd.env()
-	spinbox.state(state = 'normal')
-	if(is.null(lcmd.frame_interpol)){
-		lcmd.frame <<- InterpolationPanelCmd()
-		lcmd.frame_interpol <<- 1
-	}
-})
-
-##########
-tkadd(menu.dataproc, "separator")
+tkadd(menu.mrg, "separator")
 
 ##########
 menu.valid <- tkmenu(top.menu, tearoff = FALSE)
-tkadd(menu.dataproc, "cascade", label = "Validation", menu = menu.valid)
+tkadd(menu.mrg, "cascade", label = "Validation", menu = menu.valid)
 
 ########
 # Precipitation validation
@@ -535,6 +520,21 @@ tkadd(menu.valid, "command", label = "Temperature", command = function(){
 	if(is.null(lcmd.frame_valid)){
 		lcmd.frame <<- ValidationPanelCmd('TT')
 		lcmd.frame_valid <<- 1
+	}
+})
+
+##########xxxxxxxxxxxxxxxxxx Menu Data Processing xxxxxxxxxxxxxxxxxx##########
+
+menu.dataproc <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
+tkadd(top.menu, "cascade", label = "Data Processing", menu = menu.dataproc)
+
+##########
+tkadd(menu.dataproc, "command", label = "Spatial  Interpolation", command = function(){
+	refreshCDT.lcmd.env()
+	spinbox.state(state = 'normal')
+	if(is.null(lcmd.frame_interpol)){
+		lcmd.frame <<- InterpolationPanelCmd()
+		lcmd.frame_interpol <<- 1
 	}
 })
 

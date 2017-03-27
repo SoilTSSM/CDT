@@ -3,14 +3,16 @@ RHtestsV4Cmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(26)
-		hscrlwin <- h.scale(34)
+		hscrlwin <- h.scale(32)
 		lfindu <- as.integer(w.scale(13)/sfont0)
+		largeur0 <- as.integer(w.scale(26)/sfont0)
 		largeur <- as.integer(w.scale(27)/sfont0)
 		largeur1 <- as.integer(w.scale(25)/sfont0)
 	}else{
 		wscrlwin <- w.scale(26)
 		hscrlwin <- h.scale(36)
 		lfindu <- as.integer(w.scale(11)/sfont0)
+		largeur0 <- as.integer(w.scale(22)/sfont0)
 		largeur <- as.integer(w.scale(22)/sfont0)
 		largeur1 <- as.integer(w.scale(25)/sfont0)
 	}
@@ -61,7 +63,7 @@ RHtestsV4Cmd <- function(){
 	PLEV <- sprintf("%1.4f", c(0.75, 0.80, 0.90, 0.95, 0.99, 0.9999))
 	ChoixAjustment <- tclVar('3')
 
-	getData.tab1 <- tkbutton(subfr1, text = "Input Data", bg = 'lightgreen', width = largeur)
+	getData.tab1 <- tkbutton(subfr1, text = "Input Data", bg = 'lightgreen', width = largeur0)
 
 	sep1.tab1 <- ttkseparator(subfr1)
 	framePrcp.tab1 <- ttklabelframe(subfr1, text = 'Precipitation Data', relief = 'groove', borderwidth = 2)

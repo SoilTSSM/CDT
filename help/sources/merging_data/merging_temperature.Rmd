@@ -1,5 +1,5 @@
 ---
-title: "Temperatures Merging"
+title: "Merging Temperatures"
 output:
   html_document:
     toc: true
@@ -8,18 +8,228 @@ output:
       collapsed: false
 ---
 
-Temperatures Merging
+```{r, child = "cdtMenuToolbar.Rmd"}
+```
 
-## Compute downscaling coefficients
-
-## Reanalysis downscaling
-
-## Compute mean bias
-
-## Bias correction
-
-## Merging data
+The menu `r menuselection('Merging Data','Merging Temperature')`  allows to combine temperature data from reanalysis and weather station. There are 6 sequential steps required to merge temperature data.
 
 
+`r put.image("images/merging_data/merging_tt/menu_merge.tt.png", height = 40, width = 40)`
+
+ >  The menu colored in lightblue indicates that this step does not need to repeat several times, you just run it only once, and you can use it later with the same source of reanalysis.
+
+
+## Compute Downscaling Coefficients `r anchor.point('tt.calc.dcoef')`
+
+The sub-menu `r menuselection('Compute Downscaling Coefficients')` allows to calculate the parameters for the downscaling using linear regression between the elevation and the temperature data from station. The objective is to construct a temperature data with higher spatial resolution taking into account the dependence of temperature on elevation for each month of the year.
+
+`r put.image("images/merging_data/merging_tt/coeff_down.png", height = 80, width = 80)`
+
+1. Select the file containing the station data to be used to estimate the parameters of the linear regression. If the file is not yet listed, use the button `r button('...')` to open it.
+2. Provide the elevation data as a Digital Elevation Model (DEM) from a NetCDF file.
+3. Enter the full path to directory to save the parameters, or browse it from `r button('...')`.
+4. Select the time step of the data.
+5. Enter the start and end year of the period to be used to estimate parameters.
+
+Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
+
+ >  **OUTPUT:** Under the directory you specified to save the result (3), a directory called **CoefDownTemp\_DGM\_**<*Input station data filename without extension*> has been created, inside this directory there is a file named **STN\_DEM\_GLM\_COEF.txt** containing the parameters of the linear regression. 
+
+## Reanalysis Downscaling `r anchor.point('tt.downscale')`
+
+The sub-menu `r menuselection('Reanalysis Downscaling')` allows to carry out the downscaling using the parameters estimated in step 1.
+
+`r put.image("images/merging_data/merging_tt/reanal_down.png", height = 80, width = 80)`
+
+1. Enter the full path to file containing the estimated parameters calculated in step 1,  or open it from the button `r button('...')`.
+2. Enter the full path to directory containing the reanalysis files, or use `r button('...')` to browse it.
+3. Provide a sample file from the reanalysis by selecting it from the drop-down list or open it by using the button `r button('...')`.
+4. Specify the reanalysis filename format. See the section [NetCDF filename format](cdt_data_input.html#cdt.ncdf.ffrmt)
+5. Provide the elevation data as a Digital Elevation Model (DEM) from a NetCDF file.
+6. Enter the full path to directory to save the downscaled data, or browse it from `r button('...')`.
+7. Specify the filename format of the downscaled files.
+8. Select the time step of the data.
+9. Enter the date range of the reanalysis you want to downscale, make sure the date is valid, meaning that dates like 2016-06-31 and 2015-02-29 will throw an error.
+10. Select the source of data to create a grid onto which the downscaled data will be interpolated.
+	- __From DEM__: the DEM grid will be used
+	- __New Grid__: you can create your own grid with different resolution and extent, by selecting this option and clicking the button `r button('Create')`, which will display a dialog box allowing you to specify the resolution and the bounding box of the grid.
+
+	`r put.image("images/merging_data/merging_tt/create_grid.png", height = 35, width = 35)`
+
+11. Select the interpolation method.
+12. Define the neighborhood for the inverse distance weighted and kriging method.
+	- __nmin__: the maximum number of nearest observations that should be used to interpolate a point.
+	- __nmax__: the minimum number of nearest observations that should be used to interpolate a point.
+	- __maxdist__: maximum distance (in  decimal degree) to be used to interpolate a point (search radius). __maxdist__ specifies a circular search range to select the point.
+
+Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
+
+ >  **OUTPUT:** Under the directory you specified to save the result (6), a directory called **Downscaled\_Reanalysis\_**<*start date*>\_<*end date*> has been created. The names of the files containing the downscaled data had to be the same format as you provided in (7).  
+
+## Bias calculation `r anchor.point('tt.calc.bias')`
+
+The sub-menu `r menuselection('Compute Bias Coefficients')`  allows to calculate the mean bias coefficients or estimate the parameters of the distribution and specify the required input.
+
+`r put.image("images/merging_data/merging_tt/compute_bias.png", height = 80, width = 80)`
+1. Select the method to correct the bias in downscaled temperature data using historical observed station data. There are three methods available: 
+	* __Quantile.Mapping__: the correction of bias in the downscaled data is performed by quantile mapping using distribution derived transformations to adjust the probability distribution of the downscaled data such that it matches the probability distribution of the station data. A normal distribution is used to fit the series from station and downscaled data. For each month of the year, the parameters of the distribution are calculated from station and downscaled data series.
+	* __Multiplicative.Bias.Var__: this method consists to apply a multiplicative bias correction to the downscaled data. A mean bias coefficients are computed for each day, dekad or month of the year according to the time step of the input data.
+	* __Multiplicative.Bias.Mon__: same as __Multiplicative.Bias.Var__, but the mean bias coefficients are computed for each month of the year regardless of the time step of the data.
+
+2. Select the file containing the station data to be used to calculate the mean bias coefficients or the parameters of the distribution. If the file is not yet listed, use the button `r button('...')` to open it.
+3. Enter the full path to directory containing the downscaled files, or use `r button('...')` to browse it.
+4. Specify the downscaled data filename format. See the section [NetCDF filename format](cdt_data_input.html#cdt.ncdf.ffrmt) for more details on the format of NetCDF file names.
+5. Provide the elevation data as a Digital Elevation Model (DEM) from a NetCDF file.
+6. Enter the full path to directory to save the interpolated mean bias coefficients or parameters of the distribution, or browse it from `r button('...')`.
+7. In case of **Multiplicative.Bias.Var** or **Multiplicative.Bias.Mon**, enter the prefix for the output file names.
+8. Select the time step of your data, there are three choices available: daily, dekadal and monthly data.
+9. Enter the start and end year of the period to be used to compute the mean bias coefficients or to estimate the parameters of the distribution.
+10. Select the interpolation method to interpolate the mean bias coefficients or distribution parameters. You can select one of the following three interpolation methods on the drop-down list:
+	- __Nearest Neighbor__: this method does not use an auxiliary variables but takes the elevation as a third coordinate.
+	- __Inverse Distance Weighted__: with no auxiliary variables are used the interpolation is done with a simple inverse distance weighting, in the case where auxiliary variables are included the interpolation method becomes a weighted least squares prediction.
+	- __Kriging__: with no auxiliary variables are used the interpolation is performed with an ordinary kriging, in the case where auxiliary variables are included the interpolation method becomes a kriging with external drift.
+
+11. Define the neighborhood size in terms of number of nearest points for the Nearest Neighbor interpolation method.
+	- __Multi.Lon__: Maximum distance belong to longitude, it is represented as a multiplier of grid interpolation resolution. For example, suppose that the grid resolution is equal to 0.05 degree, if Multi.Lon is set to 10, then the maximum distance of points to be used belong to longitude is 0.5 degree, only observations within this distance from the prediction location are used to select the interpolated value.
+	- __Multi.Lat__: Maximum distance belong to latitude. 
+	- __Multi.Elv__: Maximum height for elevation. The elevation data are divided into an interval of 100m. If Multi.Elv is set to 4, then maximum vertical distance to search the interpolated value is 400m.
+
+12. Define the neighborhood for the inverse distance weighted and kriging method.
+	- __nmin__: the maximum number of nearest observations that should be used to interpolate a point.
+	- __nmax__: the minimum number of nearest observations that should be used to interpolate a point.
+	- __maxdist__: maximum distance (in  decimal degree) to be used to interpolate a point (search radius). __maxdist__ specifies a circular search range to select the point.
+
+13. Use auxiliary variables to explain the trend-part of spatial variation when interpolating from inverse distance weighting or kriging. Check the box corresponding to the variable to use.
+	- __DEM__: include elevation data as auxiliary variable.
+	- __Slope__: include slope data as auxiliary variable.
+	- __Aspect__: include aspect data as auxiliary variable.
+	- __Lon__: include longitude as auxiliary variable.
+	- __Lat__: include latitude as auxiliary variable.
+
+Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
+
+ >  **OUTPUT:** Under the directory you specified to save the result (6), a directory called **STN\_REANAL\_Bias\_**<*Input station data filename without extension*> has been created.
+ >  
+ >  * __Quantile.Mapping__: 24 files have bean created under this directory. 
+ >  	* An RData file named **BIAS\_PARAMS.RData** containing all the data necessary to estimate the parameters of the distribution,  and the fitted model and parameters at each station  location and resampled reanalysis grid points for each month.
+ >  	* 12 NetCDF files **Gaussian\_Pars.STN\_**<*month*>**.nc** containing the interpolated parameters for the station data. Here <*month*> is an integer from 1 to 12 representing the months of the year.
+ >  	*  12 NetCDF files **Gaussian\_Pars.REANAL\_**<*month*>**.nc** containing the interpolated parameters for the downscaled data. Here <*month*> is an integer from 1 to 12 representing the months of the year.
+ > 
+ >  * __Multiplicative.Bias.Var__: 
+ >  	* for daily data: 366 files have bean created under this directory, an RData file named **BIAS\_PARAMS.RData** containing all the data necessary to calculate the mean bias factor, and the mean bias factor at each station location. 365 NetCDF files <**filename prefix (7)**>\_<*day*>**.nc** containing the interpolated mean bias coefficients. Here <*day*> is an integer from 1 to 365 representing the days of the year.
+ >  	* for dekadal data: 37 files have bean created under this directory, an RData file named **BIAS\_PARAMS.RData** containing all the data necessary to calculate the mean bias factor, and the mean bias factor at each station location. 36 NetCDF files <**filename prefix (7)**>\_<*dekad*>**.nc** containing the interpolated mean bias coefficients. Here <*dekad*> is an integer from 1 to 36 representing the dekads of the year.
+ >  	* for monthly data: 13 files have bean created under this directory, an RData file named **BIAS\_PARAMS.RData** containing all the data necessary to calculate the mean bias factor, and the mean bias factor at each station location. 12 NetCDF files <**filename prefix (7)**>\_<*month*>**.nc** containing the interpolated mean bias coefficients. Here <*month*> is an integer from 1 to 12 representing the months of the year.
+ > 
+ >  * __Multiplicative.Bias.Mon__: 13 files have bean created under this directory, an RData file named **BIAS\_PARAMS.RData** containing all the data necessary to calculate the mean bias factor, and the mean bias factor at each station location. 12 NetCDF files <**filename prefix (7)**>\_<*month*>**.nc** containing the interpolated mean bias coefficients. Here <*month*> is an integer from 1 to 12 representing the months of the year.
+
+
+## Apply bias correction `r anchor.point('tt.apply.bias')`
+
+The sub-menu `r menuselection('Apply bias correction')` allows to apply the bias correction to the downscaled data.
+
+`r put.image("images/merging_data/merging_tt/apply_bias.png", height = 80, width = 80)`
+
+1. Select the method used to calculate the mean bias coefficients or distribution parameters.
+2. Enter the full path to directory containing the downscaled files, or use `r button('...')` to browse it.
+3. Specify the downscaled data filename format.
+4. Enter the full path to directory containing the mean bias or distribution parameters files.
+5. In case of **Multiplicative.Bias.Var** or **Multiplicative.Bias.Mon**, specify the prefix for the file name of the mean bias coefficients.
+6. Select the time step of the data.
+7. Enter the date range of the downscaled data you want to adjust, make sure the date is valid, meaning that dates like 2016-06-31 and 2015-02-29 will throw an error.
+8. Specify the filename format of the adjusted files.
+9. Enter the full path to directory to save the adjusted files.
+
+Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
+
+>  **OUTPUT:** Under the directory you specified to save the result (4), a directory called **Adjusted\_Temp\_Data\_**<*start date*>\_<*end date*> has been created. The names of the files containing the adjusted temperature data had to be the same format as you provided in (8). 
+
+
+## Compute Spatio-temporal Trend Coefficients `r anchor.point('tt.calc.lmcoef')`
+
+To estimate the parameters of the linear regression to be used on the [Spatio-Temporal LM](merging_temperature.html#tt.merge.data) method when merging data, go to the sub-menu  `r menuselection('Compute Spatio-temporal Trend Coefficients')`
+
+`r put.image("images/merging_data/merging_tt/LMCoef.png", height = 80, width = 80)`
+
+
+1. Select the file containing the station data to be used to estimate the parameters of the linear regression. If the file is not yet listed, use the button `r button('...')` to open it.
+2. Enter the full path to directory containing the adjusted files, or use `r button('...')` to browse it.
+3. Specify the adjusted data filename format.
+4. Provide the elevation data as a Digital Elevation Model (DEM) from a NetCDF file.
+5. Enter the full path to directory to save the interpolated parameters, or browse it from `r button('...')`.
+6. Select the time step of the data.
+7. Enter the start and end year of the period to be used to estimate parameters.
+8. Select the interpolation method to interpolate the parameters. You can select one of the following three interpolation methods on the drop-down list:
+	- __Nearest Neighbor__: this method does not use an auxiliary variables but takes the elevation as a third coordinate.
+	- __Inverse Distance Weighted__: with no auxiliary variables are used the interpolation is done with a simple inverse distance weighting, in the case where auxiliary variables are included the interpolation method becomes a weighted least squares prediction.
+	- __Kriging__: with no auxiliary variables are used the interpolation is performed with an ordinary kriging, in the case where auxiliary variables are included the interpolation method becomes a kriging with external drift.
+
+9. Define the neighborhood size in terms of number of nearest points for the Nearest Neighbor interpolation method.
+	- __Multi.Lon__: Maximum distance belong to longitude, it is represented as a multiplier of grid interpolation resolution. For example, suppose that the grid resolution is equal to 0.05 degree, if Multi.Lon is set to 10, then the maximum distance of points to be used belong to longitude is 0.5 degree, only observations within this distance from the prediction location are used to select the interpolated value.
+	- __Multi.Lat__: Maximum distance belong to latitude. 
+	- __Multi.Elv__: Maximum height for elevation. The elevation data are divided into an interval of 100m. If Multi.Elv is set to 4, then maximum vertical distance to search the interpolated value is 400m.
+
+10. Define the neighborhood for the inverse distance weighted and kriging method.
+	- __nmin__: the maximum number of nearest observations that should be used to interpolate a point.
+	- __nmax__: the minimum number of nearest observations that should be used to interpolate a point.
+	- __maxdist__: maximum distance (in  decimal degree) to be used to interpolate a point (search radius). __maxdist__ specifies a circular search range to select the point.
+
+11. Use auxiliary variables to explain the trend-part of spatial variation when interpolating from inverse distance weighting or kriging. Check the box corresponding to the variable to use.
+
+Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
+
+ >  **OUTPUT:** Under the directory you specified to save the result (5), a directory called **LMCoef**\_<*Input station data filename without extension*> has been created. 13 files have bean created under this directory, an RData file named **LM\_MODEL\_PARS.RData** containing all the data necessary to estimate the parameters of the linear regression, and the fitted model and parameters at each station location for each month. 12 NetCDF files <**LM\_Coefficient**>\_<*month*>**.nc** containing the interpolated parameters. Here <*month*> is an integer from 1 to 12 representing the months of the year.
+
+
+## Merging Data `r anchor.point('tt.merge.data')`
+
+To perform the merging, go to the sub-menu `r menuselection('Merging Data')`.
+
+`r put.image("images/merging_data/merging_tt/merging.png", height = 80, width = 80)`
+
+1. Select the method to be used to merge the station and adjusted data. There are two ways to perform the merging.
+	- __Regression Kriging__: the regression kriging approach adopted here is performed by modeling the deterministic (spatial trend) and stochastic (residuals) part separately. It first fits a regression model (Generalized Linear Model) to predict the spatial trend, then interpolate the residuals by usign the inverse distance weighted method or kriging method by fitting a variogram for residuals.
+	- __Spatio-Temporal LM__: in this approach the deterministic part is fitted by a simple linear regression by taking into account the temporal components, i.e, it fits a linear regression between the station data and the adjusted data extracted at the station locations for each  month of the year, these models are used to predict the spatial trend, then interpolate the residuals. 
+
+2. Select the file containing the station data.
+3. Enter the full path to directory containing the adjusted RFE files, or use `r button('...')` to browse it.
+4. Specify the adjusted data filename format.
+5. In case of __Spatio-Temporal LM__, enter the full path to directory containing the interpolated regression parameters.
+6. Select the time step of the data.
+7. Enter the date range of the data you want to merge, make sure the date is valid, meaning that dates like 2016-06-31 and 2015-02-29 will throw an error.
+8. Select the interpolation method. You can select one of the following two interpolation methods on the drop-down list:
+	- __Inverse Distance Weighted__: with no auxiliary variables are used the interpolation is done with a simple inverse distance weighting, in the case where auxiliary variables are included the interpolation method becomes a weighted least squares prediction.
+	- __Kriging__: with no auxiliary variables are used the interpolation is performed with an ordinary kriging, in the case where auxiliary variables are included the interpolation method becomes a kriging with external drift.
+
+9. Define the neighborhood for the inverse distance weighted and kriging method.
+	- __nmin__: the maximum number of nearest observations that should be used to interpolate a point.
+	- __nmax__: the minimum number of nearest observations that should be used to interpolate a point.
+	- __maxdist__: maximum distance (in  decimal degree) to be used to interpolate a point (search radius). __maxdist__ specifies a circular search range to select the point.
+
+10. Set the minimum number of stations to perform the merging. If the number of stations is less than these given values no mering will be performed.
+	- __Min.Nb.Stn__: Minimum number of stations with data to be used to do the merging.
+
+11. Enter the full path to directory to save the merged data.
+12. Specify the merged data filename format.
+13. Select the method to blank the merged data, so that the values outside of a specified area are replaced by missing values.
+	- __None__: no mask will be applied.
+	- __Use DEM__: DEM data are used create a grid mask (1s over the land and NAs over the ocean). This mask is only useful for islands.
+	- __Use ESRI shapefile__: a shapefile are used to mask the data outside the administrative boundary by replacing with missing values.
+14. Provide the elevation data as a Digital Elevation Model (DEM) from a NetCDF file, if this field is enabled.
+15.  Select the ESRI shapefiles in the list if __Use ESRI shapefile__ is selected for blanking,  or use `r button('...')` to open it if not yet listed.
+16. Use auxiliary variables to explain the trend-part of spatial variation when interpolating. Check the box corresponding to the variable to include.
+	- __DEM__: include elevation data as auxiliary variable.
+	- __Slope__: include slope data as auxiliary variable.
+	- __Aspect__: include aspect data as auxiliary variable.
+	- __Lon__: include longitude as auxiliary variable.
+	- __Lat__: include latitude as auxiliary variable.
+
+Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
+
+ >  **OUTPUT:** Under the directory you specified to save the result (11), a directory called **Merged\_Temp\_Data**\_<*start date*>\_<*end date*> has been created. The names of the files containing the merged temperature data had to be the same format as you provided in (12).
+
+
+<!-- 
 ```{r, child="_generated_date.Rmd"}
 ```
+ -->
+

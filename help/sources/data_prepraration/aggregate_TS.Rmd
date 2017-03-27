@@ -24,7 +24,7 @@ The menu `r menuselection('Data Preparation','Aggregating Time Series')` allows 
 5. Select the type of data to be aggregated. There are three choices available: `One station series`, `CDT data format` and `NetCDF gridded data`. The case of `One station series` and `NetCDF gridded data` are described in more detail in the sections below.
 6. Select the function to be used to aggregate the series. For temperature, select `mean` and `sum` for precipitation.
 7. Enter the minimum fraction of non-missing values that must be present within each output time step. If the fraction of non-missing values within the output time step is less than this fraction a missing value is returned.
-8. In the case of `One station series` and `CDT data format`, select the file containing the station data,  and for `NetCDF gridded data`, enter the full path to directory containing the NetCDF data,  or use the `r button('...')` to browse it.
+8. In the case of `One station series` and `CDT data format`, select the file containing the station data,  and for `NetCDF gridded data`, enter the full path to directory containing the NetCDF data,  or use `r button('...')` to browse it.
 9. In the case of `One station series` and `CDT data format`, enter the name of the file or the full path of the file to save the aggregated data. For `NetCDF gridded data`, enter the full path to directory to save result.
 
 Click on the button ![][executetask] to aggregate the data. 
@@ -46,30 +46,14 @@ By selecting `NetCDF gridded data`, the button `r button('Settings')` will be en
 
 `r put.image("images/data_prepraration/aggregate_ts/ncdf_params.png", height = 60, width = 60)`
 
-1. Enter the date range of the series you want to aggregate, makes sure the date is valid, meaning that dates like 2016-06-31 and 2015-02-29 will throw an error.
-2. Enter the format of the file name for the input netcdf files
-3. Enter the format of the file name for the output netcdf files
+1. Enter the date range of the series you want to aggregate, make sure the date is valid, meaning that dates like 2016-06-31 and 2015-02-29 will throw an error.
+2. Enter the filename format of the input netcdf files
+3. Enter the filename format of the output netcdf files
 
-__*NetCDF filename format*__
-
-CDT uses a specific encoding to represent netcdf file names. Since each file only contains the data for a single date (one file per date), then it is necessary to encode the file names to have a time series.
-
-CDT uses `%s` to represent the year, month, dekad or day.
-
-*Examples:*
-
-Here are some examples of how to format a netcdf file names
-
-Time step |  netcdf file name | CDT format
---------- |  ---------------- | ----------
-daily     |  rfe_20160626.nc    | rfe_%s%s%s.nc
-daily     |  tmax_mrg_2016-06-26_ALL.nc  | tmax_mrg_%s-%s-%s_ALL.nc
-dekadal  | precip_2016063.nc  | precip_%s%s%s.nc
-dekadal | rfe_2016-06-dk3.nc  | rfe_%s-%s-dk%s.nc
-monthly  | tmin_2016-06.nc | tmin_%s-%s.nc
-monthly | tmax_201606_CLM.nc | tmax_%s%s_CLM.nc
+>  Go to the section [NetCDF filename format](cdt_data_input.html#cdt.ncdf.ffrmt) for more details on the format of the NetCDF file names.
 
 Click on the button ![][executetask] to aggregate the data. 
-
+<!-- 
 ```{r, child = "_generated_date.Rmd"}
 ```
+-->

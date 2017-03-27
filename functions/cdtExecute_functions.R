@@ -152,15 +152,16 @@ Execute_All_Functions <- function(get.stn){
 	###############################
 	##Adjust bias
 	if(GeneralParameters$action == 'rmbias.rain'){
-		months <- sort(as.numeric(GeneralParameters$Adjust.Months))
-		start.year <- GeneralParameters$Adjust.Date.Range$start.year
-		end.year <- GeneralParameters$Adjust.Date.Range$end.year
-		mois <- format(ISOdate(2014, months, 1), "%b")
-		if(length(mois) > 6) xmo <- paste(mois[1], mois[length(mois)], sep = '-')
-		else if(length(mois) == 1) xmo <- mois
-		else xmo <- paste(substr(mois, 1, 1), collapse = '')
-		origdir <- file.path(GeneralParameters$IO.files$dir2save,
-					paste('Adjusted_RFE_Data', xmo, paste(start.year, end.year, sep = '-'), sep = '_'))
+
+		daty <- GeneralParameters$Adjust.Date.Range
+		if(GeneralParameters$period == 'monthly'){
+			xdeb <- paste(format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year, sep = '')
+			xfin <- paste(format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year, sep = '')
+		}else{
+			xdeb <- paste(daty$start.dek, format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year, sep = '')
+			xfin <- paste(daty$end.dek, format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year, sep = '')
+		}
+		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('Adjusted_RFE_Data', xdeb, xfin, sep = '_'))
 		mrg2run <- try(execAdjBiasRain(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Adjusting Gauge-RFE bias finished successfully", "Adjusting Gauge-RFE bias failed")
 	}
