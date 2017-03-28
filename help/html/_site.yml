@@ -3,7 +3,7 @@ navbar:
   title: "CDT User Guide"
   type: inverse
   left:
-    - text: "CDT GUI & Data"
+    - text: "CDT"
       menu:
         - text: "CDT GUI"
           href: cdt_file_menu.html

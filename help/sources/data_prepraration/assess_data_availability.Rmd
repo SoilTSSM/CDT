@@ -5,9 +5,6 @@ output:
     toc: true
 ---
 
-```{r, child = "cdtMenuToolbar.Rmd"}
-```
-
 The menu `r menuselection('Data Preparation','Assess Data Availability')` provides a summary view of your data. It gives an informative graphics of the available observations and the proportion of missing values in the data. 
 
 `r put.image("images/data_prepraration/assess_data/asses_data_availab.png", height = 60, width = 60)`

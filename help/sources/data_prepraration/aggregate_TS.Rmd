@@ -5,9 +5,6 @@ output:
     toc: true
 ---
 
-```{r, child = "cdtMenuToolbar.Rmd"}
-```
-
 The menu `r menuselection('Data Preparation','Aggregating Time Series')` allows you to convert a time series with a given time step to another time step. It will display a dialog box allowing you to enter the input data and set the required parameters.
 
 `r put.image("images/data_prepraration/aggregate_ts/aggreagate_TS.png", height = 50, width = 50)`

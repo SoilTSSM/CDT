@@ -8,9 +8,6 @@ output:
       collapsed: false
 ---
 
-```{r, child = "cdtMenuToolbar.Rmd"}
-```
-
 The menu `r menuselection('Merging Data','Merging Temperature')`  allows to combine temperature data from reanalysis and weather station. There are 6 sequential steps required to merge temperature data.
 
 

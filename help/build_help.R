@@ -5,6 +5,22 @@ library(markdown)
 library(rmarkdown)
 library(stringr)
 
+####################################################################
+
+help_dir <- '/Users/rijaf/Desktop/ECHANGE/github/CDT/help/html'
+mathjax_dir <- '/Users/rijaf/Desktop/ECHANGE/MathJax'
+
+## arrange files for toc
+toc.order <- c("cdt_file_menu", "cdt_data_input", "format_cdt_data", 
+				"assess_data_availability", "aggregate_TS",
+				"merging_rainfall", "merging_temperature", "update_dekadal_rainfall", "validation")
+
+## build all files or some files
+## "all" or "part"
+build.files <- "part"
+
+####################################################################
+
 getIndexTOC <- function(fileRmd){
 	input_lines <- readLines(fileRmd, warn = FALSE)
 	input_lines <- iconv(input_lines, from = "", to = "UTF-8")
@@ -139,22 +155,34 @@ validate_front_matter <- function(front_matter) {
     stop("Invalid YAML front matter (ends with ':')", call. = FALSE)
 }
 
-
 ####################################################################
 
-help_dir <- '/Users/rijaf/Desktop/ECHANGE/github/CDT/help/html'
-setwd(help_dir)
-
-mathjax_dir <- '/Users/rijaf/Desktop/ECHANGE/MathJax'
 sources_dir <- '../sources'
 r_images <- 'images/R_images'
-
+setwd(help_dir)
 Sys.setenv(RMARKDOWN_MATHJAX_PATH = mathjax_dir)
 
-## arrange files for toc
-toc.order <- c("index.Rmd", "cdt_file_menu.Rmd", "cdt_data_input.Rmd", "format_cdt_data.Rmd", 
-			"assess_data_availability.Rmd", "aggregate_TS.Rmd",
-			"merging_rainfall.Rmd", "merging_temperature.Rmd", "update_dekadal_rainfall.Rmd")
+###############
+
+if(build.files == "part"){
+	gitout <- system("git status --porcelain", intern = TRUE)
+	imod <- str_trim(substr(gitout, 1, 2)) %in% c("M", "??")
+	if(any(imod)){
+		gitout <- gitout[imod]
+		imod1 <- grep(".Rmd", gitout, fixed = TRUE)
+		if(length(imod1) > 0){
+			gitout <- gitout[imod1]
+			gitout <- tools::file_path_sans_ext(basename(gitout))
+			ibld <- toc.order %in% gitout
+			if(any(ibld)){
+				files2build <- toc.order[ibld]
+				# build.files <- "part"
+			}else stop("no build")
+		}else stop("no build")
+	}else stop("no build")
+}
+
+toc.order <- c("index.Rmd", paste(toc.order, ".Rmd", sep = ""))
 
 #####
 all_src <- list.files(path = sources_dir, pattern = '.Rmd', full.names = TRUE, recursive = TRUE)
@@ -168,47 +196,28 @@ html_files <- paste(all_files, '.html', sep = '')
 figure_dir <- paste(all_files, '_files', sep = '')
 figure_files <- list.files(r_images, recursive = TRUE, full.names = TRUE)
 
-## Test change 
-# git_modifed_added <- do.call('rbind',lapply(strsplit(system('git status -s',intern = TRUE),' '), function(x) x[x != ""]))
-# is_change <- grep('help',git_modifed_added[,2])
-# if(length(is_change)>0)
-# changed_files <- git_modifed_added[is_change,2]
-# # and do build else do nothing/ ifif(length(is_change)>0){buil}
-
-# # search all Rmd files 
-# # search in images and get files corresponding
-# # if any change in common_dir re-build all
-
-## replace parent_dir, rmd_files, all_files, html_files and figure_dir to the new changed files
-
-# all_files <- c("index", "cdt_data_input", "cdt_file_menu")
-# parent_dir <- c("index", "cdt_file", "cdt_file")
-# rmd_files <- paste(all_files, '.Rmd', sep = '')
-# html_files <- paste(all_files, '.html', sep = '')
-# figure_dir <- paste(all_files, '_files', sep = '')
-
-# all_files <- "merging_rainfall"
-# rmd_files <- "merging_rainfall.Rmd"
-# parent_dir <- "merging_data"
-# html_files <- "merging_rainfall.html"
-# figure_dir <- "merging_rainfall_files"
-
 ###############
-### delete
-# html_files <- c("index.html", "aggregate_TS.html")
 
-######
-exist_Rimage_fig <- sapply(strsplit(list.files(r_images), '\\.'), '[[', 1) %in% all_files
+if(build.files == "part"){
+	all_files1 <- c("index", files2build)
+	rmd_files1 <- c("index.Rmd", paste(files2build, ".Rmd", sep = ""))
+	html_files1 <- c("index.html", paste(files2build, ".html", sep = ""))
+	figure_dir1 <- c("index_files", paste(files2build, "_files", sep = ""))
+}else{
+	all_files1 <- all_files
+	rmd_files1 <- rmd_files
+	html_files1 <- html_files
+	figure_dir1 <- figure_dir
+}
+
+exist_Rimage_fig <- sapply(strsplit(list.files(r_images), '\\.'), '[[', 1) %in% all_files1
 if(any(exist_Rimage_fig)) unlink(figure_files[exist_Rimage_fig])
-
-exist_html_fig <- dir.exists(figure_dir)
-if(any(exist_html_fig)) unlink(figure_dir[exist_html_fig], recursive = TRUE, force = TRUE)
-
-exist_html_files <- file.exists(html_files)
-if(any(exist_html_files)) unlink(html_files[exist_html_files])
-
-exist_rmd_wd_files <- file.exists(rmd_files)
-if(any(exist_rmd_wd_files)) unlink(rmd_files[exist_rmd_wd_files])
+exist_html_fig <- dir.exists(figure_dir1)
+if(any(exist_html_fig)) unlink(figure_dir1[exist_html_fig], recursive = TRUE, force = TRUE)
+exist_html_files <- file.exists(html_files1)
+if(any(exist_html_files)) unlink(html_files1[exist_html_files])
+exist_rmd_wd_files <- file.exists(rmd_files1)
+if(any(exist_rmd_wd_files)) unlink(rmd_files1[exist_rmd_wd_files])
 
 ###############
 # remove index
@@ -226,6 +235,7 @@ cat(paste('---\n',
 				'  toc_float:', '\n',
 				'   collapsed: false', '\n',
 				'---\n', sep = ''), file = index.path)
+cat("\n```{r, child = 'cdtMenuToolbar.Rmd'}\n```\n", file = index.path, append = TRUE)
 cat("\n<div id='toc-index' class='toc-index-class'>\n\n", file = index.path, append = TRUE)
 toTOC <- do.call('c',
 	lapply(seq_along(rmd_files), function(j){
@@ -244,13 +254,19 @@ cat(paste(toTOC, collapse = '\n\n'), file = index.path, append = TRUE)
 cat("\n\n</div>\n", file = index.path, append = TRUE)
 cat("\n```{r, child = '_generated_date.Rmd'}\n```\n", file = index.path, append = TRUE)
 file.copy(index.path, '.')
+rmd_files <- c("index.Rmd", rmd_files)
 
 ###############
-rmd_files <- c("index.Rmd", rmd_files)
-for(jj in seq_along(rmd_files)) render(rmd_files[jj])
+
+rmd_files1 <- if(build.files == "part") rmd_files1 else rmd_files
+for(jj in seq_along(rmd_files1)) render(rmd_files1[jj])
+
+###############
 
 exist_rmd_wd_files <- file.exists(rmd_files)
 if(any(exist_rmd_wd_files)) unlink(rmd_files[exist_rmd_wd_files])
+
+###############
 
 # unlink('../index.html')
 # file.symlink(file.path(getwd(),'index.html'), '../index.html')

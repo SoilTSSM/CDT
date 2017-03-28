@@ -7,6 +7,9 @@ output:
    collapsed: false
 ---
 
+```{r, child = 'cdtMenuToolbar.Rmd'}
+```
+
 <div id='toc-index' class='toc-index-class'>
 
 # [CDT GUI](cdt_file_menu.html)
@@ -76,6 +79,8 @@ output:
 ## [Merging Data](merging_temperature.html#tt.merge.data)
 
 # [Updating dekadal rainfall](update_dekadal_rainfall.html)
+
+# [Validation](validation.html)
 
 </div>
 

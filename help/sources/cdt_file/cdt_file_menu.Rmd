@@ -11,8 +11,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(fig.path = 'images/R_images/cdt_file_menu.')
 ```
-```{r, child = "cdtMenuToolbar.Rmd"}
-```
+
 <br>
 
 ## CDT Main Window `r anchor.point('cdt.main.win')`

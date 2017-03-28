@@ -11,8 +11,7 @@ output:
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(fig.path = 'images/R_images/format_cdt_data.')
 ```
-```{r, child = "cdtMenuToolbar.Rmd"}
-```
+
 If you do not yet have a data in CDT format to work with, you can format your data to [CDT station data format](cdt_data_input.html#cdt.format.data) using the menu options `r menuselection('Data Preparation','Format CDTs Input Data')`. 
 
 CDT can format two types of input files:

@@ -11,7 +11,7 @@
 
 
 
-<title>Aggregating Time Series</title>
+<title>Validation</title>
 
 <script src="libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,6 +19,9 @@
 <script src="libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="libs/navigation-1.1/tabsets.js"></script>
 <link href="libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
 <script src="libs/highlightjs-1.1/highlight.js"></script>
@@ -163,6 +166,107 @@ $(document).ready(function () {
 
 
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
 
 
 <div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
@@ -278,79 +382,44 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Aggregating Time Series</h1>
+<h1 class="title toc-ignore">Validation</h1>
 
 </div>
 
 
-<p>The menu <span class="menuselection">Data Preparation ‣ Aggregating Time Series</span>   allows you to convert a time series with a given time step to another time step. It will display a dialog box allowing you to enter the input data and set the required parameters.</p>
+<p>The menu <span class="menuselection">Merging Data ‣ Validation</span>   allows to compare satellite rainfall products and merged data products from CDT (rainfall and temperature) with station measurements using statistical indicators. To perform validation for precipitation, go to the sub-menu <span class="menuselection">Precipitation</span>   and to the sub-menu <span class="menuselection">Temperature</span>   for temperature. A tabbed panel will be activated on the left panel, it gives you a way to enter the input, set all parameters, display map to select the area of interest, calculate the statistics and display the results.</p>
+<p>The first tab <strong>General</strong> is dedicated to the required input files and directory and output directory.</p>
 <center>
 <div class="figure">
-<img src="images/data_prepraration/aggregate_ts/aggreagate_TS.png" style="width:50.0%" style="height:50.0%" />
+<img src="images/merging_data/validation/tab1.png" style="width:50.0%" style="height:50.0%" />
 
 </div>
 </center>
 <p><br></p>
 <ol style="list-style-type: decimal">
-<li>Select the time step of your input time series. There are three choices available: daily, dekadal and monthly data.</li>
-<li>Select the time step to aggregate the time series. There are 5 possible time steps for the outputs:
+<li>Select the time step of the data.</li>
+<li>Select the file containing the station validation data. If the file is not yet listed, use the button <span class="buttonclass"> … </span>   to open it.</li>
+<li>Enter the full path to directory containing the gridded NetCDF files, or use <span class="buttonclass"> … </span>   to browse it.</li>
+<li>Provide a sample file from the gridded data by selecting it from the drop-down list or open it by using the button <span class="buttonclass"> … </span>  .</li>
+<li>Specify the gridded data filename format. See the section <a href="cdt_data_input.html#cdt.ncdf.ffrmt">NetCDF filename format</a> for more details on the format of NetCDF file names.</li>
+<li>Enter the full path to directory to save the validation output, or browse it from <span class="buttonclass"> … </span>  .</li>
+</ol>
+<p>The tab <strong>Select Stations</strong> allows to select the station to be used to perform the validation.</p>
+<center>
+<div class="figure">
+<img src="images/merging_data/validation/tab2.png" style="width:50.0%" style="height:50.0%" />
+
+</div>
+</center>
+<p><br></p>
+<ol style="list-style-type: decimal">
+<li>There are three ways to select the stations to be used to do the validation:
 <ul>
-<li>‘Dekadal data’</li>
-<li>‘Monthly data’</li>
-<li>‘Yearly data’</li>
-<li>‘Seasonal data’: a seasonal time series is a series defined for a specific season (over a given months). For example, December-January-February (DJF), June-July-August (JJA) or May-October (MJJASO) for six-month seasonal series.</li>
-<li>‘Rolling Seasonal data’: a rolling seasonal time series is a seasonal time series which includes all possible seasons over the year. For example, for three-month seasonal series, the series will be composed of the 12 possible seasons (DJF, JFM, FMA, MAM, AMJ, MJJ, JJA, JAS, ASO, SON, OND, NDJ)</li>
+<li><strong>All Stations</strong>: all the stations from the station data will be used.</li>
+<li><strong>Rectangle</strong>: the stations can be selected by drawing a rectangle over the region</li>
+<li><strong>Polygons</strong>:</li>
 </ul></li>
-<li>Enter here the start month of the season (1 to 12).</li>
-<li>Enter here the length of the season. For example, 3 for three-month (DJF) and 6 for six-month length (MJJASO).</li>
-<li>Select the type of data to be aggregated. There are three choices available: <code>One station series</code>, <code>CDT data format</code> and <code>NetCDF gridded data</code>. The case of <code>One station series</code> and <code>NetCDF gridded data</code> are described in more detail in the sections below.</li>
-<li>Select the function to be used to aggregate the series. For temperature, select <code>mean</code> and <code>sum</code> for precipitation.</li>
-<li>Enter the minimum fraction of non-missing values that must be present within each output time step. If the fraction of non-missing values within the output time step is less than this fraction a missing value is returned.</li>
-<li>In the case of <code>One station series</code> and <code>CDT data format</code>, select the file containing the station data, and for <code>NetCDF gridded data</code>, enter the full path to directory containing the NetCDF data, or use <span class="buttonclass"> … </span>   to browse it.</li>
-<li>In the case of <code>One station series</code> and <code>CDT data format</code>, enter the name of the file or the full path of the file to save the aggregated data. For <code>NetCDF gridded data</code>, enter the full path to directory to save result.</li>
 </ol>
-<p>Click on the button [][executetask] to aggregate the data.</p>
-<p><strong><em>One station series</em></strong></p>
-<p>If you select <code>One station series</code> for the type of data, the button <span class="buttonclass"> Settings </span>   will be enabled allowing you to set the options for the format of data</p>
-<center>
-<div class="figure">
-<img src="images/data_prepraration/aggregate_ts/one_stn_format.png" style="width:40.0%" style="height:40.0%" />
-
-</div>
-</center>
-<p><br></p>
-<blockquote>
-<p>Go to the section <a href="cdt_data_input.html#cdt.ts.data">Input series for one station</a> for more details on the format of the data and the date.</p>
-</blockquote>
-<ol style="list-style-type: decimal">
-<li>Choose the number of climate variables in the file.</li>
-<li>Choose the format of date (grouped or separated).</li>
-</ol>
-<p><strong><em>NetCDF gridded data</em></strong></p>
-<p>By selecting <code>NetCDF gridded data</code>, the button <span class="buttonclass"> Settings </span>   will be enabled which allows you to edit the date range of the series to be aggregated and the format of the file names for the ncdf input and output files.</p>
-<center>
-<div class="figure">
-<img src="images/data_prepraration/aggregate_ts/ncdf_params.png" style="width:60.0%" style="height:60.0%" />
-
-</div>
-</center>
-<p><br></p>
-<ol style="list-style-type: decimal">
-<li>Enter the date range of the series you want to aggregate, make sure the date is valid, meaning that dates like 2016-06-31 and 2015-02-29 will throw an error.</li>
-<li>Enter the filename format of the input netcdf files</li>
-<li>Enter the filename format of the output netcdf files</li>
-</ol>
-<blockquote>
-<p>Go to the section <a href="cdt_data_input.html#cdt.ncdf.ffrmt">NetCDF filename format</a> for more details on the format of the NetCDF file names.</p>
-</blockquote>
-<p>Click on the button [][executetask] to aggregate the data.<br />
-<!-- 
-
-
------------
-
-Generated on : March 28, 2017, 01:05
---></p>
 
 <footer class="navbar navbar-inverse  navbar-fixed-bottom">
     <p>
@@ -362,6 +431,8 @@ Generated on : March 28, 2017, 01:05
 </footer>
 
 
+</div>
+</div>
 
 </div>
 

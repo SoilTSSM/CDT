@@ -8,9 +8,6 @@ output:
       collapsed: false
 ---
 
-```{r, child = "cdtMenuToolbar.Rmd"}
-```
-
 The menu `r menuselection('Merging Data','Merging Rainfall')` allows to combine a rain gauge and gridded satellite-based rainfall estimates (RFE) data. There are 4 sequential steps required to merge rainfall data.
 
 `r put.image("images/merging_data/merging_rr/menu_merge.rr.png", height = 40, width = 40)`
