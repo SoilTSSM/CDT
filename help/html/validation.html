@@ -387,7 +387,7 @@ div.tocify {
 </div>
 
 
-<p>The menu <span class="menuselection">Merging Data ‣ Validation</span>   allows to compare satellite rainfall products and merged data products from CDT (rainfall and temperature) with station measurements using statistical indicators. To perform validation for precipitation, go to the sub-menu <span class="menuselection">Precipitation</span>   and to the sub-menu <span class="menuselection">Temperature</span>   for temperature. A tabbed panel will be activated on the left panel, it gives you a way to enter the input, set all parameters, display map to select the area of interest, calculate the statistics and display the results.</p>
+<p>The menu <span class="menuselection">Merging Data ‣ Validation</span>   allows to compare satellite rainfall products and merged data products from CDT (rainfall and temperature) with station measurements using statistical indicators. To perform validation for precipitation, go to the sub-menu <span class="menuselection">Precipitation</span>   and to the sub-menu <span class="menuselection">Temperature</span>   for temperature. A tabbed panel will be activated on the left panel, it gives you a way to enter the input, set all parameters, display map to select the area of interest, calculate the statistics to be used to evaluate the gridded data and display the results.</p>
 <p>The first tab <strong>General</strong> is dedicated to the required input files and directory and output directory.</p>
 <center>
 <div class="figure">
@@ -415,11 +415,100 @@ div.tocify {
 <ol style="list-style-type: decimal">
 <li>There are three ways to select the stations to be used to do the validation:
 <ul>
-<li><strong>All Stations</strong>: all the stations from the station data will be used.</li>
-<li><strong>Rectangle</strong>: the stations can be selected by drawing a rectangle over the region</li>
-<li><strong>Polygons</strong>:</li>
+<li><strong>All Stations</strong>: all the stations from the input station data file will be used.</li>
+<li><strong>Rectangle</strong>: the stations can be selected by drawing a rectangle over the desired region.</li>
+<li><strong>Polygons</strong>: the stations can be selected by choosing one polygon or a set of polygons representing a administrative boundaries.</li>
+</ul></li>
+<li>If you want to select the stations to be used to do the validation from a map (in case of <strong>Rectangle</strong> or <strong>Polygons</strong>), provide here the ESRI shapefiles, or use <span class="buttonclass"> … </span>   to open it if not yet listed.</li>
+<li>Select the attribute to be displayed on the map and to be used to select the station in case of <strong>Polygons</strong>.</li>
+<li>In case of <strong>Polygons</strong>, if you do not want to select the polygons from the map, scroll down the list to select the administrative division name of the polygons within it the station will be used to do the validation.</li>
+<li><p>After you have provided the shapefile in (2), you can click on <span class="buttonclass"> Display Map </span>   to display the map in the right panel.</p>
+<center>
+<div class="figure">
+<img src="images/merging_data/validation/map.png" style="width:60.0%" style="height:60.0%" />
+
+</div></li>
+</ol>
+</center>
+<br><br />
+When you move the mouse over the map, the current position of the cursor will be displayed in the status bar. <strong>X:</strong> <em>longitude</em>, <strong>Y:</strong> <em>latitude</em> and <strong>Z:</strong> <em>the name of the corresponding administrative division</em>.<br />
+
+<center>
+<div class="figure">
+<img src="images/merging_data/validation/status_bar.png" style="width:80.0%" style="height:100.0%" />
+
+</div>
+</center>
+<p><br><br />
+If you see that the administrative division name displayed is not what you want, you can always change the subdivision level in (3).</p>
+<ol start="6" style="list-style-type: decimal">
+<li>Click on <span class="buttonclass"> Select </span>   before you draw a rectangle or select a polygons by clicking on the map. When this button turns red, you can proceed to the operation on the map.<br />
+
+<center>
+<img src="images/merging_data/validation/rectangle.png" style="width:60.0%" style="height:60.0%" /><br />
+<span class="img-caption"> Rectangle selection </span>
+</center>
+<br><br />
+
+<center>
+<img src="images/merging_data/validation/polygons.png" style="width:60.0%" style="height:60.0%" /><br />
+<span class="img-caption"> Polygons selection </span>
+</center>
+<p><br></p></li>
+<li>When you draw a rectangle on the map, its spatial extent will be shown here. In addition, if you know in advance the range of the region, you can directly enter here the minimum/maximum longitude/latitude of your area of interest.<br />
+
+<center>
+<div class="figure">
+<img src="images/merging_data/validation/select.png" style="width:30.0%" style="height:30.0%" />
+
+</div></li>
+</ol>
+</center>
+<p><br></p>
+<ol start="8" style="list-style-type: decimal">
+<li>Zoom tools: to activate the zoom click on these buttons, when the button turns red, you can proceed the zooming on the map. To deactivate the zoom right-click anywhere on the map.
+<ul>
+<li><img src="images/common/ZoomIn128.gif" title="Zoom in" id="cdtIcons" class="cdtIcons1" /> zoom in</li>
+<li><img src="images/common/ZoomOut128.gif" title="Zoom out" id="cdtIcons" class="cdtIcons1" /> zoom out</li>
+<li><img src="images/common/ZoomRect128.gif" title="Zoom areas" id="cdtIcons" class="cdtIcons1" /> drag a rectangle to zoom in a rectangular region</li>
+<li><img src="images/common/PanImage32.gif" title="Pan map" id="cdtIcons" class="cdtIcons1" /> move the map by clicking and holding the left mouse button and dragging the map to a new place</li>
+<li><img src="images/common/reset128.gif" title="Zoom reset" id="cdtIcons" class="cdtIcons" /> reset the zoom</li>
 </ul></li>
 </ol>
+<p>The tab <strong>Validation</strong> allows to specify the period and season to perform the validation, to calculate the statistics to be used to evaluate the gridded data, and to display the results.</p>
+<center>
+<div class="figure">
+<img src="images/merging_data/validation/tab3.png" style="width:50.0%" style="height:50.0%" />
+
+</div>
+</center>
+<p><br></p>
+<ol style="list-style-type: decimal">
+<li>Enter the start and end year of the period to calculate the validation statistics.</li>
+<li>Select the start and end month of the season to calculate the validation statistics.</li>
+<li>Select the type of data to calculate statistics:
+<ul>
+<li><strong>All Data</strong>: use all data from station without aggregation</li>
+<li><strong>Spatial Average</strong>: the station will be spatially averaged before the computation of the statistics.</li>
+</ul></li>
+<li>Click on <span class="buttonclass"> EXECUTE </span>   to calculate the validation statistics.</li>
+<li>Click on <span class="buttonclass"> Statistics </span>   to display table of the calculated statistics.</li>
+<li>Click on <span class="buttonclass"> STATION-MERGED Plot </span>   to display a scatter plot.<br />
+
+<center>
+<img src="images/merging_data/validation/scatter.jpg" title="fig:" style="width:50.0%" style="height:50.0%" /></li>
+</ol>
+</center>
+<br><br />
+7. Click on <span class="buttonclass"> Empirical CDF Plot </span>   to display a cumulative density function (CDF).<br />
+
+<center>
+<div class="figure">
+<img src="images/merging_data/validation/cdf.jpg" style="width:50.0%" style="height:50.0%" />
+
+</div>
+</center>
+<p><br></p>
 
 <footer class="navbar navbar-inverse  navbar-fixed-bottom">
     <p>

@@ -8,7 +8,7 @@ output:
       collapsed: false
 ---
 
-The menu `r menuselection('Merging Data','Validation')` allows to compare satellite rainfall products and merged data products from CDT (rainfall and temperature) with station measurements using statistical indicators. To perform validation for precipitation,  go to the sub-menu `r menuselection('Precipitation')` and to the sub-menu `r menuselection('Temperature')` for temperature. A tabbed panel will be activated on the left panel, it gives you a way to enter the input, set all parameters, display map to select the area of interest, calculate the statistics and display the results.
+The menu `r menuselection('Merging Data','Validation')` allows to compare satellite rainfall products and merged data products from CDT (rainfall and temperature) with station measurements using statistical indicators. To perform validation for precipitation,  go to the sub-menu `r menuselection('Precipitation')` and to the sub-menu `r menuselection('Temperature')` for temperature. A tabbed panel will be activated on the left panel, it gives you a way to enter the input, set all parameters, display map to select the area of interest, calculate the statistics to be used to evaluate the gridded data and display the results.
 
 The first tab **General** is dedicated to the required input files and directory and output directory.
 
@@ -27,6 +27,49 @@ The tab **Select Stations** allows to select the station to be used to perform t
 `r put.image("images/merging_data/validation/tab2.png", height = 50, width = 50)`
 
 1. There are three ways to select the stations to be used to do the validation:
-	- __All Stations__: all the stations from the station data will be used.
-	- __Rectangle__: the stations can be selected by drawing a rectangle over the region
-	- __Polygons__:
+	- __All Stations__: all the stations from the input station data  file will be used.
+	- __Rectangle__: the stations can be selected by drawing a rectangle over the desired region.
+	- __Polygons__: the stations can be selected by choosing one polygon or a set of polygons representing a  administrative boundaries.
+2. If you want to select the stations to be used to do the validation from a map (in case of **Rectangle** or **Polygons**), provide here the ESRI shapefiles, or use `r button('...')` to open it if not yet listed.
+3. Select the attribute to be displayed on the map and to be used to select the station in case of **Polygons**.
+4. In case of **Polygons**, if you do not want to select the polygons from the map, scroll down the list to select the administrative division name of the polygons within it the station will be used to do the validation.
+5. After you have provided the shapefile in (2), you can click on `r button('Display Map')` to display the map in the right panel.
+
+	`r put.image("images/merging_data/validation/map.png", height = 60, width = 60)` 
+	   When you move the mouse over the map,  the current position of the cursor will be displayed in the status bar. **X:** _longitude_, **Y:** _latitude_ and **Z:** _the name of the corresponding administrative division_.
+	`r put.image("images/merging_data/validation/status_bar.png", height = 100, width = 80)`
+	   If you see that the administrative division name displayed is not what you want, you can always change the subdivision level in (3).
+
+6. Click  on `r button('Select')` before you draw a rectangle or select a polygons by clicking on the map. When this button turns red, you can proceed to the operation on the map.
+	`r put.image("images/merging_data/validation/rectangle.png",
+				caption = "Rectangle selection", height = 60, width = 60)` 
+	`r put.image("images/merging_data/validation/polygons.png",
+				caption = "Polygons selection", height = 60, width = 60)`  
+
+7. When you draw a rectangle on the map, its spatial extent will be shown here. In addition, if you know in advance the range of the region, you can directly enter here the  minimum/maximum longitude/latitude of your area of interest.
+	`r put.image("images/merging_data/validation/select.png", height = 30, width = 30)` 
+
+8. Zoom tools: to activate the zoom click on these buttons, when the button turns red,  you can proceed the zooming on the map. To deactivate the zoom right-click anywhere on the map.
+	- ![][zoomin0] zoom in
+	- ![][zoomout0] zoom out 
+	- ![][zoomrect0] drag a rectangle to zoom in a rectangular region
+	- ![][panmap0] move the map by clicking and holding the left mouse button and dragging the map to a new place
+	- ![][zoomreset] reset the zoom
+
+
+The tab **Validation** allows to specify the period and season to perform the validation, to calculate the statistics to be used to evaluate the gridded data, and to display the results.
+
+`r put.image("images/merging_data/validation/tab3.png", height = 50, width = 50)`
+
+1. Enter the start and end year of the period to calculate the validation statistics.
+2. Select the start and end month of the season to calculate the validation statistics.
+3. Select the type of data to calculate statistics:
+	- __All Data__: use all data from station without aggregation
+	- __Spatial Average__: the station will be spatially averaged before the computation of the statistics.
+4. Click on `r button('EXECUTE')` to calculate the validation statistics.
+5. Click on `r button('Statistics')` to display table of the calculated statistics.
+6. Click on `r button('STATION-MERGED Plot')` to display a scatter plot.
+`r put.image("images/merging_data/validation/scatter.jpg", height = 50, width = 50)`
+7. Click on `r button('Empirical CDF Plot')` to display a cumulative density function (CDF).
+`r put.image("images/merging_data/validation/cdf.jpg", height = 50, width = 50)`
+

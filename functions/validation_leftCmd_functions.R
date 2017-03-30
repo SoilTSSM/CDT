@@ -82,8 +82,10 @@ ValidationPanelCmd <- function(clim.var){
 	tkgrid(combStnfl.tab1, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(btStnfl.tab1, row = 1, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
-	infobulle(combStnfl.tab1, 'Choose the station data in the list')
-	status.bar.display(combStnfl.tab1, TextOutputVar, 'Choose the file containing the station data in CDT format')
+	infobulle(combPrd.tab1, 'Time step of the data')
+	status.bar.display(combPrd.tab1, TextOutputVar, 'Time step of the data')
+	infobulle(combStnfl.tab1, 'Select the station data in the list')
+	status.bar.display(combStnfl.tab1, TextOutputVar, 'Select the file containing the station data in CDT format')
 	infobulle(btStnfl.tab1, 'Browse file if not listed')
 	status.bar.display(btStnfl.tab1, TextOutputVar, 'Browse file if not listed')
 
@@ -134,9 +136,11 @@ ValidationPanelCmd <- function(clim.var){
 	tkgrid(cap1.tab1, row = 4, column = 0, sticky = 'e', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(netCDFff.tab1, row = 4, column = 2, sticky = 'w', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	infobulle(netCDFff.tab1, 'Enter the format of the NetCDF files names,\nexample: rfe1983_01-dk1.nc')
+	infobulle(dirCDF.tab1, 'Enter the full path to directory containing the NetCDF files')
+	status.bar.display(dirCDF.tab1, TextOutputVar, 'Enter the full path to directory containing the NetCDF files')
+	infobulle(netCDFff.tab1, 'Enter the format of the NetCDF files names, example: rfe1983_01-dk1.nc')
 	status.bar.display(netCDFff.tab1, TextOutputVar, 'Enter the format of the NetCDF files names, example: rfe1983_01-dk1.nc')
-	infobulle(combgrdCDF.tab1, 'Choose the file in the list')
+	infobulle(combgrdCDF.tab1, 'Select the file in the list')
 	status.bar.display(combgrdCDF.tab1, TextOutputVar, 'File containing a sample of NetCDF data')
 	infobulle(btgrdCDF.tab1, 'Browse file if not listed')
 	status.bar.display(btgrdCDF.tab1, TextOutputVar, 'Browse file if not listed')
@@ -156,9 +160,9 @@ ValidationPanelCmd <- function(clim.var){
 	tkgrid(bfl2sav.tab1, row = 0, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(fl2sav.tab1, 'Enter the full path to the directory  to save result')
-	status.bar.display(fl2sav.tab1, TextOutputVar, 'Enter the full path to the directory to save extracted data')
+	status.bar.display(fl2sav.tab1, TextOutputVar, 'Enter the full path to the directory to save result')
 	infobulle(bfl2sav.tab1, 'Browse here the full path to the directory to save result')
-	status.bar.display(bfl2sav.tab1, TextOutputVar, 'Browse here the full path to the directory to save extracted data')
+	status.bar.display(bfl2sav.tab1, TextOutputVar, 'Browse here the full path to the directory to save result')
 
 	#############################
 	tkgrid(frameStn, row = 0, column = 0, sticky = 'we')
@@ -639,10 +643,14 @@ ValidationPanelCmd <- function(clim.var){
 	tkgrid(mon2Lab.tab3, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
 	tkgrid(cbChoixM2.tab3, row = 2, column = 1, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1)
 
-	infobulle(years1En.tab3, 'Start year to be used for validation')
-	status.bar.display(years1En.tab3, TextOutputVar, 'Start year to be used for validation')
-	infobulle(years2En.tab3, 'End year to be used for validation')
-	status.bar.display(years2En.tab3, TextOutputVar, 'End year to be used for validation')
+	infobulle(years1En.tab3, 'Start year of the period to calculate the statistics')
+	status.bar.display(years1En.tab3, TextOutputVar, 'Start year of the period to calculate the statistics')
+	infobulle(years2En.tab3, 'End year of the period to calculate the statistics')
+	status.bar.display(years2En.tab3, TextOutputVar, 'End year of the period to calculate the statistics')
+	infobulle(cbChoixM1.tab3, 'Start month of the period to calculate the statistics')
+	status.bar.display(cbChoixM1.tab3, TextOutputVar, 'Start month of the period to calculate the statistics')
+	infobulle(cbChoixM2.tab3, 'End month of the season to calculate the statistics')
+	status.bar.display(cbChoixM2.tab3, TextOutputVar, 'End month of the season to calculate the statistics')
 
 	#######################
 	dataType.val <- c('All Data', 'Spatial Average')
@@ -652,7 +660,7 @@ ValidationPanelCmd <- function(clim.var){
 	validate.tab3 <- tkbutton(subfr3, text = "EXECUTE")
 	stats.tab3 <- tkbutton(subfr3, text = "Statistics")
 	scatt.tab3 <- tkbutton(subfr3, text = "STATION-MERGED Plot")
-	ecdf.tab3 <- tkbutton(subfr3, text = " Empirical CDF Plot")
+	ecdf.tab3 <- tkbutton(subfr3, text = "Empirical CDF Plot")
 
 	sep1.tab3 <- ttkseparator(subfr3)
 	sep2.tab3 <- ttkseparator(subfr3)
@@ -672,6 +680,13 @@ ValidationPanelCmd <- function(clim.var){
 	tkgrid(scatt.tab3, row = 8, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(sep5.tab3, row = 9, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, pady = 3)
 	tkgrid(ecdf.tab3, row = 10, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(dataType.tab3, 'Use all data from station or a spatial average to calculate the statistics')
+	status.bar.display(dataType.tab3, TextOutputVar, 'Use all data from station or a spatial average to calculate the statistics')
+	infobulle(validate.tab3, 'Calculate the statistics to evaluate the gridded data')
+	status.bar.display(validate.tab3, TextOutputVar, 'Calculate the statistics to evaluate the gridded data')
+	infobulle(stats.tab3, 'Display a table of the statistics')
+	status.bar.display(stats.tab3, TextOutputVar, 'Display a table of the statistics')
 
 	#############################
 

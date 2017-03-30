@@ -17,7 +17,7 @@ toc.order <- c("cdt_file_menu", "cdt_data_input", "format_cdt_data",
 
 ## build all files or some files
 ## "all" or "part"
-build.files <- "part"
+build.files <- "all"
 
 ####################################################################
 
@@ -164,6 +164,13 @@ Sys.setenv(RMARKDOWN_MATHJAX_PATH = mathjax_dir)
 
 ###############
 
+nothing.to.build <- function() {
+	opt <- options(show.error.messages = FALSE)
+	on.exit(options(opt))
+	cat("Nothing to build", "\n")
+	stop()
+}
+
 if(build.files == "part"){
 	gitout <- system("git status --porcelain", intern = TRUE)
 	imod <- str_trim(substr(gitout, 1, 2)) %in% c("M", "??")
@@ -177,9 +184,9 @@ if(build.files == "part"){
 			if(any(ibld)){
 				files2build <- toc.order[ibld]
 				# build.files <- "part"
-			}else stop("no build")
-		}else stop("no build")
-	}else stop("no build")
+			}else nothing.to.build()
+		}else nothing.to.build()
+	}else nothing.to.build()
 }
 
 toc.order <- c("index.Rmd", paste(toc.order, ".Rmd", sep = ""))
@@ -235,7 +242,7 @@ cat(paste('---\n',
 				'  toc_float:', '\n',
 				'   collapsed: false', '\n',
 				'---\n', sep = ''), file = index.path)
-cat("\n```{r, child = 'cdtMenuToolbar.Rmd'}\n```\n", file = index.path, append = TRUE)
+cat("\n```{r, child = 'cdtcsschunks.Rmd'}\n```\n", file = index.path, append = TRUE)
 cat("\n<div id='toc-index' class='toc-index-class'>\n\n", file = index.path, append = TRUE)
 toTOC <- do.call('c',
 	lapply(seq_along(rmd_files), function(j){
@@ -255,11 +262,15 @@ cat("\n\n</div>\n", file = index.path, append = TRUE)
 cat("\n```{r, child = '_generated_date.Rmd'}\n```\n", file = index.path, append = TRUE)
 file.copy(index.path, '.')
 rmd_files <- c("index.Rmd", rmd_files)
+ctdtools <- readLines('cdtMenuToolbar.Rmd')
 
 ###############
 
 rmd_files1 <- if(build.files == "part") rmd_files1 else rmd_files
-for(jj in seq_along(rmd_files1)) render(rmd_files1[jj])
+for(jj in seq_along(rmd_files1)){
+	cat(ctdtools, file = rmd_files1[jj], sep = "\n", append = TRUE)
+	render(rmd_files1[jj])
+}
 
 ###############
 
@@ -271,4 +282,3 @@ if(any(exist_rmd_wd_files)) unlink(rmd_files[exist_rmd_wd_files])
 # unlink('../index.html')
 # file.symlink(file.path(getwd(),'index.html'), '../index.html')
 # system('ln -s "$PWD"/index.html ../index.html')
-
