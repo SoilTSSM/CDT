@@ -17,7 +17,7 @@ toc.order <- c("cdt_file_menu", "cdt_data_input", "format_cdt_data",
 
 ## build all files or some files
 ## "all" or "part"
-build.files <- "all"
+build.files <- "part"
 
 ####################################################################
 

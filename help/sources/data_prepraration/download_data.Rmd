@@ -67,7 +67,7 @@ The menu `r menuselection('Data Preparation','Download Country boundary')` allow
 
 When everything is specified, click `r button('Download')` to start the download.
 
->  **OUTPUT:** The downloaded shapefiles are stored in the directory you specified to save the result (3).
+>  **OUTPUT:** The downloaded shapefiles (with file extension **.shp**, **.shx**, **.dbf**) are stored in the directory you specified to save the result (3).
 
 
 
