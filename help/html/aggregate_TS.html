@@ -215,6 +215,10 @@ $(document).ready(function () {
     <li>
       <a href="download_data.html">Download Data</a>
     </li>
+    <li class="divider"></li>
+    <li>
+      <a href="fill_na_temp.html">Filling missing dekadal temperature values</a>
+    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -283,7 +287,7 @@ $(document).ready(function () {
 </div>
 
 
-<p>The menu <span class="menuselection">Data Preparation ‣ Aggregating Time Series</span>   allows you to convert a time series with a given time step to another time step. It will display a dialog box allowing you to enter the input data and set the required parameters.</p>
+<p>The menu <span class="menuselection">Data Preparation ‣ Aggregating Time Series</span>   allows to convert a time series with a given time step to another time step. It will display a dialog box allowing you to enter the input data and set the required parameters.</p>
 <center>
 <div class="figure">
 <img src="images/data_prepraration/aggregate_ts/aggreagate_TS.png" style="width:50.0%" style="height:50.0%" />
@@ -306,12 +310,12 @@ $(document).ready(function () {
 <li>Select the type of data to be aggregated. There are three choices available: <code>One station series</code>, <code>CDT data format</code> and <code>NetCDF gridded data</code>. The case of <code>One station series</code> and <code>NetCDF gridded data</code> are described in more detail in the sections below.</li>
 <li>Select the function to be used to aggregate the series. For temperature, select <code>mean</code> and <code>sum</code> for precipitation.</li>
 <li>Enter the minimum fraction of non-missing values that must be present within each output time step. If the fraction of non-missing values within the output time step is less than this fraction a missing value is returned.</li>
-<li>In the case of <code>One station series</code> and <code>CDT data format</code>, select the file containing the station data, and for <code>NetCDF gridded data</code>, enter the full path to directory containing the NetCDF data, or use <span class="buttonclass"> … </span>   to browse it.</li>
+<li>In the case of <code>One station series</code> and <code>CDT data format</code>, select the file containing the station data, and for <code>NetCDF gridded data</code>, enter the full path to directory containing the NetCDF data, or use <span class="buttonclass">   …   </span>   to browse it.</li>
 <li>In the case of <code>One station series</code> and <code>CDT data format</code>, enter the name of the file or the full path of the file to save the aggregated data. For <code>NetCDF gridded data</code>, enter the full path to directory to save result.</li>
 </ol>
-<p>Click on the button [][executetask] to aggregate the data.</p>
+<p>Click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> to aggregate the data.</p>
 <p><strong><em>One station series</em></strong></p>
-<p>If you select <code>One station series</code> for the type of data, the button <span class="buttonclass"> Settings </span>   will be enabled allowing you to set the options for the format of data</p>
+<p>If you select <code>One station series</code> for the type of data, the button <span class="buttonclass">   Settings   </span>   will be enabled allowing you to set the options for the format of data</p>
 <center>
 <div class="figure">
 <img src="images/data_prepraration/aggregate_ts/one_stn_format.png" style="width:40.0%" style="height:40.0%" />
@@ -327,7 +331,7 @@ $(document).ready(function () {
 <li>Choose the format of date (grouped or separated).</li>
 </ol>
 <p><strong><em>NetCDF gridded data</em></strong></p>
-<p>By selecting <code>NetCDF gridded data</code>, the button <span class="buttonclass"> Settings </span>   will be enabled which allows you to edit the date range of the series to be aggregated and the format of the file names for the ncdf input and output files.</p>
+<p>By selecting <code>NetCDF gridded data</code>, the button <span class="buttonclass">   Settings   </span>   will be enabled which allows you to edit the date range of the series to be aggregated and the format of the file names for the ncdf input and output files.</p>
 <center>
 <div class="figure">
 <img src="images/data_prepraration/aggregate_ts/ncdf_params.png" style="width:60.0%" style="height:60.0%" />
@@ -343,24 +347,7 @@ $(document).ready(function () {
 <blockquote>
 <p>Go to the section <a href="cdt_data_input.html#cdt.ncdf.ffrmt">NetCDF filename format</a> for more details on the format of the NetCDF file names.</p>
 </blockquote>
-<p>Click on the button [][executetask] to aggregate the data.<br />
-<!-- 
-
-
------------
-
-Generated on : March 29, 2017, 22:32
---><br />
-[executetask]: images/common/run24.gif “Execute the append task” id=cdtIcons class=cdtIcons<br />
-[openfile]: images/common/open24.gif “Open data frame” id=cdtIcons class=cdtIcons<br />
-[saveimage]: images/common/save_img24.gif “Save image” id=cdtIcons class=cdtIcons<br />
-[exitcdt]: images/common/exit24.gif “Exit CDT” id=cdtIcons class=cdtIcons<br />
-[closetab]: images/common/close_tab24.gif “Close active tab” id=cdtIcons class=cdtIcons<br />
-[closetab1]: images/common/closetabs.png “Close active tab” id=cdtIcons class=cdtIcons<br />
-[opentable]: images/common/open_table24.gif “Open table” id=cdtIcons class=cdtIcons<br />
-[savetable]: images/common/save_table24.gif “Save table” id=cdtIcons class=cdtIcons<br />
-[browsebutf]: images/common/browsefiledir.png “Browse for a file” id=cdtIcons class=cdtIcons<br />
-[dropdownarrow]: images/common/dropdown.png “Drop down arrow” id=cdtIcons class=cdtIcons</p>
+<p>Click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> to aggregate the data.</p>
 
 <footer class="navbar navbar-inverse  navbar-fixed-bottom">
     <p>

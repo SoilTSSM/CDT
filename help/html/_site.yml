@@ -23,6 +23,9 @@ navbar:
         - text: "---------"
         - text: "Download Data"
           href: download_data.html
+        - text: "---------"
+        - text: "Filling missing dekadal temperature values"
+          href: fill_na_temp.html
     - text: "Quality Control"
       menu:
         - text: "Check Stations Coordinates"

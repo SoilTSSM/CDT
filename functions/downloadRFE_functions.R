@@ -193,7 +193,7 @@ DownloadRFE <- function(parent.win){
 	tkgrid(en.file.save, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(bt.file.save, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	infobulle(en.file.save, 'Enter the full path to\ndirectory to save downloaded files')
+	infobulle(en.file.save, 'Enter the full path to directory to save downloaded files')
 	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to directory to save downloaded files')
 	infobulle(bt.file.save, 'or browse here')
 
@@ -245,9 +245,9 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 	if(datasrc%in%c('10-DAYS TAMSATv3', '10-DAYS TAMSATv2')){
 		if(datasrc == '10-DAYS TAMSATv2') url <- 'http://www.tamsat.org.uk/public_data'
 		if(datasrc == '10-DAYS TAMSATv3') url <- 'http://www.tamsat.org.uk/public_data/TAMSAT3'
-		outdir0 <- file.path(outdir, 'Dekad_TAMSAT_Africa', fsep = .Platform$file.sep)
+		outdir0 <- file.path(outdir, 'Dekad_TAMSAT_Africa')
 		if(!file.exists(outdir0)) dir.create(outdir0, showWarnings = FALSE, recursive = TRUE)
-		outdir1 <- file.path(outdir, 'Dekad_TAMSAT_Extracted', fsep = .Platform$file.sep)
+		outdir1 <- file.path(outdir, 'Dekad_TAMSAT_Extracted')
 		if(!file.exists(outdir1)) dir.create(outdir1, showWarnings = FALSE, recursive = TRUE)
 
 		deb <- try(as.Date(istart), silent = TRUE)
@@ -289,7 +289,7 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			if(datasrc == '10-DAYS TAMSATv2') file0 <- paste('rfe', year, '_', mon, '-dk', dek, '.nc', sep = '')
 			if(datasrc == '10-DAYS TAMSATv3') file0 <- paste('rfe', year, '_', mon, '-dk', dek, '.v3.nc', sep = '')
 			link <- paste(url, year, mon, file0, sep = '/')
-			destfile0 <- file.path(outdir0, file0, fsep = .Platform$file.sep)
+			destfile0 <- file.path(outdir0, file0)
 			test <- try(suppressWarnings(readLines(link, n = 1)), silent = TRUE)
 			if(inherits(test, "try-error")){
 				InsertMessagesTxt(main.txt.out, paste('Cannot open the connection or file does not exist:', file0), format = TRUE)
@@ -330,7 +330,7 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 					dx <- ncdim_def("Lon", "degreeE", xm)
 					dy <- ncdim_def("Lat", "degreeN", ym)
 					rfeout <- ncvar_def('rfe', "mm", list(dx, dy), -99, longname = "TAMSAT 10-days rainfall estimate", prec = "short")
-					outfl <- file.path(outdir1, file0, fsep = .Platform$file.sep)
+					outfl <- file.path(outdir1, file0)
 					nc2 <- nc_create(outfl, rfeout)
 					ncvar_put(nc2, rfeout, xdat)
 					nc_close(nc2)
@@ -346,9 +346,9 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 	if(datasrc%in%c('DAILY TAMSATv3', 'DAILY TAMSATv2')){
 		if(datasrc == 'DAILY TAMSATv2') url <- 'http://tamsat.org.uk/public_data'
 		if(datasrc == 'DAILY TAMSATv3') url <- 'http://www.tamsat.org.uk/public_data/TAMSAT3'
-		outdir0 <- file.path(outdir, 'Daily_TAMSAT_Africa', fsep = .Platform$file.sep)
+		outdir0 <- file.path(outdir, 'Daily_TAMSAT_Africa')
 		if(!file.exists(outdir0)) dir.create(outdir0, showWarnings = FALSE, recursive = TRUE)
-		outdir1 <- file.path(outdir, 'Daily_TAMSAT_Extracted', fsep = .Platform$file.sep)
+		outdir1 <- file.path(outdir, 'Daily_TAMSAT_Extracted')
 		if(!file.exists(outdir1)) dir.create(outdir1, showWarnings = FALSE, recursive = TRUE)
 
 		deb <- try(as.Date(istart), silent = TRUE)
@@ -383,7 +383,7 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			if(datasrc == 'DAILY TAMSATv2') file0 <- paste('rfe', year, '_', mon, '_', day, '.nc', sep = '')
 			if(datasrc == 'DAILY TAMSATv3') file0 <- paste('rfe', year, '_', mon, '_', day, '.v3.nc', sep = '')
 			link <- paste(url, year, mon, file0, sep = '/')
-			destfile0 <- file.path(outdir0, file0, fsep = .Platform$file.sep)
+			destfile0 <- file.path(outdir0, file0)
 			test <- try(suppressWarnings(readLines(link, n = 1)), silent = TRUE)
 			if(inherits(test, "try-error")){
 				InsertMessagesTxt(main.txt.out, paste('Cannot open the connection or file does not exist:', file0), format = TRUE)
@@ -424,7 +424,7 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 					dx <- ncdim_def("Lon", "degreeE", xm)
 					dy <- ncdim_def("Lat", "degreeN", ym)
 					rfeout <- ncvar_def('rfe', "mm", list(dx, dy), -99, longname = "TAMSAT daily rainfall estimate", prec = "short")
-					outfl <- file.path(outdir1, file0, fsep = .Platform$file.sep)
+					outfl <- file.path(outdir1, file0)
 					nc2 <- nc_create(outfl, rfeout)
 					ncvar_put(nc2, rfeout, xdat)
 					nc_close(nc2)
@@ -439,10 +439,16 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 	#####################################################
 
 	if(datasrc%in%c('10-DAYS CHIRPSv2.0', '10-DAYS CHIRPv1.0')){
-		if(datasrc == '10-DAYS CHIRPv1.0') url <- 'http://iridl.ldeo.columbia.edu/SOURCES/.UCSB/.CHIRP/.v1p0/.dekad/.prcp'
-		if(datasrc == '10-DAYS CHIRPSv2.0') url <- 'http://iridl.ldeo.columbia.edu/SOURCES/.UCSB/.CHIRPS/.v2p0/.dekad/.prcp'
+		if(datasrc == '10-DAYS CHIRPv1.0'){
+			url <- 'http://iridl.ldeo.columbia.edu/SOURCES/.UCSB/.CHIRP/.v1p0/.dekad/.prcp'
+			outdir0 <- file.path(outdir, 'Dekad_CHIRP_Extracted')
+		}
+		if(datasrc == '10-DAYS CHIRPSv2.0'){
+			url <- 'http://iridl.ldeo.columbia.edu/SOURCES/.UCSB/.CHIRPS/.v2p0/.dekad/.prcp'
+			outdir0 <- file.path(outdir, 'Dekad_CHIRPS_Extracted')
+		}
+		if(!file.exists(outdir0)) dir.create(outdir0, showWarnings = FALSE, recursive = TRUE)
 		mois <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-		if(!file.exists(outdir)) dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
 		area <- paste('X', minlon, maxlon, 'RANGEEDGES', 'Y', minlat, maxlat, 'RANGEEDGES', sep = '/')
 
@@ -484,7 +490,7 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			link <- paste(url, area, time, 'data.nc', sep = '/')
 			if(datasrc == '10-DAYS CHIRPv1.0') fileout <- paste('chirpV1.0_', dates[j, 1], dates[j, 2], as.numeric(dates[j, 5]), '.nc', sep = '')
 			if(datasrc == '10-DAYS CHIRPSv2.0') fileout <- paste('chirpsV2.0_', dates[j, 1], dates[j, 2], as.numeric(dates[j, 5]), '.nc', sep = '')
-			destfile <- file.path(outdir, fileout, fsep = .Platform$file.sep)
+			destfile <- file.path(outdir0, fileout)
 			ret <- try(download.file(link, destfile, mode = "wb", quiet = TRUE), silent = TRUE)
 			if(ret != 0){
 				InsertMessagesTxt(main.txt.out, paste('Download failed :', fileout), format = TRUE)
@@ -503,7 +509,8 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 	if(datasrc == 'DAILY CHIRPSv2.0'){
 		url <- 'http://iridl.ldeo.columbia.edu/SOURCES/.UCSB/.CHIRPS/.v2p0/.daily-improved/.global/.0p05/.prcp'
 		mois <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-		if(!file.exists(outdir)) dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
+		outdir0 <- file.path(outdir, 'Daily_CHIRPS_Extracted')
+		if(!file.exists(outdir0)) dir.create(outdir0, showWarnings = FALSE, recursive = TRUE)
 
 		area <- paste('X', minlon, maxlon, 'RANGEEDGES', 'Y', minlat, maxlat, 'RANGEEDGES', sep = '/')
 
@@ -528,7 +535,7 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			time <- paste('T/%28', as.numeric(dates[j, 3]), '%20', dates[j, 4], '%20', dates[j, 1], '%29/VALUES', sep = '')
 			link <- paste(url, area, time, 'data.nc', sep = '/')
 			fileout <- paste('chirpsV2.0_', dates[j, 1], dates[j, 2], dates[j, 3], '.nc', sep = '')
-			destfile <- file.path(outdir, fileout, fsep = .Platform$file.sep)
+			destfile <- file.path(outdir0, fileout)
 			ret <- try(download.file(link, destfile, mode = "wb", quiet = TRUE), silent = TRUE)
 			if(ret != 0){
 				InsertMessagesTxt(main.txt.out, paste('Download failed :', fileout), format = TRUE)

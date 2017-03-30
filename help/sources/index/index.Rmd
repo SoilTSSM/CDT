@@ -54,6 +54,16 @@ output:
 
 # [Aggregating Time Series](aggregate_TS.html)
 
+# [Download data](download_data.html)
+
+## [ Download satellite rainfall estimates  data (RFE)](download_data.html#down.rfe)
+
+## [ Download Digital Elevation Model data (DEM)](download_data.html#down.dem)
+
+## [ Download country boundary](download_data.html#down.shp)
+
+# [Filling missing dekadal temperature values](fill_na_temp.html)
+
 # [Merging Rainfall](merging_rainfall.html)
 
 ## [ Bias calculation](merging_rainfall.html#rr.calc.bias)

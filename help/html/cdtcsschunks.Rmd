@@ -9,22 +9,22 @@ menuselection <- function(...) {
   paste("<span class='menuselection'>", menu, "</span> &nbsp;", sep = '')
 }
 button <- function(...)
-					paste("<span class='buttonclass'>",
+					paste("<span class='buttonclass'> &nbsp;",
 					as.character(eval(substitute(alist(...)))),
-					"</span> &nbsp;")
+					"&nbsp; </span> &nbsp;")
 onglet <- function(...)
-					paste("<span class='ongletclass'>",
+					paste("<span class='ongletclass'> &nbsp;",
 					as.character(eval(substitute(alist(...)))),
-					"</span> &nbsp;")
+					"&nbsp; </span> &nbsp;")
 dropdownlistBut <- function() "<span class='dropdlistclass'>AA</span><span class='dropdclass'>&#9662;</span>"
 checkbox <- function(...)
-					paste("<img src='images/common/checkbox.png' title='Checkbox' class='radiochckbutclass' /><span class='radiochcktextclass'>",
+					paste("<img src='images/common/checkbox.png' title='Checkbox' class='radiochckbutclass' /><span class='radiochcktextclass'> &nbsp;",
 					as.character(eval(substitute(alist(...)))),
-					"</span> &nbsp;")
+					"&nbsp; </span> &nbsp;")
 radiobutton <- function(...) 
-					paste("<img src='images/common/radiobutton.png' title='Radio button' class='radiochckbutclass' /><span class='radiochcktextclass'>",
+					paste("<img src='images/common/radiobutton.png' title='Radio button' class='radiochckbutclass' /><span class='radiochcktextclass'> &nbsp;",
 					as.character(eval(substitute(alist(...)))),
-					"</span> &nbsp;")
+					"&nbsp; </span> &nbsp;")
 img.caption <- function(...)
 						paste("<span class='img-caption'>",
 						as.character(eval(substitute(alist(...)))),

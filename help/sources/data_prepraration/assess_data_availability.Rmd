@@ -7,7 +7,7 @@ output:
 
 The menu `r menuselection('Data Preparation','Assess Data Availability')` provides a summary view of your data. It gives an informative graphics of the available observations and the proportion of missing values in the data. 
 
-`r put.image("images/data_prepraration/assess_data/asses_data_availab.png", height = 60, width = 60)`
+`r put.image("images/data_prepraration/assess_data/asses_data_availab.png", height = 40, width = 40)`
 
 1. Select the time step of your data, there are three choices available: daily, dekadal and monthly data.
 2. Select the file containing the station data, if the file is not loaded yet and therefore not listed, use the button `r button('...')` to open it.

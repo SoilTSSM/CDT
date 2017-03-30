@@ -32,8 +32,6 @@ ValidationDataFun <- function(retValidParams){
 
 	outValidation <- file.path(retValidParams$dir2sav, paste('Validation', getf.no.ext(retValidParams$stn$filestn), sep = '_'))
 	dir.create(outValidation, showWarnings = FALSE, recursive = TRUE)
-	# caption <- c('Stations', 'LON', 'DATE/LAT')
-	# headinfo <- cbind(caption, t(cbind(retValidParams$stn$donne$id, retValidParams$stn$donne$lon, retValidParams$stn$donne$lat)))
 
 	extr_stn <- if(retValidParams$do_extr == 1) ExtractNC2Stn(retValidParams) else EnvRainValidation$extr_stn
 	if(is.null(extr_stn)) return(NULL)
@@ -41,15 +39,6 @@ ValidationDataFun <- function(retValidParams){
 	stn.dates <- extr_stn$date
 	stn.data <- extr_stn$stn
 	stn.ncdata <- extr_stn$rfe
-
-	####
-	# donnees_stn <- t(cbind(t(headinfo), t(cbind(stn.dates, stn.data))))
-	# file.stn <- file.path(outValidation, 'STN_VALIDATION_DATA.txt', fsep = .Platform$file.sep)
-	# write.table(donnees_stn, file.stn, col.names = FALSE, row.names = FALSE, quote = FALSE)
-
-	# donnees_ncdf <- t(cbind(t(headinfo), t(cbind(stn.dates, round(stn.ncdata, 1)))))
-	# file.ncdf <- file.path(outValidation, 'GRDatSTN_VALIDATION_DATA.txt', fsep = .Platform$file.sep)
-	# write.table(donnees_ncdf, file.ncdf, col.names = FALSE, row.names = FALSE, quote = FALSE)
 
 	####
 	select_type <- retValidParams$select_type
@@ -77,21 +66,25 @@ ValidationDataFun <- function(retValidParams){
 		}
 		stn.data <- stn.data[, ixy, drop = FALSE]
 		stn.ncdata <- stn.ncdata[, ixy, drop = FALSE]
+		stn.id <- retValidParams$stn$donne$id[ixy]
 	}
 
-	inNA<- !is.na(stn.data) & !is.na(stn.ncdata)
+	inNA <- !is.na(stn.data) & !is.na(stn.ncdata)
 	stn.data[!inNA] <- NA
 	stn.ncdata[!inNA] <- NA
 	stn <- stn.data[inNA]
 	grd <- stn.ncdata[inNA]
 
 	####
-	scatt.dat <- data.frame(stn = stn, grd = grd)
+	scatt.dat <- data.frame(stn.id = rep(stn.id, each = nrow(stn.data)),
+							date = rep(stn.dates, ncol(stn.data)),
+							stn = c(stn.data), grd = c(stn.ncdata))
+	scatt.dat <- scatt.dat[!is.na(scatt.dat$stn), ]
 	file.scatt.dat <- file.path(outValidation, 'STN_GRD_VALIDATION_DATA.txt')
 	write.table(scatt.dat, file.scatt.dat, col.names = TRUE, row.names = FALSE, quote = FALSE)
 
 	stat <- validationStats(stn, grd, retValidParams)
-	file.stat <- file.path(outValidation, 'Validation_Statistics.txt')
+	file.stat <- file.path(outValidation, 'STN_GRD_Validation_Statistics.txt')
 	write.table(stat, file.stat, col.names = TRUE, row.names = FALSE)
 
 	###
@@ -108,7 +101,7 @@ ValidationDataFun <- function(retValidParams){
 
 	scatter.file <- file.path(outValidation, 'STN_GRD_SCATTER_PLOT.jpg')
 	if(Sys.info()["sysname"] == "Windows") jpeg(scatter.file, restoreConsole = FALSE) else jpeg(scatter.file)
-	grphlim <- c(0, max(stn, grd))
+	grphlim <- c(0, max(c(stn, grd), na.rm = TRUE))
 	plot(stn, grd, xlab = "Gauge", ylab = ylab, xlim = grphlim, ylim = grphlim, type = 'n')
 	grid()
 	abline(a = 0, b = 1, lwd = 2, col = 'red')
@@ -141,7 +134,7 @@ ValidationDataFun <- function(retValidParams){
 	###
 	s.scatter.file <- file.path(outValidation, 'Spatial_Average_STN_GRD_SCATTER_PLOT.jpg')
 	if(Sys.info()["sysname"] == "Windows") jpeg(s.scatter.file, restoreConsole = FALSE) else jpeg(s.scatter.file)
-	grphlim <- c(0, max(gg_tms, rfe_tms))
+	grphlim <- c(0, max(c(gg_tms, rfe_tms), na.rm = TRUE))
 	plot(gg_tms, rfe_tms, xlab = "Gauge", ylab = ylab, xlim = grphlim, ylim = grphlim, type = 'n')
 	grid()
 	abline(a = 0, b = 1, lwd = 2, col = 'red')

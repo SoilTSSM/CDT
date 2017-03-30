@@ -41,10 +41,10 @@ getCountryShapefile <- function(parent.win){
 	tkgrid(lab2, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cb.level_sub, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	infobulle(cb.country, 'Choose country')
-	status.bar.display(cb.country, TextOutputVar, 'Choose country')
-	infobulle(cb.level_sub,'Choose level subdivisions such as\ncountry, provinces, districts,...\n0 is country level')
-	status.bar.display(cb.level_sub, TextOutputVar, 'Choose level subdivisions such as\ncountry, provinces, districts,...(0 is country level)')
+	infobulle(cb.country, 'Select a country')
+	status.bar.display(cb.country, TextOutputVar, 'Select a country')
+	infobulle(cb.level_sub,'Select level subdivisions such as\ncountry, provinces, districts,... (0 is country level)')
+	status.bar.display(cb.level_sub, TextOutputVar, 'Select level subdivisions such as\ncountry, provinces, districts,... (0 is country level)')
 
 	###
 	tkbind(cb.country, "<<ComboboxSelected>>", function(){
@@ -101,7 +101,7 @@ getCountryShapefile <- function(parent.win){
 				InsertMessagesTxt(main.txt.out, "Downloading.................")
 				return(ExecDownload_GADM(cntr_iso3, level, outdir))
 			}else{
-				InsertMessagesTxt(main.txt.out, 'No internet connection', format = TRUE)
+				InsertMessagesTxt(main.txt.out, 'No Internet connection', format = TRUE)
 				return(NULL)
 			}
 		}
@@ -135,10 +135,16 @@ getCountryShapefile <- function(parent.win){
 
 ###################
 ExecDownload_GADM <- function(countryISO3, level, dirshp){
-	tkconfigure(main.win, cursor = 'watch');tcl('update')
-	getGADM(countryISO3, level, dirshp)
+	tkconfigure(main.win, cursor = 'watch')
+	tcl('update')
+	ret <- getGADM(countryISO3, level, dirshp)
+	if(is.null(ret)){
+		InsertMessagesTxt(main.txt.out, 'Download failed', format = TRUE)
+	}else{
+		if(ret == 0) InsertMessagesTxt(main.txt.out, 'File downloaded successfully')
+		else InsertMessagesTxt(main.txt.out, 'Download failed', format = TRUE)
+	}
 	tkconfigure(main.win, cursor = '')
-	InsertMessagesTxt(main.txt.out, "Download Done!")
 }
 
 #####################################
@@ -148,16 +154,11 @@ getGADM <- function(countryISO3, level, dirshp){
 	urlfl <- paste(baseURL, countryISO3, '_adm', level,'.rds', sep = '')
 	destfl <- paste(tempfile(), '.rds', sep = '')
 	ret <- try(download.file(urlfl, destfl, method = "auto", quiet = TRUE, mode = "wb", cacheOK = TRUE), silent = TRUE)
+	if(ret != 0) return(NULL)
 
-	if(ret != 0){
-		InsertMessagesTxt(main.txt.out, 'Download failed', format = TRUE)
-		return(NULL)
-	}else{
-		InsertMessagesTxt(main.txt.out, 'File downloaded successfully')
-	}
 	shp <- readRDS(destfl)
 	level <- as.character(level)
-	if(level == '0') varname <- c("OBJECTID", "ID_0", "ISO", "NAME_0")
+	if(level == '0') varname <- c("OBJECTID", "ID_0", "ISO", "NAME_ISO")
 	if(level == '1') varname <- c("OBJECTID", "ID_0", "ID_1", "ISO", "NAME_0", "NAME_1", "ENGTYPE_1")
 	if(level == '2') varname <- c("OBJECTID", "ID_0", "ID_1", "ID_2", "ISO", "NAME_0", "NAME_1", "NAME_2", "ENGTYPE_2")
 	if(level == '3') varname <- c("OBJECTID", "ID_0", "ID_1", "ID_2", "ID_3", "ISO", "NAME_0", "NAME_1", "NAME_2", "NAME_3", "ENGTYPE_3")
@@ -167,6 +168,7 @@ getGADM <- function(countryISO3, level, dirshp){
 	writePolyShape(shp, file.path(dirshp, paste(countryISO3, '_adm', level, sep = ''))) ##maptools
 	#writeOGR(shp, dsn = dirshp, layer = paste(countryISO3, '_adm', level, sep = ''), driver = "ESRI Shapefile") ##rgdal
 	unlink(destfl)
+	return(0)
 }
 
 

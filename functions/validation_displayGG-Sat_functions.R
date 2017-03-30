@@ -6,7 +6,7 @@ plotGGvsSatellite <- function(outValiddata, dataType){
 		x <- outValiddata$xs
 		y <- outValiddata$ys
 	}
-	grphlim <- c(0, max(x, y))
+	grphlim <- c(0, max(c(x, y), na.rm = TRUE))
 	if(outValiddata$clim.var == 'RR') ylab <- 'RFE'
 	if(outValiddata$clim.var == 'TT') ylab <- 'Estimate'
 	plot(x, y, xlab = "Gauge", ylab = ylab, xlim = grphlim, ylim = grphlim, type = 'n')

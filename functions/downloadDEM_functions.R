@@ -140,7 +140,8 @@ getDEMFun <- function(parent.win){
 ###################
 
 ExecDownload_DEM <- function(minlon, maxlon, minlat, maxlat, outdir){
-	tkconfigure(main.win, cursor = 'watch');tcl('update')
+	tkconfigure(main.win, cursor = 'watch')
+	tcl('update')
 	getDEM(minlon, maxlon, minlat, maxlat, outdir)
 	tkconfigure(main.win, cursor = '')
 }
@@ -166,7 +167,7 @@ aggregateDEM <- function(destfile, xm, ym, outdir, varid, longname, res1 = FALSE
 	dx <- ncdim_def("Lon", "degreeE", newobj$x)
 	dy <- ncdim_def("Lat", "degreeN", newobj$y)
 	demnc <- ncvar_def('dem', "m", list(dx, dy), NaN, longname = longname, prec = "short")
-	outfl <- file.path(outdir, 'DEM_for_Merging.nc', fsep = .Platform$file.sep)
+	outfl <- file.path(outdir, 'DEM_for_Merging.nc')
 	nc2 <- nc_create(outfl, demnc)
 	ncvar_put(nc2, demnc, newobj$z)
 	nc_close(nc2)
@@ -178,14 +179,14 @@ getDEM <- function(minlon, maxlon, minlat, maxlat, outdir){
 	##DEM NOAA NGDC ETOPO2v2: ETOPO2v2c Global Gridded 2-minute elevation and bathymetric data.
 	url <- 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NGDC/.ETOPO2v2/.z'
 	area <- paste('X', minlon-0.0375, maxlon+0.0375, 'RANGEEDGES', 'Y', minlat-0.0375, maxlat+0.0375, 'RANGEEDGES', sep = '/')
-	destfile <- file.path(outdir, 'DEM_2_Arc-Minute.nc', fsep = .Platform$file.sep)
+	destfile <- file.path(outdir, 'DEM_2_Arc-Minute.nc')
 	link <- paste(url, area, 'data.nc', sep = '/')
 	ret <- try(download.file(link, destfile, method = "auto", quiet = TRUE, mode = "wb", cacheOK = TRUE), silent = TRUE)
 
 	##NOAA NGDC ETOPO1: ETOPO1 Grid Registered 1 Arc-Minute Global Relief Model
 	url1 <- 'http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NGDC/.ETOPO1/.z_bedrock'
 	area1 <- paste('lon', minlon, maxlon, 'RANGEEDGES', 'lat', minlat, maxlat, 'RANGEEDGES', sep = '/')
-	destfile1 <- file.path(outdir, 'DEM_1_Arc-Minute.nc', fsep = .Platform$file.sep)
+	destfile1 <- file.path(outdir, 'DEM_1_Arc-Minute.nc')
 	link1 <- paste(url1, area1, 'data.nc', sep = '/')
 	ret1 <- try(download.file(link1, destfile1, method = "auto", quiet = TRUE, mode = "wb", cacheOK = TRUE), silent = TRUE)
 

@@ -1,15 +1,73 @@
 ---
 title: "Download data"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
 ---
 
-Download data
+##  Download satellite rainfall estimates  data (RFE) `r anchor.point('down.rfe')`
+
+The menu `r menuselection('Data Preparation','Download RFE data')` allows to download a satellite-based rainfall products from Tropical [Applications of Meteorology using SATellite](http://www.tamsat.org.uk/about2) and [Climate Hazards Group InfraRed Precipitation](http://chg.geog.ucsb.edu/data/chirps/).
+
+`r put.image("images/data_prepraration/download_data/download_RFE.png", height = 80, width = 70)`
+
+1. Select the RFE product to download.
+	- 10-DAYS TAMSATv3: TAMSAT version 3 dekadal rainfall 
+	- 10-DAYS TAMSATv2: TAMSAT version 2 dekadal rainfall
+	- 10-DAYS CHIRPSv2.0: CHIRP with Station version 2.0 dekadal rainfall
+	- 10-DAYS CHIRPv1.0: CHIRP version 1.0 dekadal rainfall
+	- DAILY TAMSATv3: TAMSAT version 3 daily rainfall 
+	- DAILY TAMSATv2: TAMSAT version 2 daily rainfall 
+	- DAILY CHIRPSv2.0: CHIRP with Station version 2.0 daily rainfall
+
+2. Enter the start and end date of the data you want to download.
+3. Enter the bounding box of the region of interest.
+4. Enter the full path to the directory to save the downloaded data, or browse it from the right button `r button('...')`.
+
+When everything is specified, click `r button('Download')` to start the download.
+
+>  **OUTPUT:** Under the directory you specified to save the result (4), directories have been created according to the selected data source.
+>  
+>  - 10-DAYS TAMSAT version 2 and 3, 2 directories: __Dekad\_TAMSAT\_Africa__ containing the dekadal rainfall data over Africa and __Dekad\_TAMSAT\_Extracted__ containing the dekadal rainfall data extracted over the specified area.
+>  - DAILY TAMSAT version 2 and 3, 2 directories: __Daily\_TAMSAT\_Africa__ containing the daily rainfall data over Africa and __Daily\_TAMSAT\_Extracted__ containing the daily rainfall data extracted over the specified area.
+>  - 10-DAYS CHIRPSv2.0, one directory __Dekad\_CHIRPS\_Extracted__ containing the dekadal rainfall data extracted over the specified area.
+>  - 10-DAYS CHIRPv1.0, one directory __Dekad\_CHIRP\_Extracted__ containing the dekadal rainfall data extracted over the specified area.
+>  - DAILY CHIRPSv2.0, one directory __Daily\_CHIRPS\_Extracted__ containing the daily rainfall data extracted over the specified area.
+
+##  Download Digital Elevation Model data (DEM) `r anchor.point('down.dem')`
+
+The menu `r menuselection('Data Preparation','Download DEM')` allows to download a Digital Elevation Model.
+
+`r put.image("images/data_prepraration/download_data/download_DEM.png", height = 40, width = 40)`
+
+1. Enter the bounding box of your area of interest.
+2. Enter the full path to the directory to save the downloaded DEM, or browse it from the right button `r button('...')`.
+
+When everything is specified, click `r button('Download')` to start the download.
+
+>  **OUTPUT:** The downloaded data are stored in the directory you specified to save the result (2), there are 3 files:
+>  
+>  - **DEM_1_Arc-Minute.nc**: 1 Arc-Minute relief model data extracted over your area of interest. Data source [ETOPO1](http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NGDC/.ETOPO1/)
+>  - **DEM_2_Arc-Minute.nc**: 2 Arc-Minute gridded elevation and bathymetric data extracted over your area of interest. Data source [ETOPO2v2](http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NGDC/.ETOPO2v2/)
+>  - **DEM_for_Merging.nc**: elevation data in the form of a Digital Elevation Model regridded to 0.0375 x 0.0375 degree data spacing.
+
+
+##  Download country boundary `r anchor.point('down.shp')`
+
+The menu `r menuselection('Data Preparation','Download Country boundary')` allows to download adminstrative boundaries for African countries from [GADM database of Global Administrative Areas](http://www.gadm.org/). 
+
+`r put.image("images/data_prepraration/download_data/download_SHP.png", height = 40, width = 40)`
+
+1. Select the name of the country to download.
+2. Select the administrative subdivisions (level 0: the country boundary, 1: provinces, region or districts, ...).
+3. Enter the full path to the directory to save the downloaded files, or browse it from the right button `r button('...')`.
+
+When everything is specified, click `r button('Download')` to start the download.
+
+>  **OUTPUT:** The downloaded shapefiles are stored in the directory you specified to save the result (3).
 
 
 
-```{r ,child="_attente.Rmd"}
-```
-
-<!-- 
-```{r, child="_generated_date.Rmd"}
-```
- -->

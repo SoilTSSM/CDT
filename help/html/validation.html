@@ -19,9 +19,6 @@
 <script src="libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="libs/bootstrap-3.3.5/shim/respond.min.js"></script>
-<script src="libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
-<link href="libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
-<script src="libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="libs/navigation-1.1/tabsets.js"></script>
 <link href="libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
 <script src="libs/highlightjs-1.1/highlight.js"></script>
@@ -166,107 +163,6 @@ $(document).ready(function () {
 
 
 
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = false;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
-
-<style type="text/css">
-
-#TOC {
-  margin: 25px 0px 20px 0px;
-}
-@media (max-width: 768px) {
-#TOC {
-  position: relative;
-  width: 100%;
-}
-}
-
-
-.toc-content {
-  padding-left: 30px;
-  padding-right: 40px;
-}
-
-div.main-container {
-  max-width: 1200px;
-}
-
-div.tocify {
-  width: 20%;
-  max-width: 260px;
-  max-height: 85%;
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-  div.tocify {
-    width: 25%;
-  }
-}
-
-@media (max-width: 767px) {
-  div.tocify {
-    width: 100%;
-    max-width: none;
-  }
-}
-
-.tocify ul, .tocify li {
-  line-height: 20px;
-}
-
-.tocify-subheader .tocify-item {
-  font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
-}
-
-.tocify .list-group-item {
-  border-radius: 0px;
-}
-
-.tocify-subheader {
-  display: inline;
-}
-.tocify-subheader .tocify-item {
-  font-size: 0.95em;
-}
-
-</style>
-
-<!-- setup 3col/9col grid for toc_float and main content  -->
-<div class="row-fluid">
-<div class="col-xs-12 col-sm-4 col-md-3">
-<div id="TOC" class="tocify">
-</div>
-</div>
-
-<div class="toc-content col-xs-12 col-sm-8 col-md-9">
-
-
 
 
 <div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
@@ -318,6 +214,10 @@ div.tocify {
     <li class="divider"></li>
     <li>
       <a href="download_data.html">Download Data</a>
+    </li>
+    <li class="divider"></li>
+    <li>
+      <a href="fill_na_temp.html">Filling missing dekadal temperature values</a>
     </li>
   </ul>
 </li>
@@ -388,7 +288,7 @@ div.tocify {
 
 
 <p>The menu <span class="menuselection">Merging Data ‣ Validation</span>   allows to compare satellite rainfall products and merged data products from CDT (rainfall and temperature) with station measurements using statistical indicators. To perform validation for precipitation, go to the sub-menu <span class="menuselection">Precipitation</span>   and to the sub-menu <span class="menuselection">Temperature</span>   for temperature. A tabbed panel will be activated on the left panel, it gives you a way to enter the input, set all parameters, display map to select the area of interest, calculate the statistics to be used to evaluate the gridded data and display the results.</p>
-<p>The first tab <strong>General</strong> is dedicated to the required input files and directory and output directory.</p>
+<p>The first tab <span class="ongletclass">   General   </span>   is dedicated to the required input files and directory and output directory.</p>
 <center>
 <div class="figure">
 <img src="images/merging_data/validation/tab1.png" style="width:50.0%" style="height:50.0%" />
@@ -398,13 +298,13 @@ div.tocify {
 <p><br></p>
 <ol style="list-style-type: decimal">
 <li>Select the time step of the data.</li>
-<li>Select the file containing the station validation data. If the file is not yet listed, use the button <span class="buttonclass"> … </span>   to open it.</li>
-<li>Enter the full path to directory containing the gridded NetCDF files, or use <span class="buttonclass"> … </span>   to browse it.</li>
-<li>Provide a sample file from the gridded data by selecting it from the drop-down list or open it by using the button <span class="buttonclass"> … </span>  .</li>
+<li>Select the file containing the station validation data. If the file is not yet listed, use the button <span class="buttonclass">   …   </span>   to open it.</li>
+<li>Enter the full path to directory containing the gridded NetCDF files, or use <span class="buttonclass">   …   </span>   to browse it.</li>
+<li>Provide a sample file from the gridded data by selecting it from the drop-down list or open it by using the button <span class="buttonclass">   …   </span>  .</li>
 <li>Specify the gridded data filename format. See the section <a href="cdt_data_input.html#cdt.ncdf.ffrmt">NetCDF filename format</a> for more details on the format of NetCDF file names.</li>
-<li>Enter the full path to directory to save the validation output, or browse it from <span class="buttonclass"> … </span>  .</li>
+<li>Enter the full path to directory to save the validation output, or browse it from <span class="buttonclass">   …   </span>  .</li>
 </ol>
-<p>The tab <strong>Select Stations</strong> allows to select the station to be used to perform the validation.</p>
+<p>The tab <span class="ongletclass">   Select Stations   </span>   allows to select the station to be used to perform the validation.</p>
 <center>
 <div class="figure">
 <img src="images/merging_data/validation/tab2.png" style="width:50.0%" style="height:50.0%" />
@@ -419,10 +319,10 @@ div.tocify {
 <li><strong>Rectangle</strong>: the stations can be selected by drawing a rectangle over the desired region.</li>
 <li><strong>Polygons</strong>: the stations can be selected by choosing one polygon or a set of polygons representing a administrative boundaries.</li>
 </ul></li>
-<li>If you want to select the stations to be used to do the validation from a map (in case of <strong>Rectangle</strong> or <strong>Polygons</strong>), provide here the ESRI shapefiles, or use <span class="buttonclass"> … </span>   to open it if not yet listed.</li>
+<li>If you want to select the stations to be used to do the validation from a map (in case of <strong>Rectangle</strong> or <strong>Polygons</strong>), provide here the ESRI shapefiles, or use <span class="buttonclass">   …   </span>   to open it if not yet listed.</li>
 <li>Select the attribute to be displayed on the map and to be used to select the station in case of <strong>Polygons</strong>.</li>
 <li>In case of <strong>Polygons</strong>, if you do not want to select the polygons from the map, scroll down the list to select the administrative division name of the polygons within it the station will be used to do the validation.</li>
-<li><p>After you have provided the shapefile in (2), you can click on <span class="buttonclass"> Display Map </span>   to display the map in the right panel.</p>
+<li><p>After you have provided the shapefile in (2), you can click on <span class="buttonclass">   Display Map   </span>   to display the map in the right panel.</p>
 <center>
 <div class="figure">
 <img src="images/merging_data/validation/map.png" style="width:60.0%" style="height:60.0%" />
@@ -442,7 +342,7 @@ When you move the mouse over the map, the current position of the cursor will be
 <p><br><br />
 If you see that the administrative division name displayed is not what you want, you can always change the subdivision level in (3).</p>
 <ol start="6" style="list-style-type: decimal">
-<li>Click on <span class="buttonclass"> Select </span>   before you draw a rectangle or select a polygons by clicking on the map. When this button turns red, you can proceed to the operation on the map.<br />
+<li>Click on <span class="buttonclass">   Select   </span>   before you draw a rectangle or select a polygons by clicking on the map. When this button turns red, you can proceed to the operation on the map.<br />
 
 <center>
 <img src="images/merging_data/validation/rectangle.png" style="width:60.0%" style="height:60.0%" /><br />
@@ -475,7 +375,7 @@ If you see that the administrative division name displayed is not what you want,
 <li><img src="images/common/reset128.gif" title="Zoom reset" id="cdtIcons" class="cdtIcons" /> reset the zoom</li>
 </ul></li>
 </ol>
-<p>The tab <strong>Validation</strong> allows to specify the period and season to perform the validation, to calculate the statistics to be used to evaluate the gridded data, and to display the results.</p>
+<p>The tab <span class="ongletclass">   Validation   </span>   allows to specify the period and season to perform the validation, to calculate the statistics to be used to evaluate the gridded data, and to display the results.</p>
 <center>
 <div class="figure">
 <img src="images/merging_data/validation/tab3.png" style="width:50.0%" style="height:50.0%" />
@@ -491,16 +391,16 @@ If you see that the administrative division name displayed is not what you want,
 <li><strong>All Data</strong>: use all data from station without aggregation</li>
 <li><strong>Spatial Average</strong>: the station will be spatially averaged before the computation of the statistics.</li>
 </ul></li>
-<li>Click on <span class="buttonclass"> EXECUTE </span>   to calculate the validation statistics.</li>
-<li>Click on <span class="buttonclass"> Statistics </span>   to display table of the calculated statistics.</li>
-<li>Click on <span class="buttonclass"> STATION-MERGED Plot </span>   to display a scatter plot.<br />
+<li>Click on <span class="buttonclass">   EXECUTE   </span>   to calculate the validation statistics.</li>
+<li>Click on <span class="buttonclass">   Statistics   </span>   to display table of the calculated statistics.</li>
+<li>Click on <span class="buttonclass">   STATION-MERGED Plot   </span>   to display a scatter plot.<br />
 
 <center>
 <img src="images/merging_data/validation/scatter.jpg" title="fig:" style="width:50.0%" style="height:50.0%" /></li>
 </ol>
 </center>
 <br><br />
-7. Click on <span class="buttonclass"> Empirical CDF Plot </span>   to display a cumulative density function (CDF).<br />
+7. Click on <span class="buttonclass">   Empirical CDF Plot   </span>   to display a cumulative density function (CDF).<br />
 
 <center>
 <div class="figure">
@@ -509,6 +409,23 @@ If you see that the administrative division name displayed is not what you want,
 </div>
 </center>
 <p><br></p>
+<blockquote>
+<p><strong>OUTPUT:</strong> Under the directory you specified to save the result, a directory called <strong>Validation</strong>_&lt;<em>Input station data filename without extension</em>&gt; has been created. 8 files have bean created under this directory:</p>
+<ul>
+<li><em>STN_GRD_Validation_Statistics.txt</em>: the validation statistics.
+<ul>
+<li>For dekadal and monthly precipitation data and temperature data, five continuous statistics indicators are used: Pearson correlation coefficient, Nash-Sutcliffe Efficiency, Bias, Mean Error and Mean Absolute Error.</li>
+<li>For daily precipitation data, in addition to the 5 continuous statistical indicators, another five categorical statistics indicators were used to assess rain detection capabilities: Probability Of Detection, False Alarm Ratio, Frequency Bias, Critical Success Index and Heidke Skill Score.</li>
+</ul></li>
+<li><em>STN_GRD_VALIDATION_DATA.txt</em>: the data from the selected station during the period and season that you defined, and used to calculate the statistics and plot the empirical cumulative distribution function and scatter plot. The first column is the station ID, the second column is the date, the third column the station data and the last column corresponds to the gridded data extracted at station locations.</li>
+<li><em>STN_GRD_SCATTER_PLOT.jpg</em>: scatter plot</li>
+<li><p><em>STN_GRD_ECDF_PLOT.jpg</em>: cumulative density function plot</p></li>
+<li><em>Spatial_Average_Validation_Statistics.txt</em>: same as the above-mentioned statistics.</li>
+<li><em>Spatial_Average_STN_GRD_VALIDATION_DATA.txt</em>: containing the data spatially averaged for the selected station during the period and season that you defined, and used to calculate the statistics and plot the empirical cumulative distribution function and scatter plot. The first column is the date, the second column the station data and the third column corresponds to the gridded data extracted at station locations.</li>
+<li><em>Spatial_Average_STN_GRD_SCATTER_PLOT.jpg</em>: scatter plot</li>
+<li><p><em>Spatial_Average_STN_GRD_ECDF_PLOT.jpg</em>: cumulative density function plot</p></li>
+</ul>
+</blockquote>
 
 <footer class="navbar navbar-inverse  navbar-fixed-bottom">
     <p>
@@ -520,8 +437,6 @@ If you see that the administrative division name displayed is not what you want,
 </footer>
 
 
-</div>
-</div>
 
 </div>
 

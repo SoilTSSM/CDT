@@ -3,14 +3,11 @@ title: "Validation"
 output:
   html_document:
     toc: true
-    toc_depth: 2
-    toc_float:
-      collapsed: false
 ---
 
 The menu `r menuselection('Merging Data','Validation')` allows to compare satellite rainfall products and merged data products from CDT (rainfall and temperature) with station measurements using statistical indicators. To perform validation for precipitation,  go to the sub-menu `r menuselection('Precipitation')` and to the sub-menu `r menuselection('Temperature')` for temperature. A tabbed panel will be activated on the left panel, it gives you a way to enter the input, set all parameters, display map to select the area of interest, calculate the statistics to be used to evaluate the gridded data and display the results.
 
-The first tab **General** is dedicated to the required input files and directory and output directory.
+The first tab `r onglet('General')` is dedicated to the required input files and directory and output directory.
 
 `r put.image("images/merging_data/validation/tab1.png", height = 50, width = 50)`
 
@@ -22,7 +19,7 @@ The first tab **General** is dedicated to the required input files and directory
 6. Enter the full path to directory to save the validation output, or browse it from `r button('...')`.
 
 
-The tab **Select Stations** allows to select the station to be used to perform the validation.
+The tab `r onglet('Select Stations')` allows to select the station to be used to perform the validation.
 
 `r put.image("images/merging_data/validation/tab2.png", height = 50, width = 50)`
 
@@ -57,7 +54,7 @@ The tab **Select Stations** allows to select the station to be used to perform t
 	- ![][zoomreset] reset the zoom
 
 
-The tab **Validation** allows to specify the period and season to perform the validation, to calculate the statistics to be used to evaluate the gridded data, and to display the results.
+The tab `r onglet('Validation')` allows to specify the period and season to perform the validation, to calculate the statistics to be used to evaluate the gridded data, and to display the results.
 
 `r put.image("images/merging_data/validation/tab3.png", height = 50, width = 50)`
 
@@ -72,4 +69,18 @@ The tab **Validation** allows to specify the period and season to perform the va
 `r put.image("images/merging_data/validation/scatter.jpg", height = 50, width = 50)`
 7. Click on `r button('Empirical CDF Plot')` to display a cumulative density function (CDF).
 `r put.image("images/merging_data/validation/cdf.jpg", height = 50, width = 50)`
+
+ >  **OUTPUT:** Under the directory you specified to save the result, a directory called **Validation**\_<*Input station data filename without extension*> has been created. 8 files have bean created under this directory:
+ >  
+ >  * _STN\_GRD\_Validation\_Statistics.txt_: the validation statistics. 
+ >  	- For dekadal and monthly precipitation data and temperature data, five continuous statistics indicators are used: Pearson correlation coefficient, Nash-Sutcliffe Efficiency, Bias, Mean Error and Mean Absolute Error.
+ >  	- For daily precipitation data, in addition to the 5 continuous statistical indicators, another five categorical statistics indicators were used to assess rain detection capabilities: Probability Of Detection, False Alarm Ratio, Frequency Bias, Critical Success Index and Heidke Skill Score.
+ >  * _STN\_GRD\_VALIDATION\_DATA.txt_: the data from the selected station during the period and season that you defined, and used to calculate the statistics and plot the empirical cumulative distribution function and scatter plot. The first column is the station ID, the second column is the date, the third column the station data and the last column corresponds to the gridded data extracted at station locations.
+ >  * _STN\_GRD\_SCATTER\_PLOT.jpg_: scatter plot
+ >  * _STN\_GRD\_ECDF\_PLOT.jpg_: cumulative density function plot
+ >  
+ >  * _Spatial\_Average\_Validation\_Statistics.txt_: same as the above-mentioned statistics.
+ >  * _Spatial\_Average\_STN\_GRD\_VALIDATION_DATA.txt_: containing the data spatially averaged for the selected station during the period and season that you defined, and used to calculate the statistics and plot the empirical cumulative distribution function and scatter plot. The first column is the date, the second column the station data and the third column corresponds to the gridded data extracted at station locations.
+ >  * _Spatial\_Average\_STN\_GRD\_SCATTER_PLOT.jpg_: scatter plot
+ >  * _Spatial\_Average\_STN\_GRD\_ECDF\_PLOT.jpg_: cumulative density function plot
 

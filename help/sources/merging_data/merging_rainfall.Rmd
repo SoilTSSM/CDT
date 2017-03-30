@@ -68,7 +68,7 @@ The sub-menu `r menuselection('Compute mean Gauge-RFE bias')` opens a dialog whe
 
 Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
 
- >  **OUTPUT:** Under the directory you specified to save the result (7), a directory called **STN\_RFE\_Bias\_**<*Input station data filename without extension*> has been created.
+ >  **OUTPUT:** Under the directory you specified to save the result (7), a directory named **STN\_RFE\_Bias\_**<*Input station data filename without extension*> has been created.
  >  
  >  * __Quantile.Mapping__: 24 files have bean created under this directory. 
  >  	* An RData file named **BIAS\_PARAMS.RData** containing all the data necessary to estimate the parameters of the distribution,  and the fitted model and parameters at each station  location and resampled RFE grid points for each month.
@@ -102,7 +102,7 @@ The sub-menu `r menuselection('Apply bias correction')` allows to apply the bias
 
 Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
 
->  **OUTPUT:** Under the directory you specified to save the result (5), a directory called **Adjusted\_RFE\_Data\_**<*start date*>\_<*end date*> has been created. The names of the files containing the adjusted RFE data had to be the same format as you provided in (9). 
+>  **OUTPUT:** Under the directory you specified to save the result (5), a directory named **Adjusted\_RFE\_Data\_**<*start date*>\_<*end date*> has been created. The names of the files containing the adjusted RFE data had to be the same format as you provided in (9). 
 
 
 ##  Compute Spatio-temporal Trend Coefficients `r anchor.point('rr.calc.lmcoef')`
@@ -198,7 +198,7 @@ To perform the merging, go to the sub-menu `r menuselection('Merging Data')`.
 
 Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
 
- >  **OUTPUT:** Under the directory you specified to save the result (14), a directory called **Merged\_RR\_Data**\_<*start date*>\_<*end date*> has been created. The names of the files containing the merged rainfall data had to be the same format as you provided in (15).
+ >  **OUTPUT:** Under the directory you specified to save the result (14), a directory named **Merged\_RR\_Data**\_<*start date*>\_<*end date*> has been created. The names of the files containing the merged rainfall data had to be the same format as you provided in (15).
 
 
 

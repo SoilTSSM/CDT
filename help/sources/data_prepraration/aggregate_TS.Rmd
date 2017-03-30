@@ -5,7 +5,7 @@ output:
     toc: true
 ---
 
-The menu `r menuselection('Data Preparation','Aggregating Time Series')` allows you to convert a time series with a given time step to another time step. It will display a dialog box allowing you to enter the input data and set the required parameters.
+The menu `r menuselection('Data Preparation','Aggregating Time Series')` allows to convert a time series with a given time step to another time step. It will display a dialog box allowing you to enter the input data and set the required parameters.
 
 `r put.image("images/data_prepraration/aggregate_ts/aggreagate_TS.png", height = 50, width = 50)`
 
@@ -50,7 +50,3 @@ By selecting `NetCDF gridded data`, the button `r button('Settings')` will be en
 >  Go to the section [NetCDF filename format](cdt_data_input.html#cdt.ncdf.ffrmt) for more details on the format of the NetCDF file names.
 
 Click on the button ![][executetask] to aggregate the data. 
-<!-- 
-```{r, child = "_generated_date.Rmd"}
-```
--->

@@ -3,9 +3,6 @@ title: "Updating dekadal rainfall"
 output:
   html_document:
     toc: true
-    toc_depth: 2
-    toc_float:
-      collapsed: false
 ---
 
 The menu `r menuselection('Merging Data','Updating dekadal Rainfall')` allows to download RFE data, correct the bias from the RFE data,  and perform the combination of station and RFE data.

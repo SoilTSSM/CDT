@@ -319,6 +319,10 @@ div.tocify {
     <li>
       <a href="download_data.html">Download Data</a>
     </li>
+    <li class="divider"></li>
+    <li>
+      <a href="fill_na_temp.html">Filling missing dekadal temperature values</a>
+    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -409,15 +413,15 @@ div.tocify {
 </center>
 <p><br></p>
 <ol style="list-style-type: decimal">
-<li>Select the file containing the station data to be used to estimate the parameters of the linear regression. If the file is not yet listed, use the button <span class="buttonclass"> … </span>   to open it.</li>
+<li>Select the file containing the station data to be used to estimate the parameters of the linear regression. If the file is not yet listed, use the button <span class="buttonclass">   …   </span>   to open it.</li>
 <li>Provide the elevation data as a Digital Elevation Model (DEM) from a NetCDF file.</li>
-<li>Enter the full path to directory to save the parameters, or browse it from <span class="buttonclass"> … </span>  .</li>
+<li>Enter the full path to directory to save the parameters, or browse it from <span class="buttonclass">   …   </span>  .</li>
 <li>Select the time step of the data.</li>
 <li>Enter the start and end year of the period to be used to estimate parameters.</li>
 </ol>
-<p>Click <span class="buttonclass">    OK    </span>   when all the specifications are defined, then click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> in the toolbar to run the process.</p>
+<p>Click <span class="buttonclass">      OK      </span>   when all the specifications are defined, then click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> in the toolbar to run the process.</p>
 <blockquote>
-<p><strong>OUTPUT:</strong> Under the directory you specified to save the result (3), a directory called <strong>CoefDownTemp_DGM_</strong>&lt;<em>Input station data filename without extension</em>&gt; has been created, inside this directory there is a file named <strong>STN_DEM_GLM_COEF.txt</strong> containing the parameters of the linear regression.</p>
+<p><strong>OUTPUT:</strong> Under the directory you specified to save the result (3), a directory named <strong>CoefDownTemp_DGM_</strong>&lt;<em>Input station data filename without extension</em>&gt; has been created, inside this directory there is a file named <strong>STN_DEM_GLM_COEF.txt</strong> containing the parameters of the linear regression.</p>
 </blockquote>
 </div>
 <div id="reanalysis-downscaling" class="section level2">
@@ -431,19 +435,19 @@ div.tocify {
 </center>
 <p><br></p>
 <ol style="list-style-type: decimal">
-<li>Enter the full path to file containing the estimated parameters calculated in step 1, or open it from the button <span class="buttonclass"> … </span>  .</li>
-<li>Enter the full path to directory containing the reanalysis files, or use <span class="buttonclass"> … </span>   to browse it.</li>
-<li>Provide a sample file from the reanalysis by selecting it from the drop-down list or open it by using the button <span class="buttonclass"> … </span>  .</li>
+<li>Enter the full path to file containing the estimated parameters calculated in step 1, or open it from the button <span class="buttonclass">   …   </span>  .</li>
+<li>Enter the full path to directory containing the reanalysis files, or use <span class="buttonclass">   …   </span>   to browse it.</li>
+<li>Provide a sample file from the reanalysis by selecting it from the drop-down list or open it by using the button <span class="buttonclass">   …   </span>  .</li>
 <li>Specify the reanalysis filename format. See the section <a href="cdt_data_input.html#cdt.ncdf.ffrmt">NetCDF filename format</a></li>
 <li>Provide the elevation data as a Digital Elevation Model (DEM) from a NetCDF file.</li>
-<li>Enter the full path to directory to save the downscaled data, or browse it from <span class="buttonclass"> … </span>  .</li>
+<li>Enter the full path to directory to save the downscaled data, or browse it from <span class="buttonclass">   …   </span>  .</li>
 <li>Specify the filename format of the downscaled files.</li>
 <li>Select the time step of the data.</li>
 <li>Enter the date range of the reanalysis you want to downscale, make sure the date is valid, meaning that dates like 2016-06-31 and 2015-02-29 will throw an error.</li>
 <li>Select the source of data to create a grid onto which the downscaled data will be interpolated.
 <ul>
 <li><strong>From DEM</strong>: the DEM grid will be used</li>
-<li><strong>New Grid</strong>: you can create your own grid with different resolution and extent, by selecting this option and clicking the button <span class="buttonclass"> Create </span>  , which will display a dialog box allowing you to specify the resolution and the bounding box of the grid.</li>
+<li><strong>New Grid</strong>: you can create your own grid with different resolution and extent, by selecting this option and clicking the button <span class="buttonclass">   Create   </span>  , which will display a dialog box allowing you to specify the resolution and the bounding box of the grid.</li>
 </ul>
 <center>
 <img src="images/merging_data/merging_tt/create_grid.png" title="fig:" style="width:35.0%" style="height:35.0%" /></li>
@@ -459,9 +463,9 @@ div.tocify {
 <li><strong>maxdist</strong>: maximum distance (in decimal degree) to be used to interpolate a point (search radius). <strong>maxdist</strong> specifies a circular search range to select the point.</li>
 </ul></li>
 </ol>
-<p>Click <span class="buttonclass">    OK    </span>   when all the specifications are defined, then click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> in the toolbar to run the process.</p>
+<p>Click <span class="buttonclass">      OK      </span>   when all the specifications are defined, then click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> in the toolbar to run the process.</p>
 <blockquote>
-<p><strong>OUTPUT:</strong> Under the directory you specified to save the result (6), a directory called <strong>Downscaled_Reanalysis_</strong>&lt;<em>start date</em>&gt;_&lt;<em>end date</em>&gt; has been created. The names of the files containing the downscaled data had to be the same format as you provided in (7).</p>
+<p><strong>OUTPUT:</strong> Under the directory you specified to save the result (6), a directory named <strong>Downscaled_Reanalysis_</strong>&lt;<em>start date</em>&gt;_&lt;<em>end date</em>&gt; has been created. The names of the files containing the downscaled data had to be the same format as you provided in (7).</p>
 </blockquote>
 </div>
 <div id="bias-calculation" class="section level2">
@@ -479,11 +483,11 @@ div.tocify {
 * <strong>Multiplicative.Bias.Var</strong>: this method consists to apply a multiplicative bias correction to the downscaled data. A mean bias coefficients are computed for each day, dekad or month of the year according to the time step of the input data.<br />
 * <strong>Multiplicative.Bias.Mon</strong>: same as <strong>Multiplicative.Bias.Var</strong>, but the mean bias coefficients are computed for each month of the year regardless of the time step of the data.</p>
 <ol start="2" style="list-style-type: decimal">
-<li>Select the file containing the station data to be used to calculate the mean bias coefficients or the parameters of the distribution. If the file is not yet listed, use the button <span class="buttonclass"> … </span>   to open it.</li>
-<li>Enter the full path to directory containing the downscaled files, or use <span class="buttonclass"> … </span>   to browse it.</li>
+<li>Select the file containing the station data to be used to calculate the mean bias coefficients or the parameters of the distribution. If the file is not yet listed, use the button <span class="buttonclass">   …   </span>   to open it.</li>
+<li>Enter the full path to directory containing the downscaled files, or use <span class="buttonclass">   …   </span>   to browse it.</li>
 <li>Specify the downscaled data filename format. See the section <a href="cdt_data_input.html#cdt.ncdf.ffrmt">NetCDF filename format</a> for more details on the format of NetCDF file names.</li>
 <li>Provide the elevation data as a Digital Elevation Model (DEM) from a NetCDF file.</li>
-<li>Enter the full path to directory to save the interpolated mean bias coefficients or parameters of the distribution, or browse it from <span class="buttonclass"> … </span>  .</li>
+<li>Enter the full path to directory to save the interpolated mean bias coefficients or parameters of the distribution, or browse it from <span class="buttonclass">   …   </span>  .</li>
 <li>In case of <strong>Multiplicative.Bias.Var</strong> or <strong>Multiplicative.Bias.Mon</strong>, enter the prefix for the output file names.</li>
 <li>Select the time step of your data, there are three choices available: daily, dekadal and monthly data.</li>
 <li>Enter the start and end year of the period to be used to compute the mean bias coefficients or to estimate the parameters of the distribution.</li>
@@ -514,7 +518,7 @@ div.tocify {
 <li><strong>Lat</strong>: include latitude as auxiliary variable.</li>
 </ul></li>
 </ol>
-<p>Click <span class="buttonclass">    OK    </span>   when all the specifications are defined, then click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> in the toolbar to run the process.</p>
+<p>Click <span class="buttonclass">      OK      </span>   when all the specifications are defined, then click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> in the toolbar to run the process.</p>
 <blockquote>
 <p><strong>OUTPUT:</strong> Under the directory you specified to save the result (6), a directory called <strong>STN_REANAL_Bias_</strong>&lt;<em>Input station data filename without extension</em>&gt; has been created.</p>
 <ul>
@@ -546,7 +550,7 @@ div.tocify {
 <p><br></p>
 <ol style="list-style-type: decimal">
 <li>Select the method used to calculate the mean bias coefficients or distribution parameters.</li>
-<li>Enter the full path to directory containing the downscaled files, or use <span class="buttonclass"> … </span>   to browse it.</li>
+<li>Enter the full path to directory containing the downscaled files, or use <span class="buttonclass">   …   </span>   to browse it.</li>
 <li>Specify the downscaled data filename format.</li>
 <li>Enter the full path to directory containing the mean bias or distribution parameters files.</li>
 <li>In case of <strong>Multiplicative.Bias.Var</strong> or <strong>Multiplicative.Bias.Mon</strong>, specify the prefix for the file name of the mean bias coefficients.</li>
@@ -555,9 +559,9 @@ div.tocify {
 <li>Specify the filename format of the adjusted files.</li>
 <li>Enter the full path to directory to save the adjusted files.</li>
 </ol>
-<p>Click <span class="buttonclass">    OK    </span>   when all the specifications are defined, then click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> in the toolbar to run the process.</p>
+<p>Click <span class="buttonclass">      OK      </span>   when all the specifications are defined, then click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> in the toolbar to run the process.</p>
 <blockquote>
-<p><strong>OUTPUT:</strong> Under the directory you specified to save the result (4), a directory called <strong>Adjusted_Temp_Data_</strong>&lt;<em>start date</em>&gt;_&lt;<em>end date</em>&gt; has been created. The names of the files containing the adjusted temperature data had to be the same format as you provided in (8).</p>
+<p><strong>OUTPUT:</strong> Under the directory you specified to save the result (4), a directory named <strong>Adjusted_Temp_Data_</strong>&lt;<em>start date</em>&gt;_&lt;<em>end date</em>&gt; has been created. The names of the files containing the adjusted temperature data had to be the same format as you provided in (8).</p>
 </blockquote>
 </div>
 <div id="compute-spatio-temporal-trend-coefficients" class="section level2">
@@ -571,11 +575,11 @@ div.tocify {
 </center>
 <p><br></p>
 <ol style="list-style-type: decimal">
-<li>Select the file containing the station data to be used to estimate the parameters of the linear regression. If the file is not yet listed, use the button <span class="buttonclass"> … </span>   to open it.</li>
-<li>Enter the full path to directory containing the adjusted files, or use <span class="buttonclass"> … </span>   to browse it.</li>
+<li>Select the file containing the station data to be used to estimate the parameters of the linear regression. If the file is not yet listed, use the button <span class="buttonclass">   …   </span>   to open it.</li>
+<li>Enter the full path to directory containing the adjusted files, or use <span class="buttonclass">   …   </span>   to browse it.</li>
 <li>Specify the adjusted data filename format.</li>
 <li>Provide the elevation data as a Digital Elevation Model (DEM) from a NetCDF file.</li>
-<li>Enter the full path to directory to save the interpolated parameters, or browse it from <span class="buttonclass"> … </span>  .</li>
+<li>Enter the full path to directory to save the interpolated parameters, or browse it from <span class="buttonclass">   …   </span>  .</li>
 <li>Select the time step of the data.</li>
 <li>Enter the start and end year of the period to be used to estimate parameters.</li>
 <li>Select the interpolation method to interpolate the parameters. You can select one of the following three interpolation methods on the drop-down list:
@@ -598,7 +602,7 @@ div.tocify {
 </ul></li>
 <li>Use auxiliary variables to explain the trend-part of spatial variation when interpolating from inverse distance weighting or kriging. Check the box corresponding to the variable to use.</li>
 </ol>
-<p>Click <span class="buttonclass">    OK    </span>   when all the specifications are defined, then click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> in the toolbar to run the process.</p>
+<p>Click <span class="buttonclass">      OK      </span>   when all the specifications are defined, then click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> in the toolbar to run the process.</p>
 <blockquote>
 <p><strong>OUTPUT:</strong> Under the directory you specified to save the result (5), a directory called <strong>LMCoef</strong>_&lt;<em>Input station data filename without extension</em>&gt; has been created. 13 files have bean created under this directory, an RData file named <strong>LM_MODEL_PARS.RData</strong> containing all the data necessary to estimate the parameters of the linear regression, and the fitted model and parameters at each station location for each month. 12 NetCDF files &lt;<strong>LM_Coefficient</strong>&gt;_&lt;<em>month</em>&gt;<strong>.nc</strong> containing the interpolated parameters. Here &lt;<em>month</em>&gt; is an integer from 1 to 12 representing the months of the year.</p>
 </blockquote>
@@ -620,7 +624,7 @@ div.tocify {
 <li><strong>Spatio-Temporal LM</strong>: in this approach the deterministic part is fitted by a simple linear regression by taking into account the temporal components, i.e, it fits a linear regression between the station data and the adjusted data extracted at the station locations for each month of the year, these models are used to predict the spatial trend, then interpolate the residuals.</li>
 </ul></li>
 <li>Select the file containing the station data.</li>
-<li>Enter the full path to directory containing the adjusted RFE files, or use <span class="buttonclass"> … </span>   to browse it.</li>
+<li>Enter the full path to directory containing the adjusted RFE files, or use <span class="buttonclass">   …   </span>   to browse it.</li>
 <li>Specify the adjusted data filename format.</li>
 <li>In case of <strong>Spatio-Temporal LM</strong>, enter the full path to directory containing the interpolated regression parameters.</li>
 <li>Select the time step of the data.</li>
@@ -649,7 +653,7 @@ div.tocify {
 <li><strong>Use ESRI shapefile</strong>: a shapefile are used to mask the data outside the administrative boundary by replacing with missing values.</li>
 </ul></li>
 <li>Provide the elevation data as a Digital Elevation Model (DEM) from a NetCDF file, if this field is enabled.</li>
-<li>Select the ESRI shapefiles in the list if <strong>Use ESRI shapefile</strong> is selected for blanking, or use <span class="buttonclass"> … </span>   to open it if not yet listed.</li>
+<li>Select the ESRI shapefiles in the list if <strong>Use ESRI shapefile</strong> is selected for blanking, or use <span class="buttonclass">   …   </span>   to open it if not yet listed.</li>
 <li>Use auxiliary variables to explain the trend-part of spatial variation when interpolating. Check the box corresponding to the variable to include.
 <ul>
 <li><strong>DEM</strong>: include elevation data as auxiliary variable.</li>
@@ -659,16 +663,16 @@ div.tocify {
 <li><strong>Lat</strong>: include latitude as auxiliary variable.</li>
 </ul></li>
 </ol>
-<p>Click <span class="buttonclass">    OK    </span>   when all the specifications are defined, then click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> in the toolbar to run the process.</p>
+<p>Click <span class="buttonclass">      OK      </span>   when all the specifications are defined, then click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> in the toolbar to run the process.</p>
 <blockquote>
-<p><strong>OUTPUT:</strong> Under the directory you specified to save the result (11), a directory called <strong>Merged_Temp_Data</strong>_&lt;<em>start date</em>&gt;_&lt;<em>end date</em>&gt; has been created. The names of the files containing the merged temperature data had to be the same format as you provided in (12).</p>
+<p><strong>OUTPUT:</strong> Under the directory you specified to save the result (11), a directory named <strong>Merged_Temp_Data</strong>_&lt;<em>start date</em>&gt;_&lt;<em>end date</em>&gt; has been created. The names of the files containing the merged temperature data had to be the same format as you provided in (12).</p>
 </blockquote>
 <!-- 
 
 
 -----------
 
-Generated on : March 29, 2017, 22:32
+Generated on : March 30, 2017, 19:03
  -->
 </div>
 

@@ -11,7 +11,7 @@
 
 
 
-<title></title>
+<title>Download data</title>
 
 <script src="libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -176,7 +176,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1",
+      selectors: "h1,h2",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
@@ -386,54 +386,92 @@ div.tocify {
 
 
 
+<h1 class="title toc-ignore">Download data</h1>
 
 </div>
 
 
-<div id="toc-index" class="toc-index-class">
-<h1 id="cdt-gui"><a href="cdt_file_menu.html">CDT GUI</a></h1>
-<h2 id="cdt-main-window"><a href="cdt_file_menu.html#cdt.main.win">CDT Main Window</a></h2>
-<h3 id="menu-bar"><a href="cdt_file_menu.html#menu.bar">Menu Bar</a></h3>
-<h3 id="toolbars"><a href="cdt_file_menu.html#toolbars">Toolbars</a></h3>
-<h3 id="open-files"><a href="cdt_file_menu.html#open.files">Open Files</a></h3>
-<h3 id="input-and-command-panels"><a href="cdt_file_menu.html#cmd.panel">Input and Command Panels</a></h3>
-<h3 id="map-and-table-view"><a href="cdt_file_menu.html#map.view">Map and Table View</a></h3>
-<h3 id="output-message"><a href="cdt_file_menu.html#out.msg">Output Message</a></h3>
-<h3 id="status-bar"><a href="cdt_file_menu.html#status.bar">Status Bar</a></h3>
-<h1 id="cdt-input-data-format"><a href="cdt_data_input.html">CDT Input Data Format</a></h1>
-<h2 id="data-format-with-several-stations"><a href="cdt_data_input.html#cdt.format.data">Data format with several stations</a></h2>
-<h2 id="input-series-for-one-station"><a href="cdt_data_input.html#cdt.ts.data">Input series for one station</a></h2>
-<h2 id="coordinates-data"><a href="cdt_data_input.html#cdt.coords.data">Coordinates data</a></h2>
-<h2 id="netcdf-data"><a href="cdt_data_input.html#cdt.ncdf.data">NetCDF data</a></h2>
-<h2 id="netcdf-filename-format"><a href="cdt_data_input.html#cdt.ncdf.ffrmt">NetCDF filename format</a></h2>
-<h1 id="format-cdt-input-data"><a href="format_cdt_data.html">Format CDT Input data</a></h1>
-<h2 id="multiple-files"><a href="format_cdt_data.html#multiple.files">Multiple Files</a></h2>
-<h2 id="single-file"><a href="format_cdt_data.html#single.file">Single File</a></h2>
-<h2 id="merge-two-cdt-data-format"><a href="format_cdt_data.html#merge.2cdt.data">Merge two CDT data format</a></h2>
-<h1 id="assess-data-availability"><a href="assess_data_availability.html">Assess Data Availability</a></h1>
-<h1 id="aggregating-time-series"><a href="aggregate_TS.html">Aggregating Time Series</a></h1>
-<h1 id="download-data"><a href="download_data.html">Download data</a></h1>
-<h2 id="download-satellite-rainfall-estimates-data-rfe"><a href="download_data.html#down.rfe">Download satellite rainfall estimates data (RFE)</a></h2>
-<h2 id="download-digital-elevation-model-data-dem"><a href="download_data.html#down.dem">Download Digital Elevation Model data (DEM)</a></h2>
-<h2 id="download-country-boundary"><a href="download_data.html#down.shp">Download country boundary</a></h2>
-<h1 id="filling-missing-dekadal-temperature-values"><a href="fill_na_temp.html">Filling missing dekadal temperature values</a></h1>
-<h1 id="merging-rainfall"><a href="merging_rainfall.html">Merging Rainfall</a></h1>
-<h2 id="bias-calculation"><a href="merging_rainfall.html#rr.calc.bias">Bias calculation</a></h2>
-<h2 id="apply-bias-correction"><a href="merging_rainfall.html#rr.apply.bias">Apply bias correction</a></h2>
-<h2 id="compute-spatio-temporal-trend-coefficients"><a href="merging_rainfall.html#rr.calc.lmcoef">Compute Spatio-temporal Trend Coefficients</a></h2>
-<h2 id="merging-data"><a href="merging_rainfall.html#rr.merge.data">Merging Data</a></h2>
-<h1 id="merging-temperatures"><a href="merging_temperature.html">Merging Temperatures</a></h1>
-<h2 id="compute-downscaling-coefficients"><a href="merging_temperature.html#tt.calc.dcoef">Compute Downscaling Coefficients</a></h2>
-<h2 id="reanalysis-downscaling"><a href="merging_temperature.html#tt.downscale">Reanalysis Downscaling</a></h2>
-<h2 id="bias-calculation-1"><a href="merging_temperature.html#tt.calc.bias">Bias calculation</a></h2>
-<h2 id="apply-bias-correction-1"><a href="merging_temperature.html#tt.apply.bias">Apply bias correction</a></h2>
-<h2 id="compute-spatio-temporal-trend-coefficients-1"><a href="merging_temperature.html#tt.calc.lmcoef">Compute Spatio-temporal Trend Coefficients</a></h2>
-<h2 id="merging-data-1"><a href="merging_temperature.html#tt.merge.data">Merging Data</a></h2>
-<h1 id="updating-dekadal-rainfall"><a href="update_dekadal_rainfall.html">Updating dekadal rainfall</a></h1>
-<h1 id="validation"><a href="validation.html">Validation</a></h1>
+<div id="download-satellite-rainfall-estimates-data-rfe" class="section level2">
+<h2>Download satellite rainfall estimates data (RFE) <a name="down.rfe"></a></h2>
+<p>The menu <span class="menuselection">Data Preparation ‣ Download RFE data</span>   allows to download a satellite-based rainfall products from Tropical <a href="http://www.tamsat.org.uk/about2">Applications of Meteorology using SATellite</a> and <a href="http://chg.geog.ucsb.edu/data/chirps/">Climate Hazards Group InfraRed Precipitation</a>.</p>
+<center>
+<div class="figure">
+<img src="images/data_prepraration/download_data/download_RFE.png" style="width:70.0%" style="height:80.0%" />
+
 </div>
-<hr />
-<p>Generated on : March 30, 2017, 19:03</p>
+</center>
+<p><br></p>
+<ol style="list-style-type: decimal">
+<li>Select the RFE product to download.
+<ul>
+<li>10-DAYS TAMSATv3: TAMSAT version 3 dekadal rainfall</li>
+<li>10-DAYS TAMSATv2: TAMSAT version 2 dekadal rainfall</li>
+<li>10-DAYS CHIRPSv2.0: CHIRP with Station version 2.0 dekadal rainfall</li>
+<li>10-DAYS CHIRPv1.0: CHIRP version 1.0 dekadal rainfall</li>
+<li>DAILY TAMSATv3: TAMSAT version 3 daily rainfall</li>
+<li>DAILY TAMSATv2: TAMSAT version 2 daily rainfall</li>
+<li>DAILY CHIRPSv2.0: CHIRP with Station version 2.0 daily rainfall</li>
+</ul></li>
+<li>Enter the start and end date of the data you want to download.</li>
+<li>Enter the bounding box of the region of interest.</li>
+<li>Enter the full path to the directory to save the downloaded data, or browse it from the right button <span class="buttonclass">   …   </span>  .</li>
+</ol>
+<p>When everything is specified, click <span class="buttonclass">   Download   </span>   to start the download.</p>
+<blockquote>
+<p><strong>OUTPUT:</strong> Under the directory you specified to save the result (4), directories have been created according to the selected data source.</p>
+<ul>
+<li>10-DAYS TAMSAT version 2 and 3, 2 directories: <strong>Dekad_TAMSAT_Africa</strong> containing the dekadal rainfall data over Africa and <strong>Dekad_TAMSAT_Extracted</strong> containing the dekadal rainfall data extracted over the specified area.</li>
+<li>DAILY TAMSAT version 2 and 3, 2 directories: <strong>Daily_TAMSAT_Africa</strong> containing the daily rainfall data over Africa and <strong>Daily_TAMSAT_Extracted</strong> containing the daily rainfall data extracted over the specified area.</li>
+<li>10-DAYS CHIRPSv2.0, one directory <strong>Dekad_CHIRPS_Extracted</strong> containing the dekadal rainfall data extracted over the specified area.</li>
+<li>10-DAYS CHIRPv1.0, one directory <strong>Dekad_CHIRP_Extracted</strong> containing the dekadal rainfall data extracted over the specified area.</li>
+<li>DAILY CHIRPSv2.0, one directory <strong>Daily_CHIRPS_Extracted</strong> containing the daily rainfall data extracted over the specified area.</li>
+</ul>
+</blockquote>
+</div>
+<div id="download-digital-elevation-model-data-dem" class="section level2">
+<h2>Download Digital Elevation Model data (DEM) <a name="down.dem"></a></h2>
+<p>The menu <span class="menuselection">Data Preparation ‣ Download DEM</span>   allows to download a Digital Elevation Model.</p>
+<center>
+<div class="figure">
+<img src="images/data_prepraration/download_data/download_DEM.png" style="width:40.0%" style="height:40.0%" />
+
+</div>
+</center>
+<p><br></p>
+<ol style="list-style-type: decimal">
+<li>Enter the bounding box of your area of interest.</li>
+<li>Enter the full path to the directory to save the downloaded DEM, or browse it from the right button <span class="buttonclass">   …   </span>  .</li>
+</ol>
+<p>When everything is specified, click <span class="buttonclass">   Download   </span>   to start the download.</p>
+<blockquote>
+<p><strong>OUTPUT:</strong> The downloaded data are stored in the directory you specified to save the result (2), there are 3 files:</p>
+<ul>
+<li><strong>DEM_1_Arc-Minute.nc</strong>: 1 Arc-Minute relief model data extracted over your area of interest. Data source <a href="http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NGDC/.ETOPO1/">ETOPO1</a></li>
+<li><strong>DEM_2_Arc-Minute.nc</strong>: 2 Arc-Minute gridded elevation and bathymetric data extracted over your area of interest. Data source <a href="http://iridl.ldeo.columbia.edu/SOURCES/.NOAA/.NGDC/.ETOPO2v2/">ETOPO2v2</a></li>
+<li><strong>DEM_for_Merging.nc</strong>: elevation data in the form of a Digital Elevation Model regridded to 0.0375 x 0.0375 degree data spacing.</li>
+</ul>
+</blockquote>
+</div>
+<div id="download-country-boundary" class="section level2">
+<h2>Download country boundary <a name="down.shp"></a></h2>
+<p>The menu <span class="menuselection">Data Preparation ‣ Download Country boundary</span>   allows to download adminstrative boundaries for African countries from <a href="http://www.gadm.org/">GADM database of Global Administrative Areas</a>.</p>
+<center>
+<div class="figure">
+<img src="images/data_prepraration/download_data/download_SHP.png" style="width:40.0%" style="height:40.0%" />
+
+</div>
+</center>
+<p><br></p>
+<ol style="list-style-type: decimal">
+<li>Select the name of the country to download.</li>
+<li>Select the administrative subdivisions (level 0: the country boundary, 1: provinces, region or districts, …).</li>
+<li>Enter the full path to the directory to save the downloaded files, or browse it from the right button <span class="buttonclass">   …   </span>  .</li>
+</ol>
+<p>When everything is specified, click <span class="buttonclass">   Download   </span>   to start the download.</p>
+<blockquote>
+<p><strong>OUTPUT:</strong> The downloaded shapefiles are stored in the directory you specified to save the result (3).</p>
+</blockquote>
+</div>
 
 <footer class="navbar navbar-inverse  navbar-fixed-bottom">
     <p>

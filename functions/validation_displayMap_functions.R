@@ -30,7 +30,7 @@ plotMap4Validation <- function(donne, shpf, ZoomXYval, selectedPolygon){
 	lat <- as.numeric(donne[3, ])
 
 	#######
-	opar <- par(mar = c(4,4,2,2))
+	opar <- par(mar = c(4, 4, 2, 2))
 	plot(1, xlim = c(xmin, xmax), ylim = c(ymin, ymax), xlab = "", ylab = "", type = "n", xaxt = 'n', yaxt = 'n')
 	if(!is.null(shpf)) lines(ocrds)
 	points(lon, lat, pch = 19, col = 'darkred', cex = 0.5)

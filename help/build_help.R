@@ -12,7 +12,7 @@ mathjax_dir <- '/Users/rijaf/Desktop/ECHANGE/MathJax'
 
 ## arrange files for toc
 toc.order <- c("cdt_file_menu", "cdt_data_input", "format_cdt_data", 
-				"assess_data_availability", "aggregate_TS",
+				"assess_data_availability", "aggregate_TS", "download_data", "fill_na_temp",
 				"merging_rainfall", "merging_temperature", "update_dekadal_rainfall", "validation")
 
 ## build all files or some files

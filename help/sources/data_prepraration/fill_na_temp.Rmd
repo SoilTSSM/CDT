@@ -1,0 +1,9 @@
+---
+title: "Filling missing dekadal temperature values"
+output:
+  html_document:
+    toc: true
+---
+
+
+`r put.image("images/data_prepraration/fill_missing/fill_na.png", height = 50, width = 50)`

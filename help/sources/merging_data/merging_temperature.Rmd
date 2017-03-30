@@ -30,7 +30,7 @@ The sub-menu `r menuselection('Compute Downscaling Coefficients')` allows to cal
 
 Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
 
- >  **OUTPUT:** Under the directory you specified to save the result (3), a directory called **CoefDownTemp\_DGM\_**<*Input station data filename without extension*> has been created, inside this directory there is a file named **STN\_DEM\_GLM\_COEF.txt** containing the parameters of the linear regression. 
+ >  **OUTPUT:** Under the directory you specified to save the result (3), a directory named **CoefDownTemp\_DGM\_**<*Input station data filename without extension*> has been created, inside this directory there is a file named **STN\_DEM\_GLM\_COEF.txt** containing the parameters of the linear regression. 
 
 ## Reanalysis Downscaling `r anchor.point('tt.downscale')`
 
@@ -61,7 +61,7 @@ The sub-menu `r menuselection('Reanalysis Downscaling')` allows to carry out the
 
 Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
 
- >  **OUTPUT:** Under the directory you specified to save the result (6), a directory called **Downscaled\_Reanalysis\_**<*start date*>\_<*end date*> has been created. The names of the files containing the downscaled data had to be the same format as you provided in (7).  
+ >  **OUTPUT:** Under the directory you specified to save the result (6), a directory named **Downscaled\_Reanalysis\_**<*start date*>\_<*end date*> has been created. The names of the files containing the downscaled data had to be the same format as you provided in (7).  
 
 ## Bias calculation `r anchor.point('tt.calc.bias')`
 
@@ -138,7 +138,7 @@ The sub-menu `r menuselection('Apply bias correction')` allows to apply the bias
 
 Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
 
->  **OUTPUT:** Under the directory you specified to save the result (4), a directory called **Adjusted\_Temp\_Data\_**<*start date*>\_<*end date*> has been created. The names of the files containing the adjusted temperature data had to be the same format as you provided in (8). 
+>  **OUTPUT:** Under the directory you specified to save the result (4), a directory named **Adjusted\_Temp\_Data\_**<*start date*>\_<*end date*> has been created. The names of the files containing the adjusted temperature data had to be the same format as you provided in (8). 
 
 
 ## Compute Spatio-temporal Trend Coefficients `r anchor.point('tt.calc.lmcoef')`
@@ -222,7 +222,7 @@ To perform the merging, go to the sub-menu `r menuselection('Merging Data')`.
 
 Click `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` when all the specifications are defined, then click on the button ![][executetask] in the toolbar to run the process.
 
- >  **OUTPUT:** Under the directory you specified to save the result (11), a directory called **Merged\_Temp\_Data**\_<*start date*>\_<*end date*> has been created. The names of the files containing the merged temperature data had to be the same format as you provided in (12).
+ >  **OUTPUT:** Under the directory you specified to save the result (11), a directory named **Merged\_Temp\_Data**\_<*start date*>\_<*end date*> has been created. The names of the files containing the merged temperature data had to be the same format as you provided in (12).
 
 
 <!-- 
