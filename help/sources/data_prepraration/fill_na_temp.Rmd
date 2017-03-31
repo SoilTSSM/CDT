@@ -6,7 +6,7 @@ output:
 ---
 
 
-The menu `r menuselection('Merging Data','Filling missing dekadal temperature values')` allows to fill the missing values of dekadal temperature data using a downscaled and bias corrected reanalysis as predictors.
+The menu `r menuselection('Data Preparation','Filling missing dekadal temperature values')` allows to fill the missing values of dekadal temperature data using a downscaled and bias corrected reanalysis as predictors.
 
 `r put.image("images/data_prepraration/fill_missing/fill_na.png", height = 50, width = 50)`
 
