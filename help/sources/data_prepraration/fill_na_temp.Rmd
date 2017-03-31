@@ -6,4 +6,16 @@ output:
 ---
 
 
+The menu `r menuselection('Merging Data','Filling missing dekadal temperature values')` allows to fill the missing values of dekadal temperature data using a downscaled and bias corrected reanalysis as predictors.
+
 `r put.image("images/data_prepraration/fill_missing/fill_na.png", height = 50, width = 50)`
+
+1. Select the file containing the dekadal temperature data in CDT format. If the file is not yet listed, use the button `r button('...')` to open it.
+2. Enter the full path to directory containing the adjusted reanalysis in NetCDF format, or use `r button('...')` to browse it.
+3. Specify the adjusted data filename format. See the section [NetCDF filename format](cdt_data_input.html#cdt.ncdf.ffrmt) for more details on the format of NetCDF file names.
+4. Enter the full path of the file you want to save the filled dekadal temperature data, or just enter the file name if you want to save it under the current working directory.
+5. Enter the start and end date of the period for the gaps filling.
+6. Specify the minimum length (typically, between 10 and 20) of non missing data to be used to perform the regression.
+
+>  **OUTPUT:** the file you provided in (4) containing the filled dekadal temperature data in CDT format. If there is not enough data to perform the regression, then the values are left missing.
+

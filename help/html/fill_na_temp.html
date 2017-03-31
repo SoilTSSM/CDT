@@ -287,6 +287,7 @@ $(document).ready(function () {
 </div>
 
 
+<p>The menu <span class="menuselection">Merging Data ‣ Filling missing dekadal temperature values</span>   allows to fill the missing values of dekadal temperature data using a downscaled and bias corrected reanalysis as predictors.</p>
 <center>
 <div class="figure">
 <img src="images/data_prepraration/fill_missing/fill_na.png" style="width:50.0%" style="height:50.0%" />
@@ -294,6 +295,17 @@ $(document).ready(function () {
 </div>
 </center>
 <p><br></p>
+<ol style="list-style-type: decimal">
+<li>Select the file containing the dekadal temperature data in CDT format. If the file is not yet listed, use the button <span class="buttonclass">   …   </span>   to open it.</li>
+<li>Enter the full path to directory containing the adjusted reanalysis in NetCDF format, or use <span class="buttonclass">   …   </span>   to browse it.</li>
+<li>Specify the adjusted data filename format. See the section <a href="cdt_data_input.html#cdt.ncdf.ffrmt">NetCDF filename format</a> for more details on the format of NetCDF file names.</li>
+<li>Enter the full path of the file you want to save the filled dekadal temperature data, or just enter the file name if you want to save it under the current working directory.</li>
+<li>Enter the start and end date of the period for the gaps filling.</li>
+<li>Specify the minimum length (typically, between 10 and 20) of non missing data to be used to perform the regression.</li>
+</ol>
+<blockquote>
+<p><strong>OUTPUT:</strong> the file you provided in (4) containing the filled dekadal temperature data in CDT format. If there is not enough data to perform the regression, then the values are left missing.</p>
+</blockquote>
 
 <footer class="navbar navbar-inverse  navbar-fixed-bottom">
     <p>

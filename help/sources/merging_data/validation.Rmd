@@ -65,6 +65,7 @@ The tab `r onglet('Validation')` allows to specify the period and season to perf
 	- __Spatial Average__: the station will be spatially averaged before the computation of the statistics.
 4. Click on `r button('EXECUTE')` to calculate the validation statistics.
 5. Click on `r button('Statistics')` to display table of the calculated statistics.
+`r put.image("images/merging_data/validation/statistics.png", height = 50, width = 50)`
 6. Click on `r button('STATION-MERGED Plot')` to display a scatter plot.
 `r put.image("images/merging_data/validation/scatter.jpg", height = 50, width = 50)`
 7. Click on `r button('Empirical CDF Plot')` to display a cumulative density function (CDF).

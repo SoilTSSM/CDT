@@ -42,6 +42,11 @@ body {
     width: auto;
 }
 
+.fluid-row {
+    /*display: none;*/
+    visibility: hidden;
+}
+
 
 /******Table*******/
 

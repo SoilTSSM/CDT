@@ -46,7 +46,7 @@ fillMissDekTemp <- function(parent.win, GeneralParameters){
 	tkgrid(bt.stnfl, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 
 	infobulle(cb.stnfl, 'Select the file in the list')
-	status.bar.display(cb.stnfl, TextOutputVar, 'File containing the dekadal temperature data in CDT format')
+	status.bar.display(cb.stnfl, TextOutputVar, 'File containing the station temperature data in CDT format')
 	infobulle(bt.stnfl, 'Browse file if not listed')
 	status.bar.display(bt.stnfl, TextOutputVar, 'Browse file if not listed')
 
@@ -57,7 +57,7 @@ fillMissDekTemp <- function(parent.win, GeneralParameters){
 	dir.rfe <- tclVar(GeneralParameters$IO.files$Temp.dir)
 	inrfeff <- tclVar(GeneralParameters$IO.files$Temp.File.Format)
 
-	txt.dir.rfe <- tklabel(frRFE, text = 'Directory of temperature files', anchor = 'w', justify = 'left')
+	txt.dir.rfe <- tklabel(frRFE, text = 'Directory of adjusted reanalysis files', anchor = 'w', justify = 'left')
 	en.dir.rfe <- tkentry(frRFE, textvariable = dir.rfe, width = largeur)
 	bt.dir.rfe <- tkbutton(frRFE, text = "...")
 	txt.inrfeff <- tklabel(frRFE, text = 'Filename format', anchor = 'w', justify = 'left')
@@ -76,12 +76,12 @@ fillMissDekTemp <- function(parent.win, GeneralParameters){
 	tkgrid(txt.inrfeff, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
 	tkgrid(en.inrfeff, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 
-	infobulle(en.dir.rfe, 'Enter the full path to\ndirectory containing the dekadal temperature files')
-	status.bar.display(en.dir.rfe, TextOutputVar, 'Enter the full path to directory containing the dekadal temperature files')
+	infobulle(en.dir.rfe, 'Enter the full path to directory containing the adjusted reanalysis files')
+	status.bar.display(en.dir.rfe, TextOutputVar, 'Enter the full path to directory containing the adjusted reanalysis files')
 	infobulle(bt.dir.rfe, 'or browse here')
 	status.bar.display(bt.dir.rfe, TextOutputVar, 'or browse here')
-	infobulle(en.inrfeff, 'Enter the filename format of the temperature data in NetCDF,\nexample: tmax_adj_1961011.nc')
-	status.bar.display(en.inrfeff, TextOutputVar, 'Enter the filename format of the temperature data in NetCDF,\nexample: tmax_adj_1961011.nc')
+	infobulle(en.inrfeff, 'Enter the filename format')
+	status.bar.display(en.inrfeff, TextOutputVar, 'Enter the filename format')
 
 	############################################
 
@@ -103,10 +103,10 @@ fillMissDekTemp <- function(parent.win, GeneralParameters){
 	tkgrid(en.file.save, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 	tkgrid(bt.file.save, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 
-	infobulle(en.file.save, 'Enter the full path to the file to save result')
-	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to the file to save the filled data')
-	infobulle(bt.file.save, 'Browse here the full path to the  file to save result')
-	status.bar.display(bt.file.save, TextOutputVar, 'Browse here the full path to file to save the filled data')
+	infobulle(en.file.save, 'Enter the full path of the file to save result')
+	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path of the file to save the filled data')
+	infobulle(bt.file.save, 'Browse here the full path of the file to save result')
+	status.bar.display(bt.file.save, TextOutputVar, 'Browse here the full path of file to save the filled data')
 
 	############################################
 	tkgrid(frSTN, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -170,7 +170,7 @@ fillMissDekTemp <- function(parent.win, GeneralParameters){
 	tkgrid(en.min.len, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(en.min.len, 'Minimum length (between 10 and 20) of non missing data\nto be used to perform the regression')
-	status.bar.display(en.min.len, TextOutputVar, 'Minimum length  (between 10 and 20) of non missing data\nto be used to perform the regression')
+	status.bar.display(en.min.len, TextOutputVar, 'Minimum length (between 10 and 20) of non missing data\nto be used to perform the regression')
 
 	############################################
 	tkgrid(frDate, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
