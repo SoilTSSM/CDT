@@ -12,7 +12,7 @@ The first tab `r onglet('General')` is dedicated to the required input files and
 `r put.image("images/merging_data/validation/tab1.png", height = 50, width = 50)`
 
 1. Select the time step of the data.
-2. Select the file containing the station validation data. If the file is not yet listed, use the button `r button('...')` to open it.
+2. Select the file containing the station validation data in CDT format. If the file is not yet listed, use the button `r button('...')` to open it.
 3. Enter the full path to directory containing the gridded NetCDF files, or use `r button('...')` to browse it.
 4. Provide a sample file from the gridded data by selecting it from the drop-down list or open it by using the button `r button('...')`.
 5. Specify the gridded data filename format. See the section [NetCDF filename format](cdt_data_input.html#cdt.ncdf.ffrmt) for more details on the format of NetCDF file names.

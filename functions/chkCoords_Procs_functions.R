@@ -27,8 +27,8 @@ excludeOutStnFun <- function(GeneralParameters){
 		InsertMessagesTxt(main.txt.out, paste('Unable to open', stnf), format = TRUE)
 		return(NULL)
 	}
-	ndaty <- nchar(donne[nrow(donne), 1])
-	period <- ifelse(ndaty == 8, 'daily', ifelse(ndaty == 7, 'dekadal', ifelse(ndaty == 6, 'monthly', NA)))
+	ndaty <- as.character(nchar(donne[nrow(donne), 1]))
+	period <- switch(ndaty, '8' = 'daily', '7' = 'dekadal', '6' = 'monthly', NA)
 	if(is.na(period)){
 		InsertMessagesTxt(main.txt.out, "Unknown date", format = TRUE)
 		return(NULL)

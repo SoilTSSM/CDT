@@ -1,14 +1,41 @@
 ---
 title: "Check Stations Coordinates"
+output:
+  html_document:
+    toc: true
 ---
 
-Check Stations Coordinates
+To check if the stations do not include missing or unlikely coordinates, duplicated coordinates or stations located outside a specified region, go to `r menuselection('Quality Control','Check Stations Coordinates')`.
 
+`r put.image("images/quality_control/check_coords/check_crds.png", height = 50, width = 50)`
 
+1. Select the file containing the station data in CDT format. If the file is not yet listed, use the button `r button('...')` to open it.
+2. Select the country boundaries or any administrative boundaries shapefiles to be used to check whether stations are located outside it.
+3. Enter the full path to directory to save the result, or browse it from `r button('...')`.
+4. Specify the distance from the boundaries in kilometer, all stations located beyond this distance will be flagged as outside.
 
-```{r ,child="_attente.Rmd"}
-```
+When you have finished filling all required inputs, click on `r button('&nbsp;&nbsp;  OK  &nbsp;&nbsp;')` and then click on the button ![][executetask] in the toolbar to run the verification.
 
+`r put.image("images/quality_control/check_coords/check_crds_rpanel.png", height = 40, width = 40)`
 
-```{r, child="_generated_date.Rmd"}
-```
+To display the results of the verification and correct any errors on the station coordinates, click on `r button('View/Edit Results')` located on the left panel. A table containing the missing, unlikely, duplicated and outside coordinates will be displayed.
+
+`r put.image("images/quality_control/check_coords/check_crds_result.png", height = 60, width = 60)`
+
+The first column contains a description of the issues found concerning that location. The results are classified into three categories:
+
+- __Missing Coordinates__: longitude and/or latitude are missing
+- __Duplicate Coordinates__: there is more than one station that has the same coordinates
+- __Coordinates Outside__: the station is located outside the given administrative boundaries
+
+To correct the wrong coordinates, change the corresponding longitude (3rd column) and latitude (4th column).
+To remove a station, right-click on the left column containing the row number/names corresponding to this station then select `r menuselection('Delete selected row')`
+
+`r put.image("images/quality_control/check_coords/pop-menu.png", height = 40, width = 40)`
+
+When you finish editing the table, click on the button ![][savetable] in the toolbar to save the table, then click on the button `r button('Correct Coordinates')` in the left panel to correct the coordinates.
+
+ >  **OUTPUT:** Under the directory you specified to save the result (3), a directory named **ChkCoord\_**<*Input station data filename without extension*> has been created, there are two files inside this directory:
+ >  - <*Input station data filename without extension*>\_**2CORRECT**\_**STATIONS.txt**: containing the information about the stations to be corrected.
+ >  - <*Input station data filename without extension*>\_**CHECKED**\_**STATIONS.txt**: a CDT data for the corrected coordinates.
+ 

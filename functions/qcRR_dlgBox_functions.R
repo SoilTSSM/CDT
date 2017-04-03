@@ -33,19 +33,6 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 									'dekadal' = cb.periodVAL[2],
 									'monthly' = cb.periodVAL[3])
 	file.choix1 <- tclVar(GeneralParameters$IO.files$STN.file)
-	file.choix2 <- tclVar(GeneralParameters$IO.files$DEM.file)
-	file.save1 <- tclVar(GeneralParameters$IO.files$dir2save)
-
-	if(!GeneralParameters$stn.type$single.series & !GeneralParameters$dem$use.elv){
-		state <- c('disabled', 'normal', 'disabled')
-		state1 <- 'disabled'
-	}else if(GeneralParameters$stn.type$single.series){
-		state <- c('disabled', 'normal', 'disabled')
-		state1 <- 'normal'
-	}else if(GeneralParameters$dem$use.elv){
-		state <- if(GeneralParameters$dem$interp.dem == '0') c('normal', 'normal', 'normal') else c('disabled', 'normal', 'normal')
-		state1 <- 'disabled'
-	}
 
 	############
 
@@ -53,12 +40,6 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 	txt.file.stn <- tklabel(frIO, text = 'Input data to control', anchor = 'w', justify = 'left')
 	cb.file.stn <- ttkcombobox(frIO, values = unlist(listOpenFiles), textvariable = file.choix1, width = largeur1)
 	bt.file.stn <- tkbutton(frIO, text = "...") 
-	txt.file.elv <- tklabel(frIO, text = 'Elevation Data (NetCDF)', anchor = 'w', justify = 'left')
-	cb.file.elv <- ttkcombobox(frIO, values = unlist(listOpenFiles), textvariable = file.choix2, width = largeur1, state = state[1])
-	bt.file.elv <- tkbutton(frIO, text = "...", state = state[1]) 
-	txt.file.save <- tklabel(frIO, text = 'Directory to save result', anchor = 'w', justify = 'left')
-	en.file.save <- tkentry(frIO, textvariable = file.save1, width = largeur) 
-	bt.file.save <- tkbutton(frIO, text = "...")
 
 	####
 	tkconfigure(bt.file.stn, command = function(){
@@ -77,44 +58,12 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 		}
 	})
 
-	tkconfigure(bt.file.elv, command = function(){
-		nc.opfiles <- getOpenNetcdf(parent.win, all.opfiles)
-		if(!is.null(nc.opfiles)){
-			nopf <- length(AllOpenFilesType)
-			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
-			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
-			tclvalue(file.choix2) <- AllOpenFilesData[[nopf+1]][[1]]
-
-			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
-			tclvalue(file.choix2) <- AllOpenFilesData[[nopf+1]][[1]]
-			tkconfigure(cb.file.elv, values = unlist(listOpenFiles), textvariable = file.choix2)
-			tkconfigure(cb.file.stn, values = unlist(listOpenFiles), textvariable = file.choix1)
-		}else{
-			return(NULL)
-		}
-	})
-
-	tkconfigure(bt.file.save, command = function(){
-		file2save1 <- tk_choose.dir(str_trim(GeneralParameters$IO.files$dir2save), "")
-		if(!file.exists(file2save1)){
-			tkmessageBox(message = paste(file2save1, 'does not exist. It will be created.'), icon = "warning", type = "ok")
-			dir.create(file2save1, recursive = TRUE)
-			tclvalue(file.save1) <- file2save1
-		}else tclvalue(file.save1) <- file2save1
-	})
-
 	####
 
 	tkgrid(cb.period, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 5, ipadx = 1, ipady = 1)
 	tkgrid(txt.file.stn, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cb.file.stn, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(bt.file.stn, row = 2, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.file.elv, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cb.file.elv, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(bt.file.elv, row = 4, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.file.save, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.file.save, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(bt.file.save, row = 6, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(cb.period, 'Choose the time step of the data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the time step of the data')
@@ -122,13 +71,6 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 	status.bar.display(cb.file.stn, TextOutputVar, 'Choose the file containing the data to control')
 	infobulle(bt.file.stn, 'Browse file if not listed')
 	status.bar.display(bt.file.stn, TextOutputVar, 'Browse file if not listed')
-	infobulle(cb.file.elv, 'Choose the file in the list')
-	status.bar.display(cb.file.elv, TextOutputVar, 'Choose the file containing the elevation data')
-	infobulle(bt.file.elv, 'Browse file if not listed')
-	status.bar.display(bt.file.elv, TextOutputVar, 'Browse file if not listed')
-	infobulle(en.file.save, 'Enter the full path to directory to save result')
-	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to directory to save result')
-	infobulle(bt.file.save, 'or browse here')
 
 	##################
 
@@ -149,80 +91,67 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 
 	##################
 
-	frSetOpt <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
+	frELV <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
 
-	bt.opt.set <- ttkbutton(frSetOpt, text = "Options - Settings")
-
-	####
-	tkconfigure(bt.opt.set, command = function(){
-		state.parm <- if(tclvalue(cb.1series.val) == "0") 'normal' else 'disabled'
-		GeneralParameters <<- get.param.rainfall(tt, GeneralParameters, state.parm)
-	})
-
-	####
-	tkgrid(bt.opt.set, sticky = 'we', padx = 10, pady = 2, ipadx = 1, ipady = 1)
-
-	infobulle(bt.opt.set, 'Set general options for QC')
-	status.bar.display(bt.opt.set, TextOutputVar, 'Set general options for QC')
-
-	############################################
-	tkgrid(frIO, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frSetOpt, row = 1, column = 0, padx = 1, pady = 5, ipadx = 1, ipady = 1)
-
-	#######################  RIGHT   #####################
-
-	frSeries <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
-
-	cb.1series.val <- tclVar(GeneralParameters$stn.type$single.series)
+	file.choix2 <- tclVar(GeneralParameters$IO.files$DEM.file)
 	cb.1uselv.val <- tclVar(GeneralParameters$dem$use.elv)
 	uselv.ch <- tclVar(GeneralParameters$dem$interp.dem)
 
-	state1s <- if(GeneralParameters$AllOrOne == 'one') 'normal' else 'disabled'
+	if(!GeneralParameters$stn.type$single.series & !GeneralParameters$dem$use.elv){
+		state <- c('disabled', 'normal', 'disabled')
+	}else if(GeneralParameters$stn.type$single.series){
+		state <- c('disabled', 'normal', 'disabled')
+	}else if(GeneralParameters$dem$use.elv){
+		state <- if(GeneralParameters$dem$interp.dem == '0') c('normal', 'normal', 'normal') else c('disabled', 'normal', 'normal')
+	}
 
-	cb.1series <- tkcheckbutton(frSeries, variable = cb.1series.val, text = 'Rainfall series from one station', anchor = 'w', justify = 'left', state = state1s)
-	cb.1uselv <- tkcheckbutton(frSeries, variable = cb.1uselv.val, text = 'Use Elevation', anchor = 'w', justify = 'left', state = state[2])
-	cb.1intelv <- tkradiobutton(frSeries, text = "Elevation from DEM", anchor = 'w', justify = 'left', state = state[3])
-	cb.1datelv <- tkradiobutton(frSeries, text = "Elevation from STN data", anchor = 'w', justify = 'left', state = state[3])
+	cb.1uselv <- tkcheckbutton(frELV, variable = cb.1uselv.val, text = 'Use Elevation', anchor = 'w', justify = 'left', state = state[2])
+	cb.1intelv <- tkradiobutton(frELV, text = "Elevation from DEM", anchor = 'w', justify = 'left', state = state[3])
+	cb.1datelv <- tkradiobutton(frELV, text = "Elevation from STN data", anchor = 'w', justify = 'left', state = state[3])
 	tkconfigure(cb.1intelv, variable = uselv.ch, value = "0")
 	tkconfigure(cb.1datelv, variable = uselv.ch, value = "1")
 
-	tkgrid(cb.1series, row = 0, column = 0, sticky = 'we', padx = 1, ipadx = 1, pady = spady)
-	tkgrid(cb.1uselv, row = 1, column = 0, sticky = 'we', padx = 1, ipadx = 1, pady = spady)
-	tkgrid(cb.1intelv, row = 2, column = 0, sticky = 'we', padx = 1, ipadx = 1, pady = spady)
-	tkgrid(cb.1datelv, row = 3, column = 0, sticky = 'we', padx = 1, ipadx = 1, pady = spady)
+	txt.file.elv <- tklabel(frELV, text = 'Elevation Data (NetCDF)', anchor = 'w', justify = 'left')
+	cb.file.elv <- ttkcombobox(frELV, values = unlist(listOpenFiles), textvariable = file.choix2, width = largeur1, state = state[1])
+	bt.file.elv <- tkbutton(frELV, text = "...", state = state[1]) 
 
-	infobulle(cb.1series, 'Check this box if the data is a time series from one station')
-	status.bar.display(cb.1series, TextOutputVar, 'Check this box if the data is a time series from one station')
+	#####
+	tkconfigure(bt.file.elv, command = function(){
+		nc.opfiles <- getOpenNetcdf(parent.win, all.opfiles)
+		if(!is.null(nc.opfiles)){
+			nopf <- length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
+			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
+			tclvalue(file.choix2) <- AllOpenFilesData[[nopf+1]][[1]]
+
+			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.choix2) <- AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.file.elv, values = unlist(listOpenFiles), textvariable = file.choix2)
+			tkconfigure(cb.file.stn, values = unlist(listOpenFiles), textvariable = file.choix1)
+		}else{
+			return(NULL)
+		}
+	})
+
+	#####
+
+	tkgrid(cb.1uselv, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, ipadx = 1, pady = spady)
+	tkgrid(cb.1intelv, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, ipadx = 1, pady = spady)
+	tkgrid(cb.1datelv, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, ipadx = 1, pady = spady)
+	tkgrid(txt.file.elv, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.file.elv, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.file.elv, row = 4, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(cb.file.elv, 'Choose the file in the list')
+	status.bar.display(cb.file.elv, TextOutputVar, 'Choose the file containing the elevation data')
+	infobulle(bt.file.elv, 'Browse file if not listed')
+	status.bar.display(bt.file.elv, TextOutputVar, 'Browse file if not listed')
 	infobulle(cb.1uselv, 'Check this box if you want to use elevation data to choose neighbors stations')
 	status.bar.display(cb.1uselv, TextOutputVar, 'Check this box if you want to use elevation data to choose neighbors stations')
 	infobulle(cb.1intelv, 'Tick this box if the elevation data will be extracted from DEM')
 	status.bar.display(cb.1intelv, TextOutputVar, 'Tick this box if the elevation data will be extracted from DEM')
 	infobulle(cb.1datelv, 'Tick this box if the elevation data from CDT station data')
 	status.bar.display(cb.1datelv, TextOutputVar, 'Tick this box if the elevation data from CDT station data')
-
-	################
-
-	tkbind(cb.1series, "<Button-1>", function(){
-		if(GeneralParameters$AllOrOne == 'one'){
-			tkconfigure(cb.file.elv, state = 'disabled')
-			tkconfigure(bt.file.elv, state = 'disabled')
-			tkconfigure(cb.1uselv, state = 'normal')
-			tkconfigure(cb.1intelv, state = 'disabled')
-			tkconfigure(cb.1datelv, state = 'disabled')
-			tclvalue(cb.1uselv.val) <- "0"
-			if(tclvalue(cb.1series.val) == "0"){
-				tkconfigure(ffrmt1, state = 'normal')
-				tkconfigure(ffrmt2, state = 'normal')
-				tkconfigure(dtfrmt1, state = 'normal')
-				tkconfigure(dtfrmt2, state = 'normal')
-			}else{
-				tkconfigure(ffrmt1, state = 'disabled')
-				tkconfigure(ffrmt2, state = 'disabled')
-				tkconfigure(dtfrmt1, state = 'disabled')
-				tkconfigure(dtfrmt2, state = 'disabled')
-			}
-		}
-	})
 
 	####
 	tkbind(cb.1uselv, "<Button-1>", function(){
@@ -262,11 +191,62 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 		}
 	})
 
+	############################################
+	tkgrid(frIO, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frELV, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#######################  RIGHT   #####################
+
+	frSeries <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
+
+	cb.1series.val <- tclVar(GeneralParameters$stn.type$single.series)
+
+	state1s <- if(GeneralParameters$AllOrOne == 'one') 'normal' else 'disabled'
+
+	cb.1series <- tkcheckbutton(frSeries, variable = cb.1series.val, text = 'Rainfall series from one station', anchor = 'w', justify = 'left', state = state1s)
+
+	tkgrid(cb.1series, row = 0, column = 0, sticky = 'we', padx = 1, ipadx = 1, pady = spady)
+
+	infobulle(cb.1series, 'Check this box if the data is a time series from one station')
+	status.bar.display(cb.1series, TextOutputVar, 'Check this box if the data is a time series from one station')
+
+	################
+
+	tkbind(cb.1series, "<Button-1>", function(){
+		if(GeneralParameters$AllOrOne == 'one'){
+			tkconfigure(cb.file.elv, state = 'disabled')
+			tkconfigure(bt.file.elv, state = 'disabled')
+			tkconfigure(cb.1uselv, state = 'normal')
+			tkconfigure(cb.1intelv, state = 'disabled')
+			tkconfigure(cb.1datelv, state = 'disabled')
+			tclvalue(cb.1uselv.val) <- "0"
+			if(tclvalue(cb.1series.val) == "0"){
+				tkconfigure(ffrmt1, state = 'normal')
+				tkconfigure(ffrmt2, state = 'normal')
+				tkconfigure(dtfrmt1, state = 'normal')
+				tkconfigure(dtfrmt2, state = 'normal')
+			}else{
+				tkconfigure(ffrmt1, state = 'disabled')
+				tkconfigure(ffrmt2, state = 'disabled')
+				tkconfigure(dtfrmt1, state = 'disabled')
+				tkconfigure(dtfrmt2, state = 'disabled')
+			}
+		}
+	})
+
 	###################################################
 
 	frflfrmt <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
 	rbffrmt <- tclVar(GeneralParameters$stn.type$file.format)
+
+	if(!GeneralParameters$stn.type$single.series & !GeneralParameters$dem$use.elv){
+		state1 <- 'disabled'
+	}else if(GeneralParameters$stn.type$single.series){
+		state1 <- 'normal'
+	}else if(GeneralParameters$dem$use.elv){
+		state1 <- 'disabled'
+	}
 
 	txtffrmt <- ttklabel(frflfrmt, text = "File Format", anchor = 'w', justify = 'left')
 	ffrmt1 <- tkradiobutton(frflfrmt, text = "One variable", anchor = 'w', justify = 'left', state = state1)
@@ -306,10 +286,59 @@ qc.get.info.rain <- function(parent.win, GeneralParameters){
 	infobulle(dtfrmt2, 'In case of single series: dates are separated by space or tabulation')
 	status.bar.display(dtfrmt2, TextOutputVar, 'In case of single series:dates are separated by space or tabulation')
 
+	##################
+
+	frSetOpt <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
+
+	bt.opt.set <- ttkbutton(frSetOpt, text = "Options - Settings")
+
+	####
+	tkconfigure(bt.opt.set, command = function(){
+		state.parm <- if(tclvalue(cb.1series.val) == "0") 'normal' else 'disabled'
+		GeneralParameters <<- get.param.rainfall(tt, GeneralParameters, state.parm)
+	})
+
+	####
+	tkgrid(bt.opt.set, sticky = 'we', padx = 10, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(bt.opt.set, 'Set general options for QC')
+	status.bar.display(bt.opt.set, TextOutputVar, 'Set general options for QC')
+
+	##################
+
+	frSave <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
+
+	file.save1 <- tclVar(GeneralParameters$IO.files$dir2save)
+
+	txt.file.save <- tklabel(frSave, text = 'Directory to save result', anchor = 'w', justify = 'left')
+	en.file.save <- tkentry(frSave, textvariable = file.save1, width = largeur) 
+	bt.file.save <- tkbutton(frSave, text = "...")
+
+	####
+	tkconfigure(bt.file.save, command = function(){
+		file2save1 <- tk_choose.dir(str_trim(GeneralParameters$IO.files$dir2save), "")
+		if(!file.exists(file2save1)){
+			tkmessageBox(message = paste(file2save1, 'does not exist. It will be created.'), icon = "warning", type = "ok")
+			dir.create(file2save1, recursive = TRUE)
+			tclvalue(file.save1) <- file2save1
+		}else tclvalue(file.save1) <- file2save1
+	})
+
+	####
+	tkgrid(txt.file.save, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.file.save, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.file.save, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(en.file.save, 'Enter the full path to directory to save result')
+	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to directory to save result')
+	infobulle(bt.file.save, 'or browse here')
+
 	############################################
 	tkgrid(frSeries, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frflfrmt, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frdtfrmt, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frSetOpt, row = 3, column = 0, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frSave, row = 4, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	############################################
 

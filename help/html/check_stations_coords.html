@@ -11,7 +11,7 @@
 
 
 
-<title>Filling missing dekadal temperature values</title>
+<title>Check Stations Coordinates</title>
 
 <script src="libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -282,30 +282,61 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Filling missing dekadal temperature values</h1>
+<h1 class="title toc-ignore">Check Stations Coordinates</h1>
 
 </div>
 
 
-<p>The menu <span class="menuselection">Data Preparation ‣ Filling missing dekadal temperature values</span>   allows to fill the missing values of dekadal temperature data using a downscaled and bias corrected reanalysis as predictors.</p>
+<p>To check if the stations do not include missing or unlikely coordinates, duplicated coordinates or stations located outside a specified region, go to <span class="menuselection">Quality Control ‣ Check Stations Coordinates</span>  .</p>
 <center>
 <div class="figure">
-<img src="images/data_prepraration/fill_missing/fill_na.png" style="width:60.0%" style="height:60.0%" />
+<img src="images/quality_control/check_coords/check_crds.png" style="width:50.0%" style="height:50.0%" />
 
 </div>
 </center>
 <p><br></p>
 <ol style="list-style-type: decimal">
-<li>Select the file containing the dekadal temperature data in CDT format. If the file is not yet listed, use the button <span class="buttonclass">   …   </span>   to open it.</li>
-<li>Enter the full path to directory containing the adjusted reanalysis in NetCDF format, or use <span class="buttonclass">   …   </span>   to browse it.</li>
-<li>Specify the adjusted data filename format. See the section <a href="cdt_data_input.html#cdt.ncdf.ffrmt">NetCDF filename format</a> for more details on the format of NetCDF file names.</li>
-<li>Enter the full path of the file you want to save the filled dekadal temperature data, or just enter the file name if you want to save it under the current working directory.</li>
-<li>Enter the start and end date of the period for the gaps filling.</li>
-<li>Specify the minimum length (typically, between 10 and 20) of non missing data to be used to perform the regression.</li>
+<li>Select the file containing the station data in CDT format. If the file is not yet listed, use the button <span class="buttonclass">   …   </span>   to open it.</li>
+<li>Select the country boundaries or any administrative boundaries shapefiles to be used to check whether stations are located outside it.</li>
+<li>Enter the full path to directory to save the result, or browse it from <span class="buttonclass">   …   </span>  .</li>
+<li>Specify the distance from the boundaries in kilometer, all stations located beyond this distance will be flagged as outside.</li>
 </ol>
-<p>Click <span class="buttonclass">      OK      </span>   when all the specifications are defined, then click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> in the toolbar to run the perform the filling.</p>
+<p>When you have finished filling all required inputs, click on <span class="buttonclass">      OK      </span>   and then click on the button <img src="images/common/run24.gif" title="Execute the append task" id="cdtIcons" class="cdtIcons" /> in the toolbar to run the verification.</p>
+<center>
+<div class="figure">
+<img src="images/quality_control/check_coords/check_crds_rpanel.png" style="width:40.0%" style="height:40.0%" />
+
+</div>
+</center>
+<p><br></p>
+<p>To display the results of the verification and correct any errors on the station coordinates, click on <span class="buttonclass">   View/Edit Results   </span>   located on the left panel. A table containing the missing, unlikely, duplicated and outside coordinates will be displayed.</p>
+<center>
+<div class="figure">
+<img src="images/quality_control/check_coords/check_crds_result.png" style="width:60.0%" style="height:60.0%" />
+
+</div>
+</center>
+<p><br></p>
+<p>The first column contains a description of the issues found concerning that location. The results are classified into three categories:</p>
+<ul>
+<li><strong>Missing Coordinates</strong>: longitude and/or latitude are missing</li>
+<li><strong>Duplicate Coordinates</strong>: there is more than one station that has the same coordinates</li>
+<li><strong>Coordinates Outside</strong>: the station is located outside the given administrative boundaries</li>
+</ul>
+<p>To correct the wrong coordinates, change the corresponding longitude (3rd column) and latitude (4th column).<br />
+To remove a station, right-click on the left column containing the row number/names corresponding to this station then select <span class="menuselection">Delete selected row</span>  </p>
+<center>
+<div class="figure">
+<img src="images/quality_control/check_coords/pop-menu.png" style="width:40.0%" style="height:40.0%" />
+
+</div>
+</center>
+<p><br></p>
+<p>When you finish editing the table, click on the button <img src="images/common/save_table24.gif" title="Save table" id="cdtIcons" class="cdtIcons" /> in the toolbar to save the table, then click on the button <span class="buttonclass">   Correct Coordinates   </span>   in the left panel to correct the coordinates.</p>
 <blockquote>
-<p><strong>OUTPUT:</strong> the file you provided in (4) containing the filled dekadal temperature data in CDT format. If there is not enough data to perform the regression, then the values are left missing.</p>
+<p><strong>OUTPUT:</strong> Under the directory you specified to save the result (3), a directory named <strong>ChkCoord_</strong>&lt;<em>Input station data filename without extension</em>&gt; has been created, there are two files inside this directory:<br />
+- &lt;<em>Input station data filename without extension</em>&gt;_<strong>2CORRECT</strong>_<strong>STATIONS.txt</strong>: containing the information about the stations to be corrected.<br />
+- &lt;<em>Input station data filename without extension</em>&gt;_<strong>CHECKED</strong>_<strong>STATIONS.txt</strong>: a CDT data for the corrected coordinates.</p>
 </blockquote>
 
 <footer class="navbar navbar-inverse  navbar-fixed-bottom">

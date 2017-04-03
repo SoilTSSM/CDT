@@ -64,6 +64,8 @@ output:
 
 # [Filling missing dekadal temperature values](fill_na_temp.html)
 
+# [Check Stations Coordinates](check_stations_coords.html)
+
 # [Merging Rainfall](merging_rainfall.html)
 
 ## [ Bias calculation](merging_rainfall.html#rr.calc.bias)
