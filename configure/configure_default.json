@@ -25,10 +25,10 @@
         "Bwidget": "/usr/local/lib/tcl8.6/bwidget-1.9.6"
     }],
     "Linux": [{
-        "Tclbin": "/usr/local/bin",
-        "Tcllib": "/usr/local/lib/tcl8.6",
+        "Tclbin": "/opt/ActiveTcl-8.6/bin",
+        "Tcllib": "/opt/ActiveTcl-8.6/lib/tcl8.6",
         // Tktable path for 32-bit or 64-bit, change according to
-        "Tktable": "/usr/local/lib/teapot/package/linux-glibc2.3-x86_64/lib/Tktable2.11",
-        "Bwidget": "/usr/local/lib/teapot/package/tcl/lib/BWidget1.9.7"
+        "Tktable": "/opt/ActiveTcl-8.6/lib/teapot/package/linux-glibc2.3-x86_64/lib/Tktable2.11",
+        "Bwidget": "/opt/ActiveTcl-8.6/lib/teapot/package/tcl/lib/BWidget1.9.8"
     }]
 }

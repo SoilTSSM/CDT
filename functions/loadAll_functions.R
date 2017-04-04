@@ -141,10 +141,6 @@ source(file.path(apps.dir, 'functions', 'gapFillTemp_dlgBox_functions.R', fsep =
 source(file.path(apps.dir, 'functions', 'gapFillTemp_Procs_functions.R', fsep = .Platform$file.sep))
 
 #####
-# source(file.path(apps.dir, 'functions', 'mergingMali1dek_dlgBox_functions.R', fsep = .Platform$file.sep))
-# source(file.path(apps.dir, 'functions', 'mergingMali1dek_Procs_functions.R', fsep = .Platform$file.sep))
-
-#####
 #
 #source(file.path(apps.dir, 'functions','',fsep = .Platform$file.sep))
 #source(file.path(apps.dir, 'functions','',fsep = .Platform$file.sep))
