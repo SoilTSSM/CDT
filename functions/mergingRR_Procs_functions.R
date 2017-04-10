@@ -1519,7 +1519,10 @@ MergingFunctionRain <- function(paramsMRG){
 
 		############
 		locations.stn <- interp.grid$coords.stn
-		locations.stn$stn <- data.stn[date.stn == ncInfo$dates[jj], ]
+		donne.stn <- data.stn[date.stn == ncInfo$dates[jj], , drop = FALSE]
+		if(nrow(donne.stn) == 0) return(NULL)
+		locations.stn$stn <- c(donne.stn[1, ])
+		# locations.stn$stn <- data.stn[date.stn == ncInfo$dates[jj], ]
 		locations.stn$rfe <- xrfe[ijGrd]
 		xadd <- as.data.frame(interp.grid$coords.grd)
 		xadd$rfe <- c(xrfe[interp.grid$idxy$ix, interp.grid$idxy$iy])
@@ -1712,7 +1715,7 @@ MergingFunctionRain <- function(paramsMRG){
 		an <- substr(dekdaty, 1, 4)
 		mois <- substr(dekdaty, 5, 6)
 		jour <- as.numeric(substr(dekdaty, 7, 8))
-		outfl <- file.path(origdir, sprintf(Mrg.file.format, an, mois, jour))
+		outfl <- file.path(origdir, sprintf(Mrg.file.format, an, mois, str_pad(jour, width = 2, side = "left", pad = "0")))
 
 		nbs <- ifelse(jour[1] <= 10, 10, ifelse(jour[1] > 10 & jour[1] <= 20, 10,
 					rev((28:31)[which(!is.na(as.Date(paste(an[1], mois[1], 28:31, sep = '-'))))])[1]-20))
@@ -1793,7 +1796,7 @@ MergingFunctionRain <- function(paramsMRG){
 
 			xday <- simplify2array(xday)
 			ddek <- apply(xday, 1:2, sum)
-			scl <- xdek/ddek
+			scl <- xdek/(ddek+0.1)
 			scl[is.na(scl) | is.nan(scl) | is.infinite(scl)] <- 1
 			xday <- sweep(xday, 1:2, scl, `*`)
 

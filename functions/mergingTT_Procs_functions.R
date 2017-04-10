@@ -1603,7 +1603,10 @@ MergingFunctionTemp <- function(paramsMRG){
 
 		############
 		locations.stn <- interp.grid$coords.stn
-		locations.stn$stn <- data.stn[date.stn == ncInfo$dates[jj], ]
+		donne.stn <- data.stn[date.stn == ncInfo$dates[jj], , drop = FALSE]
+		if(nrow(donne.stn) == 0) return(NULL)
+		locations.stn$stn <- c(donne.stn[1, ])
+		# locations.stn$stn <- data.stn[date.stn == ncInfo$dates[jj], ]
 		locations.stn$tmp <- xtmp[ijGrd]
 		xadd <- as.data.frame(interp.grid$coords.grd)
 		xadd$tmp <- c(xtmp[interp.grid$idxy$ix, interp.grid$idxy$iy])
