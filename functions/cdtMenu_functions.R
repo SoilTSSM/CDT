@@ -135,7 +135,7 @@ tkadd(menu.dataprep, "command", label = "Format CDTs Input Data", command = func
 ##########
 # tkadd(menu.dataprep, "separator")
 
-tkadd(menu.dataprep, "command", label = "Merge two CDT data format", command = function(){
+tkadd(menu.dataprep, "command", label = "Merge two CDT Data", command = function(){
 	refreshCDT.lcmd.env()
 	if(is.null(lcmd.frame_merge2cdt)){
 		lcmd.frame <<- merge2CDTDataPanelCmd()
@@ -143,7 +143,15 @@ tkadd(menu.dataprep, "command", label = "Merge two CDT data format", command = f
 	}
 })
 
-##########
+tkadd(menu.dataprep, "command", label = "Filtering CDT Data", command = function(){
+	refreshCDT.lcmd.env()
+	if(is.null(lcmd.frame_filtercdtdat)){
+		lcmd.frame <<- filterCDTDataPanelCmd()
+		lcmd.frame_filtercdtdat <<- 1
+	}
+})
+
+######################################## AVAIL
 tkadd(menu.dataprep, "separator")
 
 ##########
@@ -156,7 +164,7 @@ tkadd(menu.dataprep, "command", label = "Assess Data Availability", command = fu
 	}
 })
 
-##########
+######################################## AGGREGATE
 tkadd(menu.dataprep, "separator")
 
 ##########
@@ -166,26 +174,29 @@ tkadd(menu.dataprep, "command", label = "Aggregating Time Series", command = fun
 	GeneralParameters <<- mainDialogAggTs(main.win, initpars)
 })
 
-##########
+######################################## DOWNLOAD
 tkadd(menu.dataprep, "separator")
 
 ##########
 tkadd(menu.dataprep, "command", label = "Download DEM", command = function(){
+	refreshCDT.lcmd.env()
 	getDEMFun(main.win)
 })
 
 ##########
 tkadd(menu.dataprep, "command", label = "Download Country boundary", command = function(){
+	refreshCDT.lcmd.env()
 	getCountryShapefile(main.win)
 })
 
 ##########
 
 tkadd(menu.dataprep, "command", label = "Download RFE data", command = function(){
+	refreshCDT.lcmd.env()
 	DownloadRFE(main.win)
 })
 
-##########
+######################################## FILL TEMP
 tkadd(menu.dataprep, "separator")
 
 ##########
@@ -195,15 +206,15 @@ tkadd(menu.dataprep, "command", label = "Filling missing dekadal temperature val
 	GeneralParameters <<- fillMissDekTemp(main.win, initpars)
 })
 
-# ##########
-# tkadd(menu.dataprep, "separator")
+######################################## CONVERSION
+tkadd(menu.dataprep, "separator")
 
-# ##########
-# tkadd(menu.dataprep, "command", label = "Data Conversion", command = function(){
-# 	refreshCDT.lcmd.env()
-# 	initpars <- initialize.parameters('data.convrs', 'dekadal')
-# 	GeneralParameters <<- DataConversion(main.win, initpars)
-# })
+##########
+tkadd(menu.dataprep, "command", label = "Data Format Conversion", state = 'disabled', command = function(){
+	refreshCDT.lcmd.env()
+	# initpars <- initialize.parameters('data.convrs', 'dekadal')
+	# GeneralParameters <<- DataConversion(main.win, initpars)
+})
 
 ##########xxxxxxxxxxxxxxxxxx Menu Quality Control xxxxxxxxxxxxxxxxxx##########
 
@@ -378,110 +389,140 @@ tkadd(menu.qchom, "command", label = "Aggregate homogenized stations", command =
 menu.mrg <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
 tkadd(top.menu, "cascade", label = "Merging Data", menu = menu.mrg)
 
-##########rain
-menu.mrg.rain <- tkmenu(top.menu, tearoff = FALSE)
-tkadd(menu.mrg, "cascade", label = "Merging Rainfall", menu = menu.mrg.rain)
-
-##########
-tkadd(menu.mrg.rain, "command", label = "Compute mean Gauge-RFE bias", background = 'lightblue', command = function(){
+########################################
+tkadd(menu.mrg, "command", label = "Spatial  Interpolation", command = function(){
 	refreshCDT.lcmd.env()
-	initpars <- initialize.parameters('coefbias.rain', 'dekadal')
-	GeneralParameters <<- coefBiasGetInfoRain(main.win, initpars)
+	spinbox.state(state = 'normal')
+	if(is.null(lcmd.frame_interpol)){
+		lcmd.frame <<- InterpolationPanelCmd()
+		lcmd.frame_interpol <<- 1
+	}
 })
 
-##########
-tkadd(menu.mrg.rain, "separator")
-
-##########
-tkadd(menu.mrg.rain, "command", label = "Apply bias correction", command = function(){
-	refreshCDT.lcmd.env()
-	initpars <- initialize.parameters('rmbias.rain', 'dekadal')
-	GeneralParameters <<- rmvBiasGetInfoRain(main.win, initpars)
-})
-
-##########
-tkadd(menu.mrg.rain, "separator")
-
-##########
-tkadd(menu.mrg.rain, "command", label = "Compute Spatio-temporal Trend Coefficients", background = 'lightblue', command = function(){
-	refreshCDT.lcmd.env()
-	initpars <- initialize.parameters('coefLM.rain', 'dekadal')
-	GeneralParameters <<- coefLMGetInfoRain(main.win, initpars)
-})
-
-##########
-tkadd(menu.mrg.rain, "separator")
-
-##########
-tkadd(menu.mrg.rain, "command", label = "Merging Data", command = function(){
-	refreshCDT.lcmd.env()
-	initpars <- initialize.parameters('merge.rain', 'dekadal')
-	GeneralParameters <<- mergeGetInfoRain(main.win, initpars)
-})
+######################################## DOWNSCALING
+tkadd(menu.mrg, "separator")
 
 ##########temperature
-tkadd(menu.mrg, "separator")
-menu.mrg.temp <- tkmenu(top.menu, tearoff = FALSE)
-tkadd(menu.mrg, "cascade", label = "Merging Temperature", menu = menu.mrg.temp)
+menu.mrg.down <- tkmenu(top.menu, tearoff = FALSE)
+tkadd(menu.mrg, "cascade", label = "Temperature - Reanalysis Downscaling", menu = menu.mrg.down)
 
 ##########
-tkadd(menu.mrg.temp, "command", label = "Compute Downscaling Coefficients", background = 'lightblue', command = function(){
+tkadd(menu.mrg.down, "command", label = "Compute Downscaling Coefficients", background = 'lightblue', command = function(){
 	refreshCDT.lcmd.env()
 	initpars <- initialize.parameters('coefdown.temp', 'dekadal')
 	GeneralParameters <<- coefDownGetInfoTemp(main.win, initpars)
 })
 
 ##########
-tkadd(menu.mrg.temp, "separator")
+tkadd(menu.mrg.down, "separator")
 
 ##########
-tkadd(menu.mrg.temp, "command", label = "Reanalysis Downscaling", command = function(){
+tkadd(menu.mrg.down, "command", label = "Reanalysis Downscaling", command = function(){
 	refreshCDT.lcmd.env()
 	initpars <- initialize.parameters('down.temp', 'dekadal')
 	GeneralParameters <<- downGetInfoDekTempReanal(main.win, initpars)
 })
 
-##########
-tkadd(menu.mrg.temp, "separator")
+######################################## SIMPLIFIED
+tkadd(menu.mrg, "separator")
 
 ##########
-tkadd(menu.mrg.temp, "command", label = "Compute Bias Coefficients", background = 'lightblue', command = function(){
+menu.mrg1 <- tkmenu(top.menu, tearoff = FALSE)
+tkadd(menu.mrg, "cascade", label = "Merging - Simplified", menu = menu.mrg1, state = 'disabled')
+
+######################################## ADVANCED
+tkadd(menu.mrg, "separator")
+
+##########
+menu.mrg2 <- tkmenu(top.menu, tearoff = FALSE)
+tkadd(menu.mrg, "cascade", label = "Merging - Advanced", menu = menu.mrg2)
+
+##########rain advanced
+menu.mrg.rain2 <- tkmenu(top.menu, tearoff = FALSE)
+tkadd(menu.mrg2, "cascade", label = "Merging Rainfall", menu = menu.mrg.rain2)
+
+##########
+tkadd(menu.mrg.rain2, "command", label = "Compute mean Gauge-RFE bias", background = 'lightblue', command = function(){
+	refreshCDT.lcmd.env()
+	initpars <- initialize.parameters('coefbias.rain', 'dekadal')
+	GeneralParameters <<- coefBiasGetInfoRain(main.win, initpars)
+})
+
+##########
+tkadd(menu.mrg.rain2, "separator")
+
+##########
+tkadd(menu.mrg.rain2, "command", label = "Apply bias correction", command = function(){
+	refreshCDT.lcmd.env()
+	initpars <- initialize.parameters('rmbias.rain', 'dekadal')
+	GeneralParameters <<- rmvBiasGetInfoRain(main.win, initpars)
+})
+
+##########
+tkadd(menu.mrg.rain2, "separator")
+
+##########
+tkadd(menu.mrg.rain2, "command", label = "Compute Spatio-temporal Trend Coefficients", background = 'lightblue', command = function(){
+	refreshCDT.lcmd.env()
+	initpars <- initialize.parameters('coefLM.rain', 'dekadal')
+	GeneralParameters <<- coefLMGetInfoRain(main.win, initpars)
+})
+
+##########
+tkadd(menu.mrg.rain2, "separator")
+
+##########
+tkadd(menu.mrg.rain2, "command", label = "Merging Data", command = function(){
+	refreshCDT.lcmd.env()
+	initpars <- initialize.parameters('merge.rain', 'dekadal')
+	GeneralParameters <<- mergeGetInfoRain(main.win, initpars)
+})
+
+########################################
+tkadd(menu.mrg2, "separator")
+
+##########temperature advanced
+menu.mrg.temp2 <- tkmenu(top.menu, tearoff = FALSE)
+tkadd(menu.mrg2, "cascade", label = "Merging Temperature", menu = menu.mrg.temp2)
+
+##########
+tkadd(menu.mrg.temp2, "command", label = "Compute Bias Coefficients", background = 'lightblue', command = function(){
 	refreshCDT.lcmd.env()
 	initpars <- initialize.parameters('coefbias.temp', 'dekadal')
 	GeneralParameters <<- biasGetInfoTempDown(main.win, initpars)
 })
 
 ##########
-tkadd(menu.mrg.temp, "separator")
+tkadd(menu.mrg.temp2, "separator")
 
 ##########
-tkadd(menu.mrg.temp, "command", label = "Apply bias correction", command = function(){
+tkadd(menu.mrg.temp2, "command", label = "Apply bias correction", command = function(){
 	refreshCDT.lcmd.env()
 	initpars <- initialize.parameters('adjust.temp', 'dekadal')
 	GeneralParameters <<- adjGetInfoTempDownReanal(main.win, initpars)
 })
 
 ##########
-tkadd(menu.mrg.temp, "separator")
+tkadd(menu.mrg.temp2, "separator")
 
 ##########
-tkadd(menu.mrg.temp, "command", label = "Compute Spatio-temporal Trend Coefficients", background = 'lightblue', command = function(){
+tkadd(menu.mrg.temp2, "command", label = "Compute Spatio-temporal Trend Coefficients", background = 'lightblue', command = function(){
 	refreshCDT.lcmd.env()
 	initpars <- initialize.parameters('coefLM.temp', 'dekadal')
 	GeneralParameters <<- coefLMGetInfoTemp(main.win, initpars)
 })
 
 ##########
-tkadd(menu.mrg.temp, "separator")
+tkadd(menu.mrg.temp2, "separator")
 
 ##########
-tkadd(menu.mrg.temp, "command", label = "Merging Data", command = function(){
+tkadd(menu.mrg.temp2, "command", label = "Merging Data", command = function(){
 	refreshCDT.lcmd.env()
 	initpars <- initialize.parameters('merge.temp', 'dekadal')
 	GeneralParameters <<- mrgGetInfoTemp(main.win, initpars)
 })
 
-##########
+######################################## UPDATE DEK
 tkadd(menu.mrg, "separator")
 
 ##########
@@ -491,16 +532,20 @@ tkadd(menu.mrg, "command", label = "Updating dekadal Rainfall", command = functi
 	GeneralParameters <<- mergeDekadInfoRain(main.win, initpars)
 })
 
-##########
+######################################## VALIDATION
 tkadd(menu.mrg, "separator")
 
 ##########
 menu.valid <- tkmenu(top.menu, tearoff = FALSE)
-tkadd(menu.mrg, "cascade", label = "Validation", menu = menu.valid)
+tkadd(menu.mrg, "cascade", label = "Validation method", menu = menu.valid)
+
+##########
+menu.valid1 <- tkmenu(top.menu, tearoff = FALSE)
+tkadd(menu.valid, "cascade", label = "Hold-Out Validation", menu = menu.valid1)
 
 ########
 # Precipitation validation
-tkadd(menu.valid, "command", label = "Precipitation", command = function(){
+tkadd(menu.valid1, "command", label = "Precipitation", command = function(){
 	refreshCDT.lcmd.env()
 	spinbox.state(state = 'normal')
 	if(is.null(lcmd.frame_valid)){
@@ -510,11 +555,11 @@ tkadd(menu.valid, "command", label = "Precipitation", command = function(){
 })
 
 ##########
-tkadd(menu.valid, "separator")
+tkadd(menu.valid1, "separator")
 
 #########
 # Temperature validation
-tkadd(menu.valid, "command", label = "Temperature", command = function(){
+tkadd(menu.valid1, "command", label = "Temperature", command = function(){
 	refreshCDT.lcmd.env()
 	spinbox.state(state = 'normal')
 	if(is.null(lcmd.frame_valid)){
@@ -523,25 +568,46 @@ tkadd(menu.valid, "command", label = "Temperature", command = function(){
 	}
 })
 
-##########xxxxxxxxxxxxxxxxxx Menu Data Processing xxxxxxxxxxxxxxxxxx##########
-
-menu.dataproc <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
-tkadd(top.menu, "cascade", label = "Data Processing", menu = menu.dataproc)
-
 ##########
-tkadd(menu.dataproc, "command", label = "Spatial  Interpolation", command = function(){
+menu.valid2 <- tkmenu(top.menu, tearoff = FALSE)
+tkadd(menu.valid, "cascade", label = "Cross-Validation", menu = menu.valid2, state = 'disabled')
+
+########
+# Precipitation validation
+menu.valid2a <- tkmenu(top.menu, tearoff = FALSE)
+tkadd(menu.valid2, "cascade", label = "Precipitation", menu = menu.valid2a)
+
+tkadd(menu.valid2a, "command", label = "Bias correction", command = function(){
 	refreshCDT.lcmd.env()
-	spinbox.state(state = 'normal')
-	if(is.null(lcmd.frame_interpol)){
-		lcmd.frame <<- InterpolationPanelCmd()
-		lcmd.frame_interpol <<- 1
-	}
+})
+
+tkadd(menu.valid2a, "command", label = "Merging data", command = function(){
+	refreshCDT.lcmd.env()
 })
 
 ##########
-tkadd(menu.dataproc, "separator")
+tkadd(menu.valid2, "separator")
 
-##########
+#########
+# Temperature validation
+menu.valid2b <- tkmenu(top.menu, tearoff = FALSE)
+tkadd(menu.valid2, "cascade", label = "Temperature", menu = menu.valid2b)
+
+tkadd(menu.valid2b, "command", label = "Bias correction", command = function(){
+	refreshCDT.lcmd.env()
+})
+
+tkadd(menu.valid2b, "command", label = "Merging data", command = function(){
+	refreshCDT.lcmd.env()
+})
+
+
+##########xxxxxxxxxxxxxxxxxx Menu Data Analysis xxxxxxxxxxxxxxxxxx##########
+
+menu.dataproc <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
+tkadd(top.menu, "cascade", label = "Data Analysis", menu = menu.dataproc)
+
+######################################## EXTRACT
 tkadd(menu.dataproc, "command", label = "Data Extraction", command = function(){
 	refreshCDT.lcmd.env()
 	spinbox.state(state = 'normal')
@@ -551,36 +617,82 @@ tkadd(menu.dataproc, "command", label = "Data Extraction", command = function(){
 	}
 })
 
-# ##########
-# tkadd(menu.dataproc, "separator")
+######################################## CLIMDEX
+tkadd(menu.dataproc, "separator")
 
-# ##########
-# menu.stats <- tkmenu(top.menu, tearoff = FALSE)
-# tkadd(menu.dataproc, "cascade", label = "Statistical Analysis", state = 'disabled', menu = menu.stats)
+##########
 
-# ########
-# # Time series analysis
-# tkadd(menu.stats, "command", label = "Time Series", command = function(){
-# return(NULL)
-# })
+menu.climdex <- tkmenu(top.menu, tearoff = FALSE)
+tkadd(menu.dataproc, "cascade", label = "Climate Extremes Indices", menu = menu.climdex)
 
-# ##########
-# tkadd(menu.stats, "separator")
+########
+# Precipitation 
+tkadd(menu.climdex, "command", label = "Precipitation", command = function(){
+	refreshCDT.lcmd.env()
+	spinbox.state(state = 'normal')
+	if(is.null(lcmd.frame_climdexRR)){
+		lcmd.frame <<- climdexPanelCmd.RR()
+		lcmd.frame_climdexRR <<- 1
+	}
+})
 
-# #########
-# # spatial 
-# tkadd(menu.stats, "command", label = "Spatial Statistics", state = 'disabled', command = function(){
-# return(NULL)
-# })
+##########
+tkadd(menu.climdex, "separator")
 
+#########
+# Temperature 
+tkadd(menu.climdex, "command", label = "Temperature", command = function(){
+	refreshCDT.lcmd.env()
+	spinbox.state(state = 'normal')
+	if(is.null(lcmd.frame_climdexTT)){
+		lcmd.frame <<- climdexPanelCmd.TT()
+		lcmd.frame_climdexTT <<- 1
+	}
+})
+
+######################################## CLIMATO
+tkadd(menu.dataproc, "separator")
+
+##########
+tkadd(menu.dataproc, "command", label = "Climatological Analysis", command = function(){
+	refreshCDT.lcmd.env()
+	spinbox.state(state = 'normal')
+	if(is.null(lcmd.frame_climatoAnalysis)){
+		lcmd.frame <<- climatoAnalysisPanelCmd()
+		lcmd.frame_climatoAnalysis <<- 1
+	}
+})
+
+
+######################################## PICSA
+tkadd(menu.dataproc, "separator")
+
+##########
+tkadd(menu.dataproc, "command", label = "PICSA", command = function(){
+	refreshCDT.lcmd.env()
+	spinbox.state(state = 'normal')
+	if(is.null(lcmd.frame_PICSA)){
+		lcmd.frame <<- PICSAPanelCmd()
+		lcmd.frame_PICSA <<- 1
+	}
+})
+
+######################################## CLIMATO DAILY
+tkadd(menu.dataproc, "separator")
+
+##########
+tkadd(menu.dataproc, "command", label = "Daily Rainfall Analysis", state = 'disabled', command = function(){
+	refreshCDT.lcmd.env()
+
+})
 
 ##########xxxxxxxxxxxxxxxxxx Menu Plot Data xxxxxxxxxxxxxxxxxx##########
 
 menu.plot <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
 tkadd(top.menu, "cascade", label = "Plot Data", menu = menu.plot)
 
-##########
-tkadd(menu.plot, "command", label = "Plot CDT data format", command = function(){
+######################################## CDT
+tkadd(menu.plot, "command", label = "Plot CDT Data", command = function(){
 	refreshCDT.lcmd.env()
 	spinbox.state(state = 'normal')
 	if(is.null(lcmd.frame_CDTffrtPlot)){
@@ -589,11 +701,11 @@ tkadd(menu.plot, "command", label = "Plot CDT data format", command = function()
 	}
 })
 
-##########
+######################################## NCDF
 tkadd(menu.plot, "separator")
 
 ##########
-tkadd(menu.plot, "command", label = "Plot NetCDF gridded data", command = function(){
+tkadd(menu.plot, "command", label = "Plot NetCDF Data (One File)", command = function(){
 	refreshCDT.lcmd.env()
 	spinbox.state(state = 'normal')
 	if(is.null(lcmd.frame_grdNcdfPlot)){
@@ -602,7 +714,33 @@ tkadd(menu.plot, "command", label = "Plot NetCDF gridded data", command = functi
 	}
 })
 
+######################################## NCDF
+tkadd(menu.plot, "separator")
+
 ##########
+tkadd(menu.plot, "command", label = "Plot NetCDF Data (Sequential Files)", state = 'disabled', command = function(){
+	refreshCDT.lcmd.env()
+	spinbox.state(state = 'normal')
+	# if(is.null(lcmd.frame_grdNcdfPlot)){
+	# 	lcmd.frame <<- PlotGriddedNcdfCmd()
+	# 	lcmd.frame_grdNcdfPlot <<- 1
+	# }
+})
+
+######################################## NCDF
+tkadd(menu.plot, "separator")
+
+##########
+tkadd(menu.plot, "command", label = "Plot NetCDF Data (Several Files)", state = 'disabled', command = function(){
+	refreshCDT.lcmd.env()
+	spinbox.state(state = 'normal')
+	# if(is.null(lcmd.frame_grdNcdfPlot)){
+	# 	lcmd.frame <<- PlotGriddedNcdfCmd()
+	# 	lcmd.frame_grdNcdfPlot <<- 1
+	# }
+})
+
+######################################## MERGED
 tkadd(menu.plot, "separator")
 
 ##########

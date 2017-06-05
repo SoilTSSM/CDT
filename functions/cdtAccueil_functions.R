@@ -9,12 +9,12 @@ cdtfont3 <- tkfont.create(family = "times", size = 12)
 cdtfont4 <- tkfont.create(family = "times", size = 11, weight = "bold")
 cdtfont5 <- tkfont.create(family = "times", size = 15, weight = "bold")
 
-infofl.cdtAcc <- file.path(apps.dir, 'text', 'cdt_welcome.txt', fsep = .Platform$file.sep)
+infofl.cdtAcc <- file.path(apps.dir, 'text', 'cdt_welcome.txt')
 rdL.cdtAcc <- readLines(infofl.cdtAcc, warn = FALSE)
 
-imgfl.cdtAcc <- tkimage.create('photo', file = file.path(imgdir, "CDT_acceuil.gif", fsep = .Platform$file.sep))
-irifl.cdtAcc <- tkimage.create('photo', file = file.path(imgdir, "iri_logo_full.gif", fsep = .Platform$file.sep))
-# irifl.cdtAcc <- resizeTclImage(file.path(imgdir, "iri_logo_full.gif", fsep = .Platform$file.sep), factor = 2, zoom = FALSE)
+imgfl.cdtAcc <- tkimage.create('photo', file = file.path(imgdir, "CDT_acceuil.gif"))
+irifl.cdtAcc <- tkimage.create('photo', file = file.path(imgdir, "iri_logo_full.gif"))
+# irifl.cdtAcc <- resizeTclImage(file.path(imgdir, "iri_logo_full.gif"), factor = 2, zoom = FALSE)
 
 #####
 frame_cdt <- tkframe(tknotes)
@@ -35,7 +35,7 @@ cdtauth1 <- tklabel(frame_cdt, text = 'Rija Faniriantsoa, Tufa Dinku', font = cd
 # 						xscrollcommand = function(...) tkset(xscr.cdtAcc,...),
 # 						yscrollcommand = function(...) tkset(yscr.cdtAcc,...))
 
-txta.cdtAcc <- tktext(frame_msg, bg = "white", font = "courier", cursor="", wrap = "word", height = 8, width = wcdtAccInfo)
+txta.cdtAcc <- tktext(frame_msg, bg = "white", font = "courier", cursor = "", wrap = "word", height = 8, width = wcdtAccInfo)
 tktag.configure(txta.cdtAcc, "cdtfont4f", font = cdtfont4)
 tktag.configure(txta.cdtAcc, "welcome", font = cdtfont5, foreground = 'blue4', justify = 'center')
 

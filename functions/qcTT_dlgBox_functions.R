@@ -420,7 +420,7 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 
 	tkconfigure(bt.opt.OK, command = function(){
 		if(tclvalue(file.choix1a) == ""){
-			tkmessageBox(message = "Choose the file to control", icon = "warning", type = "ok")
+			tkmessageBox(message = "Select the file to control", icon = "warning", type = "ok")
 		}else if(tclvalue(cb.1series.val) == "1" & tclvalue(rbffrmt) == "1" &
 					tclvalue(cb.const.val) == "1" & tclvalue(file.choix1b) == ""){
 			msgtxtn <- if(tclvalue(vartxtn) == "1") 'Tmin' else  'Tmax'
@@ -437,7 +437,7 @@ qc.get.info.txtn <- function(parent.win, GeneralParameters){
 						icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else if(tclvalue(file.save1) == "" | tclvalue(file.save1) == "NA"){
-			tkmessageBox(message = "Choose a directory to save results", icon = "warning", type = "ok")
+			tkmessageBox(message = "Enter a directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{
 			donne <- getStnOpenData(file.choix1a)

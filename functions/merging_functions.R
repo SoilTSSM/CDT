@@ -106,6 +106,8 @@ quantile.mapping.BGamma <- function(x, pars.stn, pars.rfe, rfe.zero){
 
 ##############################
 ## Fit linear model
+## See http://rsnippets.blogspot.com/2013/12/speeding-up-model-bootstrapping-in-gnu-r.html
+
 fitLM.fun.RR <- function(df, min.len){
 	# df <- na.omit(df)
 	df <- df[!is.na(df$stn) & !is.na(df$rfe), , drop = FALSE]

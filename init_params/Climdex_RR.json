@@ -1,0 +1,67 @@
+{
+    // Type of data:  
+    // "series": One station series
+    // "cdt": CDT data format
+    // "netcdf": NetCDF gridded data
+    "data.type": "cdt",
+
+    // Input and Output files/directory
+    "IO.files": [{
+        // Full path to the directory of netcdf data
+        // or file containing the data
+        "In.dir.file": "",
+        // Full path to the directory  or file to save results
+        "Out.dir.file": ""
+    }],
+
+    "baseYear": [{
+        // Start year of the base period
+        "start.year": 1981,
+        // End year of the base period
+        "end.year": 2010
+    }],
+
+    "Indices": [{
+        // Monthly maximum 1-day precipitation
+        "Rx1day": true,
+        // Monthly maximum consecutive 5-day precipitation
+        "Rx5day": true,
+        // Simple pricipitation intensity index
+        "SDII": true,
+        // Annual count of days when PRCP ≥ 10mm
+        "R10mm": true,
+        // Annual count of days when PRCP ≥ 20mm
+        "R20mm": true,
+        // Annual count of days when PRCP ≥ nnmm 
+        "Rnnmm": true,
+        // Maximum length of dry spell
+        "CDD": true,
+        // Maximum length of wet spell
+        "CWD": true,
+        // Annual total PRCP when RR > 95th percentile
+        "R95pTOT": true,
+        // Annual total PRCP when RR > 99th percentile
+        "R99pTOT": true,
+        // Annual total precipitation in wet days
+        "PRCPTOT": true,
+        // User defined threshold (mm)
+        "thres.Rnnmm": 25
+    }],
+    "One.series": [{
+        // Series format, 1: one variable, 3: 3 variables (Rain, Tmax, Tmin)
+        "file.format": "1",
+        // Date format, 1: grouped (YYYYMMDD), 3: separated (YYYY MM DD)
+        "date.format": "1"
+    }],
+    "ncdf.file": [{
+        // daily rainfall data sample filename
+        "sample": "",
+        "format": "rr_mrg_%s%s%s_CLM.nc",
+        "start.year": 1983,
+        "start.mon": 1,
+        "start.day": 1,
+        "end.year": 2015,
+        "end.mon": 12,
+        "end.day": 31
+    }]
+}

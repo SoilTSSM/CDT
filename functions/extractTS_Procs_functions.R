@@ -1,1010 +1,1193 @@
-getExtractDataFun <- function(retExtractParams){
+ExtractDataProcs <- function(GeneralParameters){
+	start.year <- GeneralParameters$date.range$start.year
+	start.mon <- GeneralParameters$date.range$start.mon
+	start.day <- GeneralParameters$date.range$start.day
+	end.year <- GeneralParameters$date.range$end.year
+	end.mon <- GeneralParameters$date.range$end.mon
+	end.day <- GeneralParameters$date.range$end.day
+	startMonth <- GeneralParameters$date.range$start.month
+	endMonth <- GeneralParameters$date.range$end.month
 
-	TSClimatologyFun <- function(){
-		if(calc.anomaly == "1"){
-			xanom <- data.frame(xtmp.clim,  stringsAsFactors = FALSE)
-			xdates <- as.character(xanom[, 1])
-			xanom <- as.numeric(xanom[, 2])
-			if(period1 %in% c('daily', 'dekadal', 'monthly')){
-				comp.fun <- paste('anomaly', period1, sep = '.')
-				comp.fun <- match.fun(comp.fun)
-				xanom <- comp.fun(xanom, xdates)
-
-				xanom <- xanom[as.numeric(substr(xdates, 5, 6))%in%id.mois]
-			}else{
-				xanom <- xanom-mean(xanom, na.rm = TRUE)
-			}
-			xanom <- round(xanom, 1)
-			xanom[is.na(xanom) | is.nan(xanom)] <- -9999
-			if(is.cpt){
-				cptIn <- list(freqOut = period2, xdon = matrix(xanom, ncol = 1), xdates = xdates,
-								xlon = headinfo[2], xlat = headinfo[3], xid = headinfo[1],
-								varid = varid, units = units, miss.val = -9999)
-				cptOut <- do.call(getDataCPT.Station, cptIn)
-				cat(cptOut, file = out2sav.anom)
-			}else{
-				xtmp[-(1:3), -1] <- xanom
-				writeFiles(xtmp, out2sav.anom)
-			}
-		}
-
-		if(calc.stanomaly == "1"){
-			xstanom <- data.frame(xtmp.clim,  stringsAsFactors = FALSE)
-			xdates <- as.character(xstanom[, 1])
-			xstanom <- as.numeric(xstanom[, 2])
-			if(period1 %in% c('daily', 'dekadal', 'monthly')){
-				comp.fun <- paste('standard', period1, sep = '.')
-				comp.fun <- match.fun(comp.fun)
-				xstanom <- comp.fun(xstanom, xdates)
-
-				xstanom <- xstanom[as.numeric(substr(xdates, 5, 6))%in%id.mois]
-			}else{
-				xstanom <- (xstanom-mean(xstanom, na.rm = TRUE))/sd(xstanom, na.rm = TRUE)
-			}
-			xstanom[is.na(xstanom) | is.nan(xstanom)] <- -9999
-			xstanom <- round(xstanom, 2)
-
-			if(is.cpt){
-				cptIn <- list(freqOut = period2, xdon = matrix(xstanom, ncol = 1), xdates = xdates,
-								xlon = headinfo[2], xlat = headinfo[3], xid = headinfo[1],
-								varid = varid, units = units, miss.val = -9999)
-				cptOut <- do.call(getDataCPT.Station, cptIn)
-				cat(cptOut, file = out2sav.stanom)
-			}else{
-				xtmp[-(1:3), -1] <- xstanom
-				writeFiles(xtmp, out2sav.stanom)
-			}
-		}
-
-		if(calc.climato == "1"){
-			xclim <- data.frame(xtmp.clim,  stringsAsFactors = FALSE)
-			xdates <- as.character(xclim[, 1])
-			xclim <- as.numeric(xclim[, 2])
-			if(period1 %in% c('daily', 'dekadal', 'monthly')){
-				comp.fun <- paste('climato', period1, sep = '.')
-				comp.fun <- match.fun(comp.fun)
-				xclim <- comp.fun(xclim, xdates, 'mean')
-				xclim <- round(xclim, 1)
-				
-				if(period1 == 'daily') ijmo <- which(as.numeric(format(seq(as.Date('2014-1-1'), by = 'day', length.out = 365), '%m'))%in%id.mois)
-				if(period1 == 'dekadal') ijmo <- which(rep(1:12, each = 3)%in%id.mois)
-				if(period1 == 'monthly') ijmo <- id.mois
-	
-				xclim[is.na(xclim) | is.nan(xclim)] <- miss.val
-				if(is.cpt){
-					cptIn <- list(freqOut = period2, xdon = matrix(xclim, ncol = 1), xdates = ijmo,
-									xlon = headinfo[2], xlat = headinfo[3], xid = headinfo[1],
-									varid = varid, units = units, miss.val = miss.val)
-					cptOut <- do.call(getDataCPTclim.Station, cptIn)
-				}else{
-					xclim <- xclim[ijmo]
-					xclim <- t(cbind(t(xtmp[1:3, ]), t(cbind(ijmo, xclim))))
-				}
-			}else{
-				xclim <- data.frame(xtmp.clim,  stringsAsFactors = FALSE)
-				xdates <- as.character(xclim[, 1])
-				xclim <- as.numeric(xclim[, 2])
-
-				xclim <- mean(xclim, na.rm = TRUE)
-				xclim <- round(xclim, 1)
-				xclim[is.na(xclim) | is.nan(xclim)] <- miss.val
-				if(period1 == 'yearly') ijdate <- paste(c(xdates[1], xdates[length(xdates)]), collapse = '_')
-				else ijdate <- paste(sapply(strsplit(strsplit(xdates[1], '_')[[1]], '-'), tail, n = 1), collapse = '_')
-				if(is.cpt){
-					cptIn <- list(freqOut = period2, xdon = matrix(xclim, nrow = 1), xdates = ijdate,
-									xlon = headinfo[2], xlat = headinfo[3], xid = headinfo[1],
-									varid = varid, units = units, miss.val = miss.val)
-					cptOut <- do.call(getDataCPTclim.Station, cptIn)
-				}else{
-					xtmp[4, -1] <- xclim
-					xclim <- xtmp[1:4, ]
-					xclim[4, 1] <- ijdate
-				}
-			}
-
-			if(is.cpt) cat(cptOut, file = out2sav.clim)
-			else writeFiles(xclim, out2sav.clim)
-		}
-	}
-
-	##########################
-
-	CDTClimatologyFun <- function(){
-		if(calc.anomaly == "1"){
-			xanom <- xtmp.clim
-			xdates <- as.character(xanom[, 1])
-			xanom <- apply(xanom[, -1], 2, as.numeric)
-			if(period1 %in% c('daily', 'dekadal', 'monthly')){
-				comp.fun <- paste('anomaly', period1 , sep = '.') 
-				comp.fun <- match.fun(comp.fun)
-
-				xanom <- apply(xanom, 2, comp.fun, dates = xdates)
-				xanom <- xanom[as.numeric(substr(xdates, 5, 6))%in%id.mois, , drop = FALSE]
-			}else{
-				xanom <- t(t(xanom)-apply(xanom, 2, mean, na.rm = TRUE))
-			}
-			xanom <- round(xanom, 1)
-			xanom[is.na(xanom) | is.nan(xanom)] <- -9999
-
-			if(is.cpt){
-				cptIn <- list(freqOut = period2, xdon = xanom, xdates = xdates,
-								xlon = headinfo[, 2], xlat = headinfo[, 3], xid = headinfo[, 1],
-								varid = varid, units = units, miss.val = -9999)
-				cptOut <- do.call(getDataCPT.Station, cptIn)
-				cat(cptOut, file = out2sav.anom)
-			}else{
-				xtmp[-(1:3), -1] <- xanom
-				writeFiles(xtmp, out2sav.anom)
-			}
-		}
-
-		if(calc.stanomaly == "1"){
-			xstanom <- xtmp.clim
-			xdates <- as.character(xstanom[, 1])
-			xstanom <- apply(xstanom[, -1], 2, as.numeric)
-			if(period1 %in% c('daily', 'dekadal', 'monthly')){
-				comp.fun <- paste('standard', period1, sep = '.')
-				comp.fun <- match.fun(comp.fun)
-
-				xstanom <- apply(xstanom, 2, comp.fun, dates = xdates)
-				xstanom <- xstanom[as.numeric(substr(xdates, 5, 6))%in%id.mois, , drop = FALSE]
-			}else{
-				xstanom <- t((t(xstanom)-apply(xstanom, 2, mean, na.rm = TRUE))/apply(xstanom, 2, sd, na.rm = TRUE))
-			}
-			xstanom[is.na(xstanom) | is.nan(xstanom)] <- -9999
-			xstanom <- round(xstanom, 2)
-
-			if(is.cpt){
-				cptIn <- list(freqOut = period2, xdon = xstanom, xdates = xdates,
-								xlon = headinfo[, 2], xlat = headinfo[, 3], xid = headinfo[, 1],
-								varid = varid, units = units, miss.val = -9999)
-				cptOut <- do.call(getDataCPT.Station, cptIn)
-				cat(cptOut, file = out2sav.stanom)
-			}else{
-				xtmp[-(1:3), -1] <- xstanom
-				writeFiles(xtmp, out2sav.stanom)
-			}
-		}
-
-		if(calc.climato == "1"){
-			xclim <- xtmp.clim
-			xdates <- as.character(xclim[, 1])
-			xclim <- apply(xclim[, -1], 2, as.numeric)
-			if(period1 %in% c('daily', 'dekadal', 'monthly')){
-				comp.fun <- paste('climato', period1, sep = '.')
-				comp.fun <- match.fun(comp.fun)
-
-				xclim <- apply(xclim, 2, comp.fun, dates = xdates, fun = 'mean')
-				xclim <- round(xclim, 1)
-				if(period1 == 'daily') ijmo <- which(as.numeric(format(seq(as.Date('2014-1-1'), by = 'day', length.out = 365), '%m'))%in%id.mois)
-				if(period1 == 'dekadal') ijmo <- which(rep(1:12, each = 3)%in%id.mois)
-				if(period1 == 'monthly') ijmo <- id.mois
-				
-				xclim[is.na(xclim) | is.nan(xclim)] <- miss.val
-				if(is.cpt){
-					cptIn <- list(freqOut = period2, xdon = xclim, xdates = ijmo,
-									xlon = headinfo[, 2], xlat = headinfo[, 3], xid = headinfo[, 1],
-									varid = varid, units = units, miss.val = miss.val)
-					cptOut <- do.call(getDataCPTclim.Station, cptIn)
-				}else{
-					xclim <- xclim[ijmo, , drop = FALSE]
-					xclim <- t(cbind(t(xtmp[1:3, ]), t(cbind(ijmo, xclim))))
-				}
-			}else{
-				xclim <- apply(xclim, 2, mean, na.rm = TRUE)
-				xclim <- round(xclim, 1)
-				xclim[is.na(xclim) | is.nan(xclim)] <- miss.val
-				if(period1 == 'yearly') ijdate <- paste(c(xdates[1], xdates[length(xdates)]), collapse = '_')
-				else ijdate <- paste(sapply(strsplit(strsplit(xdates[1], '_')[[1]], '-'), tail, n = 1), collapse = '_')
-				if(is.cpt){
-					cptIn <- list(freqOut = period2, xdon = matrix(xclim, nrow = 1), xdates = ijdate,
-									xlon = headinfo[, 2], xlat = headinfo[, 3], xid = headinfo[, 1],
-									varid = varid, units = units, miss.val = miss.val)
-					cptOut <- do.call(getDataCPTclim.Station, cptIn)
-				}else{
-					xtmp[4, -1] <- xclim
-					xclim <- xtmp[1:4, ]
-					xclim[4, 1] <- ijdate
-				}
-			}
-
-			if(is.cpt) cat(cptOut, file = out2sav.clim)
-			else writeFiles(xclim, out2sav.clim)
-		}
-	}
-
-	##########################
-
-	ListDataClimatologyFun <- function(){
-		if(calc.anomaly == "1"){
-			xRVAL <- xtmp.clim
-			if(period1 %in% c('daily', 'dekadal', 'monthly')){
-				comp.fun <- paste('anomaly.', period1, '_lstOmat', sep = '')
-				comp.fun <- match.fun(comp.fun)
-
-				xRVAL <- comp.fun(xRVAL, daty.clim)
-				xRVAL <- lapply(xRVAL, round, 1)
-				xRVAL <- xRVAL[as.numeric(substr(daty.clim, 5, 6))%in%id.mois]
-			}else{
-				cmoy <- apply(simplify2array(xRVAL), 1:2, mean, na.rm = TRUE)
-				xRVAL <- lapply(xRVAL, function(x) round(x-cmoy, 1))
-				rm(cmoy)
-			}
-
-			xRVAL <- lapply(xRVAL, function(x){
-				x[is.na(x) | is.nan(x)] <- -9999
-				x
-			})
-
-			fileout.anom <- file.path(dirname(fileout), paste('Anomalies_', basename(fileout), sep = ''))
-
-			if(is.cpt){
-				cptIn <- list(freqOut = period2, xdon = xRVAL, xdates = outdonne$out$date,
-								xlon = rlon[, 1], xlat = rlat[1, ], 
-								varid = varid, units = units, miss.val = -9999)
-				cptOut <- do.call(getDataCPT.GRDdata, cptIn)
-				cat(cptOut, file = fileout.anom)
-			}else{
-				writeFilesListData(xRVAL, outdonne$out$date, capdate, fileout.anom, out2sav.anom)
-			}
-		}
-
-		if(calc.stanomaly == "1"){
-			xRVAL <- xtmp.clim
-			if(period1 %in% c('daily', 'dekadal', 'monthly')){
-				comp.fun <- paste('standard.', period1, '_lstOmat', sep = '')
-				comp.fun <- match.fun(comp.fun)
-
-				xRVAL <- comp.fun(xRVAL, daty.clim)
-				xRVAL <- lapply(xRVAL, round, 2)
-				xRVAL <- xRVAL[as.numeric(substr(daty.clim, 5, 6))%in%id.mois]
-			}else{
-					cmoy <- apply(simplify2array(xRVAL), 1:2, mean, na.rm = TRUE)
-					csd <- apply(simplify2array(xRVAL), 1:2, sd, na.rm = TRUE)
-					xRVAL <- lapply(xRVAL, function(x) round((x-cmoy)/csd, 1))
-					rm(cmoy, csd)
-			}
-
-			xRVAL <- lapply(xRVAL, function(x){
-				x[is.na(x) | is.nan(x)] <- -9999
-				x
-			})
-
-			fileout.stanom <- file.path(dirname(fileout), paste('StandardizedAnomalies_', basename(fileout), sep = ''))
-
-			if(is.cpt){
-				cptIn <- list(freqOut = period2, xdon = xRVAL, xdates = outdonne$out$date,
-								xlon = rlon[, 1], xlat = rlat[1, ], 
-								varid = varid, units = units, miss.val = -9999)
-				cptOut <- do.call(getDataCPT.GRDdata, cptIn)
-				cat(cptOut, file = fileout.stanom)
-			}else{
-				writeFilesListData(xRVAL, outdonne$out$date, capdate, fileout.stanom, out2sav.stanom)
-			}
-		}
-
-		if(calc.climato == "1"){
-			xRVAL <- xtmp.clim
-			if(period1 %in% c('daily', 'dekadal', 'monthly')){
-				comp.fun <- paste('climato.', period1, '_lstOmat', sep = '')
-				comp.fun <- match.fun(comp.fun)
-
-				xRVAL <- comp.fun(xRVAL, daty.clim, fun = 'mean')
-				xRVAL <- lapply(xRVAL, round, 1)
-
-				if(period1 == 'daily') ijmo <- which(as.numeric(format(seq(as.Date('2014-1-1'), by = 'day', length.out = 365), '%m'))%in%id.mois)
-				if(period1 == 'dekadal') ijmo <- which(rep(1:12, each = 3)%in%id.mois)
-				if(period1 == 'monthly') ijmo <- id.mois
-				xRVAL <- lapply(xRVAL, function(x){
-					x[is.na(x) | is.nan(x)] <- miss.val
-					x
-				})
-
-				if(is.cpt){
-					cptIn <- list(freqOut = period2, xdon = xRVAL, xdates = ijmo,
-									xlon = rlon[, 1], xlat = rlat[1, ], 
-									varid = varid, units = units, miss.val = -9999)
-					cptOut <- do.call(getDataCPTclim.GRDdata, cptIn)
-					cat(cptOut, file = out2sav.clim)
-				}else{
-					xRVAL <- xRVAL[ijmo]
-					fileout.clim <- file.path(dirname(fileout[1]), paste('Climatologies_Output_', ijmo, '.', file_ext(basename(fileout[1])), sep = ''))
-					capdate <- paste('DATE:', ijmo)
-					writeFilesListData(xRVAL, ijmo, capdate, fileout.clim, out2sav.clim)
-				}
-			}else{
-				xRVAL <- round(apply(simplify2array(xRVAL), 1:2, mean, na.rm = TRUE), 1)
-				xRVAL[is.na(xRVAL) | is.nan(xRVAL)] <- miss.val
-
-				if(period1 == 'yearly') daty <- paste(c(daty.clim[1], daty.clim[length(daty.clim)]), collapse = '_')
-				else daty <- paste(sapply(strsplit(strsplit(daty.clim[1], '_')[[1]], '-'), tail, n = 1), collapse = '_')
-				
-				if(is.cpt){
-					cptIn <- list(freqOut = period2, xdon = xRVAL, xdates = daty,
-									xlon = rlon[, 1], xlat = rlat[1, ], 
-									varid = varid, units = units, miss.val =miss.val)
-					cptOut <- do.call(getDataCPTclim1.GRDdata, cptIn)
-					cat(cptOut, file = out2sav.clim)
-				}else{
-					fileout.clim <- file.path(dirname(fileout), paste('Climatologies_', daty, '.', file_ext(fileout), sep = ''))[1]
-					capdate <- paste('DATE:', daty)
-					writeFilesListData(xRVAL, daty, capdate, fileout.clim, out2sav.clim)
-				}
-			}
-		}
-	}
-
-	##########################
-
-	writeFilesListData <- function(RVAL, daty, capdate, fileout1, out2sav1){
-		if(ChoixOutType == '1'){
-			if(is.list(RVAL)){
-				for(j in seq_along(RVAL)){
-					writeFiles('Longitude', file = fileout1[j], append = TRUE)
-					writeFiles(rlon, file = fileout1[j], append = TRUE)
-					writeFiles('Latitude', file = fileout1[j], append = TRUE)
-					writeFiles(rlat, file = fileout1[j], append = TRUE)
-					writeFiles(capdate[j], file = fileout1[j], append = TRUE)
-					xtmp <- round(RVAL[[j]], 1)
-					xtmp[is.na(xtmp)] <- miss.val
-					writeFiles(xtmp, file = fileout1[j], append = TRUE)
-				}
-			}else{
-				writeFiles('Longitude', file = fileout1, append = TRUE)
-				writeFiles(rlon, file = fileout1, append = TRUE)
-				writeFiles('Latitude', file = fileout1, append = TRUE)
-				writeFiles(rlat, file = fileout1, append = TRUE)
-				writeFiles(capdate, file = fileout1, append = TRUE)
-				xtmp <- round(RVAL, 1)
-				xtmp[is.na(xtmp)] <- miss.val
-				writeFiles(xtmp, file = fileout1, append = TRUE)
-			}
-		}
-
-		if(ChoixOutType == '2'){
-			writeFiles('Longitude', file = out2sav1, append = TRUE)
-			writeFiles(rlon, file = out2sav1, append = TRUE)
-			writeFiles('Latitude', file = out2sav1, append = TRUE)
-			writeFiles(rlat, file = out2sav1, append = TRUE)
-			if(is.list(RVAL)){
-				for(j in seq_along(RVAL)){
-					writeFiles(capdate[j], file = out2sav1, append = TRUE)
-					xtmp <- round(RVAL[[j]], 1)
-					xtmp[is.na(xtmp)] <- miss.val
-					writeFiles(xtmp, file = out2sav1, append = TRUE)
-				}
-			}else{
-				writeFiles(capdate, file = out2sav1, append = TRUE)
-				xtmp <- round(RVAL, 1)
-				xtmp[is.na(xtmp)] <- miss.val
-				writeFiles(xtmp, file = out2sav1, append = TRUE)
-			}
-		}
-
-		if(ChoixOutType == '3'){
-			xlon <- rlon[, 1]
-			xlat <- as.numeric(rlat[1, ])
-			xcrds <- expand.grid(xlon, xlat, daty)
-			xcrds <- xcrds[, 3:1]
-			if(is.list(RVAL)) xdata <- round(unlist(RVAL), 1)
-			else xdata <- round(c(RVAL), 1)
-			xdata[is.na(xdata)] <- miss.val
-			xtmp <- cbind(xcrds, xdata)
-			writeFiles(xtmp, out2sav1)
-		}
-	}
-
-	######################################################################################################
-
-	period <- retExtractParams$freq
-	ncdir <- retExtractParams$ncdat$dir
-	ncfformat <- retExtractParams$ncdat$format
-
-	range.date <- as.numeric(str_trim(retExtractParams$dates))
-	yrs1 <- range.date[1]
-	mon1 <- range.date[2]
-	day1 <- range.date[3]
-	yrs2 <- range.date[4]
-	mon2 <- range.date[5]
-	day2 <- range.date[6]
-	usemon1 <- retExtractParams$usemon$start
-	usemon2 <- retExtractParams$usemon$end
-
-	outTS <- retExtractParams$out.ts
-	season1 <- retExtractParams$seasmon$start
-	season2 <- retExtractParams$seasmon$end
-
-	aggfun <- retExtractParams$aggre$fun
-	missfrac <- as.numeric(retExtractParams$aggre$missfrac)
-
-	extType <- retExtractParams$area.type
-	xyrect <- as.numeric(retExtractParams$rect)
-	xminLon <- xyrect[1]
-	xmaxLon <- xyrect[2]
-	xminLat <- xyrect[3]
-	xmaxLat <- xyrect[4]
-
-	shpfl <- retExtractParams$shpdat$shpf
-	shpId <- retExtractParams$shpdat$attr
-	polyName <- retExtractParams$shpdat$id
-
-	spAvrg <- retExtractParams$sp.ave
-	out2sav <- retExtractParams$outdir
-	ChoixOutType <- retExtractParams$out.type
-	multiptspoly <- retExtractParams$polyg
-
-	calc.anomaly <- retExtractParams$climato$anom
-	calc.stanomaly <- retExtractParams$climato$stanom
-	calc.climato <- retExtractParams$climato$clim
-	pts.int <- abs(as.numeric(retExtractParams$pts.int))
-	pmLon <- pts.int[1]
-	pmLat <- pts.int[2]
-	is.cpt <- retExtractParams$is.cpt
-
-	confpath <- file.path(apps.dir, 'configure', 'configure_user.json')
-	conffile <- fromJSON(confpath)
-	miss.val <- as.numeric(str_trim(conffile$missing.value))
+	xminLon <- GeneralParameters$Geom$minlon
+	xmaxLon <- GeneralParameters$Geom$maxlon
+	xminLat <- GeneralParameters$Geom$minlat
+	xmaxLat <- GeneralParameters$Geom$maxlat
+	xpadLon <- GeneralParameters$Geom$padlon
+	xpadLat <- GeneralParameters$Geom$padlat
 
 	####
-	outTsTable <- cbind(c('Daily', 'Dekadal', 'Monthly', '3-Months', '6-Months', 'Yearly'),
-						c('daily', 'dekadal', 'monthly', 'season3', 'season6', 'yearly'))
-	period1 <- outTsTable[outTsTable[, 1] == outTS, 2]
-	if(is.cpt) period2 <- ifelse(period1%in%c('season3', 'season6'), 'seasonal', period1)
-
-	####
-	if(is.na(yrs1) | is.na(mon1) | is.na(day1) | is.na(yrs2) | is.na(mon2) | is.na(day2)){
-		InsertMessagesTxt(main.txt.out, "Invalid date for time series extraction", format = TRUE)
+	outputDIR <- GeneralParameters$out.data$outdir
+	if(outputDIR == "" | outputDIR == "NA" | is.na(outputDIR)){
+		if(GeneralParameters$out.data$format == 'ncdf') msg <- "No directory to save the extracted data"
+		else msg <- "No File to save the extracted data"
+		InsertMessagesTxt(main.txt.out, msg, format = TRUE)
 		return(NULL)
 	}
 
-	####
-	if(period == 'Daily data'){
-		period0 <- 'daily'
-		daty1 <- try(as.Date(paste(yrs1, mon1, day1, sep = '-')), silent = TRUE)
-		daty2 <- try(as.Date(paste(yrs2, mon2, day2, sep = '-')), silent = TRUE)
-		if(inherits(daty1, "try-error") | inherits(daty2, "try-error")){
+	if(GeneralParameters$in.series %in% c("daily", "dekadal")){
+		if(is.na(start.year) | is.na(start.mon) | is.na(start.day) |
+			is.na(end.year) | is.na(end.mon) | is.na(end.day)){
 			InsertMessagesTxt(main.txt.out, "Invalid date for time series extraction", format = TRUE)
 			return(NULL)
 		}
-		dates <- format(seq(daty1, daty2, 'day'), '%Y%m%d')
-		ncfiles <- sprintf(ncfformat, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 8))
-	}
-
-	if(period == 'Dekadal data'){
-		period0 <- 'dekadal'
-		daty1 <- try(as.Date(paste(yrs1, mon1, day1, sep = '-')), silent = TRUE)
-		daty2 <- try(as.Date(paste(yrs2, mon2, day2, sep = '-')), silent = TRUE)
-		if(inherits(daty1, "try-error") | inherits(daty2, "try-error")){
+	}else{
+		if(is.na(start.year) | is.na(start.mon) | is.na(end.year) | is.na(end.mon)){
 			InsertMessagesTxt(main.txt.out, "Invalid date for time series extraction", format = TRUE)
 			return(NULL)
 		}
-		dates <- seq(daty1, daty2, 'day')
-		dates <- paste(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%Y%m'),
-					as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%d')), sep = '')
-		ncfiles <- sprintf(ncfformat, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 7))
 	}
 
-	if(period == 'Monthly data'){
-		period0 <- 'monthly'
-		daty1 <- try(as.Date(paste(yrs1, mon1, day1, sep = '-')), silent = TRUE)
-		daty2 <- try(as.Date(paste(yrs2, mon2, day2, sep = '-')), silent = TRUE)
-		if(inherits(daty1, "try-error") | inherits(daty2, "try-error")){
-			InsertMessagesTxt(main.txt.out, "Invalid date for time series extraction", format = TRUE)
+	if(GeneralParameters$in.series == "dekadal"){
+		if(GeneralParameters$date.range$start.day > 3 | GeneralParameters$date.range$end.day >3){
+			InsertMessagesTxt(main.txt.out, "Invalid dekad date", format = TRUE)
 			return(NULL)
 		}
-		dates <- format(seq(daty1, daty2, 'month'), '%Y%m')
-		ncfiles <- sprintf(ncfformat, substr(dates, 1, 4), substr(dates, 5, 6))
 	}
 
-	if(!file.exists(ncdir)){
-		InsertMessagesTxt(main.txt.out, "Directory containing NetCDF files does not exist", format = TRUE)
-		return(NULL)
+	####
+	if(GeneralParameters$type.series != 'rawts'){
+		if(!GeneralParameters$climato$all.years){
+			if(is.na(GeneralParameters$climato$start.year) | is.na(GeneralParameters$climato$end.year)){
+				InsertMessagesTxt(main.txt.out, "Invalid start and end of years for climatology calculation", format = TRUE)
+				return(NULL)
+			}
+		}
+		if(is.na(GeneralParameters$climato$min.year)){
+			InsertMessagesTxt(main.txt.out, "Invalid minimum number of year for climatology calculation", format = TRUE)
+			return(NULL)
+		}
+		if(GeneralParameters$in.series == "daily" & is.na(GeneralParameters$climato$winsize)){
+			InsertMessagesTxt(main.txt.out, "Invalid window size for climatology calculation", format = TRUE)
+			return(NULL)
+		}
 	}
 
-	###
-	dates0 <- dates
-	id.mois <- getMonthsInSeason(usemon1, usemon2)
-	imois <- as.numeric(substr(dates, 5, 6))%in%id.mois
-	dates <- dates[imois]
-	ncfiles <- ncfiles[imois]
-
-	ncpath <- file.path(ncdir, ncfiles, fsep = .Platform$file.sep)
-	existFl <- unlist(lapply(ncpath, file.exists))
-	if(!any(existFl)){
-		InsertMessagesTxt(main.txt.out, "Invalid filename format or date outside the range", format = TRUE)
-		return(NULL)
-	}
-
-	############
-	
-	id.seas <- getMonthsInSeason(season1, season2)
-	if(!all(id.seas%in%id.mois) & period1%in%c('season3', 'season6')){
-		InsertMessagesTxt(main.txt.out, "Selected months and season do not overlap", format = TRUE)
-		return(NULL)
-	}
-
-	if(extType == 'Point'){
+	####
+	if(GeneralParameters$type.extract == 'point'){
 		if(is.na(xminLon) | is.na(xminLat)){
 			InsertMessagesTxt(main.txt.out, "Invalid coordinates to extract", format = TRUE)
 			return(NULL)
 		}
 	}
 
-	if(extType == 'Rectangle'){
+	if(GeneralParameters$type.extract == 'rect'){
 		if(is.na(xminLon) | is.na(xmaxLon) | is.na(xminLat) | is.na(xmaxLat)){
 			InsertMessagesTxt(main.txt.out, "Invalid coordinates for the extraction", format = TRUE)
 			return(NULL)
 		}
 	}
 
-	if(extType == 'Polygon'){
-		shpf <- getShpOpenData(shpfl)[[2]]
+	if(GeneralParameters$type.extract %in% c('mpoint', 'mpoly')){
+		if(is.null(GeneralParameters$Geom$multiObj)){
+			if(GeneralParameters$type.extract == 'mpoint') InsertMessagesTxt(main.txt.out, "No selected points", format = TRUE)
+			if(GeneralParameters$type.extract == 'mpoly') InsertMessagesTxt(main.txt.out, "No selected polygons", format = TRUE)
+			return(NULL)
+		}
+
+		multiptspoly <- gsub("[\r]", "", GeneralParameters$Geom$multiObj)
+		multiptspoly <- str_trim(strsplit(multiptspoly, "[\n]")[[1]])
+		multiptspoly <- multiptspoly[multiptspoly != ""]
+		if(length(multiptspoly) == 0){
+			InsertMessagesTxt(main.txt.out, "No coordinates  or polygons found", format = TRUE)
+			return(NULL)
+		}
+	}
+
+	if(GeneralParameters$type.extract %in% c('poly', 'mpoly')){
+		shpf <- getShpOpenData(GeneralParameters$shp.file$shp)[[2]]
 		if(!is.null(shpf)){
-			shpf.union <- unionSpatialPolygons(shpf, as.character(shpf@data[, shpId]))
-			shpf.df <- aggregate(as(shpf, "data.frame")[, 1], list(as.character(shpf@data[, shpId])), identity)
+			shpf.union <- unionSpatialPolygons(shpf, as.character(shpf@data[, GeneralParameters$shp.file$attr]))
+			shpf.df <- aggregate(as(shpf, "data.frame")[, 1], list(as.character(shpf@data[, GeneralParameters$shp.file$attr])), identity)
 			shpf.df$x <- seq(shpf.union)
 			row.names(shpf.df) <- sapply(slot(shpf.union, "polygons"), function(x) slot(x, "ID"))
 			shpf.union <- SpatialPolygonsDataFrame(shpf.union, shpf.df)
-			regOI <- shpf.union[as.character(shpf.union@data$Group.1) == polyName, ]
-			bbxregOI <- bbox(regOI)
 		}else{
-			InsertMessagesTxt(main.txt.out, "Ceci ne devrait pas se produire", format = TRUE)
+			InsertMessagesTxt(main.txt.out, "No polygons found", format = TRUE)
 			return(NULL)
 		}
 	}
 
-	if(extType%in%c('Multiple Points', 'Multiple Polygons')){
-		if(!is.na(multiptspoly)){
-			multiptspoly <- gsub("[\r]", "", multiptspoly)
-			multiptspoly <- str_trim(strsplit(multiptspoly, "[\n]")[[1]])
-			multiptspoly <- multiptspoly[multiptspoly != ""]
-			if(length(multiptspoly) == 0){
-				InsertMessagesTxt(main.txt.out, "No coordinates found", format = TRUE)
-				return(NULL)
-			}
-			if(extType == 'Multiple Points'){
-				multiptspoly <- t(sapply(multiptspoly, function(x) strsplit(x, " ")[[1]]))
-				multiptspoly <- data.frame(multiptspoly, stringsAsFactors = FALSE)
-				rownames(multiptspoly) <- NULL
-				names(multiptspoly) <- c('id', 'x', 'y')
-				multiptspoly[, 2:3] <- apply(multiptspoly[, 2:3, drop = FALSE], 2, as.numeric)
-				headinfo <- multiptspoly
-			}
-
-			if(extType == 'Multiple Polygons'){
-				shpf <- getShpOpenData(shpfl)[[2]]
-				if(!is.null(shpf)){
-					shpf.union <- unionSpatialPolygons(shpf, as.character(shpf@data[, shpId]))
-					shpf.df <- aggregate(as(shpf, "data.frame")[, 1], list(as.character(shpf@data[, shpId])), identity)
-					shpf.df$x <- seq(shpf.union)
-					row.names(shpf.df) <- sapply(slot(shpf.union, "polygons"), function(x) slot(x, "ID"))
-					shpf.union <- SpatialPolygonsDataFrame(shpf.union, shpf.df)
-					regOI <- shpf.union[str_trim(shpf.union@data$Group.1)%in%multiptspoly, ]
-					bbxregOI <- bbox(regOI)
-					headinfo <- cbind(as.character(regOI@data$Group.1), round(coordinates(regOI), 5))
-					headinfo[, 1] <- substr(str_replace_all(headinfo[, 1], "[^[:alnum:]]", ""), 1, 15)
-				}
-			}
-		}else{
-			if(extType == 'Multiple Points') InsertMessagesTxt(main.txt.out, "No selected points", format = TRUE)
-			if(extType == 'Multiple Polygons') InsertMessagesTxt(main.txt.out, "No selected polygons", format = TRUE)
-			return(NULL)
-		}
+	####
+	if(GeneralParameters$in.series %in% c('daily', 'dekadal')){
+		daty1 <- try(as.Date(paste(start.year, start.mon, start.day, sep = '-')), silent = TRUE)
+		daty2 <- try(as.Date(paste(end.year, end.mon, end.day, sep = '-')), silent = TRUE)
 	}
 
-	###########################################################################################
+	if(GeneralParameters$in.series == 'monthly'){
+		daty1 <- try(as.Date(paste(start.year, start.mon, '01', sep = '-')), silent = TRUE)
+		daty2 <- try(as.Date(paste(end.year, end.mon, '01', sep = '-')), silent = TRUE)
+	}
 
-	if(calc.climato == "1") out2sav.clim <- file.path(dirname(out2sav), paste('Climatologies_', basename(out2sav), sep = ''))
-	if(calc.anomaly == "1") out2sav.anom <- file.path(dirname(out2sav), paste('Anomalies_', basename(out2sav), sep = ''))
-	if(calc.stanomaly == "1") out2sav.stanom <- file.path(dirname(out2sav), paste('StandardizedAnomalies_', basename(out2sav), sep = ''))
+	if(inherits(daty1, "try-error") | inherits(daty2, "try-error")){
+		InsertMessagesTxt(main.txt.out, "Invalid date for time series extraction", format = TRUE)
+		return(NULL)
+	}
 
-	###########################################################################################
+	####
+	if(GeneralParameters$in.series == 'daily'){
+		dates <- format(seq(daty1, daty2, 'day'), '%Y%m%d')
+		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 8))
+	}
 
-	nc <- nc_open(ncpath[existFl][1])
-	xlon <- nc$dim[[1]]$vals
-	xlat <- nc$dim[[2]]$vals
-	varid <- nc$var[[1]]$name
-	units <- nc$var[[1]]$units
-	xval <- ncvar_get(nc, varid = varid)
+	if(GeneralParameters$in.series == 'dekadal'){
+		dates <- seq(daty1, daty2, 'day')
+		dates <- paste(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%Y%m'),
+					as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%d')), sep = '')
+		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 7))
+	}
+
+	if(GeneralParameters$in.series == 'monthly'){
+		dates <- format(seq(daty1, daty2, 'month'), '%Y%m')
+		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6))
+	}
+
+	#####################################
+	seasonLength <- (endMonth-startMonth+1)%%12
+	seasonLength[seasonLength == 0] <- 12
+	monthtoExtr <- (startMonth:(startMonth+(seasonLength-1)))%%12
+	monthtoExtr[monthtoExtr == 0] <- 12
+
+	imois <-  as.numeric(substr(dates, 5, 6))%in%monthtoExtr
+	dates <- dates[imois]
+	ncfiles <- ncfiles[imois]
+
+	ncpath <- file.path(GeneralParameters$ncdf.file$dir, ncfiles)
+	existFl <- unlist(lapply(ncpath, file.exists))
+	if(!any(existFl)){
+		InsertMessagesTxt(main.txt.out, "Unable to locate netcdf files", format = TRUE)
+		return(NULL)
+	}
+
+	dates <- dates[existFl]
+	ncpath <- ncpath[existFl]
+
+	####
+	ncInfo <- getRFESampleData(GeneralParameters$ncdf.file$sample)
+	if(is.null(ncInfo)){
+		InsertMessagesTxt(main.txt.out, "No netcdf data sample file found", format = TRUE)
+		return(NULL)
+	}
+
+	#####################################
+	nc <- nc_open(ncpath[1])
+	lon <- nc$dim[[ncInfo$rfeILon]]$vals
+	lat <- nc$dim[[ncInfo$rfeILat]]$vals
+	nc.name <- ncInfo$rfeVarid
+	nc.longname <- nc$var[[nc.name]]$longname
+	nc.units <- nc$var[[nc.name]]$units
+	# nc.missval <- nc$var[[nc.name]]$missval
+	nc.prec <- nc$var[[nc.name]]$prec
+	## xval <- ncvar_get(nc, varid = nc.name)
 	nc_close(nc)
 
-	if(extType == 'Point'){
-		nx <- xlon[2]-xlon[1]
-		padx <- round(pmLon/nx)
-		ny <- xlat[2]-xlat[1]
-		pady <- round(pmLat/ny)
-		voisin <- expand.grid(x = xminLon + nx*(-padx:padx), y =  xminLat + ny*(-pady:pady))
+	xo <- order(lon)
+	lon <- lon[xo]
+	yo <- order(lat)
+	lat <- lat[yo]
 
-		iclo <- findInterval(voisin$x, xlon)
-		ilo <- iclo+(2 * voisin$x > xlon[iclo]+xlon[iclo+1])
-		icla <- findInterval(voisin$y, xlat)
-		ila <- icla+(2 * voisin$y > xlat[icla]+xlat[icla+1])
-		ilola <- !is.na(ilo) & !is.na(ila)
-		if(any(ilola)){
-			ilo <- ilo[ilola]
-			ila <- ila[ilola]
+	spxycrd <- expand.grid(x = lon, y = lat)
+	coordinates(spxycrd) <- ~x+y
+	spxycrd <- SpatialPixels(points = spxycrd, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
+
+	#####################################
+
+	parsextr <- list(xminLon, xminLat, xmaxLon, xmaxLat, xpadLon, xpadLat,
+					GeneralParameters$Geom$namePoly, GeneralParameters$Geom$multiObj,
+					GeneralParameters$shp.file$shp, GeneralParameters$shp.file$attr,
+					GeneralParameters$type.extract)
+
+	if(is.null(EnvExtractData$parsextr)){
+		extractGeom <- TRUE
+	}else{
+		extractGeom <- if(!isTRUE(all.equal(EnvExtractData$parsextr, parsextr))) TRUE else FALSE
+	}
+
+	if(extractGeom){
+		if(GeneralParameters$type.extract == 'point'){
+			if(is.na(xpadLon)){
+				InsertMessagesTxt(main.txt.out, "Pad lon is missing, no padding will be applied belong the longitude", format = TRUE)
+				xpadLon <- 0
+			}
+			if(is.na(xpadLat)){
+				InsertMessagesTxt(main.txt.out, "Pad lat is missing, no padding will be applied belong the latitude", format = TRUE)
+				xpadLat <- 0
+			}
+
+			headinfo <- cbind('Point', xminLon, xminLat)
+			nxy <- spxycrd@grid@cellsize
+			padx <- round(xpadLon/nxy[1])
+			pady <- round(xpadLat/nxy[2])
+			voisin <- expand.grid(x = xminLon + nxy[1]*(-padx:padx), y =  xminLat + nxy[2]*(-pady:pady))
+			coordinates(voisin) <- ~x+y
+			if(length(voisin) > 1) voisin <- SpatialPixels(points = voisin, tolerance = sqrt(sqrt(.Machine$double.eps)))
+			ij2xtr <- over(voisin, spxycrd)
+			if(!any(!is.na(ij2xtr))){
+				InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
+				return(NULL)
+			}
 		}
-	}else  if(extType == 'Multiple Points'){
-		ilo <- xlon >= (min(multiptspoly$x, na.rm = TRUE)-pmLon) & xlon <= (max(multiptspoly$x, na.rm = TRUE)+pmLon)
-		if(!any(ilo)){
-			InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
-			return(NULL)
+
+		if(GeneralParameters$type.extract == 'mpoint'){
+			if(is.na(xpadLon)){
+				InsertMessagesTxt(main.txt.out, "Pad lon is missing, no padding will be applied belong the longitude", format = TRUE)
+				xpadLon <- 0
+			}
+			if(is.na(xpadLat)){
+				InsertMessagesTxt(main.txt.out, "Pad lat is missing, no padding will be applied belong the latitude", format = TRUE)
+				xpadLat <- 0
+			}
+
+			multiptspoly <- t(sapply(multiptspoly, function(x) strsplit(x, " ")[[1]]))
+			multiptspoly <- data.frame(multiptspoly, stringsAsFactors = FALSE)
+			rownames(multiptspoly) <- NULL
+			names(multiptspoly) <- c('id', 'x', 'y')
+			multiptspoly[, 2:3] <- apply(multiptspoly[, 2:3, drop = FALSE], 2, as.numeric)
+			headinfo <- multiptspoly
+
+			nxy <- spxycrd@grid@cellsize
+			padx <- round(xpadLon/nxy[1])
+			pady <- round(xpadLat/nxy[2])
+			voisin <- lapply(seq(nrow(multiptspoly)), function(j){
+							xy <- expand.grid(x = multiptspoly[j, 'x'] + nxy[1]*(-padx:padx),
+											y =  multiptspoly[j, 'y'] + nxy[2]*(-pady:pady))
+							coordinates(xy) <- ~x+y
+							if(length(xy) > 1) xy <- SpatialPixels(points = xy, tolerance = sqrt(sqrt(.Machine$double.eps)))
+							return(xy)
+						})
+			ij2xtr <- lapply(voisin, over, y = spxycrd)
+			if(all(sapply(ij2xtr, function(x) !any(!is.na(x))))){
+				InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
+				return(NULL)
+			}
 		}
 
-		iloL <- which(ilo)
-		if(iloL[1] > 1) ilo[iloL[1]-1] <- TRUE
-		if(iloL[length(iloL)] < length(ilo)) ilo[iloL[length(iloL)]+1] <- TRUE
-		rlon <- xlon[ilo]
+		if(GeneralParameters$type.extract == 'rect'){
+			rectPoly <- Polygon(cbind(c(xminLon, xmaxLon, xmaxLon, xminLon, xminLon),
+									c(xminLat, xminLat, xmaxLat, xmaxLat, xminLat)))
+			rectPoly <- Polygons(list(rectPoly), "p1")
+			rectPoly <- SpatialPolygons(list(rectPoly), 1:1)
+			headinfo <- NULL
 
-		ila <- xlat >= (min(multiptspoly$y, na.rm = TRUE)-pmLat) & xlat <= (max(multiptspoly$y, na.rm = TRUE)+pmLat)
-		if(!any(ila)){
-			InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
-			return(NULL)
+			polyRas <- spxycrd
+			polyRas$z <- seq_along(spxycrd)
+			polyRas <- raster(polyRas)
+			ij2xtr <- extract(polyRas, rectPoly, weights = TRUE, normalizeWeights = TRUE, cellnumbers = TRUE)
+			if(is.null(ij2xtr[[1]])){
+				InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
+				return(NULL)
+			}
 		}
-		ilaL <- which(ila)
-		if(ilaL[1] > 1) ila[ilaL[1]-1] <- TRUE
-		if(ilaL[length(ilaL)] < length(ila)) ila[ilaL[length(ilaL)]+1] <- TRUE
-		rlat <- xlat[ila]
 
-		sptNC <- expand.grid(x = rlon, y = rlat)
-		coordinates(sptNC) <- ~x+y
-		sptNC <- SpatialPixels(points = sptNC, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
-		nx <- sptNC@grid@cellsize[1]
-		padx <- round(pmLon/nx)
-		ny <- sptNC@grid@cellsize[2]
-		pady <- round(pmLat/ny)
+		if(GeneralParameters$type.extract == 'poly'){
+			shpf.regOI <- shpf.union[str_trim(shpf.union@data$Group.1) == GeneralParameters$Geom$namePoly, ]
+			headinfo <- NULL
 
-		pts.loc <- multiptspoly[, c('x', 'y'), drop = FALSE]
-		pts.w.voisin <- lapply(1:nrow(pts.loc), function(j){
-			voisin <- expand.grid(x = pts.loc$x[j] + nx*(-padx:padx), y =  pts.loc$y[j] + ny*(-pady:pady))
-			cbind(voisin, j)
+			polyRas <- spxycrd
+			polyRas$z <- seq_along(spxycrd)
+			polyRas <- raster(polyRas)
+			ij2xtr <- extract(polyRas, shpf.regOI, weights = TRUE, normalizeWeights = TRUE, cellnumbers = TRUE)
+			if(is.null(ij2xtr[[1]])){
+				InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
+				return(NULL)
+			}
+		}
+
+		if(GeneralParameters$type.extract == 'mpoly'){
+			shpf.regOI <- shpf.union[str_trim(shpf.union@data$Group.1)%in%multiptspoly, ]
+			headinfo <- cbind(as.character(shpf.regOI@data$Group.1), round(coordinates(shpf.regOI), 5))
+			headinfo[, 1] <- substr(str_replace_all(headinfo[, 1], "[^[:alnum:]]", ""), 1, 15)
+
+			polyRas <- spxycrd
+			polyRas$z <- seq_along(spxycrd)
+			polyRas <- raster(polyRas)
+			ij2xtr <- extract(polyRas, shpf.regOI, weights = TRUE, normalizeWeights = TRUE, cellnumbers = TRUE)
+			if(all(sapply(ij2xtr, is.null))){
+				InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
+				return(NULL)
+			}
+		}
+
+		EnvExtractData$parsextr <- parsextr
+		EnvExtractData$ij2xtr <- ij2xtr
+		EnvExtractData$headinfo <- headinfo
+	}else{
+		ij2xtr <- EnvExtractData$ij2xtr
+		headinfo <- EnvExtractData$headinfo
+	}
+
+	#####################################
+
+	infoFiles <- c(GeneralParameters$ncdf.file$dir, GeneralParameters$ncdf.file$format)
+	if(!is.null(EnvExtractData$cdtdata)){
+		iexist <- dates%in%EnvExtractData$cdtdata$dates
+		if(all(iexist)){
+			if(!isTRUE(all.equal(EnvExtractData$infoFiles, infoFiles))){
+				readNCDFdata <- TRUE
+				EnvExtractData$cdtdata <- NULL
+			}else readNCDFdata <- FALSE
+		}else{
+			if(any(iexist) & isTRUE(all.equal(EnvExtractData$infoFiles, infoFiles))){
+				dates <- dates[!iexist]
+				ncpath <- ncpath[!iexist]
+			}else EnvExtractData$cdtdata <- NULL
+			readNCDFdata <- TRUE
+		}
+	}else readNCDFdata <- TRUE
+
+	if(readNCDFdata){
+		InsertMessagesTxt(main.txt.out, 'Read netcdf data ...')
+		if(doparallel & length(ncpath) >= 180){
+			klust <- makeCluster(nb_cores)
+			registerDoParallel(klust)
+			`%parLoop%` <- `%dopar%`
+			closeklust <- TRUE
+		}else{
+			`%parLoop%` <- `%do%`
+			closeklust <- FALSE
+		}
+
+		toExport <- c("xo", "yo", "ncpath", "ncInfo")
+		ncData <- foreach(jj = seq_along(ncpath), .packages = "ncdf4", .export = toExport) %parLoop% {
+			nc <- nc_open(ncpath[jj])
+			vars <- ncvar_get(nc, varid = ncInfo$rfeVarid)
+			nc_close(nc)
+			vars <- vars[xo, yo]
+			if(ncInfo$rfeILat < ncInfo$rfeILon){
+				vars <- matrix(c(vars), nrow = length(xo), ncol = length(yo), byrow = TRUE)
+			}
+			vars
+		}
+		if(closeklust) stopCluster(klust)
+		InsertMessagesTxt(main.txt.out, 'Reading netcdf data finished')
+
+		xycrd <- expand.grid(x = lon, y = lat)
+		cdtdata <- list(lon = xycrd$x,
+						lat = xycrd$y,
+						dates = dates,
+						data = t(sapply(ncData, c)))
+		rm(ncData)
+		cdtdata$dates <- c(EnvExtractData$cdtdata$dates, cdtdata$dates)
+		cdtdata$data <- rbind(EnvExtractData$cdtdata$data, cdtdata$data)
+		odaty <- order(cdtdata$dates)
+		cdtdata$dates <- cdtdata$dates[odaty]
+		cdtdata$data <- cdtdata$data[odaty, , drop = FALSE]
+		EnvExtractData$cdtdata <- cdtdata
+		EnvExtractData$infoFiles <- infoFiles
+	}else cdtdata <- EnvExtractData$cdtdata
+
+	#####################################
+
+	if(GeneralParameters$type.extract == 'point'){
+		ij2xtr <- ij2xtr[!is.na(ij2xtr)]
+		DATAext <- cdtdata$data[, ij2xtr, drop = FALSE]
+		if(length(ij2xtr) > 1) DATAext <- matrix(base::rowMeans(DATAext, na.rm = TRUE), ncol = 1)
+	}
+
+	if(GeneralParameters$type.extract == 'mpoint'){
+		ij2xtr <- lapply(ij2xtr, function(x) x[!is.na(x)])
+		nonZero <- sapply(ij2xtr, length) > 0
+		ij2xtr <- ij2xtr[nonZero]
+
+		DATAext <- sapply(ij2xtr, function(ij){
+			MAT <- cdtdata$data[, ij, drop = FALSE]
+			if(length(ij) > 1) MAT <- matrix(base::rowMeans(MAT, na.rm = TRUE), ncol = 1)
+			MAT
 		})
-		pts.w.voisin <- do.call('rbind', pts.w.voisin)
-
-		if(pmLon > 0 | pmLat > 0){
-			coordinates(pts.w.voisin)<- ~x+y
-			pts.w.voisin$ijv <- unname(over(pts.w.voisin, geometry(sptNC)))
-			pts.w.voisin <- pts.w.voisin[!is.na(pts.w.voisin$ijv), ]
-		}else{
-			coordinates(pts.loc) <- ~x+y
-		}
-	}else if(extType == 'Multiple Polygons'){
-		ilo <- xlon >= bbxregOI[1, 1] & xlon <= bbxregOI[1, 2]
-		ila <- xlat >= bbxregOI[2, 1] & xlat <= bbxregOI[2, 2]
-		if(!any(ilo) | !any(ila)){
-			InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
-			return(NULL)
-		}
-		rlon <- xlon[ilo]
-		rlat <- xlat[ila]
-
-		rval <- xval[ilo, ila]
-		rval[] <- 1:prod(dim(rval))
-		sptNC <- expand.grid(x = rlon, y = rlat)
-		coordinates(sptNC) <- ~x+y
-		sptNC <- SpatialPixels(points = sptNC, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
-		sptNC$z <- c(rval)
-		sptNC <- raster(sptNC)
-		idmat <- extract(sptNC, regOI, weights = TRUE, normalizeWeights = TRUE, cellnumbers = TRUE)
-	}else{
-		if(extType == 'Rectangle'){
-			ilo <- xlon >= xminLon & xlon <= xmaxLon
-			ila <- xlat >= xminLat & xlat <= xmaxLat
-			if(!any(ilo) | !any(ila)){
-				InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
-				return(NULL)
-			}
-			rlon <- xlon[ilo]
-			rlat <- xlat[ila]
-			rval <- xval[ilo, ila]
-		}
-		if(extType == 'Polygon'){
-			ilo <- xlon >= bbxregOI[1, 1] & xlon <= bbxregOI[1, 2]
-			ila <- xlat >= bbxregOI[2, 1] & xlat <= bbxregOI[2, 2]
-			if(!any(ilo) | !any(ila)){
-				InsertMessagesTxt(main.txt.out, "No data to extract: Object outside data range", format = TRUE)
-				return(NULL)
-			}
-			rlon <- xlon[ilo]
-			rlat <- xlat[ila]
-
-			rval <- xval[ilo, ila]
-			rval[] <- 1:prod(dim(rval))
-			w.pix <- id.pix <- rval
-			w.pix[] <- id.pix[] <- NA
-			sptNC <- expand.grid(x = rlon, y = rlat)
-			coordinates(sptNC) <- ~x+y
-			sptNC <- SpatialPixels(points = sptNC, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
-			sptNC$z <- c(rval)
-			sptNC <- raster(sptNC)
-			idmat <- extract(sptNC, regOI, weights = TRUE, normalizeWeights = TRUE, cellnumbers = TRUE)
-			id.pix[idmat[[1]][, 2]] <- idmat[[1]][, 2]
-			w.pix[idmat[[1]][, 2]] <- idmat[[1]][, 3]
-			idmat <- list(id = id.pix, weight = w.pix)
+		if(!all(nonZero)){
+			DATAtmp <- matrix(NA, ncol = length(nonZero), nrow = nrow(DATAext))
+			DATAtmp[, nonZero] <- DATAext
+			DATAext <- DATAtmp
+			rm(DATAtmp)
 		}
 	}
 
-	######################
+	if(GeneralParameters$type.extract == 'rect'){
+		ij2xtr <- lapply(ij2xtr, function(x) x[order(x[, "value"]), , drop = FALSE])
+		# RAGNE (take all pixels)
+		# RANGEEDGES (only take full pixels)
+		# ij2xtr <- lapply(ij2xtr, function(x){
+		# 				mx <- x[, "weight"]
+		# 				x <- x[mx == max(mx), , drop = FALSE]
+		# 				x[, "weight"] <- 1/nrow(x)
+		# 				return(x)
+		# 			})
 
-	if(doparallel & length(ncpath[existFl]) >= 30){
-		klust <- makeCluster(nb_cores)
-		registerDoParallel(klust)
-		`%parLoop%` <- `%dopar%`
-		closeklust <- TRUE
-	}else{
-		`%parLoop%` <- `%do%`
-		closeklust <- FALSE
+		headinfo <- lapply(ij2xtr, function(x) reshapeXYZ2Matrix(cbind(spxycrd@coords[x[, 'value'], , drop = FALSE], seq(nrow(x)))))
+		headinfo <- headinfo[[1]]
+
+		DATAext <- cdtdata$data[, ij2xtr[[1]][, "value"], drop = FALSE]
+
+		if(GeneralParameters$out.data$sp.avrg){
+			nDAT <- nrow(DATAext)
+			nijt <- nrow(ij2xtr[[1]])
+			DATAext <- DATAext * rep(ij2xtr[[1]][, "weight"], rep(nDAT, nijt))
+			DATAext <- matrix(base::rowSums(DATAext, na.rm = TRUE), ncol = 1)
+			headinfo <- cbind('Rectangle', mean(headinfo$x), mean(headinfo$y))
+		}
 	}
-	NCDATA <- foreach(fl = seq_along(ncpath), .packages = 'ncdf4',
-					.export = c('ncpath', 'existFl')) %parLoop% {
-		if(!existFl[fl]) return(NULL)
-		nc <- try(nc_open(ncpath[fl]), silent = TRUE)
-		if(inherits(nc, "try-error")) return(NULL)
-		xval <- ncvar_get(nc, varid = nc$var[[1]]$name)
-		nc_close(nc)
-		return(xval)
+
+	if(GeneralParameters$type.extract == 'poly'){
+		ij2xtr <- lapply(ij2xtr, function(x) x[order(x[, "value"]), , drop = FALSE])
+		headinfo <- lapply(ij2xtr, function(x) reshapeXYZ2Matrix(cbind(spxycrd@coords[x[, 'value'], , drop = FALSE], seq(nrow(x)))))
+		headinfo <- headinfo[[1]]
+
+		DATAext <- cdtdata$data[, ij2xtr[[1]][, "value"], drop = FALSE]
+
+		if(GeneralParameters$out.data$sp.avrg){
+			nDAT <- nrow(DATAext)
+			nijt <- nrow(ij2xtr[[1]])
+			DATAext <- DATAext * rep(ij2xtr[[1]][, "weight"], rep(nDAT, nijt))
+			DATAext <- matrix(base::rowSums(DATAext, na.rm = TRUE), ncol = 1)
+			namepoly <- substr(str_replace_all(GeneralParameters$Geom$namePoly, "[^[:alnum:]]", ""), 1, 15)
+			headinfo <- cbind(namepoly, coordinates(shpf.regOI))
+		}
 	}
-	if(closeklust) stopCluster(klust)
 
-	######################
+	if(GeneralParameters$type.extract == 'mpoly'){
+		nonNull <- !sapply(ij2xtr, is.null)
+		ij2xtr <- ij2xtr[nonNull]
+		ij2xtr <- lapply(ij2xtr, function(x) x[order(x[, "value"]), , drop = FALSE])
 
-	RVAL <- lapply(NCDATA, function(xval){
-		if(is.null(xval)) return(NULL)
-		rval <- xval[ilo, ila]
-		if(extType == 'Point'){
-			if(!any(ilola)) rval <- NA
-			else{
-				if(length(ilo) > 1) rval <- mean(diag(rval), na.rm = TRUE)
+		nDAT <- nrow(cdtdata$data)
+
+		DATAext <- sapply(ij2xtr, function(ij){
+			MAT <- cdtdata$data[, ij[, "value"], drop = FALSE]
+			nijt <- nrow(ij)
+			if(nijt > 1){
+				MAT <- MAT * rep(ij[, "weight"], rep(nDAT, nijt))
+				MAT <- matrix(base::rowSums(MAT, na.rm = TRUE), ncol = 1)
 			}
-		}else if(extType == 'Multiple Points'){
-			if(pmLon > 0 | pmLat > 0) rval <- tapply(rval[pts.w.voisin$ijv], pts.w.voisin$j, mean, na.rm = TRUE)
-			else rval <- rval[unname(over(pts.loc, geometry(sptNC)))]
-		}else if(extType == 'Multiple Polygons'){
-			rval <- sapply(idmat, function(x) if(!is.null(x)) round(sum(rval[x[, 2]]*x[, 3], na.rm = TRUE), 1) else NA)
-		}else{
-			if(extType == 'Rectangle'){
-				if(spAvrg == '1'){
-					rval <- round(mean(rval, na.rm = TRUE), 1)
-					rval <- if(is.nan(rval)) NA else rval
-				}
-			}
-			if(extType == 'Polygon'){
-				rval[is.na(idmat$id)] <- NA
-				if(spAvrg == '1'){
-					rval <- round(sum(rval*idmat$weight, na.rm = TRUE))
-					rval <- if(is.nan(rval)) NA else rval
-				}
-			}
+			MAT
+		})
+
+		if(!all(nonNull)){
+			DATAtmp <- matrix(NA, ncol = length(nonNull), nrow = nrow(DATAext))
+			DATAtmp[, nonNull] <- DATAext
+			DATAext <- DATAtmp
+			rm(DATAtmp)
 		}
-		return(rval)
-	})
+	}
 
-	######################################################################################################
+	#####################################
 
-	if(extType == 'Point'){
-		RVAL[sapply(RVAL, is.null)] <- NA
-		xval <- unlist(RVAL)
-		capition <- c('POINTS', 'LON', 'DATE/LAT')
-		headinfo <- c('Pt1', xminLon, xminLat)
+	# start.seas <- GeneralParameters$out.series$start.seas
+	# end.seas <- GeneralParameters$out.series$end.seas
+	# len.seas <- (end.seas-start.seas+1)%%12
+	# len.seas[len.seas == 0] <- 12
+	# monthtoSeas <- (start.seas:(start.seas+(len.seas-1)))%%12
+	# monthtoSeas[monthtoSeas == 0] <- 12
 
-		if(period0 == period1){
-			outdonne <- NULL
-			outdonne$out$date <- dates
-			outdonne$out$data <- xval
-			xtmp.clim <- cbind(dates0, xval[match(dates0, dates)])
-		}else{
-			if(period1%in%c('season3', 'season6')){
-				len.mon <- if(period1 == 'season6') 6 else 3
-				start.mon <- which(format(ISOdate(2014,1:12,1), "%b")%in%season1)
-				outdonne <- aggregateSeries(xval, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
-									time.step.In = period0, time.step.Out = c(start.mon, len.mon), type = 'vector')
-				xtmp.clim <- data.frame(outdonne$out$date, outdonne$out$data)
-			}else{
-				outdonne <- aggregateSeries(xval, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
-							time.step.In = period0, time.step.Out = period1, type = 'vector')
-				if(period1 != "yearly"){
-					xmon <- as.numeric(substr(outdonne$out$date, 5, 6))%in%id.mois
-					outdonne$out$date <- outdonne$out$date[xmon]
-					outdonne$out$data <- outdonne$out$data[xmon]
-				}
-				xtmp <- data.frame(outdonne$out$date, outdonne$out$data)
-				daty.clim <- aggregateSeries(rep(1, length(dates0)), dates0, fun = aggfun, 
-							time.step.In = period0, time.step.Out = period1, type = 'vector')
-				xtmp.clim <- cbind(daty.clim$out$date, xtmp[match(daty.clim$out$date, outdonne$out$date), -1])
-			}
-		}
+	#####################################
 
-		outdonne$out$data[is.na(outdonne$out$data)] <- miss.val
-		outdonne$out$data <- round(outdonne$out$data, 1)
-		xtmp <- rbind(cbind(capition, headinfo), cbind(outdonne$out$date, outdonne$out$data))
-
-		if(is.cpt){
-			cptIn <- list(freqOut = period2, xdon = matrix(outdonne$out$data, ncol = 1), xdates = outdonne$out$date,
-							xlon =  headinfo[2], xlat = headinfo[3], xid = headinfo[1],
-							varid = varid, units = units, miss.val = miss.val)
-			cptOut <- do.call(getDataCPT.Station, cptIn)
-			cat(cptOut, file = out2sav)
-		}else{
-			writeFiles(xtmp, out2sav)
-		}
-
-		###### clim
-		TSClimatologyFun()
-	}else if(extType%in%c('Multiple Points', 'Multiple Polygons')){
-		RVAL[sapply(RVAL, is.null)] <- list(rep(NA, nrow(headinfo)))
-		xval <- do.call('rbind', RVAL)
-		capition <- c('Stations', 'LON', 'DATE/LAT')
-
-		nona <- apply(xval, 2, function(x) sum(!is.na(x)) > 0)
-		if(!any(nona)){
-			InsertMessagesTxt(main.txt.out, "All data are missing", format = TRUE)
-			return(NULL)
-		}
-		xval <- xval[, nona, drop = FALSE]
-		headinfo <- headinfo[nona, , drop = FALSE]
-
-		if(period0 == period1){
-			outdonne <- NULL
-			outdonne$out$date <- dates
-			outdonne$out$data <- xval
-			xtmp.clim <- cbind(dates0, xval[match(dates0, dates), ])
-		}else{
-			if(period1%in%c('season3', 'season6')){
-				len.mon <- if(period1 == 'season6') 6 else 3
-				start.mon <- which(format(ISOdate(2014,1:12,1), "%b")%in%season1)
-				outdonne <- aggregateSeries(xval, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
-							time.step.In = period0, time.step.Out = c(start.mon, len.mon), type = 'matrix')
-				xtmp.clim <- data.frame(outdonne$out$date, outdonne$out$data)
-			}else{
-				outdonne <- aggregateSeries(xval, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
-							time.step.In = period0, time.step.Out = period1, type = 'matrix')
-				if(period1 != "yearly"){
-					xmon <- as.numeric(substr(outdonne$out$date, 5, 6))%in%id.mois
-					outdonne$out$date <- outdonne$out$date[xmon]
-					outdonne$out$data <- outdonne$out$data[xmon, , drop = FALSE]
-				}
-				xtmp <- data.frame(outdonne$out$date, outdonne$out$data)
-				daty.clim <- aggregateSeries(rep(1, length(dates0)), dates0, fun = aggfun, 
-							time.step.In = period0, time.step.Out = period1, type = 'vector')
-				xtmp.clim <- cbind(daty.clim$out$date, xtmp[match(daty.clim$out$date, outdonne$out$date), -1])
-			}
-		}
-
-		outdonne$out$data[is.na(outdonne$out$data)] <- miss.val
-		outdonne$out$data <- round(outdonne$out$data, 1)
-		xtmp <- t(cbind(t(cbind(capition, t(headinfo))),
-		 		t(cbind(outdonne$out$date, outdonne$out$data))))
-
-		if(is.cpt){
-			cptIn <- list(freqOut = period2, xdon = outdonne$out$data, xdates = outdonne$out$date,
-							xlon = headinfo[, 2], xlat = headinfo[, 3], xid = headinfo[, 1],
-							varid = varid, units = units, miss.val = miss.val)
-			cptOut <- do.call(getDataCPT.Station, cptIn)
-			cat(cptOut, file = out2sav)
-		}else{
-			writeFiles(xtmp, out2sav)
-		}
-		###### clim
-		CDTClimatologyFun()
+	if(GeneralParameters$in.series == 'monthly'){
+		dtmp <- range(as.Date(paste0(cdtdata$dates, '01'), '%Y%m%d'), na.rm = TRUE)
+		pastemps <- 'month'
 	}else{
-		if(spAvrg == '1'){
-			RVAL[sapply(RVAL, is.null)] <- NA
-			xval <- unlist(RVAL)
-			
-			if(extType == 'Rectangle'){
-				capition <- c('REGION', 'LON', 'DATE/LAT')
-				headinfo <- c('Pts', round(mean(rlon), 6), round(mean(rlat), 6))
-			}
-			if(extType == 'Polygon'){
-				capition <- c('POLYGON', 'LON', 'DATE/LAT')
-				headinfo <- c(substr(str_replace_all(polyName, "[^[:alnum:]]", ""), 1, 15),
-								round(c(coordinates(regOI)), 6))
-			}
+		dtmp <- range(as.Date(cdtdata$dates, '%Y%m%d'), na.rm = TRUE)
+		pastemps <- 'day'
+	}
+	cdates <- seq(dtmp[1], dtmp[2], pastemps)
+	ystart <- seq(as.Date(paste0(format(cdates[1], '%Y'), '-1-1')), cdates[1], pastemps)
+	ystart <- ystart[-length(ystart)]
+	yend <- seq(cdates[length(cdates)], as.Date(paste0(format(cdates[length(cdates)], '%Y'), '-12-31')), pastemps)
+	yend <- yend[-1]
+	if(length(ystart) > 0) cdates <- c(ystart, cdates)
+	if(length(yend) > 0) cdates <- c(cdates, yend)
+	if(GeneralParameters$in.series == 'daily') cdates <- format(cdates, "%Y%m%d")
+	if(GeneralParameters$in.series == 'dekadal'){
+		dek <- as.numeric(format(cdates, '%d'))
+		cdates <- paste0(format(cdates, "%Y%m")[dek <= 3], dek[dek <= 3])
+	}
+	if(GeneralParameters$in.series == 'monthly') cdates <- format(cdates, "%Y%m")
 
-			if(period0 == period1){
-				outdonne <- NULL
-				outdonne$out$date <- dates
-				outdonne$out$data <- xval
-				xtmp.clim <- cbind(dates0, xval[match(dates0, dates)])
+	##################
+
+	idrow <- seq(length(cdtdata$dates))
+	idrow <- idrow[match(cdates, cdtdata$dates)]
+
+	##################
+
+	itmp <- as.numeric(substr(cdates, 5, 6))%in%monthtoExtr
+	xrow <- idrow[itmp]
+	xdaty <- cdates[itmp]
+
+	##################
+
+	if(GeneralParameters$in.series == GeneralParameters$out.series$out.series){
+		AggrData <- DATAext[xrow, , drop = FALSE]
+		odaty <- xdaty
+		indx <- xrow
+	}else{
+		if(GeneralParameters$out.series$out.series == "dekadal"){
+			jour <- as.numeric(substr(xdaty, 7, 8))
+			jour[jour <= 10] <- 1
+			jour[jour > 10 & jour <= 20] <- 2
+			jour[jour > 20] <- 3
+			indx <- tapply(xrow, paste0(substr(xdaty, 1, 6), jour), identity)
+			odaty <- names(indx)
+			len.data <- sapply(indx, length)
+		}else if(GeneralParameters$out.series$out.series == "monthly"){
+			indx <- tapply(xrow, substr(xdaty, 1, 6), identity)
+			odaty <- names(indx)
+			len.data <- sapply(indx, length)
+		}else{
+			xmois <- as.numeric(substr(xdaty, 5, 6))
+
+			rleMois <- rle(xmois)
+			xrank <- cumsum(rleMois$lengths)
+			istart <- seq(which(rleMois$values %in% monthtoExtr[1])[1], length(rleMois$values), seasonLength)
+			iend <- istart + seasonLength - 1
+
+			istart <- xrank[istart]-rleMois$lengths[istart]+1
+
+			debSeas <- as.Date(paste0(substr(xdaty[istart], 1, 6), '01'), '%Y%m%d')
+			finSeas <- sapply(lapply(debSeas, addMonths, n = seasonLength-1), format, '%Y-%m')
+
+			## end
+			nend <- 0
+			if(iend[length(iend)] > length(rleMois$lengths)){
+				iex <- iend[length(iend)] - length(rleMois$lengths)
+				iex <- (rleMois$values[length(rleMois$lengths)] + (1:iex))%%12
+				iex[iex == 0] <- 12
+
+				if(GeneralParameters$in.series == 'daily'){
+					nend <- mapply(function(an, mon) rev((28:31)[!is.na(as.Date(paste(an, mon, 28:31, sep = '-')))])[1],
+											rep(as.numeric(substr(finSeas[length(finSeas)], 1, 4)), length(iex)), iex)
+					nend <- sum(nend)
+				}
+				if(GeneralParameters$in.series == 'dekadal') nend <- sum(length(iex))*3
+				if(GeneralParameters$in.series == 'monthly') nend <- sum(length(iex))
+
+				iend[length(iend)] <- length(rleMois$lengths)
+			}
+			iend <- xrank[iend]
+
+			## index
+			indx <- lapply(seq_along(istart), function(j) xrow[istart[j]:iend[j]])
+
+			odaty <- paste0(format(debSeas, '%Y-%m'), '_', finSeas)
+			len.data <- sapply(indx, length)
+			len.data[length(len.data)] <- len.data[length(len.data)] + nend
+		}
+
+		##################
+
+		nbstn <- ncol(DATAext)
+		transPose <- if(nbstn > 1) t else as.matrix
+		len.MAT <- matrix(len.data, nrow = length(len.data), ncol = nbstn)
+
+		# moved to cdtAggrTSMatClimato_functions.R
+		### NA count
+		# funMissMAT <- function(x, DATA){
+		# 	MAT <- is.na(DATA[x, , drop = FALSE])
+		# 	colSums(MAT)
+		# }
+
+		### Aggregation
+		# funAggrMAT <- function(x, DATA, pars){
+		# 	x <- x[!is.na(x)]
+		# 	if(length(x) == 0) return(rep(NA, ncol(DATA)))
+		# 	MAT <- DATA[x, , drop = FALSE]
+		# 	if(pars$aggr.fun == "mean") res <- colMeans(MAT, na.rm = TRUE)
+		# 	if(pars$aggr.fun == "sum") res <- colSums(MAT, na.rm = TRUE)
+		# 	if(pars$aggr.fun == "count"){
+		# 		count.fun <- match.fun(pars$count.fun)
+		# 		MAT <- count.fun(MAT, pars$count.thres) & !is.na(MAT)
+		# 		res <- colSums(MAT, na.rm = TRUE)
+		# 	}
+		# 	return(res)
+		# }
+
+		##################
+
+		toAggr <- list(indx, GeneralParameters$aggr.series, headinfo)
+
+		if(is.null(EnvExtractData$toAggr)){
+			aggregatData <- TRUE
+		}else{
+			aggregatData <- if(!isTRUE(all.equal(EnvExtractData$toAggr, toAggr))) TRUE else FALSE
+		}
+
+		if(aggregatData){
+			AggrSeries <- list(aggr.fun = GeneralParameters$aggr.series$aggr.fun,
+								count.fun = GeneralParameters$aggr.series$opr.fun,
+								count.thres = GeneralParameters$aggr.series$opr.thres)
+
+			missData <- transPose(sapply(indx, funMissMAT, DATA = DATAext))
+			AggrData <- transPose(sapply(indx, funAggrMAT, DATA = DATAext, pars = AggrSeries))
+			AggrData[(1-(missData/len.MAT)) < GeneralParameters$aggr.series$min.frac] <- NA
+			EnvExtractData$AggrData <- AggrData
+			EnvExtractData$toAggr <- toAggr
+		}else AggrData <- EnvExtractData$AggrData
+	}
+
+	#####################################
+	## Climatologies
+
+	if(GeneralParameters$type.series != "rawts"){
+		## Climatologies
+		calClim <- list(indx, GeneralParameters$aggr.series, headinfo, GeneralParameters$climato)
+		if(is.null(EnvExtractData$calClim)){
+			computeClimato <- TRUE
+		}else{
+			computeClimato <- if(!isTRUE(all.equal(EnvExtractData$calClim, calClim))) TRUE else FALSE
+		}
+
+		if(computeClimato){
+			climYear1 <- GeneralParameters$climato$start.year
+			climYear2 <- GeneralParameters$climato$end.year
+
+			if(GeneralParameters$out.series$out.series == "daily"){
+				winsize <- GeneralParameters$climato$winsize
+				if(winsize < 1) winsize <- 1
+				years <- as.numeric(substr(cdates, 1, 4))
+				feb29 <- which(substr(cdates, 5, 8) == '0229')
+				if(GeneralParameters$climato$all.years){
+					ryear <- range(years)
+					climYear1 <- ryear[1]
+					climYear2 <- ryear[2]
+				}
+				ixnorm <- index.data.rollNormal(cdates, climYear1, climYear2, winsize)
+				ixdays <- index.data.rollClimato(cdates, climYear1, climYear2, winsize)
+				iClim <- idrow[ixnorm[!ixnorm%in%feb29]]
+
+				idxclim <- lapply(1:365, function(j) iClim[ixdays[[j]]])
+				vtimes <- table.annuel()
+				itmp <- vtimes[, 2]%in%monthtoExtr
+				vtimes <- vtimes[itmp, , drop = FALSE]
+				idxclim <- idxclim[itmp]
+				climOUT <- lapply(idxclim, function(x){
+					MAT <- DATAext[x, , drop = FALSE]
+					naYear <- base::colSums(!is.na(MAT))
+					clim <- base::colMeans(MAT, na.rm = TRUE)
+					clim[naYear < GeneralParameters$climato$min.year * winsize] <- NA
+					clim
+				})
+				if(GeneralParameters$type.series == 'stanom'){
+					sdOUT <- lapply(idxclim, function(x){
+						MAT <- DATAext[x, , drop = FALSE]
+						naYear <- base::colSums(!is.na(MAT))
+						vars <- matrixStats::colVars(MAT, na.rm = TRUE)
+						vars[naYear < GeneralParameters$climato$min.year * winsize] <- NA
+						sqrt(vars)
+					})
+				}
+				climdates <- paste0(paste0(climYear1, "-", climYear2), "_",
+							 paste0(str_pad(vtimes[, 2], 2, pad =  "0"),
+									str_pad(vtimes[, 1], 2, pad =  "0")))
 			}else{
-				if(period1%in%c('season3', 'season6')){
-					len.mon <- if(period1 == 'season6') 6 else 3
-					start.mon <- which(format(ISOdate(2014,1:12,1), "%b")%in%season1)
-					outdonne <- aggregateSeries(xval, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
-										time.step.In = period0, time.step.Out = c(start.mon, len.mon), type = 'vector')
-					xtmp.clim <- data.frame(outdonne$out$date, outdonne$out$data)
-				}else{
-					outdonne <- aggregateSeries(xval, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
-								time.step.In = period0, time.step.Out = period1, type = 'vector')
-					if(period1 != "yearly"){
-						xmon <- as.numeric(substr(outdonne$out$date, 5, 6))%in%id.mois
-						outdonne$out$date <- outdonne$out$date[xmon]
-						outdonne$out$data <- outdonne$out$data[xmon]
+				years <- as.numeric(substr(odaty, 1, 4))
+				iyear <-if(GeneralParameters$climato$all.years) rep(TRUE, length(years)) else (years >= climYear1 & years <= climYear2)
+				years <- years[iyear]
+				climMAT <- AggrData[iyear, , drop = FALSE]
+				cdaty <- odaty[iyear]
+
+				if(GeneralParameters$out.series$out.series %in% c("dekadal", "monthly")){
+					if(GeneralParameters$out.series$out.series == "dekadal"){
+						idxc <- substr(cdaty, 5, 7)
+					}else idxc <- substr(cdaty, 5, 6)
+
+					idxclim <- tapply(seq(length(cdaty)), idxc, identity)
+					climOUT <- lapply(idxclim, function(x){
+						MAT <- climMAT[x, , drop = FALSE]
+						naYear <- base::colSums(!is.na(MAT))
+						clim <- base::colMeans(MAT, na.rm = TRUE)
+						clim[naYear < GeneralParameters$climato$min.year] <- NA
+						clim
+					})
+					if(GeneralParameters$type.series == 'stanom'){
+						sdOUT <- lapply(idxclim, function(x){
+							MAT <- climMAT[x, , drop = FALSE]
+							naYear <- base::colSums(!is.na(MAT))
+							vars <- matrixStats::colVars(MAT, na.rm = TRUE)
+							vars[naYear < GeneralParameters$climato$min.year] <- NA
+							sqrt(vars)
+						})
 					}
-					xtmp <- data.frame(outdonne$out$date, outdonne$out$data)
-					daty.clim <- aggregateSeries(rep(1, length(dates0)), dates0, fun = aggfun, 
-								time.step.In = period0, time.step.Out = period1, type = 'vector')
-					xtmp.clim <- cbind(daty.clim$out$date, xtmp[match(daty.clim$out$date, outdonne$out$date), -1])
-				}
-			}
-
-			outdonne$out$data[is.na(outdonne$out$data)] <- miss.val
-			outdonne$out$data <- round(outdonne$out$data, 1)
-			xtmp <- rbind(cbind(capition, headinfo), cbind(outdonne$out$date, outdonne$out$data))
-
-			if(is.cpt){
-				cptIn <- list(freqOut = period2, xdon = matrix(outdonne$out$data, ncol = 1), xdates = outdonne$out$date,
-								xlon =  headinfo[2], xlat = headinfo[3], xid = headinfo[1],
-								varid = varid, units = units, miss.val = miss.val)
-				cptOut <- do.call(getDataCPT.Station, cptIn)
-				cat(cptOut, file = out2sav)
-			}else{
-				writeFiles(xtmp, out2sav)
-			}
-
-			###### clim
-			TSClimatologyFun()
-		}else{
-			RVAL[sapply(RVAL, is.null)] <- list(matrix(NA, ncol = length(rlat), nrow = length(rlon)))
-			rlon <- matrix(round(rlon, 5), nrow = nrow(rval), ncol = ncol(rval))
-			rlat <- matrix(round(rlat, 5), nrow = nrow(rval), ncol = ncol(rval), byrow = TRUE)
-			if(period0 == period1){
-				outdonne <- NULL
-				outdonne$out$date <- dates
-				outdonne$out$data <- RVAL
-
-				daty.clim <- dates0
-				xtmp.clim <- RVAL[match(dates0, dates)]
-				xtmp.clim[sapply(xtmp.clim, is.null)] <- list(matrix(NA, nrow = nrow(rval), ncol = ncol(rval)))
-			}else{
-				if(period1%in%c('season3', 'season6')){
-					len.mon <- if(period1 == 'season6') 6 else 3
-					start.mon <- which(format(ISOdate(2014,1:12,1), "%b")%in%season1)
-					outdonne <- aggregateSeries(RVAL, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
-								time.step.In = period0, time.step.Out = c(start.mon, len.mon), type = 'list')
-
-					fileout <- file.path(out2sav, paste('Output_', outdonne$out$date, '.txt', sep = ''))
-					capdate <- paste('DATE:', outdonne$out$date)
-
-					daty.clim <- outdonne$out$date
-					xtmp.clim <- outdonne$out$data
+					climdates <- sapply(names(climOUT), function(x) paste(paste0(range(years), collapse = "-"), x, sep = "_"))
 				}else{
-					outdonne <- aggregateSeries(RVAL, dates, fun = aggfun, na.rm = TRUE, min.frac = missfrac,
-											time.step.In = period0, time.step.Out = period1, type = 'list')
-					if(period1 != "yearly"){
-						xmon <- as.numeric(substr(outdonne$out$date, 5, 6))%in%id.mois
-						outdonne$out$date <- outdonne$out$date[xmon]
-						outdonne$out$data <- outdonne$out$data[xmon]
+					naYear <- base::colSums(!is.na(climMAT))
+					climOUT <- base::colMeans(climMAT, na.rm = TRUE)
+					climOUT[naYear < GeneralParameters$climato$min.year] <- NA
+					if(GeneralParameters$type.series == 'stanom'){
+						sdOUT <- matrixStats::colVars(climMAT, na.rm = TRUE)
+						sdOUT[naYear < GeneralParameters$climato$min.year] <- NA
+						sdOUT <- sqrt(sdOUT)
 					}
-					daty.clim <- aggregateSeries(rep(1, length(dates0)), dates0, fun = aggfun, 
-								time.step.In = period0, time.step.Out = period1, type = 'vector')
-					xtmp.clim <- outdonne$out$data
-					xtmp.clim <- xtmp.clim[match(daty.clim$out$date, outdonne$out$date)]
-					xtmp.clim[sapply(xtmp.clim, is.null)] <- list(matrix(NA, nrow = nrow(rval), ncol = ncol(rval)))
-					daty.clim <- daty.clim$out$date
+					climdates <- paste(paste0(range(years), collapse = "-"),
+										paste0(substr(cdaty[1], 6, 7), "-",
+										substr(cdaty[1], 14, 15)), sep = "_")
+				}
+				rm(climMAT)
+			}
+
+			EnvExtractData$climdates <- climdates
+			EnvExtractData$climOUT <- climOUT
+			if(GeneralParameters$type.series == 'stanom') EnvExtractData$sdOUT <- sdOUT
+			EnvExtractData$calClim <- calClim
+		}else{
+			climdates <- EnvExtractData$climdates
+			climOUT <- EnvExtractData$climOUT
+			if(GeneralParameters$type.series == 'stanom') sdOUT <- EnvExtractData$sdOUT
+		}
+
+		##################
+		## Anomalies
+		if(GeneralParameters$type.series == 'anom'){
+			if(GeneralParameters$out.series$out.series == "daily"){
+				idtclim <- substr(climdates, 11, 14)
+				idtseries <- substr(odaty, 5, 8)
+
+				idxc <- match(idtseries, idtclim)
+				idxc[idtseries == '0229'] <- which(idtclim == "0228")
+				outMAT <- do.call(rbind, climOUT)
+				outMAT <- outMAT[idxc, , drop = FALSE]
+			}else{
+				if(GeneralParameters$out.series$out.series %in% c("dekadal", "monthly")){
+					if(GeneralParameters$out.series$out.series == "dekadal"){
+						idtclim <- substr(climdates, 11, 13)
+						idtseries <- substr(odaty, 5, 7)
+					}else{
+						idtclim <- substr(climdates, 11, 12)
+						idtseries <- substr(odaty, 5, 6)
+					}
+
+					idxc <- match(idtseries, idtclim)
+					outMAT <- do.call(rbind, climOUT)
+					outMAT <- outMAT[idxc, , drop = FALSE]
+				}else{
+					outMAT <- matrix(climOUT, nrow = nrow(AggrData), ncol = ncol(AggrData), byrow = TRUE)
 				}
 			}
 
-			if(is.cpt){
-				fileout <- out2sav
-				cptIn <- list(freqOut = period2, xdon = outdonne$out$data, xdates = outdonne$out$date,
-								xlon = rlon[, 1], xlat = rlat[1, ], 
-								varid = varid, units = units, miss.val = miss.val)
-				cptOut <- do.call(getDataCPT.GRDdata, cptIn)
-				cat(cptOut, file = fileout)
+			outMAT <- AggrData - outMAT
+		}
+
+		##################
+		## Standardized Anomalies
+		if(GeneralParameters$type.series == 'stanom'){
+			if(GeneralParameters$out.series$out.series == "daily"){
+				idtclim <- substr(climdates, 11, 14)
+				idtseries <- substr(odaty, 5, 8)
+
+				idxc <- match(idtseries, idtclim)
+				idxc[idtseries == '0229'] <- which(idtclim == "0228")
+				outMAT <- do.call(rbind, climOUT)
+				outMAT <- outMAT[idxc, , drop = FALSE]
+				outMAT1 <- do.call(rbind, sdOUT)
+				outMAT1 <- outMAT1[idxc, , drop = FALSE]
 			}else{
-				fileout <- file.path(out2sav, paste('Output_', outdonne$out$date, '.txt', sep = ''))
-				capdate <- paste('DATE:', outdonne$out$date)
-				writeFilesListData(outdonne$out$data, outdonne$out$date, capdate, fileout, out2sav)
+				if(GeneralParameters$out.series$out.series %in% c("dekadal", "monthly")){
+					if(GeneralParameters$out.series$out.series == "dekadal"){
+						idtclim <- substr(climdates, 11, 13)
+						idtseries <- substr(odaty, 5, 7)
+					}else{
+						idtclim <- substr(climdates, 11, 12)
+						idtseries <- substr(odaty, 5, 6)
+					}
+
+					idxc <- match(idtseries, idtclim)
+					outMAT <- do.call(rbind, climOUT)
+					outMAT <- outMAT[idxc, , drop = FALSE]
+					outMAT1 <- do.call(rbind, sdOUT)
+					outMAT1 <- outMAT1[idxc, , drop = FALSE]
+				}else{
+					outMAT <- matrix(climOUT, nrow = nrow(AggrData), ncol = ncol(AggrData), byrow = TRUE)
+					outMAT1 <- matrix(sdOUT, nrow = nrow(AggrData), ncol = ncol(AggrData), byrow = TRUE)
+				}
 			}
 
-			###### clim	
-			ListDataClimatologyFun()
+			outMAT <- (AggrData - outMAT)/outMAT1
+			outMAT[is.nan(outMAT) | is.infinite(outMAT)] <- 0
+			rm(outMAT1)
 		}
 	}
-	rm(NCDATA, xval, RVAL, outdonne, xtmp, xtmp.clim, cptIn, cptOut)
-	gc()
-	tcl('update')
+
+	#####################################
+	## Write data
+
+	if(GeneralParameters$out.data$format == "ncdf"){
+		if(GeneralParameters$type.series == 'rawts'){
+			if(GeneralParameters$in.series == GeneralParameters$out.series$out.series){
+				if(GeneralParameters$in.series == "daily" & GeneralParameters$aggr.series$aggr.fun == "count"){
+					name <- 'number'
+					units <- 'count'
+					longname <- paste0("Number of (", paste(nc.name, GeneralParameters$aggr.series$opr.fun, GeneralParameters$aggr.series$opr.thres), ") from ", nc.longname)
+					prec <- "short"
+				}else{
+					name <- nc.name
+					units <- nc.units
+					longname <- nc.longname
+					prec <- nc.prec
+				}
+			}else{
+				if(GeneralParameters$out.series$out.series == "dekadal") outFormat <- "Dekadal"
+				if(GeneralParameters$out.series$out.series == "monthly") outFormat <- "Monthly"
+				if(GeneralParameters$out.series$out.series == "seasonal3") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
+				if(GeneralParameters$out.series$out.series == "seasonal6") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
+				if(GeneralParameters$out.series$out.series == "annual") outFormat <- paste("Annual", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
+				name <- nc.name
+				units <- nc.units
+				longname <- paste(outFormat, "from", nc.longname)
+				prec <- nc.prec
+			}
+		}
+
+		if(GeneralParameters$type.series %in% c('climato', 'anom', 'stanom')){
+			if(GeneralParameters$out.series$out.series == "daily") outFormat <- "Daily"
+			if(GeneralParameters$out.series$out.series == "dekadal") outFormat <- "Dekadal"
+			if(GeneralParameters$out.series$out.series == "monthly") outFormat <- "Monthly"
+			if(GeneralParameters$out.series$out.series == "seasonal3") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
+			if(GeneralParameters$out.series$out.series == "seasonal6") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
+			if(GeneralParameters$out.series$out.series == "annual") outFormat <- paste("Annual", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
+			name1 <- "climato"
+			if(GeneralParameters$in.series == "daily" & GeneralParameters$aggr.series$aggr.fun == "count"){
+				units1 <- "count"
+				prec1 <- "short"
+			}else{
+				units1 <- nc.units
+				prec1 <- nc.prec
+			}
+			longname1 <- paste(outFormat, "climatology using", substr(climdates[1], 1, 9), "base period")
+		}
+
+		if(GeneralParameters$type.series == 'anom'){
+			if(GeneralParameters$out.series$out.series == "daily") outFormat <- "Daily"
+			if(GeneralParameters$out.series$out.series == "dekadal") outFormat <- "Dekadal"
+			if(GeneralParameters$out.series$out.series == "monthly") outFormat <- "Monthly"
+			if(GeneralParameters$out.series$out.series == "seasonal3") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
+			if(GeneralParameters$out.series$out.series == "seasonal6") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
+			if(GeneralParameters$out.series$out.series == "annual") outFormat <- paste("Annual", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
+			name <- "anom"
+			if(GeneralParameters$in.series == "daily" & GeneralParameters$aggr.series$aggr.fun == "count"){
+				units <- "count"
+				prec <- "short"
+			}else{
+				units <- nc.units
+				prec <- nc.prec
+			}
+			longname <- paste(outFormat, "anomalies, based on", substr(climdates[1], 1, 9), "climatology")
+		}
+
+		if(GeneralParameters$type.series == 'stanom'){
+			if(GeneralParameters$out.series$out.series == "daily") outFormat <- "Daily"
+			if(GeneralParameters$out.series$out.series == "dekadal") outFormat <- "Dekadal"
+			if(GeneralParameters$out.series$out.series == "monthly") outFormat <- "Monthly"
+			if(GeneralParameters$out.series$out.series == "seasonal3") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
+			if(GeneralParameters$out.series$out.series == "seasonal6") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
+			if(GeneralParameters$out.series$out.series == "annual") outFormat <- paste("Annual", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
+			name <- "stanom"
+			units <- ""
+			prec <- "float"
+			longname <- paste(outFormat, "standardized anomalies, based on", substr(climdates[1], 1, 9), "climatology")
+		}
+
+		#########
+		prefix <- strsplit(GeneralParameters$ncdf.file$format, "%")[[1]][1]
+		missval <- -9999
+		missval1 <- -9999
+
+		dx <- ncdim_def("Lon", "degreeE", headinfo$x)
+		dy <- ncdim_def("Lat", "degreeN", headinfo$y)
+		xy.dim <- list(dx, dy)
+		grd.out <- ncvar_def(name, units, xy.dim, missval, longname, prec)
+		if(GeneralParameters$type.series %in% c('climato', 'anom', 'stanom')) grd.Clim <- ncvar_def(name1, units1, xy.dim, missval1, longname1, prec1)
+
+		#########
+		if(GeneralParameters$type.series == 'rawts'){
+			outputDIR <- file.path(GeneralParameters$out.data$outdir, "Extracted_Data")
+			dir.create(outputDIR, showWarnings = FALSE, recursive = TRUE)
+			for(j in seq_along(odaty)){
+				xtmp <- AggrData[j, ]
+				xtmp <- xtmp[headinfo$z]
+				dim(xtmp) <- dim(headinfo$z)
+				xtmp[is.na(xtmp)] <- missval
+
+				ncoutfile <- file.path(outputDIR, paste0(prefix, odaty[j], ".nc"))
+				nc <- nc_create(ncoutfile, grd.out)
+				ncvar_put(nc, grd.out, xtmp)
+				nc_close(nc)
+			}
+		}else{
+			if(GeneralParameters$type.series %in% c('climato', 'anom', 'stanom')){
+				outputDIR <- file.path(GeneralParameters$out.data$outdir, "Climatology")
+				dir.create(outputDIR, showWarnings = FALSE, recursive = TRUE)
+				for(j in seq_along(climdates)){
+					xtmp <- if(is.list(climOUT)) climOUT[[j]] else climOUT
+					xtmp <- xtmp[headinfo$z]
+					dim(xtmp) <- dim(headinfo$z)
+					xtmp[is.na(xtmp)] <- missval
+
+					ncoutfile <- file.path(outputDIR, paste0(prefix, climdates[j], ".nc"))
+					nc <- nc_create(ncoutfile, grd.Clim)
+					ncvar_put(nc, grd.Clim, xtmp)
+					nc_close(nc)
+				}
+			}
+
+			if(GeneralParameters$type.series == 'stanom'){
+				outputDIR <- file.path(GeneralParameters$out.data$outdir, "Climatology_SD")
+				dir.create(outputDIR, showWarnings = FALSE, recursive = TRUE)
+				for(j in seq_along(climdates)){
+					xtmp <- if(is.list(sdOUT)) sdOUT[[j]] else sdOUT
+					xtmp <- xtmp[headinfo$z]
+					dim(xtmp) <- dim(headinfo$z)
+					xtmp[is.na(xtmp)] <- missval
+
+					ncoutfile <- file.path(outputDIR, paste0(prefix, climdates[j], ".nc"))
+					nc <- nc_create(ncoutfile, grd.Clim)
+					ncvar_put(nc, grd.Clim, xtmp)
+					nc_close(nc)
+				}
+			}
+
+			if(GeneralParameters$type.series %in% c('anom', 'stanom')){
+				odir <- if(GeneralParameters$type.series == 'anom') "Anomaly" else "StandardizedAnomaly"
+				outputDIR <- file.path(GeneralParameters$out.data$outdir, odir)
+				dir.create(outputDIR, showWarnings = FALSE, recursive = TRUE)
+				for(j in seq_along(odaty)){
+					xtmp <- outMAT[j, ]
+					xtmp <- xtmp[headinfo$z]
+					dim(xtmp) <- dim(headinfo$z)
+					xtmp[is.na(xtmp)] <- missval
+
+					ncoutfile <- file.path(outputDIR, paste0(prefix, odaty[j], ".nc"))
+					nc <- nc_create(ncoutfile, grd.out)
+					ncvar_put(nc, grd.out, xtmp)
+					nc_close(nc)
+				}
+			}
+		}
+	}
+
+	#####################################
+
+	if(GeneralParameters$out.data$format == "tyxz"){
+		outputFile <- GeneralParameters$out.data$outdir
+
+		if(GeneralParameters$type.series == 'rawts'){
+			outfile <- file.path(dirname(outputFile), paste0("TS_", basename(outputFile)))
+			tyxz.crds <- expand.grid(headinfo$x, headinfo$y, odaty)
+			tyxz.crds <- tyxz.crds[, 3:1]
+			xtmp <- c(t(AggrData))
+
+			xtmp <- round(xtmp, 3)
+			xtmp[is.na(xtmp)] <- -9999
+			xtmp <- data.frame(tyxz.crds, xtmp)
+			writeFiles(xtmp, outfile)
+		}else{
+			if(GeneralParameters$type.series %in% c('climato', 'anom', 'stanom')){
+				outfile <- file.path(dirname(outputFile), paste0("CLM-MEAN_", basename(outputFile)))
+				tyxz.crds <- expand.grid(headinfo$x, headinfo$y, climdates)
+				tyxz.crds <- tyxz.crds[, 3:1]
+				xtmp <- if(is.list(climOUT)) unlist(climOUT) else climOUT
+
+				xtmp <- round(xtmp, 3)
+				xtmp[is.na(xtmp)] <- -9999
+				xtmp <- data.frame(tyxz.crds, xtmp)
+				writeFiles(xtmp, outfile)
+			}
+
+			if(GeneralParameters$type.series == 'stanom'){
+				outfile <- file.path(dirname(outputFile), paste0("CLM-SD_", basename(outputFile)))
+				tyxz.crds <- expand.grid(headinfo$x, headinfo$y, climdates)
+				tyxz.crds <- tyxz.crds[, 3:1]
+				xtmp <- if(is.list(sdOUT)) unlist(sdOUT) else sdOUT
+
+				xtmp <- round(xtmp, 3)
+				xtmp[is.na(xtmp)] <- -9999
+				xtmp <- data.frame(tyxz.crds, xtmp)
+				writeFiles(xtmp, outfile)
+			}
+
+			if(GeneralParameters$type.series %in% c('anom', 'stanom')){
+				odir <- if(GeneralParameters$type.series == 'anom') "Anomaly" else "STDAnomaly"
+				outfile <- file.path(dirname(outputFile), paste0(odir, "_", basename(outputFile)))
+				tyxz.crds <- expand.grid(headinfo$x, headinfo$y, odaty)
+				tyxz.crds <- tyxz.crds[, 3:1]
+				xtmp <- c(t(outMAT))
+
+				xtmp <- round(xtmp, 3)
+				xtmp[is.na(xtmp)] <- -9999
+				xtmp <- data.frame(tyxz.crds, xtmp)
+				writeFiles(xtmp, outfile)
+			}
+		}
+	}
+
+	#####################################
+
+	if(GeneralParameters$out.data$format == "cdt"){
+		outputFile <- GeneralParameters$out.data$outdir
+		caption <- c('ID', 'LON', 'DATE/LAT')
+		xhead <- t(headinfo)
+
+		if(GeneralParameters$type.series == 'rawts'){
+			outfile <- file.path(dirname(outputFile), paste0("TS_", basename(outputFile)))
+			xtmp <- round(AggrData, 3)
+			xtmp[is.na(xtmp)] <- -9999
+			xtmp <- rbind(xhead, xtmp)
+			xtmp <- cbind(c(caption, odaty), xtmp)
+			writeFiles(xtmp, outfile)
+		}else{
+			if(GeneralParameters$type.series %in% c('climato', 'anom', 'stanom')){
+				outfile <- file.path(dirname(outputFile), paste0("CLM-MEAN_", basename(outputFile)))
+				xtmp <- if(is.list(climOUT)) do.call(rbind, climOUT) else climOUT
+				xtmp <- round(xtmp, 3)
+				xtmp[is.na(xtmp)] <- -9999
+				xtmp <- rbind(xhead, xtmp)
+				xtmp <- cbind(c(caption, climdates), xtmp)
+				writeFiles(xtmp, outfile)
+			}
+
+			if(GeneralParameters$type.series == 'stanom'){
+				outfile <- file.path(dirname(outputFile), paste0("CLM-SD_", basename(outputFile)))
+				xtmp <- if(is.list(sdOUT)) do.call(rbind, sdOUT) else sdOUT
+				xtmp <- round(xtmp, 3)
+				xtmp[is.na(xtmp)] <- -9999
+				xtmp <- rbind(xhead, xtmp)
+				xtmp <- cbind(c(caption, climdates), xtmp)
+				writeFiles(xtmp, outfile)
+			}
+
+			if(GeneralParameters$type.series %in% c('anom', 'stanom')){
+				odir <- if(GeneralParameters$type.series == 'anom') "Anomaly" else "STDAnomaly"
+				outfile <- file.path(dirname(outputFile), paste0(odir, "_", basename(outputFile)))
+				xtmp <- round(outMAT, 3)
+				xtmp[is.na(xtmp)] <- -9999
+				xtmp <- rbind(xhead, xtmp)
+				xtmp <- cbind(c(caption, odaty), xtmp)
+				writeFiles(xtmp, outfile)
+			}
+		}
+	}
+
+	#####################################
+
+	if(GeneralParameters$out.data$format == "cpt"){
+		outputFile <- GeneralParameters$out.data$outdir
+		name <- nc.name
+		units <- if(GeneralParameters$in.series == "daily" & GeneralParameters$aggr.series$aggr.fun == "count") 'count' else nc.units
+		cptgrid <- GeneralParameters$type.extract %in% c('rect', 'poly') & !GeneralParameters$out.data$sp.avrg
+
+		if(GeneralParameters$type.series == 'rawts'){
+			outfile <- file.path(dirname(outputFile), paste0("TS_", basename(outputFile)))
+			if(cptgrid){
+				xtmp <- lapply(seq_along(odaty), function(j){
+					x <- round(AggrData[j, ], 3)
+					x <- x[headinfo$z]
+					dim(x) <- dim(headinfo$z)
+					x[is.na(x)] <- -9999
+					x
+				})
+				gridinfo <- headinfo[c('x', 'y')]
+				cptIn <- list(data = xtmp, date = odaty,  gridinfo = gridinfo,
+							varid = name, units = units, missval = -9999)
+				cptOut <- do.call(CPT.convertGridData, cptIn)
+			}else{
+				xtmp <- round(AggrData, 3)
+				xtmp[is.na(xtmp)] <- -9999
+				cptIn <- list(data = xtmp, date = odaty,  stninfo = headinfo,
+								varid = name, units = units, missval = -9999)
+				cptOut <- do.call(CPT.convertStationData, cptIn)
+			}
+			cat(cptOut, file = outfile)
+		}else{
+			if(GeneralParameters$type.series %in% c('climato', 'anom', 'stanom')){
+				outfile <- file.path(dirname(outputFile), paste0("CLM-MEAN_", basename(outputFile)))
+				if(cptgrid){
+					xtmp0 <- if(is.list(climOUT)) climOUT else list(climOUT)
+					xtmp <- lapply(seq_along(climdates), function(j){
+						x <- round(xtmp0[[j]], 3)
+						x <- x[headinfo$z]
+						dim(x) <- dim(headinfo$z)
+						x[is.na(x)] <- -9999
+						x
+					})
+					gridinfo <- headinfo[c('x', 'y')]
+					cptIn <- list(data = xtmp, date = climdates,  gridinfo = gridinfo,
+								varid = name, units = units, missval = -9999)
+					cptOut <- do.call(CPT.convertGridData, cptIn)
+				}else{
+					xtmp <- if(is.list(climOUT)) do.call(rbind, climOUT) else matrix(climOUT, nrow = 1)
+					xtmp <- round(xtmp, 3)
+					xtmp[is.na(xtmp)] <- -9999
+					cptIn <- list(data = xtmp, date = climdates,  stninfo = headinfo,
+									varid = name, units = units, missval = -9999)
+					cptOut <- do.call(CPT.convertStationData, cptIn)
+				}
+				cat(cptOut, file = outfile)
+			}
+
+			if(GeneralParameters$type.series == 'stanom'){
+				outfile <- file.path(dirname(outputFile), paste0("CLM-SD_", basename(outputFile)))
+				if(cptgrid){
+					xtmp0 <- if(is.list(sdOUT)) sdOUT else list(sdOUT)
+					xtmp <- lapply(seq_along(climdates), function(j){
+						x <- round(xtmp0[[j]], 3)
+						x <- x[headinfo$z]
+						dim(x) <- dim(headinfo$z)
+						x[is.na(x)] <- -9999
+						x
+					})
+					gridinfo <- headinfo[c('x', 'y')]
+					cptIn <- list(data = xtmp, date = climdates,  gridinfo = gridinfo,
+								varid = name, units = units, missval = -9999)
+					cptOut <- do.call(CPT.convertGridData, cptIn)
+				}else{
+					xtmp <- if(is.list(sdOUT)) do.call(rbind, sdOUT) else matrix(sdOUT, nrow = 1)
+					xtmp <- round(xtmp, 3)
+					xtmp[is.na(xtmp)] <- -9999
+					cptIn <- list(data = xtmp, date = climdates,  stninfo = headinfo,
+									varid = name, units = units, missval = -9999)
+					cptOut <- do.call(CPT.convertStationData, cptIn)
+				}
+				cat(cptOut, file = outfile)
+			}
+
+			if(GeneralParameters$type.series %in% c('anom', 'stanom')){
+				odir <- if(GeneralParameters$type.series == 'anom') "Anomaly" else "STDAnomaly"
+				outfile <- file.path(dirname(outputFile), paste0(odir, "_", basename(outputFile)))
+				if(cptgrid){
+					xtmp <- lapply(seq_along(odaty), function(j){
+						x <- round(outMAT[j, ], 3)
+						x <- x[headinfo$z]
+						dim(x) <- dim(headinfo$z)
+						x[is.na(x)] <- -9999
+						x
+					})
+					gridinfo <- headinfo[c('x', 'y')]
+					cptIn <- list(data = xtmp, date = odaty,  gridinfo = gridinfo,
+								varid = name, units = units, missval = -9999)
+					cptOut <- do.call(CPT.convertGridData, cptIn)
+				}else{
+					xtmp <- round(outMAT, 3)
+					xtmp[is.na(xtmp)] <- -9999
+					cptIn <- list(data = xtmp, date = odaty,  stninfo = headinfo,
+									varid = name, units = units, missval = -9999)
+					cptOut <- do.call(CPT.convertStationData, cptIn)
+				}
+				cat(cptOut, file = outfile)
+			}
+		}
+	}
+
+	#####################################
+	## AggrData
+	## odaty
+	## headinfo
+	## climOUT
+	## climdates
+
+	## outMAT
+
+	# assign('odaty', odaty, envir = .GlobalEnv)
+	# assign('headinfo', headinfo, envir = .GlobalEnv)
+	# if(exists("climdates")) assign('climdates', climdates, envir = .GlobalEnv)
+	# if(exists("outMAT"))  assign('outMAT', outMAT, envir = .GlobalEnv)
+
+	#####################################
+
 	return(0)
 }
 

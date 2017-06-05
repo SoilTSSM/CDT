@@ -88,7 +88,7 @@ GlmCoefDownscaling <- function(paramsGlmCoef){
 #################################################################################################
 
 ReanalysisDownscaling <- function(paramsDownscl){
-	
+
 	if(paramsDownscl$memType == 2){
 		reanalData <- read.NetCDF.Data(paramsDownscl$reanalData$read.ncdf.parms)
 		if(is.null(reanalData)) return(NULL)

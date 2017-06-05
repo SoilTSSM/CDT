@@ -92,12 +92,10 @@ ExeAggTimeSeries <- function(GeneralParameters){
 		dend <- as.Date(paste(iend.yrs, iend.mon, iend.day, sep = '-'), format = '%Y-%m-%d')
 		if(is.na(dstart)){
 			InsertMessagesTxt(main.txt.out, "Wrong start date", format = TRUE)
-			tcl("update")
 			return(NULL)
 		}
 		if(is.na(dend)){
 			InsertMessagesTxt(main.txt.out, "Wrong end date", format = TRUE)
-			tcl("update")
 			return(NULL)
 		}
 
@@ -106,7 +104,7 @@ ExeAggTimeSeries <- function(GeneralParameters){
 			daty <- seq(dstart, dend, 'day')
 			dates <- format(daty, '%Y%m%d')
 			filein0 <- file.path(input.data, sprintf(informat, as.character(substr(dates, 1, 4)),
-			 						as.character(substr(dates, 5,6)), as.character(substr(dates, 7, 8))))
+			 						as.character(substr(dates, 5, 6)), as.character(substr(dates, 7, 8))))
 		}
 		if(period == 'dekadal'){
 			daty <- seq(dstart, dend, 'day')
@@ -126,7 +124,6 @@ ExeAggTimeSeries <- function(GeneralParameters){
 		existFl <- unlist(lapply(filein0, file.exists))
 		if(!any(existFl)){
 			InsertMessagesTxt(main.txt.out, "Unable to locate NetCDF files", format = TRUE)
-			tcl("update")
 			return(NULL)
 		}
 		filein0 <- filein0[existFl]

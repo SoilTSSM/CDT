@@ -1,8 +1,38 @@
 ###test internet connection
 testConnection <- function(url = "https://www.google.com") {
-    if (!as.logical(capabilities(what = "http/ftp"))) return(FALSE)
+    if(!as.logical(capabilities(what = "http/ftp"))) return(FALSE)
     test <- try(suppressWarnings(readLines(url, n = 1)), silent = TRUE)
     ifelse(inherits(test, "try-error"), FALSE, TRUE)
+}
+
+####################################################################
+## Setting Initialization Parameters
+initialize.parameters <- function(action, freqData, previous = FALSE,
+								gal.params = GeneralParameters){
+	if(!is.null(gal.params)){
+		if(!is.null(gal.params$action)){
+			if(gal.params$action == action) initpars <- gal.params
+			else{
+				if(previous) initpars <- init.params(action, as.character(gal.params$period))
+				else initpars <- init.params(action, freqData)
+			}
+		}else initpars <- init.params(action, freqData)
+	}else initpars <- init.params(action, freqData)
+	return(initpars)
+}
+
+####################################################################
+## Refresh all environment, destroy left panel widgets
+refreshCDT.lcmd.env <- function(lcmdf = lcmd.frame, choixStn = lchoixStnFr){
+	tkdestroy(lcmdf)
+	tkdestroy(choixStn)
+	choixStn$env$stn.choix <- c('')
+	tclvalue(choixStn$env$stn.choix.val) <- choixStn$env$stn.choix[1]
+
+	all.cdt.env <- list(EnvQcOutlierData, EnvQcZeroChkData, EnvInterpolation, EnvExtractData,
+						EnvHomogzData, EnvRainValidation, EnvClimatoAnalysis, EnvZoomPars, EnvPICSA)
+	ret <- lapply(cdt.lcmd.container, assign, NULL, envir = .GlobalEnv)
+	ret <- lapply(all.cdt.env, function(x) rm(list = ls(envir = x), envir = x))
 }
 
 ####################################################################
@@ -19,37 +49,6 @@ getf.no.ext <- function(flname){
 }
 
 ####################################################################
-## Setting Initialization Parameters
-initialize.parameters <- function(action, freqData, previous = FALSE,
-								gal.params = GeneralParameters){
-	if(!is.null(gal.params)){
-		if(gal.params$action == action) initpars <- gal.params
-		else{
-			if(previous) initpars <- init.params(action, as.character(gal.params$period))
-			else initpars <- init.params(action, freqData)
-		}
-	}else initpars <- init.params(action, freqData)
-	return(initpars)
-}
-
-####################################################################
-## Refresh all environment, destroy left panel widgets
-refreshCDT.lcmd.env <- function(lcmdf = lcmd.frame, choixStn = lchoixStnFr){
-	tkdestroy(lcmdf)
-	tkdestroy(choixStn)
-	choixStn$env$stn.choix <- c('')
-	tclvalue(choixStn$env$stn.choix.val) <- choixStn$env$stn.choix[1]
-
-	lcmd.container <- list('lcmd.frame_homo', 'lcmd.frame_qc', 'lcmd.frame_chk', 'lcmd.frame_extrdata', 'lcmd.frame_assdata',
-						'lcmd.frame_mergePlot', 'lcmd.frame_CDTffrtPlot', 'lcmd.frame_grdNcdfPlot', 'lcmd.frame_rhtests',
-						'lcmd.frame_interpol', 'lcmd.frame_valid', 'lcmd.frame_qc0Chck', 'lcmd.frame_merge2cdt')
-	all.cdt.env <- list(EnvQcOutlierData, EnvQcZeroChkData, EnvInterpolation, EnvMultiPP,
-					EnvHomogzData, EnvRainValidation)
-	ret <- lapply(lcmd.container, assign, NULL, envir = .GlobalEnv)
-	ret <- lapply(all.cdt.env, function(x) rm(list = ls(envir = x), envir = x))
-}
-
-####################################################################
 #BWidget info-bulle(ballon, tooltip) help
 infobulle <- function(tclobj, text){
 	tcl("interp", "alias", "", "help", "", "DynamicHelp::register") 
@@ -58,15 +57,15 @@ infobulle <- function(tclobj, text){
 
 ##Binding event in toolbar and display on status bar
 status.bar.display <- function(tclobj, tclvar, text){
-	tkbind(tclobj,"<Enter>", function() tclvalue(tclvar) <- text)
-	tkbind(tclobj,"<Leave>", function() tclvalue(tclvar) <- "")
+	tkbind(tclobj, "<Enter>", function() tclvalue(tclvar) <- text)
+	tkbind(tclobj, "<Leave>", function() tclvalue(tclvar) <- "")
 }
 
 
 ###########################################
 helpWidget <- function(tclobj, statusbar_tclvar, text_ballon, text_statusbar){
-	tkbind(tclobj,"<Enter>", function() tclvalue(statusbar_tclvar)<-text_statusbar)
-	tkbind(tclobj,"<Leave>", function() tclvalue(statusbar_tclvar) <- "")
+	tkbind(tclobj, "<Enter>", function() tclvalue(statusbar_tclvar) <- text_statusbar)
+	tkbind(tclobj, "<Leave>", function() tclvalue(statusbar_tclvar) <- "")
 	tcl("DynamicHelp::register", tclobj, 'balloon', text_ballon)
 }
 
@@ -80,30 +79,6 @@ tkbutton.toolbar <- function(frame, img.dir, img.file, txtvar.status, txt.toolti
 	status.bar.display(button, txtvar.status, txt.status)
 	return(button)
 }
-
-# ##Create button with help
-# tkbutton.h <- function(frame, text, txtvar.status, txt.tooltip, txt.status){
-# 	button <- tkbutton(frame, text = text)
-# 	infobulle(button, txt.tooltip)
-# 	status.bar.display(button, txtvar.status, txt.status)
-# 	return(button)
-# }
-
-# ##Create entry with help
-# tkentry.h <- function(frame, txtvar.status, txt.tooltip, txt.status){
-# 	entry <- tkentry(frame)
-# 	infobulle(entry, txt.tooltip)
-# 	status.bar.display(entry, txtvar.status, txt.status)
-# 	return(entry)
-# }
-
-# ##Create label with help
-# tklabel.h <- function(frame, text, txtvar.status, txt.tooltip, txt.status){
-# 	labl <- tklabel(frame, text = text)
-# 	infobulle(labl, txt.tooltip)
-# 	status.bar.display(labl, txtvar.status, txt.status)
-# 	return(labl)
-# }
 
 ####################################################################
 ##spinbox
@@ -123,9 +98,10 @@ InsertMessagesTxt <- function(wdgt, texta, format = FALSE, fgcolor = 'red', bgco
 	tktag.configure(wdgt, "formated1", foreground = fgcolor, background = bgcolor, font = font1)
 	tktag.configure(wdgt, "formated2", foreground = fgcolor, background = bgcolor, font = font2)
 	txtformated <- if(fgcolor == 'red' & bgcolor == 'yellow') "formated1" else "formated2"
-	chn <- tclvalue(tkget(wdgt, "0.0", "end"))
-	vectxt <- unlist(strsplit(chn, "\n"))
-	lnt <- length(vectxt)
+	# tktag.configure(wdgt, "sel", foreground = fgcolor, background = 'blue', font = font2)
+	# chn <- tclvalue(tkget(wdgt, "0.0", "end"))
+	# vectxt <- unlist(strsplit(chn, "\n"))
+	# lnt <- length(vectxt)
 	if(format) tkinsert(wdgt, "end", paste(texta, "\n"), txtformated)
 	else tkinsert(wdgt, "end", paste(texta, "\n"))
 	tcl(wdgt, 'yview', 'moveto', '1.0')
@@ -246,6 +222,13 @@ resizeTclImage <- function(file, factor = 2, zoom = TRUE){
 	return(imgrsz)
 }
 
+###############################################################################
+## Test leap year
+
+is.leapyear <- function(year){
+	leap <- year%%c(4, 100, 400)
+	((leap[1] == 0) & (leap[2] != 0)) | (leap[3] == 0)
+}
 
 ###############################################################################
 #Cycle month, start month, n: number of month (DJF, start = 'December', n = 3)
@@ -253,8 +236,7 @@ resizeTclImage <- function(file, factor = 2, zoom = TRUE){
 # return end month
 
 cycleMonth <- function(start, n, full = FALSE){
-	if(full)  frmt <- "%B"
-	else frmt <- "%b"
+	frmt <- if(full) "%B" else "%b"
 	mois <- format(ISOdate(2014, 1:12, 1), frmt)
 	ix <- which(mois == start)
 	im <- (ix+(n-1))%%12
@@ -316,14 +298,18 @@ getMonthsInSeason1 <- function(start.mois, len.mois, full = FALSE){
 #File or directory to save result
 #filedirVar tclVar
 
-fileORdir2Save <- function(filedirVar, isFile = TRUE){
+fileORdir2Save <- function(filedirVar, initialdir = getwd(), isFile = TRUE){
 	if(isFile){
 		filetypes <- "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}"
-		if(Sys.info()["sysname"] == "Windows") file2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes, defaultextension = TRUE)
-		else file2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes)
+		if(Sys.info()["sysname"] == "Windows"){
+			file2save <- tkgetSaveFile(initialdir = initialdir, initialfile = "",
+										filetypes = filetypes, defaultextension = TRUE)
+		}else{
+			file2save <- tkgetSaveFile(initialdir = initialdir, initialfile = "", filetypes = filetypes)
+		}
 		tclvalue(filedirVar) <- if(!is.na(file2save)) file2save else ""
 	}else{
-		dir2save <- tk_choose.dir(getwd(), "")
+		dir2save <- tk_choose.dir(default = initialdir, caption = "")
 		if(is.na(dir2save)) tclvalue(filedirVar) <- ""
 		else{
 			dir.create(dir2save, showWarnings = FALSE, recursive = TRUE)
@@ -382,7 +368,7 @@ reshapeXYZ2Matrix <- function(df){
 ##pts_Coords = list(lon, lat)
 ##grd_Coords  = list(lon, lat)
 
-grid2pointINDEX <- function(pts_Coords,grd_Coords){
+grid2pointINDEX <- function(pts_Coords, grd_Coords){
 	newgrid <- expand.grid(lon = grd_Coords$lon, lat = grd_Coords$lat)
 	coordinates(newgrid) <- ~lon+lat
 	newgrid <- SpatialPixels(points = newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
@@ -944,19 +930,19 @@ ncFilesInfo <- function(freqData, start.date, end.date, months, ncDir, ncFileFor
 	if(freqData == 'daily'){
 		dates <- format(seq(start.date, end.date, 'day'), '%Y%m%d')
 		ncDataFiles <- file.path(ncDir, sprintf(ncFileFormat, substr(dates, 1, 4),
-						substr(dates, 5, 6), substr(dates, 7, 8)), fsep = .Platform$file.sep)
+										substr(dates, 5, 6), substr(dates, 7, 8)))
 	}
 	if(freqData == 'dekadal'){
 		dates <- seq(start.date,  end.date, 'day')
 		dates <- paste(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%Y%m'),
-						as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%d')), sep = '')
+					as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%d')), sep = '')
 		ncDataFiles <- file.path(ncDir, sprintf(ncFileFormat, substr(dates, 1, 4),
-						substr(dates, 5, 6), substr(dates, 7, 7)), fsep = .Platform$file.sep)
+										substr(dates, 5, 6), substr(dates, 7, 7)))
 	}
 	if(freqData == 'monthly'){
 		dates <- format(seq(start.date, end.date, 'month'), '%Y%m')
 		ncDataFiles <- file.path(ncDir, sprintf(ncFileFormat, substr(dates, 1, 4),
-						substr(dates, 5, 6)), fsep = .Platform$file.sep)
+												substr(dates, 5, 6)))
 	}
 	months.dates <- as(substr(dates, 5, 6), 'numeric')
 	imo <- months.dates%in%months
@@ -1286,270 +1272,6 @@ slope.aspect <- function(mat, xres, yres, filter = "sobel", smoothing = 1){
 }
 
 #################################################################################
-## CPT format
-
-dateCPT.daily <- function(date){
-	year <- substr(date, 1, 4)
-	mon <- substr(date, 5, 6)
-	day <- substr(date, 7, 8)
-	paste(year, mon, day, sep = '-')
-}
-
-dateCPT.dekadal <- function(date){
-	year <- substr(date, 1, 4)
-	mon <- substr(date, 5, 6)
-	dek <- as.numeric(substr(date, 7, 7))
-	eom <- sapply(seq_along(year), function(i){
-		daty <- as.Date(paste(year[i], mon[i], 28:31, sep = '-'))
-		rev((28:31)[which(!is.na(daty))])[1]
-	})
-	ddek <- dek
-	ddek[dek == 1] <- '01/10'
-	ddek[dek == 2] <- '11/20'
-	ddek[dek == 3] <- paste(21, eom[dek == 3], sep = '/')
-	paste(year, mon, ddek, sep = '-')
-}
-
-dateCPT.monthly <- function(date){
-	year <- substr(date, 1, 4)
-	mon <- substr(date, 5, 6)
-	paste(year, mon, sep = '-')
-}
-
-dateCPT.seasonal <- function(date) gsub("_", "/", date)
-dateCPT.yearly <- function(date) date
-
-dateCPTclim.daily <- function(date) format(seq(as.Date('2014-1-1'), by = 'day', length.out = 365), '%m-%d')
-dateCPTclim.dekadal <- function(date){
-	mon <- str_pad(rep(1:12, each = 3), width = 2, pad = "0")
-	dek <- c(t(cbind("01/10", "11/20", paste(21, c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31), sep = '/'))))
-	paste(mon, dek, sep = "-")
-}
-dateCPTclim.monthly <- function(date) str_pad(1:12, width = 2, pad = "0")
-dateCPTclim.seasonal <- function(date) gsub("_", "/", date)
-dateCPTclim.yearly <- function(date) gsub("_", "/", date)
-
-########
-dateCPT <- function(date, freq){
-	dateCPT <- match.fun(paste("dateCPT", freq, sep = "."))
-	dateCPT(date)
-}
-
-dateCPTclim <- function(date, freq){
-	dateCPT <- match.fun(paste("dateCPTclim", freq, sep = "."))
-	dateCPT(date)
-}
-
-##################################
-
-formatCPT.date <- function(date){
-	cptT <- paste(c("cpt:T", date), collapse = "\t")
-	paste(cptT, '\n', sep = '')
-}
-
-getCPT.tag.line <- function(cpt.tags){
-	cpt.tags <- paste(paste('cpt', names(cpt.tags), sep = ':'), do.call('c', cpt.tags), sep = '=')
-	tags <- paste(paste(cpt.tags, collapse = ', '), '\n', sep = '')
-	return(tags)
-}
-
-formatCPT.GRDdata <- function(x, y, z, width = 13, side = "both"){
-	z <- t(z)
-	xout <- formatC(c(z))
-	xout <- str_pad(xout, width = width, side = side)
-	xout <- paste("\t", xout, sep = '')
-	dim(xout) <- dim(z)
-	xout <- cbind(round(y, 6), xout)
-	xout <- xout[nrow(xout):1, ]
-	xout <- paste(apply(xout, 1, paste, collapse = ""), '\n', sep = '')
-	xout <- c(paste("\t", paste(round(x, 6), collapse = "\t"), "\n", sep = ""), xout)
-	return(xout)
-}
-
-formatCPT.Station <-function(date, z, width = 13, side = "both"){
-	xout <- formatC(c(z))
-	xout <- str_pad(xout, width = width, side = side)
-	xout <- paste("\t", xout, sep = '')
-	dim(xout) <- dim(z)
-	xout <- cbind(date, xout)
-	xout <- paste(apply(xout, 1, paste, collapse = ""), '\n', sep = '')
-	return(xout)
-}
-
-##################################
-
-getDataCPT.GRDdata <- function(freqOut, xdon, xdates, xlon, xlat, varid, units, miss.val){
-	xdon <- rapply(xdon, f = function(x) ifelse(is.na(x) | is.nan(x) | is.infinite(x), miss.val, x), how = "replace")
-	ncmax <- max(nchar(formatC(do.call(c, xdon))))
-	daty <- dateCPT(xdates, freqOut)
-	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
-	nfields <- paste("cpt:nfields=", 1, "\n", sep = '')
-	cpt.date <- formatCPT.date(daty)
-	cpt.data <- lapply(seq_along(daty), function(j){
-		cpt.tags <- list(field = varid, T = daty[j], nrow = length(xlat), ncol = length(xlon),
-							row = 'Y', col = 'X', units = units, missing = miss.val)
-		cpt.tags <- getCPT.tag.line(cpt.tags)
-		cpt.data <- formatCPT.GRDdata(xlon, xlat, xdon[[j]], width = ncmax, side = "both")
-		c(cpt.tags, cpt.data)
-	})
-	cpt.data <- do.call(c, cpt.data)
-	cpt.out <- c(xmlns, nfields, cpt.date, cpt.data)
-	return(cpt.out)
-}
-
-getDataCPTclim.GRDdata <- function(freqOut, xdon, xdates, xlon, xlat, varid, units, miss.val){
-	xdon <- rapply(xdon, f = function(x) ifelse(is.na(x) | is.nan(x) | is.infinite(x), miss.val, x), how = "replace")
-	ncmax <- max(nchar(formatC(do.call(c, xdon))))
-	daty <- dateCPTclim(xdates, freqOut)
-	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
-	nfields <- paste("cpt:nfields=", 1, "\n", sep = '')
-	cpt.date <- formatCPT.date(daty)
-	cpt.data <- lapply(seq_along(daty), function(j){
-		cpt.tags <- list(field = varid, T = daty[j], nrow = length(xlat), ncol = length(xlon),
-							row = 'Y', col = 'X', units = units, missing = miss.val)
-		cpt.tags <- getCPT.tag.line(cpt.tags)
-		cpt.data <- formatCPT.GRDdata(xlon, xlat, xdon[[j]], width = ncmax, side = "both")
-		c(cpt.tags, cpt.data)
-	})
-	cpt.data <- do.call(c, cpt.data)
-	cpt.out <- c(xmlns, nfields, cpt.date, cpt.data)
-	return(cpt.out)
-}
-
-# getDataCPT.GRDdata <- function(freqOut, xdon, xdates, xlon, xlat, varid, units, miss.val, clim = FALSE){
-# 	xdon <- rapply(xdon, f = function(x) ifelse(is.na(x) | is.nan(x) | is.infinite(x), miss.val, x), how = "replace")
-# 	ncmax <- max(nchar(formatC(do.call(c, xdon))))
-# 	foo <- if(clim) dateCPTclim else dateCPT
-# 	daty <- foo(xdates, freqOut)
-# 	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
-# 	nfields <- paste("cpt:nfields=", 1, "\n", sep = '')
-# 	cpt.date <- formatCPT.date(daty)
-# 	cpt.data <- lapply(seq_along(daty), function(j){
-# 		cpt.tags <- list(field = varid, T = daty[j], nrow = length(xlat), ncol = length(xlon),
-# 							row = 'Y', col = 'X', units = units, missing = miss.val)
-# 		cpt.tags <- getCPT.tag.line(cpt.tags)
-# 		cpt.data <- formatCPT.GRDdata(xlon, xlat, xdon[[j]], width = ncmax, side = "both")
-# 		c(cpt.tags, cpt.data)
-# 	})
-# 	cpt.data <- do.call(c, cpt.data)
-# 	cpt.out <- c(xmlns, nfields, cpt.date, cpt.data)
-# 	return(cpt.out)
-# }
-
-##################################
-
-getDataCPTclim1.GRDdata <- function(freqOut, xdon, xdates, xlon, xlat, varid, units, miss.val){
-	ncmax <- max(nchar(formatC(c(xdon))))
-	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
-	nfields <- paste("cpt:nfields=", 1, "\n", sep = '')
-	cpt.tags <- list(field = varid, nrow = length(xlat), ncol = length(xlon),
-						row = 'Y', col = 'X', units = units, missing = miss.val)
-	cpt.tags <- getCPT.tag.line(cpt.tags)
-	cpt.data <- formatCPT.GRDdata(xlon, xlat, xdon, width = ncmax, side = "both")
-	cpt.out <- c(xmlns, nfields, cpt.tags, cpt.data)
-	return(cpt.out)
-}
-
-
-##################################
-
-getDataCPT.Station <- function(freqOut, xdon, xdates, xlon, xlat, xid, varid, units, miss.val){
-	ncmax <- max(nchar(formatC(c(xdon))))
-	daty <- dateCPT(xdates, freqOut)
-	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
-	# nfields <- paste("cpt:nfields=", 1, "\n", sep = '')
-	# cpt.date <- formatCPT.date(daty)
-	cpt.tags <- list(field = varid, nrow = length(xdates), ncol = length(xlon),
-					 row = 'T', col = 'station', units = units, missing = miss.val)
-	cpt.tags <- getCPT.tag.line(cpt.tags)
-	cpt.stn <- paste('\t', paste(xid, collapse = '\t'), '\n', sep = '')
-	cpt.lon <- paste('cpt:X', '\t', paste(xlon, collapse = '\t'), '\n', sep = '')
-	cpt.lat <- paste('cpt:Y', '\t', paste(xlat, collapse = '\t'), '\n', sep = '')
-	cpt.data <- formatCPT.Station(daty, xdon, width = ncmax)
-	# cpt.out <- c(xmlns, nfields, cpt.date, cpt.tags, cpt.stn, cpt.lon, cpt.lat, cpt.data)
-	cpt.out <- c(xmlns, cpt.tags, cpt.stn, cpt.lon, cpt.lat, cpt.data)
-	return(cpt.out)
-}
-
-getDataCPTclim.Station <- function(freqOut, xdon, xdates, xlon, xlat, xid, varid, units, miss.val){
-	ncmax <- max(nchar(formatC(c(xdon))))
-	daty <- dateCPTclim(xdates, freqOut)
-	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
-	cpt.tags <- list(field = varid, nrow = length(xdates), ncol = length(xlon),
-					 row = 'T', col = 'station', units = units, missing = miss.val)
-	cpt.tags <- getCPT.tag.line(cpt.tags)
-	cpt.stn <- paste('\t', paste(xid, collapse = '\t'), '\n', sep = '')
-	cpt.lon <- paste('cpt:X', '\t', paste(xlon, collapse = '\t'), '\n', sep = '')
-	cpt.lat <- paste('cpt:Y', '\t', paste(xlat, collapse = '\t'), '\n', sep = '')
-	cpt.data <- formatCPT.Station(daty, xdon, width = ncmax)
-	cpt.out <- c(xmlns, cpt.tags, cpt.stn, cpt.lon, cpt.lat, cpt.data)
-	return(cpt.out)
-}
-
-# getDataCPT.Station <- function(freqOut, xdon, xdates, xlon, xlat, xid, varid, units, miss.val, clim = FALSE){
-# 	ncmax <- max(nchar(formatC(c(xdon))))
-# 	foo <- if(clim) dateCPTclim else dateCPT
-# 	daty <- foo(xdates, freqOut)
-# 	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
-# 	cpt.tags <- list(field = varid, nrow = length(xdates), ncol = length(xlon),
-# 					 row = 'T', col = 'station', units = units, missing = miss.val)
-# 	cpt.tags <- getCPT.tag.line(cpt.tags)
-# 	cpt.stn <- paste('\t', paste(xid, collapse = '\t'), '\n', sep = '')
-# 	cpt.lon <- paste('cpt:X', '\t', paste(xlon, collapse = '\t'), '\n', sep = '')
-# 	cpt.lat <- paste('cpt:Y', '\t', paste(xlat, collapse = '\t'), '\n', sep = '')
-# 	cpt.data <- formatCPT.Station(daty, xdon, width = ncmax)
-# 	cpt.out <- c(xmlns, cpt.tags, cpt.stn, cpt.lon, cpt.lat, cpt.data)
-# 	return(cpt.out)
-# }
-
-cdtData2CPT <- function(timeStep, cdtFile, csv = FALSE, tsvFile,
-						missing.code, field, units){
-	if(csv) sep = ',' else sep = ''
-	stnData <- read.table(cdtFile, stringsAsFactors = FALSE, na.strings = str_trim(missing.code), sep = sep)
-	stnData <- getCDTdataAndDisplayMsg(stnData, timeStep)
-	stnData$data[is.na(stnData$data)] <- missing.code
-	cptIn <- list(freqOut = timeStep, xdon = stnData$data, xdates = stnData$dates,
-					xlon = stnData$lon, xlat = stnData$lat, xid = stnData$id,
-					varid = field, units = units, miss.val = missing.code)
-	cptOut <- do.call(getDataCPT.Station, cptIn)
-	cat(cptOut, file = tsvFile)
-	return(0)
-}
-
-netcdf2CPT <- function(timeStep, start.year, start.mon, start.day = 1,
-						end.year, end.mon, end.day = 1,
-						ncdfDIR, ncdfFORMAT, tsvFile, missing.code){
-	start.date <- as.Date(paste(start.year, start.mon, start.day, sep = '-'))
-	end.date <- as.Date(paste(end.year, end.mon, end.day, sep = '-'))
-	ncInfo <- ncFilesInfo(timeStep, start.date, end.date, 1:12, ncdfDIR, ncdfFORMAT, "NetCDF data not found")
-	if(is.null(ncInfo)) return(NULL)
-
-	nc <- nc_open(ncInfo$nc.files[ncInfo$exist][1])
-	xlon <- nc$dim[[1]]$vals
-	xlat <- nc$dim[[2]]$vals
-	varid <- nc$var[[1]]$name
-	units <- nc$var[[1]]$units
-	nc_close(nc)
-
-	ncdata <- lapply(seq_along(ncInfo$nc.files), function(j){
-		if(ncInfo$exist[j]){
-			nc <- nc_open(ncInfo$nc.files[j])
-			xdat <- ncvar_get(nc, varid = varid)
-			nc_close(nc)
-			xdat[is.na(xdat)] <- missing.code
-			xdat
-		}else return(NULL)
-	})
-	ncdata[sapply(ncdata, is.null)] <- matrix(missing.code, nrow = length(xlon), ncol = length(xlat))
-
-	cptIn <- list(freqOut = timeStep, xdon = ncdata, xdates = ncInfo$dates,
-					xlon = xlon, xlat = xlat, varid = varid, units = units, miss.val = missing.code)
-	cptOut <- do.call(getDataCPT.GRDdata, cptIn)
-	cat(cptOut, file = tsvFile)
-	return(0)
-}
-
-#################################################################################
 ### Merging Method combination
 generateCombnation <- function(){
 	DAS <- expand.grid(dem = c(FALSE, TRUE), slope = c(FALSE, TRUE), aspect = c(FALSE, TRUE),
@@ -1641,4 +1363,16 @@ Bias.combination <- function(){
 	return(BScomb)
 }
 
+#################################################################################
+##  lists all the functions in file
+
+is_assign <- function (expr) is.call(expr) && as.character(expr[[1]]) %in% c('=', '<-', 'assign')
+is_function <- function (expr){
+    if(!is_assign(expr)) return(FALSE)
+    value <- expr[[3]]
+    is.call(value) && as.character(value[[1]]) == 'function'
+}
+function_name <- function (expr) as.character(expr[[2]])
+
+# unlist(Map(function_name, Filter(is_function, parse(filename))))
 

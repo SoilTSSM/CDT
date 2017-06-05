@@ -39,10 +39,12 @@ adjDon <- NULL
 
 ###Left panel initialization
 assign('lcmd.frame', NULL, envir = .GlobalEnv)
-lcmd.container <- list('lcmd.frame_homo', 'lcmd.frame_qc', 'lcmd.frame_chk', 'lcmd.frame_extrdata', 'lcmd.frame_assdata',
+cdt.lcmd.container <- list('lcmd.frame_homo', 'lcmd.frame_qc', 'lcmd.frame_chk', 'lcmd.frame_extrdata', 'lcmd.frame_assdata',
 						'lcmd.frame_mergePlot', 'lcmd.frame_CDTffrtPlot', 'lcmd.frame_grdNcdfPlot', 'lcmd.frame_rhtests',
-						'lcmd.frame_interpol', 'lcmd.frame_valid', 'lcmd.frame_qc0Chck', 'lcmd.frame_merge2cdt')
-lcmd.ret <- lapply(lcmd.container, assign, NULL, envir = .GlobalEnv)
+						'lcmd.frame_interpol', 'lcmd.frame_valid', 'lcmd.frame_qc0Chck', 'lcmd.frame_merge2cdt',
+						'lcmd.frame_filtercdtdat', 'lcmd.frame_climdexRR', 'lcmd.frame_climdexTT', 'lcmd.frame_climatoAnalysis',
+						'lcmd.frame_PICSA')
+lcmd.ret <- lapply(cdt.lcmd.container, assign, NULL, envir = .GlobalEnv)
 
 #####**************************** General&Generic functions ************************######
 

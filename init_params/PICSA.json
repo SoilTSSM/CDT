@@ -1,0 +1,92 @@
+{
+    // Type of data:  
+    // "cdt": CDT data format
+    // "netcdf": NetCDF gridded data
+    "data.type": "cdt",
+
+    "RAIN": [{
+        // Full path to the directory of netcdf daily rainfall data or file containing the daily rainfall data
+        "dirORfile": "",
+        "sample": "",
+        "format": "rr_mrg_%s%s%s_CLM.nc"
+    }],
+
+    // "temp": compute ETP from temperature data (modified Hargreaves method)
+    // "etp": use ETP from another source, ETP has already been calculated
+    "compute.ETP": "temp",
+
+    "TMAX": [{
+        // Full path to the directory of netcdf daily tmax data or file 
+        "dirORfile": "",
+        "sample": "",
+        "format": "tmax_mrg_%s%s%s_CLM.nc"
+    }],
+
+    "TMIN": [{
+        // Full path to the directory of netcdf daily tmin data or file 
+        "dirORfile": "",
+        "sample": "",
+        "format": "tmin_mrg_%s%s%s_CLM.nc"
+    }],
+
+    "ETP": [{
+        // Full path to the directory of netcdf daily PET data or file 
+        "dirORfile": "",
+        "sample": "",
+        "format": "pet_%s%s%s.nc"
+    }],
+
+    "dekmon": [{
+        // Use dekadal/monthly rainfall data to calculate seasonal amounts
+        "use.dekmon": false,
+        // Time step of data
+        "time.step": "dekadal",
+        // Full path to the directory of netcdf dekadal/monthly rainfall data or file 
+        "dirORfile": "",
+        "sample": "",
+        "format": "rr_mrg_%s%s%s_CLM.nc"
+    }],
+
+    // Full path to the directory or file to save results
+    "Outdir": "",
+
+    // Date range of the output time series
+    "date.range": [{
+        // Use all years from the input data
+        "all.years": true,
+        // Start year of the period to analyze
+        "start.year": 1981,
+        // End year of the period to analyze
+        "end.year": 2016
+    }],
+
+    "onset": [{
+        "early.month": 9,
+        "early.day": 1,
+        "thres.rain.day": 0.85,
+        "rain.total": 20,
+        "first.win.search": 5,
+        "min.rain.day": 3,
+        "dry.spell": 7,
+        "dry.spell.win.search": 21,
+        "late.month": 11,
+        "late.day": 30
+    }],
+
+    "cessation": [{
+        "early.month": 12,
+        "early.day": 15,
+        "swh.capacity": 60,
+        "min.water.balance": 5,
+        "first.win.search": 3,
+        "late.month": 2,
+        "late.day": 15
+    }],
+
+    "JPEG": [{
+        "width": 11,
+        "height": 7,
+        "units": "in",
+        "res": 400
+    }]
+}

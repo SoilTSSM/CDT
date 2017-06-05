@@ -45,7 +45,7 @@ By selecting `NetCDF gridded data`, the button `r button('Settings')` will be en
 
 1. Enter the date range of the series you want to aggregate, make sure the date is valid, meaning that dates like 2016-06-31 and 2015-02-29 will throw an error.
 2. Enter the filename format of the input netcdf files
-3. Enter the filename format of the output netcdf files
+3. Enter the filename format of the output netcdf files. For **Yearly**, **Seasonal** and **Rolling Seasonal** output, the format of the filename must have a single **%s** only. Example: **tmax_%s-EATS.nc**
 
 >  Go to the section [NetCDF filename format](cdt_data_input.html#cdt.ncdf.ffrmt) for more details on the format of the NetCDF file names.
 

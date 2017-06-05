@@ -82,19 +82,20 @@ merge2CDTDataPanelCmd <- function(){
 	mrgDataBut <- ttkbutton(merge.cmd, text = "Merge Data")
 
 	tkconfigure(mrgDataBut, command = function(){
- 		GeneralParameters <- list(file1 = tclvalue(file.stnfl1),
-								file2 = tclvalue(file.stnfl2),
-								file2save = tclvalue(file.save1))
+ 		GeneralParameters <- list(file1 = str_trim(tclvalue(file.stnfl1)),
+								file2 = str_trim(tclvalue(file.stnfl2)),
+								file2save = str_trim(tclvalue(file.save1)))
 
 		tkconfigure(main.win, cursor = 'watch')
-		InsertMessagesTxt(main.txt.out, "Merge data...........")
-		tcl('update')
-		ret <- tryCatch(merge2CDTdata(GeneralParameters),
-		#warning = function(w) warningFun(w),
-		error = function(e) errorFun(e),
-		finally = {
-			tkconfigure(main.win, cursor = '')
-		})
+		InsertMessagesTxt(main.txt.out, "Merge data ...........")
+		ret <- tryCatch(
+			merge2CDTdata(GeneralParameters),
+			#warning = function(w) warningFun(w),
+			error = function(e) errorFun(e),
+			finally = {
+				tkconfigure(main.win, cursor = '')
+			}
+		)
 
 		if(!is.null(ret)){
 			if(ret == 0) InsertMessagesTxt(main.txt.out, "Merging CDT data finished successfully")

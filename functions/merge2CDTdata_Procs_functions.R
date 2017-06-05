@@ -48,13 +48,23 @@ merge2CDTdata <- function(GeneralParameters){
 
 	donne <- lapply(list(donne1, donne2), function(x){
 		ix <- grepl('[[:digit:]]', x[, 1])
-		header <- x[!ix, ]
-		x <- x[ix, ]
+		seph <- rle(ix)
+		ipos <- which(!seph$values & seph$lengths >= 3 & seph$lengths <= 4)
+		if(length(ipos) == 0){
+			InsertMessagesTxt(main.txt.out, 'The input data is not in a standard unambiguous CDT format', format = TRUE)
+			return(NULL)
+		}
+		if(ipos[1] != 1){
+			InsertMessagesTxt(main.txt.out, 'The input data is not in a standard unambiguous CDT format', format = TRUE)
+			return(NULL)
+		}
+		header <- x[1:seph$lengths[ipos[1]], , drop = FALSE]
+		x <- x[ix, , drop = FALSE]
 		capt <- as.character(header[, 1])
 		id.stn <- as.character(header[1, -1])
 		coords <- header[-1, -1]
 		daty <- x[, 1]
-		don <- x[, -1]
+		don <- x[, -1, drop = FALSE]
 		list(capt = capt, id = id.stn, crd = coords, date = daty, data = don)
 	})
 

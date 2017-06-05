@@ -28,9 +28,9 @@ customLevels <- function(parent.win, atLev){
 	tkgrid.configure(textLevel, sticky = 'nswe') 
 	if(length(atLev) > 0) for(j in seq_along(atLev)) tkinsert(textLevel, "end", paste(atLev[j], ', ',sep = ''))
 
-	#########	
+	#########
 	bt.opt.OK <- tkbutton(frButt, text = "OK") 
-	bt.opt.CA <- tkbutton(frButt, text = "Cancel") 	
+	bt.opt.CA <- tkbutton(frButt, text = "Cancel")
 
 	tkconfigure(bt.opt.OK, command = function(){
 		vlevel <- tclvalue(tkget(textLevel, "0.0", "end"))
@@ -44,7 +44,7 @@ customLevels <- function(parent.win, atLev){
 		tkdestroy(tt)
 		tkfocus(parent.win)
 	})
-	
+
 	tkconfigure(bt.opt.CA, command = function(){
 		tkgrab.release(tt)
 		tkdestroy(tt)
@@ -69,7 +69,7 @@ customLevels <- function(parent.win, atLev){
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Levels for map')
 	tkwm.deiconify(tt)
-	
+
 	##################################################################	
 	tkfocus(tt)
 	tkbind(tt, "<Destroy>", function() {tkgrab.release(tt); tkfocus(parent.win)})

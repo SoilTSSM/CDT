@@ -22,7 +22,7 @@ getCountryShapefile <- function(parent.win){
 	#####
 	frA1 <- tkframe(frGrd0, relief = 'sunken', bd = 2)
 
-	flcntr <- file.path(apps.dir, 'country', 'Afica_Country.txt')
+	flcntr <- file.path(apps.dir, 'data', 'Afica_Country.txt')
 	cntr <- read.table(flcntr, header = TRUE, colClasses = 'character', stringsAsFactors = FALSE)
 	cbvalues <- cntr$NAME_ENGLISH
 	country <- tclVar(downshp$shp$country)

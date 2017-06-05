@@ -1,7 +1,7 @@
 
 ##define new environment
-#Extract Multiple Points and Polygons functions
-EnvMultiPP <- new.env()
+# Data Extraction
+EnvExtractData <- new.env()
 
 #Interpolation delete data
 EnvInterpolation <- new.env()
@@ -17,4 +17,14 @@ EnvHomogzData <- new.env()
 
 #Rainfall Validation
 EnvRainValidation <- new.env()
+
+#Climatological analysis data
+EnvClimatoAnalysis <- new.env()
+
+# Zoom parameters and bbox
+EnvZoomPars <- new.env()
+
+# PICSA
+EnvPICSA <- new.env()
+
 

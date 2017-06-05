@@ -1,0 +1,88 @@
+{
+    // Type of data:  
+    // "series": One station series
+    // "cdt": CDT data format
+    // "netcdf": NetCDF gridded data
+    "data.type": "cdt",
+
+    // Input and Output files/directory
+    "IO.files": [{
+        // Full path to the directory of TX netcdf data or file containing the data
+        "TX.dir.file": "",
+        // Full path to the directory of TN netcdf data or file containing the data
+        "TN.dir.file": "",
+        // Full path to the directory  or file to save results
+        "Out.dir.file": ""
+    }],
+
+    "baseYear": [{
+        // Start year of the base period
+        "start.year": 1961,
+        // End year of the base period
+        "end.year": 1990
+    }],
+
+    "Indices": [{
+        // Monthly maximum value of TX
+        "TXx": true,
+        // Monthly minimum value of TX
+        "TXn": true,
+        // Percentage of days when TX < 10th percentile
+        "TX10p": true,
+        // Percentage of days when TX > 90th percentile
+        "TX90p": true,
+        // Warm spell duration index
+        "WSDI": true,
+        // Number of summer days when TX > 25C (or user defined threshold)
+        "SU": true,
+        // Number of icing days when TX < 0C (or user defined threshold)
+        "ID": true,
+        // Monthly maximum value of TN
+        "TNx": true,
+        // Monthly minimum value of TN
+        "TNn": true,
+        // Percentage of days when TN < 10th percentile
+        "TN10p": true,
+        // Percentage of days when TN > 90th percentile
+        "TN90p": true,
+        // Cold spell duration index
+        "CSDI": true,
+        // Number of tropical nights when TN > 20C (or user defined threshold)
+        "TR": true,
+        // Number of frost days when TN < 0C (or user defined threshold)
+        "FD": true,
+        // Daily temperature range
+        "DTR": true,
+        // Growing season length
+        "GSL": true,
+        // upper threshold of daily maximum temperature (degC)
+        "upTX": 25,
+        // lower threshold of daily maximum temperature (degC)
+        "loTX": 0,
+        // upper threshold of daily minimum temperature (degC)
+        "upTN": 20,
+        // lower threshold of daily minimum temperature (degC)
+        "loTN": 0
+    }],
+    "One.series": [{
+        // Series format, 1: one variable, 3: 3 variables (Rain, Tmax, Tmin)
+        "file.format": "1",
+        // Date format, 1: grouped (YYYYMMDD), 3: separated (YYYY MM DD)
+        "date.format": "1"
+    }],
+
+    "ncdf.file": [{
+        // TX sample filename
+        "TX.ncsample": "",
+        "TX.format": "tmax_mrg_%s%s%s_CLM.nc",
+        // TN sample filename
+        "TN.ncsample": "",
+        "TN.format": "tmin_mrg_%s%s%s_CLM.nc",
+        "start.year": 1961,
+        "start.mon": 1,
+        "start.day": 1,
+        "end.year": 2015,
+        "end.mon": 12,
+        "end.day": 31
+    }]
+}

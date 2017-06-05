@@ -22,7 +22,7 @@ aggregateSeries <- function(xvar, dates, fun = 'sum', ..., min.frac = 1.0,
 		iDUPdate1 <- duplicated(dates)
 		dates <- dates[!iDUPdate1]
 		alldates <- seq(min(dates), max(dates), 'day')
-		iMISSdate <- match(alldates,dates)
+		iMISSdate <- match(alldates, dates)
 		dates <- format(alldates, '%Y%m%d')
 		miss.dates <- alldates[is.na(iMISSdate)]
 		miss.dates <- format(miss.dates, '%Y%m%d')
@@ -299,7 +299,7 @@ index_DayDekMon <- function(freqIn, freqOut = 'monthly', dates){
 index_Season <- function(freqIn, freqOut = c(1, 3), dates){
 	startMonth <- freqOut[1]
 	seasonLength <- freqOut[2]
-	annee <- substr(dates,1,4)
+	annee <- substr(dates, 1, 4)
 	mois <- substr(dates, 5, 6)
 	month12 <- format(ISOdate(2014, 1:12, 1), "%b")
 	month12n <- str_pad(1:12, width = 2, pad = "0")
