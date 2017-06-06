@@ -1075,12 +1075,12 @@ PICSAProcs <- function(GeneralParameters){
 
 			### Cessation
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_cessation', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.line.yaxdate(yrsCesst, matCessat[, j], origindate = onsetXS)
+			plot.line.yaxdate(yrsCesst, matCessat[, j], origindate = cessatXS)
 			dev.off()
 
 			### Cessation1
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_cessation1', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.line.yaxdate(yrsCesst, matCessat[, j], origindate = onsetXS, mean = TRUE, tercile = TRUE)
+			plot.line.yaxdate(yrsCesst, matCessat[, j], origindate = cessatXS, mean = TRUE, tercile = TRUE)
 			dev.off()
 
 			### Length of season
