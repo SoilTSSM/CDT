@@ -1487,7 +1487,7 @@ ExtractDataPanelCmd <- function(){
 		GeneralParameters$out.data$sp.avrg <- switch(tclvalue(spatAverage), '0' = FALSE, '1' = TRUE)
 		GeneralParameters$out.data$outdir <- str_trim(tclvalue(file2save))
 
-		assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
+		# assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
 		tkconfigure(main.win, cursor = 'watch')
 		InsertMessagesTxt(main.txt.out, "Extraction .................")

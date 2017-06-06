@@ -948,6 +948,13 @@ PICSAProcs <- function(GeneralParameters){
 	yrsOnset <- as.numeric(substr(yearS, 1, 4))
 
 	##################
+
+	load(file.path(apps.dir, 'data', 'ONI_50-2016.RData'))
+	ONI.date <- format(seq(as.Date('1950-1-15'), as.Date('2017-12-15'), "month"), "%Y%m")
+	ONI.data <- ONI$ts[, 3]
+
+	##################
+
 	if(data.type == 'cdt'){
 		InsertMessagesTxt(main.txt.out, 'Plot stations data ...')
 
@@ -1016,12 +1023,8 @@ PICSAProcs <- function(GeneralParameters){
 		jpg.ucdt <- GeneralParameters$JPEG$units
 		jpg.rcdt <- GeneralParameters$JPEG$res
 
-		load(file.path(apps.dir, 'data', 'ONI_50-2016.RData'))
-		ONI.date <- format(seq(as.Date('1950-1-15'), as.Date('2017-12-15'), "month"), "%Y%m")
-		ONI.data <- ONI$ts[, 3]
-
 		allfonct <- unlist(Map(function_name, Filter(is_function, parse(file.path(apps.dir, 'functions', 'PICSA_Plot_functions.R')))))
-		toExport1 <- c(toExport1, allfonct, "writeFiles", "table.annuel")
+		toExport1 <- c(toExport1, allfonct, "writeFiles", "table.annuel", "ONI.data", "ONI.date")
 
 		##################
 

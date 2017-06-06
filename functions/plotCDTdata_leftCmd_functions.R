@@ -30,7 +30,7 @@ PlotCDTDataFormatCmd <- function(){
 
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
-	
+
 	#######################################################################################################
 
 	#Tab1
@@ -114,7 +114,7 @@ PlotCDTDataFormatCmd <- function(){
 	status.bar.display(btStnfl.tab1, TextOutputVar, 'Browse file if not listed')
 	infobulle(unitEd.tab1, 'Unit to display on colorscale')
 	status.bar.display(unitEd.tab1, TextOutputVar, 'Unit to display on colorscale')
-	
+
 	##############
 	frameShp <- ttklabelframe(subfr1, text = "Shapefiles for boundary", relief = 'groove')
 
@@ -147,7 +147,7 @@ PlotCDTDataFormatCmd <- function(){
 	#############################
 	tkgrid(frameStn, row = 0, column = 0, sticky = 'we')
 	tkgrid(frameShp, row = 1, column = 0, sticky = 'we')
-	
+
 	############################
 	tkbind(combPrd.tab1, "<<ComboboxSelected>>", function(){
 		if(tclvalue(file.period) == 'Daily data'){
@@ -161,11 +161,11 @@ PlotCDTDataFormatCmd <- function(){
 		if(tclvalue(file.period) == 'Monthly data'){
 			tkconfigure(day1.tab1, state = 'disabled')
 		}
-	})		
-	
+	})
+
 	#######################################################################################################
 
-	#Tab2	
+	#Tab2
 	frTab2 <- tkframe(cmd.tab2) #,relief = 'sunken', bd = 2
 	tkgrid(frTab2, padx = 5, pady = 5, ipadx = 2, ipady = 2)
 	tkgrid.columnconfigure(frTab2, 0, weight = 1)
@@ -260,9 +260,9 @@ PlotCDTDataFormatCmd <- function(){
 			for(i in 0:wPreview) tkcreate(previewPresetCol.tab2, "line", i, 0, i, 20, fill = kolor[i], tags = 'gradlines0')
 		}
 	})
-	
+
 	########################
-	##Customized color	
+	##Customized color
 	tkbind(chkCustoCol.tab2, "<Button-1>", function(){
 		if(tclvalue(custom.color) == '0') tkconfigure(butCustoCol.tab2, state = 'normal')
 		else tkconfigure(butCustoCol.tab2, state = 'disabled')
@@ -284,7 +284,7 @@ PlotCDTDataFormatCmd <- function(){
 		if(tclvalue(custom.level) == '0') tkconfigure(butCustoLev.tab2, state = 'normal')
 		else tkconfigure(butCustoLev.tab2, state = 'disabled')
 	})
-	
+
 	atLev <- NULL
 	# initLev <- NULL
 	tkconfigure(butCustoLev.tab2, command = function(){
@@ -299,15 +299,15 @@ PlotCDTDataFormatCmd <- function(){
 		}
 		atLev <<- customLevels(main.win, atLev)
 	})
-	
+
 	#######################################################################################################
-	
+
 	plotDataBut <- ttkbutton(plotBut.cmd, text = "Plot Data")
 
 	tkgrid(plotDataBut, row = 0, column = 0, sticky = 'e', padx = 5, pady = 5)
 
 	#################
-	
+
 	notebookTab <- NULL
 	#######
 
@@ -327,7 +327,7 @@ PlotCDTDataFormatCmd <- function(){
 			if(!is.null(donne)) atLev <- pretty(donne$z)
 		}
 		shpf <- getShpOpenData(file.plotShp)[[2]]
-		
+
 		imgContainer <- displayCDTdata(tknotes, notebookTab, donne, atLev, listCol, shpf, tclvalue(unit_sym))
 		if(!is.null(imgContainer)){
 			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, notebookTab, AllOpenTabType, AllOpenTabData)
@@ -335,11 +335,10 @@ PlotCDTDataFormatCmd <- function(){
 			AllOpenTabType <<- retNBTab$AllOpenTabType
 			AllOpenTabData <<- retNBTab$AllOpenTabData
 		}
-	})	
+	})
 
-	
 	#######################################################################################################
-	
+
 	tcl('update')
 	tkgrid(cmd.frame, sticky = 'nswe', pady = 5)
 	tkgrid.columnconfigure(cmd.frame, 0, weight = 1)

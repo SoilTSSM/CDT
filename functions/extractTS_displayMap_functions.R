@@ -47,6 +47,7 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 	ocrds <- getBoundaries(shpf)
 	selectedPolygon <- NULL
 	pltusr <- NULL
+
 	parPlotSize1 <- tclVar()
 	parPlotSize2 <- tclVar()
 	parPlotSize3 <- tclVar()

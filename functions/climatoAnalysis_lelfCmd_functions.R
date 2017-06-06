@@ -28,12 +28,12 @@ climatoAnalysisPanelCmd <- function(){
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "Input")
 	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Analysis")
-	# cmd.tab3 <- bwAddTab(tknote.cmd, text = "Plot")
+	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Plot")
 
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
-	# tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
 
 	#######################################################################################################
 
@@ -681,16 +681,16 @@ climatoAnalysisPanelCmd <- function(){
 
 	#######################################################################################################
 
-	# #Tab3
-	# frTab3 <- tkframe(cmd.tab3)
-	# tkgrid(frTab3, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	# tkgrid.columnconfigure(frTab3, 0, weight = 1)
+	#Tab3
+	frTab3 <- tkframe(cmd.tab3)
+	tkgrid(frTab3, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab3, 0, weight = 1)
 
-	# scrw3 <- bwScrolledWindow(frTab3)
-	# tkgrid(scrw3)
-	# tkgrid.columnconfigure(scrw3, 0, weight = 1)
-	# subfr3 <- bwScrollableFrame(scrw3, width = wscrlwin, height = hscrlwin)
-	# tkgrid.columnconfigure(subfr3, 0, weight = 1)
+	scrw3 <- bwScrolledWindow(frTab3)
+	tkgrid(scrw3)
+	tkgrid.columnconfigure(scrw3, 0, weight = 1)
+	subfr3 <- bwScrollableFrame(scrw3, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr3, 0, weight = 1)
 
 
 	#######################################################################################################

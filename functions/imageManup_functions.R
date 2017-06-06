@@ -63,6 +63,7 @@ refreshPlot1 <- function(W, img, hscale, vscale){
 	img_w <- as.double(tcl('image', 'width', img$image))
 	img_h <- as.double(tcl('image', 'height', img$image))
 	tkconfigure(W, width = img_w, height = img_h)
+	tcl('update')
 }
 
 ##################################################################################

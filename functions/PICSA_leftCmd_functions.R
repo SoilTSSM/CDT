@@ -29,11 +29,13 @@ PICSAPanelCmd <- function(){
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "Input")
 	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Output")
 	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Rainy Season")
+	cmd.tab4 <- bwAddTab(tknote.cmd, text = "Plot")
 
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab4, 0, weight = 1)
 
 	#######################################################################################################
 
@@ -971,8 +973,7 @@ PICSAPanelCmd <- function(){
 		GeneralParameters$cessation$late.month <- which(MOIS%in%str_trim(tclvalue(cess.late.mon)))
 		GeneralParameters$cessation$late.day <- as.numeric(str_trim(tclvalue(cess.late.day)))
 
-		assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
-
+		# assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
 		tkconfigure(main.win, cursor = 'watch')
 		InsertMessagesTxt(main.txt.out, paste("Calculating onset & cessation......."))
