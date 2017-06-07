@@ -975,7 +975,8 @@ PICSAProcs <- function(GeneralParameters){
 		nbdayfun <- if(thres.rain.day == 0) '>' else '>='
 		compute.ETP <- GeneralParameters$compute.ETP
 
-		toExport1 <- c("getIndexSeasonVars", "funAggrMAT", "NumberOfSpell.All", "MaximumLengthOfSpell", "onset", "cessat", "cdtPrecip")
+		toExport1 <- c("getIndexSeasonVars", "funAggrMAT", "NumberOfSpell.All", "MaximumLengthOfSpell", "cdtPrecip",
+						 "onset", "cessat",  "season.length", "yrsOnset", "matOnset", "onsetXS", "yrsCesst", "matCessat", "cessatXS")
 		if(dekmonUse) toExport1 <- c(toExport1, "cdtPrecip1")
 		if(compute.ETP == "temp") toExport1 <- c(toExport1, "cdtTmax", "cdtTmin")
 

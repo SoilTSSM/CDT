@@ -58,7 +58,8 @@ plot.line.yaxdate <- function(x, y, origindate = NULL, xlab = '', ylab = '',
 plot.line.yaxvalue <- function(x, y,  xlab = '', ylab = '',
 							linecol = 'red', pointcol = "blue",
 							mean = FALSE, tercile = FALSE, linear = FALSE){
-	plot(x, y, type = 'n', xaxt = 'n', yaxt = 'n', xlab = xlab, ylab = ylab)
+	ylim <- c(0, max(pretty(y)))
+	plot(x, y, type = 'n', xaxt = 'n', yaxt = 'n', xlab = xlab, ylab = ylab, ylim = ylim)
 	abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 	abline(v = axTicks(1), col = "lightgray", lty = "dotted")
 	collegend <- NULL
@@ -89,7 +90,8 @@ plot.line.yaxvalue <- function(x, y,  xlab = '', ylab = '',
 
 
 plot.bar.yaxvalue <- function(x, y,  xlab = '', ylab = '', barcol = "darkblue"){
-	plot(x, y, type = 'n', xlab = xlab, ylab = ylab, axes = FALSE)
+	ylim <- c(0, max(pretty(y)))
+	plot(x, y, type = 'n', xlab = xlab, ylab = ylab, axes = FALSE, ylim = ylim)
 
 	minTck <- axTicks(2)
 	minTck <- minTck[-length(minTck)] + diff(minTck)/2
@@ -170,7 +172,8 @@ plot.probaExeecdance.theor <- function(dat, xlab = '', linecol = 'blue', pointco
 plot.line.dryspell <- function(x, y,  xlab = '', ylab = '',
 							linecol = 'red', pointcol = "blue", sub = NULL,
 							mean = FALSE, tercile = FALSE, linear = FALSE){
-	plot(x, y, type = 'n', xaxt = 'n', yaxt = 'n', xlab = xlab, ylab = '')
+	ylim <- c(0, max(pretty(y)))
+	plot(x, y, type = 'n', xaxt = 'n', yaxt = 'n', xlab = xlab, ylab = '', ylim = ylim)
 	abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 	abline(v = axTicks(1), col = "lightgray", lty = "dotted")
 	collegend <- NULL
@@ -203,7 +206,8 @@ plot.line.dryspell <- function(x, y,  xlab = '', ylab = '',
 
 
 plot.bar.dryspell <- function(x, y,  xlab = '', ylab = '', sub = NULL, barcol = "slateblue4"){
-	plot(x, y, type = 'n', xlab = xlab, ylab = '', axes = FALSE)
+	ylim <- c(0, max(pretty(y)))
+	plot(x, y, type = 'n', xlab = xlab, ylab = '', axes = FALSE, ylim = ylim)
 
 	minTck <- axTicks(2)
 	minTck <- minTck[-length(minTck)] + diff(minTck)/2
@@ -246,7 +250,8 @@ plot.tmax.tmin <- function(x, tmax, tmin){
 plot.bar.ONI <- function(x, y,  xlab = '', ylab = '', colz = NA, col = c("blue", "gray", "red")){
 	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.9, 0.1), respect = FALSE)
 	op <- par(mar = c(3, 4, 2, 2))
-	plot(x, y, type = 'n', xlab = '', ylab = ylab, axes = FALSE)
+	ylim <- c(0, max(pretty(y)))
+	plot(x, y, type = 'n', xlab = '', ylab = ylab, axes = FALSE, ylim = ylim)
 
 	minTck <- axTicks(2)
 	minTck <- minTck[-length(minTck)] + diff(minTck)/2
@@ -272,7 +277,8 @@ plot.bar.ONI <- function(x, y,  xlab = '', ylab = '', colz = NA, col = c("blue",
 plot.line.ONI <- function(x, y,  xlab = '', ylab = '', colz = NA, col = c("blue", "gray", "red")){
 	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.9, 0.1), respect = FALSE)
 	op <- par(mar = c(3, 4, 2, 2))
-	plot(x, y, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = ylab)
+	ylim <- c(0, max(pretty(y)))
+	plot(x, y, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = ylab, ylim = ylim)
 	abline(v = axTicks(1), col = "lightgray", lty = "dotted")
 	minTck <- axTicks(2)
 	minTck <- minTck[-length(minTck)] + diff(minTck)/2
