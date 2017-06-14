@@ -120,10 +120,8 @@ InterpolationPanelCmd <- function(){
 
 	varCreateGrd <- tclVar('1')
 	file.grdCDF <- tclVar()
-	new.grid <- data.frame(c('minLon', 'maxLon', 'resLon', 'minLat', 'maxLat', 'resLat'),
-							c('42', '52', '0.1','-26','-12', '0.1'))
-	names(new.grid) <- c('Parameters', 'Values')
-	newgrdPars <- list(new.grid = new.grid)
+	new.grid <- list(minlon = 42, maxlon = 52, reslon = 0.1, minlat = -26, maxlat = -12, reslat = 0.1)
+	newgrdPars <- list(New.Grid.Def = new.grid)
 
 	grdCDF.tab1 <- tkradiobutton(frameGrid, text = "From gridded NetCDF data", anchor = 'w', justify = 'left')
 	combgrdCDF.tab1 <- ttkcombobox(frameGrid, values = unlist(listOpenFiles), textvariable = file.grdCDF, state = 'disabled', width = largeur)
@@ -670,13 +668,14 @@ InterpolationPanelCmd <- function(){
 		}
 
 		if(tclvalue(custom.level) == '0' | length(atLev) == 0){
-			if(!is.null(outNCdata)) atLev <<- pretty(outNCdata[[2]]$value)
+			if(!is.null(outNCdata)) atLev <<- pretty(outNCdata$data$z)
 		}
 
 		shpf <- getShpOpenData(file.plotShp)[[2]]
-		units <- NA
+		units <- ""
 
-		imgContainer <- displayNetCDFdata(tknotes, notebookTab2, outNCdata, atLev, listCol, shpf, units, tclvalue(blankVal))
+		imgContainer <- displayNetCDFdata(tknotes, notebookTab2, outNCdata$data, atLev, listCol, shpf,
+											units, tclvalue(blankVal), outNCdata$filename)
 		if(!is.null(imgContainer)){
 			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, notebookTab2, AllOpenTabType, AllOpenTabData)
 			notebookTab2 <<- retNBTab$notebookTab

@@ -399,17 +399,26 @@ PICSAPanelCmd <- function(){
 	###############
 
 	tkbind(cb.etpcalc, "<<ComboboxSelected>>", function(){
+		varPICSA.val <- c("Onset", "Cessation", "Season Length", "Seasonal Rainfall Amounts",
+						"Dry Spells", "Longest Dry Spell",
+						"Number of rain day", "Maximum daily rain",
+						"Total rain when RR>95thPerc", "Nb of day when RR>95thPerc")
+
 		if(tclvalue(ETPCalc) == 'From temperature data'){
 			stateTemp <- 'normal'
 			stateTemp1 <- if(tclvalue(DataType) == 'NetCDF gridded data') 'normal' else 'disabled'
 			stateEtp <- 'disabled'
 			stateEtp1 <- 'disabled'
+			varPICSA.val <- c(varPICSA.val, "Maximum temperature", "Minimum temperature")
 		}else{
 			stateTemp <- 'disabled'
 			stateTemp1 <- 'disabled'
 			stateEtp <- 'normal'
 			stateEtp1 <- if(tclvalue(DataType) == 'NetCDF gridded data') 'normal' else 'disabled'
+			if(tclvalue(varPICSA) %in% c("Maximum temperature", "Minimum temperature")) tclvalue(varPICSA) <- "Onset"
 		}
+
+		tkconfigure(cb.TsMap.picsavar, values = varPICSA.val)
 
 		tkconfigure(cb.tmax, state = stateTemp)
 		tkconfigure(bt.tmax, state = stateTemp)
@@ -929,8 +938,11 @@ PICSAPanelCmd <- function(){
 
 	#######################
 
-	bt.CalculateOnset <- ttkbutton(subfr3, text = "Calculate")
+	stateCalc <- if(GeneralParameters$picsa.out$deja.calc) 'disabled' else 'normal'
 
+	bt.CalculateOnset <- ttkbutton(subfr3, text = "Calculate", state = stateCalc)
+
+	####
 	tkconfigure(bt.CalculateOnset, command = function(){
 		GeneralParameters$data.type <- switch(tclvalue(DataType),
 												'CDT data format' = 'cdt',
@@ -973,7 +985,7 @@ PICSAPanelCmd <- function(){
 		GeneralParameters$cessation$late.month <- which(MOIS%in%str_trim(tclvalue(cess.late.mon)))
 		GeneralParameters$cessation$late.day <- as.numeric(str_trim(tclvalue(cess.late.day)))
 
-		# assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
+		assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
 		tkconfigure(main.win, cursor = 'watch')
 		InsertMessagesTxt(main.txt.out, paste("Calculating onset & cessation......."))
@@ -1002,10 +1014,112 @@ PICSAPanelCmd <- function(){
 	tkgrid(bt.CalculateOnset, row = 2, column = 0, sticky = 'we', pady = 3)
 
 	#######################################################################################################
+
+	#Tab4
+	frTab4 <- tkframe(cmd.tab4)
+	tkgrid(frTab4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab4, 0, weight = 1)
+
+	scrw4 <- bwScrolledWindow(frTab4)
+	tkgrid(scrw4)
+	tkgrid.columnconfigure(scrw4, 0, weight = 1)
+	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr4, 0, weight = 1)
+
+	#######################
+
+	framePicsaOut <- ttklabelframe(subfr4, text = "Onset & Cessation Data", relief = 'groove')
+
+	dejaCalc <- tclVar(GeneralParameters$picsa.out$deja.calc)
+	picsaData <- tclVar(GeneralParameters$picsa.out$picsa.data)
+
+	statePicOut <- if(GeneralParameters$picsa.out$deja.calc) 'normal' else 'disabled'
+
+	chk.picsaout <- tkcheckbutton(framePicsaOut, variable = dejaCalc, text =  "Onset & Cessation are already calculated", anchor = 'w', justify = 'left')
+	txt.picsaout <- tklabel(framePicsaOut, text = "PICSA output data",  anchor = 'w', justify = 'left')
+	en.picsaout <- tkentry(framePicsaOut, textvariable = picsaData, width = largeur2, state = statePicOut)
+	bt.picsaout <- tkbutton(framePicsaOut, text = "...", state = statePicOut)
+
+	tkconfigure(bt.picsaout, command = function(){
+		filetypes <- "{{R Objects} {.RData}} {{All files} *}"
+		loadPiscaData <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
+		if(loadPiscaData == "") return(NULL)
+		tclvalue(picsaData) <- loadPiscaData
+	})
+
+	tkgrid(chk.picsaout, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.picsaout, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.picsaout, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.picsaout, row = 2, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(chk.picsaout, "Check this box if the onset and cessation data are already calculated")
+	status.bar.display(chk.picsaout, TextOutputVar, "Check this box if the onset and cessation data are already calculated")
+	infobulle(en.picsaout, "Enter the full path to the file 'PICSA.DATA.RData' containing the PICSA outputs data")
+	status.bar.display(en.picsaout, TextOutputVar, "Enter the full path to the file 'PICSA.DATA.RData' containing the PICSA outputs data")
+	infobulle(bt.picsaout, "Enter the full path to the file 'PICSA.DATA.RData' containing the PICSA outputs data")
+	status.bar.display(bt.picsaout, TextOutputVar, "Enter the full path to the file 'PICSA.DATA.RData' containing the PICSA outputs data")
+
+	###############
+	tkbind(chk.picsaout, "<Button-1>", function(){
+		statePicOut <- if(tclvalue(dejaCalc) == '1') 'disabled' else 'normal'
+		tkconfigure(en.picsaout, state = statePicOut)
+		tkconfigure(bt.picsaout, state = statePicOut)
+		stateCalc <- if(tclvalue(dejaCalc) == '1') 'normal' else 'disabled'
+		tkconfigure(bt.CalculateOnset, state = stateCalc)
+		## load function
+	})
+
+	#######################
+
+	frameTSMaps <- ttklabelframe(subfr4, text = "Maps", relief = 'groove')
+
+	varPICSA <- tclVar("Onset")
+	varPICSA.val <- c("Onset", "Cessation", "Season Length", "Seasonal Rainfall Amounts",
+					"Dry Spells", "Longest Dry Spell", 
+					"Number of rain day", "Maximum daily rain",
+					"Total rain when RR>95thPerc", "Nb of day when RR>95thPerc")
+	if(GeneralParameters$compute.ETP == 'temp') varPICSA.val <- c(varPICSA.val, "Maximum temperature", "Minimum temperature")
+	stateDrySpl <- 'disabled'
+
+
+	cb.TsMap.picsavar <- ttkcombobox(frameTSMaps, values = varPICSA.val, textvariable = varPICSA, width = 21)
+	txt.TsMap.dryspell <- tklabel(frameTSMaps, text = "DrySpell",  anchor = 'w', justify = 'left')
+	spin.TsMap.dryspell <- ttkspinbox(frameTSMaps, from = 1, to = 40, increment = 1, justify = 'center', width = 2, state = stateDrySpl)
+	tkset(spin.TsMap.dryspell, 5)
+
+	bt.TsMap.prev <- tkbutton(frameTSMaps, text = "<<")
+	bt.TsMap.next <- tkbutton(frameTSMaps, text = ">>")
+	spin.TsMap.year <- ttkspinbox(frameTSMaps, from = 1800, to = 2200, increment = 1, justify = 'center', width = 4)
+	tkset(spin.TsMap.year, 1983)
+	bt.TsMap.plot <- tkbutton(frameTSMaps, text = "PLOT")
+
+
+	tkgrid(cb.TsMap.picsavar, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.TsMap.dryspell, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(spin.TsMap.dryspell, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	tkgrid(bt.TsMap.prev, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(spin.TsMap.year, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.TsMap.next, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.TsMap.plot, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+
+	tkbind(cb.TsMap.picsavar, "<<ComboboxSelected>>", function(){
+		stateDrySpl <- if(tclvalue(varPICSA) == "Dry Spells") "normal" else "disabled"
+		tkconfigure(spin.TsMap.dryspell, state = stateDrySpl)
+	})
+
+	#######################
+	# tkgrid(framePicsaOut, row = 0, column = 0, sticky = 'we')
+	# tkgrid(frameTSMaps, row = 1, column = 0, sticky = 'we', pady = 3)
+
+
+	#######################################################################################################
 	tcl('update')
 	tkgrid(cmd.frame, sticky = 'nswe', pady = 5)
 	tkgrid.columnconfigure(cmd.frame, 0, weight = 1)
 	######
 	return(cmd.frame)
 }
+
 

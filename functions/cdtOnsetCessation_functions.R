@@ -217,7 +217,7 @@ cessationDectection <- function(jj, Precip, ETP, dates, pars, min.frac){
 	colID <- base::colSums(csWB) == 0
 	colretenu <- colretenu[!colID]
 	csWB <- csWB[, !colID, drop = FALSE]
-	if(ncol(csWB) == 0) return(rep(NA, initCol))
+	if(ncol(csWB) == 0) return(rep(format(as.Date(odates[1], "%Y%m%d") + win.search, "%Y%m%d"), initCol))
 	css <- apply(csWB, 2, function(x){
 			rlex <- rle(x)
 			fin <- rlex$lengths >= length.day & rlex$values

@@ -25,7 +25,7 @@ splitCDTData <- function(donne, period){
 	}
 
 	ihead <- 1:seph$lengths[ipos[1]]
-	Info <- data.frame(t(donne[ihead, -1]))
+	Info <- data.frame(t(donne[ihead, -1, drop = FALSE]))
 	names(Info) <- if(length(ihead) == 4) c('Stations', 'Lon', 'Lat', 'ELV') else c('Stations', 'Lon', 'Lat')
 	daty.orig <- as.character(donne[-ihead, 1])
 
@@ -97,14 +97,15 @@ splitCDTData <- function(donne, period){
 
 	##missing & duplicated coordinates
 	Info <- apply(Info, 2, as.character)
+	if(ncol(donne) == 1) Info <- matrix(Info, nrow = 1)
 	stn.id <- as.character(Info[, 1])
 	stn.lon <- as.numeric(Info[, 2])
 	stn.lat <- as.numeric(Info[, 3])
 	stn.elv <- if(dim(Info)[2] == 4) as.numeric(Info[, 4]) else NULL
 
 	imiss <- (is.na(stn.lon) | stn.lon < -180 | stn.lon > 360 | is.na(stn.lat) | stn.lat < -90 | stn.lat > 90)
-	idup <- duplicated(Info[, 2:3]) | duplicated(Info[, 2:3], fromLast = TRUE)
-	aretenir <- !imiss & !duplicated(Info[, 2:3])
+	idup <- duplicated(Info[, 2:3, drop = FALSE]) | duplicated(Info[, 2:3, drop = FALSE], fromLast = TRUE)
+	aretenir <- !imiss & !duplicated(Info[, 2:3, drop = FALSE])
 
 	stn.lon <- stn.lon[aretenir]
 	stn.lat <- stn.lat[aretenir]

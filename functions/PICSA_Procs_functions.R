@@ -59,6 +59,13 @@ PICSAProcs <- function(GeneralParameters){
 		return(NULL)
 	}
 
+	if(!GeneralParameters$date.range$all.years){
+		if(is.na(GeneralParameters$date.range$start.year) | is.na(GeneralParameters$date.range$end.year)){
+			InsertMessagesTxt(main.txt.out, "Invalid start and end years", format = TRUE)
+			return(NULL)
+		}
+	}
+
 	##################
 
 	if(data.type == 'cdt'){
@@ -159,6 +166,7 @@ PICSAProcs <- function(GeneralParameters){
 			if(readRaindata1){
 				cdtPrecip1 <- getStnOpenData(dekmonFl)
 				if(is.null(cdtPrecip1)) return(NULL)
+				## test dekmonTs if dekad or monthly
 				cdtPrecip1 <- getCDTdataAndDisplayMsg(cdtPrecip1, dekmonTs)
 				if(is.null(cdtPrecip1)) return(NULL)
 				cdtPrecip1 <- cdtPrecip1[c('id', 'lon', 'lat', 'dates', 'data')]
@@ -198,10 +206,6 @@ PICSAProcs <- function(GeneralParameters){
 			startYear <- 1900
 			endYear <- 2020
 		}else{
-			if(is.na(GeneralParameters$date.range$start.year) | is.na(GeneralParameters$date.range$end.year)){
-				InsertMessagesTxt(main.txt.out, "Invalid years", format = TRUE)
-				return(NULL)
-			}
 			startYear <- GeneralParameters$date.range$start.year
 			endYear <- GeneralParameters$date.range$end.year
 		}
@@ -715,6 +719,15 @@ PICSAProcs <- function(GeneralParameters){
 
 	##################
 
+	if(data.type == 'cdt'){
+		if(!GeneralParameters$date.range$all.years){
+			taona <- as.numeric(substr(cdtPrecip$dates, 1, 4))
+			itaona <- taona >= GeneralParameters$date.range$start.year & taona <= GeneralParameters$date.range$end.year
+			cdtPrecip$dates <- cdtPrecip$dates[itaona]
+			cdtPrecip$data <- cdtPrecip$data[itaona, , drop = FALSE]
+		}
+	}
+
 	if(compute.ETP == "temp"){
 		cdtTmax$data <- cdtTmax$data[match(cdtPrecip$dates, cdtTmax$dates), , drop = FALSE]
 		cdtTmax$dates <- cdtPrecip$dates
@@ -831,22 +844,8 @@ PICSAProcs <- function(GeneralParameters){
 
 		cdtETP <- NULL
 		cdtETP$data <- ETPHargreaves(cdtTmax$data, cdtTmin$data, RA, cdtPrecip$data)
+		EnvPICSA$cdtETP <- cdtETP
 	}
-
-	# ##################
-	# ###REMOVE
-	# if(compute.ETP == "temp"){
-	# 	outDATA <- list(rr = cdtPrecip, tx = cdtTmax, tn = cdtTmin)
-	# }else{
-	# 	outDATA <- list(rr = cdtPrecip, etp = cdtETP)
-	# }
-	# if(dekmonUse) outDATA <- c(outDATA, list(rrdk = cdtPrecip1, etp = cdtETP))
-
-	# # outDATA <- c(outDATA, list(onset = onset, cessat = cessat, onset.1970 = onset.1970,
-	# # 			onset.julian = onset.julian, cessat.1970 = cessat.1970, cessat.julian = cessat.julian))
-
-	# assign("outDATA", outDATA, envir = .GlobalEnv)
-
 
 	##################
 	InsertMessagesTxt(main.txt.out, 'Calculate onset and cessation of seasonal rainfall ...')
@@ -897,6 +896,10 @@ PICSAProcs <- function(GeneralParameters){
 					  win.search = cess.win.search,
 					  WB.lag = WB.lag)
 
+	# thres.rain.day <- GeneralParameters$onset$thres.rain.day
+	# dryspellfun <- if(thres.rain.day == 0) '==' else '<'
+	# nbdayfun <- if(thres.rain.day == 0) '>' else '>='
+
 	cess.idx <- getIndexCalcOnsetCess(cdtPrecip$dates, cess.start.month, cess.start.day, WB.lag)
 	onset.idx <- getIndexCalcOnsetCess(cdtPrecip$dates, onset.start.month, onset.start.day)
 
@@ -933,6 +936,8 @@ PICSAProcs <- function(GeneralParameters){
 		yearS <- c(NA, yearS)
 	}
 
+	##################
+
 	matCessat <- as.Date(cessat, "%Y%m%d")
 	dim(matCessat) <- dim(cessat)
 	matCessat <- matCessat - as.Date(yearE, "%Y%m%d")
@@ -953,7 +958,277 @@ PICSAProcs <- function(GeneralParameters){
 	ONI.date <- format(seq(as.Date('1950-1-15'), as.Date('2017-12-15'), "month"), "%Y%m")
 	ONI.data <- ONI$ts[, 3]
 
+	###########################################
+
+	EnvPICSA$compute.ETP <- GeneralParameters$compute.ETP
+	EnvPICSA$dekmonUse <- GeneralParameters$dekmon$use.dekmon
+	EnvPICSA$dekmonTs <- GeneralParameters$dekmon$time.step
+
 	##################
+
+	EnvPICSA$index$cess.idx <- cess.idx
+	EnvPICSA$index$onset.idx <- onset.idx
+	EnvPICSA$index$onsetOrigDate <- onsetXS
+	EnvPICSA$index$cessatOrigDate <- cessatXS
+	EnvPICSA$index$onsetYear <- yrsOnset
+	EnvPICSA$index$cessatYear <- yrsCesst
+
+	EnvPICSA$output$Onset.date <- onset
+	EnvPICSA$output$Cessation.date <- cessat
+	EnvPICSA$output$Onset.nb <- matOnset
+	EnvPICSA$output$Cessation.nb <- matCessat
+	EnvPICSA$output$SeasonLength <- season.length
+
+	EnvPICSA$ONI$date <- ONI.date
+	EnvPICSA$ONI$data <- ONI.data
+
+	###########################################
+
+	# transPose <- if(ncol(cdtPrecip$data) > 1) t else as.matrix
+	# debfin.idx <- transPose(sapply(seq(nrow(onset)), function(j){
+	# 					getIndexSeasonVarsRow(onset[j, ], cessat[j, ], cdtPrecip$dates, "daily")
+	# 				}))
+	# na.idx <- is.na(debfin.idx)
+	# lenDebFin <- sapply(debfin.idx, length)
+	# dim(lenDebFin) <- dim(debfin.idx)
+
+
+	# NAcount <- sapply(seq(ncol(cdtPrecip$data)), function(j){
+	# 				sapply(debfin.idx[, j], function(x){
+	# 					y <- if(length(x) == 1 & all(is.na(x))) NA else cdtPrecip$data[x, j]
+	# 					sum(is.na(y))
+	# 				})
+	# 			})
+
+
+
+	# p0 <- Sys.time()
+	# AllDrySpell <- sapply(seq(ncol(cdtPrecip$data)), function(j){
+	# 					sapply(debfin.idx[, j], NumberOfSpell.AllMAT,
+	# 					DATA = cdtPrecip$data[, j, drop = FALSE],
+	# 					opr.fun = dryspellfun, opr.thres = thres.rain.day)
+	# 				})
+	# p0 <- Sys.time()-p0 # 5.443457 mins
+
+	# # dryspell5 <- apply(AllDrySpell, 2, function(y) sapply(y, function(x) sum(x >= 5, na.rm = TRUE)))
+	# # dryspell5[na.idx] <- NA
+	# # dryspell7 <- apply(AllDrySpell, 2, function(y) sapply(y, function(x) sum(x >= 7, na.rm = TRUE)))
+	# # dryspell7[na.idx] <- NA
+	# # dryspell10 <- apply(AllDrySpell, 2, function(y) sapply(y, function(x) sum(x >= 10, na.rm = TRUE)))
+	# # dryspell10[na.idx] <- NA
+	# # dryspell15 <- apply(AllDrySpell, 2, function(y) sapply(y, function(x) sum(x >= 15, na.rm = TRUE)))
+	# # dryspell15[na.idx] <- NA
+
+	# dryspellmax <- apply(AllDrySpell, 2, function(y) sapply(y, function(x) if(all(is.na(x))) NA else max(x, na.rm = TRUE)))
+
+	# if(dekmonUse){
+	# 	seas.idx <- mapply(function(x, y)
+	# 						getIndexSeasonVars(x, y, cdtPrecip1$dates, dekmonTs),
+	# 	 					as.data.frame(onset), as.data.frame(cessat))
+
+	# 	RainTotal <- sapply(seq(ncol(cdtPrecip$data)), function(j){
+	# 					sapply(seas.idx[, j], funAggrMAT,
+	# 						DATA = cdtPrecip1$data[, j, drop = FALSE],
+	# 						pars = list(aggr.fun = "sum"))
+	# 				})
+	# 	RainTotal[is.na(seas.idx)] <- NA
+	# }else{
+	# 	RainTotal <- sapply(seq(ncol(cdtPrecip$data)), function(j){
+	# 					sapply(debfin.idx[, j], funAggrMAT,
+	# 						DATA = cdtPrecip$data[, j, drop = FALSE],
+	# 						pars = list(aggr.fun = "sum"))
+	# 				})
+	# 	RainTotal[na.idx] <- NA
+	# }
+
+	# nbdayrain <- sapply(seq(ncol(cdtPrecip$data)), function(j){
+	# 				sapply(debfin.idx[, j], funAggrMAT,
+	# 					DATA = cdtPrecip$data[, j, drop = FALSE],
+	# 					pars = list(aggr.fun = "count", count.fun = nbdayfun,
+	# 					count.thres = thres.rain.day))
+	# 			})
+
+	# max24h <- sapply(seq(ncol(cdtPrecip$data)), function(j){
+	# 			sapply(debfin.idx[, j], funAggrMAT,
+	# 				DATA = cdtPrecip$data[, j, drop = FALSE],
+	# 				pars = list(aggr.fun = "max"))
+	# 		})
+
+	# # RRq95th <- sapply(seq(ncol(cdtPrecip$data)), function(j){
+	# # 			seasRR <- cdtPrecip$data[unlist(debfin.idx[, j]), j]
+	# # 			quantile(seasRR[seasRR > thres.rain.day], probs = 0.95, type = 8, na.rm = TRUE)
+	# # 		})
+
+	# nbQ95th <- sapply(seq(ncol(cdtPrecip$data)), function(j){
+	# 			seasRR <- cdtPrecip$data[unlist(debfin.idx[, j]), j]
+	# 			q95th <- quantile(seasRR[seasRR > thres.rain.day], probs = 0.95, type = 8, na.rm = TRUE)
+	# 			sapply(debfin.idx[, j], funAggrMAT,
+	# 				DATA = cdtPrecip$data[, j, drop = FALSE],
+	# 				pars = list(aggr.fun = "count", count.fun = ">", count.thres = q95th))
+	# 		})
+
+	# if(compute.ETP == "temp"){
+	# 	tmax <- sapply(seq(ncol(cdtTmax$data)), function(j){
+	# 				sapply(debfin.idx[, j], funAggrMAT,
+	# 					DATA = cdtTmax$data[, j, drop = FALSE],
+	# 					pars = list(aggr.fun = "mean"))
+	# 			})
+	# 	tmin <- sapply(seq(ncol(cdtTmin$data)), function(j){
+	# 				sapply(debfin.idx[, j], funAggrMAT,
+	# 					DATA = cdtTmin$data[, j, drop = FALSE],
+	# 					pars = list(aggr.fun = "mean"))
+	# 			})
+	# 	tmax <- round(tmax, 1)
+	# 	tmin <- round(tmin, 1)
+	# }
+
+	#########################################
+
+	InsertMessagesTxt(main.txt.out, 'Compute PICSA data ...')
+
+	if(doparallel & ncol(onset) >= 30){
+		klust <- makeCluster(nb_cores)
+		registerDoParallel(klust)
+		`%parLoop%` <- `%dopar%`
+		closeklust <- TRUE
+	}else{
+		`%parLoop%` <- `%do%`
+		closeklust <- FALSE
+	}
+
+	toExport1 <- c("cdtPrecip", "NumberOfSpell.AllVEC", "funAggrVEC")
+	if(dekmonUse) toExport1 <- c(toExport1, "cdtPrecip1")
+	if(compute.ETP == "temp") toExport1 <- c(toExport1, "cdtTmax", "cdtTmin")
+
+	dekmonUse <- GeneralParameters$dekmon$use.dekmon
+	dekmonTs <- GeneralParameters$dekmon$time.step
+	compute.ETP <- GeneralParameters$compute.ETP
+	thres.rain.day <- GeneralParameters$onset$thres.rain.day
+	dryspellfun <- if(thres.rain.day == 0) '==' else '<'
+	nbdayfun <- if(thres.rain.day == 0) '>' else '>='
+
+	transPose <- if(ncol(cdtPrecip$data) > 1) t else as.matrix
+	debfin.idx <- transPose(sapply(seq(nrow(onset)), function(j){
+						getIndexSeasonVarsRow(onset[j, ], cessat[j, ], cdtPrecip$dates, "daily")
+					}))
+	# na.idx <- is.na(debfin.idx)
+	lenDebFin <- sapply(debfin.idx, length)
+	dim(lenDebFin) <- dim(debfin.idx)
+
+	if(dekmonUse){
+		debfin.seas <- transPose(sapply(seq(nrow(onset)), function(j){
+							getIndexSeasonVarsRow(onset[j, ], cessat[j, ], cdtPrecip1$dates, dekmonTs)
+						}))
+		lenDebFinS <- sapply(debfin.seas, length)
+		dim(lenDebFinS) <- dim(debfin.seas)
+	}
+
+	ret <- foreach(j = seq(ncol(onset)), .export = toExport1) %parLoop% {
+		NAcount <- sapply(debfin.idx[, j], function(x){
+						y <- if(length(x) == 1 & all(is.na(x))) NA else cdtPrecip$data[x, j]
+						sum(is.na(y))
+					})
+		nafrac <- 1 - (NAcount/lenDebFin[, j]) < 0.98
+
+		AllDrySpell <- sapply(debfin.idx[, j], NumberOfSpell.AllVEC,
+							DATA = cdtPrecip$data[, j],
+							opr.fun = dryspellfun, opr.thres = thres.rain.day)
+		AllDrySpell[nafrac] <- NA
+
+		if(dekmonUse){
+			NAcountS <- sapply(debfin.seas[, j], function(x){
+							y <- if(length(x) == 1 & all(is.na(x))) NA else cdtPrecip1$data[x, j]
+							sum(is.na(y))
+						})
+			nafracS <- 1 - (NAcountS/lenDebFinS[, j]) < 0.98
+			RainTotal <- sapply(debfin.seas[, j], funAggrVEC, DATA = cdtPrecip1$data[, j], pars = list(aggr.fun = "sum"))
+			RainTotal[nafracS] <- NA
+		}else{
+			RainTotal <- sapply(debfin.idx[, j], funAggrVEC, DATA = cdtPrecip$data[, j], pars = list(aggr.fun = "sum"))
+			RainTotal[nafrac] <- NA
+			NAcountS <- NULL
+		}
+
+		nbdayrain <- sapply(debfin.idx[, j], funAggrVEC, DATA = cdtPrecip$data[, j],
+							pars = list(aggr.fun = "count", count.fun = nbdayfun, count.thres = thres.rain.day))
+		nbdayrain[nafrac] <- NA
+		
+		max24h <- sapply(debfin.idx[, j], funAggrVEC, DATA = cdtPrecip$data[, j], pars = list(aggr.fun = "max"))
+		max24h[nafrac] <- NA
+
+		if(compute.ETP == "temp"){
+			tmax <- sapply(debfin.idx[, j], funAggrVEC, DATA = cdtTmax$data[, j], pars = list(aggr.fun = "mean"))
+			tmin <- sapply(debfin.idx[, j], funAggrVEC, DATA = cdtTmin$data[, j], pars = list(aggr.fun = "mean"))
+			tmax[nafrac] <- NA
+			tmin[nafrac] <- NA
+		}else{
+			tmax <- NULL
+			tmin <- NULL
+		}
+
+		seasRR <- cdtPrecip$data[unlist(debfin.idx[, j]), j]
+		q95th <- quantile(seasRR[seasRR > thres.rain.day], probs = 0.95, type = 8, na.rm = TRUE)
+		nbQ95th <- sapply(debfin.idx[, j], funAggrVEC, DATA = cdtPrecip$data[, j],
+				pars = list(aggr.fun = "count", count.fun = ">", count.thres = q95th))
+		nbQ95th[nafrac] <- NA
+		TotalQ95th <- sapply(debfin.idx[, j], function(x){
+						x <- x[!is.na(x)]
+						if(length(x) == 0) return(NA)
+						VEC <- cdtPrecip$data[x, j]
+						VEC <- VEC[!is.na(VEC)]
+						if(length(VEC) == 0) return(NA)
+						sum(VEC[VEC > q95th])
+					})
+		TotalQ95th[nafrac] <- NA
+
+		list(dryspells = AllDrySpell, total = RainTotal, nbday = nbdayrain, max24h = max24h,
+			 q95th = q95th, TotalQ95th = TotalQ95th, nbQ95th = nbQ95th,
+			 NAcount = NAcount, NAcountS = NAcountS, tmax =  tmax, tmin =  tmin)
+	}
+	if(closeklust) stopCluster(klust)
+
+	AllDrySpell <- sapply(ret, function(x) x$dryspells)
+	RainTotal <- sapply(ret, function(x) x$total)
+	nbdayrain <- sapply(ret, function(x) x$nbday)
+	max24h <- sapply(ret, function(x) x$max24h)
+	Q95th <- matrix(sapply(ret, function(x) x$q95th), nrow = 1)
+	NbQ95th <- sapply(ret, function(x) x$nbQ95th)
+	TotalQ95th <- sapply(ret, function(x) x$TotalQ95th)
+	if(compute.ETP == "temp"){
+		tmax <- sapply(ret, function(x) x$tmax)
+		tmin <- sapply(ret, function(x) x$tmin)
+	}
+
+	#########################################
+
+	EnvPICSA$picsa$AllDrySpell <- AllDrySpell
+	EnvPICSA$picsa$RainTotal <- RainTotal
+	EnvPICSA$picsa$nbdayrain <- nbdayrain
+	EnvPICSA$picsa$max24h <- max24h
+	EnvPICSA$picsa$Q95th <- Q95th
+	EnvPICSA$picsa$NbQ95th <- NbQ95th
+	EnvPICSA$picsa$TotalQ95th <- TotalQ95th
+	if(compute.ETP == "temp"){
+		EnvPICSA$picsa$tmax <- tmax
+		EnvPICSA$picsa$tmin <- tmin
+	}
+
+	EnvPICSA$picsa.idx$debfin.idx <- debfin.idx
+	EnvPICSA$picsa.idx$lenDebFin <- lenDebFin
+	EnvPICSA$picsa.idx$NAcount <- sapply(ret, function(x) x$NAcount)
+	if(dekmonUse){
+		EnvPICSA$picsa.idx$debfin.seas <- debfin.seas
+		EnvPICSA$picsa.idx$lenDebFinS <- lenDebFinS
+		EnvPICSA$picsa.idx$NAcountS <- sapply(ret, function(x) x$NAcountS)
+	}
+
+	outPICSAData <- file.path(outputDIR, "PICSA.OUT.Data")
+	dir.create(outPICSAData, showWarnings = FALSE, recursive = TRUE)
+	save(EnvPICSA, file = file.path(outPICSAData, "PICSA.DATA.RData"))
+
+	InsertMessagesTxt(main.txt.out, 'Computing PICSA data done!')
+
+	#########################################
 
 	if(data.type == 'cdt'){
 		InsertMessagesTxt(main.txt.out, 'Plot stations data ...')
@@ -968,53 +1243,65 @@ PICSAProcs <- function(GeneralParameters){
 			closeklust <- FALSE
 		}
 
-		dekmonUse <- GeneralParameters$dekmon$use.dekmon
-		dekmonTs <- GeneralParameters$dekmon$time.step
-		thres.rain.day <- GeneralParameters$onset$thres.rain.day
-		dryspellfun <- if(thres.rain.day == 0) '==' else '<'
-		nbdayfun <- if(thres.rain.day == 0) '>' else '>='
+		# dekmonUse <- GeneralParameters$dekmon$use.dekmon
+		# dekmonTs <- GeneralParameters$dekmon$time.step
+		# thres.rain.day <- GeneralParameters$onset$thres.rain.day
+		# dryspellfun <- if(thres.rain.day == 0) '==' else '<'
+		# nbdayfun <- if(thres.rain.day == 0) '>' else '>='
+		# compute.ETP <- GeneralParameters$compute.ETP
+
+		# toExport1 <- c("getIndexSeasonVars", "funAggrMAT", "NumberOfSpell.All", "MaximumLengthOfSpell", "onset", "cessat", "cdtPrecip")
+		# toExport1 <- c("cdtPrecip", "getIndexSeasonVars", "onset", "cessat", "season.length",
+		# 				"yrsOnset", "matOnset", "onsetXS", "yrsCesst", "matCessat", "cessatXS")
+		# if(dekmonUse) toExport1 <- c(toExport1, "cdtPrecip1")
+		# if(compute.ETP == "temp") toExport1 <- c(toExport1, "cdtTmax", "cdtTmin")
+
+		# output.cdt <- foreach(j = seq(ncol(onset)), .packages = "matrixStats", .export = toExport1) %parLoop% {
+		# 	ijday <- getIndexSeasonVars(onset[, j], cessat[, j], cdtPrecip$dates, "daily")
+		# 	## seasonal amounts
+		# 	if(dekmonUse){
+		# 		ijseas <- getIndexSeasonVars(onset[, j], cessat[, j], cdtPrecip1$dates, dekmonTs)
+		# 		RainTotal <- sapply(ijseas, funAggrMAT, DATA = cdtPrecip1$data[, j, drop = FALSE], pars = list(aggr.fun = "sum"))
+		# 	}else{
+		# 		RainTotal <- sapply(ijday, funAggrMAT, DATA = cdtPrecip$data[, j, drop = FALSE], pars = list(aggr.fun = "sum"))
+		# 	}
+
+		# 	max24h <- sapply(ijday, funAggrMAT, DATA = cdtPrecip$data[, j, drop = FALSE], pars = list(aggr.fun = "max"))
+		# 	nbdayrain <- sapply(ijday, funAggrMAT, DATA = cdtPrecip$data[, j, drop = FALSE], pars = list(aggr.fun = "count", count.fun = nbdayfun, count.thres = thres.rain.day))
+
+		# 	seasRR <- cdtPrecip$data[unlist(ijday), j]
+		# 	seasRR <- seasRR[seasRR > thres.rain.day]
+		# 	q95th <- quantile(seasRR, probs = 0.95, type = 8, na.rm = TRUE)
+
+		# 	nbQ95th <- sapply(ijday, funAggrMAT, DATA = cdtPrecip$data[, j, drop = FALSE], pars = list(aggr.fun = "count", count.fun = ">=", count.thres = q95th))
+
+		# 	## dry spell 5, 7, 10, 15
+		# 	dryspell <- lapply(ijday, NumberOfSpell.All, DATA = cdtPrecip$data[, j, drop = FALSE], opr.fun = dryspellfun, opr.thres = thres.rain.day, ccday = c(5, 7, 10, 15))
+		# 	dryspell <- t(do.call(cbind, dryspell))
+		# 	## longest dry spell
+		# 	maxdryspell <- sapply(ijday, MaximumLengthOfSpell, DATA = cdtPrecip$data[, j, drop = FALSE], opr.fun = dryspellfun, opr.thres = thres.rain.day)
+		# 	ret <- data.frame(RainTotal, dryspell, maxdryspell, max24h, nbdayrain, nbQ95th)
+		# 	names(ret) <- c('RainTotal', 'DrySpell5', 'DrySpell7', 'DrySpell10', 'DrySpell15', "DrySpellMax", "MaxDailyRain", "NbRainDay", "ExtremeFrequency95Per")
+
+		# 	##
+		# 	if(compute.ETP == "temp"){
+		# 		tmax <- sapply(ijday, funAggrMAT, DATA = cdtTmax$data[, j, drop = FALSE], pars = list(aggr.fun = "mean"))
+		# 		tmin <- sapply(ijday, funAggrMAT, DATA = cdtTmin$data[, j, drop = FALSE], pars = list(aggr.fun = "mean"))
+		# 		ret <- data.frame(ret, tmax =  round(tmax, 1), tmin = round(tmin, 1))
+		# 	}
+		# 	return(ret)
+		# }
+
 		compute.ETP <- GeneralParameters$compute.ETP
-
-		toExport1 <- c("getIndexSeasonVars", "funAggrMAT", "NumberOfSpell.All", "MaximumLengthOfSpell", "cdtPrecip",
-						 "onset", "cessat",  "season.length", "yrsOnset", "matOnset", "onsetXS", "yrsCesst", "matCessat", "cessatXS")
-		if(dekmonUse) toExport1 <- c(toExport1, "cdtPrecip1")
-		if(compute.ETP == "temp") toExport1 <- c(toExport1, "cdtTmax", "cdtTmin")
-
-		output.cdt <- foreach(j = seq(ncol(onset)), .packages = "matrixStats", .export = toExport1) %parLoop% {
-			ijday <- getIndexSeasonVars(onset[, j], cessat[, j], cdtPrecip$dates, "daily")
-			## seasonal amounts
-			if(dekmonUse){
-				ijseas <- getIndexSeasonVars(onset[, j], cessat[, j], cdtPrecip1$dates, dekmonTs)
-				RainTotal <- sapply(ijseas, funAggrMAT, DATA = cdtPrecip1$data[, j, drop = FALSE], pars = list(aggr.fun = "sum"))
-			}else{
-				RainTotal <- sapply(ijday, funAggrMAT, DATA = cdtPrecip$data[, j, drop = FALSE], pars = list(aggr.fun = "sum"))
-			}
-
-			max24h <- sapply(ijday, funAggrMAT, DATA = cdtPrecip$data[, j, drop = FALSE], pars = list(aggr.fun = "max"))
-			nbdayrain <- sapply(ijday, funAggrMAT, DATA = cdtPrecip$data[, j, drop = FALSE], pars = list(aggr.fun = "count", count.fun = nbdayfun, count.thres = thres.rain.day))
-
-			seasRR <- cdtPrecip$data[unlist(ijday), j]
-			seasRR <- seasRR[seasRR > thres.rain.day]
-			q95th <- quantile(seasRR, probs = 0.95, type = 8, na.rm = TRUE)
-
-			nbQ95th <- sapply(ijday, funAggrMAT, DATA = cdtPrecip$data[, j, drop = FALSE], pars = list(aggr.fun = "count", count.fun = ">=", count.thres = q95th))
-
-			## dry spell 5, 7, 10, 15
-			dryspell <- lapply(ijday, NumberOfSpell.All, DATA = cdtPrecip$data[, j, drop = FALSE], opr.fun = dryspellfun, opr.thres = thres.rain.day, ccday = c(5, 7, 10, 15))
-			dryspell <- t(do.call(cbind, dryspell))
-			## longest dry spell
-			maxdryspell <- sapply(ijday, MaximumLengthOfSpell, DATA = cdtPrecip$data[, j, drop = FALSE], opr.fun = dryspellfun, opr.thres = thres.rain.day)
-			ret <- data.frame(RainTotal, dryspell, maxdryspell, max24h, nbdayrain, nbQ95th)
-			names(ret) <- c('RainTotal', 'DrySpell5', 'DrySpell7', 'DrySpell10', 'DrySpell15', "DrySpellMax", "MaxDailyRain", "NbRainDay", "ExtremeFrequency95Per")
-
-			##
-			if(compute.ETP == "temp"){
-				tmax <- sapply(ijday, funAggrMAT, DATA = cdtTmax$data[, j, drop = FALSE], pars = list(aggr.fun = "mean"))
-				tmin <- sapply(ijday, funAggrMAT, DATA = cdtTmin$data[, j, drop = FALSE], pars = list(aggr.fun = "mean"))
-				ret <- data.frame(ret, tmax =  round(tmax, 1), tmin = round(tmin, 1))
-			}
-			return(ret)
-		}
+		toExport1 <- c("cdtPrecip", "season.length", 
+						"getIndexSeasonVars", 
+						"onset", "yrsOnset", "matOnset", "onsetXS", 
+						"cessat", "yrsCesst", "matCessat", "cessatXS", 
+						"RainTotal", "AllDrySpell", "max24h", "nbdayrain",
+						"NbQ95th", "TotalQ95th", "Q95th")
+		if(compute.ETP == "temp")  toExport1 <- c(toExport1, "tmax", "tmin")
+		allfonct <- unlist(Map(function_name, Filter(is_function, parse(file.path(apps.dir, 'functions', 'PICSA_Plot_functions.R')))))
+		toExport1 <- c(toExport1, allfonct, "writeFiles", "table.annuel", "ONI.data", "ONI.date")
 
 		###
 		outPICSAdir <- file.path(outputDIR, "PICSA.OUT.Stations")
@@ -1024,19 +1311,24 @@ PICSAProcs <- function(GeneralParameters){
 		jpg.ucdt <- GeneralParameters$JPEG$units
 		jpg.rcdt <- GeneralParameters$JPEG$res
 
-		allfonct <- unlist(Map(function_name, Filter(is_function, parse(file.path(apps.dir, 'functions', 'PICSA_Plot_functions.R')))))
-		toExport1 <- c(toExport1, allfonct, "writeFiles", "table.annuel", "ONI.data", "ONI.date")
-
 		##################
 
 		# for(j in seq(ncol(cdtPrecip$data))){
-		ret <- foreach(j = seq(ncol(cdtPrecip$data)), .packages = c("matrixStats", "stringr", "tools", "fitdistrplus"), .export = toExport1) %parLoop% {
+		ret <- foreach(j = seq(ncol(cdtPrecip$data)), .packages = c("stringr", "tools", "fitdistrplus"), .export = toExport1) %parLoop% {
 			stnDIR <- file.path(outPICSAdir, cdtPrecip$id[j])
 			dir.create(stnDIR, showWarnings = FALSE, recursive = TRUE)
-			don <- output.cdt[[j]]
+
+			DrySpell5 <- sapply(AllDrySpell[, j], function(x) sum(x >= 5))
+			DrySpell7 <- sapply(AllDrySpell[, j], function(x) sum(x >= 7))
+			DrySpell10 <- sapply(AllDrySpell[, j], function(x) sum(x >= 10))
+			DrySpell15 <- sapply(AllDrySpell[, j], function(x) sum(x >= 15))
+			DrySpellMax <- sapply(AllDrySpell[, j], function(x) max(x))
 
 			## write data
-			don.out <- data.frame(onset = onset[, j], cessation = cessat[, j], seasonLength = as.numeric(season.length[, j]), don)
+			don.out <- data.frame(onset = onset[, j], cessation = cessat[, j], seasonLength = as.numeric(season.length[, j]), RainTotal = RainTotal[, j],
+								 DrySpell5 = DrySpell5, DrySpell7 = DrySpell7, DrySpell10 = DrySpell10, DrySpell15 = DrySpell15, DrySpellMax = DrySpellMax,
+								 MaxDailyRain = max24h[, j], NbRainDay = nbdayrain[, j], Q95th = Q95th[, j], ExtrmFreqQ95th = NbQ95th[, j], RainTotalQ95th = TotalQ95th[, j])
+			if(compute.ETP == "temp") don.out <- data.frame(don.out, tmax = round(tmax[, j], 1), tmin = round(tmin[, j], 1))
 			writeFiles(don.out, file.path(stnDIR, paste0(cdtPrecip$id[j], '_out', '.csv')), col.names = TRUE)
 
 			## ONI 
@@ -1046,17 +1338,17 @@ PICSAProcs <- function(GeneralParameters){
 
 			### Rainfall amounts ENSO line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount.ENSO_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.line.ONI(yrsOnset, don$RainTotal, xlab = 'Year', ylab = 'Rainfall Amount (mm)', colz = oni.idx)
+			plot.line.ONI(yrsOnset, RainTotal[, j], xlab = 'Year', ylab = 'Rainfall Amount (mm)', colz = oni.idx)
 			dev.off()
 
 			### Rainfall amounts ENSO bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount.ENSO_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.bar.ONI(yrsOnset, don$RainTotal, xlab = 'Year', ylab = 'Rainfall Amount (mm)', colz = oni.idx)
+			plot.bar.ONI(yrsOnset, RainTotal[, j], xlab = 'Year', ylab = 'Rainfall Amount (mm)', colz = oni.idx)
 			dev.off()
 
 			### Rainfall amounts ENSO prob
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount.ENSO_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.probaExeecdance.ONI(don$RainTotal, oni.idx, xlab = 'Rainfall Amount (mm)')
+			plot.probaExeecdance.ONI(RainTotal[, j], oni.idx, xlab = 'Rainfall Amount (mm)')
 			dev.off()
 
 			### daily rainfall
@@ -1096,111 +1388,118 @@ PICSAProcs <- function(GeneralParameters){
 
 			### Rainfall amounts line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount_line1', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.line.yaxvalue(yrsOnset, don$RainTotal, xlab = 'Year', ylab = 'Rainfall Amount (mm)')
+			plot.line.yaxvalue(yrsOnset, RainTotal[, j], xlab = 'Year', ylab = 'Rainfall Amount (mm)')
 			dev.off()
 
 			### Rainfall amounts line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount_line2', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.line.yaxvalue(yrsOnset, don$RainTotal, xlab = 'Year', ylab = 'Rainfall Amount (mm)', mean = TRUE, tercile = TRUE)
+			plot.line.yaxvalue(yrsOnset, RainTotal[, j], xlab = 'Year', ylab = 'Rainfall Amount (mm)', mean = TRUE, tercile = TRUE)
 			dev.off()
 
 			### Rainfall amounts bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.bar.yaxvalue(yrsOnset, don$RainTotal, xlab = 'Year', ylab = 'Rainfall Amount (mm)')
+			plot.bar.yaxvalue(yrsOnset, RainTotal[, j], xlab = 'Year', ylab = 'Rainfall Amount (mm)')
 			dev.off()
 
 			### Rainfall amounts prob
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.probaExeecdance.theor(don$RainTotal, xlab = "Rainfall Amount (mm)")
+			plot.probaExeecdance.theor(RainTotal[, j], xlab = "Rainfall Amount (mm)")
 			dev.off()
 
 			## Dry Spell 5 line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.5days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.line.dryspell(yrsOnset, don$DrySpell5, xlab = 'Year', ylab = 'Number of Dry Spells', sub = "Dry spells - 5 or more consecutive days")
+			plot.line.dryspell(yrsOnset, DrySpell5, xlab = 'Year', ylab = 'Number of Dry Spells', sub = "Dry spells - 5 or more consecutive days")
 			dev.off()
 			## Dry Spell 5 bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.5days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.bar.dryspell(yrsOnset, don$DrySpell5, xlab = 'Year', ylab = 'Number of Dry Spells', sub = "Dry spells - 5 or more consecutive days")
+			plot.bar.dryspell(yrsOnset, DrySpell5, xlab = 'Year', ylab = 'Number of Dry Spells', sub = "Dry spells - 5 or more consecutive days")
 			dev.off()
 			## Dry Spell 5 ecdf
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.5days_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.probaExeecdance(don$DrySpell5, xlab = 'Number of Dry Spells', sub = "Dry spells - 5 or more consecutive days")
+			plot.probaExeecdance(DrySpell5, xlab = 'Number of Dry Spells', sub = "Dry spells - 5 or more consecutive days")
 			dev.off()
 
 			## Dry Spell 7 line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.7days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.line.dryspell(yrsOnset, don$DrySpell7, xlab = 'Year', ylab = 'Number of Dry Spells', sub = "Dry spells - 7 or more consecutive days")
+			plot.line.dryspell(yrsOnset, DrySpell7, xlab = 'Year', ylab = 'Number of Dry Spells', sub = "Dry spells - 7 or more consecutive days")
 			dev.off()
 			## Dry Spell 7 bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.7days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.bar.dryspell(yrsOnset, don$DrySpell7, xlab = 'Year', ylab = 'Number of Dry Spells', sub = "Dry spells - 7 or more consecutive days")
+			plot.bar.dryspell(yrsOnset, DrySpell7, xlab = 'Year', ylab = 'Number of Dry Spells', sub = "Dry spells - 7 or more consecutive days")
 			dev.off()
 			## Dry Spell 7 ecdf
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.7days_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.probaExeecdance(don$DrySpell7, xlab = 'Number of Dry Spells', sub = "Dry spells - 7 or more consecutive days")
+			plot.probaExeecdance(DrySpell7, xlab = 'Number of Dry Spells', sub = "Dry spells - 7 or more consecutive days")
 			dev.off()
 
 			## Dry Spell 10 line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.10days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.line.dryspell(yrsOnset, don$DrySpell10, xlab = 'Year', ylab = 'Number of Dry Spells', sub = "Dry spells - 10 or more consecutive days")
+			plot.line.dryspell(yrsOnset, DrySpell10, xlab = 'Year', ylab = 'Number of Dry Spells', sub = "Dry spells - 10 or more consecutive days")
 			dev.off()
 			## Dry Spell 10 bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.10days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.bar.dryspell(yrsOnset, don$DrySpell10, xlab = 'Year', ylab = 'Number of Dry Spells', sub = "Dry spells - 10 or more consecutive days")
+			plot.bar.dryspell(yrsOnset, DrySpell10, xlab = 'Year', ylab = 'Number of Dry Spells', sub = "Dry spells - 10 or more consecutive days")
 			dev.off()
 			## Dry Spell 10 ecdf
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.10days_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.probaExeecdance(don$DrySpell10, xlab = 'Number of Dry Spells', sub = "Dry spells - 10 or more consecutive days")
+			plot.probaExeecdance(DrySpell10, xlab = 'Number of Dry Spells', sub = "Dry spells - 10 or more consecutive days")
 			dev.off()
 
 			## longest dry spell line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_longest.dry.spell_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.line.yaxvalue(yrsOnset, don$DrySpellMax, xlab = 'Year', ylab = 'Longest dry spell (days)', mean = TRUE)
+			plot.line.yaxvalue(yrsOnset, DrySpellMax, xlab = 'Year', ylab = 'Longest dry spell (days)', mean = TRUE)
 			dev.off()
 
 			## longest dry spell bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_longest.dry.spell_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.bar.yaxvalue(yrsOnset, don$DrySpellMax, xlab = 'Year', ylab = 'Longest dry spell (days)')
+			plot.bar.yaxvalue(yrsOnset, DrySpellMax, xlab = 'Year', ylab = 'Longest dry spell (days)')
 			dev.off()
 
 			## Rainy days line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainy.days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.line.yaxvalue(yrsOnset, don$NbRainDay, xlab = 'Year', ylab = 'Rainy days (days)', linecol = 'darkgreen', pointcol = "lightblue", mean = TRUE)
+			plot.line.yaxvalue(yrsOnset, nbdayrain[, j], xlab = 'Year', ylab = 'Number of rainy days (days)', linecol = 'darkgreen', pointcol = "lightblue", mean = TRUE)
 			dev.off()
 
 			## Rainy days bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainy.days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.bar.yaxvalue(yrsOnset, don$NbRainDay, xlab = 'Year', ylab = 'Rainy days (days)', barcol = "darkgreen")
+			plot.bar.yaxvalue(yrsOnset, nbdayrain[, j], xlab = 'Year', ylab = 'Number of rainy days (days)', barcol = "darkgreen")
 			dev.off()
 
 			## max 24h line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_max.1-day.precip_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.line.yaxvalue(yrsOnset, don$MaxDailyRain, xlab = 'Year', ylab = 'Seasonal maximum 1-day precipitation (mm)', linecol = 'turquoise4', pointcol = "lightblue", mean = TRUE)
+			plot.line.yaxvalue(yrsOnset, max24h[, j], xlab = 'Year', ylab = 'Seasonal maximum 1-day precipitation (mm)', linecol = 'turquoise4', pointcol = "lightblue", mean = TRUE)
 			dev.off()
 
 			## max 24h bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_max.1-day.precip_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			plot.bar.yaxvalue(yrsOnset, don$MaxDailyRain, xlab = 'Year', ylab = 'Seasonal maximum 1-day precipitation (mm)', barcol = "turquoise4")
+			plot.bar.yaxvalue(yrsOnset, max24h[, j], xlab = 'Year', ylab = 'Seasonal maximum 1-day precipitation (mm)', barcol = "turquoise4")
 			dev.off()
 
-			## above 95th percentile line
+			## Number of rainy days above 95th percentile line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_nb.precip.gt.95th.perc_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			op <- par(mar = c(5.1, 5.1, 3.1, 2.1))
-			plot.line.yaxvalue(yrsOnset, don$ExtremeFrequency95Per, xlab = 'Year', ylab = 'Seasonal count of days when\nRR > 95th percentile (days)', linecol = 'darkgreen', pointcol = "lightblue", mean = TRUE)
+			plot.line.yaxvalue(yrsOnset, NbQ95th[, j], xlab = 'Year', ylab = 'Seasonal count of days when\nRR > 95th percentile (days)', linecol = 'darkgreen', pointcol = "lightblue", mean = TRUE)
 			par(op)
 			dev.off()
 
-			## above 95th percentile line
+			## Number of rainy days above 95th percentile bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_nb.precip.gt.95th.perc_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			op <- par(mar = c(5.1, 5.1, 3.1, 2.1))
-			plot.bar.yaxvalue(yrsOnset, don$ExtremeFrequency95Per, xlab = 'Year', ylab = 'Seasonal count of days when\nRR > 95th percentile (days)', barcol = "darkgreen")
+			plot.bar.yaxvalue(yrsOnset, NbQ95th[, j], xlab = 'Year', ylab = 'Seasonal count of days when\nRR > 95th percentile (days)', barcol = "darkgreen")
+			par(op)
+			dev.off()
+
+			## Seasonal total of rain above 95th percentile bar
+			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_total.precip.gt.95th.perc_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+			op <- par(mar = c(5.1, 5.1, 3.1, 2.1))
+			plot.bar.yaxvalue(yrsOnset, TotalQ95th[, j], xlab = 'Year', ylab = 'Seasonal total of precipitation\nwhen RR > 95th percentile (days)', barcol = "darkgreen")
 			par(op)
 			dev.off()
 
 			## tmax & tmin
 			if(compute.ETP == "temp"){
 				jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_tmax.tmin_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-				plot.tmax.tmin(yrsOnset, don$tmax, don$tmin)
+				plot.tmax.tmin(yrsOnset, tmax[, j], tmin[, j])
 				dev.off()
 			}
 		}

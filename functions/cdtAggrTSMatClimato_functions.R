@@ -229,6 +229,72 @@ getIndexSeasonVars <- function(startSeas, endSeas, dates, inTimestep){
 	return(idx)
 }
 
+getIndexSeasonVarsRow <- function(startSeas, endSeas, dates, inTimestep){
+	idx <- vector(mode = "list", length = length(startSeas))
+	ina <- is.na(startSeas) | is.na(endSeas)
+	idx[ina] <- NA
+	startSeas <- startSeas[!ina]
+	endSeas <- endSeas[!ina]
+	if(length(startSeas) == 0) return(idx)
+
+	if(inTimestep == "daily"){
+		start.seas <- as.numeric(as.character(startSeas))
+		end.seas <- as.numeric(as.character(endSeas))
+	}
+	if(inTimestep == "monthly"){
+		start.seas <- as.numeric(substr(startSeas, 1, 6))
+		end.seas <- as.numeric(substr(endSeas, 1, 6))
+	}
+	if(inTimestep == "dekadal"){
+		start.seas1 <- as.numeric(substr(startSeas, 1, 6))
+		end.seas1 <- as.numeric(substr(endSeas, 1, 6))
+		start.seas2 <- as.numeric(substr(startSeas, 7, 8))
+		end.seas2 <- as.numeric(substr(endSeas, 7, 8))
+		start.seas2 <- ifelse(start.seas2 <= 10, 1, ifelse(start.seas2 > 20, 3, 2))
+		end.seas2 <- ifelse(end.seas2 <= 10, 1, ifelse(end.seas2 > 20, 3, 2))
+		start.seas <- as.numeric(paste0(start.seas1, start.seas2))
+		end.seas <- as.numeric(paste0(end.seas1, end.seas2))
+	}
+
+	##################
+
+	if(inTimestep == 'monthly'){
+		dtmp <- range(as.Date(paste0(dates, '01'), '%Y%m%d'), na.rm = TRUE)
+		pastemps <- 'month'
+	}else{
+		dtmp <- range(as.Date(dates, '%Y%m%d'), na.rm = TRUE)
+		pastemps <- 'day'
+	}
+	cdates <- seq(dtmp[1], dtmp[2], pastemps)
+	ystart <- seq(as.Date(paste0(format(cdates[1], '%Y'), '-1-1')), cdates[1], pastemps)
+	ystart <- ystart[-length(ystart)]
+	yend <- seq(cdates[length(cdates)], as.Date(paste0(format(cdates[length(cdates)], '%Y'), '-12-31')), pastemps)
+	yend <- yend[-1]
+	if(length(ystart) > 0) cdates <- c(ystart, cdates)
+	if(length(yend) > 0) cdates <- c(cdates, yend)
+	if(inTimestep == 'daily') cdates <- format(cdates, "%Y%m%d")
+	if(inTimestep == 'dekadal'){
+		dek <- as.numeric(format(cdates, '%d'))
+		cdates <- paste0(format(cdates, "%Y%m")[dek <= 3], dek[dek <= 3])
+	}
+	if(inTimestep == 'monthly') cdates <- format(cdates, "%Y%m")
+
+	idrow <- seq(length(dates))
+	idrow <- idrow[match(cdates, dates)]
+
+	##################
+
+	cdates <- as.numeric(as.character(dates))
+	istart <- match(start.seas, cdates)
+	iend <- match(end.seas, cdates)
+
+	idrow <- lapply(seq_along(istart), function(j) {
+		if(!is.na(iend[j])) idrow[istart[j]:iend[j]] else NA
+	})
+	idx[!ina] <- idrow
+	return(idx)
+}
+
 ###############################################
 
 ### NA count
@@ -250,6 +316,24 @@ funAggrMAT <- function(x, DATA, pars){
 		count.fun <- match.fun(pars$count.fun)
 		MAT <- count.fun(MAT, pars$count.thres) & !is.na(MAT)
 		res <- base::colSums(MAT, na.rm = TRUE)
+	}
+	return(res)
+}
+
+funAggrVEC <- function(x, DATA, pars){
+	x <- x[!is.na(x)]
+	if(length(x) == 0) return(NA)
+	VEC <- DATA[x]
+	VEC <- VEC[!is.na(VEC)]
+	if(length(VEC) == 0) return(NA)
+	if(pars$aggr.fun == "max") res <- max(VEC)
+	if(pars$aggr.fun == "min") res <- min(VEC)
+	if(pars$aggr.fun == "mean") res <- mean(VEC)
+	if(pars$aggr.fun == "sum") res <- sum(VEC)
+	if(pars$aggr.fun == "count"){
+		count.fun <- match.fun(pars$count.fun)
+		VEC <- count.fun(VEC, pars$count.thres)
+		res <- sum(VEC)
 	}
 	return(res)
 }
@@ -284,9 +368,9 @@ NumberOfSpell.All <- function(ix, DATA, opr.fun = "<", opr.thres = 1, ccday = 1:
 	})
 }
 
-NumberOfSpell.All1 <- function(ix, DATA, opr.fun = "<", opr.thres = 1){
-	opr.fun <- match.fun(opr.fun)
+NumberOfSpell.AllMAT <- function(ix, DATA, opr.fun = "<", opr.thres = 1){
 	if(length(ix) == 1) if(is.na(ix)) return(NA)
+	opr.fun <- match.fun(opr.fun)
 	MAT <- DATA[ix, , drop = FALSE]
 	MAT <- opr.fun(MAT, opr.thres) & !is.na(MAT)
 	lapply(seq(ncol(MAT)), function(i){
@@ -296,6 +380,18 @@ NumberOfSpell.All1 <- function(ix, DATA, opr.fun = "<", opr.thres = 1){
 		xx$lengths[xx$values]
 	})
 }
+
+NumberOfSpell.AllVEC <- function(ix, DATA, opr.fun = "<", opr.thres = 1){
+	if(length(ix) == 1)  if(is.na(ix)) return(NA)
+	opr.fun <- match.fun(opr.fun)
+	VEC <- DATA[ix]
+	if(all(is.na(VEC))) return(NA)
+	VEC <- opr.fun(VEC, opr.thres) & !is.na(VEC)
+	if(!any(VEC)) return(NA)
+	xx <- rle(VEC)
+	xx$lengths[xx$values]
+}
+
 
 
 # Maximum length of dry spell, maximum number of consecutive days with RR < 1mm

@@ -83,6 +83,11 @@
         "late.day": 15
     }],
 
+    "picsa.out": [{
+        "deja.calc": false,
+        "picsa.data": ""
+    }],
+
     "JPEG": [{
         "width": 11,
         "height": 7,

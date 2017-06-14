@@ -36,7 +36,7 @@ displayNetCDFdata <- function(parent, notebookTab, donne, atLev, listCol, shpf,
 		shpf[['vtmp']] <- 1
 		shpMask <- over(plotgrd, shpf)[,'vtmp']
 		outMask <- matrix(shpMask, nrow = length(donne$x), ncol = length(donne$y))
-		donne$value[is.na(outMask)] <- NA
+		donne$z[is.na(outMask)] <- NA
 	}
 
 	plotIt <- function(){

@@ -101,13 +101,12 @@ interpolationProc <- function(donne, demdata, interpolParams){
 		xlat <- fdem$y
 	}
 	if(grdChx == '1'){
-		parGrd <- as.numeric(as.character(grdCR$new.grid$Values))
-		if(sum(is.na(parGrd)) > 0){
+		if(any(is.na(unlist(grdCR$New.Grid.Def)))){
 			InsertMessagesTxt(main.txt.out, 'Some values for grid are missing', format = TRUE)
 			return(NULL)
 		}
-		xlon <- seq(parGrd[1], parGrd[2], parGrd[3])
-		xlat <- seq(parGrd[4], parGrd[5], parGrd[6])
+		xlon <- seq(grdCR$New.Grid.Def$minlon, grdCR$New.Grid.Def$maxlon, grdCR$New.Grid.Def$reslon)
+		xlat <- seq(grdCR$New.Grid.Def$minlat, grdCR$New.Grid.Def$maxlat, grdCR$New.Grid.Def$reslat)
 	}
 
 	newgrid <- data.frame(expand.grid(lon = xlon, lat = xlat))
@@ -200,7 +199,7 @@ interpolationProc <- function(donne, demdata, interpolParams){
 		nc2 <- nc_create(outfl, grd.out)
 		ncvar_put(nc2, grd.out, out.interp)
 		nc_close(nc2)
-		return(list(filename, list(x = xlon, y = xlat, value = out.interp0), outfl))
+		return(list(filename = filename, data = list(x = xlon, y = xlat, z = out.interp0), path = outfl))
 	}else{
 		InsertMessagesTxt(main.txt.out, "Interpolation failed", format = TRUE)
 		InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', intrpdata[1]), format = TRUE)

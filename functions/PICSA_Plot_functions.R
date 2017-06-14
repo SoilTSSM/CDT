@@ -167,8 +167,6 @@ plot.probaExeecdance.theor <- function(dat, xlab = '', linecol = 'blue', pointco
 	axis(2, at = axTicks(2), labels = paste0(axTicks(2), "%"), font = 2)
 }
 
-
-
 plot.line.dryspell <- function(x, y,  xlab = '', ylab = '',
 							linecol = 'red', pointcol = "blue", sub = NULL,
 							mean = FALSE, tercile = FALSE, linear = FALSE){
