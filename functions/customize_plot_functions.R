@@ -8,7 +8,7 @@ getBoundaries <- function(shpf){
 		polys <- lapply(retPolygon, function(x){
 			ret <- NULL
 			for(i in seq_along(x)){
-				poly <- rbind(slot(x[[i]], "coords"), cbind(NA, NA) )
+				poly <- rbind(slot(x[[i]], "coords"), cbind(NA, NA))
 				ret <- rbind(ret, poly)
 			}
 			ret

@@ -58,7 +58,7 @@ imageNotebookTab_open <- function(parent, notebookTab, tabTitle, tabType, tabDat
 					#new (scorllWin)
 					else tcl('destroy', tkwinfo('children', tabData[[idTabs]][[1]][[2]]))
 				}else{#or class(tabData[[idTabs]][[2]]) == "list"
-					##tabData[[idTabs]][[1]][[2]] < ==  == onglet[[2]]
+					##tabData[[idTabs]][[1]][[2]] <--  == onglet[[2]]
 					##canvas qc, extrait data
 					if(tclvalue(tkwinfo('class', tkwinfo('children', tabData[[idTabs]][[1]][[2]]))) == "Canvas") tkdestroy(tabData[[idTabs]][[2]][[1]])
 					#new (scorllWin)

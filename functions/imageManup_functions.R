@@ -113,7 +113,7 @@ pReleaseRect <- function(W, rectCrds){
 #mouvement de souris
 #Mouse.Mouvment <= old
 
-mouseMouvment <- function(W, x, y, parPltCrd) {
+mouseMouvment <- function(W, x, y, parPltCrd, xdiv = c(0, 1), ydiv = c(0, 1)) {
 	xmouse <- as.numeric(x)
 	ymouse <- as.numeric(y)
 
@@ -143,15 +143,17 @@ mouseMouvment <- function(W, x, y, parPltCrd) {
 	usrcrd4 <- as.numeric(tclvalue(parPltCrd$usrCoords4))
 
 	minX <- usrcrd1
-	rangeX <- usrcrd2-usrcrd1
+	rangeX <- usrcrd2 - usrcrd1
 	minY <- usrcrd3
-	rangeY <- usrcrd4-usrcrd3
+	rangeY <- usrcrd4 - usrcrd3
 
-	xcoord <- minX+(xpos-xplt1)*rangeX/(xplt2-xplt1)
-	ycoord <- minY+(ypos-yplt1)*rangeY/(yplt2-yplt1)
+	xposD <- (xpos - xdiv[1]) / (xdiv[2] - xdiv[1])
+	xcoord <- minX + (xposD - xplt1) * rangeX / (xplt2 - xplt1)
+	yposD <- (ypos - ydiv[1]) / (ydiv[2] - ydiv[1])
+	ycoord <- minY + (yposD - yplt1) * rangeY / (yplt2 - yplt1)
 	outsideArea <- xcoord < usrcrd1 | xcoord > usrcrd2 | ycoord < usrcrd3 | ycoord > usrcrd4
 
-	return(list(x = xcoord, y = ycoord, inout = outsideArea))
+	return(list(x = xcoord, y = ycoord, inout = outsideArea, xym = list(x = xpos, y = ypos)))
 }
 
 ##################################################################################
@@ -214,8 +216,7 @@ getAdminLabel <- function(xx, yy, shp, idField){
 getStnIDLabel <- function(xx, yy, pltusr, inout){
 	#si le pointer se trouve dans ce rayon afficher l'id de la station
 	fdispIdStn <- function(x){
-		if(x <= 2) y <- 0.0006944444*x
-		else y <- 0.002777778
+		y <- if(x <= 2) 0.0006944444 * x else 0.002777778
 		return(y)
 	}
 

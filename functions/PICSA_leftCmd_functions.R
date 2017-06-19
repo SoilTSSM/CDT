@@ -30,12 +30,14 @@ PICSAPanelCmd <- function(){
 	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Output")
 	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Rainy Season")
 	cmd.tab4 <- bwAddTab(tknote.cmd, text = "Plot")
+	cmd.tab5 <- bwAddTab(tknote.cmd, text = "Options")
 
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab4, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab5, 0, weight = 1)
 
 	#######################################################################################################
 
@@ -117,6 +119,7 @@ PICSAPanelCmd <- function(){
 					tkconfigure(cb.tmin, values = unlist(listOpenFiles), textvariable = file.tmin)
 					tkconfigure(cb.etp, values = unlist(listOpenFiles), textvariable = file.etp)
 					tkconfigure(cb.raindk, values = unlist(listOpenFiles), textvariable = file.raindk)
+					tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.shp)
 				}else return(NULL)
 			})
 
@@ -134,6 +137,7 @@ PICSAPanelCmd <- function(){
 					tkconfigure(cb.tmin, values = unlist(listOpenFiles), textvariable = file.tmin)
 					tkconfigure(cb.etp, values = unlist(listOpenFiles), textvariable = file.etp)
 					tkconfigure(cb.raindk, values = unlist(listOpenFiles), textvariable = file.raindk)
+					tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.shp)
 				}else return(NULL)
 			})
 
@@ -151,6 +155,7 @@ PICSAPanelCmd <- function(){
 					tkconfigure(cb.tmin, values = unlist(listOpenFiles), textvariable = file.tmin)
 					tkconfigure(cb.etp, values = unlist(listOpenFiles), textvariable = file.etp)
 					tkconfigure(cb.raindk, values = unlist(listOpenFiles), textvariable = file.raindk)
+					tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.shp)
 				}else return(NULL)
 			})
 
@@ -168,6 +173,7 @@ PICSAPanelCmd <- function(){
 					tkconfigure(cb.tmin, values = unlist(listOpenFiles), textvariable = file.tmin)
 					tkconfigure(cb.etp, values = unlist(listOpenFiles), textvariable = file.etp)
 					tkconfigure(cb.raindk, values = unlist(listOpenFiles), textvariable = file.raindk)
+					tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.shp)
 				}else return(NULL)
 			})
 
@@ -185,6 +191,7 @@ PICSAPanelCmd <- function(){
 					tkconfigure(cb.tmin, values = unlist(listOpenFiles), textvariable = file.tmin)
 					tkconfigure(cb.etp, values = unlist(listOpenFiles), textvariable = file.etp)
 					tkconfigure(cb.raindk, values = unlist(listOpenFiles), textvariable = file.raindk)
+					tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.shp)
 				}else return(NULL)
 			})
 
@@ -364,6 +371,7 @@ PICSAPanelCmd <- function(){
 			tkconfigure(cb.tmin, values = unlist(listOpenFiles), textvariable = file.tmin)
 			tkconfigure(cb.etp, values = unlist(listOpenFiles), textvariable = file.etp)
 			tkconfigure(cb.raindk, values = unlist(listOpenFiles), textvariable = file.raindk)
+			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.shp)
 		}else return(NULL)
 	})
 
@@ -415,7 +423,7 @@ PICSAPanelCmd <- function(){
 			stateTemp1 <- 'disabled'
 			stateEtp <- 'normal'
 			stateEtp1 <- if(tclvalue(DataType) == 'NetCDF gridded data') 'normal' else 'disabled'
-			if(tclvalue(varPICSA) %in% c("Maximum temperature", "Minimum temperature")) tclvalue(varPICSA) <- "Onset"
+			if(tclvalue(EnvPICSAplot$varPICSA) %in% c("Maximum temperature", "Minimum temperature")) tclvalue(EnvPICSAplot$varPICSA) <- "Onset"
 		}
 
 		tkconfigure(cb.TsMap.picsavar, values = varPICSA.val)
@@ -482,6 +490,7 @@ PICSAPanelCmd <- function(){
 			tkconfigure(cb.tmin, values = unlist(listOpenFiles), textvariable = file.tmin)
 			tkconfigure(cb.etp, values = unlist(listOpenFiles), textvariable = file.etp)
 			tkconfigure(cb.raindk, values = unlist(listOpenFiles), textvariable = file.raindk)
+			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.shp)
 		}else return(NULL)
 	})
 
@@ -505,6 +514,7 @@ PICSAPanelCmd <- function(){
 			tkconfigure(cb.tmin, values = unlist(listOpenFiles), textvariable = file.tmin)
 			tkconfigure(cb.etp, values = unlist(listOpenFiles), textvariable = file.etp)
 			tkconfigure(cb.raindk, values = unlist(listOpenFiles), textvariable = file.raindk)
+			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.shp)
 		}else return(NULL)
 	})
 
@@ -574,6 +584,7 @@ PICSAPanelCmd <- function(){
 			tkconfigure(cb.tmin, values = unlist(listOpenFiles), textvariable = file.tmin)
 			tkconfigure(cb.etp, values = unlist(listOpenFiles), textvariable = file.etp)
 			tkconfigure(cb.raindk, values = unlist(listOpenFiles), textvariable = file.raindk)
+			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.shp)
 		}else return(NULL)
 	})
 
@@ -690,6 +701,7 @@ PICSAPanelCmd <- function(){
 			tkconfigure(cb.tmin, values = unlist(listOpenFiles), textvariable = file.tmin)
 			tkconfigure(cb.etp, values = unlist(listOpenFiles), textvariable = file.etp)
 			tkconfigure(cb.raindk, values = unlist(listOpenFiles), textvariable = file.raindk)
+			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.shp)
 		}else return(NULL)
 	})
 
@@ -985,7 +997,7 @@ PICSAPanelCmd <- function(){
 		GeneralParameters$cessation$late.month <- which(MOIS%in%str_trim(tclvalue(cess.late.mon)))
 		GeneralParameters$cessation$late.day <- as.numeric(str_trim(tclvalue(cess.late.day)))
 
-		assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
+		# assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
 		tkconfigure(main.win, cursor = 'watch')
 		InsertMessagesTxt(main.txt.out, paste("Calculating onset & cessation......."))
@@ -1001,8 +1013,28 @@ PICSAPanelCmd <- function(){
 		)
 
 		if(!is.null(ret)){
-			if(ret == 0) InsertMessagesTxt(main.txt.out, "Calculation finished successfully")
-			else InsertMessagesTxt(main.txt.out, "Calculation failed", format = TRUE)
+			if(ret == 0){
+				InsertMessagesTxt(main.txt.out, "Calculation finished successfully")
+
+				PICSADATA <<- TRUE
+
+				statexyLoc <- if(tclvalue(DataType) == 'NetCDF gridded data') "normal" else "disabled"
+				stateStnID <- if(tclvalue(DataType) == 'CDT data format') "normal" else "disabled"
+				tkconfigure(cb.stnID, state = stateStnID)
+				tkconfigure(en.lonLoc, state = statexyLoc)
+				tkconfigure(en.latLoc, state = statexyLoc)
+
+				range.TsMap.year <- range(EnvPICSA$index$onsetYear)
+				tkconfigure(EnvPICSAplot$spin.TsMap.year, from = range.TsMap.year[1], to = range.TsMap.year[2])
+				tkset(EnvPICSAplot$spin.TsMap.year, range.TsMap.year[2])
+
+				stnIDTSPLOT <- if(tclvalue(DataType) == 'CDT data format') EnvPICSA$cdtPrecip$id else ""
+				tkconfigure(cb.stnID, values = stnIDTSPLOT)
+				tclvalue(EnvPICSAplot$stnIDTSp) <- stnIDTSPLOT[1]
+
+			}else{
+				InsertMessagesTxt(main.txt.out, "Calculation failed", format = TRUE)
+			}
 		}else{
 			InsertMessagesTxt(main.txt.out, "Calculation failed", format = TRUE)
 		}
@@ -1036,7 +1068,6 @@ PICSAPanelCmd <- function(){
 	statePicOut <- if(GeneralParameters$picsa.out$deja.calc) 'normal' else 'disabled'
 
 	chk.picsaout <- tkcheckbutton(framePicsaOut, variable = dejaCalc, text =  "Onset & Cessation are already calculated", anchor = 'w', justify = 'left')
-	txt.picsaout <- tklabel(framePicsaOut, text = "PICSA output data",  anchor = 'w', justify = 'left')
 	en.picsaout <- tkentry(framePicsaOut, textvariable = picsaData, width = largeur2, state = statePicOut)
 	bt.picsaout <- tkbutton(framePicsaOut, text = "...", state = statePicOut)
 
@@ -1045,12 +1076,21 @@ PICSAPanelCmd <- function(){
 		loadPiscaData <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
 		if(loadPiscaData == "") return(NULL)
 		tclvalue(picsaData) <- loadPiscaData
+
+		if(!PICSADATA){
+			picsa <- try(loadPICSA.Data(), silent = TRUE)
+			if(inherits(picsa, "try-error")){
+				InsertMessagesTxt(main.txt.out, 'Unable to load PICSA outputs data', format = TRUE)
+				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', picsa[1]), format = TRUE)
+				return(NULL)
+			}
+			PICSADATA <<- picsa
+		} 
 	})
 
 	tkgrid(chk.picsaout, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.picsaout, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.picsaout, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(bt.picsaout, row = 2, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.picsaout, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.picsaout, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(chk.picsaout, "Check this box if the onset and cessation data are already calculated")
 	status.bar.display(chk.picsaout, TextOutputVar, "Check this box if the onset and cessation data are already calculated")
@@ -1066,53 +1106,430 @@ PICSAPanelCmd <- function(){
 		tkconfigure(bt.picsaout, state = statePicOut)
 		stateCalc <- if(tclvalue(dejaCalc) == '1') 'normal' else 'disabled'
 		tkconfigure(bt.CalculateOnset, state = stateCalc)
-		## load function
 	})
 
 	#######################
 
 	frameTSMaps <- ttklabelframe(subfr4, text = "Maps", relief = 'groove')
 
-	varPICSA <- tclVar("Onset")
+	EnvPICSAplot$varPICSA <- tclVar("Onset")
 	varPICSA.val <- c("Onset", "Cessation", "Season Length", "Seasonal Rainfall Amounts",
 					"Dry Spells", "Longest Dry Spell", 
 					"Number of rain day", "Maximum daily rain",
 					"Total rain when RR>95thPerc", "Nb of day when RR>95thPerc")
+
 	if(GeneralParameters$compute.ETP == 'temp') varPICSA.val <- c(varPICSA.val, "Maximum temperature", "Minimum temperature")
 	stateDrySpl <- 'disabled'
 
-
-	cb.TsMap.picsavar <- ttkcombobox(frameTSMaps, values = varPICSA.val, textvariable = varPICSA, width = 21)
+	cb.TsMap.picsavar <- ttkcombobox(frameTSMaps, values = varPICSA.val, textvariable = EnvPICSAplot$varPICSA, width = 21)
 	txt.TsMap.dryspell <- tklabel(frameTSMaps, text = "DrySpell",  anchor = 'w', justify = 'left')
-	spin.TsMap.dryspell <- ttkspinbox(frameTSMaps, from = 1, to = 40, increment = 1, justify = 'center', width = 2, state = stateDrySpl)
-	tkset(spin.TsMap.dryspell, 5)
+	EnvPICSAplot$spin.TsMap.dryspell <- ttkspinbox(frameTSMaps, from = 1, to = 40, increment = 1, justify = 'center', width = 2, state = stateDrySpl)
+	tkset(EnvPICSAplot$spin.TsMap.dryspell, 5)
 
 	bt.TsMap.prev <- tkbutton(frameTSMaps, text = "<<")
 	bt.TsMap.next <- tkbutton(frameTSMaps, text = ">>")
-	spin.TsMap.year <- ttkspinbox(frameTSMaps, from = 1800, to = 2200, increment = 1, justify = 'center', width = 4)
-	tkset(spin.TsMap.year, 1983)
+	EnvPICSAplot$spin.TsMap.year <- ttkspinbox(frameTSMaps, from = 1800, to = 2200, increment = 1, justify = 'center', width = 4)
+	tkset(EnvPICSAplot$spin.TsMap.year, 2015)
 	bt.TsMap.plot <- tkbutton(frameTSMaps, text = "PLOT")
-
 
 	tkgrid(cb.TsMap.picsavar, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(txt.TsMap.dryspell, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(spin.TsMap.dryspell, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(EnvPICSAplot$spin.TsMap.dryspell, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	tkgrid(bt.TsMap.prev, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(spin.TsMap.year, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(EnvPICSAplot$spin.TsMap.year, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(bt.TsMap.next, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(bt.TsMap.plot, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
+	infobulle(cb.TsMap.picsavar, "Select the variable to plot")
+	status.bar.display(cb.TsMap.picsavar, TextOutputVar, "Select the variable to plot")
+	infobulle(EnvPICSAplot$spin.TsMap.dryspell, "Dry spell definition (continuous dry days)")
+	status.bar.display(EnvPICSAplot$spin.TsMap.dryspell, TextOutputVar, "Dry spell definition (continuous dry days)")
+	infobulle(bt.TsMap.prev, "Plot the previous year")
+	status.bar.display(bt.TsMap.prev, TextOutputVar, "Plot the previous year")
+	infobulle(bt.TsMap.next, "Plot the next year")
+	status.bar.display(bt.TsMap.next, TextOutputVar, "Plot the next year")
+	infobulle(EnvPICSAplot$spin.TsMap.year, "Select the year to plot")
+	status.bar.display(EnvPICSAplot$spin.TsMap.year, TextOutputVar, "Select the year to plot")
 
+	#################
 	tkbind(cb.TsMap.picsavar, "<<ComboboxSelected>>", function(){
-		stateDrySpl <- if(tclvalue(varPICSA) == "Dry Spells") "normal" else "disabled"
-		tkconfigure(spin.TsMap.dryspell, state = stateDrySpl)
+		stateDrySpl <- if(tclvalue(EnvPICSAplot$varPICSA) == "Dry Spells") "normal" else "disabled"
+		tkconfigure(EnvPICSAplot$spin.TsMap.dryspell, state = stateDrySpl)
 	})
+
+	#######################
+
+	frameClimMaps <- ttklabelframe(subfr4, text = "Climatological Analysis", relief = 'groove')
+
+	ANALYSIS <- c('Average', 'Median', 'Standard deviation', 'Trend', 'Percentiles', 'Frequency')
+	EnvPICSAplot$analysis.method <- tclVar('Average')
+	EnvPICSAplot$mth.perc <- tclVar(95)
+	EnvPICSAplot$low.thres <- tclVar("09-15")
+	EnvPICSAplot$up.thres <- tclVar("11-30")
+
+	statePrc <- if(tclvalue(EnvPICSAplot$analysis.method) == 'Percentiles') 'normal' else 'disabled'
+	stateFrq <- if(tclvalue(EnvPICSAplot$analysis.method) == 'Frequency') 'normal' else 'disabled'
+
+	cb.anMthd <- ttkcombobox(frameClimMaps, values = ANALYSIS, textvariable = EnvPICSAplot$analysis.method, width = 21)
+	txt.Percent <- tklabel(frameClimMaps, text = "Percentile",  anchor = 'w', justify = 'left')
+	en.Percent <- tkentry(frameClimMaps, textvariable = EnvPICSAplot$mth.perc, width = 3, state = statePrc)
+
+	txt.Freq1 <- tklabel(frameClimMaps, text = "Between",  anchor = 'w', justify = 'left')
+	en.Freq1 <- tkentry(frameClimMaps, textvariable = EnvPICSAplot$low.thres, width = 5, state = stateFrq)
+	txt.Freq2 <- tklabel(frameClimMaps, text = "And",  anchor = 'w', justify = 'left')
+	en.Freq2 <- tkentry(frameClimMaps, textvariable = EnvPICSAplot$up.thres, width = 5, state = stateFrq)
+	bt.ClimMap.plot <- tkbutton(frameClimMaps, text = "PLOT")
+
+
+	tkgrid(cb.anMthd, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.Percent, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.Percent, row = 0, column = 5, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	tkgrid(txt.Freq1, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.Freq1, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.Freq2, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.Freq2, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.ClimMap.plot, row = 1, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(cb.anMthd, "Select the analysis method")
+	status.bar.display(cb.anMthd, TextOutputVar, "Select the analysis method")
+	infobulle(en.Percent, "Enter the nth percentile to be calculated")
+	status.bar.display(en.Percent, TextOutputVar, "Enter the nth percentile to be calculated")
+	infobulle(en.Freq1, "Enter the lower bound of the interval to count the number of occurrences")
+	status.bar.display(en.Freq1, TextOutputVar, "Enter the lower bound of the interval to count the number of occurrences")
+	infobulle(en.Freq2, "Enter the upper bound of the interval to count the number of occurrences")
+	status.bar.display(en.Freq2, TextOutputVar, "Enter the upper bound of the interval to count the number of occurrences")
+
+	#################
+	tkbind(cb.anMthd, "<<ComboboxSelected>>", function(){
+		statePrc <- if(tclvalue(EnvPICSAplot$analysis.method) == 'Percentiles') 'normal' else 'disabled'
+		stateFrq <- if(tclvalue(EnvPICSAplot$analysis.method) == 'Frequency') 'normal' else 'disabled'
+		tkconfigure(en.Percent, state = statePrc)
+		tkconfigure(en.Freq1, state = stateFrq)
+		tkconfigure(en.Freq2, state = stateFrq)
+	})
+
+	#######################
+
+	frameTSPlot <- ttklabelframe(subfr4, text = "Time Series plot", relief = 'groove')
+
+	varTSPLOT <- c("From Maps", "Daily Rainfall")
+	EnvPICSAplot$varTSp <- tclVar("From Maps")
+
+	typeTSPLOT <- c("Line", "Barplot", "Probability", "ENSO-Line", "ENSO-Barplot", "ENSO-Proba")
+	EnvPICSAplot$typeTSp <- tclVar("Line")
+	EnvPICSAplot$averageTSp <- tclVar(FALSE)
+	EnvPICSAplot$tercileTSp <- tclVar(FALSE)
+	EnvPICSAplot$trendTSp <- tclVar(FALSE)
+
+	EnvPICSAplot$lonLOC <- tclVar()
+	EnvPICSAplot$latLOC <- tclVar()
+
+	# update when load data
+	stnIDTSPLOT <- c("")
+	EnvPICSAplot$stnIDTSp <- tclVar()
+
+	stateTsp <- if(tclvalue(EnvPICSAplot$varTSp) == "From Maps") "normal" else "disabled"
+	stateType <- if(tclvalue(EnvPICSAplot$typeTSp)%in%c("Line", "ENSO-Line") && tclvalue(EnvPICSAplot$varTSp) == "From Maps") "normal" else "disabled"
+
+	statexyLoc <- "disabled"
+	stateStnID <- "disabled"
+
+	cb.varTSp <- ttkcombobox(frameTSPlot, values = varTSPLOT, textvariable = EnvPICSAplot$varTSp, width = 21)
+	cb.typeTSp <- ttkcombobox(frameTSPlot, values = typeTSPLOT, textvariable = EnvPICSAplot$typeTSp, width = 10, state = stateTsp)
+
+	chk.meanTSp <- tkcheckbutton(frameTSPlot, variable = EnvPICSAplot$averageTSp, text =  "Add Mean", anchor = 'w', justify = 'left', state = stateType)
+	chk.tercTSp <- tkcheckbutton(frameTSPlot, variable = EnvPICSAplot$tercileTSp, text =  "Add Terciles", anchor = 'w', justify = 'left', state = stateType)
+	chk.trendTSp <- tkcheckbutton(frameTSPlot, variable = EnvPICSAplot$trendTSp, text =  "Add Trend", anchor = 'w', justify = 'left', state = stateType)
+
+	txt.lonLoc <- tklabel(frameTSPlot, text = "Longitude",  anchor = 'e', justify = 'right')
+	en.lonLoc <- tkentry(frameTSPlot, textvariable = EnvPICSAplot$lonLOC, width = 6, state = statexyLoc)
+	txt.latLoc <- tklabel(frameTSPlot, text = "Latitude",  anchor = 'e', justify = 'right')
+	en.latLoc <- tkentry(frameTSPlot, textvariable = EnvPICSAplot$latLOC, width = 6, state = statexyLoc)
+
+	txt.stnID <- tklabel(frameTSPlot, text = "Station",  anchor = 'e', justify = 'right')
+	cb.stnID <- ttkcombobox(frameTSPlot, values = stnIDTSPLOT, textvariable = EnvPICSAplot$stnIDTSp, width = 10, state = stateStnID)
+	bt.TsGraph.plot <- tkbutton(frameTSPlot, text = "PLOT")
+
+
+	tkgrid(cb.varTSp, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 12, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.typeTSp, row = 0, column = 12, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	tkgrid(chk.meanTSp, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(chk.tercTSp, row = 1, column = 6, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(chk.trendTSp, row = 1, column = 12, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	tkgrid(txt.lonLoc, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.lonLoc, row = 2, column = 4, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.latLoc, row = 2, column = 8, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.latLoc, row = 2, column = 12, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	tkgrid(txt.stnID, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.stnID, row = 3, column = 3, sticky = 'we', rowspan = 1, columnspan = 9, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.TsGraph.plot, row = 3, column = 12, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#################
+	tkbind(cb.varTSp, "<<ComboboxSelected>>", function(){
+		stateTsp <- if(tclvalue(EnvPICSAplot$varTSp) == "From Maps") "normal" else "disabled"
+		tkconfigure(cb.typeTSp, state = stateTsp)
+
+		stateType <- if(tclvalue(EnvPICSAplot$typeTSp)%in%c("Line", "ENSO-Line") && tclvalue(EnvPICSAplot$varTSp) == "From Maps") "normal" else "disabled"
+		tkconfigure(chk.meanTSp, state = stateType)
+		tkconfigure(chk.tercTSp, state = stateType)
+		tkconfigure(chk.trendTSp, state = stateType)
+	})
+
+	tkbind(cb.typeTSp, "<<ComboboxSelected>>", function(){
+		stateType <- if(tclvalue(EnvPICSAplot$typeTSp)%in%c("Line", "ENSO-Line") && tclvalue(EnvPICSAplot$varTSp) == "From Maps") "normal" else "disabled"
+		tkconfigure(chk.meanTSp, state = stateType)
+		tkconfigure(chk.tercTSp, state = stateType)
+		tkconfigure(chk.trendTSp, state = stateType)
+	})
+
 
 	#######################
 	# tkgrid(framePicsaOut, row = 0, column = 0, sticky = 'we')
 	# tkgrid(frameTSMaps, row = 1, column = 0, sticky = 'we', pady = 3)
+	# tkgrid(frameClimMaps, row = 2, column = 0, sticky = 'we', pady = 3)
+	# tkgrid(frameTSPlot, row = 3, column = 0, sticky = 'we', pady = 3)
 
+	#######################################################################################################
+
+	#Tab5
+	frTab5 <- tkframe(cmd.tab5)
+	tkgrid(frTab5, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab5, 0, weight = 1)
+
+	scrw5 <- bwScrolledWindow(frTab5)
+	tkgrid(scrw5)
+	tkgrid.columnconfigure(scrw5, 0, weight = 1)
+	subfr5 <- bwScrollableFrame(scrw5, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr5, 0, weight = 1)
+
+	#######################
+
+	frameSHP <- ttklabelframe(subfr5, text = "Shapefile for Administrative Boundaries", relief = 'groove')
+
+	file.shp <- tclVar()
+
+	cb.shpF <- ttkcombobox(frameSHP, values = unlist(listOpenFiles), textvariable = file.shp, width = largeur1)
+	bt.shpF <- tkbutton(frameSHP, text = "...")
+
+	tkconfigure(bt.shpF, command = function(){
+		shp.opfiles <- getOpenShp(main.win, all.opfiles)
+		if(!is.null(shp.opfiles)){
+			nopf <- length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]] <<- 'shp'
+			AllOpenFilesData[[nopf+1]] <<- shp.opfiles
+
+			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.shp) <- AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.rain, values = unlist(listOpenFiles), textvariable = file.rain)
+			tkconfigure(cb.tmax, values = unlist(listOpenFiles), textvariable = file.tmax)
+			tkconfigure(cb.tmin, values = unlist(listOpenFiles), textvariable = file.tmin)
+			tkconfigure(cb.etp, values = unlist(listOpenFiles), textvariable = file.etp)
+			tkconfigure(cb.raindk, values = unlist(listOpenFiles), textvariable = file.raindk)
+			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.shp)
+		}else return(NULL)
+	})
+
+	tkgrid(cb.shpF, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(bt.shpF, row = 0, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+
+	#######################
+	# tkgrid(frameSHP, row = 0, column = 0, sticky = 'we')
+
+	#######################################################################################################
+
+	PICSADATA <- FALSE
+
+	loadPICSA.Data <- function(){
+		fileRData <- tclvalue(picsaData)
+		if(file.exists(fileRData)){
+			load(fileRData)
+			ret <- lapply(ls(envir = EnvPICSA.save), function(x) assign(x, get(x, envir = EnvPICSA.save), envir = EnvPICSA))
+
+			statexyLoc <- if(EnvPICSA$data.type == 'netcdf') "normal" else "disabled"
+			stateStnID <- if(EnvPICSA$data.type == 'cdt') "normal" else "disabled"
+			tkconfigure(cb.stnID, state = stateStnID)
+			tkconfigure(en.lonLoc, state = statexyLoc)
+			tkconfigure(en.latLoc, state = statexyLoc)
+
+			varPICSA.val <- c("Onset", "Cessation", "Season Length", "Seasonal Rainfall Amounts",
+							"Dry Spells", "Longest Dry Spell",
+							"Number of rain day", "Maximum daily rain",
+							"Total rain when RR>95thPerc", "Nb of day when RR>95thPerc")
+			if(EnvPICSA$compute.ETP == 'temp'){
+				varPICSA.val <- c(varPICSA.val, "Maximum temperature", "Minimum temperature")
+			}else{
+				if(tclvalue(EnvPICSAplot$varPICSA) %in% c("Maximum temperature", "Minimum temperature")) tclvalue(EnvPICSAplot$varPICSA) <- "Onset"
+			}
+			tkconfigure(cb.TsMap.picsavar, values = varPICSA.val)
+
+			range.TsMap.year <- range(EnvPICSA$index$onsetYear)
+			tkconfigure(EnvPICSAplot$spin.TsMap.year, from = range.TsMap.year[1], to = range.TsMap.year[2])
+			tkset(EnvPICSAplot$spin.TsMap.year, range.TsMap.year[2])
+
+			stnIDTSPLOT <- if(EnvPICSA$data.type == 'cdt') EnvPICSA$cdtPrecip$id else ""
+			tkconfigure(cb.stnID, values = stnIDTSPLOT)
+			tclvalue(EnvPICSAplot$stnIDTSp) <- stnIDTSPLOT[1]
+
+			loaded <- TRUE
+		}else{
+			InsertMessagesTxt(main.txt.out, 'No PICSA outputs data found', format = TRUE)
+			loaded <- FALSE
+		}
+		return(loaded)
+	}
+
+	getSHPLines <- function(file.shp){
+		if(!is.null(EnvPICSAplot$ocrds)){
+			if(!isTRUE(all.equal(EnvPICSAplot$shpInfo, tclvalue(file.shp)))){
+				getdfShp <- TRUE
+				EnvPICSAplot$ocrds <- NULL
+			}else getdfShp <- FALSE
+		}else getdfShp <- TRUE
+
+		if(getdfShp){
+			shpofile <- getShpOpenData(file.shp)
+			ocrds <- getBoundaries(shpofile[[2]])
+			EnvPICSAplot$ocrds <- ocrds
+			EnvPICSAplot$shpInfo <- tclvalue(file.shp)
+		}else ocrds <- EnvPICSAplot$ocrds
+		return(ocrds)
+	}
+
+	#######################
+
+	EnvPICSAplot$notebookTab.maps <- NULL
+
+	tkconfigure(bt.TsMap.prev, command = function(){
+		if(!PICSADATA){
+			picsa <- try(loadPICSA.Data(), silent = TRUE)
+			if(inherits(picsa, "try-error")){
+				InsertMessagesTxt(main.txt.out, 'Unable to load PICSA outputs data', format = TRUE)
+				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', picsa[1]), format = TRUE)
+				return(NULL)
+			}
+			PICSADATA <<- picsa
+		} 
+
+		range.TsMap.year <- range(EnvPICSA$index$onsetYear)
+		iyear <- as.numeric(str_trim(tclvalue(tkget(EnvPICSAplot$spin.TsMap.year))))
+		iyear <- iyear-1
+		if(iyear < range.TsMap.year[1]) iyear <- range.TsMap.year[2]
+		tkset(EnvPICSAplot$spin.TsMap.year, iyear)
+
+		ocrds <- getSHPLines(file.shp)
+		EnvPICSAplot$xlim.maps <- range(c(ocrds[, 1], EnvPICSA$cdtPrecip$lon), na.rm = TRUE)
+		EnvPICSAplot$ylim.maps <- range(c(ocrds[, 2], EnvPICSA$cdtPrecip$lat), na.rm = TRUE)
+
+		imgContainer <- PICSA.DisplayMaps(tknotes, ocrds)
+
+		retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvPICSAplot$notebookTab.maps, AllOpenTabType, AllOpenTabData)
+		EnvPICSAplot$notebookTab.maps <- retNBTab$notebookTab
+		AllOpenTabType <<- retNBTab$AllOpenTabType
+		AllOpenTabData <<- retNBTab$AllOpenTabData
+	})
+
+	#######################
+
+	tkconfigure(bt.TsMap.next, command = function(){
+		if(!PICSADATA){
+			picsa <- try(loadPICSA.Data(), silent = TRUE)
+			if(inherits(picsa, "try-error")){
+				InsertMessagesTxt(main.txt.out, 'Unable to load PICSA outputs data', format = TRUE)
+				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', picsa[1]), format = TRUE)
+				return(NULL)
+			}
+			PICSADATA <<- picsa
+		} 
+
+		range.TsMap.year <- range(EnvPICSA$index$onsetYear)
+		iyear <- as.numeric(str_trim(tclvalue(tkget(EnvPICSAplot$spin.TsMap.year))))
+		iyear <- iyear+1
+		if(iyear > range.TsMap.year[2]) iyear <- range.TsMap.year[1]
+		tkset(EnvPICSAplot$spin.TsMap.year, iyear)
+
+		ocrds <- getSHPLines(file.shp)
+		EnvPICSAplot$xlim.maps <- range(c(ocrds[, 1], EnvPICSA$cdtPrecip$lon), na.rm = TRUE)
+		EnvPICSAplot$ylim.maps <- range(c(ocrds[, 2], EnvPICSA$cdtPrecip$lat), na.rm = TRUE)
+
+		imgContainer <- PICSA.DisplayMaps(tknotes, ocrds)
+
+		retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvPICSAplot$notebookTab.maps, AllOpenTabType, AllOpenTabData)
+		EnvPICSAplot$notebookTab.maps <- retNBTab$notebookTab
+		AllOpenTabType <<- retNBTab$AllOpenTabType
+		AllOpenTabData <<- retNBTab$AllOpenTabData
+	})
+
+	#######################
+
+	tkconfigure(bt.TsMap.plot, command = function(){
+		if(!PICSADATA){
+			picsa <- try(loadPICSA.Data(), silent = TRUE)
+			if(inherits(picsa, "try-error")){
+				InsertMessagesTxt(main.txt.out, 'Unable to load PICSA outputs data', format = TRUE)
+				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', picsa[1]), format = TRUE)
+				return(NULL)
+			}
+			PICSADATA <<- picsa
+		} 
+
+		ocrds <- getSHPLines(file.shp)
+		EnvPICSAplot$xlim.maps <- range(c(ocrds[, 1], EnvPICSA$cdtPrecip$lon), na.rm = TRUE)
+		EnvPICSAplot$ylim.maps <- range(c(ocrds[, 2], EnvPICSA$cdtPrecip$lat), na.rm = TRUE)
+
+		imgContainer <- PICSA.DisplayMaps(tknotes, ocrds)
+
+		retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvPICSAplot$notebookTab.maps, AllOpenTabType, AllOpenTabData)
+		EnvPICSAplot$notebookTab.maps <- retNBTab$notebookTab
+		AllOpenTabType <<- retNBTab$AllOpenTabType
+		AllOpenTabData <<- retNBTab$AllOpenTabData
+	})
+
+	#######################
+
+	EnvPICSAplot$notebookTab.clmaps <- NULL
+
+	tkconfigure(bt.ClimMap.plot, command = function(){
+		if(!PICSADATA){
+			picsa <- try(loadPICSA.Data(), silent = TRUE)
+			if(inherits(picsa, "try-error")){
+				InsertMessagesTxt(main.txt.out, 'Unable to load PICSA outputs data', format = TRUE)
+				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', picsa[1]), format = TRUE)
+				return(NULL)
+			}
+			PICSADATA <<- picsa
+		} 
+
+		ocrds <- getSHPLines(file.shp)
+		EnvPICSAplot$xlim.maps <- range(c(ocrds[, 1], EnvPICSA$cdtPrecip$lon), na.rm = TRUE)
+		EnvPICSAplot$ylim.maps <- range(c(ocrds[, 2], EnvPICSA$cdtPrecip$lat), na.rm = TRUE)
+
+		imgContainer <- PICSA.DisplayClimMaps(tknotes, ocrds)
+
+		retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvPICSAplot$notebookTab.clmaps, AllOpenTabType, AllOpenTabData)
+		EnvPICSAplot$notebookTab.clmaps <- retNBTab$notebookTab
+		AllOpenTabType <<- retNBTab$AllOpenTabType
+		AllOpenTabData <<- retNBTab$AllOpenTabData
+	})
+
+	#######################
+
+	tkconfigure(bt.TsGraph.plot, command = function(){
+		if(!PICSADATA){
+			picsa <- try(loadPICSA.Data(), silent = TRUE)
+			if(inherits(picsa, "try-error")){
+				InsertMessagesTxt(main.txt.out, 'Unable to load PICSA outputs data', format = TRUE)
+				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', picsa[1]), format = TRUE)
+				return(NULL)
+			}
+			PICSADATA <<- picsa
+		} 
+
+	})
 
 	#######################################################################################################
 	tcl('update')

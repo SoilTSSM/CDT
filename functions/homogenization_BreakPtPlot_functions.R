@@ -145,7 +145,7 @@ plotCPTFun <- function(ReturnExecResults, stat.fun, replotBreak){
 		pltdy <- par("plt")
 		usrdy <- par("usr")
 		par(op)
-		return(list(pltmo = pltmo, usrmo = usrmo, pltdk = pltdk, usrdk = usrdk, pltdy = pltdy, usrdy = usrdy))
+		return(list(parmo = c(pltmo, usrmo), pardk = c(pltdk, usrdk), pardy = c(pltdy, usrdy)))
 	}
 	if(ReturnExecResults$period == 'dekadal'){
 		##format dates
@@ -183,7 +183,7 @@ plotCPTFun <- function(ReturnExecResults, stat.fun, replotBreak){
 		pltdk <- par("plt")
 		usrdk <- par("usr")
 		par(op)
-		return(list(pltmo = pltmo, usrmo = usrmo, pltdk = pltdk, usrdk = usrdk))
+		return(list(parmo = c(pltmo, usrmo), pardk = c(pltdk, usrdk), pardy = rep(0, 8)))
 	}
 	if(ReturnExecResults$period == 'monthly'){
 		##format dates
@@ -205,7 +205,7 @@ plotCPTFun <- function(ReturnExecResults, stat.fun, replotBreak){
 		pltmo <- par("plt")
 		usrmo <- par("usr")
 		par(op)
-		return(list(pltmo = pltmo, usrmo = usrmo))
+		return(list(parmo = c(pltmo, usrmo), pardk = rep(0, 8), pardy = rep(0, 8)))
 	}
 }
 
@@ -214,14 +214,21 @@ plotCPTFun <- function(ReturnExecResults, stat.fun, replotBreak){
 
 ###plot breakpoints
 plotHomogBreakPts <- function(parent, notebookTab, replotBreak){
-	pltusr <- NULL
-
 	if(ReturnExecResults$action == 'homog' & GeneralParameters$action == 'homog'){
-		stat.fun <- GeneralParameters$hom.stats
+		varplot <- c("parPlotSize1", "parPlotSize2", "parPlotSize3", "parPlotSize4",
+					 "usrCoords1", "usrCoords2", "usrCoords3", "usrCoords4")
+		parPltCrdMon <- setNames(lapply(varplot, function(x) assign(x, tclVar(), env = parent.frame())), varplot)
+		parPltCrdDek <- setNames(lapply(varplot, function(x) assign(x, tclVar(), env = parent.frame())), varplot)
+		parPltCrdDly <- setNames(lapply(varplot, function(x) assign(x, tclVar(), env = parent.frame())), varplot)
+		
 		plotIt <- function(){
 			op1 <- par(bg = 'white')
-			pltusr <<- plotCPTFun(ReturnExecResults, stat.fun, replotBreak)
+			pltusr <- plotCPTFun(ReturnExecResults, GeneralParameters$hom.stats, replotBreak)
 			par(op1)
+
+			for(j in seq_along(varplot)) tclvalue(parPltCrdMon[[varplot[j]]]) <- pltusr$parmo[j]
+			for(j in seq_along(varplot)) tclvalue(parPltCrdDek[[varplot[j]]]) <- pltusr$pardk[j]
+			for(j in seq_along(varplot)) tclvalue(parPltCrdDly[[varplot[j]]]) <- pltusr$pardly[j]
 		}
 	}else{
 		InsertMessagesTxt(main.txt.out, 'Reinitialize the operation. Parameters or Outputs are not a homogenization results', format = TRUE)
@@ -232,9 +239,9 @@ plotHomogBreakPts <- function(parent, notebookTab, replotBreak){
 
 	tabTitre <- if(replotBreak) paste(ReturnExecResults$station, 'Changed-Breakpoints', sep = '-')
 				else paste(ReturnExecResults$station, 'Breakpoints', sep = '-')
-	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitre, AllOpenTabType, AllOpenTabData)
 
 	#########
+	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitre, AllOpenTabType, AllOpenTabData)
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
 
@@ -242,151 +249,64 @@ plotHomogBreakPts <- function(parent, notebookTab, replotBreak){
 	tkgrid(img)
 	tkgrid.rowconfigure(img, 0, weight = 1)
 	tkgrid.columnconfigure(img, 0, weight = 1)
+	tcl("update")
 
-	display.cursor.type <- function(x, y){
-		xmouse <- as.numeric(x)
-		ymouse <- as.numeric(y)
-
-		imgw <- as.numeric(tclvalue(tkwinfo("reqwidth", img)))
-		imgh <- as.numeric(tclvalue(tkwinfo("reqheight", img)))
-
-		imgmw <- as.numeric(tclvalue(tkwinfo("width", img)))
-		imgmh <- as.numeric(tclvalue(tkwinfo("height", img)))
-
-		posimgx <- round((imgmw-imgw)/2)
-		posimgy <- round((imgmh-imgh)/2)
-		orgx <- ifelse(posimgx < 0, 0, posimgx)
-		orgy <- ifelse(posimgy < 0, 0, posimgy)
-
-		xpos <- (xmouse-orgx)/imgw
-		ypos <- 1-(ymouse-orgy)/imgh
-
+	#########
+	tkbind(img, "<Motion>", function(W, x, y){
 		if(ReturnExecResults$period == 'daily'){
+			xyMon <- mouseMouvment(W, x, y, parPltCrdMon, ydiv = c(2/3, 1))
+			xyDek <- mouseMouvment(W, x, y, parPltCrdDek, ydiv = c(1/3, 2/3))
+			xyDly <- mouseMouvment(W, x, y, parPltCrdDly, ydiv = c(0, 1/3))
 
-			xpltmo1 <- pltusr$pltmo[1]
-			xpltmo2 <- pltusr$pltmo[2]
-			ypltmo1 <- pltusr$pltmo[3]
-			ypltmo2 <- pltusr$pltmo[4]
-			minXmo <- pltusr$usrmo[1]
-			rangeXmo <- pltusr$usrmo[2]-pltusr$usrmo[1]
-			minYmo <- pltusr$usrmo[3]
-			rangeYmo <- pltusr$usrmo[4]-pltusr$usrmo[3]
-			xcoordmo <- minXmo+(xpos-xpltmo1)*rangeXmo/(xpltmo2-xpltmo1)
-			#change scale:layout (2/3 to 1)
-			yposmo <- (ypos-2/3)/(1-2/3)
-			ycoordmo <- minYmo+(yposmo-ypltmo1)*rangeYmo/(ypltmo2-ypltmo1)
-
-			xpltdk1 <- pltusr$pltdk[1]
-			xpltdk2 <- pltusr$pltdk[2]
-			ypltdk1 <- pltusr$pltdk[3]
-			ypltdk2 <- pltusr$pltdk[4]
-			minXdk <- pltusr$usrdk[1]
-			rangeXdk <- pltusr$usrdk[2]-pltusr$usrdk[1]
-			minYdk <- pltusr$usrdk[3]
-			rangeYdk <- pltusr$usrdk[4]-pltusr$usrdk[3]
-			xcoorddk <- minXdk+(xpos-xpltdk1)*rangeXdk/(xpltdk2-xpltdk1)
-			yposdk <- (ypos-1/3)/(2/3-1/3)
-			ycoorddk <- minYdk+(yposdk-ypltdk1)*rangeYdk/(ypltdk2-ypltdk1)
-
-			xpltdy1 <- pltusr$pltdy[1]
-			xpltdy2 <- pltusr$pltdy[2]
-			ypltdy1 <- pltusr$pltdy[3]
-			ypltdy2 <- pltusr$pltdy[4]
-			minXdy <- pltusr$usrdy[1]
-			rangeXdy <- pltusr$usrdy[2]-pltusr$usrdy[1]
-			minYdy <- pltusr$usrdy[3]
-			rangeYdy <- pltusr$usrdy[4]-pltusr$usrdy[3]
-			xcoorddy <- minXdy+(xpos-xpltdy1)*rangeXdy/(xpltdy2-xpltdy1)
-			yposdy <- (ypos-0)/(1/3-0)
-			ycoorddy <- minYdy+(yposdy-ypltdy1)*rangeYdy/(ypltdy2-ypltdy1)
-
-			if(ypos >= 0 & ypos < 1/3){
-				frxcoord <- format(as.Date(xcoorddy, origin = '1970-1-1'), '%d-%b-%Y')
-				frycoord <- round(ycoorddy, 1)
-			}else if(ypos >= 1/3 & ypos < 2/3){
-				dtdk <- as.Date(xcoorddk, origin = '1970-1-1')
+			if(xyDly$xym$y >= 0 & xyDly$xym$y < 1/3){
+				frxcoord <- ifelse(xyDly$inout, '', format(as.Date(xyDly$x, origin = '1970-1-1'), '%d-%b-%Y'))
+				frycoord <- ifelse(xyDly$inout, '', round(xyDly$y, 1))
+			}else if(xyDek$xym$y >= 1/3 & xyDek$xym$y < 2/3){
+				dtdk <- as.Date(xyDek$x, origin = '1970-1-1')
 				dek <- ifelse(as.numeric(format(dtdk, '%d')) <= 10, 1,
 						ifelse(as.numeric(format(dtdk, '%d')) > 20, 3, 2))
 				moyr <- format(dtdk, '%b-%Y')
-				frxcoord <- paste(dek, moyr, sep = '-')
-				frycoord <- round(ycoorddk, 1)
-			}else if(ypos >= 2/3 & ypos < 1){
-				frxcoord <- format(as.Date(xcoordmo, origin = '1970-1-1'), '%b-%Y')
-				frycoord <- round(ycoordmo, 1)
-			}
-			if(xcoordmo < pltusr$usrmo[1] | xcoordmo > pltusr$usrmo[2] | ycoorddy < pltusr$usrdy[3] | ycoordmo > pltusr$usrmo[4]){
+				frxcoord <- ifelse(xyDek$inout, '', paste(dek, moyr, sep = '-'))
+				frycoord <- ifelse(xyDek$inout, '', round(xyDek$y, 1))
+			}else if(xyMon$xym$y >= 2/3 & xyMon$xym$y < 1){
+				frxcoord <- ifelse(xyMon$inout, '', format(as.Date(xyMon$x, origin = '1970-1-1'), '%b-%Y'))
+				frycoord <- ifelse(xyMon$inout, '', round(xyMon$y, 1))
+			}else{
 				frxcoord <- ''
 				frycoord <- ''
 			}
 		}else if(ReturnExecResults$period == 'dekadal'){
-			xpltmo1 <- pltusr$pltmo[1]
-			xpltmo2 <- pltusr$pltmo[2]
-			ypltmo1 <- pltusr$pltmo[3]
-			ypltmo2 <- pltusr$pltmo[4]
-			minXmo <- pltusr$usrmo[1]
-			rangeXmo <- pltusr$usrmo[2]-pltusr$usrmo[1]
-			minYmo <- pltusr$usrmo[3]
-			rangeYmo <- pltusr$usrmo[4]-pltusr$usrmo[3]
-			xcoordmo <- minXmo+(xpos-xpltmo1)*rangeXmo/(xpltmo2-xpltmo1)
-			yposmo <- (ypos-1/2)/(1-1/2)
-			ycoordmo <- minYmo+(yposmo-ypltmo1)*rangeYmo/(ypltmo2-ypltmo1)
+			xyMon <- mouseMouvment(W, x, y, parPltCrdMon, ydiv = c(1/2, 1))
+			xyDek <- mouseMouvment(W, x, y, parPltCrdDek, ydiv = c(0, 1/2))
 
-			xpltdk1 <- pltusr$pltdk[1]
-			xpltdk2 <- pltusr$pltdk[2]
-			ypltdk1 <- pltusr$pltdk[3]
-			ypltdk2 <- pltusr$pltdk[4]
-			minXdk <- pltusr$usrdk[1]
-			rangeXdk <- pltusr$usrdk[2]-pltusr$usrdk[1]
-			minYdk <- pltusr$usrdk[3]
-			rangeYdk <- pltusr$usrdk[4]-pltusr$usrdk[3]
-			xcoorddk <- minXdk+(xpos-xpltdk1)*rangeXdk/(xpltdk2-xpltdk1)
-			#scale
-			yposdk <- (ypos-0)/(1/2-0)
-			ycoorddk <- minYdk+(yposdk-ypltdk1)*rangeYdk/(ypltdk2-ypltdk1)
-
-			if(ypos >= 0 & ypos < 1/2){
-				dtdk <- as.Date(xcoorddk, origin = '1970-1-1')
+			if(xyDek$xym$y >= 0 & xyDek$xym$y < 1/2){
+				dtdk <- as.Date(xyDek$x, origin = '1970-1-1')
 				dek <- ifelse(as.numeric(format(dtdk, '%d')) <= 10, 1,
 						ifelse(as.numeric(format(dtdk, '%d')) > 20, 3, 2))
 				moyr <- format(dtdk, '%b-%Y')
-				frxcoord <- paste(dek, moyr, sep = '-')
-				frycoord <- round(ycoorddk, 1)
-			}else if(ypos >= 1/2 & ypos < 1){
-				frxcoord <- format(as.Date(xcoordmo, origin = '1970-1-1'), '%b-%Y')
-				frycoord <- round(ycoordmo, 1)
-			}
-			if(xcoordmo < pltusr$usrmo[1] | xcoordmo > pltusr$usrmo[2] | ycoorddk < pltusr$usrdk[3] | ycoordmo > pltusr$usrmo[4]){
+				frxcoord <- ifelse(xyDek$inout, '', paste(dek, moyr, sep = '-'))
+				frycoord <- ifelse(xyDek$inout, '', round(xyDek$y, 1))
+			}else if(xyMon$xym$y >= 1/2 & xyMon$xym$y < 1){
+				frxcoord <- ifelse(xyMon$inout, '', format(as.Date(xyMon$x, origin = '1970-1-1'), '%b-%Y'))
+				frycoord <- ifelse(xyMon$inout, '', round(xyMon$y, 1))
+			}else{
 				frxcoord <- ''
 				frycoord <- ''
 			}
 		}else if(ReturnExecResults$period == 'monthly'){
-			xpltmo1 <- pltusr$pltmo[1]
-			xpltmo2 <- pltusr$pltmo[2]
-			ypltmo1 <- pltusr$pltmo[3]
-			ypltmo2 <- pltusr$pltmo[4]
-			minXmo <- pltusr$usrmo[1]
-			rangeXmo <- pltusr$usrmo[2]-pltusr$usrmo[1]
-			minYmo <- pltusr$usrmo[3]
-			rangeYmo <- pltusr$usrmo[4]-pltusr$usrmo[3]
-			xcoordmo <- minXmo+(xpos-xpltmo1)*rangeXmo/(xpltmo2-xpltmo1)
-			#scale
-			yposmo <- (ypos-0)/(1-0)
-			ycoordmo <- minYmo+(yposmo-ypltmo1)*rangeYmo/(ypltmo2-ypltmo1)
-			frxcoord <- format(as.Date(xcoordmo, origin = '1970-1-1'), '%b-%Y')
-			frycoord <- round(ycoordmo, 1)
-			if(xcoordmo < pltusr$usrmo[1] | xcoordmo > pltusr$usrmo[2] | ycoordmo < pltusr$usrmo[3] | ycoordmo > pltusr$usrmo[4]){
-				frxcoord <- ''
-				frycoord <- ''
-			}
+			xyMon <- mouseMouvment(W, x, y, parPltCrdMon, ydiv = c(0, 1))
+
+			frxcoord <- ifelse(xyMon$inout, '', format(as.Date(xyMon$x, origin = '1970-1-1'), '%b-%Y'))
+			frycoord <- ifelse(xyMon$inout, '', round(xyMon$y, 1))
+		}else{
+			frxcoord <- ''
+			frycoord <- ''
 		}
 
 		tclvalue(xpcoord) <- frxcoord
 		tclvalue(ypcoord) <- frycoord
-	}
-
-	tkbind(img, "<Motion>", function(x, y){
-		display.cursor.type(x, y)
 	})
+
 	tkbind(img, "<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
 	tkbind(img, "<Leave>", function() tkconfigure(img, cursor = ''))
 

@@ -576,28 +576,6 @@ ExtractDataProcs <- function(GeneralParameters){
 		transPose <- if(nbstn > 1) t else as.matrix
 		len.MAT <- matrix(len.data, nrow = length(len.data), ncol = nbstn)
 
-		# moved to cdtAggrTSMatClimato_functions.R
-		### NA count
-		# funMissMAT <- function(x, DATA){
-		# 	MAT <- is.na(DATA[x, , drop = FALSE])
-		# 	colSums(MAT)
-		# }
-
-		### Aggregation
-		# funAggrMAT <- function(x, DATA, pars){
-		# 	x <- x[!is.na(x)]
-		# 	if(length(x) == 0) return(rep(NA, ncol(DATA)))
-		# 	MAT <- DATA[x, , drop = FALSE]
-		# 	if(pars$aggr.fun == "mean") res <- colMeans(MAT, na.rm = TRUE)
-		# 	if(pars$aggr.fun == "sum") res <- colSums(MAT, na.rm = TRUE)
-		# 	if(pars$aggr.fun == "count"){
-		# 		count.fun <- match.fun(pars$count.fun)
-		# 		MAT <- count.fun(MAT, pars$count.thres) & !is.na(MAT)
-		# 		res <- colSums(MAT, na.rm = TRUE)
-		# 	}
-		# 	return(res)
-		# }
-
 		##################
 
 		toAggr <- list(indx, GeneralParameters$aggr.series, headinfo)
@@ -964,53 +942,63 @@ ExtractDataProcs <- function(GeneralParameters){
 
 	if(GeneralParameters$out.data$format == "tyxz"){
 		outputFile <- GeneralParameters$out.data$outdir
+		tyxz.crds <- expand.grid(round(headinfo$x, 6), round(headinfo$y, 6))
+		tyxz.crds <- tyxz.crds[, 2:1]
 
 		if(GeneralParameters$type.series == 'rawts'){
 			outfile <- file.path(dirname(outputFile), paste0("TS_", basename(outputFile)))
-			tyxz.crds <- expand.grid(headinfo$x, headinfo$y, odaty)
-			tyxz.crds <- tyxz.crds[, 3:1]
-			xtmp <- c(t(AggrData))
 
-			xtmp <- round(xtmp, 3)
-			xtmp[is.na(xtmp)] <- -9999
-			xtmp <- data.frame(tyxz.crds, xtmp)
-			writeFiles(xtmp, outfile)
+			ret <- lapply(seq_along(odaty), function(j){
+				xtmp <- AggrData[j, ]
+				xtmp <- round(xtmp[headinfo$z], 3)
+				xtmp[is.na(xtmp)] <- -9999
+				xtmp <- data.frame(odaty[j], tyxz.crds, xtmp)
+				xtmp
+			})
+			ret <- do.call(rbind, ret)
+			writeFiles(ret, outfile)
 		}else{
 			if(GeneralParameters$type.series %in% c('climato', 'anom', 'stanom')){
 				outfile <- file.path(dirname(outputFile), paste0("CLM-MEAN_", basename(outputFile)))
-				tyxz.crds <- expand.grid(headinfo$x, headinfo$y, climdates)
-				tyxz.crds <- tyxz.crds[, 3:1]
-				xtmp <- if(is.list(climOUT)) unlist(climOUT) else climOUT
 
-				xtmp <- round(xtmp, 3)
-				xtmp[is.na(xtmp)] <- -9999
-				xtmp <- data.frame(tyxz.crds, xtmp)
-				writeFiles(xtmp, outfile)
+				ret <- lapply(seq_along(climdates), function(j){
+					xtmp <- if(is.list(climOUT)) climOUT[[j]] else climOUT
+					xtmp <- round(xtmp[headinfo$z], 3)
+					xtmp[is.na(xtmp)] <- -9999
+					xtmp <- data.frame(climdates[j], tyxz.crds, xtmp)
+					xtmp
+				})
+				ret <- do.call(rbind, ret)
+				writeFiles(ret, outfile)
 			}
 
 			if(GeneralParameters$type.series == 'stanom'){
 				outfile <- file.path(dirname(outputFile), paste0("CLM-SD_", basename(outputFile)))
-				tyxz.crds <- expand.grid(headinfo$x, headinfo$y, climdates)
-				tyxz.crds <- tyxz.crds[, 3:1]
-				xtmp <- if(is.list(sdOUT)) unlist(sdOUT) else sdOUT
 
-				xtmp <- round(xtmp, 3)
-				xtmp[is.na(xtmp)] <- -9999
-				xtmp <- data.frame(tyxz.crds, xtmp)
-				writeFiles(xtmp, outfile)
+				ret <- lapply(seq_along(climdates), function(j){
+					xtmp <- if(is.list(sdOUT)) sdOUT[[j]] else sdOUT
+					xtmp <- round(xtmp[headinfo$z], 3)
+					xtmp[is.na(xtmp)] <- -9999
+					xtmp <- data.frame(climdates[j], tyxz.crds, xtmp)
+					xtmp
+				})
+				ret <- do.call(rbind, ret)
+				writeFiles(ret, outfile)
 			}
 
 			if(GeneralParameters$type.series %in% c('anom', 'stanom')){
 				odir <- if(GeneralParameters$type.series == 'anom') "Anomaly" else "STDAnomaly"
 				outfile <- file.path(dirname(outputFile), paste0(odir, "_", basename(outputFile)))
-				tyxz.crds <- expand.grid(headinfo$x, headinfo$y, odaty)
-				tyxz.crds <- tyxz.crds[, 3:1]
-				xtmp <- c(t(outMAT))
 
-				xtmp <- round(xtmp, 3)
-				xtmp[is.na(xtmp)] <- -9999
-				xtmp <- data.frame(tyxz.crds, xtmp)
-				writeFiles(xtmp, outfile)
+				ret <- lapply(seq_along(odaty), function(j){
+					xtmp <- outMAT[j, ]
+					xtmp <- round(xtmp[headinfo$z], 3)
+					xtmp[is.na(xtmp)] <- -9999
+					xtmp <- data.frame(odaty[j], tyxz.crds, xtmp)
+					xtmp
+				})
+				ret <- do.call(rbind, ret)
+				writeFiles(ret, outfile)
 			}
 		}
 	}
@@ -1171,20 +1159,6 @@ ExtractDataProcs <- function(GeneralParameters){
 			}
 		}
 	}
-
-	#####################################
-	## AggrData
-	## odaty
-	## headinfo
-	## climOUT
-	## climdates
-
-	## outMAT
-
-	# assign('odaty', odaty, envir = .GlobalEnv)
-	# assign('headinfo', headinfo, envir = .GlobalEnv)
-	# if(exists("climdates")) assign('climdates', climdates, envir = .GlobalEnv)
-	# if(exists("outMAT"))  assign('outMAT', outMAT, envir = .GlobalEnv)
 
 	#####################################
 

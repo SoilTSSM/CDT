@@ -1,8 +1,6 @@
 
-######################################################################################################
-
-plotNASummary <- function(dates, xseries, jstn, period){
-	years <- as.numeric(substr(dates, 1,4))
+assess.plotNASummary <- function(dates, xseries, jstn, period){
+	years <- as.numeric(substr(dates, 1, 4))
 	yNonNA <- tapply(xseries, list(years), FUN = function(x) length(which(complete.cases(x))))
 	taxis <- as.numeric(names(yNonNA))
 	at_tick <- seq_len(length(taxis) + 1)
@@ -24,11 +22,12 @@ plotNASummary <- function(dates, xseries, jstn, period){
 	plt <- par("plt")
 	usr <- par("usr")
 	par(opar)
-	return(list(plt = plt, usr = usr, years = taxis))
+	return(list(par = c(plt, usr), years = taxis))
 }
+
 ######################################################################################################
 
-plotAllNASummary <- function(donne, dates, period){
+assess.plotAllNASummary <- function(donne, dates, period){
 	if(period == 'daily'){
 		xdates <- as.Date(dates, format = '%Y%m%d')
 	}else if(period == 'dekadal'){
@@ -45,11 +44,12 @@ plotAllNASummary <- function(donne, dates, period){
 
 	nbstn <- ncol(donne)
 	nlstn <- nrow(donne)
-	vNonNA <- nbstn-apply(donne, 1, function(x) sum(is.na(x)))
+	vNonNA <- nbstn - base::rowSums(is.na(donne))
+
 	tstn <- t(apply(donne, 2, stnTworking))
 	mat <- matrix(0, nrow = nlstn, ncol = nbstn)
 	for(j in 1:nbstn) mat[tstn[j, 1]:tstn[j, 2], j] <- 1
-	sworking <- apply(mat, 1, sum)
+	sworking <- base::rowSums(mat)
 
 	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.1, 1), respect = FALSE)
 	op <- par(mar = c(0, 0, 0, 0))
@@ -65,12 +65,47 @@ plotAllNASummary <- function(donne, dates, period){
 	plt <- par("plt")
 	usr <- par("usr")
 	par(op)
-	return(list(plt = plt, usr = usr))
+	return(list(par = c(plt, usr)))
 }
 
 ######################################################################################################
 
-funCorDist <- function(donne, latlon){
+assess.plotAnnualAverage <- function(donne){
+	nadon <- base::rowSums(!is.na(donne$data))
+
+	year <- as.numeric(substr(donne$dates, 1, 4))
+	meanyear <- tapply(nadon, year, mean)
+	minyear <- tapply(nadon, year, min)
+	maxyear <- tapply(nadon, year, max)
+	xyear <- as.numeric(names(meanyear))
+	ylim <- c(0, max(pretty(maxyear)))
+	xlim <- range(xyear)
+
+	plot(xyear, meanyear, type = 'n', axes = FALSE, xlim = xlim, ylim = ylim,
+		xlab = '', ylab = "Number of stations", main = "Average number of stations reporting each year")
+
+	minTck <- axTicks(2)
+	minTck <- minTck[-length(minTck)] + diff(minTck)/2
+	minTck <-c(min(axTicks(2))-diff(minTck)[1]/2, minTck, max(axTicks(2))+diff(minTck)[1]/2)
+	abline(h = axTicks(2), col = "lightgray", lty = "solid", lwd = 0.8)
+	abline(h = minTck, col = "lightgray", lty = "dotted")
+
+	ixx <- which(xyear%%5 == 0)
+	xxax <- if(length(ixx) < 5) axTicks(1) else xyear[ixx]
+
+	lines(xyear, meanyear, type = "h", lwd = 10, lend = "butt", col = 4)
+	points(xyear, meanyear, pch = 20, col = 2, cex = 0.5)
+	arrows(xyear, minyear, xyear, maxyear, angle = 90, code = 3, length = 0.03, col = 2)
+
+	axis(1, labels = xxax, at = xxax)
+	axis(2, at = axTicks(2), las = 1)
+	box(bty = 'l')
+	box(bty = '7', col = 'gray')
+}
+
+######################################################################################################
+
+assess.funCorDist <- function(donne, latlon){
 	lon <- latlon[, 1]
 	lat <- latlon[, 2]
 	#######
@@ -98,7 +133,7 @@ funCorDist <- function(donne, latlon){
 		intrv <- names(xquant)
 		intrv <- gsub('\\(|\\]|\\[', '', intrv)
 		Intrv <- matrix(as.numeric(do.call('rbind', strsplit(intrv, ','))), ncol = 2)
-		mids<-(Intrv[, 2]+Intrv[, 1])/2
+		mids <- (Intrv[, 2]+Intrv[, 1])/2
 		xquant <- do.call('rbind', xquant)
 		return(unname(cbind(mids, xquant)))
 	}
@@ -134,8 +169,8 @@ funCorDist <- function(donne, latlon){
 	dists <- rdist.earth(coord, miles = FALSE)
 	###
 	xdist <- fDistCor(donne, dists)
-	x <- xdist[,1]
-	y <- xdist[,2]
+	x <- xdist[, 1]
+	y <- xdist[, 2]
 	###
 
 	xysumm <- summaryDistCor(x, y)
@@ -143,15 +178,15 @@ funCorDist <- function(donne, latlon){
 	loess <- loess.smooth(x, y)
 	###
 	op <- par(mar = c(4, 4, 2, 2))
-	plot(x, y, xlab = "Distance (km)", ylab = "Correlation", xlim = c(0, max(x, na.rm = T)), ylim = c(min(xysumm[,2], na.rm = T),
-	ifelse(max(xysumm[, 4], na.rm = T) < 0.9, max(xysumm[, 4], na.rm = T)+0.1, 1)), type = 'n')
+	plot(x, y, xlab = "Distance (km)", ylab = "Correlation", type = 'n', xlim = c(0, max(x, na.rm = TRUE)),
+		ylim = c(min(xysumm[, 2], na.rm = TRUE), ifelse(max(xysumm[, 4], na.rm = TRUE) < 0.9, max(xysumm[, 4], na.rm = TRUE)+0.1, 1)))
 	polygon(c(rev(xysumm[, 1]), xysumm[, 1]), c(rev(xysumm[, 4]), xysumm[, 2]), col = "darkslategray1", border = NA)
 	lines(xysumm[, 1], xysumm[, 3], col = 'blue', lwd = 2)
 	lines(loess$x, loess$y, lwd = 2, col = 'red')
 	abline(v = axTicks(1), h = axTicks(2), col = 'lightgrey', lty = "dotted")
 	legend(x = 'topright', legend = c("5/95th Percentile", "Median", 'Loess smooth'),
-		col = c('darkslategray1', 'blue', 'red'), lty = c(0, 1, 1), lwd = c(0, 2, 2),
-		pch = c(22, NA, NA), pt.bg = c('darkslategray1', NA, NA), pt.cex = 2, bg = 'gray97')
+			col = c('darkslategray1', 'blue', 'red'), lty = c(0, 1, 1), lwd = c(0, 2, 2),
+			pch = c(22, NA, NA), pt.bg = c('darkslategray1', NA, NA), pt.cex = 2, bg = 'gray97')
 	par(op)
 }
 
@@ -165,15 +200,21 @@ DisplayStnNASum <- function(parent, jstn, donne, period, notebookTab){
 	xseries <- donne[, ijx]
 
 	########PLOT
-	pltusr <- NULL
+	yearAxis <- NULL
+	varplot <- c("parPlotSize1", "parPlotSize2", "parPlotSize3", "parPlotSize4",
+				 "usrCoords1", "usrCoords2", "usrCoords3", "usrCoords4")
+	parPltCrd <- setNames(lapply(varplot, function(x) assign(x, tclVar(), env = parent.frame())), varplot)
+
 	plotIt <- function(){
 		op <- par(bg = "white")
-		pltusr <<- plotNASummary(dates, xseries, jstn, period)
+		pltusr <- assess.plotNASummary(dates, xseries, jstn, period)
 		par(op)
+		for(j in seq_along(varplot)) tclvalue(parPltCrd[[varplot[j]]]) <- pltusr$par[j]
+		yearAxis <<- pltusr$years
 	}
 
 	#########
-	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitle = paste(jstn, 'Miss.Summary', sep = '-'), AllOpenTabType, AllOpenTabData)
+	onglet <- imageNotebookTab_open(parent, notebookTab, paste(jstn, 'Miss.Summary', sep = '-'), AllOpenTabType, AllOpenTabData)
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
 
@@ -182,77 +223,49 @@ DisplayStnNASum <- function(parent, jstn, donne, period, notebookTab){
 	tkgrid.rowconfigure(img, 0, weight = 1)
 	tkgrid.columnconfigure(img, 0, weight = 1)
 	tcl("update")
-	parPlotSize <- pltusr$plt
-	usrCoords <- pltusr$usr
 
-	display.cursor.type <- function(x, y){
-		xmouse <- as.numeric(x)
-		ymouse <- as.numeric(y)
+	tkbind(img, "<Motion>", function(W, x, y){
+		xyMouse <- mouseMouvment(W, x, y, parPltCrd)
 
-		imgw <- as.numeric(tclvalue(tkwinfo("reqwidth", img)))
-		imgh <- as.numeric(tclvalue(tkwinfo("reqheight", img)))
+		ipos <- ceiling(xyMouse$x)
+		yearAxisRange <- ipos < 1 | ipos > length(yearAxis) | xyMouse$inout
 
-		imgmw <- as.numeric(tclvalue(tkwinfo("width", img)))
-		imgmh <- as.numeric(tclvalue(tkwinfo("height", img)))
-
-		posimgx <- round((imgmw-imgw)/2)
-		posimgy <- round((imgmh-imgh)/2)
-		orgx <- ifelse(posimgx < 0, 0, posimgx)
-		orgy <- ifelse(posimgy < 0, 0, posimgy)
-
-		xpos<-(xmouse-orgx)/imgw
-		ypos <- 1-(ymouse-orgy)/imgh
-
-		xplt1 <- parPlotSize[1]
-		xplt2 <- parPlotSize[2]
-		yplt1 <- parPlotSize[3]
-		yplt2 <- parPlotSize[4]
-
-		minX <- usrCoords[1]
-		rangeX <- usrCoords[2]-usrCoords[1]
-		minY <- usrCoords[3]
-		rangeY <- usrCoords[4]-usrCoords[3]
-
-		xcoord <- minX+(xpos-xplt1)*rangeX/(xplt2-xplt1)
-		ycoord <- minY+(ypos-yplt1)*rangeY/(yplt2-yplt1)
-
-		ipos <- ceiling(xcoord)
-		labdates <- pltusr$years[ipos]
-
-		frxcoord <- ifelse(ipos < 1 | ipos > length(pltusr$years) | ycoord < usrCoords[3] | ycoord > usrCoords[4], '', labdates)
-		frycoord <- ifelse(xcoord < usrCoords[1] | xcoord > usrCoords[2] | ycoord < usrCoords[3] | ycoord > usrCoords[4], '', round(ycoord, 1))
+		frxcoord <- ifelse(yearAxisRange, '', yearAxis[ipos])
+		frycoord <- ifelse(xyMouse$inout, '', round(xyMouse$y))
 
 		tclvalue(xpcoord) <- frxcoord
 		tclvalue(ypcoord) <- frycoord
-	}
-
-	tkbind(img,"<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
-	tkbind(img,"<Leave>", function() tkconfigure(img, cursor = ''))
-	tkbind(img, "<Motion>", function(x, y){
-		display.cursor.type(x, y)
 	})
+
+	tkbind(img, "<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
+	tkbind(img, "<Leave>", function() tkconfigure(img, cursor = ''))
 
 	return(list(onglet, img))
 }
 
 ######################################################################################################
 
-DisplayAllStnNASum <- function(parent, donne, period){
+DisplayAllStnNASum <- function(parent, donne, period, notebookTab){
 	dates <- donne$dates
 	donne <- donne$data
-	nna <- apply(donne, 2, function(x) sum(is.na(x)))
-	donne <- donne[,nna != nrow(donne)] #exclude station without data (all missing values)
+	nna <- base::colSums(is.na(donne))
+	# exclude station without data (all missing values)
+	donne <- donne[, nna != nrow(donne)]
 
 	########PLOT
-	pltusr <- NULL
+	varplot <- c("parPlotSize1", "parPlotSize2", "parPlotSize3", "parPlotSize4",
+				 "usrCoords1", "usrCoords2", "usrCoords3", "usrCoords4")
+	parPltCrd <- setNames(lapply(varplot, function(x) assign(x, tclVar(), env = parent.frame())), varplot)
+
 	plotIt <- function(){
 		op <- par(bg = "white")
-		pltusr <<- plotAllNASummary(donne, dates, period)
+		pltusr <- assess.plotAllNASummary(donne, dates, period)
 		par(op)
+		for(j in seq_along(varplot)) tclvalue(parPltCrd[[varplot[j]]]) <- pltusr$par[j]
 	}
 
 	#########
-	onglet <- addNewTab(parent, tab.title = 'Missing data Summary')
+	onglet <- imageNotebookTab_open(parent, notebookTab, 'Missing data Summary', AllOpenTabType, AllOpenTabData)
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
 
@@ -261,86 +274,52 @@ DisplayAllStnNASum <- function(parent, donne, period){
 	tkgrid.rowconfigure(img, 0, weight = 1)
 	tkgrid.columnconfigure(img, 0, weight = 1)
 	tcl("update")
-	parPlotSize <- pltusr$plt
-	usrCoords <- pltusr$usr
 
-	display.cursor.type <- function(x, y){
-		xmouse <- as.numeric(x)
-		ymouse <- as.numeric(y)
+	#########
+	tkbind(img, "<Motion>", function(W, x, y){
+		xyMouse <- mouseMouvment(W, x, y, parPltCrd, ydiv = c(0, 1/(0.1+1)))
 
-		imgw <- as.numeric(tclvalue(tkwinfo("reqwidth", img)))
-		imgh <- as.numeric(tclvalue(tkwinfo("reqheight", img)))
-
-		imgmw <- as.numeric(tclvalue(tkwinfo("width", img)))
-		imgmh <- as.numeric(tclvalue(tkwinfo("height", img)))
-
-		posimgx <- round((imgmw-imgw)/2)
-		posimgy <- round((imgmh-imgh)/2)
-		orgx <- ifelse(posimgx < 0, 0, posimgx)
-		orgy <- ifelse(posimgy < 0, 0, posimgy)
-
-		xpos<-(xmouse-orgx)/imgw
-		ypos <- 1-(ymouse-orgy)/imgh
-
-		xplt1 <- parPlotSize[1]
-		xplt2 <- parPlotSize[2]
-		yplt1 <- parPlotSize[3]
-		yplt2 <- parPlotSize[4]
-
-		minX <- usrCoords[1]
-		rangeX <- usrCoords[2]-usrCoords[1]
-		minY <- usrCoords[3]
-		rangeY <- usrCoords[4]-usrCoords[3]
-
-		xcoord <- minX+(xpos-xplt1)*rangeX/(xplt2-xplt1)
-		ypos1<-(ypos-0)/((1/(0.1+1))-0)
-		ycoord <- minY+(ypos1-yplt1)*rangeY/(yplt2-yplt1)
-
-		if(period == 'daily') labdates <- format(as.Date(xcoord, origin = '1970-1-1'), '%d-%b-%Y')
+		if(period == 'daily') labdates <- format(as.Date(xyMouse$x, origin = '1970-1-1'), '%d-%b-%Y')
 		if(period == 'dekadal'){
-			dtdk <- as.Date(xcoord, origin = '1970-1-1')
+			dtdk <- as.Date(xyMouse$x, origin = '1970-1-1')
 			dek <- ifelse(as.numeric(format(dtdk, '%d')) <= 10, 1, ifelse(as.numeric(format(dtdk, '%d')) > 20, 3, 2))
 			moyr <- format(dtdk, '%b-%Y')
 			labdates <- paste(dek, moyr, sep = '-')
 		}
-		if(period == 'monthly') labdates <- format(as.Date(xcoord, origin = '1970-1-1'),'%b-%Y')
+		if(period == 'monthly') labdates <- format(as.Date(xyMouse$x, origin = '1970-1-1'),'%b-%Y')
 
-		frxcoord <- ifelse(xcoord < usrCoords[1] | xcoord > usrCoords[2] | ycoord < usrCoords[3] | ycoord > usrCoords[4], '', labdates)
-		frycoord <- ifelse(xcoord < usrCoords[1] | xcoord > usrCoords[2] | ycoord < usrCoords[3] | ycoord > usrCoords[4], '', round(ycoord, 1))
+		frxcoord <- ifelse(xyMouse$inout, '', labdates)
+		frycoord <- ifelse(xyMouse$inout, '', round(xyMouse$y))
 
 		tclvalue(xpcoord) <- frxcoord
 		tclvalue(ypcoord) <- frycoord
-	}
-
-	tkbind(img,"<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
-	tkbind(img,"<Leave>", function() tkconfigure(img, cursor = ''))
-	tkbind(img, "<Motion>", function(x, y){
-		display.cursor.type(x, y)
 	})
+
+	tkbind(img, "<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
+	tkbind(img, "<Leave>", function() tkconfigure(img, cursor = ''))
 
 	return(list(onglet, img))
 }
 
 ######################################################################################################
 
-DisplayDistCorr <- function(parent, donne, period){
-	# dates <- donne$dates
+DisplayDistCorr <- function(parent, donne, period, notebookTab){
 	latlon <- cbind(donne$lon, donne$lat)
 	donne <- donne$data
 
-	nna <- apply(donne, 2, function(x) sum(is.na(x)))
-	latlon <- latlon[nna != nrow(donne),]
-	donne <- donne[,nna != nrow(donne)]
+	nna <- base::colSums(is.na(donne))
+	latlon <- latlon[nna != nrow(donne), ]
+	donne <- donne[, nna != nrow(donne)]
 
 	########PLOT
 	plotIt <- function(){
 		op <- par(bg = "white")
-		funCorDist(donne, latlon)
+		assess.funCorDist(donne, latlon)
 		par(op)
 	}
 
-	onglet <- addNewTab(parent, tab.title = 'Distance_Corrorelation')
 	#########
+	onglet <- imageNotebookTab_open(parent, notebookTab, 'Distance_Corrorelation', AllOpenTabType, AllOpenTabData)
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
 
@@ -349,8 +328,34 @@ DisplayDistCorr <- function(parent, donne, period){
 	tkgrid.rowconfigure(img, 0, weight = 1)
 	tkgrid.columnconfigure(img, 0, weight = 1)
 
-	tkbind(img,"<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
-	tkbind(img,"<Leave>", function() tkconfigure(img, cursor = ''))
+	tkbind(img, "<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
+	tkbind(img, "<Leave>", function() tkconfigure(img, cursor = ''))
 	return(list(onglet, img))
 }
+
+
+######################################################################################################
+
+DisplayAnnualAvg <- function(parent, donne, notebookTab){
+	plotIt <- function(){
+		op <- par(bg = "white")
+		assess.plotAnnualAverage(donne)
+		par(op)
+	}
+
+	#########
+	onglet <- imageNotebookTab_open(parent, notebookTab, 'Annual_Average', AllOpenTabType, AllOpenTabData)
+	hscale <- as.numeric(tclvalue(tkget(spinH)))
+	vscale <- as.numeric(tclvalue(tkget(spinV)))
+
+	img <- tkrplot(onglet[[2]], fun = plotIt, hscale = hscale, vscale = vscale)
+	tkgrid(img)
+	tkgrid.rowconfigure(img, 0, weight = 1)
+	tkgrid.columnconfigure(img, 0, weight = 1)
+
+	tkbind(img, "<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
+	tkbind(img, "<Leave>", function() tkconfigure(img, cursor = ''))
+	return(list(onglet, img))
+}
+
 

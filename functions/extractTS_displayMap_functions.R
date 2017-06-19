@@ -37,7 +37,7 @@ plotMap4Extraction <- function(ocrds, ZoomXYval, selectedPolygon){
 	usr <- par("usr")
 	par(opar)
 
-	return(list(plt = plt, usr = usr))
+	return(list(par = c(plt, usr)))
 }
 
 
@@ -46,34 +46,18 @@ plotMap4Extraction <- function(ocrds, ZoomXYval, selectedPolygon){
 displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 	ocrds <- getBoundaries(shpf)
 	selectedPolygon <- NULL
-	pltusr <- NULL
 
-	parPlotSize1 <- tclVar()
-	parPlotSize2 <- tclVar()
-	parPlotSize3 <- tclVar()
-	parPlotSize4 <- tclVar()
-	usrCoords1 <- tclVar()
-	usrCoords2 <- tclVar()
-	usrCoords3 <- tclVar()
-	usrCoords4 <- tclVar()
+	varplot <- c("parPlotSize1", "parPlotSize2", "parPlotSize3", "parPlotSize4",
+				 "usrCoords1", "usrCoords2", "usrCoords3", "usrCoords4")
+	parPltCrd <- setNames(lapply(varplot, function(x) assign(x, tclVar(), env = parent.frame())), varplot)
+
 	plotIt <- function(){
 		op <- par(bg = 'white')
-		pltusr <<- plotMap4Extraction(ocrds, ZoomXYval, selectedPolygon)
-		tclvalue(parPlotSize1) <<- pltusr$plt[1]
-		tclvalue(parPlotSize2) <<- pltusr$plt[2]
-		tclvalue(parPlotSize3) <<- pltusr$plt[3]
-		tclvalue(parPlotSize4) <<- pltusr$plt[4]
-		tclvalue(usrCoords1) <<- pltusr$usr[1]
-		tclvalue(usrCoords2) <<- pltusr$usr[2]
-		tclvalue(usrCoords3) <<- pltusr$usr[3]
-		tclvalue(usrCoords4) <<- pltusr$usr[4]
+		pltusr <- plotMap4Extraction(ocrds, ZoomXYval, selectedPolygon)
 		par(op)
-	}
 
-	parPltCrd <- list(parPlotSize1 = parPlotSize1, parPlotSize2 = parPlotSize2,
-						parPlotSize3 = parPlotSize3, parPlotSize4 = parPlotSize4,
-						usrCoords1 = usrCoords1, usrCoords2 = usrCoords2,
-						usrCoords3 = usrCoords3, usrCoords4 = usrCoords4)
+		for(j in seq_along(varplot)) tclvalue(parPltCrd[[varplot[j]]]) <- pltusr$par[j]
+	}
 
 	###################################################################
 
@@ -205,8 +189,8 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 
 		#Zoom plus
 		if(tclvalue(EnvZoomPars$pressButP) == "1" & !ret$oin){
-			rgX <- as.numeric(tclvalue(usrCoords2))-as.numeric(tclvalue(usrCoords1))
-			rgY <- as.numeric(tclvalue(usrCoords4))-as.numeric(tclvalue(usrCoords3))
+			rgX <- as.numeric(tclvalue(parPltCrd$usrCoords2))-as.numeric(tclvalue(parPltCrd$usrCoords1))
+			rgY <- as.numeric(tclvalue(parPltCrd$usrCoords4))-as.numeric(tclvalue(parPltCrd$usrCoords3))
 			shiftX <- rgX*(1-factZoom)/2
 			shiftY <- rgY*(1-factZoom)/2
 			xmin1 <- ret$xc-shiftX
@@ -226,8 +210,8 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 
 		#Zoom Moins
 		if(tclvalue(EnvZoomPars$pressButM) == "1"  & !ret$oin){
-			rgX <- as.numeric(tclvalue(usrCoords2))-as.numeric(tclvalue(usrCoords1))
-			rgY <- as.numeric(tclvalue(usrCoords4))-as.numeric(tclvalue(usrCoords3))
+			rgX <- as.numeric(tclvalue(parPltCrd$usrCoords2))-as.numeric(tclvalue(parPltCrd$usrCoords1))
+			rgY <- as.numeric(tclvalue(parPltCrd$usrCoords4))-as.numeric(tclvalue(parPltCrd$usrCoords3))
 			shiftX <- rgX*(1+factZoom)/2
 			shiftY <- rgY*(1+factZoom)/2
 			xmin1 <- ret$xc-shiftX

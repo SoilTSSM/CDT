@@ -269,7 +269,6 @@ SaveNotebookTabArray <- function(parent){
 							id = as.character(dat2sav$id),
 							z = as.numeric(as.character(dat2sav$z)),
 							elv = elvd)
-			# cat(AllOpenTabData[[tabid]][[3]][[2]],'\n')
 			assign('donnees', donnees, envir = EnvInterpolation)
 		}else if(AllOpenTabType[[tabid]] == "StnInfo"){
 			if(ReturnExecResults$action == 'chk.coords'){
@@ -286,21 +285,19 @@ SaveNotebookTabArray <- function(parent){
 			}
 		}else if(AllOpenTabType[[tabid]] == "arrAssess"){
 			filetypes  <-  "{{CSV Files} {.csv .CSV}} {{Text Files} {.txt .TXT}} {{All files} *}"
-			if (Sys.info()["sysname"] == "Windows") f2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes, defaultextension = TRUE)
-			else f2save <- tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes)
+			if (Sys.info()["sysname"] == "Windows"){
+				f2save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "",
+									filetypes = filetypes, defaultextension = TRUE))
+			}else f2save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
 			Objarray <- AllOpenTabData[[tabid]][[2]]
-			tkconfigure(main.win, cursor = 'watch'); tcl('update')
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
 			dat2sav <- tclArray2dataframe(Objarray)
 			writeFiles(dat2sav, f2save)
 			tkconfigure(main.win, cursor = '')
-		}else{
-			return(NULL)
-		}
-	}else{
-		return(NULL)
-	}
+		}else return(NULL)
+	}else return(NULL)
 }
-
 
 ####################################################
 
@@ -309,8 +306,9 @@ SavePlot <- function(){
 	if(length(AllOpenTabType) > 0){
 		if(AllOpenTabType[[tabid]] == "img"){
 			filetypes <- "{JPEG {.jpeg .jpg}} {{All files} {*.*}}"
-			if(Sys.info()["sysname"] == "Windows") filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes, defaultextension = TRUE))
-			else filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes))
+			if(Sys.info()["sysname"] == "Windows"){
+				filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes, defaultextension = TRUE))
+			}else filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes))
 			if (filename != ""){
 				#jpeg(file = filename, width = 960, height = 480)
 				#AllOpenTabData[[tabid]][[2]]$fun()
@@ -322,9 +320,7 @@ SavePlot <- function(){
 				dev.off()
 			}
 		}
-	}else{
-		return(NULL)
-	}
+	}else return(NULL)
 }
 
 ############################################

@@ -243,7 +243,7 @@ ExtractDataPanelCmd <- function(){
 		shpf <- getShpOpenData(shpFile)
 		dat <- shpf[[2]]@data
 		AttrTable <- names(dat)
-		tclvalue(Admin_var) <- AttrTable[1]
+		tclvalue(shpAttr) <- AttrTable[1]
 		tkconfigure(EnvExtractData$cb.shpAttr, values = AttrTable, textvariable = shpAttr)
 	})
 

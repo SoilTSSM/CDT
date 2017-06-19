@@ -30,7 +30,8 @@ refreshCDT.lcmd.env <- function(lcmdf = lcmd.frame, choixStn = lchoixStnFr){
 	tclvalue(choixStn$env$stn.choix.val) <- choixStn$env$stn.choix[1]
 
 	all.cdt.env <- list(EnvQcOutlierData, EnvQcZeroChkData, EnvInterpolation, EnvExtractData,
-						EnvHomogzData, EnvRainValidation, EnvClimatoAnalysis, EnvZoomPars, EnvPICSA)
+						EnvHomogzData, EnvRainValidation, EnvClimatoAnalysis, EnvZoomPars,
+						EnvPICSA, EnvPICSAplot)
 	ret <- lapply(cdt.lcmd.container, assign, NULL, envir = .GlobalEnv)
 	ret <- lapply(all.cdt.env, function(x) rm(list = ls(envir = x), envir = x))
 }

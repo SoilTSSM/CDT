@@ -960,6 +960,7 @@ PICSAProcs <- function(GeneralParameters){
 
 	###########################################
 
+	EnvPICSA$data.type <- GeneralParameters$data.type
 	EnvPICSA$compute.ETP <- GeneralParameters$compute.ETP
 	EnvPICSA$dekmonUse <- GeneralParameters$dekmon$use.dekmon
 	EnvPICSA$dekmonTs <- GeneralParameters$dekmon$time.step
@@ -1224,7 +1225,8 @@ PICSAProcs <- function(GeneralParameters){
 
 	outPICSAData <- file.path(outputDIR, "PICSA.OUT.Data")
 	dir.create(outPICSAData, showWarnings = FALSE, recursive = TRUE)
-	save(EnvPICSA, file = file.path(outPICSAData, "PICSA.DATA.RData"))
+	EnvPICSA.save <- EnvPICSA
+	save(EnvPICSA.save, file = file.path(outPICSAData, "PICSA.DATA.RData"))
 
 	InsertMessagesTxt(main.txt.out, 'Computing PICSA data done!')
 

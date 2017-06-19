@@ -168,6 +168,7 @@ source(file.path(apps.dir, 'functions', 'PICSA_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'PICSA_dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'PICSA_Procs_functions.R'))
 source(file.path(apps.dir, 'functions', 'PICSA_Plot_functions.R'))
+source(file.path(apps.dir, 'functions', 'PICSA_displayPLOT_functions.R'))
 
 #####
 #

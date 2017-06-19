@@ -7,11 +7,10 @@ AssessDataPanelCmd <- function(){
 	###################
 	cmd.frame <- tkframe(panel.left)
 
-	###################
-	chkframe <- tkframe(cmd.frame, relief = 'groove', bd = 2)
-	chkframe1 <- ttklabelframe(cmd.frame, text = "Missing Data Summary for each Station", labelanchor = "nw", relief = 'groove', borderwidth = 2)
 
 	###################
+	chkframe <- tkframe(cmd.frame, relief = 'groove', bd = 2)
+
 	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
 	file.period <- tclVar('Dekadal data')
 	file.stnfl <- tclVar()
@@ -26,10 +25,13 @@ AssessDataPanelCmd <- function(){
 	sep2 <- ttkseparator(chkframe)
 	cmd.DistCor <- ttkbutton(chkframe, text = "Plot Distance-Correlation")
 	cmd.AllNA <- ttkbutton(chkframe, text = "Plot Non-Missing Data Summary")
+	cmd.YearAvg <- ttkbutton(chkframe, text = "Plot Annual average of Non-Missing Data")
 	cmd.AllTab <- ttkbutton(chkframe, text = "Table of Non-Missing Data")
 
-	PlotTab.cb <- ttkcombobox(chkframe1, values = c('Chart', 'Table'), textvariable = plotORtable, state = 'normal', width = largeur1)
+	###################
+	chkframe1 <- ttklabelframe(cmd.frame, text = "Missing Data Summary for each Station", labelanchor = "nw", relief = 'groove', borderwidth = 2)
 
+	PlotTab.cb <- ttkcombobox(chkframe1, values = c('Chart', 'Table'), textvariable = plotORtable, state = 'normal', width = largeur1)
 	stnSumNA.cb <- ttkcombobox(chkframe1, values = '', textvariable = stnSumNA.val, state = 'normal', width = largeur1)
 	stnSumNA.prev <- ttkbutton(chkframe1, text = "<<-", width = 5)
 	stnSumNA.next <- ttkbutton(chkframe1, text = "->>", width = 5)
@@ -63,7 +65,8 @@ AssessDataPanelCmd <- function(){
 
 	tkgrid(cmd.DistCor, row = 5, column = 0, rowspan = 1, columnspan = 6, padx = 1, pady = 2, sticky = "we")
 	tkgrid(cmd.AllNA, row = 6, column = 0, rowspan = 1, columnspan = 6, padx = 1, pady = 2, sticky = "we")
-	tkgrid(cmd.AllTab, row = 7, column = 0, rowspan = 1, columnspan = 6, padx = 1, pady = 2, sticky = "we")
+	tkgrid(cmd.YearAvg, row = 7, column = 0, rowspan = 1, columnspan = 6, padx = 1, pady = 2, sticky = "we")
+	tkgrid(cmd.AllTab, row = 8, column = 0, rowspan = 1, columnspan = 6, padx = 1, pady = 2, sticky = "we")
 
 	tkgrid(PlotTab.cb, row = 0, column = 1, rowspan = 1, padx = 1, pady = 3, sticky = "we")
 
@@ -124,12 +127,11 @@ AssessDataPanelCmd <- function(){
 	}
 
 	nombre.non.missing <- function(donne){
-		an <- substr(donne$dates, 1, 4)
-		mo <- substr(donne$dates, 5, 6)
-		res <- lapply(seq(ncol(donne$data)), function(i){
-			tapply(donne$data[, i], list(paste(an, mo, sep = '')), function(j) length(which(!is.na(j))))
-		})
-		res <- do.call(cbind, res)
+		foo <- function(ix, DATA) base::colSums(DATA[ix, , drop = FALSE])
+		indx <- tapply(seq(length(donne$dates)), substr(donne$dates, 1, 6), identity)
+
+		naMAT <- !is.na(donne$data)
+		res <- do.call(rbind, lapply(indx, foo, DATA = naMAT))
 		daty <- dimnames(res)[[1]]
 		return(list(date = daty, nb = res))
 	}
@@ -294,54 +296,77 @@ AssessDataPanelCmd <- function(){
 	})
 
 	#######################
+	notebookTab.DistCor <- NULL
 
 	tkconfigure(cmd.DistCor, command = function(){
 		period <- get.period()
 		donne <- get.donnees(period, file.stnfl)
 
 		if(!is.null(donne)){
-			tkconfigure(main.win, cursor = 'watch'); tcl('update')
-			imgContainer <- try(DisplayDistCorr(tknotes, donne, period), silent = TRUE)
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			imgContainer <- try(DisplayDistCorr(tknotes, donne, period, notebookTab.DistCor), silent = TRUE)
 			if(!inherits(imgContainer, "try-error")){
-				if(!is.null(imgContainer)){
-					ntab <- length(AllOpenTabType)
-					AllOpenTabType[[ntab+1]] <<- 'img'
-					AllOpenTabData[[ntab+1]] <<- imgContainer
-					tkselect(tknotes, ntab)
-				}
-				tkconfigure(main.win, cursor = '')
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, notebookTab.DistCor, AllOpenTabType, AllOpenTabData)
+				notebookTab.DistCor <<- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
 			}else{
 				InsertMessagesTxt(main.txt.out, 'Distance-Correlation computation failed', format = TRUE)
 				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', imgContainer[1]), format = TRUE)
-				tkconfigure(main.win, cursor = '')
 			}
+			tkconfigure(main.win, cursor = '')
 		}else InsertMessagesTxt(main.txt.out, 'No station data found', format = TRUE)
 	})
 
 	#######################
+	notebookTab.AllNA <- NULL
 
 	tkconfigure(cmd.AllNA, command = function(){
 		period <- get.period()
 		donne <- get.donnees(period, file.stnfl)
 
 		if(!is.null(donne)){
-			tkconfigure(main.win, cursor = 'watch'); tcl('update')
-			imgContainer <- try(DisplayAllStnNASum(tknotes, donne, period), silent = TRUE)
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			imgContainer <- try(DisplayAllStnNASum(tknotes, donne, period, notebookTab.AllNA), silent = TRUE)
 			if(!inherits(imgContainer, "try-error")){
-				if(!is.null(imgContainer)){
-					ntab <- length(AllOpenTabType)
-					AllOpenTabType[[ntab+1]] <<- 'img'
-					AllOpenTabData[[ntab+1]] <<- imgContainer
-					tkselect(tknotes, ntab)
-				}
-				tkconfigure(main.win, cursor = '')
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, notebookTab.AllNA, AllOpenTabType, AllOpenTabData)
+				notebookTab.AllNA <<- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
 			}else{
 				InsertMessagesTxt(main.txt.out, 'Station missing data summaries failed', format = TRUE)
 				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', imgContainer[1]), format = TRUE)
-				tkconfigure(main.win, cursor = '')
 			}
+			tkconfigure(main.win, cursor = '')
 		}else InsertMessagesTxt(main.txt.out, 'No station data found', format = TRUE)
 	})
+
+	#######################
+	notebookTab.YearAvg <- NULL
+
+	tkconfigure(cmd.YearAvg, command = function(){
+		period <- get.period()
+		donne <- get.donnees(period, file.stnfl)
+
+		if(!is.null(donne)){
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			imgContainer <- try(DisplayAnnualAvg(tknotes, donne, notebookTab.YearAvg), silent = TRUE)
+			if(!inherits(imgContainer, "try-error")){
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, notebookTab.YearAvg, AllOpenTabType, AllOpenTabData)
+				notebookTab.YearAvg <<- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}else{
+				InsertMessagesTxt(main.txt.out, 'Station missing data summaries failed', format = TRUE)
+				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', imgContainer[1]), format = TRUE)
+			}
+			tkconfigure(main.win, cursor = '')
+		}else InsertMessagesTxt(main.txt.out, 'No station data found', format = TRUE)
+	})
+
 
 	#######################
 	MissAllStnTab <- NULL

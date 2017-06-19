@@ -540,6 +540,15 @@ climatoAnalysisPanelCmd <- function(){
 	tkgrid(txt.Freq2, row = 2, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.Freq2, row = 2, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
+	infobulle(cb.anMthd, "Select the analysis method")
+	status.bar.display(cb.anMthd, TextOutputVar, "Select the analysis method")
+	infobulle(en.Percent, "Enter the nth percentile to be calculated")
+	status.bar.display(en.Percent, TextOutputVar, "Enter the nth percentile to be calculated")
+	infobulle(en.Freq1, "Enter the lower bound of the interval to count the number of occurrences")
+	status.bar.display(en.Freq1, TextOutputVar, "Enter the lower bound of the interval to count the number of occurrences")
+	infobulle(en.Freq2, "Enter the upper bound of the interval to count the number of occurrences")
+	status.bar.display(en.Freq2, TextOutputVar, "Enter the upper bound of the interval to count the number of occurrences")
+
 	#################
 	tkbind(cb.anMthd, "<<ComboboxSelected>>", function(){
 		statePrc <- if(tclvalue(analysis.method) == 'Percentiles') 'normal' else 'disabled'

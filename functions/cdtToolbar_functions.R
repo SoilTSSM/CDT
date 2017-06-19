@@ -163,16 +163,18 @@ tkconfigure(tb.open.table, state = 'normal', command = function() {
 #######
 tkconfigure(tb.save.table, state = 'normal', command = function(){
 	if(!is.null(ReturnExecResults)){
-		tkconfigure(main.win, cursor = 'watch'); tcl('update')
+		tkconfigure(main.win, cursor = 'watch')
+		tcl('update')
 		tab2sav <- try(SaveNotebookTabArray(tknotes), silent = TRUE)
 		if(!inherits(tab2sav, "try-error")){
 			InsertMessagesTxt(main.txt.out, "Table saved successfully")
+			tkconfigure(main.win, cursor = '')
 		}else{
 			InsertMessagesTxt(main.txt.out, "The table could not be saved", format = TRUE)
 			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', tab2sav[1]), format = TRUE)
+			tkconfigure(main.win, cursor = '')
 			return(NULL)
 		}
-		tkconfigure(main.win, cursor = '')
 	}else{
 		return(NULL)
 	}
