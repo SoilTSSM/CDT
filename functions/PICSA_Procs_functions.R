@@ -926,6 +926,7 @@ PICSAProcs <- function(GeneralParameters){
 
 	onsetXS <- paste(2014, onset.start.month, onset.start.day, sep = '-')
 	cessatXS <- as.character(as.Date(paste(2014, cess.start.month, cess.start.day, sep = '-'))-WB.lag)
+	# cessatXS <- as.character(as.Date(paste(2014, cess.start.month, cess.start.day, sep = '-')))
 	yearS <- sapply(onset.idx, function(x) cdtPrecip$dates[x[1]])
 	yearE <- sapply(cess.idx, function(x) cdtPrecip$dates[x[1]])
 

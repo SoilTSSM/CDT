@@ -997,7 +997,7 @@ PICSAPanelCmd <- function(){
 		GeneralParameters$cessation$late.month <- which(MOIS%in%str_trim(tclvalue(cess.late.mon)))
 		GeneralParameters$cessation$late.day <- as.numeric(str_trim(tclvalue(cess.late.day)))
 
-		# assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
+		assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
 		tkconfigure(main.win, cursor = 'watch')
 		InsertMessagesTxt(main.txt.out, paste("Calculating onset & cessation......."))
@@ -1196,10 +1196,10 @@ PICSAPanelCmd <- function(){
 	status.bar.display(cb.anMthd, TextOutputVar, "Select the analysis method")
 	infobulle(en.Percent, "Enter the nth percentile to be calculated")
 	status.bar.display(en.Percent, TextOutputVar, "Enter the nth percentile to be calculated")
-	infobulle(en.Freq1, "Enter the lower bound of the interval to count the number of occurrences")
-	status.bar.display(en.Freq1, TextOutputVar, "Enter the lower bound of the interval to count the number of occurrences")
-	infobulle(en.Freq2, "Enter the upper bound of the interval to count the number of occurrences")
-	status.bar.display(en.Freq2, TextOutputVar, "Enter the upper bound of the interval to count the number of occurrences")
+	infobulle(en.Freq1, "Enter the lower bound of the interval to count the number of occurrences.\nIn the case of Onset and Cessation, the limit should be of the form Month-Day,\nnumber otherwise")
+	status.bar.display(en.Freq1, TextOutputVar, "Enter the lower bound of the interval to count the number of occurrences.\nIn the case of Onset and Cessation, the limit should be of the form Month-Day,\nnumber otherwise")
+	infobulle(en.Freq2, "Enter the upper bound of the interval to count the number of occurrences.\nIn the case of Onset and Cessation, the limit should be of the form Month-Day,\nnumber otherwise")
+	status.bar.display(en.Freq2, TextOutputVar, "Enter the upper bound of the interval to count the number of occurrences.\nIn the case of Onset and Cessation, the limit should be of the form Month-Day,\nnumber otherwise")
 
 	#################
 	tkbind(cb.anMthd, "<<ComboboxSelected>>", function(){
@@ -1244,9 +1244,9 @@ PICSAPanelCmd <- function(){
 	chk.trendTSp <- tkcheckbutton(frameTSPlot, variable = EnvPICSAplot$trendTSp, text =  "Add Trend", anchor = 'w', justify = 'left', state = stateType)
 
 	txt.lonLoc <- tklabel(frameTSPlot, text = "Longitude",  anchor = 'e', justify = 'right')
-	en.lonLoc <- tkentry(frameTSPlot, textvariable = EnvPICSAplot$lonLOC, width = 6, state = statexyLoc)
+	en.lonLoc <- tkentry(frameTSPlot, textvariable = EnvPICSAplot$lonLOC, width = 9, state = statexyLoc)
 	txt.latLoc <- tklabel(frameTSPlot, text = "Latitude",  anchor = 'e', justify = 'right')
-	en.latLoc <- tkentry(frameTSPlot, textvariable = EnvPICSAplot$latLOC, width = 6, state = statexyLoc)
+	en.latLoc <- tkentry(frameTSPlot, textvariable = EnvPICSAplot$latLOC, width = 9, state = statexyLoc)
 
 	txt.stnID <- tklabel(frameTSPlot, text = "Station",  anchor = 'e', justify = 'right')
 	cb.stnID <- ttkcombobox(frameTSPlot, values = stnIDTSPLOT, textvariable = EnvPICSAplot$stnIDTSp, width = 10, state = stateStnID)
@@ -1289,10 +1289,10 @@ PICSAPanelCmd <- function(){
 
 
 	#######################
-	# tkgrid(framePicsaOut, row = 0, column = 0, sticky = 'we')
-	# tkgrid(frameTSMaps, row = 1, column = 0, sticky = 'we', pady = 3)
-	# tkgrid(frameClimMaps, row = 2, column = 0, sticky = 'we', pady = 3)
-	# tkgrid(frameTSPlot, row = 3, column = 0, sticky = 'we', pady = 3)
+	tkgrid(framePicsaOut, row = 0, column = 0, sticky = 'we')
+	tkgrid(frameTSMaps, row = 1, column = 0, sticky = 'we', pady = 3)
+	tkgrid(frameClimMaps, row = 2, column = 0, sticky = 'we', pady = 3)
+	tkgrid(frameTSPlot, row = 3, column = 0, sticky = 'we', pady = 3)
 
 	#######################################################################################################
 
@@ -1338,7 +1338,7 @@ PICSAPanelCmd <- function(){
 	tkgrid(bt.shpF, row = 0, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 
 	#######################
-	# tkgrid(frameSHP, row = 0, column = 0, sticky = 'we')
+	tkgrid(frameSHP, row = 0, column = 0, sticky = 'we')
 
 	#######################################################################################################
 
@@ -1527,7 +1527,7 @@ PICSAPanelCmd <- function(){
 				return(NULL)
 			}
 			PICSADATA <<- picsa
-		} 
+		}
 
 	})
 

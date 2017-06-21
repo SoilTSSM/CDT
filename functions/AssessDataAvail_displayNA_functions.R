@@ -14,7 +14,7 @@ assess.plotNASummary <- function(dates, xseries, jstn, period){
 
 	opar <- par(mar = c(3.5, 4, 3, 2))
 	barplot(yNonNA, space = 0, ylab = 'Number of Non-Missing data/Year', ylim = ylim, col = 'cyan', xaxt = 'n', yaxt = 'n', main = jstn)
-	axis(side = 2)
+	axis(side = 2, at = axTicks(2))
 	axis(side = 1, at = at_tick - 1, labels = FALSE)
 	axis(side = 1, at = at_lab , tick = FALSE, labels = taxis)
 	abline(h = axTicks(2), col = "lightgray", lty = "dotted")

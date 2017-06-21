@@ -39,6 +39,7 @@ ValidationDataFun <- function(retValidParams){
 	stn.dates <- extr_stn$date
 	stn.data <- extr_stn$stn
 	stn.ncdata <- extr_stn$rfe
+	stn.id <- retValidParams$stn$donne$id
 
 	####
 	select_type <- retValidParams$select_type
