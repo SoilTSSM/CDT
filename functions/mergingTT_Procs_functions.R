@@ -310,7 +310,7 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 			data.down[sapply(data.down, is.null)] <- list(matrix(NA, ncol = length(downData$lat), nrow = length(downData$lon)))
 			idcoarse <- indexCoarseGrid(downData$lon, downData$lat, res.coarse)
 			data.down <- t(sapply(data.down, function(x) x[idcoarse$ix, idcoarse$iy, drop = FALSE]))
-			ptsData1 <- expand.grid(lon = downData$lon[idcoarse$ix], lat = downData$lat[idcoarse$iy])
+			# ptsData1 <- expand.grid(lon = downData$lon[idcoarse$ix], lat = downData$lat[idcoarse$iy])
 		}
 	}else{
 		nstn <- length(lon.stn)
@@ -337,70 +337,71 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 	###############
 	InsertMessagesTxt(main.txt.out, 'Compute bias factors ...')
 
-	if(bias.method == 'Multiplicative.Bias.Mon'){
+	if(bias.method != 'Quantile.Mapping'){
 		date.bias <- date.bias[ibsdt]
 		data.down.stn <- data.down.stn[ibsdt, , drop = FALSE]
 		data.stn <- data.stn[istdt, , drop = FALSE]
 
-		month.stn <- as(substr(date.bias, 5, 6), 'numeric')
-		dataf <- data.frame(id.stn = rep(id.stn, each = nrow(data.stn)),
-					times = rep(month.stn, ncol(data.stn)), stn = c(data.stn), tt = c(data.down.stn))
-
-		bias <- by(dataf, dataf$id.stn, bias.TT.times.fun, min.len)
-		bias <- lapply(bias, function(x) sapply(x,'[[', 1))
-		bias <- t(do.call('rbind', bias))
-
-		bias.pars <- list(bias = bias, lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
-							data.stn = data.stn, date.down = data.down.stn, date = date.bias)
-
-		rm(data.down.stn, dataf)
-	}
-
-	if(bias.method == 'Multiplicative.Bias.Var'){
-		date.bias <- date.bias[ibsdt]
-		data.down.stn <- data.down.stn[ibsdt, , drop = FALSE]
-		data.stn <- data.stn[istdt, , drop = FALSE]
-
-		if(freqData == 'daily'){
-			endmon <- c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-			vtimes <- cbind(unlist(sapply(endmon, function(j) 1:j)), rep(1:12, endmon), 1:365)
-			xdaty <- paste(as.numeric(substr(date.bias, 7, 8)), as.numeric(substr(date.bias, 5, 6)), sep = '_')
-			xvtm <- paste(vtimes[, 1], vtimes[, 2], sep = '_')
-			times.stn <- vtimes[match(xdaty, xvtm), 3]
-			times.stn[is.na(times.stn)] <- 59
-			## Add  +/- 5 days
-			ix5days <- lapply(unique(times.stn), function(nt){
-				ix1 <- which(times.stn == nt)
-				ix1 <- c(sapply(ix1, function(x) x+(-5:5)))
-				cbind(nt, ix1[ix1 > 0 & ix1 <= length(date.bias)])
-			})
-			ix5days <- do.call('rbind', ix5days)
-			times.stn <- ix5days[, 1]
-			data.down.stn <- data.down.stn[ix5days[, 2], ]
-			data.stn <- data.stn[ix5days[, 2], ]
-		}
-		if(freqData == 'dekadal'){
-			vtimes <- cbind(expand.grid(1:3, 1:12), 1:36)
-			xdaty <- paste(as.numeric(substr(date.bias, 7, 7)), as.numeric(substr(date.bias, 5, 6)), sep = '_')
-			xvtm <- paste(vtimes[, 1], vtimes[, 2], sep = '_')
-			times.stn <- vtimes[match(xdaty, xvtm), 3]
-		}
-		if(freqData == 'monthly'){
+		if(bias.method == 'Multiplicative.Bias.Mon'){
 			times.stn <- as.numeric(substr(date.bias, 5, 6))
 		}
-		dataf <- data.frame(id.stn = rep(id.stn, each = nrow(data.stn)),
-					times = rep(times.stn, ncol(data.stn)), stn = c(data.stn), tt = c(data.down.stn))
+		if(bias.method == 'Multiplicative.Bias.Var'){
+			if(freqData == 'daily'){
+				endmon <- c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+				vtimes <- cbind(unlist(sapply(endmon, function(j) 1:j)), rep(1:12, endmon), 1:365)
+				xdaty <- paste(as.numeric(substr(date.bias, 7, 8)), as.numeric(substr(date.bias, 5, 6)), sep = '_')
+				xvtm <- paste(vtimes[, 1], vtimes[, 2], sep = '_')
+				times.stn <- vtimes[match(xdaty, xvtm), 3]
+				times.stn[is.na(times.stn)] <- 59
+				## Add  +/- 5 days
+				ix5days <- lapply(unique(times.stn), function(nt){
+					ix1 <- which(times.stn == nt)
+					ix1 <- c(sapply(ix1, function(x) x+(-5:5)))
+					cbind(nt, ix1[ix1 > 0 & ix1 <= length(date.bias)])
+				})
+				ix5days <- do.call('rbind', ix5days)
+				times.stn <- ix5days[, 1]
+				data.down.stn <- data.down.stn[ix5days[, 2], ]
+				data.stn <- data.stn[ix5days[, 2], ]
+			}
+			if(freqData == 'dekadal'){
+				vtimes <- cbind(expand.grid(1:3, 1:12), 1:36)
+				xdaty <- paste(as.numeric(substr(date.bias, 7, 7)), as.numeric(substr(date.bias, 5, 6)), sep = '_')
+				xvtm <- paste(vtimes[, 1], vtimes[, 2], sep = '_')
+				times.stn <- vtimes[match(xdaty, xvtm), 3]
+			}
+			if(freqData == 'monthly'){
+				times.stn <- as.numeric(substr(date.bias, 5, 6))
+			}
+		}
 
-		bias <- by(dataf, dataf$id.stn, bias.TT.times.fun, min.len)
-		bias <- lapply(bias, function(x) sapply(x,'[[', 1))
-		bias <- t(do.call('rbind', bias))
+		index <- split(seq(length(times.stn)), times.stn)
+		bias <- lapply(index, function(x){
+			stn <- data.stn[x, , drop = FALSE]
+			tt <- data.down.stn[x, , drop = FALSE]
+			na.data <- is.na(stn) | is.na(tt)
+			stn[na.data] <- NA
+			tt[na.data] <- NA
+			len <- colSums(!na.data)
+			stn <- colSums(stn, na.rm = TRUE)
+			tt <- colSums(tt, na.rm = TRUE)
+			bs <- stn/tt
+			bs[len < min.len] <- 1
+			bs[is.na(bs)] <- 1
+			bs[is.infinite(bs)] <- 1.5
+			bs[is.nan(bs)] <- 1
+			bs[bs < 0] <- 1
+			bs[bs == 0] <- 0.6
+			bs[bs > 1.5] <- 1.5
+			bs
+		})
+		bias <- do.call(rbind, bias)
 
 		bias.pars <- list(bias = bias, lon.stn = lon.stn, lat.stn = lat.stn, id.stn = id.stn,
-							data.stn = data.stn, date.down = data.down.stn, date = date.bias)
-		rm(data.down.stn, dataf)
-	}
+							data.stn = data.stn, data.down = data.down.stn, date = date.bias)
 
-	if(bias.method == 'Quantile.Mapping'){
+		rm(data.down.stn)
+	}else{
 		if(doparallel & length(months) >= 3){
 			klust <- makeCluster(nb_cores)
 			registerDoParallel(klust)

@@ -10,7 +10,7 @@ plotCDTdata <- function(donne, atLev, listCol, ocrds, units){
 	if(!is.na(units)){
 		 colorkeyTitle <- if(units != "") paste('(', units, ')', sep = '') else ''
 	}else colorkeyTitle <- ''
-	
+
 	##X-Y Axis
 	toutLon <- c(ocrds[,1], donne$lon)
 	toutLat <- c(ocrds[,2], donne$lat)
@@ -61,7 +61,7 @@ plotCDTdata <- function(donne, atLev, listCol, ocrds, units){
 	colorkeyFrame <- draw.colorkey(key = colorkey, draw = FALSE, vp = NULL)
 	grobObj <- textGrob(colorkeyTitle, x = xyposTitle[1], y = xyposTitle[2], just = justTitle, rot = rotTitle,
 						gp = gpar(fontsize = 12, fontface = 'plain', col = "black", cex = 0.8))
-	
+
 	##add legend title
 	lezandyGrob <- packGrob(frame = colorkeyFrame, grob = grobObj, side = posTitle, dynamic = T)
 
@@ -71,7 +71,7 @@ plotCDTdata <- function(donne, atLev, listCol, ocrds, units){
 	}else if(colorkeyPlace == 'right'){
 		lezandy <- list(right = list(fun = lezandyGrob))
 	}
-		
+
 	plotStn <- levelplot(z~lon+lat, data = donne, at = ticks,
 						prepanel = prepanel.default.xyplot,
 						panel = function(x, y, z,...){
@@ -82,7 +82,7 @@ plotCDTdata <- function(donne, atLev, listCol, ocrds, units){
 						colorkey = FALSE, par.settings = parSettings, xlab = '', ylab = '',
 						xlim = xlim, ylim = ylim, col.regions = loko,
 						scales = list(x = Xaxis, y = Yaxis), legend = lezandy)
-	print(plotStn)	
+	print(plotStn)
 }
 
 
@@ -99,13 +99,13 @@ displayCDTdata <- function(parent, notebookTab, donne, atLev, listCol, shpf, uni
 		InsertMessagesTxt(main.txt.out, 'Levels must be at least 2', format = TRUE)
 		return(NULL)
 	}
-	
+
 	ocrds <- getBoundaries(shpf)
-	
+
 	plotIt <- function(){
 		plotCDTdata(donne, atLev, listCol, ocrds, units)
 	}
-	
+
 	###################################################################	
 
 	onglet <- imageNotebookTab_open(parent, notebookTab, tabTitle = paste('Map -', donne$date), AllOpenTabType, AllOpenTabData)
@@ -114,15 +114,15 @@ displayCDTdata <- function(parent, notebookTab, donne, atLev, listCol, shpf, uni
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
 	hscrFrame <- as.integer(tclvalue(tkwinfo("height", panel.right)))
 	wscrFrame <- as.integer(tclvalue(tkwinfo("width", panel.right)))
-	
+
 	scrollwin <- bwScrolledWindow(onglet[[2]])
 	tkgrid(scrollwin)
 	tkgrid.rowconfigure(scrollwin, 0, weight = 1)
 	tkgrid.columnconfigure(scrollwin, 0, weight = 1)
 	containerFrame <- bwScrollableFrame(scrollwin, width = wscrFrame, height = hscrFrame)
-	
+
 	img <- tkrplot(containerFrame, fun = plotIt, hscale = hscale, vscale = vscale)
 	tkgrid(img)
-	
+
 	return(list(onglet, img))
 }

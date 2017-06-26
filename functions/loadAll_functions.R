@@ -12,6 +12,9 @@ source(file.path(apps.dir, 'functions', 'cdtOpenWriteFiles_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtPreview_df_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtPreview_nc_functions.R'))
 
+###
+source(file.path(apps.dir, 'functions', 'cdtDistributions_functions.R'))
+
 source(file.path(apps.dir, 'functions', 'cdtDisaggregateStnData_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtClimato0_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtClimato_functions.R'))
@@ -52,8 +55,8 @@ source(file.path(apps.dir, 'functions', 'homogenization_ProcsGAL_functions.R'))
 source(file.path(apps.dir, 'functions', 'homogenization_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'homogenization_AdjPlot_functions.R'))
 source(file.path(apps.dir, 'functions', 'homogenization_BreakPtPlot_functions.R'))
-###
 
+###
 source(file.path(apps.dir, 'functions', 'merging_functions.R'))
 
 source(file.path(apps.dir, 'functions', 'mergingRR_dlgBox_functions.R'))
@@ -141,6 +144,7 @@ source(file.path(apps.dir, 'functions', 'validation_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'validation_Proc_functions.R'))
 source(file.path(apps.dir, 'functions', 'validation_displayGG-Sat_functions.R'))
 source(file.path(apps.dir, 'functions', 'validation_displayMap_functions.R'))
+source(file.path(apps.dir, 'functions', 'mergingRR_ProcsValidation_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'gapFillTemp_dlgBox_functions.R'))
@@ -169,6 +173,8 @@ source(file.path(apps.dir, 'functions', 'PICSA_dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'PICSA_Procs_functions.R'))
 source(file.path(apps.dir, 'functions', 'PICSA_Plot_functions.R'))
 source(file.path(apps.dir, 'functions', 'PICSA_displayPLOT_functions.R'))
+source(file.path(apps.dir, 'functions', 'SkewNormalDistribution_functions.R'))
+
 
 #####
 #

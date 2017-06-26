@@ -5,42 +5,54 @@ PICSA.plotTSMaps <- function(ocrds){
 
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Onset"){
 		don <- EnvPICSA$output$Onset.nb[EnvPICSA$index$onsetYear == iyear, ]
+		texta <- NULL
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation"){
 		don <- EnvPICSA$output$Cessation.nb[EnvPICSA$index$cessatYear == iyear, ]
+		texta <- NULL
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Season Length"){
 		don <- EnvPICSA$output$SeasonLength[EnvPICSA$index$onsetYear == iyear, ]
+		texta <- 'Season length (days)'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Seasonal Rainfall Amounts"){
 		don <- EnvPICSA$picsa$RainTotal[EnvPICSA$index$onsetYear == iyear, ]
+		texta <- 'Seasonal Rainfall Amount (mm)'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Dry Spells"){
 		don <- EnvPICSA$picsa$AllDrySpell[EnvPICSA$index$onsetYear == iyear, ]
 		drydef <- as.numeric(str_trim(tclvalue(tkget(EnvPICSAplot$spin.TsMap.dryspell))))
 		don <- sapply(don, function(x) sum(x >= drydef))
+		texta <- paste0('Number of Dry Spells', '\n', "Dry spells - ", drydef, " or more consecutive days")
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Longest Dry Spell"){
 		don <- EnvPICSA$picsa$AllDrySpell[EnvPICSA$index$onsetYear == iyear, ]
 		don <- sapply(don, max)
+		texta <- 'Longest dry spell (days)'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Number of rain day"){
 		don <- EnvPICSA$picsa$nbdayrain[EnvPICSA$index$onsetYear == iyear, ]
+		texta <- 'Number of rainy days (days)'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Maximum daily rain"){
 		don <- EnvPICSA$picsa$max24h[EnvPICSA$index$onsetYear == iyear, ]
+		texta <- 'Seasonal maximum daily rainfall depth (mm)'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Total rain when RR>95thPerc"){
 		don <- EnvPICSA$picsa$TotalQ95th[EnvPICSA$index$onsetYear == iyear, ]
+		texta <- 'Seasonal total of precipitation\nwhen RR > 95th percentile (days)'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Nb of day when RR>95thPerc"){
 		don <- EnvPICSA$picsa$NbQ95th[EnvPICSA$index$onsetYear == iyear, ]
+		texta <- 'Seasonal count of days when\nRR > 95th percentile (days)'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Maximum temperature"){
 		don <- EnvPICSA$picsa$tmax[EnvPICSA$index$onsetYear == iyear, ]
+		texta <- 'Seasonal average maximum temperature (°C)'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Minimum temperature"){
 		don <- EnvPICSA$picsa$tmin[EnvPICSA$index$onsetYear == iyear, ]
+		texta <- 'Seasonal average minimum temperature (°C)'
 	}
 
 	#################
@@ -69,15 +81,13 @@ PICSA.plotTSMaps <- function(ocrds){
 		legend.mar <- 3.5
 		legend.width <- 0.7
 		mar <- c(7, 4, 2.5, 2.5)
-		# legend.args <- list(text = "unknown units", col = "black", font = 2, cex = 0.8, side = 1, line = 2)
-		legend.args = NULL
+		legend.args <- if(!is.null(texta)) list(text = texta, cex = 0.8, side = 1, line = 2) else NULL
 	}else{
 		horizontal <- FALSE
 		legend.mar <- 6.2
 		mar <- c(4, 4, 2.5, 6)
 		legend.width <- 0.9
-		# legend.args <- list(text = "unknown units", col = "black", font = 2, cex = 0.8, side = 4, line = 3)
-		legend.args = NULL
+		legend.args <- if(!is.null(texta)) list(text = texta, cex = 0.8, side = 4, line = 3) else NULL
 	}
 
 	#################
@@ -300,6 +310,194 @@ PICSA.plotClimMaps <- function(ocrds){
 	return(list(par = c(plt, usr)))
 }
 
+##############################
+
+PICSA.plotTSGraph <- function(){
+	if(EnvPICSA$data.type == "cdt"){
+		ixy <- which(EnvPICSA$cdtPrecip$id == str_trim(tclvalue(EnvPICSAplot$stnIDTSp)))
+
+		if(length(ixy) == 0){
+			InsertMessagesTxt(main.txt.out, "Station not found", format = TRUE)
+			return(NULL)
+		}
+		EnvPICSAplot$location <- paste0("Station: ", EnvPICSA$cdtPrecip$id[ixy])
+	}else{
+		xlon <- sort(unique(EnvPICSA$cdtPrecip$lon))
+		xlat <- sort(unique(EnvPICSA$cdtPrecip$lat))
+		ilon <- as.numeric(str_trim(tclvalue(EnvPICSAplot$lonLOC)))
+		ilat <- as.numeric(str_trim(tclvalue(EnvPICSAplot$latLOC)))
+		iclo <- findInterval(ilon, xlon)
+		ilo <- iclo + (2 * ilon > xlon[iclo] + xlon[iclo+1])
+		icla <- findInterval(ilat, xlat)
+		ila <- icla + (2 * ilat > xlat[icla] + xlat[icla+1])
+
+		if(is.na(ilo) | is.na(ila)){
+			InsertMessagesTxt(main.txt.out, "Coordinates outside of data range", format = TRUE)
+			return(NULL)
+		}
+		ixy <- matrix(seq(length(EnvPICSA$cdtPrecip$lon)), length(xlon), length(xlat))[ilo, ila]
+		EnvPICSAplot$location <- paste0("Longitude: ", round(ilon, 5), ", Latitude: ", round(ilat, 5))
+	}
+
+	if(str_trim(tclvalue(EnvPICSAplot$varTSp)) == "From Maps"){
+		if(tclvalue(EnvPICSAplot$varPICSA) %in% c("Maximum temperature", "Minimum temperature")){
+			tmax <- EnvPICSA$picsa$tmax[, ixy]
+			tmin <- EnvPICSA$picsa$tmin[, ixy]
+			picsa.plot.TxTn(EnvPICSA$index$onsetYear, tmax, tmin, axis.font = 1)
+		}else{
+			if(tclvalue(EnvPICSAplot$varPICSA) == "Onset"){
+				don <- EnvPICSA$output$Onset.nb[, ixy]
+				xlab <- ''
+				ylab <- ''
+				sub <- NULL
+				theoretical <- FALSE
+			}
+			if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation"){
+				don <- EnvPICSA$output$Cessation.nb[, ixy]
+				xlab <- ''
+				ylab <- ''
+				sub <- NULL
+				theoretical <- FALSE
+			}
+			if(tclvalue(EnvPICSAplot$varPICSA) == "Season Length"){
+				don <- EnvPICSA$output$SeasonLength[, ixy]
+				xlab <- 'Year'
+				ylab <- 'Number of Days'
+				sub <- NULL
+				theoretical <- TRUE
+			}
+			if(tclvalue(EnvPICSAplot$varPICSA) == "Seasonal Rainfall Amounts"){
+				don <- EnvPICSA$picsa$RainTotal[, ixy]
+				xlab <- 'Year'
+				ylab <- 'Rainfall Amount (mm)'
+				sub <- NULL
+				theoretical <- TRUE
+			}
+			if(tclvalue(EnvPICSAplot$varPICSA) == "Dry Spells"){
+				don <- EnvPICSA$picsa$AllDrySpell[, ixy]
+				drydef <- as.numeric(str_trim(tclvalue(tkget(EnvPICSAplot$spin.TsMap.dryspell))))
+				don <- sapply(don, function(x) sum(x >= drydef))
+				xlab <- 'Year'
+				ylab <- 'Number of Dry Spells'
+				sub <- paste("Dry spells -", drydef, "or more consecutive days")
+				theoretical <- FALSE
+			}
+			if(tclvalue(EnvPICSAplot$varPICSA) == "Longest Dry Spell"){
+				don <- EnvPICSA$picsa$AllDrySpell[, ixy]
+				don <- sapply(don, max)
+				xlab <- 'Year'
+				ylab <- 'Longest dry spell (days)'
+				sub <- NULL
+				theoretical <- FALSE
+			}
+			if(tclvalue(EnvPICSAplot$varPICSA) == "Number of rain day"){
+				don <- EnvPICSA$picsa$nbdayrain[, ixy]
+				xlab <- 'Year'
+				ylab <- 'Number of rainy days (days)'
+				sub <- NULL
+				theoretical <- TRUE
+			}
+			if(tclvalue(EnvPICSAplot$varPICSA) == "Maximum daily rain"){
+				don <- EnvPICSA$picsa$max24h[, ixy]
+				xlab <- 'Year'
+				ylab <- 'Seasonal maximum daily rainfall depth (mm)'
+				sub <- NULL
+				theoretical <- FALSE
+			}
+			if(tclvalue(EnvPICSAplot$varPICSA) == "Total rain when RR>95thPerc"){
+				don <- EnvPICSA$picsa$TotalQ95th[, ixy]
+				xlab <- 'Year'
+				ylab <- 'Seasonal total of precipitation\nwhen RR > 95th percentile (days)'
+				sub <- NULL
+				theoretical <- FALSE
+			}
+			if(tclvalue(EnvPICSAplot$varPICSA) == "Nb of day when RR>95thPerc"){
+				don <- EnvPICSA$picsa$NbQ95th[, ixy]
+				xlab <- 'Year'
+				ylab <- 'Seasonal count of days when\nRR > 95th percentile (days)'
+				sub <- NULL
+				theoretical <- FALSE
+			}
+
+			####
+			if(tclvalue(EnvPICSAplot$varPICSA) == "Onset"){
+				xaxe <- EnvPICSA$index$onsetYear
+				origindate <- EnvPICSA$index$onsetOrigDate
+			}else if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation"){
+				xaxe <- EnvPICSA$index$cessatYear
+				origindate <- EnvPICSA$index$cessatOrigDate
+			}else{
+				xaxe <- EnvPICSA$index$onsetYear
+				origindate <- NULL
+			}
+
+			####
+			if(str_trim(tclvalue(EnvPICSAplot$typeTSp)) == "Line"){
+				plt.avg <- if(tclvalue(EnvPICSAplot$averageTSp) == "1") TRUE else FALSE
+				plt.terc <- if(tclvalue(EnvPICSAplot$tercileTSp) == "1") TRUE else FALSE
+				plt.trd <- if(tclvalue(EnvPICSAplot$trendTSp) == "1") TRUE else FALSE
+				picsa.plot.line(xaxe, don, origindate = origindate, 
+								sub = sub, xlab = xlab, ylab = ylab,
+								mean = plt.avg, tercile = plt.terc, linear = plt.trd,
+								col = list(line = "red", points = "blue"), axis.font = 1, start.zero = FALSE,
+								col.add = list(mean = "black", tercile1 = "green", tercile2 = "blue", linear = "purple3"))
+			}
+
+			if(str_trim(tclvalue(EnvPICSAplot$typeTSp)) == "Barplot"){
+				picsa.plot.bar(xaxe, don, origindate = origindate,
+								sub = sub, xlab = xlab, ylab = ylab,
+								barcol = "darkblue", axis.font = 1, start.zero = FALSE)
+			}
+
+			if(str_trim(tclvalue(EnvPICSAplot$typeTSp)) == "Probability"){
+				picsa.plot.proba(don, origindate = origindate, sub = sub, xlab = ylab, axis.font = 1,
+								theoretical = theoretical,  gof.c = "ad",
+								distr = c("norm", "snorm", "lnorm", "gamma", "weibull"),
+								col = list(line = "blue", points = "lightblue", prob = "black"))
+			}
+
+			####
+			if(str_trim(tclvalue(EnvPICSAplot$typeTSp))%in%c("ENSO-Line", "ENSO-Barplot", "ENSO-Proba")){
+				ijoni <- getIndexSeasonVars(as.numeric(EnvPICSA$output$Onset.date[, ixy]),
+							as.numeric(EnvPICSA$output$Cessation.date[, ixy]),
+							EnvPICSA$ONI$date, "monthly")
+				oni <- sapply(ijoni, function(x) mean(EnvPICSA$ONI$data[x], na.rm = TRUE))
+				oni <- ifelse(oni >= 0.5, 3, ifelse(oni <= -0.5, 1, 2))
+			}
+
+			####
+			if(str_trim(tclvalue(EnvPICSAplot$typeTSp)) == "ENSO-Line"){
+				plt.avg <- if(tclvalue(EnvPICSAplot$averageTSp) == "1") TRUE else FALSE
+				plt.terc <- if(tclvalue(EnvPICSAplot$tercileTSp) == "1") TRUE else FALSE
+				plt.trd <- if(tclvalue(EnvPICSAplot$trendTSp) == "1") TRUE else FALSE
+				picsa.plot.line.ENSO(xaxe, don, oni, origindate = origindate, 
+								sub = sub, xlab = xlab, ylab = ylab,
+								mean = plt.avg, tercile = plt.terc, linear = plt.trd,
+								axis.font = 1, start.zero = FALSE,
+								col = list(line = "black", points = c("blue", "gray", "red")),
+								col.add = list(mean = "darkblue", tercile1 = "chartreuse4", tercile2 = "darkgoldenrod4", linear = "purple3"))
+			}
+
+			if(str_trim(tclvalue(EnvPICSAplot$typeTSp)) == "ENSO-Barplot"){
+				picsa.plot.bar.ENSO(xaxe, don, oni, origindate = origindate,
+								sub = sub, xlab = xlab, ylab = ylab,
+								barcol = c("blue", "gray", "red"), axis.font = 1, start.zero = FALSE)
+			}
+
+			if(str_trim(tclvalue(EnvPICSAplot$typeTSp)) == "ENSO-Proba"){
+				picsa.plot.proba.ENSO(don, oni, origindate = origindate, sub = sub, xlab = ylab, axis.font = 1,
+									col.all = list(line = "black", points = "lightgray"),
+									col.nino = list(line = "red", points = "lightpink"),
+									col.nina = list(line = "blue", points = "lightblue"),
+									col.neutre = list(line = "gray", points = "lightgray"))
+			}
+		}
+	}else{
+		don <- EnvPICSA$cdtPrecip$data[, ixy]
+		picsa.plot.daily(EnvPICSA$cdtPrecip$dates, don, EnvPICSA$thres.rain.day)
+	}
+}
+
 ######################################################################################################
 
 PICSA.DisplayMaps <- function(parent, ocrds){
@@ -366,17 +564,23 @@ PICSA.DisplayMaps <- function(parent, ocrds){
 			rayondisp <- sdist[inear] > fdispIdStn(as.numeric(tclvalue(parPltCrd$usrCoords2)) - as.numeric(tclvalue(parPltCrd$usrCoords1)))
 			if(!(xyMouse$inout | rayondisp)){
 				tclvalue(EnvPICSAplot$stnIDTSp) <- EnvPICSA$cdtPrecip$id[inear]
-			}	
+				plotTS <- TRUE
+			}else plotTS <- FALSE
 		}else{
 			if(!xyMouse$inout){
 				tclvalue(EnvPICSAplot$lonLOC) <- round(xyMouse$x, 6)
 				tclvalue(EnvPICSAplot$latLOC) <- round(xyMouse$y, 6)
-			}
+				plotTS <- TRUE
+			}else plotTS <- FALSE
 		}
 
-		##plot time series here
-
-
+		if(plotTS){
+			imgContainer <- PICSA.DisplayTSPlot(tknotes)
+			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvPICSAplot$notebookTab.tsplot, AllOpenTabType, AllOpenTabData)
+			EnvPICSAplot$notebookTab.tsplot <- retNBTab$notebookTab
+			AllOpenTabType <<- retNBTab$AllOpenTabType
+			AllOpenTabData <<- retNBTab$AllOpenTabData
+		}
 	})
 
 	tkbind(img, "<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
@@ -451,23 +655,63 @@ PICSA.DisplayClimMaps <- function(parent, ocrds){
 			rayondisp <- sdist[inear] > fdispIdStn(as.numeric(tclvalue(parPltCrd$usrCoords2)) - as.numeric(tclvalue(parPltCrd$usrCoords1)))
 			if(!(xyMouse$inout | rayondisp)){
 				tclvalue(EnvPICSAplot$stnIDTSp) <- EnvPICSA$cdtPrecip$id[inear]
-			}	
+				plotTS <- TRUE
+			}else plotTS <- FALSE
 		}else{
 			if(!xyMouse$inout){
 				tclvalue(EnvPICSAplot$lonLOC) <- round(xyMouse$x, 6)
 				tclvalue(EnvPICSAplot$latLOC) <- round(xyMouse$y, 6)
-			}
+				plotTS <- TRUE
+			}else plotTS <- FALSE
 		}
 
-		##plot time series here
-
-
+		if(plotTS){
+			imgContainer <- PICSA.DisplayTSPlot(tknotes)
+			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvPICSAplot$notebookTab.tsplot, AllOpenTabType, AllOpenTabData)
+			EnvPICSAplot$notebookTab.tsplot <- retNBTab$notebookTab
+			AllOpenTabType <<- retNBTab$AllOpenTabType
+			AllOpenTabData <<- retNBTab$AllOpenTabData
+		}
 	})
 
 	tkbind(img, "<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
 	tkbind(img, "<Leave>", function() tkconfigure(img, cursor = ''))
 
 	return(list(onglet, img))
-
 }
+
+################################
+
+PICSA.DisplayTSPlot <- function(parent){
+	plotIt <- function(){
+		PICSA.plotTSGraph()
+	}
+
+	#########
+	onglet <- imageNotebookTab_open(parent, EnvPICSAplot$notebookTab.tsplot, 'Time-Series-Plot', AllOpenTabType, AllOpenTabData)
+	hscale <- as.numeric(tclvalue(tkget(spinH)))
+	vscale <- as.numeric(tclvalue(tkget(spinV)))
+	hscrFrame <- as.integer(tclvalue(tkwinfo("height", panel.right)))
+	wscrFrame <- as.integer(tclvalue(tkwinfo("width", panel.right)))
+
+	scrollwin <- bwScrolledWindow(onglet[[2]])
+	tkgrid(scrollwin)
+	tkgrid.rowconfigure(scrollwin, 0, weight = 1)
+	tkgrid.columnconfigure(scrollwin, 0, weight = 1)
+	containerFrame <- bwScrollableFrame(scrollwin, width = wscrFrame, height = hscrFrame)
+
+	img <- tkrplot(containerFrame, fun = plotIt, hscale = hscale, vscale = vscale)
+	tkgrid(img)
+	tkgrid.rowconfigure(img, 0, weight = 1)
+	tkgrid.columnconfigure(img, 0, weight = 1)
+	tcl("update")
+
+
+	return(list(onglet, img))
+}
+
+
+
+
+
 

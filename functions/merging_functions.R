@@ -1,57 +1,4 @@
 
-bias.RR.times.fun <- function(df, min.len) by(df, df$times, bias.RR.calc.fun, min.len)
-
-bias.RR.calc.fun <- function(df, min.len){
-	bs <- 1
-	ix <- which(!is.na(df$stn) & !is.na(df$rfe))
-	df <- df[ix, , drop = FALSE]
-	if(nrow(df) >= min.len){
-		sum.stn <- sum(df$stn)
-		sum.rfe <- sum(df$rfe)
-	 	if(sum.rfe > 0){
-	 		bs <- sum.stn/sum.rfe
-	 		if(bs > 3) bs <- 3
-	 	} 
-	}
-	return(bs)
-}
-
-##############################
-## Fit Mixture distribution
-fit.mixture.distr <- function(x, min.len = 7, alpha = 0.05,
-						distr.fun = c("berngamma", "bernlnorm", "bernweibull", "bernexp"),
-						method = 'mle', lower = c(0, 1e-10, 1e-10), upper = c(1, Inf, Inf),
-						keepdata = FALSE, keepdata.nb = 3, ...){
-	x <- x[!is.na(x)]
-	ret <- NULL
-	if(length(x) > min.len){
-		if(length(x[x > 0]) > 2){
-			if(var(x[x > 0]) == 0) x[x > 0] <- x[x > 0]+runif(length(x[x > 0]))
-			if(length(which(x == 0)) == 0) x <- c(x, 0)
-		}else return(NULL)
-
-		ret <- lapply(distr.fun, function(distrf){
-			start.fun <- match.fun(paste("start", distrf, sep = ""))
-			start.pars <- start.fun(x)
-			fit.mod <- try(fitdist(x, distrf, method = method, start = start.pars, lower = lower, upper = upper,
-									keepdata = keepdata, keepdata.nb = keepdata.nb, ...), silent = TRUE)
-			if(!inherits(fit.mod, "try-error")){
-				# Anderson-Darling Test
-				pdistrf <- match.fun(paste('p', distrf, sep = ''))
-				goftest <- do.call("ad.test", c(list(x), pdistrf, as.list(fit.mod$estimate)))
-				goftest$data.name <- paste(deparse(substitute(x)), 'and', distrf) 
-				test <- if(goftest$p.value > alpha) 'yes' else 'no'
-				res <- list(fitted.distr = fit.mod, ADgoftest = goftest, h0 = test)
-			}else res <- list(fitted.distr = NULL, ADgoftest = NULL, h0 = 'null')
-			return(res)
-		})
-		names(ret) <- distr.fun
-	}
-	return(ret)
-}
-
-##############################
-
 outputADTest <- function(X, months = 1:12, distr = "berngamma"){
 	H0.test <- vector(mode = 'list', length = 12)
 	H0.test[months] <- lapply(X[months], function(mon){
@@ -119,47 +66,6 @@ fitLM.month.RR <- function(df, min.len) by(df, df$month, fitLM.fun.RR, min.len)
 
 #################################################################################################
 
-bias.TT.times.fun <- function(df, min.len) by(df, df$times, bias.TT.calc.fun, min.len)
-
-bias.TT.calc.fun <- function(df, min.len){
-	bs <- 1
-	ix <- which(!is.na(df$stn) & !is.na(df$tt))
-	df <- df[ix, , drop = FALSE]
-	if(nrow(df) >= min.len){
-		bs <- sum(df$stn)/sum(df$tt)
-		if(is.nan(bs)) bs <- 1    # 0/0
-		if(is.infinite(bs)) bs <- 1.5  # n/0
-		if(bs == 0) bs <- 0.6  # 0/n
-		if(bs > 1.5) bs <- 1.5
-		if(bs < 0) bs <- 1
-	}
-	return(bs)
-}
-
-##############################
-### fit normal distribution for temp
-fit.norm.temp <- function(x, min.len, alpha = 0.05, method = 'mle',
-						lower = c(-20, 0), upper = c(60, 10),
-						keepdata = FALSE, keepdata.nb = 3, ...){
-	x <- x[!is.na(x)]
-	ret <- NULL
-	if(length(x) > min.len){
-		xmoy <- mean(x)
-		xsd <- sd(x)
-		fit.mod <- try(fitdist(x, "norm", method = method,
-					start = list(mean = xmoy, sd = xsd), lower = lower, upper = upper,
-					keepdata = keepdata, keepdata.nb = keepdata.nb, ...), silent = TRUE)
-		if(!inherits(fit.mod, "try-error")){
-			# Shapiro-Wilk normality test
-			swnt <- shapiro.test(x)
-			test <- if(swnt$p.value > alpha) 'yes' else 'no'
-			ret <- list(fitted.distr = fit.mod, SWNtest = swnt, h0 = test)
-		}else ret <- list(fitted.distr = NULL, SWNtest = NULL, h0 = 'null')
-	}
-	return(ret)
-}
-
-##############################
 outputSWNTest <- function(X, months = 1:12){
 	H0.test <- vector(mode = 'list', length = 12)
 	H0.test[months] <- lapply(X[months], function(mon){

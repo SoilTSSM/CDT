@@ -1244,9 +1244,9 @@ PICSAPanelCmd <- function(){
 	chk.trendTSp <- tkcheckbutton(frameTSPlot, variable = EnvPICSAplot$trendTSp, text =  "Add Trend", anchor = 'w', justify = 'left', state = stateType)
 
 	txt.lonLoc <- tklabel(frameTSPlot, text = "Longitude",  anchor = 'e', justify = 'right')
-	en.lonLoc <- tkentry(frameTSPlot, textvariable = EnvPICSAplot$lonLOC, width = 9, state = statexyLoc)
+	en.lonLoc <- tkentry(frameTSPlot, textvariable = EnvPICSAplot$lonLOC, width = 8, state = statexyLoc)
 	txt.latLoc <- tklabel(frameTSPlot, text = "Latitude",  anchor = 'e', justify = 'right')
-	en.latLoc <- tkentry(frameTSPlot, textvariable = EnvPICSAplot$latLOC, width = 9, state = statexyLoc)
+	en.latLoc <- tkentry(frameTSPlot, textvariable = EnvPICSAplot$latLOC, width = 8, state = statexyLoc)
 
 	txt.stnID <- tklabel(frameTSPlot, text = "Station",  anchor = 'e', justify = 'right')
 	cb.stnID <- ttkcombobox(frameTSPlot, values = stnIDTSPLOT, textvariable = EnvPICSAplot$stnIDTSp, width = 10, state = stateStnID)
@@ -1261,9 +1261,9 @@ PICSAPanelCmd <- function(){
 	tkgrid(chk.trendTSp, row = 1, column = 12, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	tkgrid(txt.lonLoc, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.lonLoc, row = 2, column = 4, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.latLoc, row = 2, column = 8, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.latLoc, row = 2, column = 12, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.lonLoc, row = 2, column = 4, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.latLoc, row = 2, column = 9, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.latLoc, row = 2, column = 13, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	tkgrid(txt.stnID, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cb.stnID, row = 3, column = 3, sticky = 'we', rowspan = 1, columnspan = 9, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -1347,6 +1347,8 @@ PICSAPanelCmd <- function(){
 	loadPICSA.Data <- function(){
 		fileRData <- tclvalue(picsaData)
 		if(file.exists(fileRData)){
+			tkconfigure(main.win, cursor = 'watch')
+			tcl("update")
 			load(fileRData)
 			ret <- lapply(ls(envir = EnvPICSA.save), function(x) assign(x, get(x, envir = EnvPICSA.save), envir = EnvPICSA))
 
@@ -1375,6 +1377,8 @@ PICSAPanelCmd <- function(){
 			tkconfigure(cb.stnID, values = stnIDTSPLOT)
 			tclvalue(EnvPICSAplot$stnIDTSp) <- stnIDTSPLOT[1]
 
+			tkconfigure(main.win, cursor = '')
+			tcl("update")
 			loaded <- TRUE
 		}else{
 			InsertMessagesTxt(main.txt.out, 'No PICSA outputs data found', format = TRUE)
@@ -1518,6 +1522,8 @@ PICSAPanelCmd <- function(){
 
 	#######################
 
+	EnvPICSAplot$notebookTab.tsplot <- NULL
+
 	tkconfigure(bt.TsGraph.plot, command = function(){
 		if(!PICSADATA){
 			picsa <- try(loadPICSA.Data(), silent = TRUE)
@@ -1529,6 +1535,12 @@ PICSAPanelCmd <- function(){
 			PICSADATA <<- picsa
 		}
 
+		imgContainer <- PICSA.DisplayTSPlot(tknotes)
+
+		retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvPICSAplot$notebookTab.tsplot, AllOpenTabType, AllOpenTabData)
+		EnvPICSAplot$notebookTab.tsplot <- retNBTab$notebookTab
+		AllOpenTabType <<- retNBTab$AllOpenTabType
+		AllOpenTabData <<- retNBTab$AllOpenTabData
 	})
 
 	#######################################################################################################

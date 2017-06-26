@@ -1006,12 +1006,9 @@ read.NetCDF.Data <- function(read.ncdf.parms){
 				xvar <- matrix(c(xvar), nrow = length(lon), ncol = length(lat), byrow = TRUE)
 			}
 		}else xvar <- NULL
-		#list(ncInfo$dates[jj], xvar)
 		xvar
 	}
 	if(closeklust) stopCluster(klust)
-	# dates <- sapply(ncdata, '[[', 1)
-	# ncdata <- lapply(ncdata, '[[', 2)
 	ret <- list(lon = lon, lat = lat, dates = ncInfo$dates, data = ncdata)
 	InsertMessagesTxt(main.txt.out, read.ncdf.parms$msg$end)
 	return(ret)
