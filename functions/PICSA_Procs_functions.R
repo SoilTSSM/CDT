@@ -1116,7 +1116,7 @@ PICSAProcs <- function(GeneralParameters){
 						"onset", "yrsOnset", "matOnset", "onsetXS", 
 						"cessat", "yrsCesst", "matCessat", "cessatXS", 
 						"RainTotal", "AllDrySpell", "max24h", "nbdayrain",
-						"NbQ95th", "TotalQ95th", "Q95th")
+						"NbQ95th", "TotalQ95th", "Q95th", "EnvPICSAplot")
 		if(compute.ETP == "temp")  toExport1 <- c(toExport1, "tmax", "tmin")
 		toExport1 <- c(toExport1, "fit.distributions", "startnorm", "startsnorm", "startlnorm", "startgamma", "startweibull")
 		allfonct <- unlist(Map(function_name, Filter(is_function, parse(file.path(apps.dir, 'functions', 'PICSA_Plot_functions.R')))))

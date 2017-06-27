@@ -391,6 +391,17 @@ defSpatialPixels <- function(grd_Coords){
 }
 
 ##################################################################################
+### grid resolution
+##grd_Coords  = list(lon, lat)
+
+gridResolution <- function(grd_Coords){
+	newgrid <- expand.grid(lon = grd_Coords$lon, lat = grd_Coords$lat)
+	coordinates(newgrid) <- ~lon+lat
+	newgrid <- SpatialPixels(points = newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
+	return(newgrid@grid)
+}
+
+##################################################################################
 ## Compare if 2 SpatialPixelsObjare have the same resolution
 
 is.diffSpatialPixelsObj <- function(SP1, SP2, tol = 1e-07){

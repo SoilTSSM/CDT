@@ -4,7 +4,7 @@
     //              daily: 365 days bias factors, dekadal: 36 bias factors, monthly: 12 bias factors 
     // "Multiplicative.Bias.Mon": multiplicative bias correction using one factor for each month
     // "Quantile.Mapping": Fitting Bernoulli-Gamma distribution
-    "Bias.Method": "Quantile.Mapping",
+    "Bias.Method": "Multiplicative.Bias.Var",
     // Input and Output files/directory
     "IO.files": [{
         // Full path to the directory containing the bias factors or distr pars

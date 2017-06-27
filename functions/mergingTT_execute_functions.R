@@ -27,9 +27,6 @@ execCoefDownTemp <- function(origdir){
 
 execDownscalingTemp <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
-
-	memType <- 2
-
 	freqData <- GeneralParameters$period
 
 	##Reanalysis sample file
@@ -106,16 +103,10 @@ execDownscalingTemp <- function(origdir){
 
 	ncinfo <- list(xo = reanalInfo$rfeILon, yo = reanalInfo$rfeILat, varid = reanalInfo$rfeVarid)
 	ncInfo$ncinfo <- ncinfo
-	if(memType == 2){
-		msg <- list(start = 'Read Reanalysis data ...', end = 'Reading Reanalysis data finished')
-		ncfiles <- list(freqData = freqData, start.date = start.date, end.date = end.date,
-						months = months, ncDir = reanalDir, ncFileFormat = reanalfilefrmt)
-		ncInfo$read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
-	}
 
 	################
 	paramsDownscl <- list(GeneralParameters = GeneralParameters, demGrid = demGrid, downCoef = downCoef, 
-							reanalData = ncInfo, xy.grid = xy.grid, origdir = origdir, memType = memType)
+							reanalData = ncInfo, xy.grid = xy.grid, origdir = origdir)
 	ret <- ReanalysisDownscaling(paramsDownscl)
 	rm(paramsDownscl, demData, demGrid, reanalInfo)
 	gc()
@@ -129,9 +120,6 @@ execDownscalingTemp <- function(origdir){
 
 execBiasTemp <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
-
-	memType <- 2
-
 	freqData <- GeneralParameters$period
 
 	#######get data
@@ -184,7 +172,7 @@ execBiasTemp <- function(origdir){
 
 	########
 	comptMBiasparms <- list(GeneralParameters = GeneralParameters, stnData = stnData, xy.grid = xy.grid,
-							downData = read.ncdf.parms, res.coarse = res.coarse, memType = memType, origdir = origdir)
+							downData = read.ncdf.parms, res.coarse = res.coarse, origdir = origdir)
 	bias.pars <- ComputeMeanBiasTemp(comptMBiasparms)
 
 	interpBiasparams <- list(GeneralParameters = GeneralParameters, bias.pars = bias.pars, stnData = stnData,

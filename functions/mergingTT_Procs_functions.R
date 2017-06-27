@@ -88,14 +88,7 @@ GlmCoefDownscaling <- function(paramsGlmCoef){
 #################################################################################################
 
 ReanalysisDownscaling <- function(paramsDownscl){
-
-	if(paramsDownscl$memType == 2){
-		reanalData <- read.NetCDF.Data(paramsDownscl$reanalData$read.ncdf.parms)
-		if(is.null(reanalData)) return(NULL)
-		reanalDataExist <- length(reanalData$data)
-	}else reanalDataExist <- length(which(paramsDownscl$reanalData$exist))
-
-	if(doparallel & reanalDataExist >= 20){
+	if(doparallel & length(which(paramsDownscl$reanalData$exist)) >= 30){
 		klust <- makeCluster(nb_cores)
 		registerDoParallel(klust)
 		`%parLoop%` <- `%dopar%`
@@ -118,29 +111,16 @@ ReanalysisDownscaling <- function(paramsDownscl){
 	Down.File.Format <- GeneralParameters$Format$Down.File.Format
 	origdir <- paramsDownscl$origdir
 
-	#############
-	# auxvar <- c('dem', 'slp', 'asp')
-	# is.auxvar <- c(GeneralParameters$auxvar$dem, GeneralParameters$auxvar$slope, GeneralParameters$auxvar$aspect)
-	# if(any(is.auxvar)){
-	# 	formule <- formula(paste('res', '~', paste(auxvar[is.auxvar], collapse = '+'), sep = ''))
-	# }else formule <- formula(paste('res', '~', 1, sep = ''))
-
 	###############
-	if(paramsDownscl$memType == 2){
-		lon.reanl <- reanalData$lon
-		lat.reanl <- reanalData$lat
-		dates.reanl <- reanalData$dates
-		data.reanl <- reanalData$data
-	}else{
-		nc <- nc_open(paramsDownscl$reanalData$nc.files[which(paramsDownscl$reanalData$exist)[1]])
-		lon.reanl <- nc$dim[[paramsDownscl$reanalData$ncinfo$xo]]$vals
-		lat.reanl <- nc$dim[[paramsDownscl$reanalData$ncinfo$yo]]$vals
-		nc_close(nc)
-		xo <- order(lon.reanl)
-		lon.reanl <- lon.reanl[xo]
-		yo <- order(lat.reanl)
-		lat.reanl <- lat.reanl[yo]
-	}
+
+	nc <- nc_open(paramsDownscl$reanalData$nc.files[which(paramsDownscl$reanalData$exist)[1]])
+	lon.reanl <- nc$dim[[paramsDownscl$reanalData$ncinfo$xo]]$vals
+	lat.reanl <- nc$dim[[paramsDownscl$reanalData$ncinfo$yo]]$vals
+	nc_close(nc)
+	xo <- order(lon.reanl)
+	lon.reanl <- lon.reanl[xo]
+	yo <- order(lat.reanl)
+	lat.reanl <- lat.reanl[yo]
 
 	###############
 	InsertMessagesTxt(main.txt.out, "Downscale  Reanalysis ...")
@@ -155,14 +135,15 @@ ReanalysisDownscaling <- function(paramsDownscl){
 	#Defines netcdf output dims
 	dx <- ncdim_def("Lon", "degreeE", xy.grid$lon)
 	dy <- ncdim_def("Lat", "degreeN", xy.grid$lat)
-	out.tt <- ncvar_def("temp", "DegC", list(dx, dy), -99, longname = "Dwonscaled temperature from reanalysis data", prec = "float")
+	out.tt <- ncvar_def("temp", "DegC", list(dx, dy), -99, longname = "Dwonscaled temperature from reanalysis data", prec = "float", compression = 9)
 
 	###############
-
 	## DEM at reanalysis grid
 	coords.reanl <- expand.grid(lon = lon.reanl, lat = lat.reanl)
 	ijreanl <- grid2pointINDEX(list(lon = coords.reanl$lon, lat = coords.reanl$lat), xy.grid)
 
+	##############
+	## create grid
 	demGrid <- paramsDownscl$demGrid
 	demres <- grdSp@grid@cellsize
 	slpasp <- slope.aspect(demGrid, demres[1], demres[2], filter = "sobel")
@@ -191,25 +172,17 @@ ReanalysisDownscaling <- function(paramsDownscl){
 
 	###############
 	packages <- c('sp', 'gstat', 'automap', 'ncdf4')
-
-	jloop <- if(paramsDownscl$memType == 2) seq_along(data.reanl) else seq_along(paramsDownscl$reanalData$nc.files)
-	ret <- foreach(jj = jloop, .packages = packages) %parLoop% {
-		if(paramsDownscl$memType == 2){
-			tt.reanl <- data.reanl[[jj]]
-			if(is.null(tt.reanl)) return(NULL)
-			date.reanl <- dates.reanl[jj]
-		}else{
-			if(paramsDownscl$reanalData$exist[jj]){
-				nc <- nc_open(paramsDownscl$reanalData$nc.files[jj])
-				tt.reanl <- ncvar_get(nc, varid = paramsDownscl$reanalData$ncinfo$varid)
-				nc_close(nc)
-				if(paramsDownscl$reanalData$ncinfo$yo == 1){
-					tt.reanl <- matrix(c(tt.reanl), nrow = length(lon.reanl), ncol = length(lat.reanl), byrow = TRUE)
-				}
-				tt.reanl <- tt.reanl[xo, yo]
-			}else return(NULL)
-			date.reanl <- paramsDownscl$reanalData$dates[[jj]]
-		}
+	ret <- foreach(jj = seq_along(paramsDownscl$reanalData$nc.files), .packages = packages) %parLoop% {
+		if(paramsDownscl$reanalData$exist[jj]){
+			nc <- nc_open(paramsDownscl$reanalData$nc.files[jj])
+			tt.reanl <- ncvar_get(nc, varid = paramsDownscl$reanalData$ncinfo$varid)
+			nc_close(nc)
+			if(paramsDownscl$reanalData$ncinfo$yo == 1){
+				tt.reanl <- matrix(c(tt.reanl), nrow = length(lon.reanl), ncol = length(lat.reanl), byrow = TRUE)
+			}
+			tt.reanl <- tt.reanl[xo, yo]
+		}else return(NULL)
+		date.reanl <- paramsDownscl$reanalData$dates[[jj]]
 
 		############
 		## standardize reanal
@@ -218,7 +191,6 @@ ReanalysisDownscaling <- function(paramsDownscl){
 		tt.std <- (tt.reanl-tt.mean)/tt.sd
 
 		mon <- as.numeric(substr(date.reanl, 5, 6))
-	
 		locations.reanl <- interp.grid$coords.stn
 		locations.reanl$res <- c(tt.std - (downCoef[mon, 2] * dem.reanl + downCoef[mon, 1]))
 		locations.reanl <- locations.reanl[!is.na(locations.reanl$res), ]
@@ -231,18 +203,6 @@ ReanalysisDownscaling <- function(paramsDownscl){
 
 		grd.temp <- krige(res~1, locations = locations.reanl, newdata = interp.grid$newgrid, model = vgm,
 							block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
- 
-		############
-		# if(any(is.auxvar)) locations.reanl <- locations.reanl[Reduce("&", as.data.frame(!is.na(locations.reanl@data[, auxvar[is.auxvar]]))), ]
-
-		# if(interp.method == 'Kriging'){
-		# 	vgm <- try(autofitVariogram(formule, input_data = locations.reanl, model = vgm.model, cressie = TRUE), silent = TRUE)
-		# 	vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
-		# }else vgm <- NULL
-
-		# block <- if(any(is.auxvar)) NULL else bGrd
-		# grd.temp <- krige(formule, locations = locations.reanl, newdata = interp.grid$newgrid, model = vgm,
-		# 				block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 
  		############
 		downTT <- matrix(grd.temp$var1.pred, ncol = nlat0, nrow = nlon0)
@@ -252,16 +212,12 @@ ReanalysisDownscaling <- function(paramsDownscl){
 		downTT[is.na(downTT)] <- -99
 
 		############
-		if(freqData == 'daily'){
-			outfl <- file.path(origdir, sprintf(Down.File.Format, substr(date.reanl, 1, 4),
-								substr(date.reanl, 5, 6), substr(date.reanl, 7, 8)))
-		}else  if(freqData == 'dekadal'){
-			outfl <- file.path(origdir, sprintf(Down.File.Format, substr(date.reanl, 1, 4),
-								substr(date.reanl, 5, 6), substr(date.reanl, 7, 7)))
-		}else  if(freqData == 'monthly'){
-			outfl <- file.path(origdir, sprintf(Down.File.Format, substr(date.reanl, 1, 4),
-								substr(date.reanl, 5, 6)))
-		}
+		year <- substr(date.reanl, 1, 4)
+		month <- substr(date.reanl, 5, 6)
+		if(freqData == 'daily') outncfrmt <- sprintf(Down.File.Format, year, month, substr(date.reanl, 7, 8))
+		else if(freqData == 'dekadal') outncfrmt <- sprintf(Down.File.Format, year, month, substr(date.reanl, 7, 7))
+		else outncfrmt <- sprintf(Down.File.Format, year, month)
+		outfl <- file.path(origdir, outncfrmt)
 
 		nc2 <- nc_create(outfl, out.tt)
 		ncvar_put(nc2, out.tt, downTT)
@@ -271,7 +227,6 @@ ReanalysisDownscaling <- function(paramsDownscl){
 
 	InsertMessagesTxt(main.txt.out, 'Downscaling  Reanalysis finished')
 	rm(demGrid, demStand, dem.reanl, interp.grid, ObjGrd, ObjStn)
-	if(paramsDownscl$memType == 2) rm(reanalData, data.reanl)
 	gc()
 	return(0)
 }
@@ -295,38 +250,21 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 	lat.stn <- stnData$lat
 	date.stn <- stnData$dates
 	data.stn <- stnData$data
+	nstn <- length(lon.stn)
 
 	###############
-	if(comptMBiasparms$memType == 2){
-		downData <- read.NetCDF.Data(comptMBiasparms$downData)
-		if(is.null(downData)) return(NULL)
-		ijGrd <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), list(lon = downData$lon, lat = downData$lat))
-		data.down.stn <- t(sapply(downData$data, function(x){
-			if(!is.null(x)) x[ijGrd]
-			else rep(NA, length(ijGrd))
-		}))
-		if(bias.method == 'Quantile.Mapping'){
-			data.down <- downData$data
-			data.down[sapply(data.down, is.null)] <- list(matrix(NA, ncol = length(downData$lat), nrow = length(downData$lon)))
-			idcoarse <- indexCoarseGrid(downData$lon, downData$lat, res.coarse)
-			data.down <- t(sapply(data.down, function(x) x[idcoarse$ix, idcoarse$iy, drop = FALSE]))
-			# ptsData1 <- expand.grid(lon = downData$lon[idcoarse$ix], lat = downData$lat[idcoarse$iy])
-		}
-	}else{
-		nstn <- length(lon.stn)
-		ptsData <- list(lon = lon.stn, lat = lat.stn)
-		if(bias.method == 'Quantile.Mapping'){
-			idcoarse <- indexCoarseGrid(comptMBiasparms$xy.grid$lon, comptMBiasparms$xy.grid$lat, res.coarse)
-			ptsData1 <- expand.grid(lon = comptMBiasparms$xy.grid$lon[idcoarse$ix], lat = comptMBiasparms$xy.grid$lat[idcoarse$iy])
-			nbgrd <- nrow(ptsData1)
-			ptsData <- list(lon = c(ptsData$lon, ptsData1$lon), lat = c(ptsData$lat, ptsData1$lat))
-		}
-		downData <- read.NetCDF.Data2Points(comptMBiasparms$downData, ptsData)
-		if(is.null(downData)) return(NULL)
-		data.down0 <- t(sapply(downData$data, function(x) if(!is.null(x)) x else rep(NA, length(ptsData$lon))))
-		data.down.stn <- data.down0[, 1:nstn]
-		if(bias.method == 'Quantile.Mapping') data.down <- data.down0[, nstn+(1:nbgrd)]
+	ptsData <- list(lon = lon.stn, lat = lat.stn)
+	if(bias.method == 'Quantile.Mapping'){
+		idcoarse <- indexCoarseGrid(comptMBiasparms$xy.grid$lon, comptMBiasparms$xy.grid$lat, res.coarse)
+		ptsData1 <- expand.grid(lon = comptMBiasparms$xy.grid$lon[idcoarse$ix], lat = comptMBiasparms$xy.grid$lat[idcoarse$iy])
+		nbgrd <- nrow(ptsData1)
+		ptsData <- list(lon = c(ptsData$lon, ptsData1$lon), lat = c(ptsData$lat, ptsData1$lat))
 	}
+	downData <- read.NetCDF.Data2Points(comptMBiasparms$downData, ptsData)
+	if(is.null(downData)) return(NULL)
+	data.down0 <- t(sapply(downData$data, function(x) if(!is.null(x)) x else rep(NA, length(ptsData$lon))))
+	data.down.stn <- data.down0[, 1:nstn]
+	if(bias.method == 'Quantile.Mapping') data.down <- data.down0[, nstn+(1:nbgrd)]
 
 	###############
 	date.bias <- downData$dates
@@ -605,11 +543,13 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 			`%parLoop%` <- `%do%`
 			closeklust <- FALSE
 		}
-		packages <- c('sp', 'gstat', 'automap')
+		packages <- c('sp', 'gstat', 'automap', 'ncdf4')
 		toExports <- c('bias.pars', 'itimes', 'interp.grid', 'interp.method', 'formule', 'auxvar',
-						'is.auxvar', 'min.stn', 'vgm.model', 'nmin', 'nmax', 'maxdist', 'bGrd')
-		BIAS <- vector(mode = 'list', length = ntimes)
-		BIAS[itimes] <- foreach(m = itimes, .packages = packages, .export = toExports) %parLoop% {
+					'is.auxvar', 'min.stn', 'vgm.model', 'nmin', 'nmax', 'maxdist', 'bGrd', 'origdir',
+						'meanBiasPrefix')
+		grd.bs <- ncvar_def("bias", "", xy.dim, NA, longname= "Multiplicative Mean Bias Factor", prec = "float")
+
+		ret <- foreach(m = itimes, .packages = packages, .export = toExports) %parLoop% {
 			locations.stn <- interp.grid$coords.stn
 			locations.stn$pars <- bias.pars[itimes == m, ]
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
@@ -670,23 +610,19 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 					pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
 				}
 			}
+
 			grdbias <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
 			grdbias[grdbias > 1.5] <- 1
 			grdbias[grdbias < 0.6] <- 1
 			grdbias[is.na(grdbias)] <- 1
-			grdbias
-		}
-		if(closeklust) stopCluster(klust)
-
-		#Defines netcdf output
-		grd.bs <- ncvar_def("bias", "", xy.dim, NA, longname= "Multiplicative Mean Bias Factor", prec = "float")
-		for(jfl in itimes){
-			outnc <- file.path(origdir, paste(meanBiasPrefix, '_', jfl, '.nc', sep = ''))
+			
+			#######
+			outnc <- file.path(origdir, paste(meanBiasPrefix, '_', m, '.nc', sep = ''))
 			nc2 <- nc_create(outnc, grd.bs)
-			ncvar_put(nc2, grd.bs, BIAS[[jfl]])
+			ncvar_put(nc2, grd.bs, grdbias)
 			nc_close(nc2)
 		}
-		rm(BIAS)
+		if(closeklust) stopCluster(klust)
 	}else{
 		if(doparallel & length(months) >= 3){
 			klust <- makeCluster(nb_cores)
