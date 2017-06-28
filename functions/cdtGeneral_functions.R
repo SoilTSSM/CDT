@@ -1059,10 +1059,13 @@ read.NetCDF.Data2Points <- function(read.ncdf.parms, list.lonlat.pts){
 	lon <- lon[xo]
 	yo <- order(lat)
 	lat <- lat[yo]
+	ijx <- grid2pointINDEX(list.lonlat.pts, list(lon = lon, lat = lat))
 
-	packages <- c('ncdf4', 'sp')
-	toExports <- c('ncInfo', 'read.ncdf.parms', 'list.lonlat.pts', 'grid2pointINDEX')
-	ncdata <- foreach(jj = seq_along(ncInfo$nc.files), .packages = packages, .export = toExports) %parLoop% {
+	# packages <- c('ncdf4', 'sp')
+	# toExports <- c('ncInfo', 'read.ncdf.parms', 'list.lonlat.pts', 'grid2pointINDEX')
+	# toExports <- c('ncInfo', 'read.ncdf.parms')
+	# ncdata <- foreach(jj = seq_along(ncInfo$nc.files), .packages = packages, .export = toExports) %parLoop% {
+	ncdata <- foreach(jj = seq_along(ncInfo$nc.files), .packages = 'ncdf4') %parLoop% {
 		if(ncInfo$exist[jj]){
 			nc <- nc_open(ncInfo$nc.files[jj])
 			xvar <- ncvar_get(nc, varid = read.ncdf.parms$ncinfo$varid)
@@ -1071,7 +1074,7 @@ read.NetCDF.Data2Points <- function(read.ncdf.parms, list.lonlat.pts){
 			if(read.ncdf.parms$ncinfo$yo == 1){
 				xvar <- matrix(c(xvar), nrow = length(lon), ncol = length(lat), byrow = TRUE)
 			}
-			ijx <- grid2pointINDEX(list.lonlat.pts, list(lon = lon, lat = lat))
+			# ijx <- grid2pointINDEX(list.lonlat.pts, list(lon = lon, lat = lat))
 			xvar <- xvar[ijx]
 		}else xvar <- NULL
 		xvar

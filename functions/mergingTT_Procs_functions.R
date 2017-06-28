@@ -121,6 +121,8 @@ ReanalysisDownscaling <- function(paramsDownscl){
 	lon.reanl <- lon.reanl[xo]
 	yo <- order(lat.reanl)
 	lat.reanl <- lat.reanl[yo]
+	nlon.r <- length(lon.reanl)
+	nlat.r <- length(lat.reanl)
 
 	###############
 	InsertMessagesTxt(main.txt.out, "Downscale  Reanalysis ...")
@@ -168,17 +170,17 @@ ReanalysisDownscaling <- function(paramsDownscl){
 	dem.sd <- sd(demGrid, na.rm = TRUE)
 	demStand <- (demGrid - dem.mean)/dem.sd
 	dem.reanl <- demStand[ijreanl]
-	dim(dem.reanl) <- c(length(lon.reanl), length(lat.reanl))
+	dim(dem.reanl) <- c(nlon.r, nlat.r)
 
 	###############
-	packages <- c('sp', 'gstat', 'automap', 'ncdf4')
+	packages <- c('fields', 'gstat', 'automap', 'ncdf4')
 	ret <- foreach(jj = seq_along(paramsDownscl$reanalData$nc.files), .packages = packages) %parLoop% {
 		if(paramsDownscl$reanalData$exist[jj]){
 			nc <- nc_open(paramsDownscl$reanalData$nc.files[jj])
 			tt.reanl <- ncvar_get(nc, varid = paramsDownscl$reanalData$ncinfo$varid)
 			nc_close(nc)
 			if(paramsDownscl$reanalData$ncinfo$yo == 1){
-				tt.reanl <- matrix(c(tt.reanl), nrow = length(lon.reanl), ncol = length(lat.reanl), byrow = TRUE)
+				tt.reanl <- matrix(c(tt.reanl), nrow = nlon.r, ncol = nlat.r, byrow = TRUE)
 			}
 			tt.reanl <- tt.reanl[xo, yo]
 		}else return(NULL)
@@ -191,21 +193,30 @@ ReanalysisDownscaling <- function(paramsDownscl){
 		tt.std <- (tt.reanl-tt.mean)/tt.sd
 
 		mon <- as.numeric(substr(date.reanl, 5, 6))
-		locations.reanl <- interp.grid$coords.stn
-		locations.reanl$res <- c(tt.std - (downCoef[mon, 2] * dem.reanl + downCoef[mon, 1]))
-		locations.reanl <- locations.reanl[!is.na(locations.reanl$res), ]
+		resid <- tt.std - (downCoef[mon, 2] * dem.reanl + downCoef[mon, 1])
 
 		############
-		if(interp.method == 'Kriging'){
-			vgm <- try(autofitVariogram(res~1, input_data = locations.reanl, model = vgm.model, cressie = TRUE), silent = TRUE)
-			vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
-		}else vgm <- NULL
+		if(interp.method == 'FBL'){
+			resid[is.na(resid)] <- 0
+			residObj <- list(x = lon.reanl, y = lat.reanl, z = resid)
+			residInterp <- interp.surface.grid(residObj, list(x = xy.grid$lon, y = xy.grid$lat))
+			downTT <- residInterp$z
+		}else{
+			locations.reanl <- interp.grid$coords.stn
+			locations.reanl$res <- c(resid)
+			locations.reanl <- locations.reanl[!is.na(locations.reanl$res), ]
 
-		grd.temp <- krige(res~1, locations = locations.reanl, newdata = interp.grid$newgrid, model = vgm,
-							block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+			if(interp.method == 'Kriging'){
+				vgm <- try(autofitVariogram(res~1, input_data = locations.reanl, model = vgm.model, cressie = TRUE), silent = TRUE)
+				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+			}else vgm <- NULL
+
+			grd.temp <- krige(res~1, locations = locations.reanl, newdata = interp.grid$newgrid, model = vgm,
+								block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+			downTT <- matrix(grd.temp$var1.pred, ncol = nlat0, nrow = nlon0)
+		}
 
  		############
-		downTT <- matrix(grd.temp$var1.pred, ncol = nlat0, nrow = nlon0)
 		downTT[is.na(downTT)] <- 0
 		downTT <- (downCoef[mon, 2] * demStand + downCoef[mon, 1]) + downTT
 		downTT <- downTT * tt.sd + tt.mean
@@ -465,6 +476,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 	nlon0 <- length(xy.grid$lon)
 	nlat0 <- length(xy.grid$lat)
 
+	#############
 	#Defines netcdf output dims
 	dx <- ncdim_def("Lon", "degreeE", xy.grid$lon)
 	dy <- ncdim_def("Lat", "degreeN", xy.grid$lat)
@@ -527,13 +539,6 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 	## interpolation
 	if(bias.method != 'Quantile.Mapping'){
 		itimes <- as.numeric(rownames(bias.pars))
-		if(bias.method == 'Multiplicative.Bias.Mon'){
-			ntimes <- 12
-		}
-		if(bias.method == 'Multiplicative.Bias.Var'){
-			ntimes <- switch(freqData, 'daily' = 365, 'dekadal' = 36, 'monthly' = 12)				
-		}
-
 		if(doparallel & length(itimes) >= 3){
 			klust <- makeCluster(nb_cores)
 			registerDoParallel(klust)
@@ -545,77 +550,76 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 		}
 		packages <- c('sp', 'gstat', 'automap', 'ncdf4')
 		toExports <- c('bias.pars', 'itimes', 'interp.grid', 'interp.method', 'formule', 'auxvar',
-					'is.auxvar', 'min.stn', 'vgm.model', 'nmin', 'nmax', 'maxdist', 'bGrd', 'origdir',
-						'meanBiasPrefix')
-		grd.bs <- ncvar_def("bias", "", xy.dim, NA, longname= "Multiplicative Mean Bias Factor", prec = "float")
+						'is.auxvar', 'min.stn', 'vgm.model', 'nmin', 'nmax', 'maxdist',
+						'bGrd', 'origdir', 'meanBiasPrefix')
+		grd.bs <- ncvar_def("bias", "", xy.dim, NA, longname= "Multiplicative Mean Bias Factor", prec = "float", compression = 9)
 
 		ret <- foreach(m = itimes, .packages = packages, .export = toExports) %parLoop% {
 			locations.stn <- interp.grid$coords.stn
 			locations.stn$pars <- bias.pars[itimes == m, ]
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
-			
+
 			extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
 			locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
-			if(length(locations.stn$pars) < min.stn) return(matrix(1, ncol = nlat0, nrow = nlon0))
-			if(!any(locations.stn$pars != 1)) return(matrix(1, ncol = nlat0, nrow = nlon0))
+			if(length(locations.stn$pars) >= min.stn & any(locations.stn$pars != 1)){
+				if(any(is.auxvar) & interp.method != 'NN') locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+				if(interp.method == 'Kriging'){
+					vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
+					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+				}else vgm <- NULL
 
-			if(any(is.auxvar) & interp.method != 'NN') locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
-			if(interp.method == 'Kriging'){
-				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
-			}else vgm <- NULL
+				xstn <- as.data.frame(locations.stn)
+				xadd <- as.data.frame(interp.grid$coords.grd)
+				xadd$pars <- 1
+				iadd <- rep(TRUE, nrow(xadd))
 
-			xstn <- as.data.frame(locations.stn)
-			xadd <- as.data.frame(interp.grid$coords.grd)
-			xadd$pars <- 1
-			iadd <- rep(TRUE, nrow(xadd))
+				for(k in 1:nrow(xstn)){
+					if(interp.method == 'NN'){
+						xy.dst <- sqrt((xstn$lon[k]-xadd$lon)^2+(xstn$lat[k]-xadd$lat)^2)*sqrt(2)
+						z.dst <- abs(xstn$elv[k]-xadd$elv)
+						z.iadd <- (z.dst < z.maxdist) & (xy.dst == min(xy.dst))
+						iadd <- iadd & (xy.dst >= xy.maxdist) & !z.iadd
+					}else{
+						dst <- sqrt((xstn$lon[k]-xadd$lon)^2+(xstn$lat[k]-xadd$lat)^2)*sqrt(2)
+						iadd <- iadd & (dst >= maxdist)
+					}
+				}
+				xadd <- xadd[iadd, ]
+				locations.stn <- rbind(xstn, xadd)
 
-			for(k in 1:nrow(xstn)){
 				if(interp.method == 'NN'){
-					xy.dst <- sqrt((xstn$lon[k]-xadd$lon)^2+(xstn$lat[k]-xadd$lat)^2)*sqrt(2)
-					z.dst <- abs(xstn$elv[k]-xadd$elv)
-					z.iadd <- (z.dst < z.maxdist) & (xy.dst == min(xy.dst))
-					iadd <- iadd & (xy.dst >= xy.maxdist) & !z.iadd
+					coordinates(locations.stn) <- ~lon+lat+elv
+					pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid,
+										nmax = 1, maxdist = maxdist, debug.level = 0)
 				}else{
-					dst <- sqrt((xstn$lon[k]-xadd$lon)^2+(xstn$lat[k]-xadd$lat)^2)*sqrt(2)
-					iadd <- iadd & (dst >= maxdist)
+					coordinates(locations.stn) <- ~lon+lat
+					if(any(is.auxvar)){
+						locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+						block <- NULL
+					}else block <- bGrd
+
+					pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
+										block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+
+					extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
+					ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
+					pars.grd$var1.pred[ixtrm] <- NA
+
+					ina <- is.na(pars.grd$var1.pred)
+					if(any(ina)){
+						pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
+											block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+						pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
+					}
 				}
-			}
-			xadd <- xadd[iadd, ]
-			locations.stn <- rbind(xstn, xadd)
 
-			if(interp.method == 'NN'){
-				coordinates(locations.stn) <- ~lon+lat+elv
-				pars.grd <- krige(pars~1, locations = locations.stn, newdata = interp.grid$newgrid,
-									nmax = 1, maxdist = maxdist, debug.level = 0)
-			}else{
-				coordinates(locations.stn) <- ~lon+lat
-				if(any(is.auxvar)){
-					locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
-					block <- NULL
-				}else block <- bGrd
+				grdbias <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
+				grdbias[grdbias > 1.5] <- 1
+				grdbias[grdbias < 0.6] <- 1
+				grdbias[is.na(grdbias)] <- 1
+			}else grdbias <- matrix(1, ncol = nlat0, nrow = nlon0)
 
-				pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-									block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-
-				extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
-				ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
-				pars.grd$var1.pred[ixtrm] <- NA
-
-				ina <- is.na(pars.grd$var1.pred)
-				if(any(ina)){
-					pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
-										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-					pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
-				}
-			}
-
-			grdbias <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
-			grdbias[grdbias > 1.5] <- 1
-			grdbias[grdbias < 0.6] <- 1
-			grdbias[is.na(grdbias)] <- 1
-			
 			#######
 			outnc <- file.path(origdir, paste(meanBiasPrefix, '_', m, '.nc', sep = ''))
 			nc2 <- nc_create(outnc, grd.bs)
@@ -737,7 +741,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 				}else{
 					block <- if(any(is.auxvar)) NULL else bGrd
 					pars.grd <- krige(formule, locations = locations.down, newdata = interp.grid$newgrid, model = vgm,
-											block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+										block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 				}
 				ret <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
 				if(j == 2) ret[ret < 0] <- NA
@@ -784,8 +788,8 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 
 		################
 		#Defines netcdf output
-		grd.mean <- ncvar_def("mean", "degC", xy.dim, NA, longname= "Means normal distribution", prec = "float")
-		grd.sd <- ncvar_def("sd", "degC", xy.dim, NA, longname= "Standard deviations normal distribution", prec = "float")
+		grd.mean <- ncvar_def("mean", "degC", xy.dim, NA, longname= "Means normal distribution", prec = "float", compression = 9)
+		grd.sd <- ncvar_def("sd", "degC", xy.dim, NA, longname= "Standard deviations normal distribution", prec = "float", compression = 9)
 
 		for(jfl in months){
 			outnc1 <- file.path(origdir, paste('Gaussian_Pars.STN', '_', jfl, '.nc', sep = ''))

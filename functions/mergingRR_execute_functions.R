@@ -2,8 +2,6 @@
 execBiasRain <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
-	memType <- 2
-
 	create.grd <- GeneralParameters$Create.Grid
 	freqData <- GeneralParameters$period
 
@@ -73,14 +71,8 @@ execBiasRain <- function(origdir){
 
 	###############
 	comptMBiasparms <- list(GeneralParameters = GeneralParameters, stnData = stnData, rfeData = read.ncdf.parms,
-							xy.rfe = xy.rfe, res.coarse = res.coarse, memType = memType, origdir = origdir)
+							xy.rfe = xy.rfe, res.coarse = res.coarse, origdir = origdir)
 	bias.pars <- ComputeMeanBiasRain(comptMBiasparms)
-
-	###############
-	# load('/Users/rijaf/Desktop/merging/MADA_ENACTS/OUT_TAMSATv3_dek/QM_NN_noD/BIAS_PARAMS.RData')
-	# bias.pars <- bias.pars$bias
-
-	###############
 
 	interpBiasparams <- list(GeneralParameters = GeneralParameters, bias.pars = bias.pars, stnData = stnData,
 							demData = demData, xy.grid = xy.grid, xy.rfe = xy.rfe, res.coarse = res.coarse, origdir = origdir)

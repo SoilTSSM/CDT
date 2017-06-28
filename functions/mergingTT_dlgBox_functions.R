@@ -543,14 +543,17 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	frInterp <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
 	interp.method <- tclVar()
-	cb.InterpVAL <- c('Ordinary Kriging', 'Inverse Distance Weighted')
+	cb.InterpVAL <- c('Ordinary Kriging', 'Inverse Distance Weighted', 'Fast Bilinear Interpolator')
 	tclvalue(interp.method) <- switch(GeneralParameters$Interpolation.pars$interp.method, 
 										'Kriging' = cb.InterpVAL[1], 
-										'IDW' = cb.InterpVAL[2])
+										'IDW' = cb.InterpVAL[2],
+										'FBL' = cb.InterpVAL[3])
 	nmin <- tclVar(GeneralParameters$Interpolation.pars$nmin)
 	nmax <- tclVar(GeneralParameters$Interpolation.pars$nmax)
 	maxdist <- tclVar(GeneralParameters$Interpolation.pars$maxdist)
 	# res.coarse <- tclVar(GeneralParameters$Interpolation.pars$res.coarse)
+
+	stateInterp <- if(GeneralParameters$Interpolation.pars$interp.method == 'FBL') 'disabled' else 'normal'
 
 	txt.Interp <- tklabel(frInterp, text = 'Interpolation method', anchor = 'w', justify = 'left')
 	cb.Interp <- ttkcombobox(frInterp, values = cb.InterpVAL, textvariable = interp.method, width = largeur1)
@@ -561,9 +564,9 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	min.nbrs.l <- tklabel(frIDW, text = 'nmin', anchor = 'e', justify = 'right')
 	max.nbrs.l <- tklabel(frIDW, text = 'nmax', anchor = 'e', justify = 'right')
 	max.dst.l <- tklabel(frIDW, text = 'maxdist', anchor = 'e', justify = 'right')
-	min.nbrs.v <- tkentry(frIDW, width = 4, textvariable = nmin, justify = 'right')
-	max.nbrs.v <- tkentry(frIDW, width = 4, textvariable = nmax, justify = 'right')
-	max.dst.v <- tkentry(frIDW, width = 4, textvariable = maxdist, justify = 'right')
+	min.nbrs.v <- tkentry(frIDW, width = 4, textvariable = nmin, justify = 'right', state = stateInterp)
+	max.nbrs.v <- tkentry(frIDW, width = 4, textvariable = nmax, justify = 'right', state = stateInterp)
+	max.dst.v <- tkentry(frIDW, width = 4, textvariable = maxdist, justify = 'right', state = stateInterp)
 
 	########
 	# res.coarse.l <- tklabel(frCoarse, text = 'Coarse Grid', anchor = 'e', justify = 'right')
@@ -589,8 +592,6 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	tkgrid(frIDW, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 5, ipadx = 1, ipady = 1)
 	# tkgrid(frCoarse, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	########
-
 	infobulle(min.nbrs.v, 'Minimum number of neighbours to be used to interpolate data')
 	status.bar.display(min.nbrs.v, TextOutputVar, 'Minimum number of neighbours to be used to interpolate data')
 	infobulle(max.nbrs.v, 'Maximum number of neighbours to be used to interpolate data')
@@ -601,11 +602,18 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 	# infobulle(frCoarse, 'Coarse resolution from gridded data to complete points data\nwhen interpolating (in decimal degree)')
 	# status.bar.display(frCoarse, TextOutputVar, 'Coarse resolution from gridded data to complete points data\nwhen interpolating (in decimal degree)')
 
+	########
+	tkbind(cb.Interp, "<<ComboboxSelected>>", function(){
+		stateInterp <- if(tclvalue(interp.method) == 'Fast Bilinear Interpolator') 'disabled' else 'normal'
+		tkconfigure(min.nbrs.v, state = stateInterp)
+		tkconfigure(max.nbrs.v, state = stateInterp)
+		tkconfigure(max.dst.v, state = stateInterp)
+	})
+
 	############################################
 	tkgrid(frDate, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frGrid, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frInterp, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
 
 	############################################
 	
@@ -663,6 +671,7 @@ downGetInfoDekTempReanal <- function(parent.win, GeneralParameters){
 
 				GeneralParameters$Interpolation.pars$interp.method <<- switch(str_trim(tclvalue(interp.method)),
 																			'Inverse Distance Weighted' = 'IDW',
+																			'Fast Bilinear Interpolator' = 'FBL',
 																			'Ordinary Kriging' = 'Kriging')
 				GeneralParameters$Interpolation.pars$nmin <<- as.numeric(str_trim(tclvalue(nmin)))
 				GeneralParameters$Interpolation.pars$nmax <<- as.numeric(str_trim(tclvalue(nmax)))
