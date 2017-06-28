@@ -1005,7 +1005,7 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 
 	packages <- c('ncdf4')
 	toExports <- c(toExports, 'downData', 'bias.method', 'origdir',
-					 'grd.bsadj', 'freqData', 'adjRreanalFF')
+					 'grd.bsadj', 'freqData', 'adjRreanalFF', 'is.leapyear')
 
 	ret <- foreach(jfl = seq_along(downData$dates), .packages = packages, .export = toExports) %parLoop% {
 		nc <- nc_open(downData$files[jfl])
@@ -1021,7 +1021,7 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 			if(freqData == 'daily'){
 				ann <- as.numeric(substr(dtmp, 1, 4))
 				iday <- as.numeric(strftime(as.Date(dtmp, format = '%Y%m%d'), format = '%j'))
-				ijt <- ifelse(ann%%4 == 0 & iday > 59, iday-1, iday)
+				ijt <- ifelse(is.leapyear(ann) & iday > 59, iday-1, iday)
 			}
 			if(freqData == 'dekadal'){
 				mon <- as.numeric(substr(dtmp, 5, 6))

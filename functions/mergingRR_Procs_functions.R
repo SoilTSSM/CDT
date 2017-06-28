@@ -828,7 +828,7 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 
 	packages <- c('ncdf4', 'fields')
 	toExports <- c(toExports, 'rfeData', 'is.regridRFE', 'bias.method',
-					'origdir', 'grd.bsadj', 'freqData', 'adjRfeFF')
+					'origdir', 'grd.bsadj', 'freqData', 'adjRfeFF', 'is.leapyear')
 
 	ret <- foreach(jfl = seq_along(rfeData$dates), .packages = packages, .export = toExports) %parLoop% {
 		nc <- nc_open(rfeData$files[jfl])
