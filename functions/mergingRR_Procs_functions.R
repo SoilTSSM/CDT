@@ -632,7 +632,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 
 ##correct RFE bias
 AjdMeanBiasRain <- function(adjMeanBiasparms){
-	InsertMessagesTxt(main.txt.out, 'Correct RFE Bias ...')
+	InsertMessagesTxt(main.txt.out, 'RFE Bias correction...')
 
 	GeneralParameters <- adjMeanBiasparms$GeneralParameters
 	origdir <- adjMeanBiasparms$origdir
@@ -800,7 +800,10 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 		toExports <- c('quantile.mapping.BGamma', 'lon', 'lat', 'PARS.stn', 'PARS.rfe', 'adjZero')
 	}
 
+	########
+
 	InsertMessagesTxt(main.txt.out, 'Reading bias data finished')
+	InsertMessagesTxt(main.txt.out, 'Correct RFE Bias ...')
 
 	########
 	## RFE regrid?

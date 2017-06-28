@@ -819,7 +819,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 
 ##correct downscaled reanalysis bias
 AjdMeanBiasTemp <- function(adjMeanBiasparms){
-	InsertMessagesTxt(main.txt.out, 'Correct Reanalysis Bias ...')
+	InsertMessagesTxt(main.txt.out, 'Reanalysis Bias correction...')
 
 	GeneralParameters <- adjMeanBiasparms$GeneralParameters
 	origdir <- adjMeanBiasparms$origdir
@@ -984,7 +984,10 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 		toExports <- c('quantile.mapping.Gau', 'lon', 'lat', 'PARS.stn', 'PARS.down')
 	}
 
+	###############
+
 	InsertMessagesTxt(main.txt.out, 'Reading bias data finished')
+	InsertMessagesTxt(main.txt.out, 'Correct Reanalysis Bias ...')
 
 	###############
 	#Defines netcdf output dims
