@@ -193,8 +193,6 @@ execBiasTemp <- function(origdir){
 execAjdBiasDownTemp <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
 
-	memType <- 2
-
 	################
 	freqData <- GeneralParameters$period
 	start.year <- GeneralParameters$Adjust.Date.Range$start.year
@@ -220,8 +218,7 @@ execAjdBiasDownTemp <- function(origdir){
 	ncinfo <- list(xo = 1, yo = 2, varid = "temp")
 	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 
-	adjMeanBiasparms <- list(downData = read.ncdf.parms, GeneralParameters = GeneralParameters,
-							origdir = origdir, memType = memType)
+	adjMeanBiasparms <- list(downData = read.ncdf.parms, GeneralParameters = GeneralParameters, origdir = origdir)
 	ret <- AjdMeanBiasTemp(adjMeanBiasparms)
 	rm(adjMeanBiasparms)
 	gc()

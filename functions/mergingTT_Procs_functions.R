@@ -819,6 +819,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 
 ##correct downscaled reanalysis bias
 AjdMeanBiasTemp <- function(adjMeanBiasparms){
+	InsertMessagesTxt(main.txt.out, 'Correct Reanalysis Bias ...')
 
 	GeneralParameters <- adjMeanBiasparms$GeneralParameters
 	origdir <- adjMeanBiasparms$origdir
@@ -830,46 +831,31 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 	adjRreanalFF <- GeneralParameters$Format$Adj.File.Format
 	months <- sort(as.numeric(GeneralParameters$Adjust.Months))
 
-	memType <- adjMeanBiasparms$memType
 
 	###############
-	if(memType == 2){
-		downData <- read.NetCDF.Data(adjMeanBiasparms$downData)
-		if(is.null(downData)) return(NULL)
+	ncfiles <- adjMeanBiasparms$downData$ncfiles
+	ncInfo <- ncFilesInfo(ncfiles$freqData, ncfiles$start.date, ncfiles$end.date, ncfiles$months,
+						ncfiles$ncDir, ncfiles$ncFileFormat, adjMeanBiasparms$downData$errmsg)
+	if(is.null(ncInfo)) return(NULL)
 
-		irnl <- !sapply(downData$data, is.null)
-		if(!any(irnl)){
-			InsertMessagesTxt(main.txt.out, "Downscaled reanalysis data not found", format = TRUE)
-			return(NULL)
-		}
+	ncInfo$nc.files <- ncInfo$nc.files[ncInfo$exist]
+	ncInfo$dates <- ncInfo$dates[ncInfo$exist]
 
-		downData$dates <- downData$dates[irnl]
-		downData$data <- downData$data[irnl]
-	}else{
-		ncfiles <- adjMeanBiasparms$downData$ncfiles
-		ncInfo <- ncFilesInfo(ncfiles$freqData, ncfiles$start.date, ncfiles$end.date, ncfiles$months,
-							ncfiles$ncDir, ncfiles$ncFileFormat, adjMeanBiasparms$downData$errmsg)
-		if(is.null(ncInfo)) return(NULL)
+	nc <- nc_open(ncInfo$nc.files[1])
+	rlon <- nc$dim[[adjMeanBiasparms$downData$ncinfo$xo]]$vals
+	rlat <- nc$dim[[adjMeanBiasparms$downData$ncinfo$yo]]$vals
+	nc_close(nc)
+	xo <- order(rlon)
+	rlon <- rlon[xo]
+	yo <- order(rlat)
+	rlat <- rlat[yo]
 
-		ncInfo$nc.files <- ncInfo$nc.files[ncInfo$exist]
-		ncInfo$dates <- ncInfo$dates[ncInfo$exist]
-
-		nc <- nc_open(ncInfo$nc.files[1])
-		rlon <- nc$dim[[adjMeanBiasparms$downData$ncinfo$xo]]$vals
-		rlat <- nc$dim[[adjMeanBiasparms$downData$ncinfo$yo]]$vals
-		nc_close(nc)
-		xo <- order(rlon)
-		rlon <- rlon[xo]
-		yo <- order(rlat)
-		rlat <- rlat[yo]
-
-		downData <- list(lon = rlon, lat = rlat, dates = ncInfo$dates, files = ncInfo$nc.files,
-						xo = xo, yo = yo, varid = adjMeanBiasparms$downData$ncinfo$varid,
-						yorder = adjMeanBiasparms$downData$ncinfo$yo)
-	}
+	downData <- list(lon = rlon, lat = rlat, dates = ncInfo$dates, files = ncInfo$nc.files,
+					xo = xo, yo = yo, varid = adjMeanBiasparms$downData$ncinfo$varid,
+					yorder = adjMeanBiasparms$downData$ncinfo$yo)
 
 	###############
-	InsertMessagesTxt(main.txt.out, 'Correct Reanalysis Bias ...')
+	InsertMessagesTxt(main.txt.out, 'Read bias data ...')
 
 	if(bias.method == "Multiplicative.Bias.Mon"){
 		biasFile <- file.path(biasDir, paste(meanBiasPrefix, '_', months, '.nc', sep = ''))
@@ -945,7 +931,7 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 		nc_close(nc)
 		BIAS[times.stn] <- lapply(seq_along(times.stn), function(m){
 			nc <- nc_open(biasFile[m])
-			xvar <- ncvar_get(nc, varid = nc$var[[1]]$name) #varid = "bias"
+			xvar <- ncvar_get(nc, varid = "bias")
 			nc_close(nc)
 			xvar
 		})
@@ -998,12 +984,15 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 		toExports <- c('quantile.mapping.Gau', 'lon', 'lat', 'PARS.stn', 'PARS.down')
 	}
 
+	InsertMessagesTxt(main.txt.out, 'Reading bias data finished')
+
+	###############
 	#Defines netcdf output dims
 	dx <- ncdim_def("Lon", "degreeE", lon)
 	dy <- ncdim_def("Lat", "degreeN", lat)
-	grd.bsadj <- ncvar_def("temp", "DegC", list(dx, dy), -99, longname= "Bias Corrected Reanalysis", prec = "float")
+	grd.bsadj <- ncvar_def("temp", "DegC", list(dx, dy), -99, longname= "Bias Corrected Reanalysis", prec = "float", compression = 9)
 
-	####
+	###############
 	if(doparallel & length(downData$dates) >= 30){
 		klust <- makeCluster(nb_cores)
 		registerDoParallel(klust)
@@ -1019,19 +1008,14 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 					 'grd.bsadj', 'freqData', 'adjRreanalFF')
 
 	ret <- foreach(jfl = seq_along(downData$dates), .packages = packages, .export = toExports) %parLoop% {
-		if(memType == 2){
-			xtmp <- downData$data[[jfl]]
-			dtmp <- downData$dates[jfl]
-		}else{
-			nc <- nc_open(downData$files[jfl])
-			xtmp <- ncvar_get(nc, varid = downData$varid)
-			nc_close(nc)
-			if(downData$yorder == 1){
-				xtmp <- matrix(c(xtmp), nrow = length(downData$lon), ncol = length(downData$lat), byrow = TRUE)
-			}
-			xtmp <- xtmp[downData$xo, downData$yo]
-			dtmp <- downData$dates[jfl]
+		nc <- nc_open(downData$files[jfl])
+		xtmp <- ncvar_get(nc, varid = downData$varid)
+		nc_close(nc)
+		if(downData$yorder == 1){
+			xtmp <- matrix(c(xtmp), nrow = length(downData$lon), ncol = length(downData$lat), byrow = TRUE)
 		}
+		xtmp <- xtmp[downData$xo, downData$yo]
+		dtmp <- downData$dates[jfl]
 
 		if(bias.method == "Multiplicative.Bias.Var"){
 			if(freqData == 'daily'){
@@ -1059,14 +1043,14 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 		xadj[is.na(xadj)] <- -99
 
 		############
-		if(freqData == 'daily'){
-			outfl <- file.path(origdir, sprintf(adjRreanalFF, substr(dtmp, 1, 4), substr(dtmp, 5, 6), substr(dtmp, 7, 8)))
-		}else  if(freqData == 'dekadal'){
-			outfl <- file.path(origdir, sprintf(adjRreanalFF, substr(dtmp, 1, 4), substr(dtmp, 5, 6), substr(dtmp, 7, 7)))
-		}else  if(freqData == 'monthly'){
-			outfl <- file.path(origdir, sprintf(adjRreanalFF, substr(dtmp, 1, 4), substr(dtmp, 5, 6)))
-		}
-		#Save adjusted data
+		year <- substr(dtmp, 1, 4)
+		month <- substr(dtmp, 5, 6)
+
+		if(freqData == 'daily') adjfrmt <- sprintf(adjRreanalFF, year, month, substr(dtmp, 7, 8))
+		else if(freqData == 'dekadal') adjfrmt <- sprintf(adjRreanalFF, year, month, substr(dtmp, 7, 7))
+		else adjfrmt <- sprintf(adjRreanalFF, year, month)
+
+		outfl <- file.path(origdir, adjfrmt)
 		nc2 <- nc_create(outfl, grd.bsadj)
 		ncvar_put(nc2, grd.bsadj, xadj)
 		nc_close(nc2)

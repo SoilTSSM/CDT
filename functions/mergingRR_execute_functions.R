@@ -90,9 +90,6 @@ execBiasRain <- function(origdir){
 
 execAdjBiasRain <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
-
-	memType <- 2
-
 	###get elevation data
 	rfeDataInfo <- getRFESampleData(GeneralParameters$IO.files$RFE.file)
 
@@ -121,9 +118,7 @@ execAdjBiasRain <- function(origdir){
 	ncinfo <- list(xo = rfeDataInfo$rfeILon, yo = rfeDataInfo$rfeILat, varid = rfeDataInfo$rfeVarid)
 	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 
-	adjMeanBiasparms <- list(rfeData = read.ncdf.parms, GeneralParameters = GeneralParameters,
-							origdir = origdir, memType = memType, readRFE = TRUE, RFEDATA = NULL)
-	# readRFE = FALSE, RFEDATA = rfeData # exec fonction ailleurs, multiple sources
+	adjMeanBiasparms <- list(rfeData = read.ncdf.parms, GeneralParameters = GeneralParameters, origdir = origdir)
 	ret <- AjdMeanBiasRain(adjMeanBiasparms)
 	rm(adjMeanBiasparms, rfeDataInfo)
 	gc()

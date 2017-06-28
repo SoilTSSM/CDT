@@ -632,6 +632,8 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 
 ##correct RFE bias
 AjdMeanBiasRain <- function(adjMeanBiasparms){
+	InsertMessagesTxt(main.txt.out, 'Correct RFE Bias ...')
+
 	GeneralParameters <- adjMeanBiasparms$GeneralParameters
 	origdir <- adjMeanBiasparms$origdir
 
@@ -643,48 +645,31 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 	months <- sort(as.numeric(GeneralParameters$Adjust.Months))
 	adjZero <- GeneralParameters$Adjusted.to.Zero
 
-	memType <- adjMeanBiasparms$memType
+	###############
+	ncfiles <- adjMeanBiasparms$rfeData$ncfiles
+	ncInfo <- ncFilesInfo(ncfiles$freqData, ncfiles$start.date, ncfiles$end.date, ncfiles$months,
+						ncfiles$ncDir, ncfiles$ncFileFormat, adjMeanBiasparms$rfeData$errmsg)
+	if(is.null(ncInfo)) return(NULL)
+
+	ncInfo$nc.files <- ncInfo$nc.files[ncInfo$exist]
+	ncInfo$dates <- ncInfo$dates[ncInfo$exist]
+
+	nc <- nc_open(ncInfo$nc.files[1])
+	rlon <- nc$dim[[adjMeanBiasparms$rfeData$ncinfo$xo]]$vals
+	rlat <- nc$dim[[adjMeanBiasparms$rfeData$ncinfo$yo]]$vals
+	nc_close(nc)
+	xo <- order(rlon)
+	rlon <- rlon[xo]
+	yo <- order(rlat)
+	rlat <- rlat[yo]
+	rfeSp <- defSpatialPixels(list(lon = rlon, lat = rlat))
+
+	rfeData <- list(lon = rlon, lat = rlat, dates = ncInfo$dates, files = ncInfo$nc.files,
+					xo = xo, yo = yo, varid = adjMeanBiasparms$rfeData$ncinfo$varid,
+					yorder = adjMeanBiasparms$rfeData$ncinfo$yo)
 
 	###############
-	if(adjMeanBiasparms$readRFE){
-		if(memType == 2){
-			rfeData <- read.NetCDF.Data(adjMeanBiasparms$rfeData)
-			if(is.null(rfeData)) return(NULL)
-
-			irfe <- !sapply(rfeData$data, is.null)
-			if(!any(irfe)){
-				InsertMessagesTxt(main.txt.out, "All RFE data are missing", format = TRUE)
-				return(NULL)
-			}
-
-			rfeData$dates <- rfeData$dates[irfe]
-			rfeData$data <- rfeData$data[irfe]
-		}else{
-			ncfiles <- adjMeanBiasparms$rfeData$ncfiles
-			ncInfo <- ncFilesInfo(ncfiles$freqData, ncfiles$start.date, ncfiles$end.date, ncfiles$months,
-								ncfiles$ncDir, ncfiles$ncFileFormat, adjMeanBiasparms$rfeData$errmsg)
-			if(is.null(ncInfo)) return(NULL)
-
-			ncInfo$nc.files <- ncInfo$nc.files[ncInfo$exist]
-			ncInfo$dates <- ncInfo$dates[ncInfo$exist]
-
-			nc <- nc_open(ncInfo$nc.files[1])
-			rlon <- nc$dim[[adjMeanBiasparms$rfeData$ncinfo$xo]]$vals
-			rlat <- nc$dim[[adjMeanBiasparms$rfeData$ncinfo$yo]]$vals
-			nc_close(nc)
-			xo <- order(rlon)
-			rlon <- rlon[xo]
-			yo <- order(rlat)
-			rlat <- rlat[yo]
-			rfeData <- list(lon = rlon, lat = rlat, dates = ncInfo$dates, files = ncInfo$nc.files,
-							xo = xo, yo = yo, varid = adjMeanBiasparms$rfeData$ncinfo$varid,
-							yorder = adjMeanBiasparms$rfeData$ncinfo$yo)
-		}
-	}else rfeData <- adjMeanBiasparms$RFEDATA
-	rfeSp <- defSpatialPixels(list(lon = rfeData$lon, lat = rfeData$lat))
-
-	###############
-	InsertMessagesTxt(main.txt.out, 'Correct RFE Bias ...')
+	InsertMessagesTxt(main.txt.out, 'Read bias data ...')
 
 	if(bias.method == "Multiplicative.Bias.Mon"){
 		biasFile <- file.path(biasDir, paste(meanBiasPrefix, '_', months, '.nc', sep = ''))
@@ -760,7 +745,7 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 		nc_close(nc)
 		BIAS[times.stn] <- lapply(seq_along(times.stn), function(m){
 			nc <- nc_open(biasFile[m])
-			xvar <- ncvar_get(nc, varid = nc$var[[1]]$name) #varid = "bias"
+			xvar <- ncvar_get(nc, varid = "bias")
 			nc_close(nc)
 			xvar
 		})
@@ -815,6 +800,8 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 		toExports <- c('quantile.mapping.BGamma', 'lon', 'lat', 'PARS.stn', 'PARS.rfe', 'adjZero')
 	}
 
+	InsertMessagesTxt(main.txt.out, 'Reading bias data finished')
+
 	########
 	## RFE regrid?
 	biasSp <- defSpatialPixels(list(lon = lon, lat = lat))
@@ -825,7 +812,7 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 	dx <- ncdim_def("Lon", "degreeE", lon)
 	dy <- ncdim_def("Lat", "degreeN", lat)
 	xy.dim <- list(dx, dy)
-	grd.bsadj <- ncvar_def("precip", "mm", xy.dim, -99, longname= "Bias Corrected RFE", prec = "short")
+	grd.bsadj <- ncvar_def("precip", "mm", xy.dim, -99, longname= "Bias Corrected RFE", prec = "short", shuffle = TRUE, compression = 9)
 
 	########
 
@@ -840,23 +827,18 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 	}
 
 	packages <- c('ncdf4', 'fields')
-	toExports <- c(toExports, 'rfeData', 'is.regridRFE', 'bias.method', 'origdir',
-					 'grd.bsadj', 'freqData', 'adjRfeFF', 'memType')
+	toExports <- c(toExports, 'rfeData', 'is.regridRFE', 'bias.method',
+					'origdir', 'grd.bsadj', 'freqData', 'adjRfeFF')
 
 	ret <- foreach(jfl = seq_along(rfeData$dates), .packages = packages, .export = toExports) %parLoop% {
-		if(memType == 2){
-			xrfe <- rfeData$data[[jfl]]
-			drfe <- rfeData$dates[jfl]
-		}else{
-			nc <- nc_open(rfeData$files[jfl])
-			xrfe <- ncvar_get(nc, varid = rfeData$varid)
-			nc_close(nc)
-			if(rfeData$yorder == 1){
-				xrfe <- matrix(c(xrfe), nrow = length(rfeData$lon), ncol = length(rfeData$lat), byrow = TRUE)
-			}
-			xrfe <- xrfe[rfeData$xo, rfeData$yo]
-			drfe <- rfeData$dates[jfl]
+		nc <- nc_open(rfeData$files[jfl])
+		xrfe <- ncvar_get(nc, varid = rfeData$varid)
+		nc_close(nc)
+		if(rfeData$yorder == 1){
+			xrfe <- matrix(c(xrfe), nrow = length(rfeData$lon), ncol = length(rfeData$lat), byrow = TRUE)
 		}
+		xrfe <- xrfe[rfeData$xo, rfeData$yo]
+		drfe <- rfeData$dates[jfl]
 
 		if(is.regridRFE){
 			rfeGrid <- interp.surface.grid(list(x = rfeData$lon, y = rfeData$lat, z = xrfe), list(x = lon, y = lat))
@@ -867,7 +849,7 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 			if(freqData == 'daily'){
 				ann <- as.numeric(substr(drfe, 1, 4))
 				iday <- as.numeric(strftime(as.Date(drfe, format = '%Y%m%d'), format = '%j'))
-				ijt <- ifelse(ann%%4 == 0 & iday > 59, iday-1, iday)
+				ijt <- ifelse(is.leapyear(ann) & iday > 59, iday-1, iday)
 			}
 			if(freqData == 'dekadal'){
 				mon <- as.numeric(substr(drfe, 5, 6))
@@ -890,14 +872,13 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 		xadj[is.na(xadj)] <- -99
 
 		############
-		if(freqData == 'daily'){
-			outfl <- file.path(origdir, sprintf(adjRfeFF, substr(drfe, 1, 4), substr(drfe, 5, 6), substr(drfe, 7, 8)))
-		}else  if(freqData == 'dekadal'){
-			outfl <- file.path(origdir, sprintf(adjRfeFF, substr(drfe, 1, 4), substr(drfe, 5, 6), substr(drfe, 7, 7)))
-		}else  if(freqData == 'monthly'){
-			outfl <- file.path(origdir, sprintf(adjRfeFF, substr(drfe, 1, 4), substr(drfe, 5, 6)))
-		}
-		#Save adjusted data
+		year <- substr(drfe, 1, 4)
+		month <- substr(drfe, 5, 6)
+		if(freqData == 'daily') adjfrmt <- sprintf(adjRfeFF, year, month, substr(drfe, 7, 8))
+		else if(freqData == 'dekadal') adjfrmt <- sprintf(adjRfeFF, year, month, substr(drfe, 7, 7))
+		else adjfrmt <- sprintf(adjRfeFF, year, month)
+
+		outfl <- file.path(origdir, adjfrmt)
 		nc2 <- nc_create(outfl, grd.bsadj)
 		ncvar_put(nc2, grd.bsadj, xadj)
 		nc_close(nc2)
