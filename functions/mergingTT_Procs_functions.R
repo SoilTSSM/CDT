@@ -1635,10 +1635,12 @@ MergingFunctionTemp <- function(paramsMRG){
 				res.grd$var1.pred[ina] <- res.grd.na$var1.pred
 			}
 
+			###########
 			resid <- rep(0, length(igrd))
 			resid[!igrd] <- res.grd$var1.pred
 			resid <- matrix(resid, ncol = nlat0, nrow = nlon0)
 			resid[is.na(resid)] <- 0
+			sp.trend[igrd] <- xtmp[igrd]
 
 			out.mrg <- sp.trend + resid
 		}else out.mrg <- xtmp
