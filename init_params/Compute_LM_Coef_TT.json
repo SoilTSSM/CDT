@@ -35,7 +35,7 @@
         // NN: Nearest Neighbor
         // IDW: Inverse Distance Weighted
         // Kriging: Ordinary Kriging
-        "interp.method": "NN",
+        "interp.method": "IDW",
 
         // nearest-neighbor interpolation parameters
         //use elevation as 3rd dimension true/false

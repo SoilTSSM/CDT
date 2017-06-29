@@ -129,3 +129,47 @@ fit.norm.temp <- function(x, min.len, alpha = 0.05, method = 'mle',
 	}
 	return(ret)
 }
+
+##############################
+## LM Vectorized
+
+lm.vectorized <- function(Y, X){
+	ncolY <- ncol(Y)
+	nrowY <- nrow(Y)
+	X <- if(is.matrix(X)) X else matrix(X, nrowY, ncolY)
+	ina <- is.na(X) | is.na(Y)
+	X[ina] <- NA
+	Y[ina] <- NA
+	nbY <- base::colSums(!is.na(Y))
+	nbY[nbY < 3] <- NA
+
+	mX <- base::colMeans(X, na.rm = TRUE)
+	mY <- base::colMeans(Y, na.rm = TRUE)
+	vX <- matrixStats::colVars(X, na.rm = TRUE)
+	vY <- matrixStats::colVars(Y, na.rm = TRUE)
+
+	X1 <- X - matrix(mX, nrowY, ncolY, byrow = TRUE)
+	Y1 <- Y - matrix(mY, nrowY, ncolY, byrow = TRUE)
+	COV <- base::colSums(X1 * Y1, na.rm = TRUE) / (nbY - 1)
+	alpha <- COV / vX
+	beta <- mY - alpha * mX
+	hatY <- matrix(alpha, nrowY, ncolY, byrow = TRUE) * X + matrix(beta, nrowY, ncolY, byrow = TRUE)
+	SSE <- base::colSums((hatY - Y)^2, na.rm = TRUE)
+	MSE <- SSE/(nbY-2)
+	sigma <- sqrt(MSE)
+	std.alpha <- sigma / (sqrt(nbY-1)*sqrt(vX))
+	std.beta <- sigma * sqrt((1/nbY) + (mX^2/((nbY-1)*vX)))
+	SXX <- (nbY-1)*vX
+	tvalue.alpha <- alpha / sqrt(MSE/SXX)
+	tvalue.beta <- beta / sqrt(MSE * ((1/nbY) + (mX^2/SXX)))
+	pvalue.alpha <- 2 * pt(-abs(tvalue.alpha), nbY-2)
+	pvalue.beta <- 2 * pt(-abs(tvalue.beta), nbY-2)
+	R2 <- COV^2 / (vX * vY)
+	out <- list(alpha = alpha, beta = beta, std.alpha = std.alpha, std.beta = std.beta,
+				tvalue.alpha = tvalue.alpha, tvalue.beta = tvalue.beta,
+				pvalue.alpha = pvalue.alpha, pvalue.beta = pvalue.beta,
+				R2 = R2, sigma = sigma)
+	return(out)
+}
+
+

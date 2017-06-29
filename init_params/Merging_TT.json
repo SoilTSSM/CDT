@@ -1,7 +1,8 @@
 {
-    // Merging Method
+    // Merging Method:
     // "Regression Kriging"
     // "Spatio-Temporal LM"
+    // "Simple Bias Adjustment"
     "Mrg.Method": "Regression Kriging",
     // Input and Output files/directory
     "IO.files": [{

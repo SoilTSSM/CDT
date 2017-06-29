@@ -1,6 +1,5 @@
 
 ComputeMeanBiasRain <- function(comptMBiasparms){
-	###############
 	InsertMessagesTxt(main.txt.out, 'Compute bias factors ...')
 
 	GeneralParameters <- comptMBiasparms$GeneralParameters
@@ -394,7 +393,8 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				}else{
 					coordinates(locations.stn) <- ~lon+lat
 					if(any(is.auxvar)){
-						locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+						locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
+						locations.stn <- locations.stn[Reduce("&", locations.df), ]
 						block <- NULL
 					}else block <- bGrd
 
@@ -632,8 +632,6 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 
 ##correct RFE bias
 AjdMeanBiasRain <- function(adjMeanBiasparms){
-	InsertMessagesTxt(main.txt.out, 'RFE Bias correction...')
-
 	GeneralParameters <- adjMeanBiasparms$GeneralParameters
 	origdir <- adjMeanBiasparms$origdir
 
@@ -941,22 +939,105 @@ ComputeLMCoefRain <- function(comptLMparams){
 	data.stn <- stnData$data
 
 	#############
-	if(comptLMparams$memType == 2){
-		# read then extract
-		rfeData <- read.NetCDF.Data(comptLMparams$rfeData)
-		if(is.null(rfeData)) return(NULL)
-		ijrfe <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), list(lon = rfeData$lon, lat = rfeData$lat))
-		data.rfe.stn  <- t(sapply(rfeData$data, function(x){
-			if(!is.null(x)) x[ijrfe]
-			else rep(NA, length(ijrfe))
-		}))
-	}else{
-		# read and extract
-		rfeData <- read.NetCDF.Data2Points(comptLMparams$rfeData, list(lon = lon.stn, lat = lat.stn))
-		if(is.null(rfeData)) return(NULL)
-		data.rfe.stn <- t(sapply(rfeData$data, function(x) if(!is.null(x)) x else rep(NA, length(lon.stn))))
-	}
+	# read and extract
+	rfeData <- read.NetCDF.Data2Points(comptLMparams$rfeData, list(lon = lon.stn, lat = lat.stn))
+	if(is.null(rfeData)) return(NULL)
+	data.rfe.stn <- t(sapply(rfeData$data, function(x) if(!is.null(x)) x else rep(NA, length(lon.stn))))
 	date.rfe <- rfeData$dates
+
+	#############
+	InsertMessagesTxt(main.txt.out, 'Compute LM Coefficients ...')
+
+	dtrfe <- date.rfe%in%date.stn
+	dtstn <- date.stn%in%date.rfe
+	data.stn <- data.stn[dtstn, , drop = FALSE]
+	date.stn <- date.stn[dtstn]
+	data.rfe.stn <- data.rfe.stn[dtrfe, , drop = FALSE]
+	# date.rfe <- date.rfe[dtrfe]
+
+	month.stn <- as(substr(date.stn, 5, 6), 'numeric')
+	year.stn <- as(substr(date.stn, 1, 4), 'numeric')
+	iyear0 <- (year.stn >= year1 & year.stn <= year2) & (month.stn%in%months)
+	data.stn.reg <- data.stn[iyear0, , drop = FALSE]
+	mon.stn.reg <- month.stn[iyear0]
+	nstn <- ncol(data.stn.reg)
+
+	#############
+	index <- split(seq(length(mon.stn.reg)), mon.stn.reg)
+	model.coef <- lapply(index, function(x){
+		Y <- data.stn.reg[x, , drop = FALSE]
+		X <- data.rfe.stn[x, , drop = FALSE]
+		ina <- is.na(X) | is.na(Y)
+		X[ina] <- NA
+		Y[ina] <- NA
+		nbY <- base::colSums(!is.na(Y))
+		ix <- nbY >= min.len
+		if(!any(ix)) return(NULL)
+		nbY <- nbY[ix]
+		Y <- Y[, ix, drop = FALSE]
+		X <- X[, ix, drop = FALSE]
+		ncolY <- ncol(Y)
+		nrowY <- nrow(Y)
+
+		mX <- base::colMeans(X, na.rm = TRUE)
+		mY <- base::colMeans(Y, na.rm = TRUE)
+		vX <- matrixStats::colVars(X, na.rm = TRUE)
+		vY <- matrixStats::colVars(Y, na.rm = TRUE)
+
+		X1 <- X - matrix(mX, nrowY, ncolY, byrow = TRUE)
+		Y1 <- Y - matrix(mY, nrowY, ncolY, byrow = TRUE)
+		COV <- base::colSums(X1 * Y1, na.rm = TRUE) / (nbY - 1)
+		alpha <- COV / vX
+		beta <- mY - alpha * mX
+
+		hatY <- matrix(alpha, nrowY, ncolY, byrow = TRUE) * X + matrix(beta, nrowY, ncolY, byrow = TRUE)
+		SSE <- base::colSums((hatY - Y)^2, na.rm = TRUE)
+		MSE <- SSE/(nbY-2)
+		sigma <- sqrt(MSE)
+		std.alpha <- sigma / (sqrt(nbY-1)*sqrt(vX))
+		# std.beta <- sigma * sqrt((1/nbY) + (mX^2/((nbY-1)*vX)))
+		SXX <- (nbY-1)*vX
+		tvalue.alpha <- alpha / sqrt(MSE/SXX)
+		# tvalue.beta <- beta / sqrt(MSE * ((1/nbY) + (mX^2/SXX)))
+		pvalue.alpha <- 2 * pt(-abs(tvalue.alpha), nbY-2)
+		# pvalue.beta <- 2 * pt(-abs(tvalue.beta), nbY-2)
+		R2 <- COV^2 / (vX * vY)
+
+		out <- matrix(NA, 4, length(ix))
+		out[, ix] <- rbind(alpha, beta, pvalue.alpha, R2)
+		return(out)
+	})
+
+	model.coef <- list(slope = do.call(rbind, lapply(model.coef, function(x) if(is.null(x)) rep(NA, nstn) else x[1, ])),
+					   intercept = do.call(rbind, lapply(model.coef, function(x) if(is.null(x)) rep(NA, nstn) else x[2, ])),
+					   pvalue = do.call(rbind, lapply(model.coef, function(x) if(is.null(x)) rep(NA, nstn) else x[3, ])),
+					   rsquared = do.call(rbind, lapply(model.coef, function(x)if(is.null(x)) rep(NA, nstn) else x[4, ])))
+	nommodcoef <- names(model.coef)
+	coef0 <- model.coef
+
+	islp <- !is.na(model.coef$slope) & model.coef$slope > 0
+	model.coef$slope[!islp] <- NA
+	extrm <- t(apply(model.coef$slope, 1, quantile, prob = c(0.001, 0.999), na.rm = TRUE))
+	islp <- !is.na(model.coef$slope) & model.coef$slope > extrm[, 1] & model.coef$slope < extrm[, 2]
+	intrcp <- !is.na(model.coef$intercept)
+	ipval <- !is.na(model.coef$pvalue) & !is.nan(model.coef$pvalue) & model.coef$pvalue < 0.05
+	irsq <- !is.na(model.coef$rsquared) & model.coef$rsquared > 0.2
+
+	model.coef <- lapply(model.coef, function(x){
+		x[!(islp & intrcp & ipval & irsq)] <- NA
+		x
+	})
+	names(model.coef) <- nommodcoef
+
+	##########
+	model.params <- list(coef0 = coef0, coef = model.coef, id.stn = id.stn,
+						lon.stn = lon.stn, lat.stn = lat.stn, date.stn = date.stn[iyear0],
+						data.stn = data.stn.reg, data.rfe = data.rfe.stn)
+	save(model.params, file = file.path(origdir, "LM_MODEL_PARS.RData"))
+
+	##########
+	InsertMessagesTxt(main.txt.out, 'Computing LM Coefficients finished')
+	InsertMessagesTxt(main.txt.out, 'Interpolate LM Coefficients ...')
 
 	#############
 	xy.grid <- comptLMparams$xy.grid
@@ -1022,73 +1103,7 @@ ComputeLMCoefRain <- function(comptLMparams){
 	interp.grid$newgrid$alon <- interp.grid$newgrid@coords[, 'lon']
 	interp.grid$newgrid$alat <- interp.grid$newgrid@coords[, 'lat']
 
-	#############
-	InsertMessagesTxt(main.txt.out, 'Compute LM Coefficients ...')
-
-	dtrfe <- date.rfe%in%date.stn
-	dtstn <- date.stn%in%date.rfe
-	data.stn <- data.stn[dtstn, , drop = FALSE]
-	date.stn <- date.stn[dtstn]
-	data.rfe.stn <- data.rfe.stn[dtrfe, , drop = FALSE]
-	# date.rfe <- date.rfe[dtrfe]
-
-	month.stn <- as(substr(date.stn, 5, 6), 'numeric')
-	year.stn <- as(substr(date.stn, 1, 4), 'numeric')
-	iyear0 <- (year.stn >= year1 & year.stn <= year2) & (month.stn%in%months)
-
-	data.stn.reg <- data.stn[iyear0, ]
-	mon.stn.reg <- month.stn[iyear0]
-	dataf <- data.frame(id.stn = rep(id.stn, each = nrow(data.stn.reg)), month = rep(mon.stn.reg, ncol(data.stn.reg)),
-						stn = c(data.stn.reg), rfe = c(data.rfe.stn))
-
-	##############
-
-	model <- by(dataf, dataf$id.stn, fitLM.month.RR, min.len)
-
-	xmod <- lapply(model, function(x){
-		sapply(x, function(m){
-			if(is.null(m)) c(NA, NA, NA, NA, NA)
-			else{
-				smod <- summary(m)
-				xcoef <- coefficients(m)
-				if(is.null(smod$fstatistic)) c(xcoef, NA, NA, NA)
-				else c(xcoef, pf(smod$fstatistic[1], smod$fstatistic[2], smod$fstatistic[3], lower.tail = FALSE), smod$r.squared, smod$adj.r.squared)
-			}
-		})
-	})
-
-	model.coef <- list(slope = sapply(xmod, function(x) x[2, ]),
-					   intercept = sapply(xmod, function(x) x[1, ]),
-					   pvalue = sapply(xmod, function(x) x[3, ]),
-					   rsquared = sapply(xmod, function(x) x[4, ]),
-					   adj.rsquared = sapply(xmod, function(x) x[5, ]))
-	nommodcoef <- names(model.coef)
-	coef0 <- model.coef
-
-	islp <- !is.na(model.coef$slope) & model.coef$slope > 0
-	model.coef$slope[!islp] <- NA
-	extrm <- t(apply(model.coef$slope, 1, quantile, prob = c(0.001, 0.99), na.rm = TRUE))
-	islp <- !is.na(model.coef$slope) & model.coef$slope > extrm[, 1] & model.coef$slope < extrm[, 2]
-	intrcp <- !is.na(model.coef$intercept)
-	ipval <- !is.na(model.coef$pvalue) & !is.nan(model.coef$pvalue) & model.coef$pvalue < 0.05
-	irsq <- !is.na(model.coef$adj.rsquared) & model.coef$adj.rsquared > 0.2
-
-	model.coef <- lapply(model.coef, function(x){
-		x[!(islp & intrcp & ipval & irsq)] <- NA
-		x
-	})
-	names(model.coef) <- nommodcoef
-
-	##########
-	model.params <- list(model = model, coef0 = coef0, coef = model.coef, id.stn = id.stn,
-						lon.stn = lon.stn, lat.stn = lat.stn, date.stn = date.stn[iyear0],
-						data.stn = data.stn.reg, data.rfe = data.rfe.stn)
-	save(model.params, file = file.path(origdir, "LM_MODEL_PARS.RData"))
-
-	InsertMessagesTxt(main.txt.out, 'Computing LM Coefficients finished')
-
-	##########
-	InsertMessagesTxt(main.txt.out, 'Interpolate LM Coefficients ...')
+	##################
 
 	if(doparallel & length(months) >= 3){
 		klust <- makeCluster(nb_cores)
@@ -1111,7 +1126,10 @@ ComputeLMCoefRain <- function(comptLMparams){
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
 			if(length(locations.stn$pars) < min.stn) return(NULL)
 
-			if(any(is.auxvar) & interp.method != 'NN') locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+			if(any(is.auxvar) & interp.method != 'NN'){
+				locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
+				locations.stn <- locations.stn[Reduce("&", locations.df), ]
+			}
 			if(interp.method == 'Kriging'){
 				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -1143,25 +1161,17 @@ ComputeLMCoefRain <- function(comptLMparams){
 			}else{
 				coordinates(locations.stn) <- ~lon+lat
 				if(any(is.auxvar)){
-					locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+					locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
+					locations.stn <- locations.stn[Reduce("&", locations.df), ]
 					block <- NULL 
 				}else block <- bGrd
+
 				pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
 									block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 				extrm1 <- min(locations.stn$pars, na.rm = TRUE)
 				pars.grd$var1.pred[pars.grd$var1.pred <= extrm1] <- extrm1
 				extrm2  <- max(locations.stn$pars, na.rm = TRUE)
 				pars.grd$var1.pred[pars.grd$var1.pred >= extrm2] <- extrm2
-
-				# extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
-				# ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred <= extrm[1] | pars.grd$var1.pred >= extrm[2])
-				# pars.grd$var1.pred[ixtrm] <- NA
-				# ina <- is.na(pars.grd$var1.pred)
-				# if(any(ina)){
-				# 	pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
-				# 						block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-				# 	pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
-				# }
 			}
 			matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
 		})
@@ -1170,11 +1180,9 @@ ComputeLMCoefRain <- function(comptLMparams){
 	}
 	if(closeklust) stopCluster(klust)
 
-	InsertMessagesTxt(main.txt.out, 'Interpolating LM Coefficients finished')
-
 	###########
-	grd.slope <- ncvar_def("slope", "", xy.dim, NA, longname= "Linear model Coef: Slope", prec = "float")
-	grd.intercept <- ncvar_def("intercept", "", xy.dim, NA, longname= "Linear model Coef: Intercept", prec = "float")
+	grd.slope <- ncvar_def("slope", "", xy.dim, NA, longname= "Linear model Coef: Slope", prec = "float", compression = 9)
+	grd.intercept <- ncvar_def("intercept", "", xy.dim, NA, longname= "Linear model Coef: Intercept", prec = "float", compression = 9)
 
 	for(jfl in months){
 		if(is.null(MODEL.COEF[[jfl]]$slope) | is.null(MODEL.COEF[[jfl]]$intercept)){
@@ -1188,6 +1196,7 @@ ComputeLMCoefRain <- function(comptLMparams){
 		xneg <- MODEL.COEF[[jfl]]$slope <= 0
 		MODEL.COEF[[jfl]]$slope[xneg] <- 1
 		MODEL.COEF[[jfl]]$intercept[xneg] <- 0
+
 		outnc1 <- file.path(origdir, paste('LM_Coefficient', '_', jfl, '.nc', sep = ''))
 		nc1 <- nc_create(outnc1, list(grd.slope, grd.intercept))
 		ncvar_put(nc1, grd.slope, MODEL.COEF[[jfl]]$slope)
@@ -1195,9 +1204,12 @@ ComputeLMCoefRain <- function(comptLMparams){
 		nc_close(nc1)
 	}
 
+	InsertMessagesTxt(main.txt.out, 'Interpolating LM Coefficients finished')
+
 	rm(rfeData, stnData, demData, data.rfe.stn, grd.dem,
 		data.stn, demGrid, interp.grid, data.stn.reg,
-		model, model.coef, MODEL.COEF, coef0, xmod, model.params)
+		model.coef, MODEL.COEF, coef0, model.params)
+	gc()
 	return(0)
 }
 
@@ -1205,8 +1217,6 @@ ComputeLMCoefRain <- function(comptLMparams){
 ###Merging
 
 MergingFunctionRain <- function(paramsMRG){
-	InsertMessagesTxt(main.txt.out, 'Merging data ...')
-
 	GeneralParameters <- paramsMRG$GeneralParameters
 	freqData <- GeneralParameters$period
 
@@ -1379,7 +1389,7 @@ MergingFunctionRain <- function(paramsMRG){
 	#############
 	packages <- c('ncdf4', 'gstat', 'automap')
 	toExports <- c('ncInfo', 'smooth.matrix')
-	ncdata <- foreach(jj = seq_along(ncInfo$nc.files), .packages = packages, .export = toExports) %parLoop% {
+	ret <- foreach(jj = seq_along(ncInfo$nc.files), .packages = packages, .export = toExports) %parLoop% {
 		if(ncInfo$exist[jj]){
 			nc <- nc_open(ncInfo$nc.files[jj])
 			xrfe <- ncvar_get(nc, varid = rfeDataInfo$rfeVarid)
@@ -1401,13 +1411,14 @@ MergingFunctionRain <- function(paramsMRG){
 		donne.stn <- data.stn[date.stn == ncInfo$dates[jj], , drop = FALSE]
 		if(nrow(donne.stn) == 0) return(NULL)
 		locations.stn$stn <- c(donne.stn[1, ])
-		# locations.stn$stn <- data.stn[date.stn == ncInfo$dates[jj], ]
 		locations.stn$rfe <- xrfe[ijGrd]
+
 		xadd <- as.data.frame(interp.grid$coords.grd)
 		xadd$rfe <- c(xrfe[interp.grid$idxy$ix, interp.grid$idxy$iy])
 		xadd$stn <- xadd$rfe
 		xadd$res <- 0
 		interp.grid$newgrid$rfe <- c(xrfe)
+		coords.grd <- data.frame(coordinates(interp.grid$newgrid))
 
 		############
 		noNA <- !is.na(locations.stn$stn)
@@ -1422,17 +1433,15 @@ MergingFunctionRain <- function(paramsMRG){
 					mo <- as(substr(ncInfo$dates[jj], 5, 6), 'numeric')
 					sp.trend <- xrfe * MODEL.COEF[[mo]]$slope + MODEL.COEF[[mo]]$intercept
 					locations.stn$res <- locations.stn$stn - sp.trend[ijGrd][noNA]
-				}else{
+				}else if(Mrg.Method == "Regression Kriging"){
 					simplediff <- if(var(locations.stn$stn) < 1e-07 | var(locations.stn$rfe, na.rm = TRUE) < 1e-07) TRUE else FALSE
 					glm.stn <- glm(formuleRK, data = locations.stn, family = gaussian)
 					if(is.na(glm.stn$coefficients[2]) | glm.stn$coefficients[2] < 0) simplediff <- TRUE
 					if(!simplediff){
 						sp.trend <- predict(glm.stn, newdata = interp.grid$newgrid)
-						# sp.trend <- krige(formuleRK, locations = locations.stn, newdata = interp.grid$newgrid)
-						# sp.trend <- sp.trend$var1.pred
 						sp.trend <- matrix(sp.trend, ncol = nlat0, nrow = nlon0)
-						sp.trend[is.na(sp.trend)] <- xrfe[is.na(sp.trend)]
-						# locations.stn$res <- residuals(glm.stn)
+						ina.trend <- is.na(sp.trend)
+						sp.trend[ina.trend] <- xrfe[ina.trend]
 						locations.stn$res <- NA
 						if(length(glm.stn$na.action) > 0) locations.stn$res[-glm.stn$na.action] <- glm.stn$residuals
 						else locations.stn$res <- glm.stn$residuals
@@ -1440,16 +1449,16 @@ MergingFunctionRain <- function(paramsMRG){
 						sp.trend <- xrfe
 						locations.stn$res <- locations.stn$stn - locations.stn$rfe
 					}
+				}else{
+					sp.trend <- xrfe
+					locations.stn$res <- locations.stn$stn - locations.stn$rfe
 				}
 			}else{
 				sp.trend <- xrfe
 				locations.stn$res <- locations.stn$stn - locations.stn$rfe
 			}
 
-			############
 			locations.stn <- locations.stn[!is.na(locations.stn$res), ]
-			# extrm <- quantile(locations.stn$res, probs = c(0.0001, 0.9999))
-			# locations.stn <- locations.stn[locations.stn$res > extrm[1] & locations.stn$res < extrm[2], ]
 		}else do.merging <- FALSE
 
 		############
@@ -1461,7 +1470,6 @@ MergingFunctionRain <- function(paramsMRG){
 				rnr.rfe[xrfe >= wet.day] <- 1
 				locations.stn$rnr.stn <- ifelse(locations.stn$stn >= wet.day,1,0)
 				xadd$rnr.stn <- c(rnr.rfe[interp.grid$idxy$ix, interp.grid$idxy$iy])
-				# xadd$rnr.stn <- ifelse(xadd$rfe >= wet.day, 1, 0)
 
 				###########
 				### binomial logistic regression
@@ -1472,13 +1480,14 @@ MergingFunctionRain <- function(paramsMRG){
 				locations.stn$rnr.res <- residuals(glm.binom)
 				rnr <- predict(glm.binom, newdata = interp.grid$newgrid, type = 'link')
 				rnr <- matrix(rnr, ncol = nlat0, nrow = nlon0)
-
-				coords.grd <- data.frame(coordinates(interp.grid$newgrid))
-				irnr <- rep(TRUE, nrow(coords.grd))
+				igrd.rnr <- irnr <- rep(TRUE, nrow(coords.grd))
 			}
 
 			############
-			if(any(is.auxvar)) locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+			if(any(is.auxvar)){
+				locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
+				locations.stn <- locations.stn[Reduce("&", locations.df), ]
+			}
 			if(interp.method == 'Kriging'){
 				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -1486,27 +1495,34 @@ MergingFunctionRain <- function(paramsMRG){
 
 			###########
 			xstn <- as.data.frame(locations.stn)
-			iadd <- rep(TRUE, nrow(xadd))
+			iadd.in <- iadd.out <- rep(TRUE, nrow(xadd))
+			igrd <- rep(TRUE, nrow(coords.grd))
 			for(k in 1:nrow(xstn)){
 				dst <- sqrt((xstn$lon[k]-xadd$lon)^2+(xstn$lat[k]-xadd$lat)^2)*sqrt(2)
-				iadd <- iadd & (dst >= maxdist)
+				iadd.in <- iadd.in & (dst >= maxdist)
+				iadd.out <- iadd.out & (dst >= 3*maxdist)
+				dst.grd <- sqrt((xstn$lon[k]-coords.grd$lon)^2+(xstn$lat[k]-coords.grd$lat)^2)*sqrt(2)
+				igrd <- igrd & (dst.grd >= 2*maxdist)
 				if(use.RnoR){
-					dst.grd <- sqrt((xstn$lon[k]-coords.grd$lon)^2+(xstn$lat[k]-coords.grd$lat)^2)*sqrt(2)
 					irnr <- irnr & (dst.grd >= maxdist.RnoR)
+					igrd.rnr <- igrd.rnr & (dst.grd >= 2*maxdist.RnoR)
 				}
 			}
 
-			xadd <- xadd[iadd, ]
+			xadd <- xadd[iadd.in & !iadd.out, ]
 			locations.stn <- rbind(xstn, xadd)
 			coordinates(locations.stn) <- ~lon+lat
+			newdata <- interp.grid$newgrid[!igrd, ]
 
 			###########
 			if(any(is.auxvar)){
-				locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+				locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
+				locations.stn <- locations.stn[Reduce("&", locations.df), ]
 				block <- NULL
 			}else block <- bGrd
-			res.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-								block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+
+			res.grd <- krige(formule, locations = locations.stn, newdata = newdata, model = vgm,
+							block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 
 			extrm <- c(min(locations.stn$res, na.rm = TRUE), max(locations.stn$res, na.rm = TRUE))
 			ixtrm <- is.na(res.grd$var1.pred) | (res.grd$var1.pred < extrm[1] | res.grd$var1.pred > extrm[2])
@@ -1514,26 +1530,32 @@ MergingFunctionRain <- function(paramsMRG){
 
 			ina <- is.na(res.grd$var1.pred)
 			if(any(ina)){
-				res.grd.na <- krige(var1.pred~1, locations = res.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
+				res.grd.na <- krige(var1.pred~1, locations = res.grd[!ina, ], newdata = newdata[ina, ], model = vgm,
 										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 				res.grd$var1.pred[ina] <- res.grd.na$var1.pred
 			}
 
-			resid <- matrix(res.grd$var1.pred, ncol = nlat0, nrow = nlon0)
+			############
+			resid <- rep(0, length(igrd))
+			resid[!igrd] <- res.grd$var1.pred
+			resid <- matrix(resid, ncol = nlat0, nrow = nlon0)
 			resid[is.na(resid)] <- 0
+			sp.trend[igrd] <- xrfe[igrd]
 
 			############
 			if(use.RnoR){
-				rnr.res.grd <- krige(rnr.res~1, locations = locations.stn, newdata = interp.grid$newgrid,
+				newdata <- interp.grid$newgrid[!igrd.rnr, ]
+				rnr.res.grd <- krige(rnr.res~1, locations = locations.stn, newdata = newdata,
 										maxdist = maxdist.RnoR, block = bGrd,  debug.level = 0)
 				ina <- is.na(rnr.res.grd$var1.pred)
 				if(any(ina)){
-					rnr.res.grd.na <- krige(var1.pred~1, locations = rnr.res.grd[!ina, ], newdata = interp.grid$newgrid[ina, ],
+					rnr.res.grd.na <- krige(var1.pred~1, locations = rnr.res.grd[!ina, ], newdata = newdata[ina, ],
 												block = bGrd, maxdist = maxdist.RnoR, debug.level = 0)
 					rnr.res.grd$var1.pred[ina] <- rnr.res.grd.na$var1.pred
 				}
-
-				rnr.res.grd <- matrix(rnr.res.grd$var1.pred, ncol = nlat0, nrow = nlon0)
+				rnr.res <- rep(0, length(igrd.rnr))
+				rnr.res[!igrd.rnr] <- rnr.res.grd$var1.pred
+				rnr.res.grd <- matrix(rnr.res, ncol = nlat0, nrow = nlon0)
 				rnr.res.grd[is.na(rnr.res.grd)] <- 0
 
 				rnr <- rnr + rnr.res.grd
@@ -1550,6 +1572,7 @@ MergingFunctionRain <- function(paramsMRG){
 					npix <- if(sum(rnr.rfe, na.rm = TRUE) == 0) 5 else 3
 					rnr <- smooth.matrix(rnr, npix)
 				}
+				rm(imsk, rnr.res.grd, rnr.res, rnr.rfe)
 			}else rnr <- matrix(1, ncol = nlat0, nrow = nlon0)
 
 			############
@@ -1563,20 +1586,19 @@ MergingFunctionRain <- function(paramsMRG){
 		out.mrg[is.na(out.mrg)] <- -99
 
 		############
-		if(freqData == 'daily'){
-			outfl <- file.path(origdir, sprintf(Mrg.file.format, substr(ncInfo$dates[jj], 1, 4),
-								substr(ncInfo$dates[jj], 5, 6), substr(ncInfo$dates[jj], 7, 8)))
-		}else if(freqData == 'dekadal'){
-			outfl <- file.path(origdir, sprintf(Mrg.file.format, substr(ncInfo$dates[jj], 1, 4),
-								substr(ncInfo$dates[jj], 5, 6), substr(ncInfo$dates[jj], 7, 7)))
-		}else if(freqData == 'monthly'){
-			outfl <- file.path(origdir, sprintf(Mrg.file.format, substr(ncInfo$dates[jj], 1, 4),
-								substr(ncInfo$dates[jj], 5, 6)))
-		}
+		year <- substr(ncInfo$dates[jj], 1, 4)
+		month <- substr(ncInfo$dates[jj], 5, 6)
+		if(freqData == 'daily') mrgfrmt <- sprintf(Mrg.file.format, year, month, substr(ncInfo$dates[jj], 7, 8))
+		else if(freqData == 'dekadal') mrgfrmt <- sprintf(Mrg.file.format, year, month, substr(ncInfo$dates[jj], 7, 7))
+		else  mrgfrmt <- sprintf(Mrg.file.format, year, month)
 
+		outfl <- file.path(origdir, mrgfrmt)
 		nc2 <- nc_create(outfl, grd.nc.out)
 		ncvar_put(nc2, grd.nc.out, round(out.mrg))
 		nc_close(nc2)
+
+		rm(out.mrg, sp.trend, rnr, resid, xadd, locations.stn, newdata, res.grd, coords.grd, xrfe)
+		gc()
 		return(0)
 	}
 
@@ -1693,3 +1715,7 @@ MergingFunctionRain <- function(paramsMRG){
 
 	return(0)
 }
+
+##############################################################################################################
+
+

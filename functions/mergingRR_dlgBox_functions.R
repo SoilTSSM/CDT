@@ -24,7 +24,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 	frMrg <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
 
 	mrg.method <- tclVar(str_trim(GeneralParameters$Mrg.Method))
-	cb.MrgMthd <- c("Regression Kriging", "Spatio-Temporal LM")
+	cb.MrgMthd <- c("Regression Kriging", "Spatio-Temporal LM", "Simple Bias Adjustment")
 
 	txt.mrg <- tklabel(frMrg, text = 'Merging method', anchor = 'w', justify = 'left')
 	cb.mrg <- ttkcombobox(frMrg, values = cb.MrgMthd, textvariable = mrg.method, width = largeur1)

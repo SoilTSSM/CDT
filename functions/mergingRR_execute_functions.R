@@ -1,6 +1,7 @@
 
 execBiasRain <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
+	InsertMessagesTxt(main.txt.out, 'Computing Gauge-RFE bias ...')
 
 	create.grd <- GeneralParameters$Create.Grid
 	freqData <- GeneralParameters$period
@@ -90,6 +91,8 @@ execBiasRain <- function(origdir){
 
 execAdjBiasRain <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
+	InsertMessagesTxt(main.txt.out, 'Adjusting Gauge-RFE bias ...')
+
 	###get elevation data
 	rfeDataInfo <- getRFESampleData(GeneralParameters$IO.files$RFE.file)
 
@@ -133,13 +136,10 @@ execAdjBiasRain <- function(origdir){
 
 execLMCoefRain <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
-
-	memType <- 2
-
-	freqData <- GeneralParameters$period
-	create.grd <- GeneralParameters$Create.Grid
+	InsertMessagesTxt(main.txt.out, 'Computing LM Coefficients ...')
 
 	#######get data
+	freqData <- GeneralParameters$period
 	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
 	stnData <- getCDTdataAndDisplayMsg(stnData, freqData)
 	if(is.null(stnData)) return(NULL)
@@ -152,6 +152,7 @@ execLMCoefRain <- function(origdir){
 	rfeDataInfo <- getRFESampleData(GeneralParameters$IO.files$RFE.file)
 
 	##Create grid for interpolation
+	create.grd <- GeneralParameters$Create.Grid
 	if(create.grd == '1'){
 		grd.lon <- rfeDataInfo$lon
 		grd.lat <- rfeDataInfo$lat
@@ -201,7 +202,7 @@ execLMCoefRain <- function(origdir){
 	read.ncdf.parms <- list(ncfiles = ncfiles, ncinfo = ncinfo, msg = msg, errmsg = errmsg)
 
 	################
-	comptLMparams <- list(GeneralParameters = GeneralParameters, stnData = stnData, demData = demData, memType = memType,
+	comptLMparams <- list(GeneralParameters = GeneralParameters, stnData = stnData, demData = demData,
 						rfeData = read.ncdf.parms, xy.grid = xy.grid, res.coarse = res.coarse, origdir = origdir)
 	ret <- ComputeLMCoefRain(comptLMparams)
 
@@ -218,10 +219,10 @@ execLMCoefRain <- function(origdir){
 
 execMergeRain <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
-
-	freqData <- GeneralParameters$period
+	InsertMessagesTxt(main.txt.out, 'Merging data ...')
 
 	#######get data
+	freqData <- GeneralParameters$period
 	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
 	stnData <- getCDTdataAndDisplayMsg(stnData, freqData)
 	if(is.null(stnData)) return(NULL)
@@ -320,7 +321,3 @@ execMergeRain <- function(origdir){
 }
 
 ##############################################################################################################
-
-##############################################################################################################
-
-

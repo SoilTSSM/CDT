@@ -1,7 +1,8 @@
 execCoefDownTemp <- function(origdir){
-	freqData <- GeneralParameters$period
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
+	InsertMessagesTxt(main.txt.out, 'Computing regression parameters ...')
 
+	freqData <- GeneralParameters$period
 	#######get data
 	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
 	stnData <- getCDTdataAndDisplayMsg(stnData, freqData)
@@ -27,8 +28,9 @@ execCoefDownTemp <- function(origdir){
 
 execDownscalingTemp <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
-	freqData <- GeneralParameters$period
+	InsertMessagesTxt(main.txt.out, '"Downscaling ...')
 
+	freqData <- GeneralParameters$period
 	##Reanalysis sample file
 	reanalInfo <- getRFESampleData(GeneralParameters$IO.files$Reanal.file)
 
@@ -120,8 +122,9 @@ execDownscalingTemp <- function(origdir){
 
 execBiasTemp <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
-	freqData <- GeneralParameters$period
+	InsertMessagesTxt(main.txt.out, 'Computing bias coefficients ...')
 
+	freqData <- GeneralParameters$period
 	#######get data
 	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
 	stnData <- getCDTdataAndDisplayMsg(stnData, freqData)
@@ -192,6 +195,7 @@ execBiasTemp <- function(origdir){
 
 execAjdBiasDownTemp <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
+	InsertMessagesTxt(main.txt.out, 'Adjustment of downscaled data ...')
 
 	################
 	freqData <- GeneralParameters$period
@@ -234,12 +238,10 @@ execAjdBiasDownTemp <- function(origdir){
 
 execLMCoefTemp <- function(origdir){
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
-
-	memType <- 2
-
-	freqData <- GeneralParameters$period
+	InsertMessagesTxt(main.txt.out, 'Computing LM Coefficients ...')
 
 	#######get data
+	freqData <- GeneralParameters$period
 	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
 	stnData <- getCDTdataAndDisplayMsg(stnData, freqData)
 	if(is.null(stnData)) return(NULL)
@@ -268,7 +270,7 @@ execLMCoefTemp <- function(origdir){
 
 	################
 	comptLMparams <- list(GeneralParameters = GeneralParameters, stnData = stnData, demData = demData,
-						adjData = read.ncdf.parms, origdir = origdir, memType = memType)
+							adjData = read.ncdf.parms, origdir = origdir)
 	ret <- ComputeLMCoefTemp(comptLMparams)
 	
 	rm(comptLMparams, stnData, demData)
@@ -282,10 +284,11 @@ execLMCoefTemp <- function(origdir){
 #######################################################################################
 
 execMergeTemp <- function(origdir){
-	freqData <- GeneralParameters$period
 	dir.create(origdir, showWarnings = FALSE, recursive = TRUE)
+	InsertMessagesTxt(main.txt.out, 'Merging data ...')
 
 	#######get data
+	freqData <- GeneralParameters$period
 	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
 	stnData <- getCDTdataAndDisplayMsg(stnData, freqData)
 	if(is.null(stnData)) return(NULL)
