@@ -134,7 +134,7 @@ picsa.plot.line <- function(x, y, origindate = NULL, sub = NULL, xlab = '', ylab
 	mtext(EnvPICSAplot$location, side = 3, outer = FALSE, adj = 1, line = 0, cex = 0.6) 
 	par(op)
 
-	op <- par(mar = c(0, 0, 0, 0))
+	op <- par(mar = c(0, 6.5, 0, 2.1))
 	if(mean | tercile | linear){
 		plot.new()
 		legend("center", "groups", legend = txtlegend, col = collegend, lwd = 3, horiz = TRUE, cex = 1.2)
@@ -171,7 +171,7 @@ picsa.plot.TxTn <- function(x, tmax, tmin, axis.font = 1){
 	mtext(EnvPICSAplot$location, side = 3, outer = FALSE, adj = 1, line = 0, cex = 0.6) 
 	par(op)
 
-	op <- par(mar = c(0, 0, 0, 0))
+	op <- par(mar = c(0, 4, 0, 2))
 	plot.new()
 	legend("top", "groups", legend = c('Tmax', 'Tmin', 'Trend line'), col = c('red', 'blue', 'black'), lwd = 3, lty = 1, horiz = TRUE)
 	par(op)
@@ -295,7 +295,7 @@ picsa.plot.bar.ENSO <- function(x, y, oni, origindate = NULL, sub = NULL, xlab =
 	mtext(EnvPICSAplot$location, side = 3, outer = FALSE, adj = 1, line = 0, cex = 0.6) 
 	par(op)
 
-	op <- par(mar = c(0, 0, 0, 0))
+	op <- par(mar = c(0, 6.5, 0, 2.1))
 	plot.new()
 	legend("center", "groups", legend = c('La Niña', 'Neutral', 'El Niño'), fill = barcol, horiz = TRUE, cex = 1.2)
 	par(op)
@@ -372,7 +372,7 @@ picsa.plot.line.ENSO <- function(x, y, oni, origindate = NULL, sub = NULL, xlab 
 	txtlegend <- if(mean | tercile | linear) c(nino, txtlegend) else nino
 	collegend <- if(mean | tercile | linear) c(rep(col$line, 3), collegend) else rep(col$line, 3)
 
-	op <- par(mar = c(0, 0, 0, 0))
+	op <- par(mar = c(0, 6.5, 0, 2.1))
 	plot.new()
 	legend("center", "groups", legend = txtlegend, col = collegend, pch = c(rep(21, 3), rep(NA, 4)),
 			pt.bg = c(col$points, rep(NA, 4)), pt.cex = c(rep(2, 3), rep(NA, 4)),
@@ -456,19 +456,19 @@ picsa.plot.proba.ENSO <- function(dat, oni, origindate = NULL, sub = NULL, xlab 
 		if(!("line" %in% names(col.nino))) col.nino$line <- "red"
 		if(!("points" %in% names(col.nino))) col.nino$points <- "lightpink"
 
-		lines(x0, y0, type = 'o', col = col.all$line, lwd = 2, pch = 21, bg = col.all$points, cex = 0.8)
-		lines(x1, y1, type = 'o', col = col.nina$line, lwd = 2, pch = 21, bg = col.nina$points, cex = 0.8)
-		lines(x2, y2, type = 'o', col = col.neutre$line, lwd = 2, pch = 21, bg = col.neutre$points, cex = 0.8)
-		lines(x3, y3, type = 'o', col = col.nino$line, lwd = 2, pch = 21, bg = col.nino$points, cex = 0.8)
+		lines(x0, y0, type = 'o', col = col.all$line, lwd = 2, pch = 21, bg = col.all$points, cex = 1.4)
+		lines(x1, y1, type = 'o', col = col.nina$line, lwd = 2, pch = 21, bg = col.nina$points, cex = 1.4)
+		lines(x2, y2, type = 'o', col = col.neutre$line, lwd = 2, pch = 21, bg = col.neutre$points, cex = 1.4)
+		lines(x3, y3, type = 'o', col = col.nino$line, lwd = 2, pch = 21, bg = col.nino$points, cex = 1.4)
 	}
 	mtext(EnvPICSAplot$location, side = 3, outer = FALSE, adj = 1, line = 0, cex = 0.6) 
 	par(op)
 
-	op <- par(mar = c(0, 0, 0, 0))
+	op <- par(mar = c(0, 6, 0, 2.1))
 	plot.new()
 	legend("center", "groups", legend = c('All years', 'La Niña', 'Neutral', 'El Niño'),
 			col = c(col.all$line, col.nina$line, col.neutre$line, col.nino$line),
-			lwd = 2, lty = 1, pch = 21, horiz = TRUE, cex = 1.2,
+			lwd = 2, lty = 1, pch = 21, horiz = TRUE, cex = 1.4,
 			pt.bg = c(col.all$points, col.nina$points, col.neutre$points, col.nino$points))
 	par(op)
 

@@ -82,10 +82,11 @@ PICSA.plotTSMaps <- function(ocrds){
 
 	#################
 
-	kolFonction <- match.fun("tim.colors")
-
 	breaks <- pretty(range(don$z, na.rm = TRUE))
-	breaks <- if(length(breaks > 0)) breaks else c(0, 1) 
+	breaks <- if(length(breaks) > 0) breaks else c(0, 1) 
+	if(length(breaks) < 7) breaks <- round(seq(breaks[1], breaks[length(breaks)], length.out = 7), 4)
+
+	kolFonction <- match.fun("tim.colors")
 	kolor <- kolFonction(length(breaks)-1)
 
 	if(diff(EnvPICSAplot$xlim.maps) > diff(EnvPICSAplot$ylim.maps)){
@@ -137,11 +138,13 @@ PICSA.plotTSMaps <- function(ocrds){
 ##############################
 
 PICSA.plotClimMaps <- function(ocrds){
-	if(tclvalue(EnvPICSAplot$analysis.method) == "Average") aggrFonction <- function(Y, X = NULL, O = NULL) base::colMeans(Y, na.rm = TRUE)
-	if(tclvalue(EnvPICSAplot$analysis.method) == "Median") aggrFonction <- function(Y, X = NULL, O = NULL) matrixStats::colMedians(Y, na.rm = TRUE)
-	if(tclvalue(EnvPICSAplot$analysis.method) == "Standard deviation") aggrFonction <- function(Y, X = NULL, O = NULL) matrixStats::colSds(Y, na.rm = TRUE)
-	if(tclvalue(EnvPICSAplot$analysis.method) == "Trend") 
-		aggrFonction <- function(Y, X = NULL, O = NULL){
+	StatOp <- tclvalue(EnvPICSAplot$analysis.method)
+	if(StatOp == "Average") aggrFonction <- function(Y, X = NULL, O = NULL) base::colMeans(Y, na.rm = TRUE)
+	if(StatOp == "Median") aggrFonction <- function(Y, X = NULL, O = NULL) matrixStats::colMedians(Y, na.rm = TRUE)
+	if(StatOp == "Standard deviation") aggrFonction <- function(Y, X = NULL, O = NULL) matrixStats::colSds(Y, na.rm = TRUE)
+	if(StatOp == "Trend") 
+		aggrFonction <- function(Y, X = NULL, O = NULL)
+		{
 			ncolY <- ncol(Y)
 			nrowY <- nrow(Y)
 			X <- if(is.matrix(X)) X else matrix(X, nrow = nrowY, ncol = ncolY)
@@ -162,14 +165,15 @@ PICSA.plotClimMaps <- function(ocrds){
 			alpha <- COV / vX
 			return(alpha)
 		}
-	if(tclvalue(EnvPICSAplot$analysis.method) == "Percentiles")
+	if(StatOp == "Percentiles")
 		aggrFonction <- function(Y, X = NULL, O = NULL){
 			Q <- as.numeric(tclvalue(EnvPICSAplot$mth.perc))/100
 			apply(Y, 2, quantile8, probs = Q)
 			matrixStats::colQuantiles(Y, probs = Q, na.rm = TRUE)
 		}
-	if(tclvalue(EnvPICSAplot$analysis.method) == "Frequency")
-		aggrFonction <- function(Y, X = NULL, O = NULL){
+	if(StatOp == "Frequency")
+		aggrFonction <- function(Y, X = NULL, O = NULL)
+		{
 			xlow <- tclvalue(EnvPICSAplot$low.thres)
 			xup <- tclvalue(EnvPICSAplot$up.thres)
 
@@ -193,18 +197,46 @@ PICSA.plotClimMaps <- function(ocrds){
 		dimdon <- dim(don)
 		don <- as.numeric(don)
 		dim(don) <- dimdon
+		title <- "Starting dates of the rainy season"
+		unit.avg <- NULL
+		unit.med <- NULL
+		unit.sd <- "days"
+		unit.trend <- "days/year"
+		unit.perc <- NULL
+		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation"){
 		don <- EnvPICSA$output$Cessation.nb
 		dimdon <- dim(don)
 		don <- as.numeric(don)
 		dim(don) <- dimdon
+		title <- "Ending dates of the rainy season"
+		unit.avg <- NULL
+		unit.med <- NULL
+		unit.sd <- "days"
+		unit.trend <- "days/year"
+		unit.perc <- NULL
+		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Season Length"){
 		don <- EnvPICSA$output$SeasonLength
+		title <- "Length of the rainy season"
+		unit.avg <- "days"
+		unit.med <- "days"
+		unit.sd <- "days"
+		unit.trend <- "days/year"
+		unit.perc <- "days"
+		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Seasonal Rainfall Amounts"){
 		don <- EnvPICSA$picsa$RainTotal
+		title <- "Seasonal rainfall amounts"
+		unit.avg <- "mm"
+		unit.med <- "mm"
+		unit.sd <- "mm"
+		unit.trend <- "mm/year"
+		unit.perc <- "mm"
+		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Dry Spells"){
 		don <- EnvPICSA$picsa$AllDrySpell
@@ -222,30 +254,86 @@ PICSA.plotClimMaps <- function(ocrds){
 			EnvPICSAplot$DrySpellDef <- drydef
 		}else don <- EnvPICSAplot$DrySpellVal
 		dim(don) <- dimdon
+		title <- "Dry Spells"
+		unit.avg <- "Number of Dry Spells"
+		unit.med <- "Number of Dry Spells"
+		unit.sd <- "Number of Dry Spells"
+		unit.trend <- "Number of Dry Spells/year"
+		unit.perc <- "Number of Dry Spells"
+		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Longest Dry Spell"){
 		don <- EnvPICSA$picsa$AllDrySpell
 		dimdon <- dim(don)
 		don <- sapply(don, max)
 		dim(don) <- dimdon
+		title <- "Longest dry spell"
+		unit.avg <- "days"
+		unit.med <- "days"
+		unit.sd <- "days"
+		unit.trend <- "days/year"
+		unit.perc <- "days"
+		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Number of rain day"){
 		don <- EnvPICSA$picsa$nbdayrain
+		title <- "Seasonal number of rainy days"
+		unit.avg <- "days"
+		unit.med <- "days"
+		unit.sd <- "days"
+		unit.trend <- "days/year"
+		unit.perc <- "days"
+		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Maximum daily rain"){
 		don <- EnvPICSA$picsa$max24h
+		title <- 'Seasonal maximum of daily rainfall'
+		unit.avg <- "mm"
+		unit.med <- "mm"
+		unit.sd <- "mm"
+		unit.trend <- "mm/year"
+		unit.perc <- "mm"
+		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Total rain when RR>95thPerc"){
 		don <- EnvPICSA$picsa$TotalQ95th
+		title <- 'Seasonal total of precipitation when RR > 95th percentile'
+		unit.avg <- "mm"
+		unit.med <- "mm"
+		unit.sd <- "mm"
+		unit.trend <- "mm/year"
+		unit.perc <- "mm"
+		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Nb of day when RR>95thPerc"){
 		don <- EnvPICSA$picsa$NbQ95th
+		title <- 'Seasonal count of days when RR > 95th percentile'
+		unit.avg <- "days"
+		unit.med <- "days"
+		unit.sd <- "days"
+		unit.trend <- "days/year"
+		unit.perc <- "days"
+		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Maximum temperature"){
 		don <- EnvPICSA$picsa$tmax
+		title <- 'Seasonal average maximum temperature'
+		unit.avg <- "°C"
+		unit.med <- "°C"
+		unit.sd <- "°C"
+		unit.trend <- "°C/year"
+		unit.perc <- "°C"
+		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Minimum temperature"){
 		don <- EnvPICSA$picsa$tmin
+		title <- 'Seasonal average minimum temperature'
+		unit.avg <- "°C"
+		unit.med <- "°C"
+		unit.sd <- "°C"
+		unit.trend <- "°C/year"
+		unit.perc <- "°C"
+		unit.freq <- "count"
 	}
 
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Onset") don <- aggrFonction(don, EnvPICSA$index$onsetYear, EnvPICSA$index$onsetOrigDate)
@@ -267,10 +355,22 @@ PICSA.plotClimMaps <- function(ocrds){
 	}
 
 	#################
+	if(StatOp == "Average") units <- unit.avg
+	if(StatOp == "Median") units <- unit.med
+	if(StatOp == "Standard deviation") units <- unit.sd
+	if(StatOp == "Trend") units <- unit.trend
+	if(StatOp == "Percentiles") units <- unit.perc
+	if(StatOp == "Frequency") units <- unit.freq
+	units <- if(!is.null(units)) paste0("(Units: ", units, ")") else ""
+	texta <- paste(StatOp, units)
 
-	kolFonction <- match.fun("tim.colors")
+	#################
 
 	breaks <- pretty(range(don$z, na.rm = TRUE))
+	breaks <- if(length(breaks) > 0) breaks else c(0, 1) 
+	if(length(breaks) < 7) breaks <- round(seq(breaks[1], breaks[length(breaks)], length.out = 7), 4)
+
+	kolFonction <- match.fun("tim.colors")
 	kolor <- kolFonction(length(breaks)-1)
 
 	if(diff(EnvPICSAplot$xlim.maps) > diff(EnvPICSAplot$ylim.maps)){
@@ -278,22 +378,20 @@ PICSA.plotClimMaps <- function(ocrds){
 		legend.mar <- 3.5
 		legend.width <- 0.7
 		mar <- c(7, 4, 2.5, 2.5)
-		# legend.args <- list(text = "unknown units", col = "black", font = 2, cex = 0.8, side = 1, line = 2)
-		legend.args = NULL
+		legend.args <- list(text = texta, cex = 0.8, side = 1, line = 2)
 	}else{
 		horizontal <- FALSE
 		legend.mar <- 6.2
 		mar <- c(4, 4, 2.5, 6)
 		legend.width <- 0.9
-		# legend.args <- list(text = "unknown units", col = "black", font = 2, cex = 0.8, side = 4, line = 3)
-		legend.args = NULL
+		legend.args <- list(text = texta, cex = 0.8, side = 4, line = 3)
 	}
 
 	#################
 
-	if(tclvalue(EnvPICSAplot$varPICSA) == "Onset" & tclvalue(EnvPICSAplot$analysis.method)%in%c("Average", "Median", "Percentiles")){
+	if(tclvalue(EnvPICSAplot$varPICSA) == "Onset" & StatOp%in%c("Average", "Median", "Percentiles")){
 		legendLabel <- format(as.Date(breaks, origin = EnvPICSA$index$onsetOrigDate), '%d %b')
-	}else if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation" & tclvalue(EnvPICSAplot$analysis.method)%in%c("Average", "Median", "Percentiles")){
+	}else if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation" & StatOp%in%c("Average", "Median", "Percentiles")){
 		legendLabel <- format(as.Date(breaks, origin = EnvPICSA$index$cessatOrigDate), '%d %b')
 	}else legendLabel <- breaks
 
@@ -305,6 +403,7 @@ PICSA.plotClimMaps <- function(ocrds){
 	axlabs <- axlabsFun(axTicks(1), axTicks(2))
 	axis(side = 1, at = axTicks(1), labels = axlabs$xaxl, tcl = -0.2, cex.axis = 0.8)
 	axis(side = 2, at = axTicks(2), labels = axlabs$yaxl, tcl = -0.2, las = 1, cex.axis = 0.8)
+	title(main = title, cex.main = 1, font.main= 2)
 
 	if(length(xna) > 0) points(xna, yna, pch = '*')
 	image.plot(don, breaks = breaks, col = kolor, horizontal = horizontal, xaxt = 'n', yaxt = 'n', add = TRUE,
