@@ -1,5 +1,4 @@
 
-
 picsa.plot.daily <- function(dates, prec, thres.rain = 1, axis.font = 1){
 	vtimes <- table.annuel()
 	vmmdd <- paste0(str_pad(vtimes[, 2], 2, pad = '0'), str_pad(vtimes[, 1], 2, pad = '0'))
@@ -7,9 +6,10 @@ picsa.plot.daily <- function(dates, prec, thres.rain = 1, axis.font = 1){
 	mmdd <- substr(dates, 5, 8)
 	mmdd[mmdd == '0229'] <- '0228'
 	yday <- match(mmdd, vmmdd)
-
 	dfplot <- data.frame(yy = years, day = yday)
 	rnor <- prec > thres.rain
+
+	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.9, 0.1), respect = FALSE)
 	op <- par(mar = c(3.1, 3.1, 2.1, 2.1))
 	plot(dfplot$yy, dfplot$day, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '', ylim = c(0, 370))
 	abline(h = axTicks(2), col = "lightgray", lty = "dotted")
@@ -19,16 +19,25 @@ picsa.plot.daily <- function(dates, prec, thres.rain = 1, axis.font = 1){
 	axis(1, at = axTicks(1), font = axis.font)
 	mtext('Year', side = 1, line = 2)
 	axis(2, at = axTicks(2), font = axis.font)
-	mtext('Day of Year', side = 2, line = 2)	
+	mtext('Day of Year', side = 2, line = 2)
 	mtext(EnvPICSAplot$location, side = 3, outer = FALSE, adj = 1, line = 0, cex = 0.6) 
 	legend(x = 'topright', legend = c("Rain", "Dry", 'NA'), bty = "n", fill = c(4, 7, NA), horiz = TRUE, cex = 0.8, inset = -0.01)
+	par(op)
+
+	op <- par(mar = c(1, 3.1, 0, 2.1))
+	plot(1, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '')
+	bbx <- par("usr")
+	rect(bbx[1], bbx[3], bbx[2], bbx[4], col = "ghostwhite")
+	text(1, 1, "Rain Present", cex = 0.9, font = 2)
 	par(op)
 }
 
 picsa.plot.bar <- function(x, y, origindate = NULL, sub = NULL, xlab = '', ylab = '',
-							barcol = "darkblue", axis.font = 1, start.zero = FALSE)
+						title = '', barcol = "darkblue", axis.font = 1, start.zero = FALSE)
 {
 	ylim <- if(start.zero) c(0, max(pretty(y))) else range(y, na.rm = TRUE)
+
+	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.9, 0.1), respect = FALSE)
 	op <- par(mar = c(3.1, 5.1, 2.1, 2.1))
 	plot(x, y, type = 'n', xlab = '', ylab = '', axes = FALSE, ylim = ylim)
 
@@ -57,18 +66,25 @@ picsa.plot.bar <- function(x, y, origindate = NULL, sub = NULL, xlab = '', ylab 
 	box(bty = '7', col = 'gray')
 	mtext(EnvPICSAplot$location, side = 3, outer = FALSE, adj = 1, line = 0, cex = 0.6) 
 	par(op)
+
+	op <- par(mar = c(1, 5.1, 0, 2.1))
+	plot(1, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '')
+	bbx <- par("usr")
+	rect(bbx[1], bbx[3], bbx[2], bbx[4], col = "ghostwhite")
+	text(1, 1, title, cex = 0.9, font = 2)
+	par(op)
 }
 
 picsa.plot.line <- function(x, y, origindate = NULL, sub = NULL, xlab = '', ylab = '',
-							mean = FALSE, tercile = FALSE, linear = FALSE,
+							title = '', mean = FALSE, tercile = FALSE, linear = FALSE,
 							axis.font = 1, start.zero = FALSE,
 							col = list(line = "red", points = "blue"),
 							col.add = list(mean = "black", tercile1 = "green", tercile2 = "blue", linear = "purple3"))
 {
 	ylim <- if(start.zero) c(0, max(pretty(y))) else range(y, na.rm = TRUE)
 
-	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.9, 0.1), respect = FALSE)
-	op <- par(mar = c(3.1, 5.1, 2.1, 2.1))
+	layout(matrix(1:3, ncol = 1), widths = 1, heights = c(0.8, 0.1, 0.1), respect = FALSE)
+	op <- par(mar = c(3.1, 6.5, 2.1, 2.1))
 
 	plot(x, y, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '', ylim = ylim)
 	abline(h = axTicks(2), col = "lightgray", lty = "dotted")
@@ -76,7 +92,7 @@ picsa.plot.line <- function(x, y, origindate = NULL, sub = NULL, xlab = '', ylab
 
 	if(!("line" %in% names(col))) col$line <- "red"
 	if(!("points" %in% names(col))) col$points <- "blue"
-	lines(x, y, type = 'o', col = col$line, lwd = 2, pch = 21, bg = col$points, cex = 0.8)
+	lines(x, y, type = 'o', col = col$line, lwd = 2, pch = 21, bg = col$points, cex = 1.4)
 
 	collegend <- NULL
 	txtlegend <- NULL
@@ -102,28 +118,35 @@ picsa.plot.line <- function(x, y, origindate = NULL, sub = NULL, xlab = '', ylab
 		txtlegend <- c(txtlegend, "Tercile 0.33333", "Tercile 0.66666")
 	}
 
-	axis(1, at = axTicks(1), font = axis.font)
+	axis(1, at = axTicks(1), font = axis.font, cex.axis = 1.5)
 	mtext(xlab, side = 1, line = 2)
 
 	if(!is.null(origindate)){
 		yaxlab <- format(as.Date(axTicks(2), origin = origindate), '%d %b')
-		axis(2, at = axTicks(2), labels = yaxlab, las = 2, font = axis.font)
-	}else axis(2, at = axTicks(2), font = axis.font, las = 1)
+		axis(2, at = axTicks(2), labels = yaxlab, las = 2, font = axis.font, cex.axis = 1.5)
+	}else axis(2, at = axTicks(2), font = axis.font, las = 1, cex.axis = 1.5)
 
-	line <- if(max(nchar(as.character(axTicks(2)))) > 2) 3 else 2
+	line <- if(max(nchar(as.character(axTicks(2)))) > 2) 4 else 3
 	if(!is.null(sub)){
 		mtext(ylab, side = 2, line = line+1)
 		mtext(sub, side = 2, line = line, font = 3, cex = 0.8)
 	}else mtext(ylab, side = 2, line = line)
 	mtext(EnvPICSAplot$location, side = 3, outer = FALSE, adj = 1, line = 0, cex = 0.6) 
 	par(op)
-	
+
+	op <- par(mar = c(0, 0, 0, 0))
 	if(mean | tercile | linear){
-		op <- par(mar = c(0, 0, 0, 0))
 		plot.new()
-		legend("top", "groups", legend = txtlegend, col = collegend, lwd = 3, horiz = TRUE, cex = 0.8)
-		par(op)
+		legend("center", "groups", legend = txtlegend, col = collegend, lwd = 3, horiz = TRUE, cex = 1.2)
 	}
+	par(op)
+
+	op <- par(mar = c(1, 6.5, 0, 2.1))
+	plot(1, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '')
+	bbx <- par("usr")
+	rect(bbx[1], bbx[3], bbx[2], bbx[4], col = "ghostwhite")
+	text(1, 1, title, cex = 1.5, font = 2)
+	par(op)
 }
 
 picsa.plot.TxTn <- function(x, tmax, tmin, axis.font = 1){
@@ -154,7 +177,7 @@ picsa.plot.TxTn <- function(x, tmax, tmin, axis.font = 1){
 	par(op)
 }
 
-picsa.plot.proba <- function(dat, origindate = NULL, sub = NULL, xlab = '', axis.font = 1,
+picsa.plot.proba <- function(dat, origindate = NULL, sub = NULL, xlab = '', title = '', axis.font = 1,
 							theoretical = FALSE, distr = c("norm", "snorm", "lnorm", "gamma", "weibull"), gof.c = "ad",
 							col = list(line = "blue", points = "lightblue", prob = "black"))
 {
@@ -164,7 +187,8 @@ picsa.plot.proba <- function(dat, origindate = NULL, sub = NULL, xlab = '', axis
 	xlim <- if(length(dat) > 1) range(pretty(dat)) else c(0, 1)
 	ylim <- c(0, 100)
 
-	op <- par(mar = c(5.1, 5.1, 2.1, 2.1))
+	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.9, 0.1), respect = FALSE)
+	op <- par(mar = c(4.1, 5.1, 2.1, 2.1))
 	plot(1, type = 'n', xaxt = 'n', yaxt = 'n', xlim = xlim, ylim = ylim, xlab = '', ylab = '')
 
 	xminTck <- axTicks(1)
@@ -181,13 +205,11 @@ picsa.plot.proba <- function(dat, origindate = NULL, sub = NULL, xlab = '', axis
 	if(!is.null(origindate)){
 		xaxlab <- format(as.Date(axTicks(1), origin = origindate), '%d %b')
 		axis(1, at = axTicks(1), labels = xaxlab, font = axis.font)
-		line <- 2
 	}else{
 		axis(1, at = axTicks(1), font = axis.font)
-		line <- 3
 	}	
-	mtext(xlab, side = 1, line = line)
-	if(!is.null(sub)) mtext(sub, side = 1, line = line+1, font = 3, cex = 0.8)
+	mtext(xlab, side = 1, line = 2)
+	if(!is.null(sub)) mtext(sub, side = 1, line = 3, font = 3, cex = 0.8)
 
 	yaxlab <- paste0(axTicks(2), "%")
 	axis(2, at = axTicks(2), labels = yaxlab, las = 2, font = axis.font)
@@ -229,15 +251,22 @@ picsa.plot.proba <- function(dat, origindate = NULL, sub = NULL, xlab = '', axis
 	}
 	mtext(EnvPICSAplot$location, side = 3, outer = FALSE, adj = 1, line = 0, cex = 0.6) 
 	par(op)
+
+	op <- par(mar = c(1, 5.1, 0, 2.1))
+	plot(1, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '')
+	bbx <- par("usr")
+	rect(bbx[1], bbx[3], bbx[2], bbx[4], col = "ghostwhite")
+	text(1, 1, title, cex = 0.9, font = 2)
+	par(op)
 }
 
-picsa.plot.bar.ENSO <- function(x, y, oni, origindate = NULL, sub = NULL, xlab = '', ylab = '',
+picsa.plot.bar.ENSO <- function(x, y, oni, origindate = NULL, sub = NULL, xlab = '', ylab = '', title = '',
 							barcol = c("blue", "gray", "red"), axis.font = 1, start.zero = FALSE)
 {
 	ylim <- if(start.zero) c(0, max(pretty(y))) else range(y, na.rm = TRUE)
 
-	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.9, 0.1), respect = FALSE)
-	op <- par(mar = c(3.1, 5.1, 2.1, 2.1))
+	layout(matrix(1:3, ncol = 1), widths = 1, heights = c(0.8, 0.1, 0.1), respect = FALSE)
+	op <- par(mar = c(3.1, 6.5, 2.1, 2.1))
 	plot(x, y, type = 'n', xlab = '', ylab = '', axes = FALSE, ylim = ylim)
 
 	minTck <- axTicks(2)
@@ -248,14 +277,14 @@ picsa.plot.bar.ENSO <- function(x, y, oni, origindate = NULL, sub = NULL, xlab =
 
 	lines(x, y, type = "h", lwd = 10, lend = "butt", col = barcol[oni])
 
-	axis(1, at = axTicks(1), font = axis.font)
+	axis(1, at = axTicks(1), font = axis.font, cex.axis = 1.5)
 	mtext(xlab, side = 1, line = 2)
 
 	if(!is.null(origindate)){
 		yaxlab <- format(as.Date(axTicks(2), origin = origindate), '%d %b')
-		axis(2, at = axTicks(2), labels = yaxlab, las = 2, font = axis.font)
-	}else axis(2, at = axTicks(2), las = 1, font = axis.font)
-	line <- if(max(nchar(as.character(axTicks(2)))) > 2) 3 else 2
+		axis(2, at = axTicks(2), labels = yaxlab, las = 2, font = axis.font, cex.axis = 1.5)
+	}else axis(2, at = axTicks(2), las = 1, font = axis.font, cex.axis = 1.5)
+	line <- if(max(nchar(as.character(axTicks(2)))) > 2) 4 else 3
 	if(!is.null(sub)){
 		mtext(ylab, side = 2, line = line+1)
 		mtext(sub, side = 2, line = line, font = 3, cex = 0.8)
@@ -268,20 +297,27 @@ picsa.plot.bar.ENSO <- function(x, y, oni, origindate = NULL, sub = NULL, xlab =
 
 	op <- par(mar = c(0, 0, 0, 0))
 	plot.new()
-	legend("top", "groups", legend = c('La Niña', 'Neutral', 'El Niño'), fill = barcol, horiz = TRUE)
+	legend("center", "groups", legend = c('La Niña', 'Neutral', 'El Niño'), fill = barcol, horiz = TRUE, cex = 1.2)
+	par(op)
+
+	op <- par(mar = c(1, 6.5, 0, 2.1))
+	plot(1, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '')
+	bbx <- par("usr")
+	rect(bbx[1], bbx[3], bbx[2], bbx[4], col = "ghostwhite")
+	text(1, 1, title, cex = 1.5, font = 2)
 	par(op)
 }
 
 picsa.plot.line.ENSO <- function(x, y, oni, origindate = NULL, sub = NULL, xlab = '', ylab = '',
-							mean = FALSE, tercile = FALSE, linear = FALSE,
+							title = title, mean = FALSE, tercile = FALSE, linear = FALSE,
 							axis.font = 1, start.zero = FALSE,
 							col = list(line = "black", points = c("blue", "gray", "red")),
 							col.add = list(mean = "darkblue", tercile1 = "chartreuse4", tercile2 = "darkgoldenrod4", linear = "purple3"))
 {
 	ylim <- if(start.zero) c(0, max(pretty(y))) else range(y, na.rm = TRUE)
 
-	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(1.2, 0.2), respect = FALSE)
-	op <- par(mar = c(3.1, 5.1, 2.1, 2.1))
+	layout(matrix(1:3, ncol = 1), widths = 1, heights = c(0.8, 0.15, 0.1), respect = FALSE)
+	op <- par(mar = c(3.1, 6.5, 2.1, 2.1))
 
 	plot(x, y, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '', ylim = ylim)
 	abline(h = axTicks(2), col = "lightgray", lty = "dotted")
@@ -290,7 +326,7 @@ picsa.plot.line.ENSO <- function(x, y, oni, origindate = NULL, sub = NULL, xlab 
 	if(!("line" %in% names(col))) col$line <- "black"
 	if(!("points" %in% names(col))) col$points <- c("blue", "gray", "red")
 	lines(x, y, col = col$line, lwd = 2)
-	points(x, y, pch = 21, col = 'gray30', bg = col$points[oni], cex = 1.4)
+	points(x, y, pch = 21, col = 'gray30', bg = col$points[oni], cex = 2)
 
 	collegend <- NULL
 	txtlegend <- NULL
@@ -316,15 +352,15 @@ picsa.plot.line.ENSO <- function(x, y, oni, origindate = NULL, sub = NULL, xlab 
 		txtlegend <- c(txtlegend, "Tercile 0.33333", "Tercile 0.66666")
 	}
 
-	axis(1, at = axTicks(1), font = axis.font)
+	axis(1, at = axTicks(1), font = axis.font, cex.axis = 1.5)
 	mtext(xlab, side = 1, line = 2)
 
 	if(!is.null(origindate)){
 		yaxlab <- format(as.Date(axTicks(2), origin = origindate), '%d %b')
-		axis(2, at = axTicks(2), labels = yaxlab, las = 2, font = axis.font)
-	}else axis(2, at = axTicks(2), font = axis.font, las = 1)
+		axis(2, at = axTicks(2), labels = yaxlab, las = 2, font = axis.font, cex.axis = 1.5)
+	}else axis(2, at = axTicks(2), font = axis.font, las = 1, cex.axis = 1.5)
 
-	line <- if(max(nchar(as.character(axTicks(2)))) > 2) 3 else 2
+	line <- if(max(nchar(as.character(axTicks(2)))) > 2) 4 else 3
 	if(!is.null(sub)){
 		mtext(ylab, side = 2, line = line+1)
 		mtext(sub, side = 2, line = line, font = 3, cex = 0.8)
@@ -338,13 +374,21 @@ picsa.plot.line.ENSO <- function(x, y, oni, origindate = NULL, sub = NULL, xlab 
 
 	op <- par(mar = c(0, 0, 0, 0))
 	plot.new()
-	legend("top", "groups", legend = txtlegend, col = collegend, pch = c(rep(21, 3), rep(NA, 4)),
-			pt.bg = c(col$points, rep(NA, 4)), pt.cex = c(rep(1.4, 3), rep(NA, 4)),
-			pt.lwd = c(rep(1, 3), rep(NA, 4)), lwd = 3, cex = 0.8, ncol = 3)
+	legend("center", "groups", legend = txtlegend, col = collegend, pch = c(rep(21, 3), rep(NA, 4)),
+			pt.bg = c(col$points, rep(NA, 4)), pt.cex = c(rep(2, 3), rep(NA, 4)),
+			pt.lwd = c(rep(1, 3), rep(NA, 4)), lwd = 3, ncol = 3, cex = 1.2)
+	par(op)
+
+	op <- par(mar = c(1, 6.5, 0, 2.1))
+	plot(1, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '')
+	bbx <- par("usr")
+	rect(bbx[1], bbx[3], bbx[2], bbx[4], col = "ghostwhite")
+	text(1, 1, title, cex = 1.5, font = 2)
 	par(op)
 }
 
-picsa.plot.proba.ENSO <- function(dat, oni, origindate = NULL, sub = NULL, xlab = '', axis.font = 1,
+picsa.plot.proba.ENSO <- function(dat, oni, origindate = NULL, sub = NULL, xlab = '',
+									title = '', axis.font = 1,
 									col.all = list(line = "black", points = "lightgray"),
 									col.nino = list(line = "red", points = "lightpink"),
 									col.nina = list(line = "blue", points = "lightblue"),
@@ -356,8 +400,8 @@ picsa.plot.proba.ENSO <- function(dat, oni, origindate = NULL, sub = NULL, xlab 
 	xlim <- if(length(dat) > 1) range(pretty(dat)) else c(0, 1)
 	ylim <- c(0, 100)
 
-	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.9, 0.1), respect = FALSE)
-	op <- par(mar = c(5.1, 5.1, 2.1, 2.1))
+	layout(matrix(1:3, ncol = 1), widths = 1, heights = c(0.8, 0.1, 0.1), respect = FALSE)
+	op <- par(mar = c(4.5, 6.0, 2.1, 2.1))
 	plot(1, type = 'n', xaxt = 'n', yaxt = 'n', xlim = xlim, ylim = ylim, xlab = '', ylab = '')
 
 	xminTck <- axTicks(1)
@@ -373,18 +417,18 @@ picsa.plot.proba.ENSO <- function(dat, oni, origindate = NULL, sub = NULL, xlab 
 
 	if(!is.null(origindate)){
 		xaxlab <- format(as.Date(axTicks(1), origin = origindate), '%d %b')
-		axis(1, at = axTicks(1), labels = xaxlab, font = axis.font)
+		axis(1, at = axTicks(1), labels = xaxlab, font = axis.font, cex.axis = 1.5)
 		line <- 2
 	}else{
-		axis(1, at = axTicks(1), font = axis.font)
+		axis(1, at = axTicks(1), font = axis.font, cex.axis = 1.5)
 		line <- 3
 	}	
 	mtext(xlab, side = 1, line = line)
 	if(!is.null(sub)) mtext(sub, side = 1, line = line+1, font = 3, cex = 0.8)
 
 	yaxlab <- paste0(axTicks(2), "%")
-	axis(2, at = axTicks(2), labels = yaxlab, las = 2, font = axis.font)
-	mtext("Probability of Exceeding", side = 2, line = 3)
+	axis(2, at = axTicks(2), labels = yaxlab, las = 2, font = axis.font, cex.axis = 1.5)
+	mtext("Probability of Exceeding", side = 2, line = 4)
 
 	if(length(dat) > 1){
 		fn0 <- ecdf(dat)
@@ -422,10 +466,17 @@ picsa.plot.proba.ENSO <- function(dat, oni, origindate = NULL, sub = NULL, xlab 
 
 	op <- par(mar = c(0, 0, 0, 0))
 	plot.new()
-	legend("top", "groups", legend = c('All years', 'La Niña', 'Neutral', 'El Niño'),
+	legend("center", "groups", legend = c('All years', 'La Niña', 'Neutral', 'El Niño'),
 			col = c(col.all$line, col.nina$line, col.neutre$line, col.nino$line),
-			lwd = 2, lty = 1, pch = 21, horiz = TRUE, 
+			lwd = 2, lty = 1, pch = 21, horiz = TRUE, cex = 1.2,
 			pt.bg = c(col.all$points, col.nina$points, col.neutre$points, col.nino$points))
+	par(op)
+
+	op <- par(mar = c(1, 6, 0, 2.1))
+	plot(1, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '')
+	bbx <- par("usr")
+	rect(bbx[1], bbx[3], bbx[2], bbx[4], col = "ghostwhite")
+	text(1, 1, title, cex = 1.5, font = 2)
 	par(op)
 }
 

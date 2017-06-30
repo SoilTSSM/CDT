@@ -327,10 +327,7 @@ mergeOneDekadRain <- function(){
 				locations.stn$res <- locations.stn$stn - locations.stn$rfe
 			}
 			
-			############
 			locations.stn <- locations.stn[!is.na(locations.stn$res), ]
-			# extrm <- quantile(locations.stn$res, probs = c(0.0001, 0.9999))
-			# locations.stn <- locations.stn[locations.stn$res > extrm[1] & locations.stn$res < extrm[2], ]
 		}else do.merging <- FALSE
 
 		############
@@ -372,7 +369,7 @@ mergeOneDekadRain <- function(){
 				iadd <- iadd & (dst >= maxdist)
 				if(use.RnoR){
 					dst.grd <- sqrt((xstn$lon[k]-coords.grd$lon)^2+(xstn$lat[k]-coords.grd$lat)^2)*sqrt(2)
-					irnr <- irnr & (dst.grd >= maxdist)
+					irnr <- irnr & (dst.grd >= maxdist.RnoR)
 				}
 			}
 

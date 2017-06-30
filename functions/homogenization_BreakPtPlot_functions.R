@@ -159,7 +159,7 @@ plotCPTFun <- function(ReturnExecResults, stat.fun, replotBreak){
 		vgrid <- seq(as.Date(paste(format(dkdates[1], '%Y'), 1, 1, sep = '-')),
 					as.Date(paste(format(dkdates[length(dkx)], '%Y'), 12, 31, sep = '-'))+1, 'year')
 
-		layout(matrix(1:2, ncol = 1), widths = 1, heights = c(1,1), respect = FALSE)
+		layout(matrix(1:2, ncol = 1), widths = 1, heights = c(1, 1), respect = FALSE)
 		op <- par(mar = c(0, 4, 2, 2))
 		plot(modates, mox, type = 'n', xaxt = 'n', ylab = 'Monthly', xlim = xlim)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")

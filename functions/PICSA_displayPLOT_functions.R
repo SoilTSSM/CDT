@@ -6,53 +6,65 @@ PICSA.plotTSMaps <- function(ocrds){
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Onset"){
 		don <- EnvPICSA$output$Onset.nb[EnvPICSA$index$onsetYear == iyear, ]
 		texta <- NULL
+		title <- "Starting dates of the rainy season"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation"){
 		don <- EnvPICSA$output$Cessation.nb[EnvPICSA$index$cessatYear == iyear, ]
 		texta <- NULL
+		title <- "Ending dates of the rainy season"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Season Length"){
 		don <- EnvPICSA$output$SeasonLength[EnvPICSA$index$onsetYear == iyear, ]
-		texta <- 'Season length (days)'
+		texta <- 'Number of Days'
+		title <- "Length of the rainy season"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Seasonal Rainfall Amounts"){
 		don <- EnvPICSA$picsa$RainTotal[EnvPICSA$index$onsetYear == iyear, ]
-		texta <- 'Seasonal Rainfall Amount (mm)'
+		texta <- 'Rainfall Amount (mm)'
+		title <- "Seasonal rainfall amounts"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Dry Spells"){
 		don <- EnvPICSA$picsa$AllDrySpell[EnvPICSA$index$onsetYear == iyear, ]
 		drydef <- as.numeric(str_trim(tclvalue(tkget(EnvPICSAplot$spin.TsMap.dryspell))))
 		don <- sapply(don, function(x) sum(x >= drydef))
 		texta <- paste0('Number of Dry Spells', '\n', "Dry spells - ", drydef, " or more consecutive days")
+		title <- "Dry Spells"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Longest Dry Spell"){
 		don <- EnvPICSA$picsa$AllDrySpell[EnvPICSA$index$onsetYear == iyear, ]
 		don <- sapply(don, max)
-		texta <- 'Longest dry spell (days)'
+		texta <- 'Number of Days'
+		title <- "Longest dry spell"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Number of rain day"){
 		don <- EnvPICSA$picsa$nbdayrain[EnvPICSA$index$onsetYear == iyear, ]
-		texta <- 'Number of rainy days (days)'
+		texta <- 'Number of Days'
+		title <- "Seasonal number of rainy days"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Maximum daily rain"){
 		don <- EnvPICSA$picsa$max24h[EnvPICSA$index$onsetYear == iyear, ]
-		texta <- 'Seasonal maximum daily rainfall depth (mm)'
+		texta <- 'Rainfall Depth (mm)'
+		title <- 'Seasonal maximum of daily rainfall'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Total rain when RR>95thPerc"){
 		don <- EnvPICSA$picsa$TotalQ95th[EnvPICSA$index$onsetYear == iyear, ]
-		texta <- 'Seasonal total of precipitation\nwhen RR > 95th percentile (days)'
+		texta <- 'Rainfall Amount (mm)'
+		title <- 'Seasonal total of precipitation when RR > 95th percentile'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Nb of day when RR>95thPerc"){
 		don <- EnvPICSA$picsa$NbQ95th[EnvPICSA$index$onsetYear == iyear, ]
-		texta <- 'Seasonal count of days when\nRR > 95th percentile (days)'
+		texta <- 'Number of Days'
+		title <- 'Seasonal count of days when RR > 95th percentile'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Maximum temperature"){
 		don <- EnvPICSA$picsa$tmax[EnvPICSA$index$onsetYear == iyear, ]
-		texta <- 'Seasonal average maximum temperature (°C)'
+		texta <- 'Temperature (°C)'
+		title <- 'Seasonal average maximum temperature'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Minimum temperature"){
 		don <- EnvPICSA$picsa$tmin[EnvPICSA$index$onsetYear == iyear, ]
-		texta <- 'Seasonal average minimum temperature (°C)'
+		texta <- 'Temperature (°C)'
+		title <- 'Seasonal average minimum temperature'
 	}
 
 	#################
@@ -106,11 +118,9 @@ PICSA.plotTSMaps <- function(ocrds){
 	axlabs <- axlabsFun(axTicks(1), axTicks(2))
 	axis(side = 1, at = axTicks(1), labels = axlabs$xaxl, tcl = -0.2, cex.axis = 0.8)
 	axis(side = 2, at = axTicks(2), labels = axlabs$yaxl, tcl = -0.2, las = 1, cex.axis = 0.8)
+	title(main = title, cex.main = 1, font.main= 2)
 
 	if(length(xna) > 0) points(xna, yna, pch = '*')
-	# image.plot(don, breaks = breaks, col = kolor, lab.breaks = legendLabel, horizontal = horizontal,
-	# 			xaxt = 'n', yaxt = 'n', add = TRUE, legend.mar = legend.mar, legend.width = legend.width,
-	# 			legend.args = legend.args, axis.args = list(cex.axis = 0.5, font = 2, col.axis = 4))
 	image.plot(don, breaks = breaks, col = kolor, horizontal = horizontal, xaxt = 'n', yaxt = 'n', add = TRUE,
 				legend.mar = legend.mar, legend.width = legend.width, legend.args = legend.args,
 				axis.args = list(at = breaks, labels = legendLabel, cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
@@ -351,6 +361,7 @@ PICSA.plotTSGraph <- function(){
 				ylab <- ''
 				sub <- NULL
 				theoretical <- FALSE
+				title <- "Starting dates of the rainy season"
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation"){
 				don <- EnvPICSA$output$Cessation.nb[, ixy]
@@ -358,6 +369,7 @@ PICSA.plotTSGraph <- function(){
 				ylab <- ''
 				sub <- NULL
 				theoretical <- FALSE
+				title <- "Ending dates of the rainy season"
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Season Length"){
 				don <- EnvPICSA$output$SeasonLength[, ixy]
@@ -365,6 +377,7 @@ PICSA.plotTSGraph <- function(){
 				ylab <- 'Number of Days'
 				sub <- NULL
 				theoretical <- TRUE
+				title <- "Length of the rainy season"
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Seasonal Rainfall Amounts"){
 				don <- EnvPICSA$picsa$RainTotal[, ixy]
@@ -372,6 +385,7 @@ PICSA.plotTSGraph <- function(){
 				ylab <- 'Rainfall Amount (mm)'
 				sub <- NULL
 				theoretical <- TRUE
+				title <- "Seasonal rainfall amounts"
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Dry Spells"){
 				don <- EnvPICSA$picsa$AllDrySpell[, ixy]
@@ -381,42 +395,48 @@ PICSA.plotTSGraph <- function(){
 				ylab <- 'Number of Dry Spells'
 				sub <- paste("Dry spells -", drydef, "or more consecutive days")
 				theoretical <- FALSE
+				title <- "Dry Spells"
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Longest Dry Spell"){
 				don <- EnvPICSA$picsa$AllDrySpell[, ixy]
 				don <- sapply(don, max)
 				xlab <- 'Year'
-				ylab <- 'Longest dry spell (days)'
+				ylab <- 'Number of Days'
 				sub <- NULL
 				theoretical <- FALSE
+				title <- "Longest dry spell"
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Number of rain day"){
 				don <- EnvPICSA$picsa$nbdayrain[, ixy]
 				xlab <- 'Year'
-				ylab <- 'Number of rainy days (days)'
+				ylab <- 'Number of Days'
 				sub <- NULL
 				theoretical <- TRUE
+				title <- "Seasonal number of rainy days"
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Maximum daily rain"){
 				don <- EnvPICSA$picsa$max24h[, ixy]
 				xlab <- 'Year'
-				ylab <- 'Seasonal maximum daily rainfall depth (mm)'
+				ylab <- 'Rainfall Depth (mm)'
 				sub <- NULL
 				theoretical <- FALSE
+				title <- 'Seasonal maximum of daily rainfall'
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Total rain when RR>95thPerc"){
 				don <- EnvPICSA$picsa$TotalQ95th[, ixy]
 				xlab <- 'Year'
-				ylab <- 'Seasonal total of precipitation\nwhen RR > 95th percentile (days)'
+				ylab <- 'Rainfall Amount (mm)'
 				sub <- NULL
 				theoretical <- FALSE
+				title <- 'Seasonal total of precipitation when RR > 95th percentile'
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Nb of day when RR>95thPerc"){
 				don <- EnvPICSA$picsa$NbQ95th[, ixy]
 				xlab <- 'Year'
-				ylab <- 'Seasonal count of days when\nRR > 95th percentile (days)'
+				ylab <- 'Number of Days'
 				sub <- NULL
 				theoretical <- FALSE
+				title <- 'Seasonal count of days when RR > 95th percentile'
 			}
 
 			####
@@ -437,7 +457,7 @@ PICSA.plotTSGraph <- function(){
 				plt.terc <- if(tclvalue(EnvPICSAplot$tercileTSp) == "1") TRUE else FALSE
 				plt.trd <- if(tclvalue(EnvPICSAplot$trendTSp) == "1") TRUE else FALSE
 				picsa.plot.line(xaxe, don, origindate = origindate, 
-								sub = sub, xlab = xlab, ylab = ylab,
+								sub = sub, xlab = xlab, ylab = ylab, title = title,
 								mean = plt.avg, tercile = plt.terc, linear = plt.trd,
 								col = list(line = "red", points = "blue"), axis.font = 1, start.zero = FALSE,
 								col.add = list(mean = "black", tercile1 = "green", tercile2 = "blue", linear = "purple3"))
@@ -445,13 +465,13 @@ PICSA.plotTSGraph <- function(){
 
 			if(str_trim(tclvalue(EnvPICSAplot$typeTSp)) == "Barplot"){
 				picsa.plot.bar(xaxe, don, origindate = origindate,
-								sub = sub, xlab = xlab, ylab = ylab,
+								sub = sub, xlab = xlab, ylab = ylab, title = title,
 								barcol = "darkblue", axis.font = 1, start.zero = FALSE)
 			}
 
 			if(str_trim(tclvalue(EnvPICSAplot$typeTSp)) == "Probability"){
-				picsa.plot.proba(don, origindate = origindate, sub = sub, xlab = ylab, axis.font = 1,
-								theoretical = theoretical,  gof.c = "ad",
+				picsa.plot.proba(don, origindate = origindate, sub = sub, xlab = ylab, title = title,
+								 axis.font = 1, theoretical = theoretical,  gof.c = "ad",
 								distr = c("norm", "snorm", "lnorm", "gamma", "weibull"),
 								col = list(line = "blue", points = "lightblue", prob = "black"))
 			}
@@ -471,7 +491,7 @@ PICSA.plotTSGraph <- function(){
 				plt.terc <- if(tclvalue(EnvPICSAplot$tercileTSp) == "1") TRUE else FALSE
 				plt.trd <- if(tclvalue(EnvPICSAplot$trendTSp) == "1") TRUE else FALSE
 				picsa.plot.line.ENSO(xaxe, don, oni, origindate = origindate, 
-								sub = sub, xlab = xlab, ylab = ylab,
+								sub = sub, xlab = xlab, ylab = ylab, title = title,
 								mean = plt.avg, tercile = plt.terc, linear = plt.trd,
 								axis.font = 1, start.zero = FALSE,
 								col = list(line = "black", points = c("blue", "gray", "red")),
@@ -480,12 +500,13 @@ PICSA.plotTSGraph <- function(){
 
 			if(str_trim(tclvalue(EnvPICSAplot$typeTSp)) == "ENSO-Barplot"){
 				picsa.plot.bar.ENSO(xaxe, don, oni, origindate = origindate,
-								sub = sub, xlab = xlab, ylab = ylab,
+								sub = sub, xlab = xlab, ylab = ylab, title = title,
 								barcol = c("blue", "gray", "red"), axis.font = 1, start.zero = FALSE)
 			}
 
 			if(str_trim(tclvalue(EnvPICSAplot$typeTSp)) == "ENSO-Proba"){
-				picsa.plot.proba.ENSO(don, oni, origindate = origindate, sub = sub, xlab = ylab, axis.font = 1,
+				picsa.plot.proba.ENSO(don, oni, origindate = origindate, sub = sub, xlab = ylab,
+									title = title, axis.font = 1,
 									col.all = list(line = "black", points = "lightgray"),
 									col.nino = list(line = "red", points = "lightpink"),
 									col.nina = list(line = "blue", points = "lightblue"),

@@ -2,7 +2,7 @@ aboutCDT <- function(){
 	tt <- tktoplevel()
 	tkgrab.set(tt)
 	tkfocus(tt)
-	
+
 	font1 <- tkfont.create(family = "times", size = 20, weight = "bold")
 	font2 <- tkfont.create(family = "times", size = 12, weight = "bold")
 	font3 <- tkfont.create(family = "times", size = 12, underline = TRUE)
@@ -52,11 +52,11 @@ aboutCDT <- function(){
 	yscr <- tkscrollbar(fr3a, repeatinterval = 5, command = function(...)tkyview(txta,...))
 	txta <- tktext(fr3a, bg = "white", font = "courier", xscrollcommand = function(...)tkset(xscr,...),
 	yscrollcommand = function(...)tkset(yscr,...), wrap = "word", height = 8, width = 37)
-		 
+
 	tkgrid(txta, yscr)
 	tkgrid.configure(txta, sticky = "nsew")
 	tkgrid.configure(yscr, sticky = "ns")
-	
+
 	tktag.configure(txta, "font2f", font = font2, foreground = 'blue')
 	tktag.configure(txta, "font4f", font = font4)
 
@@ -74,7 +74,7 @@ aboutCDT <- function(){
 		tkgrab.release(tt)
 		tkdestroy(tt)
 		tkfocus(main.win)
-	})	
+	})
 
 	tkwm.withdraw(tt)
 	tcl('update')
@@ -90,4 +90,4 @@ aboutCDT <- function(){
 	tkfocus(tt)
 	tkbind(tt, "<Destroy>", function() {tkgrab.release(tt); tkfocus(main.win)})
 	tkwait.window(tt)
-}	
+}

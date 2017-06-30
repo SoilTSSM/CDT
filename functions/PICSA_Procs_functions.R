@@ -1157,17 +1157,17 @@ PICSAProcs <- function(GeneralParameters){
 
 			### Rainfall amounts ENSO line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount.ENSO_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line.ENSO(yrsOnset, RainTotal[, j], oni.idx, xlab = 'Year', ylab = 'Rainfall Amount (mm)', axis.font = 2, start.zero = TRUE)
+			picsa.plot.line.ENSO(yrsOnset, RainTotal[, j], oni.idx, xlab = 'Year', ylab = 'Rainfall Amount (mm)', title = "Seasonal rainfall amounts", axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			### Rainfall amounts ENSO bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount.ENSO_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.bar.ENSO(yrsOnset, RainTotal[, j], oni.idx, xlab = 'Year', ylab = 'Rainfall Amount (mm)', axis.font = 2, start.zero = TRUE)
+			picsa.plot.bar.ENSO(yrsOnset, RainTotal[, j], oni.idx, xlab = 'Year', ylab = 'Rainfall Amount (mm)', title = "Seasonal rainfall amounts", axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			### Rainfall amounts ENSO prob
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount.ENSO_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.proba.ENSO(RainTotal[, j], oni.idx, xlab = 'Rainfall Amount (mm)', axis.font = 2)
+			picsa.plot.proba.ENSO(RainTotal[, j], oni.idx, xlab = 'Rainfall Amount (mm)', title = "Seasonal rainfall amounts", axis.font = 2)
 			dev.off()
 
 			### daily rainfall
@@ -1177,145 +1177,146 @@ PICSAProcs <- function(GeneralParameters){
 
 			### Onset
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_onset', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, matOnset[, j], origindate = onsetXS, axis.font = 2, start.zero = TRUE)
+			picsa.plot.line(yrsOnset, matOnset[, j], origindate = onsetXS, title = "Starting dates of the rainy season", axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			### Onset1
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_onset1', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, matOnset[, j], origindate = onsetXS,
+			picsa.plot.line(yrsOnset, matOnset[, j], origindate = onsetXS, title = "Starting dates of the rainy season",
 							mean = TRUE, tercile = TRUE, axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			### Cessation
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_cessation', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsCesst, matCessat[, j], origindate = cessatXS, axis.font = 2, start.zero = TRUE)
+			picsa.plot.line(yrsCesst, matCessat[, j], origindate = cessatXS, title = "Ending dates of the rainy season", axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			### Cessation1
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_cessation1', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsCesst, matCessat[, j], origindate = cessatXS,
+			picsa.plot.line(yrsCesst, matCessat[, j], origindate = cessatXS, title = "Ending dates of the rainy season",
 							mean = TRUE, tercile = TRUE, axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			### Length of season
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_Length.of.season', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			picsa.plot.line(yrsOnset, season.length[, j], xlab = 'Year', ylab = 'Number of Days',
-							axis.font = 2, start.zero = TRUE)
+							title = "Length of the rainy season", axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			### Length of season1
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_Length.of.season', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			picsa.plot.line(yrsOnset, season.length[, j], xlab = 'Year', ylab = 'Number of Days',
-								mean = TRUE, tercile = TRUE, axis.font = 2, start.zero = TRUE)
+							title = "Length of the rainy season", mean = TRUE, tercile = TRUE, axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			### Rainfall amounts line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount_line1', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			picsa.plot.line(yrsOnset, RainTotal[, j], xlab = 'Year', ylab = 'Rainfall Amount (mm)',
-								axis.font = 2, start.zero = TRUE)
+							title = "Seasonal rainfall amounts", axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			### Rainfall amounts line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount_line2', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			picsa.plot.line(yrsOnset, RainTotal[, j], xlab = 'Year', ylab = 'Rainfall Amount (mm)',
-								mean = TRUE, tercile = TRUE, axis.font = 2, start.zero = TRUE)
+							title = "Seasonal rainfall amounts", mean = TRUE, tercile = TRUE, axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			### Rainfall amounts bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.bar(yrsOnset, RainTotal[, j], xlab = 'Year', ylab = 'Rainfall Amount (mm)', axis.font = 2, start.zero = TRUE)
+			picsa.plot.bar(yrsOnset, RainTotal[, j], xlab = 'Year', ylab = 'Rainfall Amount (mm)',
+							title = "Seasonal rainfall amounts", axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			### Rainfall amounts prob
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.proba(RainTotal[, j], xlab = "Rainfall Amount (mm)", theoretical = TRUE, axis.font = 2)
+			picsa.plot.proba(RainTotal[, j], xlab = "Rainfall Amount (mm)", title = "Seasonal rainfall amounts", theoretical = TRUE, axis.font = 2)
 			dev.off()
 
 			## Dry Spell 5 line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.5days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			picsa.plot.line(yrsOnset, DrySpell5, sub = "Dry spells - 5 or more consecutive days", xlab = 'Year',
-							ylab = 'Number of Dry Spells', axis.font = 2, start.zero = TRUE)
+							ylab = 'Number of Dry Spells', title = "Dry Spells", axis.font = 2, start.zero = TRUE)
 			dev.off()
 			## Dry Spell 5 bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.5days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			picsa.plot.bar(yrsOnset, DrySpell5, sub = "Dry spells - 5 or more consecutive days", xlab = 'Year', ylab = 'Number of Dry Spells',
-							barcol = "slateblue4", axis.font = 2, start.zero = TRUE)
+							title = "Dry Spells", barcol = "slateblue4", axis.font = 2, start.zero = TRUE)
 			dev.off()
 			## Dry Spell 5 ecdf
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.5days_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.proba(DrySpell5,  sub = "Dry spells - 5 or more consecutive days", xlab = "Number of Dry Spells", axis.font = 2)
+			picsa.plot.proba(DrySpell5, sub = "Dry spells - 5 or more consecutive days", xlab = "Number of Dry Spells", title = "Dry Spells", axis.font = 2)
 			dev.off()
 
 			## Dry Spell 7 line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.7days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			picsa.plot.line(yrsOnset, DrySpell7, sub = "Dry spells - 7 or more consecutive days", xlab = 'Year',
-								ylab = 'Number of Dry Spells', axis.font = 2, start.zero = TRUE)
+							ylab = 'Number of Dry Spells', title = "Dry Spells", axis.font = 2, start.zero = TRUE)
 			dev.off()
 			## Dry Spell 7 bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.7days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			picsa.plot.bar(yrsOnset, DrySpell7, sub = "Dry spells - 7 or more consecutive days", xlab = 'Year', ylab = 'Number of Dry Spells',
-							barcol = "slateblue4", axis.font = 2, start.zero = TRUE)
+							title = "Dry Spells", barcol = "slateblue4", axis.font = 2, start.zero = TRUE)
 			dev.off()
 			## Dry Spell 7 ecdf
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.7days_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.proba(DrySpell7,  sub = "Dry spells - 7 or more consecutive days", xlab = "Number of Dry Spells", axis.font = 2)
+			picsa.plot.proba(DrySpell7, sub = "Dry spells - 7 or more consecutive days", xlab = "Number of Dry Spells", title = "Dry Spells", axis.font = 2)
 			dev.off()
 
 			## Dry Spell 10 line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.10days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			picsa.plot.line(yrsOnset, DrySpell10, sub = "Dry spells - 10 or more consecutive days", xlab = 'Year',
-								ylab = 'Number of Dry Spells', axis.font = 2, start.zero = TRUE)
+							ylab = 'Number of Dry Spells', title = "Dry Spells", axis.font = 2, start.zero = TRUE)
 			dev.off()
 			## Dry Spell 10 bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.10days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			picsa.plot.bar(yrsOnset, DrySpell10, sub = "Dry spells - 10 or more consecutive days", xlab = 'Year', ylab = 'Number of Dry Spells',
-							barcol = "slateblue4", axis.font = 2, start.zero = TRUE)
+							title = "Dry Spells", barcol = "slateblue4", axis.font = 2, start.zero = TRUE)
 			dev.off()
 			## Dry Spell 10 ecdf
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.10days_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.proba(DrySpell10,  sub = "Dry spells - 10 or more consecutive days", xlab = "Number of Dry Spells", axis.font = 2)
+			picsa.plot.proba(DrySpell10, sub = "Dry spells - 10 or more consecutive days", xlab = "Number of Dry Spells", title = "Dry Spells", axis.font = 2)
 			dev.off()
 
 			## longest dry spell line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_longest.dry.spell_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, DrySpellMax, xlab = 'Year', ylab = 'Longest dry spell (days)',
-								mean = TRUE, axis.font = 2, start.zero = TRUE)
+			picsa.plot.line(yrsOnset, DrySpellMax, xlab = 'Year', ylab = 'Number of Days',
+							title = "Longest dry spell", mean = TRUE, axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			## longest dry spell bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_longest.dry.spell_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.bar(yrsOnset, DrySpellMax, xlab = 'Year', ylab = 'Longest dry spell (days)',
-							axis.font = 2, start.zero = TRUE)
+			picsa.plot.bar(yrsOnset, DrySpellMax, xlab = 'Year', ylab = 'Number of Days',
+							title = "Longest dry spell", axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			## Rainy days line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainy.days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, nbdayrain[, j], xlab = 'Year', ylab = 'Number of rainy days (days)',
+			picsa.plot.line(yrsOnset, nbdayrain[, j], xlab = 'Year', ylab = 'Number of Days', title = "Seasonal number of rainy days",
 								col = list(line = 'darkgreen', points = "lightblue"), mean = TRUE, axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			## Rainy days bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainy.days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.bar(yrsOnset, nbdayrain[, j], xlab = 'Year', ylab = 'Number of rainy days (days)',
+			picsa.plot.bar(yrsOnset, nbdayrain[, j], xlab = 'Year', ylab = 'Number of Days', title = "Seasonal number of rainy days",
 							barcol = "darkgreen", axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			## max 24h line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_max.1-day.precip_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, max24h[, j], xlab = 'Year', ylab = 'Seasonal maximum 1-day precipitation (mm)',
+			picsa.plot.line(yrsOnset, max24h[, j], xlab = 'Year', ylab = 'Rainfall Depth (mm)', title = 'Seasonal maximum of daily rainfall',
 							 col = list(line = 'turquoise4', points = "lightblue"), mean = TRUE, axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			## max 24h bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_max.1-day.precip_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.bar(yrsOnset, max24h[, j], xlab = 'Year', ylab = 'Seasonal maximum 1-day precipitation (mm)',
+			picsa.plot.bar(yrsOnset, max24h[, j], xlab = 'Year', ylab = 'Rainfall Depth (mm)', title = 'Seasonal maximum of daily rainfall',
 							barcol = "turquoise4", axis.font = 2, start.zero = TRUE)
 			dev.off()
 
 			## Number of rainy days above 95th percentile line
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_nb.precip.gt.95th.perc_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			op <- par(mar = c(5.1, 5.1, 3.1, 2.1))
-			picsa.plot.line(yrsOnset, NbQ95th[, j], xlab = 'Year', ylab = 'Seasonal count of days when\nRR > 95th percentile (days)',
+			picsa.plot.line(yrsOnset, NbQ95th[, j], xlab = 'Year', ylab = 'Number of Days', title = 'Seasonal count of days when RR > 95th percentile',
 								col = list(line = 'darkgreen', points = "lightblue"), mean = TRUE, axis.font = 2, start.zero = TRUE)
 			par(op)
 			dev.off()
@@ -1323,15 +1324,15 @@ PICSAProcs <- function(GeneralParameters){
 			## Number of rainy days above 95th percentile bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_nb.precip.gt.95th.perc_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			op <- par(mar = c(5.1, 5.1, 3.1, 2.1))
-			picsa.plot.bar(yrsOnset, NbQ95th[, j], xlab = 'Year', ylab = 'Seasonal count of days when\nRR > 95th percentile (days)',
-						barcol = "darkgreen", axis.font = 2, start.zero = TRUE)
+			picsa.plot.bar(yrsOnset, NbQ95th[, j], xlab = 'Year', ylab = 'Number of Days', title = 'Seasonal count of days when RR > 95th percentile',
+							barcol = "darkgreen", axis.font = 2, start.zero = TRUE)
 			par(op)
 			dev.off()
 
 			## Seasonal total of rain above 95th percentile bar
 			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_total.precip.gt.95th.perc_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 			op <- par(mar = c(5.1, 5.1, 3.1, 2.1))
-			picsa.plot.bar(yrsOnset, TotalQ95th[, j], xlab = 'Year', ylab = 'Seasonal total of precipitation\nwhen RR > 95th percentile (days)',
+			picsa.plot.bar(yrsOnset, TotalQ95th[, j], xlab = 'Year', ylab = 'Rainfall Amount (mm)', title = 'Seasonal total of precipitation when RR > 95th percentile',
 							barcol = "darkgreen", axis.font = 2, start.zero = TRUE)
 			par(op)
 			dev.off()
