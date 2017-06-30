@@ -869,17 +869,13 @@ PICSAProcs <- function(GeneralParameters){
 
 	##################
 
-	onset <- foreach(jj = seq_along(onset.idx), .packages = "matrixStats",
-					 .export = toExport) %parLoop% {
-		onsetDectection(onset.idx[[jj]], DATA = cdtPrecip$data,
-						dates = cdtPrecip$dates, pars = onset.pars, min.frac = 0.99)
+	onset <- foreach(jj = seq_along(onset.idx), .packages = "matrixStats", .export = toExport) %parLoop% {
+		onsetDectection(onset.idx[[jj]], DATA = cdtPrecip$data, dates = cdtPrecip$dates, pars = onset.pars, min.frac = 0.99)
 	}
 	onset <- do.call(rbind, onset)
 
-	cessat <- foreach(jj = seq_along(cess.idx), .packages = "matrixStats",
-					 .export = toExport) %parLoop% {
-		cessationDectection(cess.idx[[jj]], Precip = cdtPrecip$data, ETP = cdtETP$data,
-						dates = cdtPrecip$dates, pars = cess.pars, min.frac = 0.99)
+	cessat <- foreach(jj = seq_along(cess.idx), .packages = "matrixStats", .export = toExport) %parLoop% {
+		cessationDectection(cess.idx[[jj]], Precip = cdtPrecip$data, ETP = cdtETP$data, dates = cdtPrecip$dates, pars = cess.pars, min.frac = 0.99)
 	}
 	cessat <- do.call(rbind, cessat)
 

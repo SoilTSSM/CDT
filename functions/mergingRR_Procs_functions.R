@@ -361,6 +361,11 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 			extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
 			locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
+			if(any(is.auxvar) & interp.method != 'NN'){
+				locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
+				locations.stn <- locations.stn[Reduce("&", locations.df), ]
+			}
+
 			if(length(locations.stn$pars) >= 1 & any(locations.stn$pars != 1)){
 				if(interp.method == 'Kriging'){
 					vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
@@ -449,6 +454,11 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
 				extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.99))
 				locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
+
+				if(any(is.auxvar) & interp.method != 'NN'){
+					locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
+					locations.stn <- locations.stn[Reduce("&", locations.df), ]
+				}
 				if(length(locations.stn$pars) < min.stn) return(NULL)
 
 				if(interp.method == 'Kriging'){
@@ -495,7 +505,8 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 					locations.stn <- locations.stn[!duplicated(locations.stn[, c('lon', 'lat')]), ]
 					coordinates(locations.stn) <- ~lon+lat
 					if(any(is.auxvar)){
-						locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+						locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
+						locations.stn <- locations.stn[Reduce("&", locations.df), ]
 						block <- NULL
 					}else block <- bGrd
 					pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
@@ -531,7 +542,12 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 				locations.rfe <- locations.rfe[locations.rfe$pars > extrm[1] & locations.rfe$pars < extrm[2], ]
 				locations.rfe <- remove.duplicates(locations.rfe)
 
-				if(any(is.auxvar) & interp.method != 'NN') locations.rfe <- locations.rfe[Reduce("&", as.data.frame(!is.na(locations.rfe@data[, auxvar[is.auxvar]]))), ]
+				if(any(is.auxvar) & interp.method != 'NN'){
+					locations.df <- as.data.frame(!is.na(locations.rfe@data[, auxvar[is.auxvar]]))
+					locations.rfe <- locations.rfe[Reduce("&", locations.df), ]
+				}
+				if(length(locations.rfe$pars) < min.stn) return(NULL)
+
 				if(interp.method == 'Kriging'){
 					vgm <- try(autofitVariogram(formule, input_data = locations.rfe, model = vgm.model, cressie = TRUE), silent = TRUE)
 					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -1124,12 +1140,13 @@ ComputeLMCoefRain <- function(comptLMparams){
 			xcoef <- model.coef[[jc]]
 			locations.stn$pars <- xcoef[as.numeric(rownames(xcoef)) == m, ]
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
-			if(length(locations.stn$pars) < min.stn) return(NULL)
 
 			if(any(is.auxvar) & interp.method != 'NN'){
 				locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
 				locations.stn <- locations.stn[Reduce("&", locations.df), ]
 			}
+			if(length(locations.stn$pars) < min.stn) return(NULL)
+
 			if(interp.method == 'Kriging'){
 				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -1459,6 +1476,12 @@ MergingFunctionRain <- function(paramsMRG){
 			}
 
 			locations.stn <- locations.stn[!is.na(locations.stn$res), ]
+			############
+			if(any(is.auxvar)){
+				locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
+				locations.stn <- locations.stn[Reduce("&", locations.df), ]
+			}
+			if(length(locations.stn) < min.stn) do.merging <- FALSE
 		}else do.merging <- FALSE
 
 		############
@@ -1484,10 +1507,6 @@ MergingFunctionRain <- function(paramsMRG){
 			}
 
 			############
-			if(any(is.auxvar)){
-				locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
-				locations.stn <- locations.stn[Reduce("&", locations.df), ]
-			}
 			if(interp.method == 'Kriging'){
 				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL

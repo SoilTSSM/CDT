@@ -562,11 +562,12 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 			extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
 			locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
+			if(any(is.auxvar) & interp.method != 'NN'){
+				locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
+				locations.stn <- locations.stn[Reduce("&", locations.df), ]
+			}
+
 			if(length(locations.stn$pars) >= min.stn & any(locations.stn$pars != 1)){
-				if(any(is.auxvar) & interp.method != 'NN'){
-					locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
-					locations.stn <- locations.stn[Reduce("&", locations.df), ]
-				}
 				if(interp.method == 'Kriging'){
 					vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -652,6 +653,11 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 				locations.stn$pars <- bias.pars$pars.stn[[m]][, j]
 				locations.stn$pars[!bias.pars$pars.sw.stn[[m]]] <- NA
 				locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
+
+				if(any(is.auxvar) & interp.method != 'NN'){
+					locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
+					locations.stn <- locations.stn[Reduce("&", locations.df), ]
+				}
 				if(length(locations.stn$pars) < min.stn) return(NULL)
 
 				if(interp.method == 'Kriging'){
@@ -699,7 +705,8 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 					locations.stn <- locations.stn[!duplicated(locations.stn[, c('lon', 'lat')]), ]
 					coordinates(locations.stn) <- ~lon+lat
 					if(any(is.auxvar)){
-						locations.stn <- locations.stn[Reduce("&", as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))), ]
+						locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
+						locations.stn <- locations.stn[Reduce("&", locations.df), ]
 						block <- NULL
 					}else  block <- bGrd
 
@@ -733,7 +740,12 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 				locations.down <- locations.down[locations.down$pars > extrm[1] & locations.down$pars < extrm[2], ]
 				locations.down <- remove.duplicates(locations.down)
 
-				if(any(is.auxvar) & interp.method != 'NN') locations.down <- locations.down[Reduce("&", as.data.frame(!is.na(locations.down@data[, auxvar[is.auxvar]]))), ]
+				if(any(is.auxvar) & interp.method != 'NN'){
+					locations.df <- as.data.frame(!is.na(locations.down@data[, auxvar[is.auxvar]]))
+					locations.down <- locations.down[Reduce("&", locations.df), ]
+				}
+				if(length(locations.down$pars) < min.stn) return(NULL)
+
 				if(interp.method == 'Kriging'){
 					vgm <- try(autofitVariogram(formule, input_data = locations.down, model = vgm.model, cressie = TRUE), silent = TRUE)
 					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -1306,12 +1318,13 @@ ComputeLMCoefTemp <- function(comptLMparams){
 			xcoef <- model.coef[[jc]]
 			locations.stn$pars <- xcoef[as.numeric(rownames(xcoef)) == m, ]
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
-			if(length(locations.stn$pars) < min.stn) return(NULL)
 
 			if(any(is.auxvar) & interp.method != 'NN'){
 				locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
 				locations.stn <- locations.stn[Reduce("&", locations.df), ]
 			}
+			if(length(locations.stn$pars) < min.stn) return(NULL)
+
 			if(interp.method == 'Kriging'){
 				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
@@ -1582,15 +1595,17 @@ MergingFunctionTemp <- function(paramsMRG){
 			}
 			
 			locations.stn <- locations.stn[!is.na(locations.stn$res), ]
+			############
+			if(any(is.auxvar)){
+				locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
+				locations.stn <- locations.stn[Reduce("&", locations.df), ]
+			}
+			if(length(locations.stn) < min.stn) do.merging <- FALSE
 		}else do.merging <- FALSE
 
 		############
 
 		if(do.merging){
-			if(any(is.auxvar)){
-				locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
-				locations.stn <- locations.stn[Reduce("&", locations.df), ]
-			}
 			if(interp.method == 'Kriging'){
 				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
 				if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
