@@ -107,15 +107,8 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 							data.stn = data.stn, data.rfe = data.rfe.stn, date = date.bias)
 		rm(data.rfe.stn)
 	}else{
-		if(doparallel & length(months) >= 3){
-			klust <- makeCluster(nb_cores)
-			registerDoParallel(klust)
-			`%parLoop%` <- `%dopar%`
-			closeklust <- TRUE
-		}else{
-			`%parLoop%` <- `%do%`
-			closeklust <- FALSE
-		}
+		is.parallel <- doparallel(length(months) >= 3)
+		`%parLoop%` <- is.parallel$dofun
 
 		mplus.dekad.date <- function(daty){
 			dek1 <- as.character(daty)
@@ -164,7 +157,7 @@ ComputeMeanBiasRain <- function(comptMBiasparms){
 
 			list(stn = xstn, rfestn = xrfestn, rfe = xrfe)
 		}
-		if(closeklust) stopCluster(klust)
+		if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 		pars.Obs.Stn <- lapply(parsDistr, '[[', 1)
 		pars.Obs.rfe <- lapply(parsDistr, '[[', 2)
@@ -338,15 +331,10 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 	## interpolation
 	if(bias.method != 'Quantile.Mapping'){
 		itimes <- as.numeric(rownames(bias.pars))
-		if(doparallel & length(itimes) >= 3){
-			klust <- makeCluster(nb_cores)
-			registerDoParallel(klust)
-			`%parLoop%` <- `%dopar%`
-			closeklust <- TRUE
-		}else{
-			`%parLoop%` <- `%do%`
-			closeklust <- FALSE
-		}
+
+		is.parallel <- doparallel(length(itimes) >= 3)
+		`%parLoop%` <- is.parallel$dofun
+
 		packages <- c('sp', 'gstat', 'automap', 'ncdf4')
 		toExports <- c('bias.pars', 'itimes', 'interp.grid', 'interp.method', 'formule',
 						'auxvar', 'is.auxvar', 'min.stn', 'vgm.model', 'nmin', 'nmax', 'maxdist',
@@ -430,17 +418,12 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 			ncvar_put(nc2, grd.bs, grdbias)
 			nc_close(nc2)
 		}
-		if(closeklust) stopCluster(klust)
+		if(is.parallel$stop) stopCluster(is.parallel$cluster)
 	}else{
-		if(doparallel & length(months) >= 3){
-			klust <- makeCluster(nb_cores)
-			registerDoParallel(klust)
-			`%parLoop%` <- `%dopar%`
-			closeklust <- TRUE
-		}else{
-			`%parLoop%` <- `%do%`
-			closeklust <- FALSE
-		}
+
+		is.parallel <- doparallel(length(months) >= 3)
+		`%parLoop%` <- is.parallel$dofun
+
 		packages <- c('sp', 'gstat', 'automap')
 		toExports <- c('bias.pars', 'months', 'interp.grid', 'interp.method', 'vgm.model', 'formule',
 						'auxvar', 'is.auxvar', 'min.stn', 'nmin', 'nmax', 'maxdist', 'bGrd', 'create.grd', 'is.regridRFE')
@@ -571,7 +554,7 @@ InterpolateMeanBiasRain <- function(interpBiasparams){
 			names(pars.mon) <- c('prob', 'scale', 'shape')
 			pars.mon
 		}
-		if(closeklust) stopCluster(klust)
+		if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 		################
 
@@ -833,15 +816,8 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 
 	########
 
-	if(doparallel & length(rfeData$dates) >= 30){
-		klust <- makeCluster(nb_cores)
-		registerDoParallel(klust)
-		`%parLoop%` <- `%dopar%`
-		closeklust <- TRUE
-	}else{
-		`%parLoop%` <- `%do%`
-		closeklust <- FALSE
-	}
+	is.parallel <- doparallel(length(rfeData$dates) >= 30)
+	`%parLoop%` <- is.parallel$dofun
 
 	packages <- c('ncdf4', 'fields')
 	toExports <- c(toExports, 'rfeData', 'is.regridRFE', 'bias.method',
@@ -901,7 +877,7 @@ AjdMeanBiasRain <- function(adjMeanBiasparms){
 		nc_close(nc2)
 		return(0)
 	}
-	if(closeklust) stopCluster(klust)
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
 	rm(rfeData)
 	gc()
 	InsertMessagesTxt(main.txt.out, 'Bias Correction finished')
@@ -1121,15 +1097,9 @@ ComputeLMCoefRain <- function(comptLMparams){
 
 	##################
 
-	if(doparallel & length(months) >= 3){
-		klust <- makeCluster(nb_cores)
-		registerDoParallel(klust)
-		`%parLoop%` <- `%dopar%`
-		closeklust <- TRUE
-	}else{
-		`%parLoop%` <- `%do%`
-		closeklust <- FALSE
-	}
+	is.parallel <- doparallel(length(months) >= 3)
+	`%parLoop%` <- is.parallel$dofun
+
 	packages <- c('sp', 'gstat', 'automap')
 	toExports <- c('model.coef', 'months', 'interp.grid', 'interp.method', 'min.stn','formule',
 					'auxvar', 'is.auxvar', 'vgm.model', 'nmin', 'nmax', 'maxdist', 'bGrd', 'nlat0', 'nlon0')
@@ -1195,7 +1165,7 @@ ComputeLMCoefRain <- function(comptLMparams){
 		names(pars.mon) <- c('slope', 'intercept')
 		pars.mon
 	}
-	if(closeklust) stopCluster(klust)
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 	###########
 	grd.slope <- ncvar_def("slope", "", xy.dim, NA, longname= "Linear model Coef: Slope", prec = "float", compression = 9)
@@ -1248,15 +1218,8 @@ MergingFunctionRain <- function(paramsMRG){
 	if(is.null(ncInfo)) return(NULL)
 
 	#############
-	if(doparallel & length(which(ncInfo$exist)) >= 10){
-		klust <- makeCluster(nb_cores)
-		registerDoParallel(klust)
-		`%parLoop%` <- `%dopar%`
-		closeklust <- TRUE
-	}else{
-		`%parLoop%` <- `%do%`
-		closeklust <- FALSE
-	}
+	is.parallel <- doparallel(length(which(ncInfo$exist)) >= 10)
+	`%parLoop%` <- is.parallel$dofun
 
 	#############
 	freqData <- GeneralParameters$period
@@ -1377,7 +1340,7 @@ MergingFunctionRain <- function(paramsMRG){
 		existLMCfl <- file.exists(coefFiles)
 		if(any(!existLMCfl)){
 			for(i in which(!existLMCfl)) InsertMessagesTxt(main.txt.out, paste(coefFiles[i], "doesn't exist"), format = TRUE)
-			if(closeklust) stopCluster(klust)
+			if(is.parallel$stop) stopCluster(is.parallel$cluster)
 			return(NULL)
 		}
 		MODEL.COEF <- vector(mode = 'list', length = 12)
@@ -1404,7 +1367,7 @@ MergingFunctionRain <- function(paramsMRG){
 	ijGrd <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), list(lon = xlon, lat = xlat))
 
 	#############
-	packages <- c('ncdf4', 'gstat', 'automap')
+	packages <- c('ncdf4', 'gstat', 'automap', 'fields')
 	toExports <- c('ncInfo', 'smooth.matrix')
 	ret <- foreach(jj = seq_along(ncInfo$nc.files), .packages = packages, .export = toExports) %parLoop% {
 		if(ncInfo$exist[jj]){
@@ -1663,7 +1626,7 @@ MergingFunctionRain <- function(paramsMRG){
 		error.msg <- "Merged dekadal data not found"
 		dekInfo <- ncFilesInfo('dekadal', start.date1, end.date1, months, dekDir, dekfilefrmt, error.msg)
 		if(is.null(dekInfo)){
-			if(closeklust) stopCluster(klust)
+			if(is.parallel$stop) stopCluster(is.parallel$cluster)
 			return(NULL)
 		}
 		dekinfo <- data.frame(date = dekInfo$dates, exist = dekInfo$exist, file = dekInfo$nc.files)
@@ -1728,7 +1691,7 @@ MergingFunctionRain <- function(paramsMRG){
 		}
 	}
 
-	if(closeklust) stopCluster(klust)
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 	InsertMessagesTxt(main.txt.out, 'Merging finished')
 

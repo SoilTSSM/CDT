@@ -140,15 +140,9 @@ climatoAnalysisProcs <- function(GeneralParameters){
 
 		if(readNCDFdata){
 			InsertMessagesTxt(main.txt.out, 'Read netcdf data ...')
-			if(doparallel & length(filein0) >= 180){
-				klust <- makeCluster(nb_cores)
-				registerDoParallel(klust)
-				`%parLoop%` <- `%dopar%`
-				closeklust <- TRUE
-			}else{
-				`%parLoop%` <- `%do%`
-				closeklust <- FALSE
-			}
+
+			is.parallel <- doparallel(length(filein0) >= 180)
+			`%parLoop%` <- is.parallel$dofun
 
 			xo <- order(lon)
 			lon <- lon[xo]
@@ -166,7 +160,7 @@ climatoAnalysisProcs <- function(GeneralParameters){
 				}
 				vars
 			}
-			if(closeklust) stopCluster(klust)
+			if(is.parallel$stop) stopCluster(is.parallel$cluster)
 			InsertMessagesTxt(main.txt.out, 'Reading netcdf data finished')
 
 			xycrd <- expand.grid(lon, lat)

@@ -261,15 +261,8 @@ ExtractNC2Stn <- function(retValidParams){
 	date.stn1 <- date.stn[existFl]
 	data.stn1 <- data.stn[existFl, , drop = FALSE]
 
-	if(doparallel & length(rfeDataFl) >= 90){
-		klust <- makeCluster(nb_cores)
-		registerDoParallel(klust)
-		`%parLoop%` <- `%dopar%`
-		closeklust <- TRUE
-	}else{
-		`%parLoop%` <- `%do%`
-		closeklust <- FALSE
-	}
+	is.parallel <- doparallel(length(rfeDataFl) >= 90)
+	`%parLoop%` <- is.parallel$dofun
 
 	packages <- c('ncdf4')
 	toExports <- c('rfeDataFl', 'date.stn1', 'retValidParams', 'ijGrd')
@@ -292,7 +285,7 @@ ExtractNC2Stn <- function(retValidParams){
 		}
 		c(as.numeric(date.stn1[jfl]), rfe.val[ijGrd])
 	}
-	if(closeklust) stopCluster(klust)
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 	rfe_stn <- matrix(NA, nrow = length(date.stn1), ncol = length(lon.stn))
 	rfe_stn[match(as.character(ret[, 1]), date.stn1), ] <- ret[, -1]

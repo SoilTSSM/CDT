@@ -130,15 +130,8 @@ ComputeMeanBiasRain.validation <- function(comptMBiasparms){
 	}
 
 	if(bias.method == 'Quantile.Mapping'){
-		if(doparallel & length(months) >= 3){
-			klust <- makeCluster(nb_cores)
-			registerDoParallel(klust)
-			`%parLoop%` <- `%dopar%`
-			closeklust <- TRUE
-		}else{
-			`%parLoop%` <- `%do%`
-			closeklust <- FALSE
-		}
+		is.parallel <- doparallel(length(months) >= 3)
+		`%parLoop%` <- is.parallel$dofun
 
 		mplus.dekad.date <- function(daty){
 			dek1 <- as.character(daty)
@@ -195,7 +188,7 @@ ComputeMeanBiasRain.validation <- function(comptMBiasparms){
 			# # xrfe <- lapply(seq(ncol(xrfe)), function(j) fit.mixture.distr(xrfe[, j], min.len))
 			list(stn = xstn, rfestn = xrfestn, rfe = xrfe)
 		}
-		if(closeklust) stopCluster(klust)
+		if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 		pars.Obs.Stn <- lapply(parsDistr, '[[', 1)
 		pars.Obs.rfe <- lapply(parsDistr, '[[', 2)

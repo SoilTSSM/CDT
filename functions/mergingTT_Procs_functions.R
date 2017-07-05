@@ -88,15 +88,8 @@ GlmCoefDownscaling <- function(paramsGlmCoef){
 #################################################################################################
 
 ReanalysisDownscaling <- function(paramsDownscl){
-	if(doparallel & length(which(paramsDownscl$reanalData$exist)) >= 30){
-		klust <- makeCluster(nb_cores)
-		registerDoParallel(klust)
-		`%parLoop%` <- `%dopar%`
-		closeklust <- TRUE
-	}else{
-		`%parLoop%` <- `%do%`
-		closeklust <- FALSE
-	}
+	is.parallel <- doparallel(length(which(paramsDownscl$reanalData$exist)) >= 30)
+	`%parLoop%` <- is.parallel$dofun
 
 	###############
 	GeneralParameters <- paramsDownscl$GeneralParameters
@@ -234,7 +227,7 @@ ReanalysisDownscaling <- function(paramsDownscl){
 		ncvar_put(nc2, out.tt, downTT)
 		nc_close(nc2)
 	}
-	if(closeklust) stopCluster(klust)
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 	InsertMessagesTxt(main.txt.out, 'Downscaling  Reanalysis finished')
 	rm(demGrid, demStand, dem.reanl, interp.grid, ObjGrd, ObjStn)
@@ -351,15 +344,8 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 
 		rm(data.down.stn)
 	}else{
-		if(doparallel & length(months) >= 3){
-			klust <- makeCluster(nb_cores)
-			registerDoParallel(klust)
-			`%parLoop%` <- `%dopar%`
-			closeklust <- TRUE
-		}else{
-			`%parLoop%` <- `%do%`
-			closeklust <- FALSE
-		}
+		is.parallel <- doparallel(length(months) >= 3)
+		`%parLoop%` <- is.parallel$dofun
 
 		date.stn <- date.stn[istdt]
 		data.stn <- data.stn[istdt, , drop = FALSE]
@@ -379,7 +365,7 @@ ComputeMeanBiasTemp <- function(comptMBiasparms){
 			xdown <- lapply(seq(ncol(xdown)), function(j) fit.norm.temp(xdown[, j], min.len))
 			list(stn = xstn, downstn = xdownstn, down = xdown)
 		}
-		if(closeklust) stopCluster(klust)
+		if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 		pars.Obs.Stn <- lapply(parsDistr, '[[', 1)
 		pars.Obs.down <- lapply(parsDistr, '[[', 2)
@@ -539,15 +525,9 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 	## interpolation
 	if(bias.method != 'Quantile.Mapping'){
 		itimes <- as.numeric(rownames(bias.pars))
-		if(doparallel & length(itimes) >= 3){
-			klust <- makeCluster(nb_cores)
-			registerDoParallel(klust)
-			`%parLoop%` <- `%dopar%`
-			closeklust <- TRUE
-		}else{
-			`%parLoop%` <- `%do%`
-			closeklust <- FALSE
-		}
+		is.parallel <- doparallel(length(itimes) >= 3)
+		`%parLoop%` <- is.parallel$dofun
+
 		packages <- c('sp', 'gstat', 'automap', 'ncdf4')
 		toExports <- c('bias.pars', 'itimes', 'interp.grid', 'interp.method', 'formule', 'auxvar',
 						'is.auxvar', 'min.stn', 'vgm.model', 'nmin', 'nmax', 'maxdist',
@@ -631,17 +611,11 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 			ncvar_put(nc2, grd.bs, grdbias)
 			nc_close(nc2)
 		}
-		if(closeklust) stopCluster(klust)
+		if(is.parallel$stop) stopCluster(is.parallel$cluster)
 	}else{
-		if(doparallel & length(months) >= 3){
-			klust <- makeCluster(nb_cores)
-			registerDoParallel(klust)
-			`%parLoop%` <- `%dopar%`
-			closeklust <- TRUE
-		}else{
-			`%parLoop%` <- `%do%`
-			closeklust <- FALSE
-		}
+		is.parallel <- doparallel(length(months) >= 3)
+		`%parLoop%` <- is.parallel$dofun
+
 		packages <- c('sp', 'gstat', 'automap')
 		toExports <- c('bias.pars', 'months', 'interp.grid', 'interp.method', 'vgm.model', 'formule',
 						'auxvar', 'is.auxvar', 'min.stn', 'nmin', 'nmax', 'maxdist', 'bGrd')
@@ -766,7 +740,7 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 			names(pars.mon) <- c('mean', 'sd')
 			pars.mon
 		}
-		if(closeklust) stopCluster(klust)
+		if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 		################
 
@@ -1012,15 +986,9 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 	grd.bsadj <- ncvar_def("temp", "DegC", list(dx, dy), -99, longname= "Bias Corrected Reanalysis", prec = "float", compression = 9)
 
 	###############
-	if(doparallel & length(downData$dates) >= 30){
-		klust <- makeCluster(nb_cores)
-		registerDoParallel(klust)
-		`%parLoop%` <- `%dopar%`
-		closeklust <- TRUE
-	}else{
-		`%parLoop%` <- `%do%`
-		closeklust <- FALSE
-	}
+
+	is.parallel <- doparallel(length(downData$dates) >= 30)
+	`%parLoop%` <- is.parallel$dofun
 
 	packages <- c('ncdf4')
 	toExports <- c(toExports, 'downData', 'bias.method', 'origdir',
@@ -1075,7 +1043,7 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 		nc_close(nc2)
 		return(0)
 	}
-	if(closeklust) stopCluster(klust)
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
 	rm(downData)
 	gc()
 	InsertMessagesTxt(main.txt.out, 'Bias Correction finished')
@@ -1298,15 +1266,8 @@ ComputeLMCoefTemp <- function(comptLMparams){
 	interp.grid$newgrid$alat <- interp.grid$newgrid@coords[, 'lat']
 
 	#############
-	if(doparallel & length(months) >= 3){
-		klust <- makeCluster(nb_cores)
-		registerDoParallel(klust)
-		`%parLoop%` <- `%dopar%`
-		closeklust <- TRUE
-	}else{
-		`%parLoop%` <- `%do%`
-		closeklust <- FALSE
-	}
+	is.parallel <- doparallel(length(months) >= 3)
+	`%parLoop%` <- is.parallel$dofun
 
 	packages <- c('sp', 'gstat', 'automap')
 	toExports <- c('model.coef', 'months', 'interp.grid', 'interp.method', 'min.stn','formule',
@@ -1373,7 +1334,7 @@ ComputeLMCoefTemp <- function(comptLMparams){
 		names(pars.mon) <- c('slope', 'intercept')
 		pars.mon
 	}
-	if(closeklust) stopCluster(klust)
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 	###########
 	grd.slope <- ncvar_def("slope", "", xy.dim, NA, longname= "Linear model Coef: Slope", prec = "float")
@@ -1412,15 +1373,8 @@ MergingFunctionTemp <- function(paramsMRG){
 	ncInfo <- paramsMRG$ncInfo
 
 	#############
-	if(doparallel & length(which(ncInfo$exist)) >= 20){
-		klust <- makeCluster(nb_cores)
-		registerDoParallel(klust)
-		`%parLoop%` <- `%dopar%`
-		closeklust <- TRUE
-	}else{
-		`%parLoop%` <- `%do%`
-		closeklust <- FALSE
-	}
+	is.parallel <- doparallel(length(which(ncInfo$exist)) >= 20)
+	`%parLoop%` <- is.parallel$dofun
 
 	#############
 	freqData <- GeneralParameters$period
@@ -1680,7 +1634,7 @@ MergingFunctionTemp <- function(paramsMRG){
 		gc()
 		return(0)
 	}
-	if(closeklust) stopCluster(klust)
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 	InsertMessagesTxt(main.txt.out, 'Merging finished')
 

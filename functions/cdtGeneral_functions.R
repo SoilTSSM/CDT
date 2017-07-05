@@ -985,15 +985,8 @@ read.NetCDF.Data <- function(read.ncdf.parms){
 							read.ncdf.parms$errmsg)
 	if(is.null(ncInfo)) return(NULL)
 
-	if(doparallel & length(which(ncInfo$exist)) >= 180){
-		klust <- makeCluster(nb_cores)
-		registerDoParallel(klust)
-		`%parLoop%` <- `%dopar%`
-		closeklust <- TRUE
-	}else{
-		`%parLoop%` <- `%do%`
-		closeklust <- FALSE
-	}
+	is.parallel <- doparallel(length(which(ncInfo$exist)) >= 180)
+	`%parLoop%` <- is.parallel$dofun
 
 	nc <- nc_open(ncInfo$nc.files[which(ncInfo$exist)[1]])
 	lon <- nc$dim[[read.ncdf.parms$ncinfo$xo]]$vals
@@ -1019,7 +1012,7 @@ read.NetCDF.Data <- function(read.ncdf.parms){
 		}else xvar <- NULL
 		xvar
 	}
-	if(closeklust) stopCluster(klust)
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
 	ret <- list(lon = lon, lat = lat, dates = ncInfo$dates, data = ncdata)
 	InsertMessagesTxt(main.txt.out, read.ncdf.parms$msg$end)
 	return(ret)
@@ -1040,15 +1033,8 @@ read.NetCDF.Data2Points <- function(read.ncdf.parms, list.lonlat.pts){
 							read.ncdf.parms$errmsg)
 	if(is.null(ncInfo)) return(NULL)
 
-	if(doparallel & length(which(ncInfo$exist)) >= 180){
-		klust <- makeCluster(nb_cores)
-		registerDoParallel(klust)
-		`%parLoop%` <- `%dopar%`
-		closeklust <- TRUE
-	}else{
-		`%parLoop%` <- `%do%`
-		closeklust <- FALSE
-	}
+	is.parallel <- doparallel(length(which(ncInfo$exist)) >= 180)
+	`%parLoop%` <- is.parallel$dofun
 
 	nc <- nc_open(ncInfo$nc.files[which(ncInfo$exist)[1]])
 	lon <- nc$dim[[read.ncdf.parms$ncinfo$xo]]$vals
@@ -1074,7 +1060,7 @@ read.NetCDF.Data2Points <- function(read.ncdf.parms, list.lonlat.pts){
 		}else xvar <- NULL
 		xvar
 	}
-	if(closeklust) stopCluster(klust)
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
 	ret <- list(dates = ncInfo$dates, data = ncdata, lon = lon, lat = lat,
 				lon.pts = list.lonlat.pts$lon, lat.pts = list.lonlat.pts$lat)
 	InsertMessagesTxt(main.txt.out, read.ncdf.parms$msg$end)

@@ -90,9 +90,29 @@ ret.pkgs <- sapply(packages, library, character.only = TRUE, logical.return = TR
 #compilePKGS(enable = TRUE)
 #enableJIT(3)
 
-nb_cores <- detectCores()-1
-doparallel <- if(nb_cores < 3) FALSE else TRUE
-# `%parLoop%` <- if(nb_cores < 3) `%do%` else `%dopar%`
+doparallel <- function(condition, nb.cores = detectCores()-1,
+						okpar = ifelse(nb.cores < 3, FALSE, TRUE))
+{
+	if(okpar & condition){
+		klust <- makeCluster(nb.cores)
+		registerDoParallel(klust)
+		`%dofun%` <- `%dopar%`
+		closeklust <- TRUE
+	}else{
+		klust <- NULL
+		`%dofun%` <- `%do%`
+		closeklust <- FALSE
+	}
+	list(dofun = `%dofun%`, cluster = klust, stop = closeklust)
+}
+
+# # test <- doparallel(TRUE)
+# # `%dofun%` <- test$dofun
+# # foreach(j = seq(10)) %dofun% {X}
+# # if(test$stop) stopCluster(test$cluster)
+
+# nb_cores <- detectCores()-1
+# doparallel <- if(nb_cores < 3) FALSE else TRUE
 options(warn = -1)
 
 if (Sys.info()["sysname"] == "Windows"){

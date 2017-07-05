@@ -177,15 +177,8 @@ climdexCalc.TT <- function(GeneralParameters){
 
 					InsertMessagesTxt(main.txt.out, 'Read daily maximum temperature data ...')
 					
-					if(doparallel & length(which(existFl)) >= 180){
-						klust <- makeCluster(nb_cores)
-						registerDoParallel(klust)
-						`%parLoop%` <- `%dopar%`
-						closeklust <- TRUE
-					}else{
-						`%parLoop%` <- `%do%`
-						closeklust <- FALSE
-					}
+					is.parallel <- doparallel(length(which(existFl)) >= 180)
+					`%parLoop%` <- is.parallel$dofun
 
 					xo <- order(lon)
 					lon <- lon[xo]
@@ -205,7 +198,7 @@ climdexCalc.TT <- function(GeneralParameters){
 						}else vars <- NULL
 						vars
 					}
-					if(closeklust) stopCluster(klust)
+					if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 					InsertMessagesTxt(main.txt.out, 'Reading daily maximum temperature data finished')
 
@@ -265,15 +258,8 @@ climdexCalc.TT <- function(GeneralParameters){
 
 					InsertMessagesTxt(main.txt.out, 'Read daily minimum temperature data ...')
 					
-					if(doparallel & length(which(existFl)) >= 180){
-						klust <- makeCluster(nb_cores)
-						registerDoParallel(klust)
-						`%parLoop%` <- `%dopar%`
-						closeklust <- TRUE
-					}else{
-						`%parLoop%` <- `%do%`
-						closeklust <- FALSE
-					}
+					is.parallel <- doparallel(length(which(existFl)) >= 180)
+					`%parLoop%` <- is.parallel$dofun
 
 					xo <- order(lon)
 					lon <- lon[xo]
@@ -293,7 +279,7 @@ climdexCalc.TT <- function(GeneralParameters){
 						}else vars <- NULL
 						vars
 					}
-					if(closeklust) stopCluster(klust)
+					if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 					InsertMessagesTxt(main.txt.out, 'Reading daily minimum temperature data finished')
 

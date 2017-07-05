@@ -705,18 +705,8 @@ climdex.TempQ1090 <- function(MONTHQ1090, bootsrap = TRUE){
 
 	####################################################
 
-	nb_cores <- detectCores()-1
-	doparallel <- if(nb_cores < 3) FALSE else TRUE
-
-	if(doparallel){
-		klust <- makeCluster(nb_cores)
-		registerDoParallel(klust)
-		`%parLoop%` <- `%dopar%`
-		closeklust <- TRUE
-	}else{
-		`%parLoop%` <- `%do%`
-		closeklust <- FALSE
-	}
+	is.parallel <- doparallel(TRUE)
+	`%parLoop%` <- is.parallel$dofun
 
 	toExports <- c('nbyear1', 'winsize', 'is.leapyear', 'quantile8')
 
@@ -788,8 +778,7 @@ climdex.TempQ1090 <- function(MONTHQ1090, bootsrap = TRUE){
 		Xdat <- Xdatnorm2[Yrnorm2 == year, , drop = FALSE]
 		Reduce('+', lapply(seqBootstrap, function(k) fooBootStrap(AllYearBoot[[ian]][, k], year, Xdat)))
 	}
-
-	if(closeklust) stopCluster(klust)
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 	###########
 	monQ10 <- do.call(rbind, lapply(MONQ1090, function(x) x[1:12, , drop = FALSE]))

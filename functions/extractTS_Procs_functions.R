@@ -336,15 +336,9 @@ ExtractDataProcs <- function(GeneralParameters){
 
 	if(readNCDFdata){
 		InsertMessagesTxt(main.txt.out, 'Read netcdf data ...')
-		if(doparallel & length(ncpath) >= 180){
-			klust <- makeCluster(nb_cores)
-			registerDoParallel(klust)
-			`%parLoop%` <- `%dopar%`
-			closeklust <- TRUE
-		}else{
-			`%parLoop%` <- `%do%`
-			closeklust <- FALSE
-		}
+
+		is.parallel <- doparallel(length(ncpath) >= 180)
+		`%parLoop%` <- is.parallel$dofun
 
 		toExport <- c("xo", "yo", "ncpath", "ncInfo")
 		ncData <- foreach(jj = seq_along(ncpath), .packages = "ncdf4", .export = toExport) %parLoop% {
@@ -357,7 +351,7 @@ ExtractDataProcs <- function(GeneralParameters){
 			}
 			vars
 		}
-		if(closeklust) stopCluster(klust)
+		if(is.parallel$stop) stopCluster(is.parallel$cluster)
 		InsertMessagesTxt(main.txt.out, 'Reading netcdf data finished')
 
 		xycrd <- expand.grid(x = lon, y = lat)
