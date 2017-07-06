@@ -10,7 +10,7 @@ AggregateQcData <- function(){
 	corrctID <- list.files(chkdir)
 
 	load(file.path(outdirs, 'OriginalData', 'Parameters.RData'))
-	if(paramsGAL$inputPars$action == "qc.rain"){	
+	if(paramsGAL$inputPars$action == "qc.rain"){
 		infohead <- cbind(paramsGAL$data$id, paramsGAL$data$lon, paramsGAL$data$lat, paramsGAL$data$elv)
 		stnID <- as.character(paramsGAL$data$id)
 	}
@@ -71,7 +71,7 @@ AggregateQcData <- function(){
 
 	fileout <- file.path(datfin, paste('Checked', stnfile, sep = '_'))
 	writeFiles(aggData, fileout)
-	return(0)	
+	return(0)
 }
 
 ###################################################
@@ -96,7 +96,7 @@ AggregateHomData0 <- function(){
 	prefix <- c('DAILY', 'DEKADAL', 'MONTHLY')
 
 	for(xfl in 1:3){
-		if(is.null(paramsGAL$data1[[xfl]]))	next	
+		if(is.null(paramsGAL$data1[[xfl]])) next
 		dates <- paramsGAL$data1[[xfl]][[1]]$date
 		donne1 <- round(paramsGAL$data1[[xfl]][[1]]$data, 1)
 		donne3 <- donne2 <- donne1
@@ -208,23 +208,23 @@ AggregateHomData <- function(){
 		}
 
 		if(!is.null(miss)){
-			infohead1 <- infohead[, -miss]	
+			infohead1 <- infohead[, -miss]
 			faileds <- list('Not Tested Stations', infohead[1, miss])
 			containertab <- displayConsOutputTabs(tknotes, faileds, title = 'Not Tested Stations')
 			ntab <- length(AllOpenTabType)
 			AllOpenTabType[[ntab+1]] <<- 'ctxt'
 			AllOpenTabData[[ntab+1]] <<- containertab
 			tkselect(tknotes, ntab)
-		} 
+		}else infohead1 <- infohead
 		if(nrow(infohead) == 3) capition <- c('Stations', 'LON', paste(period, 'LAT', sep = '/'))
 		if(nrow(infohead) == 4) capition <- c('Stations', 'LON', 'LAT', paste(period, 'ELV', sep = '/'))
 		infohead2 <- cbind(capition, infohead1)
 		donne1 <- rbind(infohead2, ggdates1)
 		donne2 <- rbind(infohead2, ggdates2)
 		donne3 <- rbind(infohead2, ggdates3)
-		donne1[is.na(donne1)]<- -99
-		donne2[is.na(donne2)]<- -99
-		donne3[is.na(donne3)]<- -99
+		donne1[is.na(donne1)] <- -99
+		donne2[is.na(donne2)] <- -99
+		donne3[is.na(donne3)] <- -99
 		writeFiles(donne1, file.path(datfin, paste('AdjMean', xfl, sep = '-')))
 		writeFiles(donne2, file.path(datfin, paste('AdjQM', xfl, sep = '-')))
 		writeFiles(donne3, file.path(datfin, paste('Combined-Adj', xfl, sep = '-')))
@@ -249,7 +249,7 @@ AggregateZeroChkData <- function(){
 	stnID <- as.character(paramsGAL$data$id)
 
 	existStn <- stnID%in%corrctID
-	noChck<-!stnID%in%outptID
+	noChck <- !stnID%in%outptID
 	stnID <- stnID[existStn]
 	noTraiteStn <- infohead[!existStn, ]
 	noZeroChkStn <- infohead[noChck, ]
