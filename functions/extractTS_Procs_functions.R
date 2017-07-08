@@ -203,6 +203,8 @@ ExtractDataProcs <- function(GeneralParameters){
 	}
 
 	if(extractGeom){
+		InsertMessagesTxt(main.txt.out, 'Define extraction geometry ...')
+
 		if(GeneralParameters$type.extract == 'point'){
 			if(is.na(xpadLon)){
 				InsertMessagesTxt(main.txt.out, "Pad lon is missing, no padding will be applied belong the longitude", format = TRUE)
@@ -310,6 +312,7 @@ ExtractDataProcs <- function(GeneralParameters){
 		EnvExtractData$parsextr <- parsextr
 		EnvExtractData$ij2xtr <- ij2xtr
 		EnvExtractData$headinfo <- headinfo
+		InsertMessagesTxt(main.txt.out, 'Extraction geometry definition done!')
 	}else{
 		ij2xtr <- EnvExtractData$ij2xtr
 		headinfo <- EnvExtractData$headinfo
@@ -317,82 +320,14 @@ ExtractDataProcs <- function(GeneralParameters){
 
 	#####################################
 
-	infoFiles <- c(GeneralParameters$ncdf.file$dir, GeneralParameters$ncdf.file$format)
-	if(!is.null(EnvExtractData$cdtdata)){
-		iexist <- dates%in%EnvExtractData$cdtdata$dates
-		if(all(iexist)){
-			if(!isTRUE(all.equal(EnvExtractData$infoFiles, infoFiles))){
-				readNCDFdata <- TRUE
-				EnvExtractData$cdtdata <- NULL
-			}else readNCDFdata <- FALSE
-		}else{
-			if(any(iexist) & isTRUE(all.equal(EnvExtractData$infoFiles, infoFiles))){
-				dates <- dates[!iexist]
-				ncpath <- ncpath[!iexist]
-			}else EnvExtractData$cdtdata <- NULL
-			readNCDFdata <- TRUE
-		}
-	}else readNCDFdata <- TRUE
-
-	if(readNCDFdata){
-		InsertMessagesTxt(main.txt.out, 'Read netcdf data ...')
-
-		is.parallel <- doparallel(length(ncpath) >= 180)
-		`%parLoop%` <- is.parallel$dofun
-
-		toExport <- c("xo", "yo", "ncpath", "ncInfo")
-		ncData <- foreach(jj = seq_along(ncpath), .packages = "ncdf4", .export = toExport) %parLoop% {
-			nc <- nc_open(ncpath[jj])
-			vars <- ncvar_get(nc, varid = ncInfo$rfeVarid)
-			nc_close(nc)
-			vars <- vars[xo, yo]
-			if(ncInfo$rfeILat < ncInfo$rfeILon){
-				vars <- matrix(c(vars), nrow = length(xo), ncol = length(yo), byrow = TRUE)
-			}
-			vars
-		}
-		if(is.parallel$stop) stopCluster(is.parallel$cluster)
-		InsertMessagesTxt(main.txt.out, 'Reading netcdf data finished')
-
-		xycrd <- expand.grid(x = lon, y = lat)
-		cdtdata <- list(lon = xycrd$x,
-						lat = xycrd$y,
-						dates = dates,
-						data = t(sapply(ncData, c)))
-		rm(ncData)
-		cdtdata$dates <- c(EnvExtractData$cdtdata$dates, cdtdata$dates)
-		cdtdata$data <- rbind(EnvExtractData$cdtdata$data, cdtdata$data)
-		odaty <- order(cdtdata$dates)
-		cdtdata$dates <- cdtdata$dates[odaty]
-		cdtdata$data <- cdtdata$data[odaty, , drop = FALSE]
-		EnvExtractData$cdtdata <- cdtdata
-		EnvExtractData$infoFiles <- infoFiles
-	}else cdtdata <- EnvExtractData$cdtdata
-
-	#####################################
-
 	if(GeneralParameters$type.extract == 'point'){
 		ij2xtr <- ij2xtr[!is.na(ij2xtr)]
-		DATAext <- cdtdata$data[, ij2xtr, drop = FALSE]
-		if(length(ij2xtr) > 1) DATAext <- matrix(base::rowMeans(DATAext, na.rm = TRUE), ncol = 1)
 	}
 
 	if(GeneralParameters$type.extract == 'mpoint'){
 		ij2xtr <- lapply(ij2xtr, function(x) x[!is.na(x)])
 		nonZero <- sapply(ij2xtr, length) > 0
 		ij2xtr <- ij2xtr[nonZero]
-
-		DATAext <- sapply(ij2xtr, function(ij){
-			MAT <- cdtdata$data[, ij, drop = FALSE]
-			if(length(ij) > 1) MAT <- matrix(base::rowMeans(MAT, na.rm = TRUE), ncol = 1)
-			MAT
-		})
-		if(!all(nonZero)){
-			DATAtmp <- matrix(NA, ncol = length(nonZero), nrow = nrow(DATAext))
-			DATAtmp[, nonZero] <- DATAext
-			DATAext <- DATAtmp
-			rm(DATAtmp)
-		}
 	}
 
 	if(GeneralParameters$type.extract == 'rect'){
@@ -405,17 +340,9 @@ ExtractDataProcs <- function(GeneralParameters){
 		# 				x[, "weight"] <- 1/nrow(x)
 		# 				return(x)
 		# 			})
-
 		headinfo <- lapply(ij2xtr, function(x) reshapeXYZ2Matrix(cbind(spxycrd@coords[x[, 'value'], , drop = FALSE], seq(nrow(x)))))
 		headinfo <- headinfo[[1]]
-
-		DATAext <- cdtdata$data[, ij2xtr[[1]][, "value"], drop = FALSE]
-
 		if(GeneralParameters$out.data$sp.avrg){
-			nDAT <- nrow(DATAext)
-			nijt <- nrow(ij2xtr[[1]])
-			DATAext <- DATAext * rep(ij2xtr[[1]][, "weight"], rep(nDAT, nijt))
-			DATAext <- matrix(base::rowSums(DATAext, na.rm = TRUE), ncol = 1)
 			headinfo <- cbind('Rectangle', mean(headinfo$x), mean(headinfo$y))
 		}
 	}
@@ -424,14 +351,7 @@ ExtractDataProcs <- function(GeneralParameters){
 		ij2xtr <- lapply(ij2xtr, function(x) x[order(x[, "value"]), , drop = FALSE])
 		headinfo <- lapply(ij2xtr, function(x) reshapeXYZ2Matrix(cbind(spxycrd@coords[x[, 'value'], , drop = FALSE], seq(nrow(x)))))
 		headinfo <- headinfo[[1]]
-
-		DATAext <- cdtdata$data[, ij2xtr[[1]][, "value"], drop = FALSE]
-
 		if(GeneralParameters$out.data$sp.avrg){
-			nDAT <- nrow(DATAext)
-			nijt <- nrow(ij2xtr[[1]])
-			DATAext <- DATAext * rep(ij2xtr[[1]][, "weight"], rep(nDAT, nijt))
-			DATAext <- matrix(base::rowSums(DATAext, na.rm = TRUE), ncol = 1)
 			namepoly <- substr(str_replace_all(GeneralParameters$Geom$namePoly, "[^[:alnum:]]", ""), 1, 15)
 			headinfo <- cbind(namepoly, coordinates(shpf.regOI))
 		}
@@ -441,24 +361,124 @@ ExtractDataProcs <- function(GeneralParameters){
 		nonNull <- !sapply(ij2xtr, is.null)
 		ij2xtr <- ij2xtr[nonNull]
 		ij2xtr <- lapply(ij2xtr, function(x) x[order(x[, "value"]), , drop = FALSE])
+	}
 
-		nDAT <- nrow(cdtdata$data)
+	#####################################
 
-		DATAext <- sapply(ij2xtr, function(ij){
-			MAT <- cdtdata$data[, ij[, "value"], drop = FALSE]
-			nijt <- nrow(ij)
-			if(nijt > 1){
-				MAT <- MAT * rep(ij[, "weight"], rep(nDAT, nijt))
-				MAT <- matrix(base::rowSums(MAT, na.rm = TRUE), ncol = 1)
+	infoFiles <- c(GeneralParameters$ncdf.file$dir, GeneralParameters$ncdf.file$format)
+	bindData <- FALSE
+	if(!is.null(EnvExtractData$cdtdata)){
+		if(isTRUE(all.equal(EnvExtractData$ij2xtr1, ij2xtr))){
+			iexist <- dates%in%EnvExtractData$cdtdata$dates
+			if(all(iexist)){
+				if(!isTRUE(all.equal(EnvExtractData$infoFiles, infoFiles))){
+					readNCDFdata <- TRUE
+					EnvExtractData$cdtdata <- NULL
+				}else readNCDFdata <- FALSE
+			}else{
+				if(isTRUE(all.equal(EnvExtractData$infoFiles, infoFiles))){
+					bindData <- TRUE
+					if(any(iexist)){
+						dates <- dates[!iexist]
+						ncpath <- ncpath[!iexist]
+					}
+				}else EnvExtractData$cdtdata <- NULL
+				readNCDFdata <- TRUE
 			}
-			MAT
-		})
+		}else{
+			readNCDFdata <- TRUE
+			EnvExtractData$cdtdata <- NULL
+		}
+	}else readNCDFdata <- TRUE
 
-		if(!all(nonNull)){
-			DATAtmp <- matrix(NA, ncol = length(nonNull), nrow = nrow(DATAext))
-			DATAtmp[, nonNull] <- DATAext
-			DATAext <- DATAtmp
-			rm(DATAtmp)
+	if(readNCDFdata){
+		InsertMessagesTxt(main.txt.out, 'Read and extract netcdf data ...')
+
+		is.parallel <- doparallel(length(ncpath) >= 180)
+		`%parLoop%` <- is.parallel$dofun
+		ncData <- foreach(jj = seq_along(ncpath), .packages = "ncdf4") %parLoop% {
+			nc <- nc_open(ncpath[jj])
+			vars <- ncvar_get(nc, varid = ncInfo$rfeVarid)
+			nc_close(nc)
+			vars <- vars[xo, yo]
+			if(ncInfo$rfeILat < ncInfo$rfeILon){
+				vars <- matrix(c(vars), nrow = length(xo), ncol = length(yo), byrow = TRUE)
+			}
+			vars <- round(c(vars), 1)
+
+			if(GeneralParameters$type.extract == 'point'){
+				DATAext <- vars[ij2xtr]
+				if(length(ij2xtr) > 1) DATAext <- mean(DATAext, na.rm = TRUE)
+			}
+
+			if(GeneralParameters$type.extract == 'mpoint'){
+				DATAext <- sapply(ij2xtr, function(ij){
+					MAT <- vars[ij]
+					if(length(ij) > 1) MAT <- mean(MAT, na.rm = TRUE)
+					MAT
+				})
+				if(!all(nonZero)){
+					DATAtmp <- rep(NA, length(nonZero))
+					DATAtmp[nonZero] <- DATAext
+					DATAext <- DATAtmp
+					rm(DATAtmp)
+				}
+			}
+
+			if(GeneralParameters$type.extract == 'mpoly'){
+				DATAext <- sapply(ij2xtr, function(ij){
+					MAT <- vars[ij[, "value"]]
+					nijt <- nrow(ij)
+					if(nijt > 1){
+						MAT <- MAT * ij[, "weight"]
+						MAT <- sum(MAT, na.rm = TRUE)
+					}
+					MAT
+				})
+
+				if(!all(nonNull)){
+					DATAtmp <- rep(NA, ncol = length(nonNull))
+					DATAtmp[nonNull] <- DATAext
+					DATAext <- DATAtmp
+					rm(DATAtmp)
+				}
+			}
+
+			if(GeneralParameters$type.extract%in%c('rect', 'poly')){
+				DATAext <- vars[ij2xtr[[1]][, "value"]]
+			}
+
+			rm(vars); gc()
+			return(DATAext)
+		}
+		if(is.parallel$stop) stopCluster(is.parallel$cluster)
+		InsertMessagesTxt(main.txt.out, 'Reading and extracting netcdf data finished')
+
+		ncData <- do.call(rbind, ncData)
+		cdtdata <- list(dates = dates,
+						data = ncData)
+		rm(ncData); gc()
+
+		if(bindData){
+			cdtdata$dates <- c(EnvExtractData$cdtdata$dates, cdtdata$dates)
+			cdtdata$data <- rbind(EnvExtractData$cdtdata$data, cdtdata$data)
+			odaty <- order(cdtdata$dates)
+			cdtdata$dates <- cdtdata$dates[odaty]
+			cdtdata$data <- cdtdata$data[odaty, , drop = FALSE]
+		}
+		EnvExtractData$cdtdata <- cdtdata
+		EnvExtractData$infoFiles <- infoFiles
+		EnvExtractData$ij2xtr1 <- ij2xtr
+	}else cdtdata <- EnvExtractData$cdtdata
+
+	#####################################
+
+	if(GeneralParameters$type.extract%in%c('rect', 'poly')){
+		if(GeneralParameters$out.data$sp.avrg){
+			nDAT <- nrow(cdtdata$data)
+			nijt <- nrow(ij2xtr[[1]])
+			cdtdata$data <- cdtdata$data * rep(ij2xtr[[1]][, "weight"], rep(nDAT, nijt))
+			cdtdata$data <- matrix(base::rowSums(cdtdata$data, na.rm = TRUE), ncol = 1)
 		}
 	}
 
@@ -508,10 +528,11 @@ ExtractDataProcs <- function(GeneralParameters){
 	##################
 
 	if(GeneralParameters$in.series == GeneralParameters$out.series$out.series){
-		AggrData <- DATAext[xrow, , drop = FALSE]
+		AggrData <- cdtdata$data[xrow, , drop = FALSE]
 		odaty <- xdaty
 		indx <- xrow
 	}else{
+		InsertMessagesTxt(main.txt.out, 'Aggregate data ...')
 		if(GeneralParameters$out.series$out.series == "dekadal"){
 			jour <- as.numeric(substr(xdaty, 7, 8))
 			jour[jour <= 10] <- 1
@@ -566,7 +587,7 @@ ExtractDataProcs <- function(GeneralParameters){
 
 		##################
 
-		nbstn <- ncol(DATAext)
+		nbstn <- ncol(cdtdata$data)
 		transPose <- if(nbstn > 1) t else as.matrix
 		len.MAT <- matrix(len.data, nrow = length(len.data), ncol = nbstn)
 
@@ -585,18 +606,21 @@ ExtractDataProcs <- function(GeneralParameters){
 								count.fun = GeneralParameters$aggr.series$opr.fun,
 								count.thres = GeneralParameters$aggr.series$opr.thres)
 
-			missData <- transPose(sapply(indx, funMissMAT, DATA = DATAext))
-			AggrData <- transPose(sapply(indx, funAggrMAT, DATA = DATAext, pars = AggrSeries))
+			missData <- transPose(sapply(indx, funMissMAT, DATA = cdtdata$data))
+			AggrData <- transPose(sapply(indx, funAggrMAT, DATA = cdtdata$data, pars = AggrSeries))
 			AggrData[(1-(missData/len.MAT)) < GeneralParameters$aggr.series$min.frac] <- NA
 			EnvExtractData$AggrData <- AggrData
 			EnvExtractData$toAggr <- toAggr
 		}else AggrData <- EnvExtractData$AggrData
+		InsertMessagesTxt(main.txt.out, 'Aggregating data finished')
 	}
 
 	#####################################
 	## Climatologies
 
 	if(GeneralParameters$type.series != "rawts"){
+		InsertMessagesTxt(main.txt.out, 'Calculate climatologies ...')
+
 		## Climatologies
 		calClim <- list(indx, GeneralParameters$aggr.series, headinfo, GeneralParameters$climato)
 		if(is.null(EnvExtractData$calClim)){
@@ -629,7 +653,7 @@ ExtractDataProcs <- function(GeneralParameters){
 				vtimes <- vtimes[itmp, , drop = FALSE]
 				idxclim <- idxclim[itmp]
 				climOUT <- lapply(idxclim, function(x){
-					MAT <- DATAext[x, , drop = FALSE]
+					MAT <- cdtdata$data[x, , drop = FALSE]
 					naYear <- base::colSums(!is.na(MAT))
 					clim <- base::colMeans(MAT, na.rm = TRUE)
 					clim[naYear < GeneralParameters$climato$min.year * winsize] <- NA
@@ -637,7 +661,7 @@ ExtractDataProcs <- function(GeneralParameters){
 				})
 				if(GeneralParameters$type.series == 'stanom'){
 					sdOUT <- lapply(idxclim, function(x){
-						MAT <- DATAext[x, , drop = FALSE]
+						MAT <- cdtdata$data[x, , drop = FALSE]
 						naYear <- base::colSums(!is.na(MAT))
 						vars <- matrixStats::colVars(MAT, na.rm = TRUE)
 						vars[naYear < GeneralParameters$climato$min.year * winsize] <- NA
@@ -773,10 +797,12 @@ ExtractDataProcs <- function(GeneralParameters){
 			outMAT[is.nan(outMAT) | is.infinite(outMAT)] <- 0
 			rm(outMAT1)
 		}
+		InsertMessagesTxt(main.txt.out, 'Calculating climatologies done!')
 	}
 
 	#####################################
 	## Write data
+	InsertMessagesTxt(main.txt.out, 'Writing data ...')
 
 	if(GeneralParameters$out.data$format == "ncdf"){
 		if(GeneralParameters$type.series == 'rawts'){
