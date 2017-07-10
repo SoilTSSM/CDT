@@ -1,82 +1,117 @@
 PICSA.plotTSMaps <- function(ocrds){
-	iyear <- as.numeric(str_trim(tclvalue(tkget(EnvPICSAplot$spin.TsMap.year))))
-
-	#################
-
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Onset"){
-		don <- EnvPICSA$output$Onset.nb[EnvPICSA$index$onsetYear == iyear, ]
+		picsaData <- "cdtONSET"
 		texta <- NULL
 		title <- "Starting dates of the rainy season"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation"){
-		don <- EnvPICSA$output$Cessation.nb[EnvPICSA$index$cessatYear == iyear, ]
+		picsaData <- "cdtCESSAT"
 		texta <- NULL
 		title <- "Ending dates of the rainy season"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Season Length"){
-		don <- EnvPICSA$output$SeasonLength[EnvPICSA$index$onsetYear == iyear, ]
+		picsaData <- "cdtSEASLEN"
 		texta <- 'Number of Days'
 		title <- "Length of the rainy season"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Seasonal Rainfall Amounts"){
-		don <- EnvPICSA$picsa$RainTotal[EnvPICSA$index$onsetYear == iyear, ]
+		picsaData <- "cdtRAINTOTAL"
 		texta <- 'Rainfall Amount (mm)'
 		title <- "Seasonal rainfall amounts"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Dry Spells"){
-		don <- EnvPICSA$picsa$AllDrySpell[EnvPICSA$index$onsetYear == iyear, ]
+		picsaData <- "cdtDRYSPELLS"
 		drydef <- as.numeric(str_trim(tclvalue(tkget(EnvPICSAplot$spin.TsMap.dryspell))))
-		don <- sapply(don, function(x) sum(x >= drydef))
 		texta <- paste0('Number of Dry Spells', '\n', "Dry spells - ", drydef, " or more consecutive days")
 		title <- "Dry Spells"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Longest Dry Spell"){
-		don <- EnvPICSA$picsa$AllDrySpell[EnvPICSA$index$onsetYear == iyear, ]
-		don <- sapply(don, max)
+		picsaData <- "cdtDRYSPELLS"
 		texta <- 'Number of Days'
 		title <- "Longest dry spell"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Number of rain day"){
-		don <- EnvPICSA$picsa$nbdayrain[EnvPICSA$index$onsetYear == iyear, ]
+		picsaData <- "cdtNBRAINDAYS"
 		texta <- 'Number of Days'
 		title <- "Seasonal number of rainy days"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Maximum daily rain"){
-		don <- EnvPICSA$picsa$max24h[EnvPICSA$index$onsetYear == iyear, ]
+		picsaData <- "cdtRAINMAX24H"
 		texta <- 'Rainfall Depth (mm)'
 		title <- 'Seasonal maximum of daily rainfall'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Total rain when RR>95thPerc"){
-		don <- EnvPICSA$picsa$TotalQ95th[EnvPICSA$index$onsetYear == iyear, ]
+		picsaData <- "cdtTOTQ95TH"
 		texta <- 'Rainfall Amount (mm)'
 		title <- 'Seasonal total of precipitation when RR > 95th percentile'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Nb of day when RR>95thPerc"){
-		don <- EnvPICSA$picsa$NbQ95th[EnvPICSA$index$onsetYear == iyear, ]
+		picsaData <- "cdtNBQ95TH"
 		texta <- 'Number of Days'
 		title <- 'Seasonal count of days when RR > 95th percentile'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Maximum temperature"){
-		don <- EnvPICSA$picsa$tmax[EnvPICSA$index$onsetYear == iyear, ]
+		picsaData <- "cdtTMAXSEAS"
 		texta <- 'Temperature (°C)'
 		title <- 'Seasonal average maximum temperature'
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Minimum temperature"){
-		don <- EnvPICSA$picsa$tmin[EnvPICSA$index$onsetYear == iyear, ]
+		picsaData <- "cdtTMINSEAS"
 		texta <- 'Temperature (°C)'
 		title <- 'Seasonal average minimum temperature'
 	}
 
 	#################
 
-	if(EnvPICSA$data.type == "cdt"){
-		xna <- EnvPICSA$cdtPrecip$lon[is.na(don)]
-		yna <- EnvPICSA$cdtPrecip$lat[is.na(don)]
-		don <- as.image(don, x = cbind(EnvPICSA$cdtPrecip$lon, EnvPICSA$cdtPrecip$lat), nx = 60, ny = 60)
+	outdirPICSAData <- file.path(EnvPICSAplot$directory, "Data")
+	
+	if(!is.null(EnvPICSAplot$loadedData$activedata)){
+		if(tclvalue(EnvPICSAplot$varPICSA) != EnvPICSAplot$loadedData$activedata){
+			loadData <- TRUE
+			EnvPICSAplot$loadedData <- NULL
+			gc()
+		}else loadData <- FALSE
+	}else loadData <- TRUE
+
+	if(loadData){
+		fileSeas <- file.path(outdirPICSAData, picsaData, "seas.rds")
+		donnees <- readRDS(fileSeas)
+		EnvPICSAplot$loadedData$donnees <- donnees
+		EnvPICSAplot$loadedData$activedata <- tclvalue(EnvPICSAplot$varPICSA)
+		EnvPICSAplot$loadedData$picsaData <- picsaData
+	}else donnees <- EnvPICSAplot$loadedData$donnees
+
+	#################
+
+	dataCDT <- if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation") "cdtCESSAT" else "cdtONSET"
+	iyear <- as.numeric(str_trim(tclvalue(tkget(EnvPICSAplot$spin.TsMap.year))))
+	rowID <- which(EnvPICSA[[dataCDT]]$years == iyear)
+	don <- donnees[rowID, ]
+
+	# if(tclvalue(EnvPICSAplot$varPICSA) == "Dry Spells") don <- sapply(don, function(x) sum(x >= drydef))
+	# if(tclvalue(EnvPICSAplot$varPICSA) == "Longest Dry Spell") don <- sapply(don, max)
+
+	if(tclvalue(EnvPICSAplot$varPICSA) == "Longest Dry Spell"){
+		don <- if(!is.null(EnvPICSAplot$DrySpellMax)) EnvPICSAplot$DrySpellMax[rowID, ] else sapply(don, max)
+	}
+
+	if(tclvalue(EnvPICSAplot$varPICSA) == "Dry Spells"){
+		if(!is.null(EnvPICSAplot$DrySpellVal)){
+			extDS <- if(EnvPICSAplot$DrySpellDef != drydef) TRUE else FALSE
+		}else extDS <- TRUE
+		don <- if(extDS) sapply(don, function(x) sum(x >= drydef)) else EnvPICSAplot$DrySpellVal[rowID, ]
+	}
+
+	#################
+
+	if(EnvPICSA$Pars$data.type == "cdt"){
+		xna <- EnvPICSA$PICSA.Coords$lon[is.na(don)]
+		yna <- EnvPICSA$PICSA.Coords$lat[is.na(don)]
+		don <- as.image(don, x = cbind(EnvPICSA$PICSA.Coords$lon, EnvPICSA$PICSA.Coords$lat), nx = 60, ny = 60)
 	}else{
 		xna <- NULL
-		lon <- sort(unique(EnvPICSA$cdtPrecip$lon))
-		lat <- sort(unique(EnvPICSA$cdtPrecip$lat))
+		lon <- sort(unique(EnvPICSA$PICSA.Coords$lon))
+		lat <- sort(unique(EnvPICSA$PICSA.Coords$lat))
 		don <- list(x = lon, y = lat, z = matrix(don, nrow = length(lon), ncol = length(lat)))
 	}
 
@@ -105,10 +140,8 @@ PICSA.plotTSMaps <- function(ocrds){
 
 	#################
 
-	if(tclvalue(EnvPICSAplot$varPICSA) == "Onset"){
-		legendLabel <- format(as.Date(breaks, origin = EnvPICSA$index$onsetOrigDate), '%d %b')
-	}else if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation"){
-		legendLabel <- format(as.Date(breaks, origin = EnvPICSA$index$cessatOrigDate), '%d %b')
+	if(tclvalue(EnvPICSAplot$varPICSA)%in%c("Onset", "Cessation")){
+		legendLabel <- format(as.Date(breaks, origin = EnvPICSA[[dataCDT]]$start.labels), '%d %b')
 	}else legendLabel <- breaks
 
 	#################
@@ -193,10 +226,7 @@ PICSA.plotClimMaps <- function(ocrds){
 	################# 
 
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Onset"){
-		don <- EnvPICSA$output$Onset.nb
-		dimdon <- dim(don)
-		don <- as.numeric(don)
-		dim(don) <- dimdon
+		picsaData <- "cdtONSET"
 		title <- "Starting dates of the rainy season"
 		unit.avg <- NULL
 		unit.med <- NULL
@@ -206,10 +236,7 @@ PICSA.plotClimMaps <- function(ocrds){
 		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation"){
-		don <- EnvPICSA$output$Cessation.nb
-		dimdon <- dim(don)
-		don <- as.numeric(don)
-		dim(don) <- dimdon
+		picsaData <- "cdtCESSAT"
 		title <- "Ending dates of the rainy season"
 		unit.avg <- NULL
 		unit.med <- NULL
@@ -219,7 +246,7 @@ PICSA.plotClimMaps <- function(ocrds){
 		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Season Length"){
-		don <- EnvPICSA$output$SeasonLength
+		picsaData <- "cdtSEASLEN"
 		title <- "Length of the rainy season"
 		unit.avg <- "days"
 		unit.med <- "days"
@@ -229,7 +256,7 @@ PICSA.plotClimMaps <- function(ocrds){
 		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Seasonal Rainfall Amounts"){
-		don <- EnvPICSA$picsa$RainTotal
+		picsaData <- "cdtRAINTOTAL"
 		title <- "Seasonal rainfall amounts"
 		unit.avg <- "mm"
 		unit.med <- "mm"
@@ -239,21 +266,8 @@ PICSA.plotClimMaps <- function(ocrds){
 		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Dry Spells"){
-		don <- EnvPICSA$picsa$AllDrySpell
-		dimdon <- dim(don)
+		picsaData <- "cdtDRYSPELLS"
 		drydef <- as.numeric(str_trim(tclvalue(tkget(EnvPICSAplot$spin.TsMap.dryspell))))
-		if(!is.null(EnvPICSAplot$DrySpellVal)){
-			if(EnvPICSAplot$DrySpellDef != drydef){
-				extDS <- TRUE
-				EnvPICSAplot$DrySpellVal <- NULL
-			}else extDS <- FALSE
-		}else extDS <- TRUE
-		if(extDS){
-			don <- sapply(don, function(x) sum(x >= drydef))
-			EnvPICSAplot$DrySpellVal <- don
-			EnvPICSAplot$DrySpellDef <- drydef
-		}else don <- EnvPICSAplot$DrySpellVal
-		dim(don) <- dimdon
 		title <- "Dry Spells"
 		unit.avg <- "Number of Dry Spells"
 		unit.med <- "Number of Dry Spells"
@@ -263,10 +277,7 @@ PICSA.plotClimMaps <- function(ocrds){
 		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Longest Dry Spell"){
-		don <- EnvPICSA$picsa$AllDrySpell
-		dimdon <- dim(don)
-		don <- sapply(don, max)
-		dim(don) <- dimdon
+		picsaData <- "cdtDRYSPELLS"
 		title <- "Longest dry spell"
 		unit.avg <- "days"
 		unit.med <- "days"
@@ -276,7 +287,7 @@ PICSA.plotClimMaps <- function(ocrds){
 		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Number of rain day"){
-		don <- EnvPICSA$picsa$nbdayrain
+		picsaData <- "cdtNBRAINDAYS"
 		title <- "Seasonal number of rainy days"
 		unit.avg <- "days"
 		unit.med <- "days"
@@ -286,7 +297,7 @@ PICSA.plotClimMaps <- function(ocrds){
 		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Maximum daily rain"){
-		don <- EnvPICSA$picsa$max24h
+		picsaData <- "cdtRAINMAX24H"
 		title <- 'Seasonal maximum of daily rainfall'
 		unit.avg <- "mm"
 		unit.med <- "mm"
@@ -296,7 +307,7 @@ PICSA.plotClimMaps <- function(ocrds){
 		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Total rain when RR>95thPerc"){
-		don <- EnvPICSA$picsa$TotalQ95th
+		picsaData <- "cdtTOTQ95TH"
 		title <- 'Seasonal total of precipitation when RR > 95th percentile'
 		unit.avg <- "mm"
 		unit.med <- "mm"
@@ -306,7 +317,7 @@ PICSA.plotClimMaps <- function(ocrds){
 		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Nb of day when RR>95thPerc"){
-		don <- EnvPICSA$picsa$NbQ95th
+		picsaData <- "cdtNBQ95TH"
 		title <- 'Seasonal count of days when RR > 95th percentile'
 		unit.avg <- "days"
 		unit.med <- "days"
@@ -316,7 +327,7 @@ PICSA.plotClimMaps <- function(ocrds){
 		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Maximum temperature"){
-		don <- EnvPICSA$picsa$tmax
+		picsaData <- "cdtTMAXSEAS"
 		title <- 'Seasonal average maximum temperature'
 		unit.avg <- "°C"
 		unit.med <- "°C"
@@ -326,7 +337,7 @@ PICSA.plotClimMaps <- function(ocrds){
 		unit.freq <- "count"
 	}
 	if(tclvalue(EnvPICSAplot$varPICSA) == "Minimum temperature"){
-		don <- EnvPICSA$picsa$tmin
+		picsaData <- "cdtTMINSEAS"
 		title <- 'Seasonal average minimum temperature'
 		unit.avg <- "°C"
 		unit.med <- "°C"
@@ -336,21 +347,74 @@ PICSA.plotClimMaps <- function(ocrds){
 		unit.freq <- "count"
 	}
 
-	if(tclvalue(EnvPICSAplot$varPICSA) == "Onset") don <- aggrFonction(don, EnvPICSA$index$onsetYear, EnvPICSA$index$onsetOrigDate)
-	else if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation") don <- aggrFonction(don, EnvPICSA$index$cessatYear, EnvPICSA$index$cessatOrigDate)
-	else don <- aggrFonction(don, EnvPICSA$index$onsetYear)
+	#################
+
+	outdirPICSAData <- file.path(EnvPICSAplot$directory, "Data")
+
+	if(!is.null(EnvPICSAplot$loadedData$activedata)){
+		if(tclvalue(EnvPICSAplot$varPICSA) != EnvPICSAplot$loadedData$activedata){
+			loadData <- TRUE
+			EnvPICSAplot$loadedData <- NULL
+			gc()
+		}else loadData <- FALSE
+	}else loadData <- TRUE
+
+	if(loadData){
+		fileSeas <- file.path(outdirPICSAData, picsaData, "seas.rds")
+		donnees <- readRDS(fileSeas)
+		EnvPICSAplot$loadedData$donnees <- donnees
+		EnvPICSAplot$loadedData$activedata <- tclvalue(EnvPICSAplot$varPICSA)
+		EnvPICSAplot$loadedData$picsaData <- picsaData
+	}else donnees <- EnvPICSAplot$loadedData$donnees
+
+	if(tclvalue(EnvPICSAplot$varPICSA) == "Longest Dry Spell"){
+		dimdon <- dim(donnees)
+		if(!is.null(EnvPICSAplot$DrySpellMax)){
+			donnees <- EnvPICSAplot$DrySpellMax
+		}else{
+			donnees <- sapply(donnees, max)
+			dim(donnees) <- dimdon
+			EnvPICSAplot$DrySpellMax <- donnees
+		}
+	}
+
+	if(tclvalue(EnvPICSAplot$varPICSA) == "Dry Spells"){
+		dimdon <- dim(donnees)
+		if(!is.null(EnvPICSAplot$DrySpellVal)){
+			if(EnvPICSAplot$DrySpellDef != drydef){
+				extDS <- TRUE
+				EnvPICSAplot$DrySpellVal <- NULL
+				gc()
+			}else extDS <- FALSE
+		}else extDS <- TRUE
+		if(extDS){
+			donnees <- sapply(donnees, function(x) sum(x >= drydef))
+			dim(donnees) <- dimdon
+			EnvPICSAplot$DrySpellVal <- donnees
+			EnvPICSAplot$DrySpellDef <- drydef
+		}else donnees <- EnvPICSAplot$DrySpellVal
+	}
+
+	#################
+
+	dataCDT <- if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation") "cdtCESSAT" else "cdtONSET"
+	dataYear <- EnvPICSA[[dataCDT]]$years
+	startLabel <- EnvPICSA[[dataCDT]]$start.labels
+
+	if(tclvalue(EnvPICSAplot$varPICSA)%in%c("Onset", "Cessation")) don <- aggrFonction(donnees, dataYear, startLabel)
+	else don <- aggrFonction(donnees, dataYear)
 	don[is.nan(don) | is.infinite(don)] <- NA
 
 	#################
 
-	if(EnvPICSA$data.type == "cdt"){
-		xna <- EnvPICSA$cdtPrecip$lon[is.na(don)]
-		yna <- EnvPICSA$cdtPrecip$lat[is.na(don)]
-		don <- as.image(don, x = cbind(EnvPICSA$cdtPrecip$lon, EnvPICSA$cdtPrecip$lat), nx = 60, ny = 60)
+	if(EnvPICSA$Pars$data.type == "cdt"){
+		xna <- EnvPICSA$PICSA.Coords$lon[is.na(don)]
+		yna <- EnvPICSA$PICSA.Coords$lat[is.na(don)]
+		don <- as.image(don, x = cbind(EnvPICSA$PICSA.Coords$lon,EnvPICSA$PICSA.Coords$lat), nx = 60, ny = 60)
 	}else{
 		xna <- NULL
-		lon <- sort(unique(EnvPICSA$cdtPrecip$lon))
-		lat <- sort(unique(EnvPICSA$cdtPrecip$lat))
+		lon <- sort(unique(EnvPICSA$PICSA.Coords$lon))
+		lat <- sort(unique(EnvPICSA$PICSA.Coords$lat))
 		don <- list(x = lon, y = lat, z = matrix(don, nrow = length(lon), ncol = length(lat)))
 	}
 
@@ -389,10 +453,8 @@ PICSA.plotClimMaps <- function(ocrds){
 
 	#################
 
-	if(tclvalue(EnvPICSAplot$varPICSA) == "Onset" & StatOp%in%c("Average", "Median", "Percentiles")){
-		legendLabel <- format(as.Date(breaks, origin = EnvPICSA$index$onsetOrigDate), '%d %b')
-	}else if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation" & StatOp%in%c("Average", "Median", "Percentiles")){
-		legendLabel <- format(as.Date(breaks, origin = EnvPICSA$index$cessatOrigDate), '%d %b')
+	if(tclvalue(EnvPICSAplot$varPICSA)%in%c("Onset", "Cessation") & StatOp%in%c("Average", "Median", "Percentiles")){
+		legendLabel <- format(as.Date(breaks, origin = EnvPICSA[[dataCDT]]$start.labels), '%d %b')
 	}else legendLabel <- breaks
 
 	#################
@@ -422,17 +484,17 @@ PICSA.plotClimMaps <- function(ocrds){
 ##############################
 
 PICSA.plotTSGraph <- function(){
-	if(EnvPICSA$data.type == "cdt"){
-		ixy <- which(EnvPICSA$cdtPrecip$id == str_trim(tclvalue(EnvPICSAplot$stnIDTSp)))
+	if(EnvPICSA$Pars$data.type == "cdt"){
+		ixy <- which(EnvPICSA$PICSA.Coords$id == str_trim(tclvalue(EnvPICSAplot$stnIDTSp)))
 
 		if(length(ixy) == 0){
 			InsertMessagesTxt(main.txt.out, "Station not found", format = TRUE)
 			return(NULL)
 		}
-		EnvPICSAplot$location <- paste0("Station: ", EnvPICSA$cdtPrecip$id[ixy])
+		EnvPICSAplot$location <- paste0("Station: ", EnvPICSA$PICSA.Coords$id[ixy])
 	}else{
-		xlon <- sort(unique(EnvPICSA$cdtPrecip$lon))
-		xlat <- sort(unique(EnvPICSA$cdtPrecip$lat))
+		xlon <- sort(unique(EnvPICSA$PICSA.Coords$lon))
+		xlat <- sort(unique(EnvPICSA$PICSA.Coords$lat))
 		ilon <- as.numeric(str_trim(tclvalue(EnvPICSAplot$lonLOC)))
 		ilat <- as.numeric(str_trim(tclvalue(EnvPICSAplot$latLOC)))
 		iclo <- findInterval(ilon, xlon)
@@ -444,18 +506,24 @@ PICSA.plotTSGraph <- function(){
 			InsertMessagesTxt(main.txt.out, "Coordinates outside of data range", format = TRUE)
 			return(NULL)
 		}
-		ixy <- matrix(seq(length(EnvPICSA$cdtPrecip$lon)), length(xlon), length(xlat))[ilo, ila]
+		ixy <- matrix(seq(length(EnvPICSA$PICSA.Coords$lon)), length(xlon), length(xlat))[ilo, ila]
 		EnvPICSAplot$location <- paste0("Longitude: ", round(ilon, 5), ", Latitude: ", round(ilat, 5))
 	}
 
+	outdirPICSAData <- file.path(EnvPICSAplot$directory, "Data")
+
 	if(str_trim(tclvalue(EnvPICSAplot$varTSp)) == "From Maps"){
 		if(tclvalue(EnvPICSAplot$varPICSA) %in% c("Maximum temperature", "Minimum temperature")){
-			tmax <- EnvPICSA$picsa$tmax[, ixy]
-			tmin <- EnvPICSA$picsa$tmin[, ixy]
-			picsa.plot.TxTn(EnvPICSA$index$onsetYear, tmax, tmin, axis.font = 1)
+			tmaxDir <- file.path(outdirPICSAData, "cdtTMAXSEAS")
+			tmax <- readcdtDATAchunk(ixy, EnvPICSA$cdtONSET$colInfo, tmaxDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
+			tmax <- tmax[, 1]
+			tminDir <- file.path(outdirPICSAData, "cdtTMINSEAS")
+			tmin <- readcdtDATAchunk(ixy, EnvPICSA$cdtONSET$colInfo, tminDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
+			tmin <- tmin[, 1]
+			picsa.plot.TxTn(EnvPICSA$cdtONSET$years, tmax, tmin, axis.font = 1)
 		}else{
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Onset"){
-				don <- EnvPICSA$output$Onset.nb[, ixy]
+				picsaData <- "cdtONSET"
 				xlab <- ''
 				ylab <- ''
 				sub <- NULL
@@ -463,7 +531,7 @@ PICSA.plotTSGraph <- function(){
 				title <- "Starting dates of the rainy season"
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation"){
-				don <- EnvPICSA$output$Cessation.nb[, ixy]
+				picsaData <- "cdtCESSAT"
 				xlab <- ''
 				ylab <- ''
 				sub <- NULL
@@ -471,7 +539,7 @@ PICSA.plotTSGraph <- function(){
 				title <- "Ending dates of the rainy season"
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Season Length"){
-				don <- EnvPICSA$output$SeasonLength[, ixy]
+				picsaData <- "cdtSEASLEN"
 				xlab <- 'Year'
 				ylab <- 'Number of Days'
 				sub <- NULL
@@ -479,7 +547,7 @@ PICSA.plotTSGraph <- function(){
 				title <- "Length of the rainy season"
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Seasonal Rainfall Amounts"){
-				don <- EnvPICSA$picsa$RainTotal[, ixy]
+				picsaData <- "cdtRAINTOTAL"
 				xlab <- 'Year'
 				ylab <- 'Rainfall Amount (mm)'
 				sub <- NULL
@@ -487,9 +555,8 @@ PICSA.plotTSGraph <- function(){
 				title <- "Seasonal rainfall amounts"
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Dry Spells"){
-				don <- EnvPICSA$picsa$AllDrySpell[, ixy]
+				picsaData <- "cdtDRYSPELLS"
 				drydef <- as.numeric(str_trim(tclvalue(tkget(EnvPICSAplot$spin.TsMap.dryspell))))
-				don <- sapply(don, function(x) sum(x >= drydef))
 				xlab <- 'Year'
 				ylab <- 'Number of Dry Spells'
 				sub <- paste("Dry spells -", drydef, "or more consecutive days")
@@ -497,8 +564,7 @@ PICSA.plotTSGraph <- function(){
 				title <- "Dry Spells"
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Longest Dry Spell"){
-				don <- EnvPICSA$picsa$AllDrySpell[, ixy]
-				don <- sapply(don, max)
+				picsaData <- "cdtDRYSPELLS"
 				xlab <- 'Year'
 				ylab <- 'Number of Days'
 				sub <- NULL
@@ -506,7 +572,7 @@ PICSA.plotTSGraph <- function(){
 				title <- "Longest dry spell"
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Number of rain day"){
-				don <- EnvPICSA$picsa$nbdayrain[, ixy]
+				picsaData <- "cdtNBRAINDAYS"
 				xlab <- 'Year'
 				ylab <- 'Number of Days'
 				sub <- NULL
@@ -514,7 +580,7 @@ PICSA.plotTSGraph <- function(){
 				title <- "Seasonal number of rainy days"
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Maximum daily rain"){
-				don <- EnvPICSA$picsa$max24h[, ixy]
+				picsaData <- "cdtRAINMAX24H"
 				xlab <- 'Year'
 				ylab <- 'Rainfall Depth (mm)'
 				sub <- NULL
@@ -522,7 +588,7 @@ PICSA.plotTSGraph <- function(){
 				title <- 'Seasonal maximum of daily rainfall'
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Total rain when RR>95thPerc"){
-				don <- EnvPICSA$picsa$TotalQ95th[, ixy]
+				picsaData <- "cdtTOTQ95TH"
 				xlab <- 'Year'
 				ylab <- 'Rainfall Amount (mm)'
 				sub <- NULL
@@ -530,7 +596,7 @@ PICSA.plotTSGraph <- function(){
 				title <- 'Seasonal total of precipitation when RR > 95th percentile'
 			}
 			if(tclvalue(EnvPICSAplot$varPICSA) == "Nb of day when RR>95thPerc"){
-				don <- EnvPICSA$picsa$NbQ95th[, ixy]
+				picsaData <- "cdtNBQ95TH"
 				xlab <- 'Year'
 				ylab <- 'Number of Days'
 				sub <- NULL
@@ -538,17 +604,42 @@ PICSA.plotTSGraph <- function(){
 				title <- 'Seasonal count of days when RR > 95th percentile'
 			}
 
-			####
-			if(tclvalue(EnvPICSAplot$varPICSA) == "Onset"){
-				xaxe <- EnvPICSA$index$onsetYear
-				origindate <- EnvPICSA$index$onsetOrigDate
-			}else if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation"){
-				xaxe <- EnvPICSA$index$cessatYear
-				origindate <- EnvPICSA$index$cessatOrigDate
-			}else{
-				xaxe <- EnvPICSA$index$onsetYear
-				origindate <- NULL
+			#################
+			
+			if(!is.null(EnvPICSAplot$loadedData$activedata)){
+				if(tclvalue(EnvPICSAplot$varPICSA) != EnvPICSAplot$loadedData$activedata){
+					loadData <- TRUE
+					EnvPICSAplot$loadedData <- NULL
+					gc()
+				}else loadData <- FALSE
+			}else loadData <- TRUE
+
+			if(loadData){
+				fileSeas <- file.path(outdirPICSAData, picsaData, "seas.rds")
+				donnees <- readRDS(fileSeas)
+				EnvPICSAplot$loadedData$donnees <- donnees
+				EnvPICSAplot$loadedData$activedata <- tclvalue(EnvPICSAplot$varPICSA)
+				EnvPICSAplot$loadedData$picsaData <- picsaData
+			}else donnees <- EnvPICSAplot$loadedData$donnees
+
+			don <- donnees[, ixy]
+
+			if(tclvalue(EnvPICSAplot$varPICSA) == "Longest Dry Spell"){
+				don <- if(!is.null(EnvPICSAplot$DrySpellMax)) EnvPICSAplot$DrySpellMax[, ixy] else sapply(don, max)
 			}
+
+			if(tclvalue(EnvPICSAplot$varPICSA) == "Dry Spells"){
+				if(!is.null(EnvPICSAplot$DrySpellVal)){
+					extDS <- if(EnvPICSAplot$DrySpellDef != drydef) TRUE else FALSE
+				}else extDS <- TRUE
+				don <- if(extDS) sapply(don, function(x) sum(x >= drydef)) else EnvPICSAplot$DrySpellVal[, ixy]
+			}
+
+			#################
+
+			dataCDT <- if(tclvalue(EnvPICSAplot$varPICSA) == "Cessation") "cdtCESSAT" else "cdtONSET"
+			xaxe <- EnvPICSA[[dataCDT]]$years
+			origindate <- if(tclvalue(EnvPICSAplot$varPICSA)%in%c("Onset", "Cessation")) EnvPICSA[[dataCDT]]$start.labels else NULL
 
 			####
 			if(str_trim(tclvalue(EnvPICSAplot$typeTSp)) == "Line"){
@@ -577,9 +668,16 @@ PICSA.plotTSGraph <- function(){
 
 			####
 			if(str_trim(tclvalue(EnvPICSAplot$typeTSp))%in%c("ENSO-Line", "ENSO-Barplot", "ENSO-Proba")){
-				ijoni <- getIndexSeasonVars(as.numeric(EnvPICSA$output$Onset.date[, ixy]),
-							as.numeric(EnvPICSA$output$Cessation.date[, ixy]),
-							EnvPICSA$ONI$date, "monthly")
+				onsetDir <- file.path(outdirPICSAData, "cdtONSET")
+				onset <- readcdtDATAchunk(ixy, EnvPICSA$cdtONSET$colInfo, onsetDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
+				onset <- onset[, 1]
+				cessatDir <- file.path(outdirPICSAData, "cdtCESSAT")
+				cessat <- readcdtDATAchunk(ixy, EnvPICSA$cdtONSET$colInfo, cessatDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
+				cessat <- cessat[, 1]
+
+				onset.dates <- format(as.Date(onset, origin = EnvPICSA$cdtONSET$days.since), "%Y%m%d")
+				cessat.dates <- format(as.Date(cessat, origin = EnvPICSA$cdtCESSAT$days.since), "%Y%m%d")
+				ijoni <- getIndexSeasonVars(onset.dates, cessat.dates, EnvPICSA$ONI$date, "monthly")
 				oni <- sapply(ijoni, function(x) mean(EnvPICSA$ONI$data[x], na.rm = TRUE))
 				oni <- ifelse(oni >= 0.5, 3, ifelse(oni <= -0.5, 1, 2))
 			}
@@ -613,8 +711,10 @@ PICSA.plotTSGraph <- function(){
 			}
 		}
 	}else{
-		don <- EnvPICSA$cdtPrecip$data[, ixy]
-		picsa.plot.daily(EnvPICSA$cdtPrecip$dates, don, EnvPICSA$thres.rain.day)
+		precipDir <- file.path(outdirPICSAData, "cdtPrecip")
+		don <- readcdtDATAchunk(EnvPICSA$opDATA$cdtPrecip$pid[ixy], EnvPICSA$cdtPrecip$colInfo, precipDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
+		don <- don[EnvPICSA$opDATA$cdtPrecip$index, 1]
+		picsa.plot.daily(EnvPICSA$opDATA$dates, don, EnvPICSA$Pars$thres.rain.day)
 	}
 }
 
@@ -651,16 +751,16 @@ PICSA.DisplayMaps <- function(parent, ocrds){
 		frxcoord <- ifelse(xyMouse$inout, '', xydisp$xdisp)
 		frycoord <- ifelse(xyMouse$inout, '', xydisp$ydisp)
 
-		if(EnvPICSA$data.type == "cdt"){
+		if(EnvPICSA$Pars$data.type == "cdt"){
 			fdispIdStn <- function(x){
 				y <- if(x <= 2) 0.0006944444 * x else 0.002777778
 				return(y)
 			}
 
-			sdist <- (xyMouse$x-EnvPICSA$cdtPrecip$lon)^2 + (xyMouse$y-EnvPICSA$cdtPrecip$lat)^2
+			sdist <- (xyMouse$x-EnvPICSA$PICSA.Coords$lon)^2 + (xyMouse$y-EnvPICSA$PICSA.Coords$lat)^2
 			inear <- which.min(sdist)
 			rayondisp <- sdist[inear] > fdispIdStn(as.numeric(tclvalue(parPltCrd$usrCoords2)) - as.numeric(tclvalue(parPltCrd$usrCoords1)))
-			frzcoord <- ifelse(xyMouse$inout | rayondisp, '', EnvPICSA$cdtPrecip$id[inear])
+			frzcoord <- ifelse(xyMouse$inout | rayondisp, '', EnvPICSA$PICSA.Coords$id[inear])
 		}else{
 			frzcoord <- ""
 		}
@@ -673,17 +773,17 @@ PICSA.DisplayMaps <- function(parent, ocrds){
 	tkbind(img, "<Button-1>", function(W, x, y){
 		xyMouse <- mouseMouvment(W, x, y, parPltCrd)
 
-		if(EnvPICSA$data.type == "cdt"){
+		if(EnvPICSA$Pars$data.type == "cdt"){
 			fdispIdStn <- function(x){
 				 y <- if(x <= 2) 0.0006944444 * x else 0.002777778
 				return(y)
 			}
 
-			sdist <- (xyMouse$x-EnvPICSA$cdtPrecip$lon)^2 + (xyMouse$y-EnvPICSA$cdtPrecip$lat)^2
+			sdist <- (xyMouse$x-EnvPICSA$PICSA.Coords$lon)^2 + (xyMouse$y-EnvPICSA$PICSA.Coords$lat)^2
 			inear <- which.min(sdist)
 			rayondisp <- sdist[inear] > fdispIdStn(as.numeric(tclvalue(parPltCrd$usrCoords2)) - as.numeric(tclvalue(parPltCrd$usrCoords1)))
 			if(!(xyMouse$inout | rayondisp)){
-				tclvalue(EnvPICSAplot$stnIDTSp) <- EnvPICSA$cdtPrecip$id[inear]
+				tclvalue(EnvPICSAplot$stnIDTSp) <- EnvPICSA$PICSA.Coords$id[inear]
 				plotTS <- TRUE
 			}else plotTS <- FALSE
 		}else{
@@ -742,16 +842,16 @@ PICSA.DisplayClimMaps <- function(parent, ocrds){
 		frxcoord <- ifelse(xyMouse$inout, '', xydisp$xdisp)
 		frycoord <- ifelse(xyMouse$inout, '', xydisp$ydisp)
 
-		if(EnvPICSA$data.type == "cdt"){
+		if(EnvPICSA$Pars$data.type == "cdt"){
 			fdispIdStn <- function(x){
 				y <- if(x <= 2) 0.0006944444 * x else 0.002777778
 				return(y)
 			}
 
-			sdist <- (xyMouse$x-EnvPICSA$cdtPrecip$lon)^2 + (xyMouse$y-EnvPICSA$cdtPrecip$lat)^2
+			sdist <- (xyMouse$x-EnvPICSA$PICSA.Coords$lon)^2 + (xyMouse$y-EnvPICSA$PICSA.Coords$lat)^2
 			inear <- which.min(sdist)
 			rayondisp <- sdist[inear] > fdispIdStn(as.numeric(tclvalue(parPltCrd$usrCoords2)) - as.numeric(tclvalue(parPltCrd$usrCoords1)))
-			frzcoord <- ifelse(xyMouse$inout | rayondisp, '', EnvPICSA$cdtPrecip$id[inear])
+			frzcoord <- ifelse(xyMouse$inout | rayondisp, '', EnvPICSA$PICSA.Coords$id[inear])
 		}else{
 			frzcoord <- ""
 		}
@@ -764,17 +864,17 @@ PICSA.DisplayClimMaps <- function(parent, ocrds){
 	tkbind(img, "<Button-1>", function(W, x, y){
 		xyMouse <- mouseMouvment(W, x, y, parPltCrd)
 
-		if(EnvPICSA$data.type == "cdt"){
+		if(EnvPICSA$Pars$data.type == "cdt"){
 			fdispIdStn <- function(x){
 				 y <- if(x <= 2) 0.0006944444 * x else 0.002777778
 				return(y)
 			}
 
-			sdist <- (xyMouse$x-EnvPICSA$cdtPrecip$lon)^2 + (xyMouse$y-EnvPICSA$cdtPrecip$lat)^2
+			sdist <- (xyMouse$x-EnvPICSA$PICSA.Coords$lon)^2 + (xyMouse$y-EnvPICSA$PICSA.Coords$lat)^2
 			inear <- which.min(sdist)
 			rayondisp <- sdist[inear] > fdispIdStn(as.numeric(tclvalue(parPltCrd$usrCoords2)) - as.numeric(tclvalue(parPltCrd$usrCoords1)))
 			if(!(xyMouse$inout | rayondisp)){
-				tclvalue(EnvPICSAplot$stnIDTSp) <- EnvPICSA$cdtPrecip$id[inear]
+				tclvalue(EnvPICSAplot$stnIDTSp) <- EnvPICSA$PICSA.Coords$id[inear]
 				plotTS <- TRUE
 			}else plotTS <- FALSE
 		}else{

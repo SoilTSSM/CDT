@@ -115,7 +115,9 @@ onsetDectection <- function(jj, DATA, dates, pars, min.frac){
 	####
 	MATdeb <- DATA[jj, , drop = FALSE]
 	initCol <- ncol(MATdeb)
-	MATdeb <- MATdeb[1:win2.search, , drop = FALSE]
+	wsearch <- 1:win2.search
+	if(length(wsearch) > nrow(MATdeb)) wsearch <- wsearch[seq(nrow(MATdeb))]
+	MATdeb <- MATdeb[wsearch, , drop = FALSE]
 
 	## remove NA
 	colID <- base::colSums(is.na(MATdeb))/nrow(MATdeb) > (1-min.frac)

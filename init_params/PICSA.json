@@ -88,6 +88,12 @@
         "picsa.data": ""
     }],
 
+    // maximum number column of data to compute at the same time
+    "COL.MAX": 500,
+    // chunk size to split column when writing to disk
+    "chunksize": 100,
+
+    // jpeg args
     "JPEG": [{
         "width": 11,
         "height": 7,

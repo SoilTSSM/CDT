@@ -997,7 +997,7 @@ PICSAPanelCmd <- function(){
 		GeneralParameters$cessation$late.month <- which(MOIS%in%str_trim(tclvalue(cess.late.mon)))
 		GeneralParameters$cessation$late.day <- as.numeric(str_trim(tclvalue(cess.late.day)))
 
-		assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
+		# assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
 		tkconfigure(main.win, cursor = 'watch')
 		InsertMessagesTxt(main.txt.out, paste("Calculating onset & cessation......."))
@@ -1017,6 +1017,7 @@ PICSAPanelCmd <- function(){
 				InsertMessagesTxt(main.txt.out, "Calculation finished successfully")
 
 				PICSADATA <<- TRUE
+				EnvPICSAplot$directory <- file.path(GeneralParameters$Outdir, "PICSA.OUT.Data")
 
 				statexyLoc <- if(tclvalue(DataType) == 'NetCDF gridded data') "normal" else "disabled"
 				stateStnID <- if(tclvalue(DataType) == 'CDT data format') "normal" else "disabled"
@@ -1024,11 +1025,11 @@ PICSAPanelCmd <- function(){
 				tkconfigure(en.lonLoc, state = statexyLoc)
 				tkconfigure(en.latLoc, state = statexyLoc)
 
-				range.TsMap.year <- range(EnvPICSA$index$onsetYear)
+				range.TsMap.year <- range(EnvPICSA$cdtONSET$years)
 				tkconfigure(EnvPICSAplot$spin.TsMap.year, from = range.TsMap.year[1], to = range.TsMap.year[2])
 				tkset(EnvPICSAplot$spin.TsMap.year, range.TsMap.year[2])
 
-				stnIDTSPLOT <- if(tclvalue(DataType) == 'CDT data format') EnvPICSA$cdtPrecip$id else ""
+				stnIDTSPLOT <- if(tclvalue(DataType) == 'CDT data format') EnvPICSA$PICSA.Coords$id else ""
 				tkconfigure(cb.stnID, values = stnIDTSPLOT)
 				tclvalue(EnvPICSAplot$stnIDTSp) <- stnIDTSPLOT[1]
 
@@ -1072,7 +1073,7 @@ PICSAPanelCmd <- function(){
 	bt.picsaout <- tkbutton(framePicsaOut, text = "...", state = statePicOut)
 
 	tkconfigure(bt.picsaout, command = function(){
-		filetypes <- "{{R Objects} {.RData}} {{All files} *}"
+		filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
 		loadPiscaData <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
 		if(loadPiscaData == "") return(NULL)
 		tclvalue(picsaData) <- loadPiscaData
@@ -1349,11 +1350,13 @@ PICSAPanelCmd <- function(){
 		if(file.exists(fileRData)){
 			tkconfigure(main.win, cursor = 'watch')
 			tcl("update")
-			load(fileRData)
-			ret <- lapply(ls(envir = EnvPICSA.save), function(x) assign(x, get(x, envir = EnvPICSA.save), envir = EnvPICSA))
+			EnvPICSA.load <- readRDS(fileRData)
+			ret <- lapply(ls(envir = EnvPICSA.load), function(x) {assign(x, get(x, envir = EnvPICSA.load), envir = EnvPICSA); return(NULL)})
+			rm(EnvPICSA.load)
+			EnvPICSAplot$directory <- dirname(fileRData)
 
-			statexyLoc <- if(EnvPICSA$data.type == 'netcdf') "normal" else "disabled"
-			stateStnID <- if(EnvPICSA$data.type == 'cdt') "normal" else "disabled"
+			statexyLoc <- if(EnvPICSA$Pars$data.type == 'netcdf') "normal" else "disabled"
+			stateStnID <- if(EnvPICSA$Pars$data.type == 'cdt') "normal" else "disabled"
 			tkconfigure(cb.stnID, state = stateStnID)
 			tkconfigure(en.lonLoc, state = statexyLoc)
 			tkconfigure(en.latLoc, state = statexyLoc)
@@ -1362,18 +1365,18 @@ PICSAPanelCmd <- function(){
 							"Dry Spells", "Longest Dry Spell",
 							"Number of rain day", "Maximum daily rain",
 							"Total rain when RR>95thPerc", "Nb of day when RR>95thPerc")
-			if(EnvPICSA$compute.ETP == 'temp'){
+			if(EnvPICSA$Pars$compute.ETP == 'temp'){
 				varPICSA.val <- c(varPICSA.val, "Maximum temperature", "Minimum temperature")
 			}else{
 				if(tclvalue(EnvPICSAplot$varPICSA) %in% c("Maximum temperature", "Minimum temperature")) tclvalue(EnvPICSAplot$varPICSA) <- "Onset"
 			}
 			tkconfigure(cb.TsMap.picsavar, values = varPICSA.val)
 
-			range.TsMap.year <- range(EnvPICSA$index$onsetYear)
+			range.TsMap.year <- range(EnvPICSA$cdtONSET$years)
 			tkconfigure(EnvPICSAplot$spin.TsMap.year, from = range.TsMap.year[1], to = range.TsMap.year[2])
 			tkset(EnvPICSAplot$spin.TsMap.year, range.TsMap.year[2])
 
-			stnIDTSPLOT <- if(EnvPICSA$data.type == 'cdt') EnvPICSA$cdtPrecip$id else ""
+			stnIDTSPLOT <- if(EnvPICSA$Pars$data.type == 'cdt') EnvPICSA$PICSA.Coords$id else ""
 			tkconfigure(cb.stnID, values = stnIDTSPLOT)
 			tclvalue(EnvPICSAplot$stnIDTSp) <- stnIDTSPLOT[1]
 
@@ -1419,15 +1422,15 @@ PICSAPanelCmd <- function(){
 			PICSADATA <<- picsa
 		} 
 
-		range.TsMap.year <- range(EnvPICSA$index$onsetYear)
+		range.TsMap.year <- range(EnvPICSA$cdtONSET$years)
 		iyear <- as.numeric(str_trim(tclvalue(tkget(EnvPICSAplot$spin.TsMap.year))))
 		iyear <- iyear-1
 		if(iyear < range.TsMap.year[1]) iyear <- range.TsMap.year[2]
 		tkset(EnvPICSAplot$spin.TsMap.year, iyear)
 
 		ocrds <- getSHPLines(file.shp)
-		EnvPICSAplot$xlim.maps <- range(c(ocrds[, 1], EnvPICSA$cdtPrecip$lon), na.rm = TRUE)
-		EnvPICSAplot$ylim.maps <- range(c(ocrds[, 2], EnvPICSA$cdtPrecip$lat), na.rm = TRUE)
+		EnvPICSAplot$xlim.maps <- range(c(ocrds[, 1], EnvPICSA$PICSA.Coords$lon), na.rm = TRUE)
+		EnvPICSAplot$ylim.maps <- range(c(ocrds[, 2], EnvPICSA$PICSA.Coords$lat), na.rm = TRUE)
 
 		imgContainer <- PICSA.DisplayMaps(tknotes, ocrds)
 
@@ -1450,15 +1453,15 @@ PICSAPanelCmd <- function(){
 			PICSADATA <<- picsa
 		} 
 
-		range.TsMap.year <- range(EnvPICSA$index$onsetYear)
+		range.TsMap.year <- range(EnvPICSA$cdtONSET$years)
 		iyear <- as.numeric(str_trim(tclvalue(tkget(EnvPICSAplot$spin.TsMap.year))))
 		iyear <- iyear+1
 		if(iyear > range.TsMap.year[2]) iyear <- range.TsMap.year[1]
 		tkset(EnvPICSAplot$spin.TsMap.year, iyear)
 
 		ocrds <- getSHPLines(file.shp)
-		EnvPICSAplot$xlim.maps <- range(c(ocrds[, 1], EnvPICSA$cdtPrecip$lon), na.rm = TRUE)
-		EnvPICSAplot$ylim.maps <- range(c(ocrds[, 2], EnvPICSA$cdtPrecip$lat), na.rm = TRUE)
+		EnvPICSAplot$xlim.maps <- range(c(ocrds[, 1], EnvPICSA$PICSA.Coords$lon), na.rm = TRUE)
+		EnvPICSAplot$ylim.maps <- range(c(ocrds[, 2], EnvPICSA$PICSA.Coords$lat), na.rm = TRUE)
 
 		imgContainer <- PICSA.DisplayMaps(tknotes, ocrds)
 
@@ -1482,8 +1485,8 @@ PICSAPanelCmd <- function(){
 		} 
 
 		ocrds <- getSHPLines(file.shp)
-		EnvPICSAplot$xlim.maps <- range(c(ocrds[, 1], EnvPICSA$cdtPrecip$lon), na.rm = TRUE)
-		EnvPICSAplot$ylim.maps <- range(c(ocrds[, 2], EnvPICSA$cdtPrecip$lat), na.rm = TRUE)
+		EnvPICSAplot$xlim.maps <- range(c(ocrds[, 1], EnvPICSA$PICSA.Coords$lon), na.rm = TRUE)
+		EnvPICSAplot$ylim.maps <- range(c(ocrds[, 2], EnvPICSA$PICSA.Coords$lat), na.rm = TRUE)
 
 		imgContainer <- PICSA.DisplayMaps(tknotes, ocrds)
 
@@ -1509,8 +1512,8 @@ PICSAPanelCmd <- function(){
 		} 
 
 		ocrds <- getSHPLines(file.shp)
-		EnvPICSAplot$xlim.maps <- range(c(ocrds[, 1], EnvPICSA$cdtPrecip$lon), na.rm = TRUE)
-		EnvPICSAplot$ylim.maps <- range(c(ocrds[, 2], EnvPICSA$cdtPrecip$lat), na.rm = TRUE)
+		EnvPICSAplot$xlim.maps <- range(c(ocrds[, 1], EnvPICSA$PICSA.Coords$lon), na.rm = TRUE)
+		EnvPICSAplot$ylim.maps <- range(c(ocrds[, 2], EnvPICSA$PICSA.Coords$lat), na.rm = TRUE)
 
 		imgContainer <- PICSA.DisplayClimMaps(tknotes, ocrds)
 

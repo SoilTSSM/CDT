@@ -7,7 +7,7 @@ imgdir <<- file.path(apps.dir, 'images', fsep = .Platform$file.sep)
 
 pkgs <- c('R.utils', 'stringr', 'jsonlite', 'tkrplot', 'gmt', 'fields', 'latticeExtra', 'sp', 'maptools',
 			'gstat', 'automap', 'reshape2', 'ncdf4', 'foreach', 'doParallel', 'raster', 'rgdal', 'rgeos',
-			'RCurl', 'fitdistrplus', 'qmap', 'ADGofTest', 'matrixStats')
+			'RCurl', 'fitdistrplus', 'qmap', 'ADGofTest', 'matrixStats', 'data.table')
 new.pkgs <- pkgs[!(pkgs %in% installed.packages()[,"Package"])]
 if(length(new.pkgs) > 0){
 	if(Sys.info()["sysname"] == "Windows") {
@@ -85,7 +85,7 @@ if(tclPath$UseOtherTclTk == 1){
 packages <- list('tcltk', 'tkrplot', 'grid', 'lattice', 'latticeExtra', 'sp', 'ncdf4', 'gmt', 'fields',
 				'gstat', 'automap', 'reshape2', 'compiler', 'parallel', 'foreach', 'doParallel',
 				'raster', 'rgeos', 'rgdal', 'maptools', 'RCurl', 'fitdistrplus', 'qmap', 'ADGofTest',
-				'matrixStats')
+				'matrixStats', 'data.table')
 ret.pkgs <- sapply(packages, library, character.only = TRUE, logical.return = TRUE)
 #compilePKGS(enable = TRUE)
 #enableJIT(3)
@@ -106,13 +106,6 @@ doparallel <- function(condition, nb.cores = detectCores()-1,
 	list(dofun = `%dofun%`, cluster = klust, stop = closeklust)
 }
 
-# # test <- doparallel(TRUE)
-# # `%dofun%` <- test$dofun
-# # foreach(j = seq(10)) %dofun% {X}
-# # if(test$stop) stopCluster(test$cluster)
-
-# nb_cores <- detectCores()-1
-# doparallel <- if(nb_cores < 3) FALSE else TRUE
 options(warn = -1)
 
 if (Sys.info()["sysname"] == "Windows"){

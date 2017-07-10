@@ -1,5 +1,209 @@
 
 PICSAProcs <- function(GeneralParameters){
+	readPICSAcdtData <- function(cdtData, cdtFile, timestep, outdir, chunksize = 100)
+	{
+		dir.cdtTmpVar <- file.path(outdir, cdtData)
+		dataInfo <- getStnOpenDataInfo(cdtFile)
+		if(!is.null(EnvPICSA[[cdtData]])){
+			if(!isTRUE(all.equal(EnvPICSA[[cdtData]]$dataInfo, dataInfo))){
+				readcdtData <- TRUE
+				unlink(dir.cdtTmpVar, recursive = TRUE)
+				EnvPICSA[[cdtData]] <- NULL
+			}else readcdtData <- FALSE
+		}else readcdtData <- TRUE
+
+		if(readcdtData){
+			cdtTmpVar <- getStnOpenData(cdtFile)
+			if(is.null(cdtTmpVar)) return(NULL)
+			cdtTmpVar <- getCDTdataAndDisplayMsg(cdtTmpVar, timestep)
+			if(is.null(cdtTmpVar)) return(NULL)
+
+			data.cdtTmpVar <- cdtTmpVar$data
+			cdtTmpVar <- cdtTmpVar[c('id', 'lon', 'lat', 'dates')]
+			cdtTmpVar$index <- seq_along(cdtTmpVar$dates)
+
+			dir.create(dir.cdtTmpVar, showWarnings = FALSE, recursive = TRUE)
+			colInfo <- writecdtDATAchunk(data.cdtTmpVar, dir.cdtTmpVar, chunksize)
+			cdtTmpVar$colInfo <- colInfo
+
+			EnvPICSA[[cdtData]] <- cdtTmpVar
+			EnvPICSA[[cdtData]]$dataInfo <- dataInfo
+			rm(data.cdtTmpVar)
+		}else cdtTmpVar <- EnvPICSA[[cdtData]]
+
+		return(cdtTmpVar)
+	}
+
+	readPICSANcdfData <- function(cdtData, vardates, ncdfPATH, ncdfInfo,
+								ncdfDir, fileFormat, outdir, chunksize = 100)
+	{
+		nc <- nc_open(ncdfPATH[1])
+		nc.lon <- nc$dim[[ncdfInfo$rfeILon]]$vals
+		nc.lat <- nc$dim[[ncdfInfo$rfeILat]]$vals
+		nc_close(nc)
+
+		xo <- order(nc.lon)
+		nc.lon <- nc.lon[xo]
+		yo <- order(nc.lat)
+		nc.lat <- nc.lat[yo]
+		len.lon <- length(nc.lon)
+		len.lat <- length(nc.lat)
+
+		col.id <- seq(len.lon*len.lat)
+		col.grp <- split(col.id, ceiling(col.id/chunksize))
+		col.idx <- rep(seq_along(col.grp), sapply(col.grp, length))
+
+		dir.cdtTmpVar <- file.path(outdir, cdtData)
+		if(!file.exists(dir.cdtTmpVar)) dir.create(dir.cdtTmpVar, showWarnings = FALSE, recursive = TRUE)
+
+		dataInfo <- c(ncdfDir, fileFormat)
+		bindPicsaData <- FALSE
+		if(!is.null(EnvPICSA[[cdtData]])){
+			iexist <- vardates%in%EnvPICSA[[cdtData]]$dates
+			if(all(iexist)){
+				if(!isTRUE(all.equal(EnvPICSA[[cdtData]]$dataInfo, dataInfo))){
+					readNcdfData <- TRUE
+					unlink(dir.cdtTmpVar, recursive = TRUE)
+					EnvPICSA[[cdtData]] <- NULL
+				}else readNcdfData <- FALSE
+			}else{
+				if(isTRUE(all.equal(EnvPICSA[[cdtData]]$dataInfo, dataInfo))){
+					bindPicsaData <- TRUE
+					if(any(iexist)){
+						vardates <- vardates[!iexist]
+						ncdfPATH <- ncdfPATH[!iexist]
+					}
+				}else{
+					unlink(dir.cdtTmpVar, recursive = TRUE)
+					EnvPICSA[[cdtData]] <- NULL
+				}
+				readNcdfData <- TRUE
+			}
+		}else readNcdfData <- TRUE
+
+		if(readNcdfData){
+			##################
+			# p0 <- Sys.time()
+
+			is.parallel <- doparallel(length(ncdfPATH) >= 180)
+			`%parLoop%` <- is.parallel$dofun
+			ncDaty <- foreach(jj = seq_along(ncdfPATH), .packages = "ncdf4") %parLoop% {
+				nc <- nc_open(ncdfPATH[jj])
+				vars <- ncvar_get(nc, varid = ncdfInfo$rfeVarid)
+				nc_close(nc)
+				vars <- vars[xo, yo]
+				if(ncdfInfo$rfeILat < ncdfInfo$rfeILon){
+					vars <- matrix(c(vars), nrow = len.lon, ncol = len.lat, byrow = TRUE)
+				}
+				vars <- round(c(vars), 1)
+
+				for(j in seq_along(col.grp)){
+					file.tmp <- file.path(dir.cdtTmpVar, paste0(j, ".gz"))
+					con <- gzfile(file.tmp, open = "a", compression = 5)
+					cat(c(vars[col.grp[[j]]], '\n'), file = con)
+					close(con)
+				}
+				rm(vars); gc()
+				return(vardates[jj])
+			}
+			if(is.parallel$stop) stopCluster(is.parallel$cluster)
+
+			##################
+			# InsertMessagesTxt(main.txt.out, paste('Reading ncdf', difftime(Sys.time(), p0, units = "mins")))
+
+			ncDaty <- do.call(c, ncDaty)
+
+			##################
+			# p0 <- Sys.time()
+
+			cdtTmpVar <- NULL
+			xycrd <- expand.grid(nc.lon, nc.lat)
+			cdtTmpVar$lon <- xycrd[, 1]
+			cdtTmpVar$lat <- xycrd[, 2]
+			cdtTmpVar$colInfo <- list(id = col.id, index = col.idx)
+
+			is.parallel <- doparallel(length(col.grp) >= 10)
+			`%parLoop%` <- is.parallel$dofun
+			if(bindPicsaData){
+				ret <- foreach(j = seq_along(col.grp)) %parLoop% {
+					file.gz <- file.path(dir.cdtTmpVar, paste0(j, ".gz"))
+					R.utils::gunzip(file.gz)
+					file.tmp <- tools::file_path_sans_ext(file.gz)
+					tmp <- data.table::fread(file.tmp, header = FALSE, sep = " ", stringsAsFactors = FALSE, colClasses = "numeric")
+					unlink(file.tmp)
+					tmp <- as.matrix(tmp)
+					dimnames(tmp) <- NULL
+					file.rds <- file.path(dir.cdtTmpVar, paste0(j, ".rds"))
+					y <- readRDS(file.rds)
+					z <- rbind(y, tmp)
+					con <- gzfile(file.rds, compression = 5)
+					open(con, "wb")
+					saveRDS(z, con)
+					close(con)
+					rm(y, z, tmp); gc()
+				}
+			}else{
+				ret <- foreach(j = seq_along(col.grp)) %parLoop% {
+					file.gz <- file.path(dir.cdtTmpVar, paste0(j, ".gz"))
+					R.utils::gunzip(file.gz)
+					file.tmp <- tools::file_path_sans_ext(file.gz)
+					tmp <- data.table::fread(file.tmp, header = FALSE, sep = " ", stringsAsFactors = FALSE, colClasses = "numeric")
+					unlink(file.tmp)
+					tmp <- as.matrix(tmp)
+					dimnames(tmp) <- NULL
+					file.rds <- file.path(dir.cdtTmpVar, paste0(j, ".rds"))
+					con <- gzfile(file.rds, compression = 5)
+					open(con, "wb")
+					saveRDS(tmp, con)
+					close(con)
+					rm(tmp); gc()
+				}
+			}
+			if(is.parallel$stop) stopCluster(is.parallel$cluster)
+
+			##################
+			# InsertMessagesTxt(main.txt.out, paste('write ncdata', difftime(Sys.time(), p0, units = "mins")))
+
+			idx <- seq(length(ncDaty))
+			if(bindPicsaData){
+				cdtTmpVar$dates <- c(EnvPICSA[[cdtData]]$dates, ncDaty)
+				cdtTmpVar$index <- c(EnvPICSA[[cdtData]]$index, max(EnvPICSA[[cdtData]]$index)+idx)
+			}else{
+				cdtTmpVar$dates <- ncDaty
+				cdtTmpVar$index <- idx
+			}
+			odaty <- order(cdtTmpVar$dates)
+			cdtTmpVar$dates <- cdtTmpVar$dates[odaty]
+			cdtTmpVar$index <- cdtTmpVar$index[odaty]
+
+			cdtTmpVar$dataInfo <- dataInfo
+			EnvPICSA[[cdtData]] <- cdtTmpVar
+
+			rm(ncDaty, xycrd, idx, odaty)
+			gc()
+		}else cdtTmpVar <- EnvPICSA[[cdtData]]
+
+		return(cdtTmpVar)
+	}
+
+	extractPICSArdsData <- function(cdtData, index, pid, outdir, chunksize = 100, chunk.par = TRUE)
+	{
+		dir.cdtData <- file.path(outdir, cdtData)
+		data.cdtData <- readcdtDATAchunk(pid, get(cdtData)$colInfo, dir.cdtData, chunksize, chunk.par)
+		tmp <- data.cdtData[index, , drop = FALSE]
+		rm(data.cdtData); gc()
+		return(tmp)
+	}
+
+	extractPICSArdsData1 <- function(cdtData, loc, opDATA, outdir, chunksize = 100, chunk.par = TRUE){
+		dir.cdtData <- file.path(outdir, cdtData)
+		data.cdtData <- readcdtDATAchunk(opDATA[[cdtData]]$pid[loc], get(cdtData)$colInfo, dir.cdtData, chunksize, chunk.par)
+		tmp <- data.cdtData[opDATA[[cdtData]]$index, , drop = FALSE]
+		rm(data.cdtData); gc()
+		return(tmp)
+	}
+
+	##################
 
 	rainFl <- GeneralParameters$RAIN$dirORfile
 	rainSl <- GeneralParameters$RAIN$sample
@@ -24,7 +228,17 @@ PICSAProcs <- function(GeneralParameters){
 	dekmonFf <- GeneralParameters$dekmon$format
 
 	data.type <- GeneralParameters$data.type
+	col.max <- GeneralParameters$COL.MAX
+	chunksize <- GeneralParameters$chunksize
 	outputDIR <- GeneralParameters$Outdir
+
+	##################
+
+	dirPICSAData <- file.path(outputDIR, "PICSA.OUT.Data")
+	outPICSAData <- file.path(dirPICSAData, "Data")
+	dir.create(outPICSAData, showWarnings = FALSE, recursive = TRUE)
+	outputPICSA <- file.path(dirPICSAData, "Output")
+	dir.create(outputPICSA, showWarnings = FALSE, recursive = TRUE)
 
 	##################
 
@@ -69,82 +283,18 @@ PICSAProcs <- function(GeneralParameters){
 	##################
 
 	if(data.type == 'cdt'){
-		rainInfo <- getStnOpenDataInfo(rainFl)
-		if(!is.null(EnvPICSA$cdtPrecip)){
-			if(!isTRUE(all.equal(EnvPICSA$rainInfo, rainInfo))){
-				readRaindata <- TRUE
-				EnvPICSA$cdtPrecip <- NULL
-			}else readRaindata <- FALSE
-		}else readRaindata <- TRUE
-
-		if(readRaindata){
-			cdtPrecip <- getStnOpenData(rainFl)
-			if(is.null(cdtPrecip)) return(NULL)
-			cdtPrecip <- getCDTdataAndDisplayMsg(cdtPrecip, "daily")
-			if(is.null(cdtPrecip)) return(NULL)
-			cdtPrecip <- cdtPrecip[c('id', 'lon', 'lat', 'dates', 'data')]
-			EnvPICSA$cdtPrecip <- cdtPrecip
-			EnvPICSA$rainInfo <- rainInfo
-		}else cdtPrecip <- EnvPICSA$cdtPrecip
+		cdtPrecip <- readPICSAcdtData("cdtPrecip", rainFl, "daily", outPICSAData, chunksize)
+		if(is.null(cdtPrecip)) return(NULL)
 
 		if(compute.ETP == "temp"){
-			tmaxInfo <- getStnOpenDataInfo(tmaxFl)
-			if(!is.null(EnvPICSA$cdtTmax)){
-				if(!isTRUE(all.equal(EnvPICSA$tmaxInfo, tmaxInfo))){
-					readTmaxdata <- TRUE
-					EnvPICSA$cdtTmax <- NULL
-				}else readTmaxdata <- FALSE
-			}else readTmaxdata <- TRUE
-
-			if(readTmaxdata){
-				cdtTmax <- getStnOpenData(tmaxFl)
-				if(is.null(cdtTmax)) return(NULL)
-				cdtTmax <- getCDTdataAndDisplayMsg(cdtTmax, "daily")
-				if(is.null(cdtTmax)) return(NULL)
-				cdtTmax <- cdtTmax[c('id', 'lon', 'lat', 'dates', 'data')]
-				EnvPICSA$cdtTmax <- cdtTmax
-				EnvPICSA$tmaxInfo <- tmaxInfo
-			}else cdtTmax <- EnvPICSA$cdtTmax
-
-			######
-			tminInfo <- getStnOpenDataInfo(tminFl)
-			if(!is.null(EnvPICSA$cdtTmin)){
-				if(!isTRUE(all.equal(EnvPICSA$tminInfo, tminInfo))){
-					readTmindata <- TRUE
-					EnvPICSA$cdtTmin <- NULL
-				}else readTmindata <- FALSE
-			}else readTmindata <- TRUE
-
-			if(readTmindata){
-				cdtTmin <- getStnOpenData(tminFl)
-				if(is.null(cdtTmin)) return(NULL)
-				cdtTmin <- getCDTdataAndDisplayMsg(cdtTmin, "daily")
-				if(is.null(cdtTmin)) return(NULL)
-				cdtTmin <- cdtTmin[c('id', 'lon', 'lat', 'dates', 'data')]
-				EnvPICSA$cdtTmin <- cdtTmin
-				EnvPICSA$tminInfo <- tminInfo
-			}else cdtTmin <- EnvPICSA$cdtTmin
-
+			cdtTmax <- readPICSAcdtData("cdtTmax", tmaxFl, "daily", outPICSAData, chunksize)
+			if(is.null(cdtTmax)) return(NULL)
+			cdtTmin <- readPICSAcdtData("cdtTmin", tminFl, "daily", outPICSAData, chunksize)
+			if(is.null(cdtTmin)) return(NULL)
 			tmpdates <- intersect(intersect(cdtPrecip$dates, cdtTmax$dates), cdtTmin$dates)
 		}else{
-			etpInfo <- getStnOpenDataInfo(etpFl)
-			if(!is.null(EnvPICSA$cdtETP)){
-				if(!isTRUE(all.equal(EnvPICSA$etpInfo, etpInfo))){
-					readETPdata <- TRUE
-					EnvPICSA$cdtETP <- NULL
-				}else readETPdata <- FALSE
-			}else readETPdata <- TRUE
-
-			if(readETPdata){
-				cdtETP <- getStnOpenData(etpFl)
-				if(is.null(cdtETP)) return(NULL)
-				cdtETP <- getCDTdataAndDisplayMsg(cdtETP, "daily")
-				if(is.null(cdtETP)) return(NULL)
-				cdtETP <- cdtETP[c('id', 'lon', 'lat', 'dates', 'data')]
-				EnvPICSA$cdtETP <- cdtETP
-				EnvPICSA$etpInfo <- etpInfo
-			}else cdtETP <- EnvPICSA$cdtETP
-
+			cdtETP <- readPICSAcdtData("cdtETP", etpFl, "daily", outPICSAData, chunksize)
+			if(is.null(cdtETP)) return(NULL)
 			tmpdates <- intersect(cdtPrecip$dates, cdtETP$dates)
 		}
 
@@ -155,27 +305,9 @@ PICSAProcs <- function(GeneralParameters){
 		}
 
 		if(dekmonUse){
-			dekmonInfo <- getStnOpenDataInfo(dekmonFl)
-			if(!is.null(EnvPICSA$cdtPrecip1)){
-				if(!isTRUE(all.equal(EnvPICSA$dekmonInfo, dekmonInfo))){
-					readRaindata1 <- TRUE
-					EnvPICSA$cdtPrecip1 <- NULL
-				}else readRaindata1 <- FALSE
-			}else readRaindata1 <- TRUE
+			cdtPrecip1 <- readPICSAcdtData("cdtPrecip1", dekmonFl, dekmonTs, outPICSAData, chunksize)
+			if(is.null(cdtPrecip1)) return(NULL)
 
-			if(readRaindata1){
-				cdtPrecip1 <- getStnOpenData(dekmonFl)
-				if(is.null(cdtPrecip1)) return(NULL)
-				## test dekmonTs if dekad or monthly
-				cdtPrecip1 <- getCDTdataAndDisplayMsg(cdtPrecip1, dekmonTs)
-				if(is.null(cdtPrecip1)) return(NULL)
-				cdtPrecip1 <- cdtPrecip1[c('id', 'lon', 'lat', 'dates', 'data')]
-				EnvPICSA$cdtPrecip1 <- cdtPrecip1
-				EnvPICSA$dekmonInfo <- dekmonInfo
-			}else cdtPrecip1 <- EnvPICSA$cdtPrecip1
-		}
-
-		if(dekmonUse){
 			if(!any(substr(cdtPrecip$dates, 1, 6)%in%substr(cdtPrecip1$dates, 1, 6))){
 				InsertMessagesTxt(main.txt.out, "Daily and dekadal or monthly rain dates did not overlap", format = TRUE)
 				return(NULL)
@@ -277,13 +409,27 @@ PICSAProcs <- function(GeneralParameters){
 			return(NULL)
 		}
 
+		if(compute.ETP == "temp"){
+			tmaxPATH <- tmaxPATH[tmaxdates%in%raindates]
+			tmaxdates <- tmaxdates[tmaxdates%in%raindates]
+			tminPATH <- tminPATH[tmindates%in%raindates]
+			tmindates <- tmindates[tmindates%in%raindates]
+		}else{
+			etpPATH <- etpPATH[etpdates%in%raindates]
+			etpdates <- etpdates[etpdates%in%raindates]
+		}
+
+		##################
 		if(dekmonUse){
 			dekmondates <- datesDM[dekmonExist]
 			dekmonPATH <- dekmonPATH[dekmonExist]
-			if(!any(substr(raindates, 1, 6)%in%substr(dekmondates, 1, 6))){
+			dekmonInt <- substr(dekmondates, 1, 6)%in%substr(raindates, 1, 6)
+			if(!any(dekmonInt)){
 				InsertMessagesTxt(main.txt.out, "Daily rain and dekadal or monthly dates did not overlap", format = TRUE)
 				return(NULL)
 			}
+			dekmonPATH <- dekmonPATH[dekmonInt]
+			dekmondates <- dekmondates[dekmonInt]
 		}
 
 		##################
@@ -322,368 +468,41 @@ PICSAProcs <- function(GeneralParameters){
 		}
 
 		#####################################
-		nc <- nc_open(rainPATH[1])
-		rainlon <- nc$dim[[rainNcInfo$rfeILon]]$vals
-		rainlat <- nc$dim[[rainNcInfo$rfeILat]]$vals
-		nc_close(nc)
 
-		rainInfo <- c(rainFl, rainFf)
-		if(!is.null(EnvPICSA$cdtPrecip)){
-			iexist <- raindates%in%EnvPICSA$cdtPrecip$dates
-			if(all(iexist)){
-				if(!isTRUE(all.equal(EnvPICSA$rainInfo, rainInfo))){
-					readRaindata <- TRUE
-					EnvPICSA$cdtPrecip <- NULL
-				}else readRaindata <- FALSE
-			}else{
-				if(any(iexist) & isTRUE(all.equal(EnvPICSA$rainInfo, rainInfo))){
-					raindates <- raindates[!iexist]
-					rainPATH <- rainPATH[!iexist]
-				}else EnvPICSA$cdtPrecip <- NULL
-				readRaindata <- TRUE
-			}
-		}else readRaindata <- TRUE
-
-		if(readRaindata){
-			InsertMessagesTxt(main.txt.out, 'Read rainfall data ...')
-			if(doparallel & length(rainPATH) >= 180){
-				klust <- makeCluster(nb_cores)
-				registerDoParallel(klust)
-				`%parLoop%` <- `%dopar%`
-				closeklust <- TRUE
-			}else{
-				`%parLoop%` <- `%do%`
-				closeklust <- FALSE
-			}
-
-			xo <- order(rainlon)
-			rainlon <- rainlon[xo]
-			yo <- order(rainlat)
-			rainlat <- rainlat[yo]
-
-			ncData <- foreach(jj = seq_along(rainPATH), .packages = "ncdf4",
-							.export = c("rainPATH", "rainNcInfo")) %parLoop% {
-				nc <- nc_open(rainPATH[jj])
-				vars <- ncvar_get(nc, varid = rainNcInfo$rfeVarid)
-				nc_close(nc)
-				vars <- vars[xo, yo]
-				if(rainNcInfo$rfeILat < rainNcInfo$rfeILon){
-					vars <- matrix(c(vars), nrow = length(rainlon), ncol = length(rainlat), byrow = TRUE)
-				}
-				vars
-			}
-			if(closeklust) stopCluster(klust)
-			InsertMessagesTxt(main.txt.out, 'Reading rainfall data finished')
-
-			xycrd <- expand.grid(rainlon, rainlat)
-			cdtPrecip <- list(
-				lon = xycrd[, 1],
-				lat = xycrd[, 2],
-				dates = raindates,
-				data = t(sapply(ncData, c))
-			)
-			rm(ncData)
-			cdtPrecip$dates <- c(EnvPICSA$cdtPrecip$dates, cdtPrecip$dates)
-			cdtPrecip$data <- rbind(EnvPICSA$cdtPrecip$data, cdtPrecip$data)
-			odaty <- order(cdtPrecip$dates)
-			cdtPrecip$dates <- cdtPrecip$dates[odaty]
-			cdtPrecip$data <- cdtPrecip$data[odaty, , drop = FALSE]
-			EnvPICSA$cdtPrecip <- cdtPrecip
-			EnvPICSA$rainInfo <- rainInfo
-		}else cdtPrecip <- EnvPICSA$cdtPrecip
+		InsertMessagesTxt(main.txt.out, 'Read rainfall data ...')
+		cdtPrecip <- readPICSANcdfData("cdtPrecip", raindates, rainPATH, rainNcInfo, rainFl, rainFf, outPICSAData, chunksize)
+		InsertMessagesTxt(main.txt.out, 'Reading rainfall data finished')
 
 		#####################################
 
 		if(compute.ETP == "temp"){
-			nc <- nc_open(tmaxPATH[1])
-			tmaxlon <- nc$dim[[tmaxNcInfo$rfeILon]]$vals
-			tmaxlat <- nc$dim[[tmaxNcInfo$rfeILat]]$vals
-			nc_close(nc)
-
-			tmaxInfo <- c(tmaxFl, tmaxFf)
-			if(!is.null(EnvPICSA$cdtTmax)){
-				iexist <- tmaxdates%in%EnvPICSA$cdtTmax$dates
-				if(all(iexist)){
-					if(!isTRUE(all.equal(EnvPICSA$tmaxInfo, tmaxInfo))){
-						readTmaxdata <- TRUE
-						EnvPICSA$cdtTmax <- NULL
-					}else readTmaxdata <- FALSE
-				}else{
-					if(any(iexist) & isTRUE(all.equal(EnvPICSA$tmaxInfo, tmaxInfo))){
-						tmaxdates <- tmaxdates[!iexist]
-						tmaxPATH <- tmaxPATH[!iexist]
-					}else EnvPICSA$cdtTmax <- NULL
-					readTmaxdata <- TRUE
-				}
-			}else readTmaxdata <- TRUE
-
-			if(readTmaxdata){
-				InsertMessagesTxt(main.txt.out, 'Read tmax data ...')
-				if(doparallel & length(tmaxPATH) >= 180){
-					klust <- makeCluster(nb_cores)
-					registerDoParallel(klust)
-					`%parLoop%` <- `%dopar%`
-					closeklust <- TRUE
-				}else{
-					`%parLoop%` <- `%do%`
-					closeklust <- FALSE
-				}
-
-				xo <- order(tmaxlon)
-				tmaxlon <- tmaxlon[xo]
-				yo <- order(tmaxlat)
-				tmaxlat <- tmaxlat[yo]
-
-				ncData <- foreach(jj = seq_along(tmaxPATH), .packages = "ncdf4",
-								.export = c("tmaxPATH", "tmaxNcInfo")) %parLoop% {
-					nc <- nc_open(tmaxPATH[jj])
-					vars <- ncvar_get(nc, varid = tmaxNcInfo$rfeVarid)
-					nc_close(nc)
-					vars <- vars[xo, yo]
-					if(tmaxNcInfo$rfeILat < tmaxNcInfo$rfeILon){
-						vars <- matrix(c(vars), nrow = length(tmaxlon), ncol = length(tmaxlat), byrow = TRUE)
-					}
-					vars
-				}
-				if(closeklust) stopCluster(klust)
-				InsertMessagesTxt(main.txt.out, 'Reading tmax data finished')
-
-				xycrd <- expand.grid(tmaxlon, tmaxlat)
-				cdtTmax <- list(
-					lon = xycrd[, 1],
-					lat = xycrd[, 2],
-					dates = tmaxdates,
-					data = t(sapply(ncData, c))
-				)
-				rm(ncData)
-				cdtTmax$dates <- c(EnvPICSA$cdtTmax$dates, cdtTmax$dates)
-				cdtTmax$data <- rbind(EnvPICSA$cdtTmax$data, cdtTmax$data)
-				odaty <- order(cdtTmax$dates)
-				cdtTmax$dates <- cdtTmax$dates[odaty]
-				cdtTmax$data <- cdtTmax$data[odaty, , drop = FALSE]
-				EnvPICSA$cdtTmax <- cdtTmax
-				EnvPICSA$tmaxInfo <- tmaxInfo
-			}else cdtTmax <- EnvPICSA$cdtTmax
+			InsertMessagesTxt(main.txt.out, 'Read tmax data ...')
+			cdtTmax <- readPICSANcdfData("cdtTmax", tmaxdates, tmaxPATH, tmaxNcInfo, tmaxFl, tmaxFf, outPICSAData, chunksize)
+			InsertMessagesTxt(main.txt.out, 'Reading tmax data finished')
 
 			############
-
-			nc <- nc_open(tminPATH[1])
-			tminlon <- nc$dim[[tminNcInfo$rfeILon]]$vals
-			tminlat <- nc$dim[[tminNcInfo$rfeILat]]$vals
-			nc_close(nc)
-
-			tminInfo <- c(tminFl, tminFf)
-			if(!is.null(EnvPICSA$cdtTmin)){
-				iexist <- tmindates%in%EnvPICSA$cdtTmin$dates
-				if(all(iexist)){
-					if(!isTRUE(all.equal(EnvPICSA$tminInfo, tminInfo))){
-						readTmindata <- TRUE
-						EnvPICSA$cdtTmin <- NULL
-					}else readTmindata <- FALSE
-				}else{
-					if(any(iexist) & isTRUE(all.equal(EnvPICSA$tminInfo, tminInfo))){
-						tmindates <- tmindates[!iexist]
-						tminPATH <- tminPATH[!iexist]
-					}else EnvPICSA$cdtTmin <- NULL
-					readTmindata <- TRUE
-				}
-			}else readTmindata <- TRUE
-
-			if(readTmindata){
-				InsertMessagesTxt(main.txt.out, 'Read tmin data ...')
-				if(doparallel & length(tminPATH) >= 180){
-					klust <- makeCluster(nb_cores)
-					registerDoParallel(klust)
-					`%parLoop%` <- `%dopar%`
-					closeklust <- TRUE
-				}else{
-					`%parLoop%` <- `%do%`
-					closeklust <- FALSE
-				}
-
-				xo <- order(tminlon)
-				tminlon <- tminlon[xo]
-				yo <- order(tminlat)
-				tminlat <- tminlat[yo]
-
-				ncData <- foreach(jj = seq_along(tminPATH), .packages = "ncdf4",
-								.export = c("tminPATH", "tminNcInfo")) %parLoop% {
-					nc <- nc_open(tminPATH[jj])
-					vars <- ncvar_get(nc, varid = tminNcInfo$rfeVarid)
-					nc_close(nc)
-					vars <- vars[xo, yo]
-					if(tminNcInfo$rfeILat < tminNcInfo$rfeILon){
-						vars <- matrix(c(vars), nrow = length(tminlon), ncol = length(tminlat), byrow = TRUE)
-					}
-					vars
-				}
-				if(closeklust) stopCluster(klust)
-				InsertMessagesTxt(main.txt.out, 'Reading tmin data finished')
-
-				xycrd <- expand.grid(tminlon, tminlat)
-				cdtTmin <- list(
-					lon = xycrd[, 1],
-					lat = xycrd[, 2],
-					dates = tmindates,
-					data = t(sapply(ncData, c))
-				)
-				rm(ncData)
-				cdtTmin$dates <- c(EnvPICSA$cdtTmin$dates, cdtTmin$dates)
-				cdtTmin$data <- rbind(EnvPICSA$cdtTmin$data, cdtTmin$data)
-				odaty <- order(cdtTmin$dates)
-				cdtTmin$dates <- cdtTmin$dates[odaty]
-				cdtTmin$data <- cdtTmin$data[odaty, , drop = FALSE]
-				EnvPICSA$cdtTmin <- cdtTmin
-				EnvPICSA$tminInfo <- tminInfo
-			}else cdtTmin <- EnvPICSA$cdtTmin
-
+			InsertMessagesTxt(main.txt.out, 'Read tmin data ...')
+			cdtTmin <- readPICSANcdfData("cdtTmin", tmindates, tminPATH, tminNcInfo, tminFl, tminFf, outPICSAData, chunksize)
+			InsertMessagesTxt(main.txt.out, 'Reading tmin data finished')
 		}else{
-
-			nc <- nc_open(etpPATH[1])
-			etplon <- nc$dim[[etpNcInfo$rfeILon]]$vals
-			etplat <- nc$dim[[etpNcInfo$rfeILat]]$vals
-			nc_close(nc)
-
-			etpInfo <- c(etpFl, etpFf)
-			if(!is.null(EnvPICSA$cdtETP)){
-				iexist <- etpdates%in%EnvPICSA$cdtETP$dates
-				if(all(iexist)){
-					if(!isTRUE(all.equal(EnvPICSA$etpInfo, etpInfo))){
-						readETPdata <- TRUE
-						EnvPICSA$cdtETP <- NULL
-					}else readETPdata <- FALSE
-				}else{
-					if(any(iexist) & isTRUE(all.equal(EnvPICSA$etpInfo, etpInfo))){
-						etpdates <- etpdates[!iexist]
-						etpPATH <- etpPATH[!iexist]
-					}else EnvPICSA$cdtETP <- NULL
-					readETPdata <- TRUE
-				}
-			}else readETPdata <- TRUE
-
-			if(readETPdata){
-				InsertMessagesTxt(main.txt.out, 'Read PET data ...')
-				if(doparallel & length(etpPATH) >= 180){
-					klust <- makeCluster(nb_cores)
-					registerDoParallel(klust)
-					`%parLoop%` <- `%dopar%`
-					closeklust <- TRUE
-				}else{
-					`%parLoop%` <- `%do%`
-					closeklust <- FALSE
-				}
-
-				xo <- order(etplon)
-				etplon <- etplon[xo]
-				yo <- order(etplat)
-				etplat <- etplat[yo]
-
-				ncData <- foreach(jj = seq_along(etpPATH), .packages = "ncdf4",
-								.export = c("etpPATH", "etpNcInfo")) %parLoop% {
-					nc <- nc_open(etpPATH[jj])
-					vars <- ncvar_get(nc, varid = etpNcInfo$rfeVarid)
-					nc_close(nc)
-					vars <- vars[xo, yo]
-					if(etpNcInfo$rfeILat < etpNcInfo$rfeILon){
-						vars <- matrix(c(vars), nrow = length(etplon), ncol = length(etplat), byrow = TRUE)
-					}
-					vars
-				}
-				if(closeklust) stopCluster(klust)
-				InsertMessagesTxt(main.txt.out, 'Reading PET data finished')
-
-				xycrd <- expand.grid(etplon, etplat)
-				cdtETP <- list(
-					lon = xycrd[, 1],
-					lat = xycrd[, 2],
-					dates = etpdates,
-					data = t(sapply(ncData, c))
-				)
-				rm(ncData)
-				cdtETP$dates <- c(EnvPICSA$cdtETP$dates, cdtETP$dates)
-				cdtETP$data <- rbind(EnvPICSA$cdtETP$data, cdtETP$data)
-				odaty <- order(cdtETP$dates)
-				cdtETP$dates <- cdtETP$dates[odaty]
-				cdtETP$data <- cdtETP$data[odaty, , drop = FALSE]
-				EnvPICSA$cdtETP <- cdtETP
-				EnvPICSA$etpInfo <- etpInfo
-			}else cdtETP <- EnvPICSA$cdtETP
+			InsertMessagesTxt(main.txt.out, 'Read PET data ...')
+			cdtETP <- readPICSANcdfData("cdtETP", etpdates, etpPATH, etpNcInfo, etpFl, etpFf, outPICSAData, chunksize)
+			InsertMessagesTxt(main.txt.out, 'Reading PET data finished')
 		}
 
 		#####################################
 
 		if(dekmonUse){
-			nc <- nc_open(dekmonPATH[1])
-			dekmonlon <- nc$dim[[dekmonNcInfo$rfeILon]]$vals
-			dekmonlat <- nc$dim[[dekmonNcInfo$rfeILat]]$vals
-			nc_close(nc)
-
-			dekmonInfo <- c(dekmonFl, dekmonFf)
-			if(!is.null(EnvPICSA$cdtPrecip1)){
-				iexist <- dekmondates%in%EnvPICSA$cdtPrecip1$dates
-				if(all(iexist)){
-					if(!isTRUE(all.equal(EnvPICSA$dekmonInfo, dekmonInfo))){
-						readRaindata1 <- TRUE
-						EnvPICSA$cdtPrecip1 <- NULL
-					}else readRaindata1 <- FALSE
-				}else{
-					if(any(iexist) & isTRUE(all.equal(EnvPICSA$dekmonInfo, dekmonInfo))){
-						dekmondates <- dekmondates[!iexist]
-						dekmonPATH <- dekmonPATH[!iexist]
-					}else EnvPICSA$cdtPrecip1 <- NULL
-					readRaindata1 <- TRUE
-				}
-			}else readRaindata1 <- TRUE
-
-			if(readRaindata1){
-				InsertMessagesTxt(main.txt.out, 'Read rainfall data for seasonal amounts ...')
-				if(doparallel & length(dekmonPATH) >= 180){
-					klust <- makeCluster(nb_cores)
-					registerDoParallel(klust)
-					`%parLoop%` <- `%dopar%`
-					closeklust <- TRUE
-				}else{
-					`%parLoop%` <- `%do%`
-					closeklust <- FALSE
-				}
-
-				xo <- order(dekmonlon)
-				dekmonlon <- dekmonlon[xo]
-				yo <- order(dekmonlat)
-				dekmonlat <- dekmonlat[yo]
-
-				ncData <- foreach(jj = seq_along(dekmonPATH), .packages = "ncdf4",
-								.export = c("dekmonPATH", "dekmonNcInfo")) %parLoop% {
-					nc <- nc_open(dekmonPATH[jj])
-					vars <- ncvar_get(nc, varid = dekmonNcInfo$rfeVarid)
-					nc_close(nc)
-					vars <- vars[xo, yo]
-					if(dekmonNcInfo$rfeILat < dekmonNcInfo$rfeILon){
-						vars <- matrix(c(vars), nrow = length(dekmonlon), ncol = length(dekmonlat), byrow = TRUE)
-					}
-					vars
-				}
-				if(closeklust) stopCluster(klust)
-				InsertMessagesTxt(main.txt.out, 'Reading rainfall data for seasonal amount finished')
-
-				xycrd <- expand.grid(dekmonlon, dekmonlat)
-				cdtPrecip1 <- list(
-					lon = xycrd[, 1],
-					lat = xycrd[, 2],
-					dates = dekmondates,
-					data = t(sapply(ncData, c))
-				)
-				rm(ncData)
-				cdtPrecip1$dates <- c(EnvPICSA$cdtPrecip1$dates, cdtPrecip1$dates)
-				cdtPrecip1$data <- rbind(EnvPICSA$cdtPrecip1$data, cdtPrecip1$data)
-				odaty <- order(cdtPrecip1$dates)
-				cdtPrecip1$dates <- cdtPrecip1$dates[odaty]
-				cdtPrecip1$data <- cdtPrecip1$data[odaty, , drop = FALSE]
-				EnvPICSA$cdtPrecip1 <- cdtPrecip1
-				EnvPICSA$dekmonInfo <- dekmonInfo
-			}else cdtPrecip1 <- EnvPICSA$cdtPrecip1
-		}		 
+			InsertMessagesTxt(main.txt.out, 'Read rainfall data for seasonal amounts ...')
+			cdtPrecip1 <- readPICSANcdfData("cdtPrecip1", dekmondates, dekmonPATH, dekmonNcInfo, dekmonFl, dekmonFf, outPICSAData, chunksize)
+			InsertMessagesTxt(main.txt.out, 'Reading rainfall data for seasonal amount finished')
+		}
 	}
+
+	##################
+
+	opDATA <- NULL
+	opDATA$dates <- cdtPrecip$dates
 
 	##################
 
@@ -691,24 +510,19 @@ PICSAProcs <- function(GeneralParameters){
 		if(!GeneralParameters$date.range$all.years){
 			taona <- as.numeric(substr(cdtPrecip$dates, 1, 4))
 			itaona <- taona >= GeneralParameters$date.range$start.year & taona <= GeneralParameters$date.range$end.year
-			cdtPrecip$dates <- cdtPrecip$dates[itaona]
-			cdtPrecip$data <- cdtPrecip$data[itaona, , drop = FALSE]
-		}
-	}
+			opDATA$dates <- cdtPrecip$dates[itaona]
+			opDATA$cdtPrecip$index <- cdtPrecip$index[itaona]
+		}else opDATA$cdtPrecip$index <- cdtPrecip$index
+	}else opDATA$cdtPrecip$index <- cdtPrecip$index
 
 	if(compute.ETP == "temp"){
-		cdtTmax$data <- cdtTmax$data[match(cdtPrecip$dates, cdtTmax$dates), , drop = FALSE]
-		cdtTmax$dates <- cdtPrecip$dates
-		cdtTmin$data <- cdtTmin$data[match(cdtPrecip$dates, cdtTmin$dates), , drop = FALSE]
-		cdtTmin$dates <- cdtPrecip$dates
-	}else{
-		cdtETP$data <- cdtETP$data[match(cdtPrecip$dates, cdtETP$dates), , drop = FALSE]
-		cdtETP$dates <- cdtPrecip$dates
-	}
+		opDATA$cdtTmax$index <- cdtTmax$index[match(opDATA$dates, cdtTmax$dates)]
+		opDATA$cdtTmin$index <- cdtTmin$index[match(opDATA$dates, cdtTmin$dates)]
+	}else opDATA$cdtETP$index <- cdtETP$index[match(opDATA$dates, cdtETP$dates)]
 
 	if(dekmonUse){
-		cdtPrecip1$data <- cdtPrecip1$data[substr(cdtPrecip1$dates, 1, 6)%in%substr(cdtPrecip$dates, 1, 6), , drop = FALSE]
-		cdtPrecip1$dates <- cdtPrecip1$dates[substr(cdtPrecip1$dates, 1, 6)%in%substr(cdtPrecip$dates, 1, 6)]
+		opDATA$cdtPrecip1$index <- cdtPrecip1$index[substr(cdtPrecip1$dates, 1, 6)%in%substr(opDATA$dates, 1, 6)]
+		opDATA$cdtPrecip1$dates <- cdtPrecip1$dates[substr(cdtPrecip1$dates, 1, 6)%in%substr(opDATA$dates, 1, 6)]
 	}
 
 	##################
@@ -722,120 +536,236 @@ PICSAProcs <- function(GeneralParameters){
 			return(NULL)
 		}
 
-		# idens <- cdtPrecip$id
-		cdtPrecip$lon <- cdtPrecip$lon[match(idens, cdtPrecip$id)]
-		cdtPrecip$lat <- cdtPrecip$lat[match(idens, cdtPrecip$id)]
-		cdtPrecip$data <- cdtPrecip$data[, match(idens, cdtPrecip$id), drop = FALSE]
-		cdtPrecip$id <- cdtPrecip$id[match(idens, cdtPrecip$id)]
+		opDATA$cdtPrecip$pid <- match(idens, cdtPrecip$id)
+		opDATA$lon <- cdtPrecip$lon[opDATA$cdtPrecip$pid]
+		opDATA$lat <- cdtPrecip$lat[opDATA$cdtPrecip$pid]
+		opDATA$id <- cdtPrecip$id[opDATA$cdtPrecip$pid]
 
 		if(compute.ETP == "temp"){
-			cdtTmax$lon <- cdtTmax$lon[match(idens, cdtTmax$id)]
-			cdtTmax$lat <- cdtTmax$lat[match(idens, cdtTmax$id)]
-			cdtTmax$data <- cdtTmax$data[, match(idens, cdtTmax$id), drop = FALSE]
-			cdtTmax$id <- cdtTmax$id[match(idens, cdtTmax$id)]
-
-			cdtTmin$lon <- cdtTmin$lon[match(idens, cdtTmin$id)]
-			cdtTmin$lat <- cdtTmin$lat[match(idens, cdtTmin$id)]
-			cdtTmin$data <- cdtTmin$data[, match(idens, cdtTmin$id), drop = FALSE]
-			cdtTmin$id <- cdtTmin$id[match(idens, cdtTmin$id)]
-		}else{
-			cdtETP$lon <- cdtETP$lon[match(idens, cdtETP$id)]
-			cdtETP$lat <- cdtETP$lat[match(idens, cdtETP$id)]
-			cdtETP$data <- cdtETP$data[, match(idens, cdtETP$id), drop = FALSE]
-			cdtETP$id <- cdtETP$id[match(idens, cdtETP$id)]
-		}
+			opDATA$cdtTmax$pid <- match(idens, cdtTmax$id)
+			opDATA$cdtTmin$pid <- match(idens, cdtTmin$id)
+		}else opDATA$cdtETP$pid <- match(idens, cdtETP$id)
 
 		if(dekmonUse){
 			if(length(intersect(idens, cdtPrecip1$id)) == 0){
 				InsertMessagesTxt(main.txt.out, "No match between daily and dekadal rain ID", format = TRUE)
 				return(NULL)
 			}
-			cdtPrecip1$lon <- cdtPrecip1$lon[match(idens, cdtPrecip1$id)]
-			cdtPrecip1$lat <- cdtPrecip1$lat[match(idens, cdtPrecip1$id)]
-			cdtPrecip1$data <- cdtPrecip1$data[, match(idens, cdtPrecip1$id), drop = FALSE]
-			cdtPrecip1$id <- cdtPrecip1$id[match(idens, cdtPrecip1$id)]
+			opDATA$cdtPrecip1$pid <- match(idens, cdtPrecip1$id)
 		}
 	}
 
 	if(data.type == 'netcdf'){
 		xyPrecip <- data.frame(x = cdtPrecip$lon, y = cdtPrecip$lat)
 		coordinates(xyPrecip) <- ~x+y
-		xyPrecip <- SpatialPixels(points = xyPrecip, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
+		xyPrecip <- SpatialPixels(points = xyPrecip, tolerance = sqrt(sqrt(.Machine$double.eps)))
+		opDATA$cdtPrecip$pid <- seq_along(cdtPrecip$lon)
+		opDATA$lon <- cdtPrecip$lon
+		opDATA$lat <- cdtPrecip$lat
 
 		if(compute.ETP == "temp"){
 			xyTmax <- data.frame(x = cdtTmax$lon, y = cdtTmax$lat)
 			coordinates(xyTmax) <- ~x+y
-			xyTmax <- SpatialPixels(points = xyTmax, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
-			ijmax <- over(xyPrecip, xyTmax)
-			cdtTmax$lon <- cdtPrecip$lon
-			cdtTmax$lat <- cdtPrecip$lat
-			cdtTmax$data <- cdtTmax$data[, ijmax, drop = FALSE]
+			xyTmax <- SpatialPixels(points = xyTmax, tolerance = sqrt(sqrt(.Machine$double.eps)))
+			opDATA$cdtTmax$pid <- over(xyPrecip, xyTmax)
 
 			xyTmin <- data.frame(x = cdtTmin$lon, y = cdtTmin$lat)
 			coordinates(xyTmin) <- ~x+y
-			xyTmin <- SpatialPixels(points = xyTmin, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
-			ijmin <- over(xyPrecip, xyTmin)
-			cdtTmin$lon <- cdtPrecip$lon
-			cdtTmin$lat <- cdtPrecip$lat
-			cdtTmin$data <- cdtTmin$data[, ijmin, drop = FALSE]
+			xyTmin <- SpatialPixels(points = xyTmin, tolerance = sqrt(sqrt(.Machine$double.eps)))
+			opDATA$cdtTmin$pid <- over(xyPrecip, xyTmin)
+			rm(xyTmax, xyTmin)
 		}else{
 			xyETP <- data.frame(x = cdtETP$lon, y = cdtETP$lat)
 			coordinates(xyETP) <- ~x+y
-			xyETP <- SpatialPixels(points = xyETP, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
-			ijetp <- over(xyPrecip, xyETP)
-			cdtETP$lon <- cdtPrecip$lon
-			cdtETP$lat <- cdtPrecip$lat
-			cdtETP$data <- cdtETP$data[, ijetp, drop = FALSE]
+			xyETP <- SpatialPixels(points = xyETP, tolerance = sqrt(sqrt(.Machine$double.eps)))
+			opDATA$cdtETP$pid <- over(xyPrecip, xyETP)
+			rm(xyETP)
 		}
 
 		if(dekmonUse){
 			xyPrecip1 <- data.frame(x = cdtPrecip1$lon, y = cdtPrecip1$lat)
 			coordinates(xyPrecip1) <- ~x+y
-			xyPrecip1 <- SpatialPixels(points = xyPrecip1, tolerance = sqrt(sqrt(.Machine$double.eps)), proj4string = CRS(as.character(NA)))
-			ijrr1 <- over(xyPrecip, xyPrecip1)
-			cdtPrecip1$lon <- cdtPrecip$lon
-			cdtPrecip1$lat <- cdtPrecip$lat
-			cdtPrecip1$data <- cdtPrecip1$data[, ijrr1, drop = FALSE]
+			xyPrecip1 <- SpatialPixels(points = xyPrecip1, tolerance = sqrt(sqrt(.Machine$double.eps)))
+			opDATA$cdtPrecip1$pid <- over(xyPrecip, xyPrecip1)
+			rm(xyPrecip1)
 		}
+		rm(xyPrecip)
 	}
 
-	##################
+	##################################################################################################
+
+	COLIDX <- seq_along(opDATA$lon)
+	loopCOL <- split(COLIDX, ceiling(COLIDX/col.max))
+
+	##################################################################################################
 
 	if(compute.ETP == "temp"){
-		latRa <- unique(cdtTmax$lat)
-		Ra.Annual <- ExtraterrestrialRadiation(latRa)
-		mmdd.anual <- format(seq(as.Date("2000-1-1"), as.Date("2000-12-31"), 'day'), "%m%d")
-		cdt.dates <- substr(cdtTmax$dates, 5, 8)
-		ilat <- match(cdtTmax$lat, latRa)
-		immdd <- match(cdt.dates, mmdd.anual)
-		RA <- Ra.Annual[immdd, ilat, drop = FALSE]
+		InsertMessagesTxt(main.txt.out, 'Compute PET ...')
 
-		cdtETP <- NULL
-		cdtETP$data <- ETPHargreaves(cdtTmax$data, cdtTmin$data, RA, cdtPrecip$data)
-		EnvPICSA$cdtETP <- cdtETP
+		etpdates <- opDATA$dates
+		index.cdtPrecip <- opDATA$cdtPrecip$index
+		index.cdtTmax <- opDATA$cdtTmax$index
+		index.cdtTmin <- opDATA$cdtTmin$index
+
+		dir.cdtETP <- file.path(outPICSAData, "cdtETP")
+		tmaxInfo <- c(tmaxFl, tmaxFf)
+		tminInfo <- c(tminFl, tminFf)
+		change.tmax <- !isTRUE(all.equal(EnvPICSA$cdtTmax$dataInfo, tmaxInfo))
+		change.tmin <- !isTRUE(all.equal(EnvPICSA$cdtTmin$dataInfo, tminInfo))
+		bindPicsaData <- FALSE
+		if(!is.null(EnvPICSA$cdtETP)){
+			iexist <- etpdates%in%EnvPICSA$cdtETP$dates
+			if(all(iexist)){
+				if(change.tmax | change.tmin){
+					calcETPdata <- TRUE
+					unlink(dir.cdtETP, recursive = TRUE)
+					EnvPICSA$cdtETP <- NULL
+				}else calcETPdata <- FALSE
+			}else{
+				if(!change.tmax & !change.tmin){
+					bindPicsaData <- TRUE
+					if(any(iexist)){
+						etpdates <- etpdates[!iexist]
+						index.cdtPrecip <- index.cdtPrecip[!iexist]
+						index.cdtTmax <- index.cdtTmax[!iexist]
+						index.cdtTmin <- index.cdtTmin[!iexist]
+					}
+				}else{
+					unlink(dir.cdtETP, recursive = TRUE)
+					EnvPICSA$cdtETP <- NULL
+				}
+				calcETPdata <- TRUE
+			}
+		}else calcETPdata <- TRUE
+
+		if(calcETPdata){
+			##################
+			# p0 <- Sys.time()
+
+			mmdd.anual <- format(seq(as.Date("2000-1-1"), as.Date("2000-12-31"), 'day'), "%m%d")
+			immdd <- match(substr(etpdates, 5, 8), mmdd.anual)
+
+			is.parallel <- doparallel(length(loopCOL) >= 6)
+			`%parLoop%` <- is.parallel$dofun
+
+			toExports <- c("ExtraterrestrialRadiation", "ETPHargreaves", "doparallel", "readcdtDATAchunk")
+			etpData <- foreach(j = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %parLoop% {
+				loc <- loopCOL[[j]]
+				latRa <- unique(opDATA$lat[loc])
+				Ra.Annual <- ExtraterrestrialRadiation(latRa)
+				ilat <- match(opDATA$lat[loc], latRa)
+				RA <- Ra.Annual[immdd, ilat, drop = FALSE]
+
+				tmax <- extractPICSArdsData("cdtTmax", index.cdtTmax, opDATA$cdtTmax$pid[loc],
+											outPICSAData, chunksize, chunk.par = FALSE)
+				tmin <- extractPICSArdsData("cdtTmin", index.cdtTmin, opDATA$cdtTmin$pid[loc],
+											outPICSAData, chunksize, chunk.par = FALSE)
+				precip <- extractPICSArdsData("cdtPrecip", index.cdtPrecip, opDATA$cdtPrecip$pid[loc],
+												outPICSAData, chunksize, chunk.par = FALSE)
+
+				etp <- ETPHargreaves(tmax, tmin, RA, precip)
+				etp <- round(etp, 1)
+				rm(Ra.Annual, RA, tmax, tmin, precip); gc()
+				return(etp)
+			}
+			if(is.parallel$stop) stopCluster(is.parallel$cluster)
+
+			##################
+			# InsertMessagesTxt(main.txt.out, paste('compute etp', difftime(Sys.time(), p0, units = "mins")))
+			# p0 <- Sys.time()
+
+			etpData <- do.call(cbind, etpData)
+
+			##################
+			# InsertMessagesTxt(main.txt.out, paste('do.call etp', difftime(Sys.time(), p0, units = "mins")))
+			# p0 <- Sys.time()
+
+			cdtETP <- NULL
+			if(data.type == 'cdt') cdtETP$id <- opDATA$id
+			cdtETP[c('lon', 'lat')] <- opDATA[c('lon', 'lat')]
+
+			if(!file.exists(dir.cdtETP)) dir.create(dir.cdtETP, showWarnings = FALSE, recursive = TRUE)
+			write.cdtETP <- if(bindPicsaData) writebindcdtDATAchunk else writecdtDATAchunk
+			colInfo <- write.cdtETP(etpData, dir.cdtETP, chunksize)
+			cdtETP$colInfo <- colInfo
+
+			##################
+			# InsertMessagesTxt(main.txt.out, paste('write etp', difftime(Sys.time(), p0, units = "mins")))
+
+			idx <- seq(length(etpdates))
+			if(bindPicsaData){
+				cdtETP$dates <- c(EnvPICSA$cdtETP$dates, etpdates)
+				cdtETP$index <- c(EnvPICSA$cdtETP$index, max(EnvPICSA$cdtETP$index)+idx)
+			}else{
+				cdtETP$dates <- etpdates
+				cdtETP$index <- idx
+			}
+			odaty <- order(cdtETP$dates)
+			cdtETP$dates <- cdtETP$dates[odaty]
+			cdtETP$index <- cdtETP$index[odaty]
+
+			opDATA$cdtETP$index <- cdtETP$index
+			opDATA$cdtETP$pid <- seq_along(opDATA$lon)
+
+			EnvPICSA$cdtETP <- cdtETP
+			rm(etpData); gc()
+		}else cdtETP <- EnvPICSA$cdtETP
+		InsertMessagesTxt(main.txt.out, 'Computing PET done!')
 	}
 
-	##################
-	InsertMessagesTxt(main.txt.out, 'Calculate onset and cessation of seasonal rainfall ...')
+	##################################################################################################
 
-	if(doparallel & ncol(cdtPrecip$data) >= 200){
-		klust <- makeCluster(nb_cores)
-		registerDoParallel(klust)
-		`%parLoop%` <- `%dopar%`
-		closeklust <- TRUE
-	}else{
-		`%parLoop%` <- `%do%`
-		closeklust <- FALSE
+	EnvPICSA$opDATA <- opDATA
+	EnvPICSA$PICSA.Coords$lon <- opDATA$lon
+	EnvPICSA$PICSA.Coords$lat <- opDATA$lat
+	if(data.type == 'cdt') EnvPICSA$PICSA.Coords$id <- opDATA$id
+
+	#################
+
+	EnvPICSA$Pars$data.type <- GeneralParameters$data.type
+	EnvPICSA$Pars$compute.ETP <- GeneralParameters$compute.ETP
+	EnvPICSA$Pars$dekmonUse <- GeneralParameters$dekmon$use.dekmon
+	EnvPICSA$Pars$dekmonTs <- GeneralParameters$dekmon$time.step
+	EnvPICSA$Pars$thres.rain.day <- GeneralParameters$onset$thres.rain.day
+	EnvPICSA$Pars$col.max <- GeneralParameters$COL.MAX
+	EnvPICSA$Pars$chunksize <- GeneralParameters$chunksize
+
+	load(file.path(apps.dir, 'data', 'ONI_50-2016.RData'))
+	EnvPICSA$ONI$date <- format(seq(as.Date('1950-1-15'), as.Date('2017-12-15'), "month"), "%Y%m")
+	EnvPICSA$ONI$data <- ONI$ts[, 3]
+
+	#################
+
+	if(data.type == 'cdt'){
+		cdtHeadIfon <- cbind(c("STN", "LON", "YEARS/LAT"), rbind(opDATA$id, opDATA$lon, opDATA$lat))
+	}
+	if(data.type == 'netcdf'){
+		ncLON <- sort(unique(opDATA$lon))
+		ncLAT <- sort(unique(opDATA$lat))
+		nLON <- length(ncLON)
+		nLAT <- length(ncLAT)
+		dx <- ncdim_def("Lon", "degreeE", ncLON)
+		dy <- ncdim_def("Lat", "degreeN", ncLAT)
+		cdtNcdfDim <- list(dx, dy)
 	}
 
-	toExport <- c("cessationDectection", "onsetDectection", "cdtPrecip", "cdtETP")
-
-	##################
+	##################################################################################################
 
 	onset.start.month <- GeneralParameters$onset$early.month
 	onset.start.day <- GeneralParameters$onset$early.day
 	onset.end.month <- GeneralParameters$onset$late.month
 	onset.end.day <- GeneralParameters$onset$late.day
+	cess.start.month <- GeneralParameters$cessation$early.month
+	cess.start.day <- GeneralParameters$cessation$early.day
+	cess.end.month <- GeneralParameters$cessation$late.month
+	cess.end.day <- GeneralParameters$cessation$late.day
+	thres.rain.day <- GeneralParameters$onset$thres.rain.day
+	dryspellfun <- if(thres.rain.day == 0) '==' else '<'
+	nbdayfun <- if(thres.rain.day == 0) '>' else '>='
+
+	####################################
+
+	InsertMessagesTxt(main.txt.out, 'Calculate onset of seasonal rainfall ...')
 
 	yearO <- if(onset.end.month <=  onset.start.month) 2015 else 2014
 	win2.search <- as.numeric(as.Date(paste(yearO, onset.end.month, onset.end.day, sep = '-'))
@@ -846,13 +776,84 @@ PICSAProcs <- function(GeneralParameters){
 						min.rain.day = GeneralParameters$onset$min.rain.day,
 						win1.search = GeneralParameters$onset$dry.spell.win.search,
 						dry.spell = GeneralParameters$onset$dry.spell,
-						thres.rain.day = GeneralParameters$onset$thres.rain.day, 
+						thres.rain.day = thres.rain.day, 
 						win2.search = win2.search)
 
-	cess.start.month <- GeneralParameters$cessation$early.month
-	cess.start.day <- GeneralParameters$cessation$early.day
-	cess.end.month <- GeneralParameters$cessation$late.month
-	cess.end.day <- GeneralParameters$cessation$late.day
+	onset.idx <- getIndexCalcOnsetCess(opDATA$dates, onset.start.month, onset.start.day)
+
+	##################
+	is.parallel <- doparallel(length(loopCOL[[1]]) >= 50)
+	`%parLoop%` <- is.parallel$dofun
+
+	toExport <- c("onsetDectection")
+
+	ONSET <- foreach(ii = seq_along(loopCOL)) %do% {
+		precip <- extractPICSArdsData1("cdtPrecip", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
+		onset <- foreach(jj = seq_along(onset.idx), .export = toExport) %parLoop% {
+			onsetDectection(onset.idx[[jj]], DATA = precip, dates = opDATA$dates, pars = onset.pars, min.frac = 0.99)
+		}
+		rm(precip); gc()
+		do.call(rbind, onset)
+	}
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
+
+	ONSET <- do.call(cbind, ONSET)
+	onsetXS <- paste(2014, onset.start.month, onset.start.day, sep = '-')
+	yearS <- sapply(onset.idx, function(x) opDATA$dates[x[1]])
+	if(onset.start.month > cess.start.month){
+		ONSET <- rbind(NA, ONSET)
+		yearS <- c(paste0(as.numeric(substr(yearS[1], 1, 4))-1, substr(yearS[1], 5, 8)), yearS)
+	}
+	yearS <- as.Date(yearS, "%Y%m%d")
+	yrsOnset <- as.numeric(format(yearS, "%Y"))
+	dimONSET <- dim(ONSET)
+	ONSET <- as.Date(ONSET, "%Y%m%d")
+	dim(ONSET) <- dimONSET
+	ONSET <- as.numeric(ONSET - yearS)
+	dim(ONSET) <- dimONSET
+
+	if(data.type == 'cdt'){
+		file.cdtONSET1 <- file.path(outputPICSA, "cdtONSET.csv")
+		xtmp <- rbind(cdtHeadIfon, cbind(format(yearS, "%Y-%m%d"), ONSET))
+		xtmp[is.na(xtmp)] <- -99
+		writeFiles(xtmp, file.cdtONSET1)
+	}
+	if(data.type == 'netcdf'){
+		dir.cdtONSET1 <- file.path(outputPICSA, "cdtONSET")
+		dir.create(dir.cdtONSET1, showWarnings = FALSE, recursive = TRUE)
+		for(j in seq_along(yrsOnset)){
+			xtmp <- matrix(ONSET[j, ], nLON, nLAT)
+			xtmp[is.na(xtmp)] <- -99
+			units <- paste("days since", as.character(yearS[j]))
+			nc.grd <- ncvar_def("onset", units, cdtNcdfDim, -99, "Starting dates of the rainy season", "short", shuffle = TRUE, compression = 9)
+			ncoutfile <- file.path(dir.cdtONSET1, paste0("onset_", yrsOnset[j], ".nc"))
+			nc <- nc_create(ncoutfile, nc.grd)
+			ncvar_put(nc, nc.grd, xtmp)
+			nc_close(nc)
+		}
+	}
+
+	dir.cdtONSET <- file.path(outPICSAData, "cdtONSET")
+	dir.create(dir.cdtONSET, showWarnings = FALSE, recursive = TRUE)
+	colInfo <- writecdtDATAchunk(ONSET, dir.cdtONSET, chunksize)
+	saveRDS(ONSET, file.path(dir.cdtONSET, "seas.rds"))
+
+	cdtONSET <- NULL
+	# cdtONSET$series.index <- onset.idx
+	cdtONSET$years <- yrsOnset
+	cdtONSET$days.since <- as.character(yearS)
+	cdtONSET$start.labels <- onsetXS
+	cdtONSET$colInfo <- colInfo
+
+	EnvPICSA$cdtONSET <- cdtONSET
+
+	rm(ONSET, onset.idx, yearS, colInfo, xtmp); gc()
+	InsertMessagesTxt(main.txt.out, 'Calculating onset of seasonal rainfall finished')
+
+	####################################
+
+	InsertMessagesTxt(main.txt.out, 'Calculate cessation of seasonal rainfall ...')
+
 	yearC <- if(cess.end.month <=  cess.start.month) 2015 else 2014
 	cess.win.search <- as.numeric(as.Date(paste(yearC, cess.end.month, cess.end.day, sep = '-'))
 						- as.Date(paste(2014, cess.start.month, cess.start.day, sep = '-')))
@@ -864,259 +865,472 @@ PICSAProcs <- function(GeneralParameters){
 					  win.search = cess.win.search,
 					  WB.lag = WB.lag)
 
-	cess.idx <- getIndexCalcOnsetCess(cdtPrecip$dates, cess.start.month, cess.start.day, WB.lag)
-	onset.idx <- getIndexCalcOnsetCess(cdtPrecip$dates, onset.start.month, onset.start.day)
+	cess.idx <- getIndexCalcOnsetCess(opDATA$dates, cess.start.month, cess.start.day, WB.lag)
 
 	##################
 
-	onset <- foreach(jj = seq_along(onset.idx), .packages = "matrixStats", .export = toExport) %parLoop% {
-		onsetDectection(onset.idx[[jj]], DATA = cdtPrecip$data, dates = cdtPrecip$dates, pars = onset.pars, min.frac = 0.99)
+	is.parallel <- doparallel(length(loopCOL[[1]]) >= 50)
+	`%parLoop%` <- is.parallel$dofun
+
+	toExport <- c("cessationDectection")
+
+	CESSAT <- foreach(ii = seq_along(loopCOL)) %do% {
+		precip <- extractPICSArdsData1("cdtPrecip", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
+		etp <- extractPICSArdsData1("cdtETP", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
+		cessat <- foreach(jj = seq_along(cess.idx), .export = toExport) %parLoop% {
+			cessationDectection(cess.idx[[jj]], Precip = precip, ETP = etp, dates = opDATA$dates, pars = cess.pars, min.frac = 0.99)
+		}
+		rm(precip, etp); gc()
+		do.call(rbind, cessat)
 	}
-	onset <- do.call(rbind, onset)
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
-	cessat <- foreach(jj = seq_along(cess.idx), .packages = "matrixStats", .export = toExport) %parLoop% {
-		cessationDectection(cess.idx[[jj]], Precip = cdtPrecip$data, ETP = cdtETP$data, dates = cdtPrecip$dates, pars = cess.pars, min.frac = 0.99)
-	}
-	cessat <- do.call(rbind, cessat)
-
-	if(closeklust) stopCluster(klust)
-	InsertMessagesTxt(main.txt.out, 'Calculating onset and cessation of seasonal rainfall finished')
-
-	##################
-
-	onsetXS <- paste(2014, onset.start.month, onset.start.day, sep = '-')
-	cessatXS <- as.character(as.Date(paste(2014, cess.start.month, cess.start.day, sep = '-'))-WB.lag)
-	yearS <- sapply(onset.idx, function(x) cdtPrecip$dates[x[1]])
-	yearE <- sapply(cess.idx, function(x) cdtPrecip$dates[x[1]])
-
+	CESSAT <- do.call(cbind, CESSAT)
+	cessatXS <- as.character(as.Date(paste(2014, cess.start.month, cess.start.day, sep = '-')))
+	yearE <- sapply(cess.idx, function(x) opDATA$dates[x[WB.lag + 1]])
 	if(onset.start.month > cess.start.month){
-		cessat <- rbind(cessat, NA)
-		yearE <- c(yearE, NA)
-		onset <- rbind(NA, onset)
-		yearS <- c(NA, yearS)
+		CESSAT <- rbind(CESSAT, NA)
+		yearE <- c(yearE, paste0(as.numeric(substr(yearE[length(yearE)], 1, 4))+1, substr(yearE[length(yearE)], 5, 8)))
+	}
+	yearE <- as.Date(yearE, "%Y%m%d")
+	yrsCesst <- as.numeric(format(yearE, "%Y"))
+	dimCESSAT <- dim(CESSAT)
+	CESSAT <- as.Date(CESSAT, "%Y%m%d")
+	dim(CESSAT) <- dimCESSAT
+	CESSAT <- as.numeric(CESSAT - yearE)
+	dim(CESSAT) <- dimCESSAT
+
+	if(data.type == 'cdt'){
+		file.cdtCESSAT1 <- file.path(outputPICSA, "cdtCESSAT.csv")
+		xtmp <- rbind(cdtHeadIfon, cbind(format(yearE, "%Y-%m%d"), CESSAT))
+		xtmp[is.na(xtmp)] <- -99
+		writeFiles(xtmp, file.cdtCESSAT1)
+	}
+	if(data.type == 'netcdf'){
+		dir.cdtCESSAT1 <- file.path(outputPICSA, "cdtCESSAT")
+		dir.create(dir.cdtCESSAT1, showWarnings = FALSE, recursive = TRUE)
+		for(j in seq_along(yrsCesst)){
+			xtmp <- matrix(CESSAT[j, ], nLON, nLAT)
+			xtmp[is.na(xtmp)] <- -99
+			units <- paste("days since", as.character(yearE[j]))
+			nc.grd <- ncvar_def("cessat", units, cdtNcdfDim, -99, "Ending dates of the rainy season", "short", shuffle = TRUE, compression = 9)
+			ncoutfile <- file.path(dir.cdtCESSAT1, paste0("cessation_", yrsCesst[j], ".nc"))
+			nc <- nc_create(ncoutfile, nc.grd)
+			ncvar_put(nc, nc.grd, xtmp)
+			nc_close(nc)
+		}
 	}
 
-	##################
+	dir.cdtCESSAT <- file.path(outPICSAData, "cdtCESSAT")
+	dir.create(dir.cdtCESSAT, showWarnings = FALSE, recursive = TRUE)
+	colInfo <- writecdtDATAchunk(CESSAT, dir.cdtCESSAT, chunksize)
+	saveRDS(CESSAT, file.path(dir.cdtCESSAT, "seas.rds"))
 
-	matCessat <- as.Date(cessat, "%Y%m%d")
-	dim(matCessat) <- dim(cessat)
-	matCessat <- matCessat - as.Date(yearE, "%Y%m%d")
+	cdtCESSAT <- NULL
+	# cdtCESSAT$series.index <- cess.idx
+	cdtCESSAT$years <- yrsCesst
+	cdtCESSAT$days.since <- as.character(yearE)
+	cdtCESSAT$start.labels <- cessatXS
+	cdtCESSAT$colInfo <- colInfo
 
-	matOnset <- as.Date(onset, "%Y%m%d")
-	dim(matOnset) <- dim(onset)
-	matOnset <- matOnset - as.Date(yearS, "%Y%m%d")
+	EnvPICSA$cdtCESSAT <- cdtCESSAT
 
-	season.length <- as.Date(cessat, "%Y%m%d")-as.Date(onset, "%Y%m%d")
-	dim(season.length) <- dim(onset)
-
-	yrsCesst <- as.numeric(substr(yearE, 1, 4))
-	yrsOnset <- as.numeric(substr(yearS, 1, 4))
-
-	##################
-
-	load(file.path(apps.dir, 'data', 'ONI_50-2016.RData'))
-	ONI.date <- format(seq(as.Date('1950-1-15'), as.Date('2017-12-15'), "month"), "%Y%m")
-	ONI.data <- ONI$ts[, 3]
+	rm(CESSAT, cess.idx, yearE, colInfo, xtmp); gc()
+	InsertMessagesTxt(main.txt.out, 'Calculating cessation of seasonal rainfall finished')
 
 	###########################################
 
-	EnvPICSA$data.type <- GeneralParameters$data.type
-	EnvPICSA$compute.ETP <- GeneralParameters$compute.ETP
-	EnvPICSA$dekmonUse <- GeneralParameters$dekmon$use.dekmon
-	EnvPICSA$dekmonTs <- GeneralParameters$dekmon$time.step
-	EnvPICSA$thres.rain.day <- GeneralParameters$onset$thres.rain.day
+	saveRDS(EnvPICSA, file = file.path(dirPICSAData, "PICSA.DATA.rds"))
 
-	##################
+	###########################################
 
-	EnvPICSA$index$cess.idx <- cess.idx
-	EnvPICSA$index$onset.idx <- onset.idx
-	EnvPICSA$index$onsetOrigDate <- onsetXS
-	EnvPICSA$index$cessatOrigDate <- cessatXS
-	EnvPICSA$index$onsetYear <- yrsOnset
-	EnvPICSA$index$cessatYear <- yrsCesst
+	writeOUTPICSA <- function(cdtData, data.cdtData, nc.grd, prefix, write.rds = TRUE){
+		if(data.type == 'cdt'){
+			file.cdtData1 <- file.path(outputPICSA, paste0(cdtData, ".csv"))
+			xtmp <- rbind(cdtHeadIfon, cbind(cdtONSET$years, data.cdtData))
+			xtmp[is.na(xtmp)] <- -99
+			writeFiles(xtmp, file.cdtData1)
+		}
+		if(data.type == 'netcdf'){
+			dir.cdtData1 <- file.path(outputPICSA, cdtData)
+			dir.create(dir.cdtData1, showWarnings = FALSE, recursive = TRUE)
+			for(j in seq_along(cdtONSET$years)){
+				xtmp <- matrix(data.cdtData[j, ], nLON, nLAT)
+				xtmp[is.na(xtmp)] <- -99
+				ncoutfile <- file.path(dir.cdtData1, paste0(prefix, "_", cdtONSET$years[j], ".nc"))
+				nc <- nc_create(ncoutfile, nc.grd)
+				ncvar_put(nc, nc.grd, xtmp)
+				nc_close(nc)
+			}
+		}
+		if(write.rds){
+			dir.cdtData <- file.path(outPICSAData, cdtData)
+			dir.create(dir.cdtData, showWarnings = FALSE, recursive = TRUE)
+			colInfo <- writecdtDATAchunk(data.cdtData, dir.cdtData, chunksize)
+			rm(colInfo)
+			saveRDS(data.cdtData, file.path(dir.cdtData, "seas.rds"))
+		}
+		rm(xtmp)
+	}
 
-	EnvPICSA$output$Onset.date <- onset
-	EnvPICSA$output$Cessation.date <- cessat
-	EnvPICSA$output$Onset.nb <- matOnset
-	EnvPICSA$output$Cessation.nb <- matCessat
-	EnvPICSA$output$SeasonLength <- season.length
-
-	EnvPICSA$ONI$date <- ONI.date
-	EnvPICSA$ONI$data <- ONI.data
-
-	#########################################
+	###########################################
 
 	InsertMessagesTxt(main.txt.out, 'Compute PICSA data ...')
 
-	if(doparallel & ncol(onset) >= 30){
-		klust <- makeCluster(nb_cores)
-		registerDoParallel(klust)
-		`%parLoop%` <- `%dopar%`
-		closeklust <- TRUE
-	}else{
-		`%parLoop%` <- `%do%`
-		closeklust <- FALSE
+	okparallel <- length(loopCOL) >= 5
+
+	###################
+
+	is.parallel <- doparallel(okparallel)
+	`%dofun%` <- is.parallel$dofun
+	toExports <- c("doparallel", "readcdtDATAchunk")
+	SEASON.LENGTH <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
+		ONSET <- readcdtDATAchunk(loopCOL[[ii]], cdtONSET$colInfo, file.path(outPICSAData, "cdtONSET"), chunksize, chunk.par = FALSE)
+		CESSAT <- readcdtDATAchunk(loopCOL[[ii]], cdtCESSAT$colInfo, file.path(outPICSAData, "cdtCESSAT"), chunksize, chunk.par = FALSE)
+		dimONSET <- dim(ONSET)
+		ONSET <- as.Date(ONSET, origin = cdtONSET$days.since)
+		dim(ONSET) <- dimONSET
+		CESSAT <- as.Date(CESSAT, origin = cdtCESSAT$days.since)
+		dim(CESSAT) <- dimONSET
+		seaslen <- as.numeric(CESSAT - ONSET)
+		dim(seaslen) <- dimONSET
+		rm(ONSET, CESSAT); gc()
+		return(seaslen)
 	}
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
+	SEASON.LENGTH <- do.call(cbind, SEASON.LENGTH)
+	nc.grd <- NULL
+	if(data.type == 'netcdf') nc.grd <- ncvar_def("seas.len", "days", cdtNcdfDim, -99, "Length of the rainy season", "short", shuffle = TRUE, compression = 9)
+	writeOUTPICSA("cdtSEASLEN", SEASON.LENGTH, nc.grd, 'season.length')
 
-	toExport1 <- c("cdtPrecip", "NumberOfSpell.AllVEC", "funAggrVEC", "quantile8")
-	if(dekmonUse) toExport1 <- c(toExport1, "cdtPrecip1")
-	if(compute.ETP == "temp") toExport1 <- c(toExport1, "cdtTmax", "cdtTmin")
+	rm(SEASON.LENGTH, nc.grd); gc()
 
-	dekmonUse <- GeneralParameters$dekmon$use.dekmon
-	dekmonTs <- GeneralParameters$dekmon$time.step
-	compute.ETP <- GeneralParameters$compute.ETP
-	thres.rain.day <- GeneralParameters$onset$thres.rain.day
-	dryspellfun <- if(thres.rain.day == 0) '==' else '<'
-	nbdayfun <- if(thres.rain.day == 0) '>' else '>='
+	###################
 
-	transPose <- if(ncol(cdtPrecip$data) > 1) t else as.matrix
-	debfin.idx <- transPose(sapply(seq(nrow(onset)), function(j){
-						getIndexSeasonVarsRow(onset[j, ], cessat[j, ], cdtPrecip$dates, "daily")
-					}))
-	# na.idx <- is.na(debfin.idx)
+	is.parallel <- doparallel(okparallel)
+	`%dofun%` <- is.parallel$dofun
+	toExports <- c("getIndexSeasonVarsRow", "doparallel", "readcdtDATAchunk")
+	transPose <- if(length(opDATA$lon) > 1) t else as.matrix
+	SEASON.IDX <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
+		ONSET <- readcdtDATAchunk(loopCOL[[ii]], cdtONSET$colInfo, file.path(outPICSAData, "cdtONSET"), chunksize, chunk.par = FALSE)
+		CESSAT <- readcdtDATAchunk(loopCOL[[ii]], cdtCESSAT$colInfo, file.path(outPICSAData, "cdtCESSAT"), chunksize, chunk.par = FALSE)
+		dimONSET <- dim(ONSET)
+		ONSET <- format(as.Date(ONSET, origin = cdtONSET$days.since), "%Y%m%d")
+		dim(ONSET) <- dimONSET
+		CESSAT <- format(as.Date(CESSAT, origin = cdtCESSAT$days.since), "%Y%m%d")
+		dim(CESSAT) <- dimONSET
+
+		debfin.idx <- transPose(sapply(seq(length(cdtONSET$years)), function(j){
+							getIndexSeasonVarsRow(ONSET[j, ], CESSAT[j, ], opDATA$dates, "daily")
+						}))
+
+		if(dekmonUse){
+			debfin.seas <- transPose(sapply(seq(length(cdtONSET$years)), function(j){
+								getIndexSeasonVarsRow(ONSET[j, ], CESSAT[j, ], opDATA$cdtPrecip1$dates, dekmonTs)
+							}))
+		}else debfin.seas <- NULL
+
+		rm(ONSET, CESSAT); gc()
+		return(list(days.idx = debfin.idx, seas.idx = debfin.seas))
+	}
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
+
+	debfin.idx <- do.call(cbind, lapply(SEASON.IDX, function(x) x$days.idx))
 	lenDebFin <- sapply(debfin.idx, length)
 	dim(lenDebFin) <- dim(debfin.idx)
 
 	if(dekmonUse){
-		debfin.seas <- transPose(sapply(seq(nrow(onset)), function(j){
-							getIndexSeasonVarsRow(onset[j, ], cessat[j, ], cdtPrecip1$dates, dekmonTs)
-						}))
+		debfin.seas <- do.call(cbind, lapply(SEASON.IDX, function(x) x$seas.idx))
 		lenDebFinS <- sapply(debfin.seas, length)
 		dim(lenDebFinS) <- dim(debfin.seas)
 	}
 
-	ret <- foreach(j = seq(ncol(onset)), .export = toExport1) %parLoop% {
-		NAcount <- sapply(debfin.idx[, j], function(x){
-						y <- if(length(x) == 1 & all(is.na(x))) NA else cdtPrecip$data[x, j]
+	rm(SEASON.IDX)
+
+	###################
+
+	is.parallel <- doparallel(okparallel)
+	`%dofun%` <- is.parallel$dofun
+	toExports <- c( "doparallel", "readcdtDATAchunk", "cdtPrecip")
+	NAFRAC <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
+		precip <- extractPICSArdsData1("cdtPrecip", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
+		days.idx <- debfin.idx[, loopCOL[[ii]], drop = FALSE]
+
+		nanb <- lapply(seq(ncol(days.idx)), function(j){
+					sapply(days.idx[, j], function(x){
+						y <- if(length(x) == 1 & all(is.na(x))) NA else precip[x, j]
 						sum(is.na(y))
 					})
-		nafrac <- 1 - (NAcount/lenDebFin[, j]) < 0.98
+				})
+		nanb <- do.call(cbind, nanb)
+		nafrac <- 1 - (nanb/lenDebFin[, loopCOL[[ii]], drop = FALSE])
+		rm(precip, days.idx, nanb); gc()
+		return(nafrac)
+	}
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
+	NAFRAC <- do.call(cbind, NAFRAC)
+	NAFRAC <- NAFRAC < 0.98
+	rm(lenDebFin)
 
-		AllDrySpell <- sapply(debfin.idx[, j], NumberOfSpell.AllVEC,
-							DATA = cdtPrecip$data[, j],
-							opr.fun = dryspellfun, opr.thres = thres.rain.day)
-		AllDrySpell[nafrac] <- NA
+	if(dekmonUse){
+		is.parallel <- doparallel(okparallel)
+		`%dofun%` <- is.parallel$dofun
+		toExports <- c("doparallel", "readcdtDATAchunk", "cdtPrecip1")
+		NAFRACS <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
+			precip <- extractPICSArdsData1("cdtPrecip1", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
+			days.idx <- debfin.seas[, loopCOL[[ii]], drop = FALSE]
 
-		if(dekmonUse){
-			NAcountS <- sapply(debfin.seas[, j], function(x){
-							y <- if(length(x) == 1 & all(is.na(x))) NA else cdtPrecip1$data[x, j]
+			nanb <- lapply(seq(ncol(days.idx)), function(j){
+						sapply(days.idx[, j], function(x){
+							y <- if(length(x) == 1 & all(is.na(x))) NA else precip[x, j]
 							sum(is.na(y))
 						})
-			nafracS <- 1 - (NAcountS/lenDebFinS[, j]) < 0.98
-			RainTotal <- sapply(debfin.seas[, j], funAggrVEC, DATA = cdtPrecip1$data[, j], pars = list(aggr.fun = "sum"))
-			RainTotal[nafracS] <- NA
-		}else{
-			RainTotal <- sapply(debfin.idx[, j], funAggrVEC, DATA = cdtPrecip$data[, j], pars = list(aggr.fun = "sum"))
-			RainTotal[nafrac] <- NA
-			NAcountS <- NULL
-		}
-
-		nbdayrain <- sapply(debfin.idx[, j], funAggrVEC, DATA = cdtPrecip$data[, j],
-							pars = list(aggr.fun = "count", count.fun = nbdayfun, count.thres = thres.rain.day))
-		nbdayrain[nafrac] <- NA
-		
-		max24h <- sapply(debfin.idx[, j], funAggrVEC, DATA = cdtPrecip$data[, j], pars = list(aggr.fun = "max"))
-		max24h[nafrac] <- NA
-
-		if(compute.ETP == "temp"){
-			tmax <- sapply(debfin.idx[, j], funAggrVEC, DATA = cdtTmax$data[, j], pars = list(aggr.fun = "mean"))
-			tmin <- sapply(debfin.idx[, j], funAggrVEC, DATA = cdtTmin$data[, j], pars = list(aggr.fun = "mean"))
-			tmax[nafrac] <- NA
-			tmin[nafrac] <- NA
-		}else{
-			tmax <- NULL
-			tmin <- NULL
-		}
-
-		seasRR <- cdtPrecip$data[unlist(debfin.idx[, j]), j]
-		q95th <- quantile8(seasRR[seasRR > thres.rain.day], probs = 0.95)
-		nbQ95th <- sapply(debfin.idx[, j], funAggrVEC, DATA = cdtPrecip$data[, j],
-				pars = list(aggr.fun = "count", count.fun = ">", count.thres = q95th))
-		nbQ95th[nafrac] <- NA
-		TotalQ95th <- sapply(debfin.idx[, j], function(x){
-						x <- x[!is.na(x)]
-						if(length(x) == 0) return(NA)
-						VEC <- cdtPrecip$data[x, j]
-						VEC <- VEC[!is.na(VEC)]
-						if(length(VEC) == 0) return(NA)
-						sum(VEC[VEC > q95th])
 					})
-		TotalQ95th[nafrac] <- NA
-
-		list(dryspells = AllDrySpell, total = RainTotal, nbday = nbdayrain, max24h = max24h,
-			 q95th = q95th, TotalQ95th = TotalQ95th, nbQ95th = nbQ95th,
-			 NAcount = NAcount, NAcountS = NAcountS, tmax =  tmax, tmin =  tmin)
+			nanb <- do.call(cbind, nanb)
+			nafrac <- 1 - (nanb/lenDebFinS[, loopCOL[[ii]], drop = FALSE])
+			rm(precip, days.idx, nanb); gc()
+			return(nafrac)
+		}
+		if(is.parallel$stop) stopCluster(is.parallel$cluster)
+		NAFRACS <- do.call(cbind, NAFRACS)
+		NAFRACS <- NAFRACS < 0.98
+		rm(lenDebFinS)
 	}
-	if(closeklust) stopCluster(klust)
 
-	AllDrySpell <- sapply(ret, function(x) x$dryspells)
-	RainTotal <- sapply(ret, function(x) x$total)
-	nbdayrain <- sapply(ret, function(x) x$nbday)
-	max24h <- sapply(ret, function(x) x$max24h)
-	Q95th <- matrix(sapply(ret, function(x) x$q95th), nrow = 1)
-	NbQ95th <- sapply(ret, function(x) x$nbQ95th)
-	TotalQ95th <- sapply(ret, function(x) x$TotalQ95th)
+	###################
+
+	is.parallel <- doparallel(okparallel)
+	`%dofun%` <- is.parallel$dofun
+	toExports <- c("funAggrVEC", "doparallel", "readcdtDATAchunk")
+	toExports1 <- if(dekmonUse) c(toExports, "cdtPrecip1") else c(toExports, "cdtPrecip")
+	RAINTOTAL <- foreach(ii = seq_along(loopCOL), .export = toExports1, .packages = "doParallel") %dofun% {
+		if(dekmonUse){
+			days.idx <- debfin.seas[, loopCOL[[ii]], drop = FALSE]
+			precip <- extractPICSArdsData1("cdtPrecip1", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
+			nafrac <- NAFRACS[, loopCOL[[ii]], drop = FALSE]
+		}else{
+			days.idx <- debfin.idx[, loopCOL[[ii]], drop = FALSE]
+			precip <- extractPICSArdsData1("cdtPrecip", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
+			nafrac <- NAFRAC[, loopCOL[[ii]], drop = FALSE]
+		}
+		xtmp <- lapply(seq(ncol(days.idx)), function(j) sapply(days.idx[, j], funAggrVEC, DATA = precip[, j], pars = list(aggr.fun = "sum")))
+		xtmp <- do.call(cbind, xtmp)
+		xtmp[nafrac] <- NA
+		rm(precip, nafrac, days.idx); gc()
+		return(xtmp)
+	}
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
+	RAINTOTAL <- do.call(cbind, RAINTOTAL)
+	nc.grd <- NULL
+	if(data.type == 'netcdf') nc.grd <- ncvar_def("seas.precip", "mm", cdtNcdfDim, -99, "Seasonal rainfall amounts", "short", shuffle = TRUE, compression = 9)
+	writeOUTPICSA("cdtRAINTOTAL", RAINTOTAL, nc.grd, 'rain.total')
+	rm(NAFRACS, RAINTOTAL, nc.grd); gc()
+
+	###################
+
 	if(compute.ETP == "temp"){
-		tmax <- sapply(ret, function(x) x$tmax)
-		tmin <- sapply(ret, function(x) x$tmin)
+		is.parallel <- doparallel(okparallel)
+		`%dofun%` <- is.parallel$dofun
+		toExports <- c("funAggrVEC", "doparallel", "readcdtDATAchunk", "cdtTmax", "cdtTmin")
+		TXTN <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
+			days.idx <- debfin.idx[, loopCOL[[ii]], drop = FALSE]
+
+			tmax <- extractPICSArdsData1("cdtTmax", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
+			tmax <- lapply(seq(ncol(days.idx)), function(j) sapply(days.idx[, j], funAggrVEC, DATA = tmax[, j], pars = list(aggr.fun = "mean")))
+			tmax <- do.call(cbind, tmax)
+			tmax[NAFRAC[, loopCOL[[ii]], drop = FALSE]] <- NA
+			tmax <- round(tmax, 1)
+
+			tmin <- extractPICSArdsData1("cdtTmin", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
+			tmin <- lapply(seq(ncol(days.idx)), function(j) sapply(days.idx[, j], funAggrVEC, DATA = tmin[, j], pars = list(aggr.fun = "mean")))
+			tmin <- do.call(cbind, tmin)
+			tmin[NAFRAC[, loopCOL[[ii]], drop = FALSE]] <- NA
+			tmin <- round(tmin, 1)
+			list(tmax = tmax, tmin = tmin)
+		}
+		if(is.parallel$stop) stopCluster(is.parallel$cluster)
+		tmax <- do.call(cbind, lapply(TXTN, function(x) x$tmax))
+		tmin <- do.call(cbind, lapply(TXTN, function(x) x$tmin))
+		nc.tmax <- NULL
+		if(data.type == 'netcdf') nc.tmax <- ncvar_def("tmax", "degC", cdtNcdfDim, -99, 'Seasonal average maximum temperature', "float", compression = 9)
+		writeOUTPICSA("cdtTMAXSEAS", tmax, nc.tmax, 'tmax')
+		nc.tmin <- NULL
+		if(data.type == 'netcdf') nc.tmin <- ncvar_def("tmin", "degC", cdtNcdfDim, -99, 'Seasonal average minimum temperature', "float", compression = 9)
+		writeOUTPICSA("cdtTMINSEAS", tmin, nc.tmin, 'tmin')
+		rm(TXTN, tmax, nc.tmax, tmin, nc.tmin); gc()
 	}
 
-	#########################################
+	###################
+	is.parallel <- doparallel(okparallel)
+	`%dofun%` <- is.parallel$dofun
+	toExports <- c("NumberOfSpell.AllVEC", "doparallel", "readcdtDATAchunk", "cdtPrecip")
+	DRYSPELLS <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
+		days.idx <- debfin.idx[, loopCOL[[ii]], drop = FALSE]
+		precip <- extractPICSArdsData1("cdtPrecip", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
 
-	EnvPICSA$picsa$AllDrySpell <- AllDrySpell
-	EnvPICSA$picsa$RainTotal <- RainTotal
-	EnvPICSA$picsa$nbdayrain <- nbdayrain
-	EnvPICSA$picsa$max24h <- max24h
-	EnvPICSA$picsa$Q95th <- Q95th
-	EnvPICSA$picsa$NbQ95th <- NbQ95th
-	EnvPICSA$picsa$TotalQ95th <- TotalQ95th
-	if(compute.ETP == "temp"){
-		EnvPICSA$picsa$tmax <- tmax
-		EnvPICSA$picsa$tmin <- tmin
+		xtmp <- lapply(seq(ncol(days.idx)), function(j) 
+					lapply(days.idx[, j], NumberOfSpell.AllVEC, DATA = precip[, j], opr.fun = dryspellfun, opr.thres = thres.rain.day))
+		xtmp <- do.call(cbind, xtmp)
+		xtmp[NAFRAC[, loopCOL[[ii]], drop = FALSE]] <- NA
+		rm(precip, days.idx); gc()
+		return(xtmp)
 	}
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
+	DRYSPELLS <- do.call(cbind, DRYSPELLS)
 
-	EnvPICSA$picsa.idx$debfin.idx <- debfin.idx
-	EnvPICSA$picsa.idx$lenDebFin <- lenDebFin
-	EnvPICSA$picsa.idx$NAcount <- sapply(ret, function(x) x$NAcount)
-	if(dekmonUse){
-		EnvPICSA$picsa.idx$debfin.seas <- debfin.seas
-		EnvPICSA$picsa.idx$lenDebFinS <- lenDebFinS
-		EnvPICSA$picsa.idx$NAcountS <- sapply(ret, function(x) x$NAcountS)
+	dir.cdtDRYSPELLS <- file.path(outPICSAData, "cdtDRYSPELLS")
+	dir.create(dir.cdtDRYSPELLS, showWarnings = FALSE, recursive = TRUE)
+	colInfo <- writecdtDATAchunk(DRYSPELLS, dir.cdtDRYSPELLS, chunksize)
+	rm(colInfo)
+	saveRDS(DRYSPELLS, file = file.path(dir.cdtDRYSPELLS, "seas.rds"))
+
+	DRYSPELL5 <- sapply(DRYSPELLS, function(x) sum(x >= 5))
+	dim(DRYSPELL5) <- dim(DRYSPELLS)
+	nc.grd <- NULL
+	if(data.type == 'netcdf') nc.grd <- ncvar_def("dryspell5", "", cdtNcdfDim, -99, 'Number of Dry Spells', "short", shuffle = TRUE, compression = 9)
+	writeOUTPICSA("cdtDRYSPELL5", DRYSPELL5, nc.grd, 'dryspell5', write.rds = FALSE)
+	rm(DRYSPELL5)
+
+	DRYSPELL7 <- sapply(DRYSPELLS, function(x) sum(x >= 7))
+	dim(DRYSPELL7) <- dim(DRYSPELLS)
+	nc.grd <- NULL
+	if(data.type == 'netcdf') nc.grd <- ncvar_def("dryspell7", "", cdtNcdfDim, -99, 'Number of Dry Spells', "short", shuffle = TRUE, compression = 9)
+	writeOUTPICSA("cdtDRYSPELL7", DRYSPELL7, nc.grd, 'dryspell7', write.rds = FALSE)
+	rm(DRYSPELL7)
+
+	DRYSPELL10 <- sapply(DRYSPELLS, function(x) sum(x >= 10))
+	dim(DRYSPELL10) <- dim(DRYSPELLS)
+	nc.grd <- NULL
+	if(data.type == 'netcdf') nc.grd <- ncvar_def("dryspell10", "", cdtNcdfDim, -99, 'Number of Dry Spells', "short", shuffle = TRUE, compression = 9)
+	writeOUTPICSA("cdtDRYSPELL10", DRYSPELL10, nc.grd, 'dryspell10', write.rds = FALSE)
+	rm(DRYSPELL10)
+
+	DRYSPELL15 <- sapply(DRYSPELLS, function(x) sum(x >= 15))
+	dim(DRYSPELL15) <- dim(DRYSPELLS)
+	nc.grd <- NULL
+	if(data.type == 'netcdf') nc.grd <- ncvar_def("dryspell15", "", cdtNcdfDim, -99, 'Number of Dry Spells', "short", shuffle = TRUE, compression = 9)
+	writeOUTPICSA("cdtDRYSPELL15", DRYSPELL15, nc.grd, 'dryspell15', write.rds = FALSE)
+	rm(DRYSPELL15)
+
+	DRYSPELLmax <- sapply(DRYSPELLS, function(x) max(x))
+	dim(DRYSPELLmax) <- dim(DRYSPELLS)
+	nc.grd <- NULL
+	if(data.type == 'netcdf') nc.grd <- ncvar_def("dryspellmax", "days", cdtNcdfDim, -99, "Longest dry spell", "short", shuffle = TRUE, compression = 9)
+	writeOUTPICSA("cdtDRYSPELLmax", DRYSPELLmax, nc.grd, 'dryspellmax', write.rds = FALSE)
+	rm(DRYSPELLS, DRYSPELLmax, nc.grd)
+
+	###################
+	is.parallel <- doparallel(okparallel)
+	`%dofun%` <- is.parallel$dofun
+	toExports <- c("funAggrVEC", "doparallel", "readcdtDATAchunk", "cdtPrecip")
+	NBRAINDAYS <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
+		days.idx <- debfin.idx[, loopCOL[[ii]], drop = FALSE]
+		precip <- extractPICSArdsData1("cdtPrecip", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
+
+		xtmp <- lapply(seq(ncol(days.idx)), function(j) sapply(days.idx[, j], funAggrVEC, DATA = precip[, j],
+							pars = list(aggr.fun = "count", count.fun = nbdayfun, count.thres = thres.rain.day)))
+		xtmp <- do.call(cbind, xtmp)
+		xtmp[NAFRAC[, loopCOL[[ii]], drop = FALSE]] <- NA
+		rm(precip, days.idx); gc()
+		return(xtmp)
 	}
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
+	NBRAINDAYS <- do.call(cbind, NBRAINDAYS)
+	nc.grd <- NULL
+	if(data.type == 'netcdf') nc.grd <- ncvar_def("nb.rain", "days", cdtNcdfDim, -99, "Seasonal number of rainy days", "short", shuffle = TRUE, compression = 9)
+	writeOUTPICSA("cdtNBRAINDAYS", NBRAINDAYS, nc.grd, 'nb.rainy.days')
+	rm(NBRAINDAYS, nc.grd); gc()
 
-	outPICSAData <- file.path(outputDIR, "PICSA.OUT.Data")
-	dir.create(outPICSAData, showWarnings = FALSE, recursive = TRUE)
-	EnvPICSA.save <- EnvPICSA
-	save(EnvPICSA.save, file = file.path(outPICSAData, "PICSA.DATA.RData"))
+	###################
+	is.parallel <- doparallel(okparallel)
+	`%dofun%` <- is.parallel$dofun
+	toExports <- c("funAggrVEC", "doparallel", "readcdtDATAchunk", "cdtPrecip")
+	RAINMAX24H <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
+		days.idx <- debfin.idx[, loopCOL[[ii]], drop = FALSE]
+		precip <- extractPICSArdsData1("cdtPrecip", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
+
+		xtmp <- lapply(seq(ncol(days.idx)), function(j) sapply(days.idx[, j], funAggrVEC, DATA = precip[, j], pars = list(aggr.fun = "max")))
+		xtmp <- do.call(cbind, xtmp)
+		xtmp[NAFRAC[, loopCOL[[ii]], drop = FALSE]] <- NA
+		rm(precip, days.idx); gc()
+		return(xtmp)
+	}
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
+	RAINMAX24H <- do.call(cbind, RAINMAX24H)
+	nc.grd <- NULL
+	if(data.type == 'netcdf') nc.grd <- ncvar_def("max24h", "mm", cdtNcdfDim, -99, 'Seasonal maximum of daily rainfall', "short", shuffle = TRUE, compression = 9)
+	writeOUTPICSA("cdtRAINMAX24H", RAINMAX24H, nc.grd, 'max24h')
+	rm(RAINMAX24H, nc.grd); gc()
+
+	###################
+
+	is.parallel <- doparallel(okparallel)
+	`%dofun%` <- is.parallel$dofun
+	toExports <- c("funAggrVEC", "quantile8", "doparallel", "readcdtDATAchunk", "cdtPrecip")
+	Q95DATA <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
+		days.idx <- debfin.idx[, loopCOL[[ii]], drop = FALSE]
+		precip <- extractPICSArdsData1("cdtPrecip", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
+
+		xtmp <- lapply(seq(ncol(days.idx)), function(j) {
+			seasRR <- precip[unlist(days.idx[, j]), j]
+			q95th <- quantile8(seasRR[seasRR > thres.rain.day], probs = 0.95)
+			nbQ95th <- sapply(days.idx[, j], funAggrVEC, DATA = precip[, j], pars = list(aggr.fun = "count", count.fun = ">", count.thres = q95th))
+			TotQ95th <- sapply(days.idx[, j], function(x){
+								x <- x[!is.na(x)]
+								if(length(x) == 0) return(NA)
+								VEC <- precip[x, j]
+								VEC <- VEC[!is.na(VEC)]
+								if(length(VEC) == 0) return(NA)
+								sum(VEC[VEC > q95th])
+							})
+			list(q95 = q95th, nbq95 = nbQ95th, totq95 = TotQ95th)
+		})
+
+		Q95 <- sapply(xtmp, function(x) x$q95)
+		nbQ95 <- do.call(cbind, lapply(xtmp, function(x) x$nbq95))
+		nbQ95[NAFRAC[, loopCOL[[ii]], drop = FALSE]] <- NA
+		totQ95 <- do.call(cbind, lapply(xtmp, function(x) x$totq95))
+		totQ95[NAFRAC[, loopCOL[[ii]], drop = FALSE]] <- NA
+
+		rm(precip, days.idx, xtmp); gc()
+		return(list(q95 = Q95, nbq95 = nbQ95, totq95 = totQ95))
+	}
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
+	Q95th <- do.call(c, lapply(Q95DATA, function(x) x$q95))
+	NbQ95th <- do.call(cbind, lapply(Q95DATA, function(x) x$nbq95))
+	TotalQ95th <- do.call(cbind, lapply(Q95DATA, function(x) x$totq95))
+	nc.nbq95 <- NULL
+	if(data.type == 'netcdf') nc.nbq95 <- ncvar_def("nbq95th", "days", cdtNcdfDim, -99, 'Seasonal count of days when RR > 95th percentile', "short", shuffle = TRUE, compression = 9)
+	writeOUTPICSA("cdtNBQ95TH", NbQ95th, nc.nbq95, 'nbq95th')
+	nc.totq95 <- NULL
+	if(data.type == 'netcdf') nc.totq95 <- ncvar_def("totq95th", "mm", cdtNcdfDim, -99, 'Seasonal total of precipitation when RR > 95th percentile', "short", shuffle = TRUE, compression = 9)
+	writeOUTPICSA("cdtTOTQ95TH", TotalQ95th, nc.totq95, 'totq95th')
+	rm(Q95DATA, NbQ95th, nc.nbq95, TotalQ95th, nc.totq95); gc()
+	if(data.type == 'netcdf') rm(Q95th)
+
+	###################
 
 	InsertMessagesTxt(main.txt.out, 'Computing PICSA data done!')
 
-	#########################################
+	if(dekmonUse) rm(cdtPrecip1)
+	if(compute.ETP == "temp") rm(cdtTmin, cdtTmax)
+	rm(cdtPrecip, cdtETP, opDATA, cdtONSET, cdtCESSAT); gc()
+
+	###########################################
 
 	if(data.type == 'cdt'){
 		InsertMessagesTxt(main.txt.out, 'Plot stations data ...')
 
-		if(doparallel & ncol(onset) >= 10){
-			klust <- makeCluster(nb_cores)
-			registerDoParallel(klust)
-			`%parLoop%` <- `%dopar%`
-			closeklust <- TRUE
-		}else{
-			`%parLoop%` <- `%do%`
-			closeklust <- FALSE
-		}
+		COLIDX <- seq_along(EnvPICSA$opDATA$lon)
+		loopCOL <- split(COLIDX, ceiling(COLIDX/chunksize))
 
-		compute.ETP <- GeneralParameters$compute.ETP
-		toExport1 <- c("cdtPrecip", "season.length", 
-						"getIndexSeasonVars", 
-						"onset", "yrsOnset", "matOnset", "onsetXS", 
-						"cessat", "yrsCesst", "matCessat", "cessatXS", 
-						"RainTotal", "AllDrySpell", "max24h", "nbdayrain",
-						"NbQ95th", "TotalQ95th", "Q95th", "EnvPICSAplot")
-		if(compute.ETP == "temp")  toExport1 <- c(toExport1, "tmax", "tmin")
-		toExport1 <- c(toExport1, "fit.distributions", "startnorm", "startsnorm", "startlnorm", "startgamma", "startweibull")
+		is.parallel <- doparallel(length(loopCOL[[1]]) >= 10)
+		`%parLoop%` <- is.parallel$dofun
+
+		toExport1 <- c("fit.distributions", "startnorm", "startsnorm", "startlnorm", "startgamma", "startweibull")
 		allfonct <- unlist(Map(function_name, Filter(is_function, parse(file.path(apps.dir, 'functions', 'PICSA_Plot_functions.R')))))
-		toExport1 <- c(toExport1, allfonct, "quantile8", "writeFiles", "table.annuel", "ONI.data", "ONI.date")
+		toExport1 <- c(toExport1, allfonct, "quantile8", "writeFiles", "table.annuel", "getIndexSeasonVars",
+						"EnvPICSAplot", "doparallel", "readcdtDATAchunk")
 
 		###
 		outPICSAdir <- file.path(outputDIR, "PICSA.OUT.Stations")
@@ -1128,223 +1342,276 @@ PICSAProcs <- function(GeneralParameters){
 
 		##################
 
-		ret <- foreach(j = seq(ncol(cdtPrecip$data)), .packages = c("stringr", "tools", "fitdistrplus"), .export = toExport1) %parLoop% {
-			stnDIR <- file.path(outPICSAdir, cdtPrecip$id[j])
-			dir.create(stnDIR, showWarnings = FALSE, recursive = TRUE)
+		ret <- foreach(ii = seq_along(loopCOL)) %do% {
+			ONSET <- readRDS(file.path(outPICSAData, "cdtONSET", paste0(ii, ".rds")))
+			CESSAT <- readRDS(file.path(outPICSAData, "cdtCESSAT", paste0(ii, ".rds")))
+			SEASLENGTH <- readRDS(file.path(outPICSAData, "cdtSEASLEN", paste0(ii, ".rds")))
+			RAINTOTAL <- readRDS(file.path(outPICSAData, "cdtRAINTOTAL", paste0(ii, ".rds")))
+			AllDrySpell <- readRDS(file.path(outPICSAData, "cdtDRYSPELLS", paste0(ii, ".rds")))
+			MAX24H <- readRDS(file.path(outPICSAData, "cdtRAINMAX24H", paste0(ii, ".rds")))
+			NBDRAIN <- readRDS(file.path(outPICSAData, "cdtNBRAINDAYS", paste0(ii, ".rds")))
+			NBQ95TH <- readRDS(file.path(outPICSAData, "cdtNBQ95TH", paste0(ii, ".rds")))
+			TOTQ95TH <- readRDS(file.path(outPICSAData, "cdtTOTQ95TH", paste0(ii, ".rds")))
 
-			DrySpell5 <- sapply(AllDrySpell[, j], function(x) sum(x >= 5))
-			DrySpell7 <- sapply(AllDrySpell[, j], function(x) sum(x >= 7))
-			DrySpell10 <- sapply(AllDrySpell[, j], function(x) sum(x >= 10))
-			DrySpell15 <- sapply(AllDrySpell[, j], function(x) sum(x >= 15))
-			DrySpellMax <- sapply(AllDrySpell[, j], function(x) max(x))
-
-			## write data
-			don.out <- data.frame(onset = onset[, j], cessation = cessat[, j], seasonLength = as.numeric(season.length[, j]), RainTotal = RainTotal[, j],
-								 DrySpell5 = DrySpell5, DrySpell7 = DrySpell7, DrySpell10 = DrySpell10, DrySpell15 = DrySpell15, DrySpellMax = DrySpellMax,
-								 MaxDailyRain = max24h[, j], NbRainDay = nbdayrain[, j], Q95th = Q95th[, j], ExtrmFreqQ95th = NbQ95th[, j], RainTotalQ95th = TotalQ95th[, j])
-			if(compute.ETP == "temp") don.out <- data.frame(don.out, tmax = round(tmax[, j], 1), tmin = round(tmin[, j], 1))
-			writeFiles(don.out, file.path(stnDIR, paste0(cdtPrecip$id[j], '_out', '.csv')), col.names = TRUE)
-			EnvPICSAplot$location <- paste0("Station: ", cdtPrecip$id[j])
-
-			## ONI 
-			ijoni <- getIndexSeasonVars(onset[, j], cessat[, j], ONI.date, "monthly")
-			oni.idx <- sapply(ijoni, function(x) mean(ONI.data[x], na.rm = TRUE))
-			oni.idx <- ifelse(oni.idx >= 0.5, 3, ifelse(oni.idx <= -0.5, 1, 2))
-
-			### Rainfall amounts ENSO line
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount.ENSO_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line.ENSO(yrsOnset, RainTotal[, j], oni.idx, xlab = 'Year', ylab = 'Rainfall Amount (mm)', title = "Seasonal rainfall amounts", axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			### Rainfall amounts ENSO bar
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount.ENSO_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.bar.ENSO(yrsOnset, RainTotal[, j], oni.idx, xlab = 'Year', ylab = 'Rainfall Amount (mm)', title = "Seasonal rainfall amounts", axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			### Rainfall amounts ENSO prob
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount.ENSO_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.proba.ENSO(RainTotal[, j], oni.idx, xlab = 'Rainfall Amount (mm)', title = "Seasonal rainfall amounts", axis.font = 2)
-			dev.off()
-
-			### daily rainfall
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_daily_rain', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.daily(cdtPrecip$dates, cdtPrecip$data[, j], thres.rain.day, axis.font = 2)
-			dev.off()
-
-			### Onset
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_onset', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, matOnset[, j], origindate = onsetXS, title = "Starting dates of the rainy season", axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			### Onset1
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_onset1', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, matOnset[, j], origindate = onsetXS, title = "Starting dates of the rainy season",
-							mean = TRUE, tercile = TRUE, axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			### Cessation
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_cessation', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsCesst, matCessat[, j], origindate = cessatXS, title = "Ending dates of the rainy season", axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			### Cessation1
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_cessation1', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsCesst, matCessat[, j], origindate = cessatXS, title = "Ending dates of the rainy season",
-							mean = TRUE, tercile = TRUE, axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			### Length of season
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_Length.of.season', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, season.length[, j], xlab = 'Year', ylab = 'Number of Days',
-							title = "Length of the rainy season", axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			### Length of season1
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_Length.of.season', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, season.length[, j], xlab = 'Year', ylab = 'Number of Days',
-							title = "Length of the rainy season", mean = TRUE, tercile = TRUE, axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			### Rainfall amounts line
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount_line1', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, RainTotal[, j], xlab = 'Year', ylab = 'Rainfall Amount (mm)',
-							title = "Seasonal rainfall amounts", axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			### Rainfall amounts line
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount_line2', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, RainTotal[, j], xlab = 'Year', ylab = 'Rainfall Amount (mm)',
-							title = "Seasonal rainfall amounts", mean = TRUE, tercile = TRUE, axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			### Rainfall amounts bar
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.bar(yrsOnset, RainTotal[, j], xlab = 'Year', ylab = 'Rainfall Amount (mm)',
-							title = "Seasonal rainfall amounts", axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			### Rainfall amounts prob
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainfall.amount_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.proba(RainTotal[, j], xlab = "Rainfall Amount (mm)", title = "Seasonal rainfall amounts", theoretical = TRUE, axis.font = 2)
-			dev.off()
-
-			## Dry Spell 5 line
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.5days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, DrySpell5, sub = "Dry spells - 5 or more consecutive days", xlab = 'Year',
-							ylab = 'Number of Dry Spells', title = "Dry Spells", axis.font = 2, start.zero = TRUE)
-			dev.off()
-			## Dry Spell 5 bar
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.5days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.bar(yrsOnset, DrySpell5, sub = "Dry spells - 5 or more consecutive days", xlab = 'Year', ylab = 'Number of Dry Spells',
-							title = "Dry Spells", barcol = "slateblue4", axis.font = 2, start.zero = TRUE)
-			dev.off()
-			## Dry Spell 5 ecdf
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.5days_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.proba(DrySpell5, sub = "Dry spells - 5 or more consecutive days", xlab = "Number of Dry Spells", title = "Dry Spells", axis.font = 2)
-			dev.off()
-
-			## Dry Spell 7 line
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.7days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, DrySpell7, sub = "Dry spells - 7 or more consecutive days", xlab = 'Year',
-							ylab = 'Number of Dry Spells', title = "Dry Spells", axis.font = 2, start.zero = TRUE)
-			dev.off()
-			## Dry Spell 7 bar
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.7days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.bar(yrsOnset, DrySpell7, sub = "Dry spells - 7 or more consecutive days", xlab = 'Year', ylab = 'Number of Dry Spells',
-							title = "Dry Spells", barcol = "slateblue4", axis.font = 2, start.zero = TRUE)
-			dev.off()
-			## Dry Spell 7 ecdf
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.7days_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.proba(DrySpell7, sub = "Dry spells - 7 or more consecutive days", xlab = "Number of Dry Spells", title = "Dry Spells", axis.font = 2)
-			dev.off()
-
-			## Dry Spell 10 line
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.10days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, DrySpell10, sub = "Dry spells - 10 or more consecutive days", xlab = 'Year',
-							ylab = 'Number of Dry Spells', title = "Dry Spells", axis.font = 2, start.zero = TRUE)
-			dev.off()
-			## Dry Spell 10 bar
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.10days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.bar(yrsOnset, DrySpell10, sub = "Dry spells - 10 or more consecutive days", xlab = 'Year', ylab = 'Number of Dry Spells',
-							title = "Dry Spells", barcol = "slateblue4", axis.font = 2, start.zero = TRUE)
-			dev.off()
-			## Dry Spell 10 ecdf
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_dry.spell.10days_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.proba(DrySpell10, sub = "Dry spells - 10 or more consecutive days", xlab = "Number of Dry Spells", title = "Dry Spells", axis.font = 2)
-			dev.off()
-
-			## longest dry spell line
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_longest.dry.spell_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, DrySpellMax, xlab = 'Year', ylab = 'Number of Days',
-							title = "Longest dry spell", mean = TRUE, axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			## longest dry spell bar
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_longest.dry.spell_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.bar(yrsOnset, DrySpellMax, xlab = 'Year', ylab = 'Number of Days',
-							title = "Longest dry spell", axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			## Rainy days line
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainy.days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, nbdayrain[, j], xlab = 'Year', ylab = 'Number of Days', title = "Seasonal number of rainy days",
-								col = list(line = 'darkgreen', points = "lightblue"), mean = TRUE, axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			## Rainy days bar
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_rainy.days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.bar(yrsOnset, nbdayrain[, j], xlab = 'Year', ylab = 'Number of Days', title = "Seasonal number of rainy days",
-							barcol = "darkgreen", axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			## max 24h line
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_max.1-day.precip_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.line(yrsOnset, max24h[, j], xlab = 'Year', ylab = 'Rainfall Depth (mm)', title = 'Seasonal maximum of daily rainfall',
-							 col = list(line = 'turquoise4', points = "lightblue"), mean = TRUE, axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			## max 24h bar
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_max.1-day.precip_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			picsa.plot.bar(yrsOnset, max24h[, j], xlab = 'Year', ylab = 'Rainfall Depth (mm)', title = 'Seasonal maximum of daily rainfall',
-							barcol = "turquoise4", axis.font = 2, start.zero = TRUE)
-			dev.off()
-
-			## Number of rainy days above 95th percentile line
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_nb.precip.gt.95th.perc_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			op <- par(mar = c(5.1, 5.1, 3.1, 2.1))
-			picsa.plot.line(yrsOnset, NbQ95th[, j], xlab = 'Year', ylab = 'Number of Days', title = 'Seasonal count of days when RR > 95th percentile',
-								col = list(line = 'darkgreen', points = "lightblue"), mean = TRUE, axis.font = 2, start.zero = TRUE)
-			par(op)
-			dev.off()
-
-			## Number of rainy days above 95th percentile bar
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_nb.precip.gt.95th.perc_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			op <- par(mar = c(5.1, 5.1, 3.1, 2.1))
-			picsa.plot.bar(yrsOnset, NbQ95th[, j], xlab = 'Year', ylab = 'Number of Days', title = 'Seasonal count of days when RR > 95th percentile',
-							barcol = "darkgreen", axis.font = 2, start.zero = TRUE)
-			par(op)
-			dev.off()
-
-			## Seasonal total of rain above 95th percentile bar
-			jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_total.precip.gt.95th.perc_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-			op <- par(mar = c(5.1, 5.1, 3.1, 2.1))
-			picsa.plot.bar(yrsOnset, TotalQ95th[, j], xlab = 'Year', ylab = 'Rainfall Amount (mm)', title = 'Seasonal total of precipitation when RR > 95th percentile',
-							barcol = "darkgreen", axis.font = 2, start.zero = TRUE)
-			par(op)
-			dev.off()
-
-			## tmax & tmin
 			if(compute.ETP == "temp"){
-				jpeg(file.path(stnDIR, paste0(cdtPrecip$id[j], '_tmax.tmin_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
-				picsa.plot.TxTn(yrsOnset, tmax[, j], tmin[, j], axis.font = 2)
-				dev.off()
+				TMAX <- readRDS(file.path(outPICSAData, "cdtTMAXSEAS", paste0(ii, ".rds")))
+				TMIN <- readRDS(file.path(outPICSAData, "cdtTMINSEAS", paste0(ii, ".rds")))
 			}
+
+			IDCOL <- loopCOL[[ii]]
+			ret <- foreach(j = seq_along(IDCOL), .export = toExport1, .packages = c("stringr", "tools", "fitdistrplus", "doParallel")) %parLoop% {
+				precip.id <- EnvPICSA$opDATA$id[EnvPICSA$cdtONSET$colInfo$id[IDCOL[j]]]
+				stnDIR <- file.path(outPICSAdir, precip.id)
+				dir.create(stnDIR, showWarnings = FALSE, recursive = TRUE)
+
+				onset <- ONSET[, j]
+				if(all(is.na(onset))) return(NULL)
+				onset.dates <- format(as.Date(onset, origin = EnvPICSA$cdtONSET$days.since), "%Y%m%d")
+				cessat <- CESSAT[, j]
+				cessat.dates <- format(as.Date(cessat, origin = EnvPICSA$cdtCESSAT$days.since), "%Y%m%d")
+				season.length <- SEASLENGTH[, j]
+				RainTotal <- RAINTOTAL[, j]
+
+				DrySpell5 <- sapply(AllDrySpell[, j], function(x) sum(x >= 5))
+				DrySpell7 <- sapply(AllDrySpell[, j], function(x) sum(x >= 7))
+				DrySpell10 <- sapply(AllDrySpell[, j], function(x) sum(x >= 10))
+				DrySpell15 <- sapply(AllDrySpell[, j], function(x) sum(x >= 15))
+				DrySpellMax <- sapply(AllDrySpell[, j], function(x) max(x))
+
+				max24h <- MAX24H[, j]
+				nbdayrain <- NBDRAIN[, j]
+				q95 <- Q95th[EnvPICSA$cdtONSET$colInfo$id[IDCOL[j]]]
+				NbQ95th <- NBQ95TH[, j]
+				TotalQ95th <- TOTQ95TH[, j]
+
+				yrsOnset <- EnvPICSA$cdtONSET$years
+				onsetXS <- EnvPICSA$cdtONSET$start.labels
+				yrsCesst <- EnvPICSA$cdtCESSAT$years
+				cessatXS <- EnvPICSA$cdtCESSAT$start.labels
+
+				## write data
+				don.out <- data.frame(onset = onset.dates, cessation = cessat.dates, seasonLength = season.length, RainTotal = RainTotal,
+									 DrySpell5 = DrySpell5, DrySpell7 = DrySpell7, DrySpell10 = DrySpell10, DrySpell15 = DrySpell15, DrySpellMax = DrySpellMax,
+									 MaxDailyRain = max24h, NbRainDay = nbdayrain, Q95th = q95, ExtrmFreqQ95th = NbQ95th, RainTotalQ95th = TotalQ95th)
+				if(compute.ETP == "temp"){
+					tmax <- TMAX[, j]
+					tmin <- TMIN[, j]
+					don.out <- data.frame(don.out, tmax = tmax, tmin = tmin)
+				}
+				writeFiles(don.out, file.path(stnDIR, paste0(precip.id, '_out', '.csv')), col.names = TRUE)
+				EnvPICSAplot$location <- paste0("Station: ", precip.id)
+
+				## ONI 
+				ijoni <- getIndexSeasonVars(onset.dates, cessat.dates, EnvPICSA$ONI$date, "monthly")
+				oni.idx <- sapply(ijoni, function(x) mean(EnvPICSA$ONI$data[x], na.rm = TRUE))
+				oni.idx <- ifelse(oni.idx >= 0.5, 3, ifelse(oni.idx <= -0.5, 1, 2))
+
+				precip <- readcdtDATAchunk(EnvPICSA$opDATA$cdtPrecip$pid[IDCOL[j]], EnvPICSA$cdtPrecip$colInfo, file.path(outPICSAData, "cdtPrecip"), chunksize, chunk.par = FALSE)
+				precip <- precip[EnvPICSA$opDATA$cdtPrecip$index, 1]
+				daty <- EnvPICSA$opDATA$dates
+
+				### daily rainfall
+				jpeg(file.path(stnDIR, paste0(precip.id, '_daily_rain', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.daily(daty, precip, EnvPICSA$Pars$thres.rain.day, axis.font = 2)
+				dev.off()
+
+				### Rainfall amounts ENSO line
+				jpeg(file.path(stnDIR, paste0(precip.id, '_rainfall.amount.ENSO_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line.ENSO(yrsOnset, RainTotal, oni.idx, xlab = 'Year', ylab = 'Rainfall Amount (mm)', title = "Seasonal rainfall amounts", axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				### Rainfall amounts ENSO bar
+				jpeg(file.path(stnDIR, paste0(precip.id, '_rainfall.amount.ENSO_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.bar.ENSO(yrsOnset, RainTotal, oni.idx, xlab = 'Year', ylab = 'Rainfall Amount (mm)', title = "Seasonal rainfall amounts", axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				### Rainfall amounts ENSO prob
+				jpeg(file.path(stnDIR, paste0(precip.id, '_rainfall.amount.ENSO_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.proba.ENSO(RainTotal, oni.idx, xlab = 'Rainfall Amount (mm)', title = "Seasonal rainfall amounts", axis.font = 2)
+				dev.off()
+
+				### Onset
+				jpeg(file.path(stnDIR, paste0(precip.id, '_onset', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line(yrsOnset, onset, origindate = onsetXS, title = "Starting dates of the rainy season", axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				### Onset1
+				jpeg(file.path(stnDIR, paste0(precip.id, '_onset1', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line(yrsOnset, onset, origindate = onsetXS, title = "Starting dates of the rainy season",
+								mean = TRUE, tercile = TRUE, axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				### Cessation
+				jpeg(file.path(stnDIR, paste0(precip.id, '_cessation', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line(yrsCesst, cessat, origindate = cessatXS, title = "Ending dates of the rainy season", axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				### Cessation1
+				jpeg(file.path(stnDIR, paste0(precip.id, '_cessation1', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line(yrsCesst, cessat, origindate = cessatXS, title = "Ending dates of the rainy season",
+								mean = TRUE, tercile = TRUE, axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				### Length of season
+				jpeg(file.path(stnDIR, paste0(precip.id, '_Length.of.season', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line(yrsOnset, season.length, xlab = 'Year', ylab = 'Number of Days',
+								title = "Length of the rainy season", axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				### Length of season1
+				jpeg(file.path(stnDIR, paste0(precip.id, '_Length.of.season', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line(yrsOnset, season.length, xlab = 'Year', ylab = 'Number of Days',
+								title = "Length of the rainy season", mean = TRUE, tercile = TRUE, axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				### Rainfall amounts line
+				jpeg(file.path(stnDIR, paste0(precip.id, '_rainfall.amount_line1', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line(yrsOnset, RainTotal, xlab = 'Year', ylab = 'Rainfall Amount (mm)',
+								title = "Seasonal rainfall amounts", axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				### Rainfall amounts line
+				jpeg(file.path(stnDIR, paste0(precip.id, '_rainfall.amount_line2', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line(yrsOnset, RainTotal, xlab = 'Year', ylab = 'Rainfall Amount (mm)',
+								title = "Seasonal rainfall amounts", mean = TRUE, tercile = TRUE, axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				### Rainfall amounts bar
+				jpeg(file.path(stnDIR, paste0(precip.id, '_rainfall.amount_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.bar(yrsOnset, RainTotal, xlab = 'Year', ylab = 'Rainfall Amount (mm)',
+								title = "Seasonal rainfall amounts", axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				### Rainfall amounts prob
+				jpeg(file.path(stnDIR, paste0(precip.id, '_rainfall.amount_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.proba(RainTotal, xlab = "Rainfall Amount (mm)", title = "Seasonal rainfall amounts", theoretical = TRUE, axis.font = 2)
+				dev.off()
+
+				## Dry Spell 5 line
+				jpeg(file.path(stnDIR, paste0(precip.id, '_dry.spell.5days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line(yrsOnset, DrySpell5, sub = "Dry spells - 5 or more consecutive days", xlab = 'Year',
+								ylab = 'Number of Dry Spells', title = "Dry Spells", axis.font = 2, start.zero = TRUE)
+				dev.off()
+				## Dry Spell 5 bar
+				jpeg(file.path(stnDIR, paste0(precip.id, '_dry.spell.5days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.bar(yrsOnset, DrySpell5, sub = "Dry spells - 5 or more consecutive days", xlab = 'Year', ylab = 'Number of Dry Spells',
+								title = "Dry Spells", barcol = "slateblue4", axis.font = 2, start.zero = TRUE)
+				dev.off()
+				## Dry Spell 5 ecdf
+				jpeg(file.path(stnDIR, paste0(precip.id, '_dry.spell.5days_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.proba(DrySpell5, sub = "Dry spells - 5 or more consecutive days", xlab = "Number of Dry Spells", title = "Dry Spells", axis.font = 2)
+				dev.off()
+
+				## Dry Spell 7 line
+				jpeg(file.path(stnDIR, paste0(precip.id, '_dry.spell.7days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line(yrsOnset, DrySpell7, sub = "Dry spells - 7 or more consecutive days", xlab = 'Year',
+								ylab = 'Number of Dry Spells', title = "Dry Spells", axis.font = 2, start.zero = TRUE)
+				dev.off()
+				## Dry Spell 7 bar
+				jpeg(file.path(stnDIR, paste0(precip.id, '_dry.spell.7days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.bar(yrsOnset, DrySpell7, sub = "Dry spells - 7 or more consecutive days", xlab = 'Year', ylab = 'Number of Dry Spells',
+								title = "Dry Spells", barcol = "slateblue4", axis.font = 2, start.zero = TRUE)
+				dev.off()
+				## Dry Spell 7 ecdf
+				jpeg(file.path(stnDIR, paste0(precip.id, '_dry.spell.7days_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.proba(DrySpell7, sub = "Dry spells - 7 or more consecutive days", xlab = "Number of Dry Spells", title = "Dry Spells", axis.font = 2)
+				dev.off()
+
+				## Dry Spell 10 line
+				jpeg(file.path(stnDIR, paste0(precip.id, '_dry.spell.10days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line(yrsOnset, DrySpell10, sub = "Dry spells - 10 or more consecutive days", xlab = 'Year',
+								ylab = 'Number of Dry Spells', title = "Dry Spells", axis.font = 2, start.zero = TRUE)
+				dev.off()
+				## Dry Spell 10 bar
+				jpeg(file.path(stnDIR, paste0(precip.id, '_dry.spell.10days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.bar(yrsOnset, DrySpell10, sub = "Dry spells - 10 or more consecutive days", xlab = 'Year', ylab = 'Number of Dry Spells',
+								title = "Dry Spells", barcol = "slateblue4", axis.font = 2, start.zero = TRUE)
+				dev.off()
+				## Dry Spell 10 ecdf
+				jpeg(file.path(stnDIR, paste0(precip.id, '_dry.spell.10days_prob', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.proba(DrySpell10, sub = "Dry spells - 10 or more consecutive days", xlab = "Number of Dry Spells", title = "Dry Spells", axis.font = 2)
+				dev.off()
+
+				## longest dry spell line
+				jpeg(file.path(stnDIR, paste0(precip.id, '_longest.dry.spell_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line(yrsOnset, DrySpellMax, xlab = 'Year', ylab = 'Number of Days',
+								title = "Longest dry spell", mean = TRUE, axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				## longest dry spell bar
+				jpeg(file.path(stnDIR, paste0(precip.id, '_longest.dry.spell_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.bar(yrsOnset, DrySpellMax, xlab = 'Year', ylab = 'Number of Days',
+								title = "Longest dry spell", axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				## Rainy days line
+				jpeg(file.path(stnDIR, paste0(precip.id, '_rainy.days_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line(yrsOnset, nbdayrain, xlab = 'Year', ylab = 'Number of Days', title = "Seasonal number of rainy days",
+									col = list(line = 'darkgreen', points = "lightblue"), mean = TRUE, axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				## Rainy days bar
+				jpeg(file.path(stnDIR, paste0(precip.id, '_rainy.days_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.bar(yrsOnset, nbdayrain, xlab = 'Year', ylab = 'Number of Days', title = "Seasonal number of rainy days",
+								barcol = "darkgreen", axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				## max 24h line
+				jpeg(file.path(stnDIR, paste0(precip.id, '_max.1-day.precip_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.line(yrsOnset, max24h, xlab = 'Year', ylab = 'Rainfall Depth (mm)', title = 'Seasonal maximum of daily rainfall',
+								 col = list(line = 'turquoise4', points = "lightblue"), mean = TRUE, axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				## max 24h bar
+				jpeg(file.path(stnDIR, paste0(precip.id, '_max.1-day.precip_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				picsa.plot.bar(yrsOnset, max24h, xlab = 'Year', ylab = 'Rainfall Depth (mm)', title = 'Seasonal maximum of daily rainfall',
+								barcol = "turquoise4", axis.font = 2, start.zero = TRUE)
+				dev.off()
+
+				## Number of rainy days above 95th percentile line
+				jpeg(file.path(stnDIR, paste0(precip.id, '_nb.precip.gt.95th.perc_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				op <- par(mar = c(5.1, 5.1, 3.1, 2.1))
+				picsa.plot.line(yrsOnset, NbQ95th, xlab = 'Year', ylab = 'Number of Days', title = 'Seasonal count of days when RR > 95th percentile',
+									col = list(line = 'darkgreen', points = "lightblue"), mean = TRUE, axis.font = 2, start.zero = TRUE)
+				par(op)
+				dev.off()
+
+				## Number of rainy days above 95th percentile bar
+				jpeg(file.path(stnDIR, paste0(precip.id, '_nb.precip.gt.95th.perc_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				op <- par(mar = c(5.1, 5.1, 3.1, 2.1))
+				picsa.plot.bar(yrsOnset, NbQ95th, xlab = 'Year', ylab = 'Number of Days', title = 'Seasonal count of days when RR > 95th percentile',
+								barcol = "darkgreen", axis.font = 2, start.zero = TRUE)
+				par(op)
+				dev.off()
+
+				## Seasonal total of rain above 95th percentile bar
+				jpeg(file.path(stnDIR, paste0(precip.id, '_total.precip.gt.95th.perc_bar', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+				op <- par(mar = c(5.1, 5.1, 3.1, 2.1))
+				picsa.plot.bar(yrsOnset, TotalQ95th, xlab = 'Year', ylab = 'Rainfall Amount (mm)', title = 'Seasonal total of precipitation when RR > 95th percentile',
+								barcol = "darkgreen", axis.font = 2, start.zero = TRUE)
+				par(op)
+				dev.off()
+
+				## tmax & tmin
+				if(compute.ETP == "temp"){
+					jpeg(file.path(stnDIR, paste0(precip.id, '_tmax.tmin_line', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
+					picsa.plot.TxTn(yrsOnset, tmax, tmin, axis.font = 2)
+					dev.off()
+					rm(tmax, tmin)
+				}
+				rm(onset, onset.dates, cessat, cessat.dates, season.length, RainTotal,
+					DrySpell5, DrySpell7, DrySpell10, DrySpell15, DrySpellMax, max24h,
+					nbdayrain, NbQ95th, TotalQ95th, precip, daty); gc()
+			}
+
+			if(compute.ETP == "temp") rm(TMAX, TMIN)
+			rm(ONSET, CESSAT, SEASLENGTH, RAINTOTAL, AllDrySpell, MAX24H, NBDRAIN, NBQ95TH, TOTQ95TH); gc()
 		}
-		if(closeklust) stopCluster(klust)
+		if(is.parallel$stop) stopCluster(is.parallel$cluster)
 		InsertMessagesTxt(main.txt.out, 'Plot done!')
 	}
 
-	# ##################
+	##################
 
 	return(0)
 

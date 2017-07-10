@@ -1,4 +1,73 @@
 
+readcdtDATAchunk <- function(col, colInfo, indir, chunksize = 100, chunk.par = TRUE)
+{
+	col.id <- match(col, colInfo$id)
+	col.idx <- colInfo$index[col.id]
+	col.grp <- split(col.id, col.idx)
+	col.grp <- lapply(col.grp, function(l){
+		ix <- (l-chunksize)%%chunksize
+		ifelse(ix == 0, chunksize, ix)
+	})
+	chunk <- unique(col.idx)
+
+	is.parallel <- doparallel(chunk.par & (length(chunk) >= 10))
+	`%parLoop%` <- is.parallel$dofun
+	don <- foreach(j = seq_along(chunk)) %parLoop% {
+		file.rds <- file.path(indir, paste0(chunk[j], ".rds"))
+		# con <- file(file.rds)
+		# open(con, "rb")
+		# x <- readRDS(con)
+		# close(con)
+		x <- readRDS(file.rds)
+		x[, col.grp[[j]], drop = FALSE]
+	}
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
+	do.call(cbind, don)
+}
+
+writecdtDATAchunk <- function(x, outdir, chunksize = 100, chunk.par = TRUE)
+{
+	col.id <- seq(ncol(x))
+	col.grp <- split(col.id, ceiling(col.id/chunksize))
+	col.idx <- rep(seq_along(col.grp), sapply(col.grp, length))
+
+	is.parallel <- doparallel(chunk.par & (length(col.grp) >= 10))
+	`%parLoop%` <- is.parallel$dofun
+	ret <- foreach(j = seq_along(col.grp)) %parLoop% {
+		tmp <- x[, col.grp[[j]], drop = FALSE]
+		file.rds <- file.path(outdir, paste0(j, ".rds"))
+		con <- gzfile(file.rds, compression = 5)
+		open(con, "wb")
+		saveRDS(tmp, con)
+		close(con)
+		rm(tmp); gc()
+	}
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
+	return(list(id = col.id, index = col.idx))
+}
+
+writebindcdtDATAchunk <- function(x, outdir, chunksize = 100, chunk.par = TRUE)
+{
+	col.id <- seq(ncol(x))
+	col.grp <- split(col.id, ceiling(col.id/chunksize))
+	col.idx <- rep(seq_along(col.grp), sapply(col.grp, length))
+
+	is.parallel <- doparallel(chunk.par & (length(col.grp) >= 10))
+	`%parLoop%` <- is.parallel$dofun
+	ret <- foreach(j = seq_along(col.grp)) %parLoop% {
+		file.rds <- file.path(outdir, paste0(j, ".rds"))
+		y <- readRDS(file.rds)
+		z <- x[, col.grp[[j]], drop = FALSE]
+		tmp <- rbind(y, z)
+		con <- gzfile(file.rds, compression = 5)
+		open(con, "wb")
+		saveRDS(tmp, con)
+		close(con)
+		rm(y, z, tmp); gc()
+	}
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
+	return(list(id = col.id, index = col.idx))
+}
 
 #################################################################################
 ## Climdex,  Extraction
