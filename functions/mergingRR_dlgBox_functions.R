@@ -655,7 +655,7 @@ mergeGetInfoRain <- function(parent.win, GeneralParameters){
 
 	############################################
 
-	bt.prm.OK <- tkbutton(frMRG1, text=" OK ")
+	bt.prm.OK <- tkbutton(frMRG1, text = "OK")
 	bt.prm.CA <- tkbutton(frMRG1, text = "Cancel")
 
 	#######

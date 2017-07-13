@@ -104,14 +104,14 @@ ExeAggTimeSeries <- function(GeneralParameters){
 			daty <- seq(dstart, dend, 'day')
 			dates <- format(daty, '%Y%m%d')
 			filein0 <- file.path(input.data, sprintf(informat, as.character(substr(dates, 1, 4)),
-			 						as.character(substr(dates, 5, 6)), as.character(substr(dates, 7, 8))))
+									as.character(substr(dates, 5, 6)), as.character(substr(dates, 7, 8))))
 		}
 		if(period == 'dekadal'){
 			daty <- seq(dstart, dend, 'day')
 			idays <- as.numeric(format(daty, '%d')) < 4
 			dates <- paste(format(daty[idays], '%Y%m'), as.numeric(format(daty[idays], '%d')), sep = '')
 			filein0 <- file.path(input.data, sprintf(informat, as.character(substr(dates, 1, 4)),
-		 							as.character(substr(dates, 5, 6)), as.numeric(substr(dates, 7, 7))))
+									as.character(substr(dates, 5, 6)), as.numeric(substr(dates, 7, 7))))
 		}
 		if(period == 'monthly'){
 			daty <- seq(dstart, dend, 'month')

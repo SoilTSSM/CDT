@@ -7,8 +7,7 @@ testConnection <- function(url = "https://www.google.com") {
 
 ####################################################################
 ## Setting Initialization Parameters
-initialize.parameters <- function(action, freqData, previous = FALSE,
-								gal.params = GeneralParameters){
+initialize.parameters <- function(action, freqData, previous = FALSE, gal.params = GeneralParameters){
 	if(!is.null(gal.params)){
 		if(!is.null(gal.params$action)){
 			if(gal.params$action == action) initpars <- gal.params
