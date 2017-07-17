@@ -111,17 +111,12 @@ HOValidation.plotGraph <- function(){
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 		abline(v = axTicks(1), col = "lightgray", lty = "dotted")
 
-		if(any(!is.na(x))){
+		if(any(!is.na(x)) & any(!is.na(y))){
+			xax <- seq(min(c(x, y), na.rm = TRUE), max(c(x, y), na.rm = TRUE), length.out = 1000)
 			fx <- ecdf(x)
-			# x <- sort(x)
-			x <- seq(min(c(x, y), na.rm = TRUE), max(c(x, y), na.rm = TRUE), length.out = 1000)
-			lines(x, fx(x), lwd = 2, col = 'blue', type = 'l')
-		}
-		if(any(!is.na(y))){
 			fy <- ecdf(y)
-			# y <- sort(y)
-			y <- seq(min(c(x, y), na.rm = TRUE), max(c(x, y), na.rm = TRUE), length.out = 1000)
-			lines(y, fy(y), lwd = 2, col ='red', type = 'l')
+			lines(xax, fx(xax), lwd = 2, col = 'blue', type = 'l')
+			lines(xax, fy(xax), lwd = 2, col ='red', type = 'l')
 		}
 		legend('bottomright', legendlab, col = c('blue', 'red'), lwd = 3, bg = 'lightgoldenrodyellow')
 	}
