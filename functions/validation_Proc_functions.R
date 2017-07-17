@@ -74,7 +74,7 @@ HandOutValidationDataProcs <- function(GeneralParameters){
 						as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%d')))
 		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 7))
 	}
-	if(timestep == "dekadal"){
+	if(timestep == "monthly"){
 		dates <- format(seq(dstart, dend, 'month'), '%Y%m')
 		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6))
 	}

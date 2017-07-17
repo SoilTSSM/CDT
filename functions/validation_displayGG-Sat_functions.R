@@ -113,12 +113,14 @@ HOValidation.plotGraph <- function(){
 
 		if(any(!is.na(x))){
 			fx <- ecdf(x)
-			x <- sort(x)
+			# x <- sort(x)
+			x <- seq(min(c(x, y), na.rm = TRUE), max(c(x, y), na.rm = TRUE), length.out = 1000)
 			lines(x, fx(x), lwd = 2, col = 'blue', type = 'l')
 		}
 		if(any(!is.na(y))){
 			fy <- ecdf(y)
-			y <- sort(y)
+			# y <- sort(y)
+			y <- seq(min(c(x, y), na.rm = TRUE), max(c(x, y), na.rm = TRUE), length.out = 1000)
 			lines(y, fy(y), lwd = 2, col ='red', type = 'l')
 		}
 		legend('bottomright', legendlab, col = c('blue', 'red'), lwd = 3, bg = 'lightgoldenrodyellow')
