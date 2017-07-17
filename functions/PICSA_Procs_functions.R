@@ -1410,6 +1410,8 @@ PICSAProcs <- function(GeneralParameters){
 				precip <- precip[EnvPICSA$opDATA$cdtPrecip$index, 1]
 				daty <- EnvPICSA$opDATA$dates
 
+				# if(Sys.info()["sysname"] == "Windows") jpeg(plotfile, restoreConsole = FALSE) else jpeg(plotfile)
+
 				### daily rainfall
 				jpeg(file.path(stnDIR, paste0(precip.id, '_daily_rain', '.jpg')), width = jpg.wcdt, height = jpg.hcdt, units = jpg.ucdt, res = jpg.rcdt)
 				picsa.plot.daily(daty, precip, EnvPICSA$Pars$thres.rain.day, axis.font = 2)

@@ -410,7 +410,7 @@ PICSA.plotClimMaps <- function(ocrds){
 	if(EnvPICSA$Pars$data.type == "cdt"){
 		xna <- EnvPICSA$PICSA.Coords$lon[is.na(don)]
 		yna <- EnvPICSA$PICSA.Coords$lat[is.na(don)]
-		don <- as.image(don, x = cbind(EnvPICSA$PICSA.Coords$lon,EnvPICSA$PICSA.Coords$lat), nx = 60, ny = 60)
+		don <- as.image(don, x = cbind(EnvPICSA$PICSA.Coords$lon, EnvPICSA$PICSA.Coords$lat), nx = 60, ny = 60)
 	}else{
 		xna <- NULL
 		lon <- sort(unique(EnvPICSA$PICSA.Coords$lon))
@@ -925,7 +925,6 @@ PICSA.DisplayTSPlot <- function(parent){
 	tkgrid.rowconfigure(img, 0, weight = 1)
 	tkgrid.columnconfigure(img, 0, weight = 1)
 	tcl("update")
-
 
 	return(list(onglet, img))
 }

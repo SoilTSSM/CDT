@@ -1,8 +1,5 @@
 
-plotMap4Validation <- function(donne, shpf, ZoomXYval, selectedPolygon){
-
-	ocrds <- getBoundaries(shpf)
-
+plotMap4Validation <- function(ocrds, ZoomXYval, selectedPolygon){
 	xmin <- ZoomXYval[1]
 	xmax <- ZoomXYval[2]
 	ymin <- ZoomXYval[3]
@@ -25,14 +22,13 @@ plotMap4Validation <- function(donne, shpf, ZoomXYval, selectedPolygon){
 		return(NULL)
 	}
 
-	idStn <- as.character(donne[1, ])
-	lon <- as.numeric(donne[2, ])
-	lat <- as.numeric(donne[3, ])
+	lon <- as.numeric(EnvHOValidation$donne[2, ])
+	lat <- as.numeric(EnvHOValidation$donne[3, ])
 
 	#######
 	opar <- par(mar = c(4, 4, 2, 2))
 	plot(1, xlim = c(xmin, xmax), ylim = c(ymin, ymax), xlab = "", ylab = "", type = "n", xaxt = 'n', yaxt = 'n')
-	if(!is.null(shpf)) lines(ocrds)
+	lines(ocrds)
 	points(lon, lat, pch = 19, col = 'darkred', cex = 0.5)
 	if(!is.null(selectedPolygon)) lines(selectedPolygon, col = 'red')
 
@@ -45,40 +41,25 @@ plotMap4Validation <- function(donne, shpf, ZoomXYval, selectedPolygon){
 	usr <- par("usr")
 	par(opar)
 
-	return(list(plt = plt, usr = usr, lon = lon, lat = lat, idStn = idStn))
+	return(list(par = c(plt, usr)))
 }
 
 ############################################################################
-displayMap4Validation <- function(parent, donne, shpf, ZoomXYval, notebookTab){
-
+displayMap4Validation <- function(parent, shpf, ZoomXYval, notebookTab){
+	ocrds <- getBoundaries(shpf)
 	selectedPolygon <- NULL
-	pltusr <- NULL
-	parPlotSize1 <- tclVar()
-	parPlotSize2 <- tclVar()
-	parPlotSize3 <- tclVar()
-	parPlotSize4 <- tclVar()
-	usrCoords1 <- tclVar()
-	usrCoords2 <- tclVar()
-	usrCoords3 <- tclVar()
-	usrCoords4 <- tclVar()
+
+	varplot <- c("parPlotSize1", "parPlotSize2", "parPlotSize3", "parPlotSize4",
+				 "usrCoords1", "usrCoords2", "usrCoords3", "usrCoords4")
+	parPltCrd <- setNames(lapply(varplot, function(x) assign(x, tclVar(), env = parent.frame())), varplot)
+
 	plotIt <- function(){
 		op <- par(bg = 'white')
-		pltusr <<- plotMap4Validation(donne, shpf, ZoomXYval, selectedPolygon)
-		tclvalue(parPlotSize1) <<- pltusr$plt[1]
-		tclvalue(parPlotSize2) <<- pltusr$plt[2]
-		tclvalue(parPlotSize3) <<- pltusr$plt[3]
-		tclvalue(parPlotSize4) <<- pltusr$plt[4]
-		tclvalue(usrCoords1) <<- pltusr$usr[1]
-		tclvalue(usrCoords2) <<- pltusr$usr[2]
-		tclvalue(usrCoords3) <<- pltusr$usr[3]
-		tclvalue(usrCoords4) <<- pltusr$usr[4]
+		pltusr <- plotMap4Validation(ocrds, ZoomXYval, selectedPolygon)
 		par(op)
-	}
 
-	parPltCrd <- list(parPlotSize1 = parPlotSize1, parPlotSize2 = parPlotSize2,
-						parPlotSize3 = parPlotSize3, parPlotSize4 = parPlotSize4,
-						usrCoords1 = usrCoords1, usrCoords2 = usrCoords2,
-						usrCoords3 = usrCoords3, usrCoords4 = usrCoords4)
+		for(j in seq_along(varplot)) tclvalue(parPltCrd[[varplot[j]]]) <- pltusr$par[j]
+	}
 
 	###################################################################
 
@@ -101,11 +82,11 @@ displayMap4Validation <- function(parent, donne, shpf, ZoomXYval, notebookTab){
 	if(is.null(lcmd.frame_valid)) return(NULL)
 
 	tkbind(canvas, "<Enter>", function(){
-		if(tclvalue(pressButP) == "1") tkconfigure(canvas, cursor = 'sizing')
-		else if(tclvalue(pressButM) == "1") tkconfigure(canvas, cursor = 'sizing')
-		else if(tclvalue(pressButRect) == "1") tkconfigure(canvas, cursor = 'sizing')
-		else if(tclvalue(pressButDrag) == "1") tkconfigure(canvas, cursor = 'hand1')
-		else if(tclvalue(pressGetCoords) == "1") tkconfigure(canvas, cursor = 'draped_box')
+		if(tclvalue(EnvZoomPars$pressButP) == "1") tkconfigure(canvas, cursor = 'sizing')
+		else if(tclvalue(EnvZoomPars$pressButM) == "1") tkconfigure(canvas, cursor = 'sizing')
+		else if(tclvalue(EnvZoomPars$pressButRect) == "1") tkconfigure(canvas, cursor = 'sizing')
+		else if(tclvalue(EnvZoomPars$pressButDrag) == "1") tkconfigure(canvas, cursor = 'hand1')
+		else if(tclvalue(EnvHOValidationplot$pressGetCoords) == "1") tkconfigure(canvas, cursor = 'draped_box')
 		else tkconfigure(canvas, cursor = 'crosshair')
 	})
 
@@ -133,27 +114,27 @@ displayMap4Validation <- function(parent, donne, shpf, ZoomXYval, notebookTab){
 		tkdelete(W, 'rect')
 
 		##get coordinates or polygon id
-		if(tclvalue(pressGetCoords) == "1" & !ret$oin){
+		if(tclvalue(EnvHOValidationplot$pressGetCoords) == "1" & !ret$oin){
 			##
-			if(tclvalue(select_type) == "Rectangle"){
+			if(tclvalue(EnvHOValidationplot$type.select) == "Rectangle"){
 				pPressRect(W, x, y, width = 1, outline = "red")
-				tclvalue(minlonRect) <<- round(ret$xc, 4)
-				tclvalue(minlatRect) <<- round(ret$yc, 4)
+				tclvalue(EnvHOValidationplot$minlonRect) <- round(ret$xc, 4)
+				tclvalue(EnvHOValidationplot$minlatRect) <- round(ret$yc, 4)
 				selectedPolygon <<- NULL
 			}
 
 			##
-			if(tclvalue(select_type) == "Polygons"){
+			if(tclvalue(EnvHOValidationplot$type.select) == "Polygons"){
 				xypts <- data.frame(x = ret$xc, y = ret$yc)
-				coordinates(xypts)=~x+y
+				coordinates(xypts) <- ~x+y
 				admin_name <- over(xypts, shpf)
-				admin_name <- c(t(admin_name[1,]))
+				admin_name <- c(t(admin_name[1, ]))
 
-				ids <- as.numeric(tclvalue(tcl(adminVar.tab2, 'current')))+1
+				ids <- as.numeric(tclvalue(tcl(EnvHOValidationplot$cb.shpAttr, 'current')))+1
 				admin_name <- admin_name[ids]
 				if(!is.na(admin_name)){
-					tclvalue(namePoly) <<- as.character(admin_name)
-					selectedPolygon <<- getBoundaries(shpf[shpf@data[, ids] == tclvalue(namePoly), ])
+					tclvalue(EnvHOValidationplot$namePoly) <- as.character(admin_name)
+					selectedPolygon <<- getBoundaries(shpf[shpf@data[, ids] == tclvalue(EnvHOValidationplot$namePoly), ])
 				}else{
 					selectedPolygon <<- NULL
 				}
@@ -162,27 +143,29 @@ displayMap4Validation <- function(parent, donne, shpf, ZoomXYval, notebookTab){
 		}
 
 		#Zoom plus
-		if(tclvalue(pressButP) == "1" & !ret$oin){
-			rgX <- as.numeric(tclvalue(usrCoords2))-as.numeric(tclvalue(usrCoords1))
-			rgY <- as.numeric(tclvalue(usrCoords4))-as.numeric(tclvalue(usrCoords3))
+		if(tclvalue(EnvZoomPars$pressButP) == "1" & !ret$oin){
+			rgX <- as.numeric(tclvalue(parPltCrd$usrCoords2))-as.numeric(tclvalue(parPltCrd$usrCoords1))
+			rgY <- as.numeric(tclvalue(parPltCrd$usrCoords4))-as.numeric(tclvalue(parPltCrd$usrCoords3))
 			shiftX <- rgX*(1-factZoom)/2
 			shiftY <- rgY*(1-factZoom)/2
 			xmin1 <- ret$xc-shiftX
 			xmax1 <- ret$xc+shiftX
 			ymin1 <- ret$yc-shiftY
 			ymax1 <- ret$yc+shiftY
+
 			ZoomXYval <<- c(xmin1, xmax1, ymin1, ymax1)
-			tclvalue(xx1) <<- round(xmin1, 4)
-			tclvalue(xx2) <<- round(xmax1, 4)
-			tclvalue(yy1) <<- round(ymin1, 4)
-			tclvalue(yy2) <<- round(ymax1, 4)
+
+			tclvalue(EnvZoomPars$xx1) <- round(xmin1, 4)
+			tclvalue(EnvZoomPars$xx2) <- round(xmax1, 4)
+			tclvalue(EnvZoomPars$yy1) <- round(ymin1, 4)
+			tclvalue(EnvZoomPars$yy2) <- round(ymax1, 4)
 			refreshPlot1(W, img, hscale = as.numeric(tclvalue(tkget(spinH))), vscale = as.numeric(tclvalue(tkget(spinV))))
 		}
 
 		#Zoom Moins
-		if(tclvalue(pressButM) == "1"  & !ret$oin){
-			rgX <- as.numeric(tclvalue(usrCoords2))-as.numeric(tclvalue(usrCoords1))
-			rgY <- as.numeric(tclvalue(usrCoords4))-as.numeric(tclvalue(usrCoords3))
+		if(tclvalue(EnvZoomPars$pressButM) == "1"  & !ret$oin){
+			rgX <- as.numeric(tclvalue(parPltCrd$usrCoords2))-as.numeric(tclvalue(parPltCrd$usrCoords1))
+			rgY <- as.numeric(tclvalue(parPltCrd$usrCoords4))-as.numeric(tclvalue(parPltCrd$usrCoords3))
 			shiftX <- rgX*(1+factZoom)/2
 			shiftY <- rgY*(1+factZoom)/2
 			xmin1 <- ret$xc-shiftX
@@ -191,40 +174,41 @@ displayMap4Validation <- function(parent, donne, shpf, ZoomXYval, notebookTab){
 			ymax1 <- ret$yc+shiftY
 
 			if(xmin1< -180 | xmax1 > 180 | ymin1< -90 | ymax1 > 90){
-				tclvalue(pressButP) <<- 0
-				tclvalue(pressButM) <<- 0
-				tclvalue(pressButRect) <<- 0
-				tclvalue(pressButDrag) <<- 0
-				tkconfigure(btZoomP.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
-				tkconfigure(btZoomM.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
-				tkconfigure(btZoomRect.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
-				tkconfigure(btPanImg.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
+				tclvalue(EnvZoomPars$pressButP) <- 0
+				tclvalue(EnvZoomPars$pressButM) <- 0
+				tclvalue(EnvZoomPars$pressButRect) <- 0
+				tclvalue(EnvZoomPars$pressButDrag) <- 0
+				tkconfigure(EnvZoomPars$btZoomP, relief = 'raised', bg = 'lightblue', state = 'normal')
+				tkconfigure(EnvZoomPars$btZoomM, relief = 'raised', bg = 'lightblue', state = 'normal')
+				tkconfigure(EnvZoomPars$btZoomRect, relief = 'raised', bg = 'lightblue', state = 'normal')
+				tkconfigure(EnvZoomPars$btPanImg, relief = 'raised', bg = 'lightblue', state = 'normal')
 				tkconfigure(W, cursor = 'crosshair')
 			}else{
 				ZoomXYval <<- c(xmin1, xmax1, ymin1, ymax1)
-				tclvalue(xx1) <<- round(xmin1, 4)
-				tclvalue(xx2) <<- round(xmax1, 4)
-				tclvalue(yy1) <<- round(ymin1, 4)
-				tclvalue(yy2) <<- round(ymax1, 4)
+				tclvalue(EnvZoomPars$xx1) <- round(xmin1, 4)
+				tclvalue(EnvZoomPars$xx2) <- round(xmax1, 4)
+				tclvalue(EnvZoomPars$yy1) <- round(ymin1, 4)
+				tclvalue(EnvZoomPars$yy2) <- round(ymax1, 4)
 				refreshPlot1(W, img, hscale = as.numeric(tclvalue(tkget(spinH))), vscale = as.numeric(tclvalue(tkget(spinV))))
 			}
 		}
 
 		##Zoom rectangle
-		if(tclvalue(pressButRect) == "1"  & !ret$oin){
+		if(tclvalue(EnvZoomPars$pressButRect) == "1"  & !ret$oin){
 			pPressRect(W, x, y, width = 1, outline = "red")
 			rectZoomInit[1] <<- ret$xc
 			rectZoomInit[3] <<- ret$yc
 		}
 
 		##Pan image
-		if(tclvalue(pressButDrag) == "1"  & !ret$oin){
+		if(tclvalue(EnvZoomPars$pressButDrag) == "1"  & !ret$oin){
 			panZoomInit[1] <<- ret$xc
 			panZoomInit[2] <<- ret$yc
-			panZoomInit[3] <<- as.numeric(tclvalue(xx1))
-			panZoomInit[4] <<- as.numeric(tclvalue(xx2))
-			panZoomInit[5] <<- as.numeric(tclvalue(yy1))
-			panZoomInit[6] <<- as.numeric(tclvalue(yy2))
+
+			panZoomInit[3] <<- as.numeric(tclvalue(EnvZoomPars$xx1))
+			panZoomInit[4] <<- as.numeric(tclvalue(EnvZoomPars$xx2))
+			panZoomInit[5] <<- as.numeric(tclvalue(EnvZoomPars$yy1))
+			panZoomInit[6] <<- as.numeric(tclvalue(EnvZoomPars$yy2))
 			tkconfigure(canvas, cursor = 'hand2')
 		}
 
@@ -232,15 +216,37 @@ displayMap4Validation <- function(parent, donne, shpf, ZoomXYval, notebookTab){
 
 	##########
 	tkbind(canvas, "<Motion>", function(W, x, y){
-		# if(tclvalue(select_type) == "Rectangle"){
-		# 	ret <- getXYCoords(W, x, y, parPltCrd)
-		# 	displayCursorPosition3Var(W, x, y, parPltCrd, xpcoord, ypcoord, zpcoord, getStnIDLabel, pltusr = pltusr, inout = ret$oin)
-		# }
-		if(tclvalue(select_type) == "Polygons" & !is.null(shpf)){
-			displayCursorPosition3Var(W, x, y, parPltCrd, xpcoord, ypcoord, zpcoord, getAdminLabel, shp = shpf, idField = adminVar.tab2)
+		if(tclvalue(EnvHOValidationplot$type.select) == "Polygons" & !is.null(shpf)){
+			displayCursorPosition3Var(W, x, y, parPltCrd, xpcoord, ypcoord, zpcoord,
+									getAdminLabel, shp = shpf, idField = EnvHOValidationplot$cb.shpAttr)
 		}else{
-			ret <- getXYCoords(W, x, y, parPltCrd)
-			displayCursorPosition3Var(W, x, y, parPltCrd, xpcoord, ypcoord, zpcoord, getStnIDLabel, pltusr = pltusr, inout = ret$oin)
+			xyMouse <- mouseMouvment(W, x, y, parPltCrd)
+
+			xydisp <- LatLonLabels(xyMouse$x, xyMouse$y)
+			frxcoord <- ifelse(xyMouse$inout, '', xydisp$xdisp)
+			frycoord <- ifelse(xyMouse$inout, '', xydisp$ydisp)
+
+			fdispIdStn <- function(x){
+				y <- if(x <= 2) 0.0006944444 * x else 0.002777778
+				return(y)
+			}
+
+			lon <- as.numeric(EnvHOValidation$donne[2, ])
+			lat <- as.numeric(EnvHOValidation$donne[3, ])
+			idStn <- as.character(EnvHOValidation$donne[1, ])
+
+			sdist <- (xyMouse$x-lon)^2 + (xyMouse$y-lat)^2
+			inear <- which.min(sdist)
+			rayondisp <- sdist[inear] > fdispIdStn(as.numeric(tclvalue(parPltCrd$usrCoords2)) - as.numeric(tclvalue(parPltCrd$usrCoords1)))
+			frzcoord <- ifelse(xyMouse$inout | rayondisp, '', idStn[inear])
+
+			tclvalue(xpcoord) <- frxcoord
+			tclvalue(ypcoord) <- frycoord
+			tclvalue(zpcoord) <- frzcoord
+
+			# ret <- getXYCoords(W, x, y, parPltCrd)
+			# displayCursorPosition3Var(W, x, y, parPltCrd, xpcoord, ypcoord, zpcoord,
+			# 						getStnIDLabel, pltusr = pltusr, inout = ret$oin)
 		}
 	})
 
@@ -249,26 +255,29 @@ displayMap4Validation <- function(parent, donne, shpf, ZoomXYval, notebookTab){
 		ret <- getXYCoords(W, x, y, parPltCrd)
 
 		##get coordinates rect
-		if(tclvalue(pressGetCoords) == "1" & tclvalue(select_type) == "Rectangle"){
+		if(tclvalue(EnvHOValidationplot$pressGetCoords) == "1" & tclvalue(EnvHOValidationplot$type.select) == "Rectangle"){
 			pMoveRect(W, x, y)
-			tclvalue(maxlonRect) <<- round(ret$xc, 4)
-			tclvalue(maxlatRect) <<- round(ret$yc, 4)
+			tclvalue(EnvHOValidationplot$maxlonRect) <- round(ret$xc, 4)
+			tclvalue(EnvHOValidationplot$maxlatRect) <- round(ret$yc, 4)
 		}
 
 		##Zoom rectangle
-		if(tclvalue(pressButRect) == "1"){
+		if(tclvalue(EnvZoomPars$pressButRect) == "1"){
 			pMoveRect(W, x, y)
 		}
 
 		##Pan image
-		if(tclvalue(pressButDrag) == "1"){
+		if(tclvalue(EnvZoomPars$pressButDrag) == "1"){
 			transX <- ret$xc-panZoomInit[1]
 			transY <- ret$yc-panZoomInit[2]
-			tclvalue(xx1) <<- round(panZoomInit[3]+factPan*transX, 4)
-			tclvalue(xx2) <<- round(panZoomInit[4]+factPan*transX, 4)
-			tclvalue(yy1) <<- round(panZoomInit[5]+factPan*transY, 4)
-			tclvalue(yy2) <<- round(panZoomInit[6]+factPan*transY, 4)
-			ZoomXYval <<- as.numeric(c(tclvalue(xx1), tclvalue(xx2), tclvalue(yy1), tclvalue(yy2)))
+
+			tclvalue(EnvZoomPars$xx1) <- round(panZoomInit[3]+factPan*transX, 4)
+			tclvalue(EnvZoomPars$xx2) <- round(panZoomInit[4]+factPan*transX, 4)
+			tclvalue(EnvZoomPars$yy1) <- round(panZoomInit[5]+factPan*transY, 4)
+			tclvalue(EnvZoomPars$yy2) <- round(panZoomInit[6]+factPan*transY, 4)
+
+			ZoomXYval <<- as.numeric(c(tclvalue(EnvZoomPars$xx1), tclvalue(EnvZoomPars$xx2),
+										tclvalue(EnvZoomPars$yy1), tclvalue(EnvZoomPars$yy2)))
 			refreshPlot1(W, img, hscale = as.numeric(tclvalue(tkget(spinH))), vscale = as.numeric(tclvalue(tkget(spinV))))
 		}
 	})
@@ -278,38 +287,44 @@ displayMap4Validation <- function(parent, donne, shpf, ZoomXYval, notebookTab){
 		ret <- getXYCoords(W, x, y, parPltCrd)
 
 		##get coordinates rect
-		if(tclvalue(pressGetCoords) == "1"){
-			if(tclvalue(select_type) == "Rectangle"){
-				xpr <- c(as.numeric(tclvalue(minlonRect)), round(ret$xc, 4), as.numeric(tclvalue(minlatRect)), round(ret$yc, 4))
+		if(tclvalue(EnvHOValidationplot$pressGetCoords) == "1"){
+			if(tclvalue(EnvHOValidationplot$type.select) == "Rectangle"){
+				xpr <- c(as.numeric(tclvalue(EnvHOValidationplot$minlonRect)), round(ret$xc, 4),
+						as.numeric(tclvalue(EnvHOValidationplot$minlatRect)), round(ret$yc, 4))
 				if(xpr[1] > xpr[2]) xpr <- xpr[c(2, 1, 3, 4)]
 				if(xpr[3] > xpr[4]) xpr <- xpr[c(1, 2, 4, 3)]
-				tclvalue(minlonRect) <<- xpr[1]
-				tclvalue(maxlonRect) <<- xpr[2]
-				tclvalue(minlatRect) <<- xpr[3]
-				tclvalue(maxlatRect) <<- xpr[4]
+
+				tclvalue(EnvHOValidationplot$minlonRect) <- xpr[1]
+				tclvalue(EnvHOValidationplot$maxlonRect) <- xpr[2]
+				tclvalue(EnvHOValidationplot$minlatRect) <- xpr[3]
+				tclvalue(EnvHOValidationplot$maxlatRect) <- xpr[4]
 			}
-			tclvalue(pressGetCoords) <<- 0
-			tkconfigure(bselect.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
+
+			tclvalue(EnvHOValidationplot$pressGetCoords) <- 0
+			tkconfigure(EnvHOValidationplot$bt.select, relief = 'raised', bg = 'lightblue', state = 'normal')
+
 			tkconfigure(W, cursor = 'crosshair')
 		}
 
 		##Zoom rectangle
-		if(tclvalue(pressButRect) == "1"){
+		if(tclvalue(EnvZoomPars$pressButRect) == "1"){
 			rectZoomInit[2] <<- ret$xc
 			rectZoomInit[4] <<- ret$yc
 			if(rectZoomInit[1] > rectZoomInit[2]) rectZoomInit <- rectZoomInit[c(2, 1, 3, 4)]
 			if(rectZoomInit[3] > rectZoomInit[4]) rectZoomInit <- rectZoomInit[c(1, 2, 4, 3)]
 			ZoomXYval <<- rectZoomInit
-			tclvalue(xx1) <<- round(rectZoomInit[1], 4)
-			tclvalue(xx2) <<- round(rectZoomInit[2], 4)
-			tclvalue(yy1) <<- round(rectZoomInit[3], 4)
-			tclvalue(yy2) <<- round(rectZoomInit[4], 4)
+
+			tclvalue(EnvZoomPars$xx1) <- round(rectZoomInit[1], 4)
+			tclvalue(EnvZoomPars$xx2) <- round(rectZoomInit[2], 4)
+			tclvalue(EnvZoomPars$yy1) <- round(rectZoomInit[3], 4)
+			tclvalue(EnvZoomPars$yy2) <- round(rectZoomInit[4], 4)
+
 			refreshPlot1(W, img, hscale = as.numeric(tclvalue(tkget(spinH))), vscale = as.numeric(tclvalue(tkget(spinV))))
 			tkdelete(W, 'rect')
 		}
 
 		##Pan image
-		if(tclvalue(pressButDrag) == "1"){
+		if(tclvalue(EnvZoomPars$pressButDrag) == "1"){
 			tkconfigure(canvas, cursor = 'hand1')
 		}
 	})
@@ -317,14 +332,15 @@ displayMap4Validation <- function(parent, donne, shpf, ZoomXYval, notebookTab){
 	###############################################
 
 	tkbind(canvas, "<Button-3>", function(W){
-		tclvalue(pressButP) <<- 0
-		tclvalue(pressButM) <<- 0
-		tclvalue(pressButRect) <<- 0
-		tclvalue(pressButDrag) <<- 0
-		tkconfigure(btZoomP.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomM.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btZoomRect.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
-		tkconfigure(btPanImg.tab2, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tclvalue(EnvZoomPars$pressButP) <- 0
+		tclvalue(EnvZoomPars$pressButM) <- 0
+		tclvalue(EnvZoomPars$pressButRect) <- 0
+		tclvalue(EnvZoomPars$pressButDrag) <- 0
+
+		tkconfigure(EnvZoomPars$btZoomP, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(EnvZoomPars$btZoomM, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(EnvZoomPars$btZoomRect, relief = 'raised', bg = 'lightblue', state = 'normal')
+		tkconfigure(EnvZoomPars$btPanImg, relief = 'raised', bg = 'lightblue', state = 'normal')
 
 		tkconfigure(canvas, cursor = 'crosshair')
 		tkdelete(W, 'rect')

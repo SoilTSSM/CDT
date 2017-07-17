@@ -1,0 +1,66 @@
+{
+    "stn.file": [{
+        // Time step of the input data
+        "tstep": "dekadal",
+        // station data file name
+        "file": ""
+    }],
+    // ncdf data
+    "ncdf.file": [{
+        // // Full path to the directory of ncdf data
+        "dir": "",
+        // ncdf filename format 
+        "format": "rr_mrg_%s%s%s.nc",
+        // ncdf sample file
+        "sample": ""
+    }],
+    // Shapefile
+    "shp.file": [{
+        // shapefile filename
+        "shp": "",
+        // Attribute field to be used and displayed
+        "attr": ""
+    }],
+
+    // Path to the file or directory to save results
+    "outdir": "",
+
+    // Validation date
+    "date.range": [{
+        // start year 
+        "start.year": 1983,
+        // end year
+        "end.year": 2015,
+        // start month 
+        "start.month": 1,
+        // end month
+        "end.month": 12
+    }],
+
+    // Data aggregation
+    "aggr.series": [{
+        // use aggregated data
+        "aggr.data": false,
+        // Function to be used to aggregate the series: "sum", "mean", "count" 
+        "aggr.fun": "sum",
+        // // Minimum fraction of available data that must be present for the time period to compute
+        // "min.frac": 0.95,
+        // Comparison operator to be used to count event
+        "opr.fun": ">=",
+        // user defined threshold filter applied to events
+        "opr.thres": 0
+    }],
+
+    // Selection type
+    // All Stations: "all"
+    // Rectangle: "rect"
+    // Polygons: "poly"
+    "type.select": "all",
+
+    // Data to use to calculate statistics
+    // All data: "all"
+    // Spatial average: "avg"
+    // Per station: "stn"
+    // "climato" = Climatologies
+    "stat.data": "all"
+}

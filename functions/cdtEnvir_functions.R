@@ -15,8 +15,9 @@ EnvQcOutlierData <- new.env()
 #Homogenization
 EnvHomogzData <- new.env()
 
-#Rainfall Validation
-EnvRainValidation <- new.env()
+#Hold-Out Validation
+EnvHOValidation <- new.env()
+EnvHOValidationplot <- new.env()
 
 #Climatological analysis data
 EnvClimatoAnalysis <- new.env()

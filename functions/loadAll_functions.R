@@ -59,6 +59,7 @@ source(file.path(apps.dir, 'functions', 'homogenization_BreakPtPlot_functions.R'
 ###
 source(file.path(apps.dir, 'functions', 'merging_functions.R'))
 
+source(file.path(apps.dir, 'functions', 'mergingRR.simple_dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'mergingRR_dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'mergingRR_execute_functions.R'))
 source(file.path(apps.dir, 'functions', 'mergingRR_Procs_functions.R'))
@@ -140,6 +141,7 @@ source(file.path(apps.dir, 'functions', 'interpol_displayVgm_functions.R'))
 source(file.path(apps.dir, 'functions', 'interpol_Proc_functions.R'))
 
 #####
+source(file.path(apps.dir, 'functions', 'validation_functions.R'))
 source(file.path(apps.dir, 'functions', 'validation_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'validation_Proc_functions.R'))
 source(file.path(apps.dir, 'functions', 'validation_displayGG-Sat_functions.R'))

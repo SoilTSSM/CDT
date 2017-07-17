@@ -1,0 +1,111 @@
+{
+    // Station data filename
+    "STN.file": "",
+    // RFE data
+    "RFE": {
+        // Full path to the directory of RFE
+        "dir": "",
+        // RFE sample file
+        "sample": "",
+        // RFE filename format 
+        "format": "rfe%s_%s-dk%s.nc"
+    },
+    "BIAS": {
+        //Bias correction method
+        // "Multiplicative.Bias.Var": multiplicative bias correction according to the time step of data
+        //              daily: 365 days bias factors, dekadal: 36 bias factors, monthly: 12 bias factors 
+        // "Multiplicative.Bias.Mon": multiplicative bias correction using one factor for each month
+        // "Quantile.Mapping": Fitting Bernoulli-Gamma distribution
+        "method": "Multiplicative.Bias.Var",
+        // Date range to be used to compute Mean Bias coefficients
+        "start.year": 1981,
+        "end.year": 2010,
+        // Bias factors already calculated
+        "deja.calc": false,
+        // Full path to the bias directory
+        "dir.Bias": "",
+        // Minimum length of non missing values to be used to calculate the factor
+        // or to fit the distribution
+        "min.length": 15,
+        // Minimum number of non missing stations to interpolate bias
+        "min.stn": 10
+    },
+    "Merging": {
+        // Merging Method:
+        // "Regression Kriging"
+        // "Spatio-Temporal LM"
+        // "Simple Bias Adjustment"
+        "method": "Regression Kriging",
+        // Minimum number of stations with data to be used to do the merging
+        "min.stn": 10,
+        // Minimum number of non-zero station values to perform the merging
+        "min.non.zero": 7,
+        // LM coef already calculated
+        "deja.calc": false,
+        // Full path to the LM coef directory
+        "dir.LMCoef": ""
+    },
+    // Merging date range
+    "Date": {
+        "start.year": 1981,
+        "start.mon": 1,
+        "start.dek": 1,
+        "end.year": 2015,
+        "end.mon": 12,
+        "end.dek": 3
+    },
+    // Interpolation method
+    "Interp": {
+        // Interpolation method: Kriging/IDW
+        // Kriging: Ordinary Kriging
+        // IDW: Inverse Distance Weighted
+        "method": "IDW",
+        // nmin for gstat
+        "nmin": 3,
+        // nmax for gstat
+        "nmax": 5,
+        // maxdist for gstat (in decimal degree)
+        "maxdist": 0.75,
+        // variogram model, see gstat package for list of available model
+        "vgm.model": ["Sph", "Exp", "Gau"],
+        // using kriging of block mean values (true or false)
+        "use.block": true
+    },
+    "RnoR": {
+        // use Rain-no-Rain mask (true or false)
+        "use.RnoR": true,
+        // Maximum distance (in decimal degrees) for interpolating Rain-no-Rain mask
+        "maxdist.RnoR": 0.25,
+        // Smooth Rain-no-Rain mask (true or false)
+        "smooth.RnoR": true,
+        // wet day definition, rainfall >= wet.day
+        "wet.day": 1.0
+    },
+    "output": {
+        // Full path to the directory to save results
+        "dir": "",
+        // Merged filename format
+        "format": "rr_mrg_%s%s%s_ALL.nc"
+    },
+    "blank": {
+        // Blank grid outside the country boundaries or over ocean
+        // "1" : None
+        // "2" : Use DEM
+        // "3" : Use ESRI shapefile
+        "blank": "1",
+        // Elevation data filename
+        "DEM.file": "",
+        // ESRI shapefile
+        "SHP.file": ""
+    },
+    "scale.daily": {
+        // Scaling up daily merged data to match dekadal totals from dekadal merged data
+        "scale": false,
+        // Full path to the directory of merged dekadal data
+        "dek.dir": "",
+        // Merged dekadal sample file
+        "dek.sample": "",
+        // Merged dekadal filename format
+        "dek.format": "rr_mrg_%s%s%s_ALL.nc"
+    }
+}

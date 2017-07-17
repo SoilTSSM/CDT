@@ -1127,11 +1127,11 @@ PICSAPanelCmd <- function(){
 	EnvPICSAplot$spin.TsMap.dryspell <- ttkspinbox(frameTSMaps, from = 1, to = 40, increment = 1, justify = 'center', width = 2, state = stateDrySpl)
 	tkset(EnvPICSAplot$spin.TsMap.dryspell, 5)
 
-	bt.TsMap.prev <- tkbutton(frameTSMaps, text = "<<")
-	bt.TsMap.next <- tkbutton(frameTSMaps, text = ">>")
+	bt.TsMap.prev <- ttkbutton(frameTSMaps, text = "<<", width = 4)
+	bt.TsMap.next <- ttkbutton(frameTSMaps, text = ">>", width = 4)
 	EnvPICSAplot$spin.TsMap.year <- ttkspinbox(frameTSMaps, from = 1800, to = 2200, increment = 1, justify = 'center', width = 4)
 	tkset(EnvPICSAplot$spin.TsMap.year, 2015)
-	bt.TsMap.plot <- tkbutton(frameTSMaps, text = "PLOT")
+	bt.TsMap.plot <- ttkbutton(frameTSMaps, text = "PLOT")
 
 	tkgrid(cb.TsMap.picsavar, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(txt.TsMap.dryspell, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -1180,7 +1180,7 @@ PICSAPanelCmd <- function(){
 	en.Freq1 <- tkentry(frameClimMaps, textvariable = EnvPICSAplot$low.thres, width = 5, state = stateFrq)
 	txt.Freq2 <- tklabel(frameClimMaps, text = "And",  anchor = 'w', justify = 'left')
 	en.Freq2 <- tkentry(frameClimMaps, textvariable = EnvPICSAplot$up.thres, width = 5, state = stateFrq)
-	bt.ClimMap.plot <- tkbutton(frameClimMaps, text = "PLOT")
+	bt.ClimMap.plot <- ttkbutton(frameClimMaps, text = "PLOT")
 
 
 	tkgrid(cb.anMthd, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -1213,7 +1213,7 @@ PICSAPanelCmd <- function(){
 
 	#######################
 
-	frameTSPlot <- ttklabelframe(subfr4, text = "Time Series plot", relief = 'groove')
+	frameTSPlot <- ttklabelframe(subfr4, text = "Time Series Graph", relief = 'groove')
 
 	varTSPLOT <- c("From Maps", "Daily Rainfall")
 	EnvPICSAplot$varTSp <- tclVar("From Maps")
@@ -1251,8 +1251,7 @@ PICSAPanelCmd <- function(){
 
 	txt.stnID <- tklabel(frameTSPlot, text = "Station",  anchor = 'e', justify = 'right')
 	cb.stnID <- ttkcombobox(frameTSPlot, values = stnIDTSPLOT, textvariable = EnvPICSAplot$stnIDTSp, width = 10, state = stateStnID)
-	bt.TsGraph.plot <- tkbutton(frameTSPlot, text = "PLOT")
-
+	bt.TsGraph.plot <- ttkbutton(frameTSPlot, text = "PLOT")
 
 	tkgrid(cb.varTSp, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 12, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cb.typeTSp, row = 0, column = 12, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)

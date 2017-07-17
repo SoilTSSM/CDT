@@ -429,7 +429,25 @@ tkadd(menu.mrg, "separator")
 
 ##########
 menu.mrg1 <- tkmenu(top.menu, tearoff = FALSE)
-tkadd(menu.mrg, "cascade", label = "Merging - Simplified", menu = menu.mrg1, state = 'disabled')
+tkadd(menu.mrg, "cascade", label = "Merging - Simplified", menu = menu.mrg1, state = "disabled")
+
+##########
+tkadd(menu.mrg1, "command", label = "Merging Rainfall", command = function(){
+	refreshCDT.lcmd.env()
+	initpars <- initialize.parameters('merge.simple.rain', 'dekadal')
+	GeneralParameters <<- mergeGetInfoRain.simple(main.win, initpars)
+})
+
+##########
+tkadd(menu.mrg1, "separator")
+
+##########
+tkadd(menu.mrg1, "command", label = "Merging Temperature", command = function(){
+	# refreshCDT.lcmd.env()
+	# initpars <- initialize.parameters('merge.simple.temp', 'dekadal')
+	# GeneralParameters <<- mrgGetInfoTemp.simple(main.win, initpars)
+})
+
 
 ######################################## ADVANCED
 tkadd(menu.mrg, "separator")
