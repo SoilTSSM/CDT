@@ -5,6 +5,9 @@ splitCDTData <- function(donne, period){
 	if(period == 'daily' & datylen != 8){
 		InsertMessagesTxt(main.txt.out, 'Station data: not a daily data', format = TRUE)
 		return(NULL)
+	}else if(period == 'pentad' & datylen != 7){
+		InsertMessagesTxt(main.txt.out, 'Station data: not a pentad data', format = TRUE)
+		return(NULL)
 	}else if(period == 'dekadal' & datylen != 7){
 		InsertMessagesTxt(main.txt.out, 'Station data: not a dekadal data', format = TRUE)
 		return(NULL)
@@ -15,11 +18,7 @@ splitCDTData <- function(donne, period){
 
 	seph <- rle(grepl('[[:digit:]]', as.character(donne[, 1])))
 	ipos <- which(!seph$values & seph$lengths >= 3 & seph$lengths <= 4)
-	if(length(ipos) == 0){
-		InsertMessagesTxt(main.txt.out, 'Station data is not in a standard unambiguous CDT format', format = TRUE)
-		return(NULL)
-	}
-	if(ipos[1] != 1){
+	if(length(ipos) == 0 | ipos[1] != 1){
 		InsertMessagesTxt(main.txt.out, 'Station data is not in a standard unambiguous CDT format', format = TRUE)
 		return(NULL)
 	}
@@ -29,9 +28,28 @@ splitCDTData <- function(donne, period){
 	names(Info) <- if(length(ihead) == 4) c('Stations', 'Lon', 'Lat', 'ELV') else c('Stations', 'Lon', 'Lat')
 	daty.orig <- as.character(donne[-ihead, 1])
 
+	if(period%in%c('pentad', 'dekadal')){
+		dek <- as.numeric(substr(daty.orig, 7, 7))
+		dek <- dek[!is.na(dek)]
+		if(period == 'pentad') wrongdaty <- any(dek == 0 | dek > 6)
+		if(period == 'dekadal') wrongdaty <- any(dek == 0 | dek > 3)
+		if(wrongdaty){
+			InsertMessagesTxt(main.txt.out, 'Station date is in wrong format', format = TRUE)
+			return(NULL)
+		}
+	}
+
 	if(period == 'daily'){
 		dates.bak <- daty.orig
 		dates <- as.Date(dates.bak, format = '%Y%m%d')
+	}else if(period == 'pentad'){
+		xan <- substr(daty.orig, 1, 4)
+		xmo <- substr(daty.orig, 5, 6)
+		xpt <- substr(daty.orig, 7, 7)
+		notpen <- which(as.numeric(xpt) > 6)
+		dates.bak <- paste(xan, xmo, xpt, sep = '-')
+		dates <- as.Date(dates.bak)
+		dates[notpen] <- NA
 	}else if(period == 'dekadal'){
 		xan <- substr(daty.orig, 1, 4)
 		xmo <- substr(daty.orig, 5, 6)
@@ -73,6 +91,14 @@ splitCDTData <- function(donne, period){
 		miss.dates <- alldates[is.na(ix)]
 		miss.dates <- format(miss.dates, '%Y%m%d')
 		dup.dates <- format(dup.dates, '%Y%m%d')
+	}else if(period == 'pentad'){
+		alldates <- seq(min(dates), max(dates), 'day')
+		alldates <- alldates[as.numeric(format(alldates, '%d')) <= 6]
+		ix <- match(alldates, dates)
+		dates <- paste(format(alldates, '%Y%m'), as.numeric(format(alldates, '%d')), sep = '')
+		miss.dates <- alldates[is.na(ix)]
+		miss.dates <- paste(format(miss.dates, '%Y%m'), as.numeric(format(miss.dates, '%d')), sep = '')
+		dup.dates <- paste(format(dup.dates, '%Y%m'), as.numeric(format(dup.dates, '%d')), sep = '')
 	}else if(period == 'dekadal'){
 		alldates <- seq(min(dates), max(dates), 'day')
 		alldates <- alldates[as.numeric(format(alldates, '%d')) <= 3]
@@ -141,6 +167,24 @@ splitTsData <- function(donne, period, filefrmt, datefrmt){
 			dates.bak <- paste(as.character(donne[, 1]), as.character(donne[, 2]), as.character(donne[, 3]), sep = '-')
 			dates <- as.Date(dates.bak)
 		}
+	}else if(period == 'pentad'){
+		if(datefrmt == "1"){ #1date
+			if(nchar(as.character(donne[5, 1])) != 7){
+				InsertMessagesTxt(main.txt.out, 'Station data: not a pentad data', format = TRUE)
+				return(NULL)
+			}
+			xan <- substr(as.character(donne[, 1]), 1, 4)
+			xmo <- substr(as.character(donne[, 1]), 5, 6)
+			xdk <- substr(as.character(donne[, 1]), 7, 7)
+			notpen<- which(as.numeric(xdk) > 6)
+			dates.bak <- paste(xan, xmo, xdk, sep = '-')
+			dates <- as.Date(dates.bak)
+		}else{ #3date
+			dates.bak <- paste(as.character(donne[, 1]), as.character(donne[, 2]), as.character(donne[, 3]), sep = '-')
+			dates <- as.Date(dates.bak)
+			notpen <- which(as.numeric(as.character(donne[, 3])) > 6)
+		}
+		dates[notpen] <- NA
 	}else if(period == 'dekadal'){
 		if(datefrmt == "1"){ #1date
 			if(nchar(as.character(donne[5, 1])) != 7){
@@ -256,6 +300,15 @@ splitTsData <- function(donne, period, filefrmt, datefrmt){
 		miss.dates <- alldates[is.na(ix)]
 		miss.dates <- format(miss.dates, '%Y%m%d')
 		dup.dates <- format(dup.dates, '%Y%m%d')
+	}
+	if(period == 'pentad'){
+		alldates <- seq(min(dates), max(dates), 'day')
+		alldates <- alldates[as.numeric(format(alldates, '%d')) <= 6]
+		ix <- match(alldates, dates)
+		dates <- paste(format(alldates, '%Y%m'), as.numeric(format(alldates, '%d')), sep = '')
+		miss.dates <- alldates[is.na(ix)]
+		miss.dates <- paste(format(miss.dates, '%Y%m'), as.numeric(format(miss.dates, '%d')), sep = '')
+		dup.dates <- paste(format(dup.dates, '%Y%m'), as.numeric(format(dup.dates, '%d')), sep = '')
 	}
 	if(period == 'dekadal'){
 		alldates <- seq(min(dates), max(dates), 'day')

@@ -20,7 +20,7 @@
         // RFE filename format 
         "RFE.File.Format": "rfe%s_%s-dk%s.nc",
         // Mean Bias prefix
-        "Mean.Bias.Prefix": "STN_RFE_MeanBias",
+        "Mean.Bias.Prefix": "STN_GRID_MeanBias",
         // Bias corrected file prefix
         "Adj.File.Format": "rr_adj_%s%s%s.nc"
     }],

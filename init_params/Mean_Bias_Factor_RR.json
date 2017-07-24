@@ -22,7 +22,7 @@
         // RFE filename format 
         "RFE.File.Format": "rfe%s_%s-dk%s.nc",
         // Mean Bias prefix
-        "Mean.Bias.Prefix": "STN_RFE_MeanBias"
+        "Mean.Bias.Prefix": "STN_GRID_MeanBias"
     }],
     // Date range to be used to compute Mean Bias coefficients
     "Bias.Date.Range": [{

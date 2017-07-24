@@ -53,8 +53,8 @@ init.params <- function(action, period){
 	## Merging Rainfall
 
 	#### Simplified
-	if(action == 'merge.simple.rain'){
-		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Merging_RR_simple.json'))
+	if(action == 'merge.rain.one'){
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Precip_Merging_One.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
 		if(str_trim(ret.params$output$dir) == "") ret.params$output$dir <- getwd()
 	}
@@ -98,19 +98,29 @@ init.params <- function(action, period){
 
 	#################################################################
 	## Merging temperature
+
 	##compute regression parameters for downscaling
 	if(action == 'coefdown.temp'){
-		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Downscalling_Coef_TT.json'))
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Temp_downscalling_Coef.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
 		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
 
 	######downscaling
 	if(action == 'down.temp'){
-		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Downscalling_TT.json'))
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Temp_downscalling_reanalysis.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
-		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
+		if(str_trim(ret.params$output$dir) == "") ret.params$output$dir <- getwd()
 	}
+
+	#### Simplified
+	if(action == 'merge.temp.one'){
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Temp_Merging_One.json'))
+		ret.params <- c(list(action = action, period = period), ret.params)
+		if(str_trim(ret.params$output$dir) == "") ret.params$output$dir <- getwd()
+	}
+
+	#### Advanced
 
 	##Bias coeff
 	if(action == 'coefbias.temp'){

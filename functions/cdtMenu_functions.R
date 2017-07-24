@@ -411,7 +411,7 @@ tkadd(menu.mrg, "cascade", label = "Temperature - Reanalysis Downscaling", menu 
 tkadd(menu.mrg.down, "command", label = "Compute Downscaling Coefficients", background = 'lightblue', command = function(){
 	refreshCDT.lcmd.env()
 	initpars <- initialize.parameters('coefdown.temp', 'dekadal')
-	GeneralParameters <<- coefDownGetInfoTemp(main.win, initpars)
+	GeneralParameters <<- Temp_coefDownGetInfo(main.win, initpars)
 })
 
 ##########
@@ -421,7 +421,8 @@ tkadd(menu.mrg.down, "separator")
 tkadd(menu.mrg.down, "command", label = "Reanalysis Downscaling", command = function(){
 	refreshCDT.lcmd.env()
 	initpars <- initialize.parameters('down.temp', 'dekadal')
-	GeneralParameters <<- downGetInfoDekTempReanal(main.win, initpars)
+	# GeneralParameters <<- downGetInfoDekTempReanal(main.win, initpars)
+	GeneralParameters <<- Temp_reanalDownGetInfo(main.win, initpars)
 })
 
 ######################################## SIMPLIFIED
@@ -429,13 +430,13 @@ tkadd(menu.mrg, "separator")
 
 ##########
 menu.mrg1 <- tkmenu(top.menu, tearoff = FALSE)
-tkadd(menu.mrg, "cascade", label = "Merging - Simplified", menu = menu.mrg1, state = "disabled")
+tkadd(menu.mrg, "cascade", label = "Merging", menu = menu.mrg1, state = "normal")
 
 ##########
 tkadd(menu.mrg1, "command", label = "Merging Rainfall", command = function(){
 	refreshCDT.lcmd.env()
-	initpars <- initialize.parameters('merge.simple.rain', 'dekadal')
-	GeneralParameters <<- mergeGetInfoRain.simple(main.win, initpars)
+	initpars <- initialize.parameters('merge.rain.one', 'dekadal')
+	GeneralParameters <<- Precip_mergeGetInfoALL(main.win, initpars)
 })
 
 ##########
@@ -443,9 +444,9 @@ tkadd(menu.mrg1, "separator")
 
 ##########
 tkadd(menu.mrg1, "command", label = "Merging Temperature", command = function(){
-	# refreshCDT.lcmd.env()
-	# initpars <- initialize.parameters('merge.simple.temp', 'dekadal')
-	# GeneralParameters <<- mrgGetInfoTemp.simple(main.win, initpars)
+	refreshCDT.lcmd.env()
+	initpars <- initialize.parameters('merge.temp.one', 'dekadal')
+	GeneralParameters <<- Temp_mergeGetInfoALL(main.win, initpars)
 })
 
 

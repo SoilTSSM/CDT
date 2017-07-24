@@ -1111,7 +1111,7 @@ coefLMGetInfoRain <- function(parent.win, GeneralParameters){
 	rad.lon <- tclVar(GeneralParameters$Interpolation.pars$rad.lon)
 	rad.lat <- tclVar(GeneralParameters$Interpolation.pars$rad.lat)
 	rad.elv <- tclVar(GeneralParameters$Interpolation.pars$rad.elv)
-	res.coarse <- tclVar(GeneralParameters$Interpolation.pars$res.coarse)
+	# res.coarse <- tclVar(GeneralParameters$Interpolation.pars$res.coarse)
 
 	if(GeneralParameters$Interpolation.pars$interp.method == 'NN'){
 		statenn <- 'normal'

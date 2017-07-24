@@ -58,15 +58,35 @@ source(file.path(apps.dir, 'functions', 'homogenization_BreakPtPlot_functions.R'
 
 ###
 source(file.path(apps.dir, 'functions', 'merging_functions.R'))
+source(file.path(apps.dir, 'functions', 'merging_dlgBox_functions.R'))
 
-source(file.path(apps.dir, 'functions', 'mergingRR.simple_dlgBox_functions.R'))
+source(file.path(apps.dir, 'functions', 'Precip_merging.dlgBoxALL_functions.R'))
+source(file.path(apps.dir, 'functions', 'Precip_merging.Bias_functions.R'))
+source(file.path(apps.dir, 'functions', 'Precip_merging.LMCoef_functions.R'))
+source(file.path(apps.dir, 'functions', 'Precip_merging.Merge_functions.R'))
+source(file.path(apps.dir, 'functions', 'Precip_merging.Procs_functions.R'))
+
+###
 source(file.path(apps.dir, 'functions', 'mergingRR_dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'mergingRR_execute_functions.R'))
 source(file.path(apps.dir, 'functions', 'mergingRR_Procs_functions.R'))
+###
 
-source(file.path(apps.dir, 'functions', 'mergingTT_dlgBox_functions.R'))
-source(file.path(apps.dir, 'functions', 'mergingTT_execute_functions.R'))
-source(file.path(apps.dir, 'functions', 'mergingTT_Procs_functions.R'))
+source(file.path(apps.dir, 'functions', 'Temp_downscaling_dlgBox_functions.R'))
+source(file.path(apps.dir, 'functions', 'Temp_downscaling_execute_functions.R'))
+source(file.path(apps.dir, 'functions', 'Temp_downscaling_Procs_functions.R'))
+
+source(file.path(apps.dir, 'functions', 'Temp_merging.dlgBoxALL_functions.R'))
+source(file.path(apps.dir, 'functions', 'Temp_merging.Bias_functions.R'))
+source(file.path(apps.dir, 'functions', 'Temp_merging.LMCoef_functions.R'))
+source(file.path(apps.dir, 'functions', 'Temp_merging.Merge_functions.R'))
+source(file.path(apps.dir, 'functions', 'Temp_merging.Procs_functions.R'))
+
+###
+source(file.path(apps.dir, 'functions', 'Temp_merging_dlgBox_functions.R'))
+source(file.path(apps.dir, 'functions', 'Temp_merging_execute_functions.R'))
+source(file.path(apps.dir, 'functions', 'Temp_merging_Procs_functions.R'))
+###
 
 source(file.path(apps.dir, 'functions', 'cdtFormatInputData_dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtFormatInputData_Procs_functions.R'))

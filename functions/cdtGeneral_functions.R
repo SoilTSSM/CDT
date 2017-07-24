@@ -254,6 +254,8 @@ addMonths <- function(daty, n = 1){
 	daty <- if(date0 > date1) date1 else date0
 	return(daty)
 }
+# addMonthsVec <- Vectorize(addMonths, "daty", SIMPLIFY = FALSE)
+addMonthsVec <- function(daty, n = 1) do.call(c, lapply(daty, addMonths, n))
 
 #add.months -->  file: cdtClimato_functions.R
 ###############################################################################
@@ -267,8 +269,24 @@ addDekads <- function(daty, n = 1){
 	daty <- as.Date(paste(daty, dek, sep = '-'))
 	return(daty)
 }
+# addDekadsVec <- Vectorize(addDekads, "daty", SIMPLIFY = FALSE)
+addDekadsVec <- function(daty, n = 1) do.call(c, lapply(daty, addDekads, n))
 
 #add.dekads -->  file: cdtClimato_functions.R
+###############################################################################
+## Add or substract pentad
+
+addPentads <- function(daty, n = 1){
+	ipen <- as.numeric(substr(format(daty,'%Y%m%d'), 8, 8))+n
+	pen <- ipen%%6
+	if(pen == 0) pen <- 6
+	daty <- format(addMonths(daty, floor((ipen-1)/6)), '%Y-%m')
+	daty <- as.Date(paste(daty, pen, sep = '-'))
+	return(daty)
+}
+# addPentadsVec <- Vectorize(addPentads, "daty", SIMPLIFY = FALSE)
+addPentadsVec <- function(daty, n = 1) do.call(c, lapply(daty, addPentads, n))
+
 ###############################################################################
 ## get month in numeric format for a season
 ## getMonthsInSeason('November','February') #donne 11 12  1  2
@@ -943,6 +961,13 @@ ncFilesInfo <- function(freqData, start.date, end.date, months, ncDir, ncFileFor
 		ncDataFiles <- file.path(ncDir, sprintf(ncFileFormat, substr(dates, 1, 4),
 										substr(dates, 5, 6), substr(dates, 7, 8)))
 	}
+	if(freqData == 'pentad'){
+		dates <- seq(start.date,  end.date, 'day')
+		dates <- paste(format(dates[which(as.numeric(format(dates, '%d')) <= 6)], '%Y%m'),
+					as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 6)], '%d')), sep = '')
+		ncDataFiles <- file.path(ncDir, sprintf(ncFileFormat, substr(dates, 1, 4),
+										substr(dates, 5, 6), substr(dates, 7, 7)))
+	}
 	if(freqData == 'dekadal'){
 		dates <- seq(start.date,  end.date, 'day')
 		dates <- paste(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%Y%m'),
@@ -1066,6 +1091,47 @@ read.NetCDF.Data2Points <- function(read.ncdf.parms, list.lonlat.pts){
 	return(ret)
 }
 
+readNetCDFData2Points <- function(ncInfo, list.lonlat.pts, msg){
+	InsertMessagesTxt(main.txt.out, msg$start)
+	nc <- nc_open(ncInfo$nc.files[which(ncInfo$exist)[1]])
+	lon <- nc$dim[[ncInfo$ncinfo$xo]]$vals
+	lat <- nc$dim[[ncInfo$ncinfo$yo]]$vals
+	nc_close(nc)
+
+	xo <- order(lon)
+	lon <- lon[xo]
+	yo <- order(lat)
+	lat <- lat[yo]
+	nlon <- length(lon)
+	nlat <- length(lat)
+	ijx <- grid2pointINDEX(list.lonlat.pts, list(lon = lon, lat = lat))
+
+	is.parallel <- doparallel(length(which(ncInfo$exist)) >= 180)
+	`%parLoop%` <- is.parallel$dofun
+
+	ncdata <- foreach(jj = seq_along(ncInfo$nc.files), .packages = 'ncdf4') %parLoop% {
+		if(ncInfo$exist[jj]){
+			nc <- try(nc_open(ncInfo$nc.files[jj]), silent = TRUE)
+			if(inherits(nc, "try-error")) return(NULL)
+			xvar <- ncvar_get(nc, varid = ncInfo$ncinfo$varid)
+			nc_close(nc)
+			xvar <- xvar[xo, yo]
+			if(ncInfo$ncinfo$yo == 1){
+				xvar <- matrix(c(xvar), nrow = nlon, ncol = nlat, byrow = TRUE)
+			}
+			xvar <- xvar[ijx]
+		}else xvar <- NULL
+		xvar
+	}
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
+
+	inull <- sapply(ncdata, is.null)
+	ncdata <- do.call(rbind, ncdata)
+	dates <- ncInfo$dates[!inull]
+	ret <- list(dates = dates, data = ncdata)
+	InsertMessagesTxt(main.txt.out, msg$end)
+	return(ret)
+}
 
 #################################################################################
 

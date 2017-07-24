@@ -141,6 +141,40 @@ Execute_All_Functions <- function(get.stn){
 	############################### 
 	##Merge Rainfall
 
+	# Mering rainfall once
+	if(GeneralParameters$action == 'merge.rain.one'){
+		daty <- GeneralParameters$Merging.Date
+		xdeb <- as.Date(paste(daty$start.year, daty$start.mon, daty$start.dek, sep = '-'))
+		xfin <- as.Date(paste(daty$end.year, daty$end.mon, daty$end.dek, sep = '-'))
+		if(GeneralParameters$period == 'daily') daty <- seq(xdeb, xfin, 'day')
+		if(GeneralParameters$period == 'monthly') daty <- seq(xdeb, xfin, 'month')
+		if(GeneralParameters$period == 'pentad'){
+			daty <- seq(xdeb, xfin, 'day')
+			daty <- daty[as.numeric(format(daty, '%d')) <= 6]
+		}
+		if(GeneralParameters$period == 'dekadal'){
+			daty <- seq(xdeb, xfin, 'day')
+			daty <- daty[as.numeric(format(daty, '%d')) <= 3]
+		}
+		daty <- daty[as.numeric(format(daty, '%m'))%in%GeneralParameters$Merging.Date$Months]
+		if(GeneralParameters$period == 'daily'){
+			xdeb <- format(daty[1], '%Y%m%d')
+			xfin <- format(daty[length(daty)], '%Y%m%d')
+		}
+		if(GeneralParameters$period%in%c('pentad', 'dekadal')){
+			xdeb <- paste(format(daty[1], '%Y%m'), as.numeric(format(daty[1], '%d')), sep = '')
+			xfin <- paste(format(daty[length(daty)], '%Y%m'), as.numeric(format(daty[length(daty)], '%d')), sep = '')
+		}
+		if(GeneralParameters$period == 'monthly'){
+			xdeb <- format(daty[1], '%Y%m')
+			xfin <- format(daty[length(daty)], '%Y%m')
+		}
+		origdir <- file.path(GeneralParameters$output$dir, paste('Merging_Precip_Data', xdeb, xfin, sep = '_'))
+		mrg2run <- try(Precip_Merging_ALL(origdir), silent = TRUE)
+		merging_end_msg(mrg2run, main.txt.out, "Rainfall merging finished successfully", "Rainfall merging failed")
+	}
+
+	###############################
 	##compute mean Gauge-RFE bias
 	if(GeneralParameters$action == 'coefbias.rain'){
 		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('STN_RFE_Bias',
@@ -218,7 +252,7 @@ Execute_All_Functions <- function(get.stn){
 	##compute regression coef
 	if(GeneralParameters$action == 'coefdown.temp'){
 		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('CoefDownTemp', getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'))
-		mrg2run <- try(execCoefDownTemp(origdir), silent = TRUE)
+		mrg2run <- try(Temp_execCoefDown(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Computing regression parameters finished successfully", "Computing regression parameters failed")
 	}
 
@@ -233,9 +267,45 @@ Execute_All_Functions <- function(get.stn){
 			xdeb <- paste(daty$start.dek, format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year, sep = '')
 			xfin <- paste(daty$end.dek, format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year, sep = '')
 		}
-		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('Downscaled_Reanalysis', xdeb, xfin, sep = '_'))
-		mrg2run <- try(execDownscalingTemp(origdir), silent = TRUE)
+		origdir <- file.path(GeneralParameters$output$dir, paste('Downscaled_Reanalysis', xdeb, xfin, sep = '_'))
+		mrg2run <- try(Temp_execDownscaling(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Downscaling finished successfully", "Downscaling failed")
+	}
+
+
+	##############################
+	# Mering temperature once
+	if(GeneralParameters$action == 'merge.temp.one'){
+		daty <- GeneralParameters$Merging.Date
+		xdeb <- as.Date(paste(daty$start.year, daty$start.mon, daty$start.dek, sep = '-'))
+		xfin <- as.Date(paste(daty$end.year, daty$end.mon, daty$end.dek, sep = '-'))
+		if(GeneralParameters$period == 'daily') daty <- seq(xdeb, xfin, 'day')
+		if(GeneralParameters$period == 'monthly') daty <- seq(xdeb, xfin, 'month')
+		if(GeneralParameters$period == 'pentad'){
+			daty <- seq(xdeb, xfin, 'day')
+			daty <- daty[as.numeric(format(daty, '%d')) <= 6]
+		}
+		if(GeneralParameters$period == 'dekadal'){
+			daty <- seq(xdeb, xfin, 'day')
+			daty <- daty[as.numeric(format(daty, '%d')) <= 3]
+		}
+		daty <- daty[as.numeric(format(daty, '%m'))%in%GeneralParameters$Merging.Date$Months]
+		if(GeneralParameters$period == 'daily'){
+			xdeb <- format(daty[1], '%Y%m%d')
+			xfin <- format(daty[length(daty)], '%Y%m%d')
+		}
+		if(GeneralParameters$period%in%c('pentad', 'dekadal')){
+			xdeb <- paste(format(daty[1], '%Y%m'), as.numeric(format(daty[1], '%d')), sep = '')
+			xfin <- paste(format(daty[length(daty)], '%Y%m'), as.numeric(format(daty[length(daty)], '%d')), sep = '')
+		}
+		if(GeneralParameters$period == 'monthly'){
+			xdeb <- format(daty[1], '%Y%m')
+			xfin <- format(daty[length(daty)], '%Y%m')
+		}
+
+		origdir <- file.path(GeneralParameters$output$dir, paste('Merging_Temp_Data', xdeb, xfin, sep = '_'))
+		mrg2run <- try(Temp_Merging_ALL(origdir), silent = TRUE)
+		merging_end_msg(mrg2run, main.txt.out, "Temperature merging finished successfully", "Temperature merging failed")
 	}
 
 	##############################
