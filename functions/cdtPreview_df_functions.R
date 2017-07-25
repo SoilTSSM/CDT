@@ -114,8 +114,10 @@ preview.data <- function(parent.win, fileopen, title.pop){
 
 	tkconfigure(OK.but, command = function() {
 		delim <- as.character(tclvalue(rbval))
-		if(delim == 'tb') sepr <- "\t"
-		if(delim == 'sp') sepr <- " "
+		if(delim == 'tb') sepr <- ""
+		if(delim == 'sp') sepr <- ""
+		# if(delim == 'tb') sepr <- "\t"
+		# if(delim == 'sp') sepr <- " "
 		if(delim == 'sc') sepr <- ";"
 		if(delim == 'cm') sepr <- ","
 		if(delim == 'ot'){

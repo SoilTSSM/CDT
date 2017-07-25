@@ -263,22 +263,23 @@ formatCDTDataSingle.File <- function(GeneralParameters){
 		stn.lat <- as.numeric(donne[, col.lat])
 		stn.elv <- if(include.elev) as.numeric(donne[, col.elv]) else rep(NA, length(stn.lon))
 		xinfo <- cbind(stn.id, stn.lon, stn.lat, stn.elv)
-		xinfo <- xinfo[!duplicated(xinfo[, 1:3]), ]
+		xinfo <- xinfo[!duplicated(xinfo[, 1:3]), , drop = FALSE]
 
 		dupstn <- duplicated(xinfo[, 1]) | duplicated(xinfo[, 1], fromLast = TRUE)
 		if(any(dupstn)){
 			stn1 <- lapply(unique(xinfo[dupstn, 1]), function(x){
-				xx <- xinfo[xinfo[, 1] == x, ]
+				xx <- xinfo[xinfo[, 1] == x, , drop = FALSE]
 				if(any(is.na(xx[, 2:3]))) xx <- xx[!apply(is.na(xx[, 2:3]), 1, any), , drop = FALSE]
 				xx
 			})
-			xinfo <- rbind(xinfo[!dupstn, ], do.call('rbind', stn1))
+			xinfo <- rbind(xinfo[!dupstn, , drop = FALSE], do.call(rbind, stn1))
 		}
 	}else{
 		STN.info <- GeneralParameters$IO.files$STN.coords.file
 		xinfo <- getStnOpenData(STN.info)
 		if(is.null(xinfo)) return(NULL)
 		xinfo <- apply(xinfo, 2, str_trim)
+		if(is.null(dim(xinfo))) xinfo <- matrix(xinfo, nrow = 1)
 		xinfo[xinfo == ""] <- NA
 		stn.id <- xinfo[, 1]
 		stn.lon <- as.numeric(xinfo[, 3])
@@ -286,12 +287,13 @@ formatCDTDataSingle.File <- function(GeneralParameters){
 		stn.elv <- as.numeric(xinfo[, 5])
 		xinfo <- cbind(stn.id, stn.lon, stn.lat, stn.elv)
 	}
+
 	miss.stn$dup.STN.ID <- xinfo[duplicated(xinfo[, 1]) | duplicated(xinfo[, 1], fromLast = TRUE), , drop = FALSE]
-	xinfo <- xinfo[!duplicated(xinfo[, 1]), ]
-	miss.stn$dup.coords <- xinfo[duplicated(xinfo[, 2:3]) | duplicated(xinfo[, 2:3], fromLast = TRUE), , drop = FALSE]
+	xinfo <- xinfo[!duplicated(xinfo[, 1]), , drop = FALSE]
+	miss.stn$dup.coords <- xinfo[duplicated(xinfo[, 2:3, drop = FALSE]) | duplicated(xinfo[, 2:3, drop = FALSE], fromLast = TRUE), , drop = FALSE]
 	miss.stn$miss.coords <- xinfo[is.na(xinfo[, 2]) | is.na(xinfo[, 3]), , drop = FALSE]
 
-	infoheadI <- xinfo[, 1:3]
+	infoheadI <- xinfo[, 1:3, drop = FALSE]
 	capition <- c('Stations', 'LON', paste(toupper(period), 'LAT', sep = '/'))
 	if(include.elev){
 		infoheadI <- xinfo
@@ -351,7 +353,7 @@ formatCDTDataSingle.File <- function(GeneralParameters){
 	miss.stn$with.data.no.coords <- NULL
 	if(!coords.included){
 		id.stn.data <- unique(xdonne[, 1])
-		isdata <- !id.stn.data%in%infoheadI[,1]
+		isdata <- !id.stn.data%in%infoheadI[, 1]
 		if(any(isdata)){
 			stn.with.data <- id.stn.data[isdata]
 			miss.stn$with.data.no.coords <- stn.with.data
@@ -403,12 +405,21 @@ formatCDTDataSingle.File <- function(GeneralParameters){
 	donne.null <- sapply(donne, is.null)
 	donne <- donne[!donne.null]
 	miss.stn$no.data <- if(any(donne.null)) infoheadI[donne.null, , drop = FALSE] else NULL
-	infoheadI <- infoheadI[!donne.null, ]
-	donne <- do.call('cbind', donne)
-	per.donne <- 1-(apply(apply(donne, 2, is.na), 2, sum)/length(odates)) >= min.perc
-	donne <- donne[, per.donne]
+	infoheadI <- infoheadI[!donne.null, , drop = FALSE]
+	donne <- do.call(cbind, donne)
+
+	na.donne <- apply(donne, 2, is.na)
+	if(is.null(dim(na.donne))) na.donne <- matrix(na.donne, ncol = 1)
+
+	per.donne <- 1-(apply(na.donne, 2, sum)/length(odates)) >= min.perc
+	if(is.null(dim(per.donne))) per.donne <- matrix(per.donne, ncol = 1)
+
+	donne <- donne[, per.donne, drop = FALSE]
 	miss.stn$less.data <- infoheadI[!per.donne, , drop = FALSE]
-	infoheadI <- infoheadI[per.donne, ]
+	infoheadI <- infoheadI[per.donne, , drop = FALSE]
+
+	infoheadI[, 1] <- substr(str_replace_all(infoheadI[, 1], "[^[:alnum:]]", ""), 1, 15)
+
 	donne <- rbind(t(rbind(capition, infoheadI)), cbind(odates, donne))
 	# donne[is.na(donne)] <- donneInfo[[3]]$miss.val
 	donne[is.na(donne)] <- -99
