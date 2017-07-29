@@ -62,5 +62,11 @@
     // Spatial average: "avg"
     // Per station: "stn"
     // "climato" = Climatologies
-    "stat.data": "all"
+    "stat.data": "all",
+
+    // add elevation map
+    "dem.data": [{
+        "add.dem": false,
+        "dem.file": ""
+    }]
 }

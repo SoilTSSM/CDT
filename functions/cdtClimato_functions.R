@@ -211,12 +211,18 @@ DayDekMon2Season1 <- function(x, index, fun, ..., min.frac = 1.0){
 
 #################################
 
+nbDayOfPentad <- function(dates){
+	year <- substr(dates, 1, 4)
+	mon <- substr(dates, 5, 6)
+	day <- as.numeric(substr(dates, 7, 8))
+	ifelse(day >= 25, rev((28:31)[!is.na(as.Date(paste(year, mon, 28:31, sep = '-')))])[1] - 25, 5)
+}
+
 nbDayOfDekad <- function(dates){
 	year <- substr(dates, 1, 4)
 	mon <- substr(dates, 5, 6)
 	day <- as.numeric(substr(dates, 7, 8))
-	ifelse(day <= 10, 10, ifelse(day > 10 & day <= 20, 10,
-		rev((28:31)[!is.na(as.Date(paste(year, mon, 28:31, sep='-')))])[1] - 20))
+	ifelse(day >= 20, rev((28:31)[!is.na(as.Date(paste(year, mon, 28:31, sep = '-')))])[1] - 20, 10)
 }
 
 nbDayOfMonth <- function(dates){
@@ -227,7 +233,7 @@ nbDayOfMonth <- function(dates){
 
 nbDayOfYear <- function(dates){
 	year <- as.numeric(substr(dates, 1, 4))
-	if(year%%4 > 0) 365 else 366
+	if(is.leapyear(year)) 366 else 365
 }
 
 cycleMonth1 <- function(start, n){

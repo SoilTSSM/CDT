@@ -171,8 +171,8 @@ tkadd(menu.dataprep, "separator")
 ##########
 tkadd(menu.dataprep, "command", label = "Aggregating Time Series", command = function(){
 	refreshCDT.lcmd.env()
-	initpars <- initialize.parameters('agg.ts', 'daily', TRUE)
-	GeneralParameters <<- mainDialogAggTs(main.win, initpars)
+	initpars <- initialize.parameters('aggregate.ts', 'daily', TRUE)
+	GeneralParameters <<- AggregateTS_GetInfo(main.win, initpars)
 })
 
 ######################################## DOWNLOAD
@@ -540,6 +540,16 @@ tkadd(menu.mrg.temp2, "command", label = "Merging Data", command = function(){
 	refreshCDT.lcmd.env()
 	initpars <- initialize.parameters('merge.temp', 'dekadal')
 	GeneralParameters <<- mrgGetInfoTemp(main.win, initpars)
+})
+
+######################################## SCALE MERGED DATA
+tkadd(menu.mrg, "separator")
+
+##########
+tkadd(menu.mrg, "command", label = "Scale merged data", command = function(){
+	refreshCDT.lcmd.env()
+	initpars <- initialize.parameters('scale.merged', 'daily')
+	GeneralParameters <<- Merging_ScaleDataInfo(main.win, initpars)
 })
 
 ######################################## UPDATE DEK

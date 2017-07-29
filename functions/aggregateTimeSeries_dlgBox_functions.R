@@ -1,14 +1,14 @@
-mainDialogAggTs <- function(parent.win, GeneralParameters){
+AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
 		largeur <- 46
 		largeur1 <- 42
-		largeur2 <- 37
+		largeur2 <- 34
 		wtkcombo <- 19
 	}else{
-		largeur <- 34
+		largeur <- 33
 		largeur1 <- 32
-		largeur2 <- 27
+		largeur2 <- 24
 		wtkcombo <- 16
 	}
 
@@ -20,231 +20,189 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 
 	frMRG0 <- tkframe(tt, relief = 'raised', borderwidth = 2)
 	frMRG1 <- tkframe(tt)
+	frAGGRTS <- tkframe(frMRG0, relief = "sunken", borderwidth = 2)
 
 	############################################
 
-	frParams <- tkframe(frMRG0, relief = 'sunken', borderwidth = 2)
+	frConvTS <- ttklabelframe(frAGGRTS, text = 'Time Series Aggregation', labelanchor = "nw", relief = "groove", borderwidth = 2)
 
 	OriginData <- tclVar()
+	Cbperiod0VAL <- c('Daily data', 'Pentad data', 'Dekadal data', 'Monthly data')
+	tclvalue(OriginData) <- switch(GeneralParameters$in.tstep, 
+									'daily' = Cbperiod0VAL[1],
+									'pentad' = Cbperiod0VAL[2],
+									'dekadal' = Cbperiod0VAL[3],
+									'monthly' = Cbperiod0VAL[4])
 	ConvertData <- tclVar()
-	Cbperiod0VAL <- c('Daily data', 'Dekadal data', 'Monthly data')
-	tclvalue(OriginData) <- switch(GeneralParameters$period, 
-									'daily' = Cbperiod0VAL[1], 
-									'dekadal' = Cbperiod0VAL[2],
-									'monthly' = Cbperiod0VAL[3])
-	Cbperiod1VAL <- c('Dekadal data', 'Monthly data', 'Yearly data', 'Seasonal data', 'Rolling Seasonal data')
-	tclvalue(ConvertData) <- switch(GeneralParameters$output.time, 
-									'dekadal' = Cbperiod1VAL[1],
-									'monthly' = Cbperiod1VAL[2],
-									'yearly' = Cbperiod1VAL[3],
-									'seasonal' = Cbperiod1VAL[4], 
-									'seasonal1' = Cbperiod1VAL[5])
+	Cbperiod1VAL <- c('Pentad data', 'Dekadal data', 'Monthly data', 'Annual data',
+						'Seasonal data', 'Rolling Seasonal data')
+	tclvalue(ConvertData) <- switch(GeneralParameters$out.tstep, 
+									'pentad' = Cbperiod1VAL[1],
+									'dekadal' = Cbperiod1VAL[2],
+									'monthly' = Cbperiod1VAL[3],
+									'annual' = Cbperiod1VAL[4],
+									'seasonal' = Cbperiod1VAL[5], 
+									'roll.seas' = Cbperiod1VAL[6])
 
 	start.mon <- tclVar(GeneralParameters$Seasonal$start.mon)
 	length.mon <- tclVar(GeneralParameters$Seasonal$length.mon)
-	if(tclvalue(ConvertData) == 'Seasonal data'){
-		state.enSeasS <- 'normal'
-		state.enSeasL <- 'normal'
-	}else if(tclvalue(ConvertData) == 'Rolling Seasonal data'){
-		state.enSeasS <- 'disabled'
-		state.enSeasL <- 'normal'
-	}else{
-		state.enSeasS <- 'disabled'
-		state.enSeasL <- 'disabled'
-	}
+
+	state.enSeasS <- if(tclvalue(ConvertData) == 'Seasonal data') "normal" else "disabled"
+	state.enSeasL <- if(tclvalue(ConvertData)%in%c('Seasonal data', 'Rolling Seasonal data')) "normal" else "disabled"
+
+	cb.intstep <- ttkcombobox(frConvTS, values = Cbperiod0VAL, textvariable = OriginData, width = wtkcombo)
+	cb.outstep <- ttkcombobox(frConvTS, values = Cbperiod1VAL, textvariable = ConvertData, width = wtkcombo)
+	txt.convTs <- tklabel(frConvTS, text = 'TO')
+	txt.seasS <- tklabel(frConvTS, text = 'Start Month', anchor = 'e', justify = 'right')
+	en.seasS <- tkentry(frConvTS, textvariable = start.mon, width = 3, state = state.enSeasS)
+	txt.seasL <- tklabel(frConvTS, text = 'Length')
+	en.seasL <- tkentry(frConvTS, textvariable = length.mon, width = 3, state = state.enSeasL)
+
+	tkgrid(cb.intstep, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, padx = 1, pady = 1)
+	tkgrid(txt.convTs, row = 0, column = 8, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
+	tkgrid(cb.outstep, row = 0, column = 9, sticky = 'we', rowspan = 1, columnspan = 8, padx = 1, pady = 1)
+	tkgrid(txt.seasS, row = 1, column = 5, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1)
+	tkgrid(en.seasS, row = 1, column = 11, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
+	tkgrid(txt.seasL, row = 1, column = 12, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1)
+	tkgrid(en.seasL, row = 1, column = 16, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
+
+
+	infobulle(cb.intstep, 'Select the time step of the input data to aggregate')
+	status.bar.display(cb.intstep, TextOutputVar, 'Select the time step of the input data to aggregate')
+	infobulle(cb.outstep, 'Select the time step of the aggregated data')
+	status.bar.display(cb.outstep, TextOutputVar, 'Select the time step of the aggregated data')
+	infobulle(en.seasS, 'Enter the start month of the season (1 to 12)')
+	status.bar.display(en.seasS, TextOutputVar, 'Enter the start month of the season (1 to 12)')
+	infobulle(en.seasL, 'Enter the width of the season (e.g., 3 for three-month season)')
+	status.bar.display(en.seasL, TextOutputVar, 'Enter the width of the season (e.g., 3 for three-month season)')
+
+	##############
+	tkbind(cb.intstep, "<<ComboboxSelected>>", function(){
+		if(tclvalue(OriginData) == 'Daily data'){
+			tkconfigure(cb.outstep, values = Cbperiod1VAL)
+			if(tclvalue(ConvertData) == Cbperiod0VAL[1]) tclvalue(ConvertData) <- 'Pentad data'
+		}else if(tclvalue(OriginData) == 'Pentad data'){
+			tkconfigure(cb.outstep, values = Cbperiod1VAL[-1])
+			if(tclvalue(ConvertData)%in%Cbperiod0VAL[1:2]) tclvalue(ConvertData) <- 'Dekadal data'
+		}else if(tclvalue(OriginData) == 'Dekadal data'){
+			tkconfigure(cb.outstep, values = Cbperiod1VAL[-(1:2)])
+			if(tclvalue(ConvertData)%in%Cbperiod0VAL[1:3]) tclvalue(ConvertData) <- 'Monthly data'
+		}else if(tclvalue(OriginData) == 'Monthly data'){
+			tkconfigure(cb.outstep, values = Cbperiod1VAL[-(1:3)])
+			if(tclvalue(ConvertData)%in%Cbperiod0VAL[1:4]) tclvalue(ConvertData) <- 'Annual data'
+		}
+
+		state.enSeasS <- if(tclvalue(ConvertData) == 'Seasonal data') "normal" else "disabled"
+		state.enSeasL <- if(tclvalue(ConvertData)%in%c('Seasonal data', 'Rolling Seasonal data')) "normal" else "disabled"
+		tkconfigure(en.seasS, state = state.enSeasS)
+		tkconfigure(en.seasL, state = state.enSeasL)
+
+		AGGRFUN <- c("mean", "sum", "max", "min")
+		if(tclvalue(OriginData) == 'Daily data') AGGRFUN <- c("mean", "sum", "max", "min", "count")
+		tkconfigure(cb.aggfun, values = AGGRFUN)
+		if(tclvalue(aggr.fun) == "count") tclvalue(aggr.fun) <- "sum"
+		stateCount <- if(tclvalue(aggr.fun) == "count") "normal" else "disabled"
+		tkconfigure(cb.opfun, state = stateCount)
+		tkconfigure(en.opthres, state = stateCount)
+	})
+
+	tkbind(cb.outstep, "<<ComboboxSelected>>", function(){
+		state.enSeasS <- if(tclvalue(ConvertData) == 'Seasonal data') "normal" else "disabled"
+		state.enSeasL <- if(tclvalue(ConvertData)%in%c('Seasonal data', 'Rolling Seasonal data')) "normal" else "disabled"
+		tkconfigure(en.seasS, state = state.enSeasS)
+		tkconfigure(en.seasL, state = state.enSeasL)
+	})
+
+	############################################
+
+	frDataType <- ttklabelframe(frAGGRTS, text = 'Type of Data', labelanchor = "nw", relief = "groove", borderwidth = 2)
 
 	DataType <- tclVar()
-	CbdatatypeVAL <- c('One station series', 'CDT data format', 'NetCDF gridded data')
-	tclvalue(DataType) <- switch(GeneralParameters$data.type, 
-								'series' = CbdatatypeVAL[1],
-								'cdt' = CbdatatypeVAL[2], 
-								'netcdf' = CbdatatypeVAL[3])
+	CbdatatypeVAL <- c('CDT data format', 'NetCDF gridded data')
+	tclvalue(DataType) <- switch(GeneralParameters$data.type,
+								'cdt' = CbdatatypeVAL[1], 
+								'netcdf' = CbdatatypeVAL[2])
 
-	aggfun <- tclVar(GeneralParameters$compute.var$Function)
-	MissFrac <- tclVar(GeneralParameters$compute.var$miss.frac)
+	if(GeneralParameters$data.type == 'cdt'){
+		file.stnfl <- tclVar(GeneralParameters$stn.data)
+		txtFileDir <- 'File containing stations input data'
+		stateSetData <- "disabled"
+	}else{
+		file.stnfl <- tclVar(GeneralParameters$ncdf.data$dir)
+		txtFileDir <- 'Directory containing the NetCDF data'
+		stateSetData <- "normal"
+	}
+	fileINdir <- tclVar(txtFileDir)
 
-	####
-	Cbperiod0 <- ttkcombobox(frParams, values = Cbperiod0VAL, textvariable = OriginData, width = wtkcombo)
-	Cbperiod1 <- ttkcombobox(frParams, values = Cbperiod1VAL, textvariable = ConvertData, width = wtkcombo)
-	labconv2 <- tklabel(frParams, text = 'TO')
-	labSeasS <- tklabel(frParams, text = 'Start Month', anchor = 'e', justify = 'right')
-	enSeasS <- tkentry(frParams, textvariable = start.mon, width = 3, state = state.enSeasS)
-	labSeasL <- tklabel(frParams, text = 'Width')
-	enSeasL <- tkentry(frParams, textvariable = length.mon, width = 3, state = state.enSeasL)
-	labdatype <- ttklabelframe(frParams, text = 'Type of Data', labelanchor = "nw", relief = "groove", borderwidth = 2)
-	frcompVar <- tkframe(frParams)
+	##############
+	cb.datatype <- ttkcombobox(frDataType, values = CbdatatypeVAL, textvariable = DataType, width = largeur2)
+	set.datatype <- ttkbutton(frDataType, text = "Settings", state = stateSetData)
 
-	######
-	Cbdatatype <- ttkcombobox(labdatype, values = CbdatatypeVAL, textvariable = DataType, width = largeur2)
-	bt.opt.set <- ttkbutton(labdatype, text = "Settings")
+	txt.stnfl <- tklabel(frDataType, text = tclvalue(fileINdir), textvariable = fileINdir, anchor = 'w', justify = 'left')
+	if(GeneralParameters$data.type == 'cdt'){
+		cb.stnfl <- ttkcombobox(frDataType, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur1)
+	}else{
+		cb.stnfl <- tkentry(frDataType, textvariable = file.stnfl, width = largeur)
+	}
+	bt.stnfl <- tkbutton(frDataType, text = "...")
 
-	######
-
-	AggreFunlab <- tklabel(frcompVar, text = 'Aggregation Fun')
-	CbAggreFun <- ttkcombobox(frcompVar, values = c("mean", "sum"), textvariable = aggfun, width = 8)
-	MissFraclab <- tklabel(frcompVar, text = 'Min.frac')
-	MissFracentr <- tkentry(frcompVar, textvariable = MissFrac, width = 6)
-
-	#######
+	##############
 
 	settingdone <- NULL
-	if(tclvalue(DataType) == 'One station series'){
-		tkconfigure(bt.opt.set, state = 'normal', command = function(){
-			GeneralParameters <<- oneStnDataAgg(tt, GeneralParameters, tclvalue(OriginData))
-			settingdone <<- 1
-		})
-	}
-	if(tclvalue(DataType) == 'CDT data format'){
-		tkconfigure(bt.opt.set, state = 'disabled')
-	}
-	if(tclvalue(DataType) == 'NetCDF gridded data'){
-		tkconfigure(bt.opt.set, state = 'normal', command = function(){
-			GeneralParameters <<- netcdfDataAgg(tt, GeneralParameters, tclvalue(OriginData), tclvalue(ConvertData))
-			settingdone <<- 1
-		})
-	}
-
-	#######
-	tkgrid(Cbdatatype, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-	tkgrid(bt.opt.set, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-
-	#######
-	tkgrid(AggreFunlab, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-	tkgrid(CbAggreFun, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-	tkgrid(MissFraclab, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-	tkgrid(MissFracentr, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-
-	########
-
-	tkgrid(Cbperiod0, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, padx = 1, pady = 1)
-	tkgrid(labconv2, row = 0, column = 8, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-	tkgrid(Cbperiod1, row = 0, column = 9, sticky = 'we', rowspan = 1, columnspan = 8, padx = 1, pady = 1)
-	tkgrid(labSeasS, row = 1, column = 5, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1)
-	tkgrid(enSeasS, row = 1, column = 11, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-	tkgrid(labSeasL, row = 1, column = 12, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1)
-	tkgrid(enSeasL, row = 1, column = 16, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-	tkgrid(labdatype, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 17, padx = 1, pady = 1, ipady = 5)
-	tkgrid(frcompVar, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 17, padx = 1, pady = 1)
-
-	#########################
-
-	infobulle(Cbperiod0, 'Select the time step of the input data to aggregate')
-	status.bar.display(Cbperiod0, TextOutputVar, 'Select the time step of the input data to aggregate')
-	infobulle(Cbperiod1, 'Select the time step of the aggregated data')
-	status.bar.display(Cbperiod1, TextOutputVar, 'Select the time step of the aggregated data')
-	infobulle(enSeasS, 'Enter the start month of the season (1 to 12)')
-	status.bar.display(enSeasS, TextOutputVar, 'Enter the start month of the season (1 to 12)')
-	infobulle(enSeasL, 'Enter the width of the season (e.g., 3 for three-month season)')
-	status.bar.display(enSeasL, TextOutputVar, 'Enter the width of the season (e.g., 3 for three-month season)')
-
-	infobulle(bt.opt.set, 'Setting data type options')
-	status.bar.display(bt.opt.set, TextOutputVar, 'Setting data type options')
-	infobulle(CbAggreFun, 'Function that have to be applied for aggregating from\ndaily/dekadal/monthly into a higher time step')
-	status.bar.display(CbAggreFun, TextOutputVar, 'Function that have to be applied for aggregating from\ndaily/dekadal/monthly into a higher time step')
-	infobulle(MissFracentr, 'Minimum fraction of available data that must be present within each output time step')
-	status.bar.display(MissFracentr, TextOutputVar, 'Minimum fraction of available data that must be present within each output time step')
-
-	#########################
-
-	tkbind(Cbperiod0, "<<ComboboxSelected>>", function(){
-		if(tclvalue(OriginData) == 'Daily data'){
-			tkconfigure(Cbperiod1, values = Cbperiod1VAL)
-			if(tclvalue(ConvertData) == 'Daily data') tclvalue(ConvertData) <- 'Dekadal data'
-		}else if(tclvalue(OriginData) == 'Dekadal data'){
-			tkconfigure(Cbperiod1, values = Cbperiod1VAL[-1])
-			if(tclvalue(ConvertData)%in%c('Daily data', 'Dekadal data')) tclvalue(ConvertData) <- 'Monthly data'
-		}else if(tclvalue(OriginData) == 'Monthly data'){
-			tkconfigure(Cbperiod1, values = Cbperiod1VAL[-(1:2)])
-			if(tclvalue(ConvertData)%in%c('Daily data', 'Dekadal data', 'Monthly data')) tclvalue(ConvertData) <- 'Yearly data'
-		}
-		if(tclvalue(ConvertData) == 'Seasonal data'){
-			tkconfigure(enSeasS, state = 'normal')
-			tkconfigure(enSeasL, state = 'normal')
-		}else if(tclvalue(ConvertData) == 'Rolling Seasonal data'){
-			tkconfigure(enSeasS, state = 'disabled')
-			tkconfigure(enSeasL, state = 'normal')
-		}else{
-			tkconfigure(enSeasS, state = 'disabled')
-			tkconfigure(enSeasL, state = 'disabled')
-		}
+	tkconfigure(set.datatype, command = function(){
+		GeneralParameters <<- AggregateTS_ncdfData(tt, GeneralParameters,
+												str_trim(tclvalue(file.stnfl)),
+												tclvalue(OriginData))
+		settingdone <<- 1
 	})
-
-	tkbind(Cbperiod1, "<<ComboboxSelected>>", function(){
-		if(tclvalue(ConvertData) == 'Seasonal data'){
-			tkconfigure(enSeasS, state = 'normal')
-			tkconfigure(enSeasL, state = 'normal')
-		}else if(tclvalue(ConvertData) == 'Rolling Seasonal data'){
-			tkconfigure(enSeasS, state = 'disabled')
-			tkconfigure(enSeasL, state = 'normal')
-		}else{
-			tkconfigure(enSeasS, state = 'disabled')
-			tkconfigure(enSeasL, state = 'disabled')
-		}
-	})
-
-	############################################
-
-	frIO <- tkframe(frMRG0, relief = 'sunken', borderwidth = 2)
-
-	file.stnfl <- tclVar(GeneralParameters$IO.files$In.dir.file)
-	file.save1 <- tclVar(GeneralParameters$IO.files$Out.dir.file)
-	fileINdir <- tclVar('File containing stations input data')
-	fileORdir <- tclVar('File to save aggregated data')
-
-	inDirFlile <- tklabel(frIO, text = tclvalue(fileINdir), textvariable = fileINdir, anchor = 'w', justify = 'left')
-	cb.stnfl <- ttkcombobox(frIO, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur1)
-	bt.stnfl <- tkbutton(frIO, text = "...")
-	outDirFlile <- tklabel(frIO, text = tclvalue(fileORdir), textvariable = fileORdir, anchor = 'w', justify = 'left')
-	en.file.save <- tkentry(frIO, textvariable = file.save1, width = largeur)
-	bt.file.save <- tkbutton(frIO, text = "...")
-
-	#########################
 
 	tkconfigure(bt.stnfl, command = function(){
-		dat.opfiles <- getOpenFiles(tt, all.opfiles)
-		if(!is.null(dat.opfiles)){
-			nopf <- length(AllOpenFilesType)
-			AllOpenFilesType[[nopf+1]] <<- 'ascii'
-			AllOpenFilesData[[nopf+1]] <<- dat.opfiles
+		if(GeneralParameters$data.type == 'cdt'){
+			dat.opfiles <- getOpenFiles(tt, all.opfiles)
+			if(!is.null(dat.opfiles)){
+				nopf <- length(AllOpenFilesType)
+				AllOpenFilesType[[nopf+1]] <<- 'ascii'
+				AllOpenFilesData[[nopf+1]] <<- dat.opfiles
 
-			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
-			tclvalue(file.stnfl) <- AllOpenFilesData[[nopf+1]][[1]]
-			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
-		}else return(NULL)
+				listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
+				tclvalue(file.stnfl) <- AllOpenFilesData[[nopf+1]][[1]]
+				tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
+			}else return(NULL)
+		}else{
+			file2convert <- tk_choose.dir(getwd(), "")
+			tclvalue(file.stnfl) <- if(!is.na(file2convert)) file2convert else ""
+		}
 	})
 
-	tkconfigure(bt.file.save, command = function() fileORdir2Save(file.save1, isFile = TRUE))
+	##############
+	tkgrid(cb.datatype, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(set.datatype, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.stnfl, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.stnfl, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.stnfl, row = 2, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
-	#########################
+	##############
+	if(GeneralParameters$data.type == 'cdt'){
+		infobulle(cb.stnfl, 'Select the file containing the data to aggregate')
+		status.bar.display(cb.stnfl, TextOutputVar, 'Select the file containing the data to aggregate')
+		infobulle(bt.stnfl, 'Browse file if not listed')
+		status.bar.display(bt.stnfl, TextOutputVar, 'Browse file if not listed')
+	}else{
+		infobulle(cb.stnfl, 'Enter the full path to directory containing the NetCDF data')
+		status.bar.display(cb.stnfl, TextOutputVar, 'Enter the full path to directory containing the NetCDF data')
+	}
 
-	tkgrid(inDirFlile, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(cb.stnfl, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(bt.stnfl, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(outDirFlile, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(en.file.save, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 0, ipadx = 1, ipady = 1)
-	tkgrid(bt.file.save, row = 3, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+	##############
 
-	infobulle(cb.stnfl, 'Choose the file in the list')
-	status.bar.display(cb.stnfl, TextOutputVar, 'Choose the file containing the data to aggregate')
-	infobulle(bt.stnfl, 'Browse file if not listed')
-	status.bar.display(bt.stnfl, TextOutputVar, 'Browse file if not listed')
-
-	infobulle(en.file.save, 'Enter the full path of the file to save result')
-	status.bar.display(en.file.save, TextOutputVar, 'Enter the full path of the file to save aggregated data')
-	infobulle(bt.file.save, 'or browse here')
-	status.bar.display(bt.file.save, TextOutputVar, 'or browse here')
-
-	############################################
-
-	tkbind(Cbdatatype, "<<ComboboxSelected>>", function(){
+	tkbind(cb.datatype, "<<ComboboxSelected>>", function(){
 		tkdestroy(cb.stnfl)
 		tclvalue(file.stnfl) <- ''
 
-		if(tclvalue(DataType) %in% c('One station series', 'CDT data format')){
-			tclvalue(fileINdir) <- 'Input data'
+		if(tclvalue(DataType) == 'CDT data format'){
+			tclvalue(fileINdir) <- 'File containing stations input data'
 			tclvalue(fileORdir) <- 'File to save aggregated data'
 
-			cb.stnfl <- ttkcombobox(frIO, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur1)
+			cb.stnfl <- ttkcombobox(frDataType, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur1)
 
 			#######
 			tkconfigure(bt.stnfl, command = function(){
@@ -259,19 +217,8 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 					tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 				}else return(NULL)
 			})
-
-			tkconfigure(bt.file.save, command = function() fileORdir2Save(file.save1, isFile = TRUE))
-
-			if(tclvalue(DataType) == 'One station series'){
-				tkconfigure(bt.opt.set, state = 'normal', command = function(){
-					GeneralParameters <<- oneStnDataAgg(tt, GeneralParameters, tclvalue(OriginData))
-					settingdone <<- 1
-				})
-			}
-
-			if(tclvalue(DataType) == 'CDT data format'){
-				tkconfigure(bt.opt.set, state = 'disabled')
-			}
+			tkconfigure(bt.file.save, command = function() fileORdir2Save(file.save, isFile = TRUE))
+			tkconfigure(set.datatype, state = 'disabled')
 
 			infobulle(cb.stnfl, 'Select the file in the list')
 			status.bar.display(cb.stnfl, TextOutputVar, 'Select the file containing the data to aggregate')
@@ -283,18 +230,18 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 			tclvalue(fileINdir) <- 'Directory containing the NetCDF data'
 			tclvalue(fileORdir) <- 'Directory to save result'
 
-			cb.stnfl <- tkentry(frIO, textvariable = file.stnfl, width = largeur)
+			cb.stnfl <- tkentry(frDataType, textvariable = file.stnfl, width = largeur)
 
 			#######
 			tkconfigure(bt.stnfl, command = function(){
 				file2convert <- tk_choose.dir(getwd(), "")
 				tclvalue(file.stnfl) <- if(!is.na(file2convert)) file2convert else ""
 			})
-
-			tkconfigure(bt.file.save, command = function() fileORdir2Save(file.save1, isFile = FALSE))
-
-			tkconfigure(bt.opt.set, state = 'normal', command = function(){
-				GeneralParameters <<- netcdfDataAgg(tt, GeneralParameters, tclvalue(OriginData), tclvalue(ConvertData))
+			tkconfigure(bt.file.save, command = function() fileORdir2Save(file.save, isFile = FALSE))
+			tkconfigure(set.datatype, state = 'normal', command = function(){
+				GeneralParameters <<- AggregateTS_ncdfData(tt, GeneralParameters,
+														str_trim(tclvalue(file.stnfl)),
+														tclvalue(OriginData))
 				settingdone <<- 1
 			})
 
@@ -306,14 +253,101 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 		}
 		
 		#######
-		tkgrid(cb.stnfl, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+		tkgrid(cb.stnfl, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 		tkfocus(tt)
 	})
 
 	############################################
+	frameAggr <- ttklabelframe(frAGGRTS, text = 'Aggregation Function', labelanchor = "nw", relief = "groove", borderwidth = 2)
 
-	tkgrid(frParams, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frIO, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	aggr.fun <- tclVar(GeneralParameters$aggr.series$aggr.fun)
+	min.frac <- tclVar(GeneralParameters$aggr.series$min.frac)
+	opr.fun <- tclVar(GeneralParameters$aggr.series$opr.fun)
+	opr.thres <- tclVar(GeneralParameters$aggr.series$opr.thres)
+
+	AGGRFUN <- c("mean", "sum", "max", "min")
+	if(str_trim(GeneralParameters$in.tstep) == "daily") AGGRFUN <- c("mean", "sum", "max", "min", "count")
+	stateCount <- if(str_trim(GeneralParameters$aggr.series$aggr.fun) == "count") 'normal' else 'disabled'
+
+	txt.aggfun <- tklabel(frameAggr, text = 'Function', anchor = 'w', justify = 'left')
+	cb.aggfun <- ttkcombobox(frameAggr, values = AGGRFUN, textvariable = aggr.fun, width = 6)
+	txt.minfrac <- tklabel(frameAggr, text = 'Min.Frac', anchor = 'w', justify = 'left')
+	en.minfrac <- tkentry(frameAggr, textvariable = min.frac, width = 6)
+	txt.opfun <- tklabel(frameAggr, text = 'Operator', anchor = 'w', justify = 'left')
+	cb.opfun <- ttkcombobox(frameAggr, values = c(">=", ">", "<=", "<"), textvariable = opr.fun, width = 6, state = stateCount)
+	txt.opthres <- tklabel(frameAggr, text = 'Threshold', anchor = 'w', justify = 'left')
+	en.opthres <- tkentry(frameAggr, textvariable = opr.thres, width = 6, width = 6, state = stateCount)
+
+	tkgrid(txt.aggfun, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.aggfun, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.minfrac, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.minfrac, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.opfun, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.opfun, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.opthres, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.opthres, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(cb.aggfun, 'Function that have to be applied for aggregating from daily/dekadal/monthly into\na higher time step (e.g., for precipitation FUN=sum and for temperature FUN=mean)')
+	status.bar.display(cb.aggfun, TextOutputVar, 'Function that have to be applied for aggregating from daily/dekadal/monthly into\na higher time step (e.g., for precipitation FUN=sum and for temperature FUN=mean)')
+	infobulle(en.minfrac, 'Minimum fraction of available data that must be present within each output time step')
+	status.bar.display(en.minfrac, TextOutputVar, 'Minimum fraction of available data that must be present within each output time step')
+	infobulle(cb.opfun, 'Select the comparison operator to be used to match event')
+	status.bar.display(cb.opfun, TextOutputVar, 'Select the comparison operator to be used to match event')
+	infobulle(en.opthres, 'User defined threshold applied to count event')
+	status.bar.display(en.opthres, TextOutputVar, 'User defined threshold applied to count event')
+
+	##############
+	tkbind(cb.aggfun, "<<ComboboxSelected>>", function(){
+		stateCount <- if(tclvalue(aggr.fun) == "count") "normal" else "disabled"
+		tkconfigure(cb.opfun, state = stateCount)
+		tkconfigure(en.opthres, state = stateCount)
+	})
+
+	############################################
+	frSave <- tkframe(frAGGRTS, relief = 'groove', borderwidth = 2)
+
+	file.save <- tclVar(GeneralParameters$output)
+
+	if(GeneralParameters$data.type == 'cdt'){
+		txtSaveDir <- 'File to save aggregated data'
+		isFile <- TRUE
+	}else{
+		txtSaveDir <- 'Directory to save aggregated data'
+		isFile <- FALSE
+	}
+	fileORdir <- tclVar(txtSaveDir)
+
+	txt.file.save <- tklabel(frSave, text = tclvalue(fileORdir), textvariable = fileORdir, anchor = 'w', justify = 'left')
+	en.file.save <- tkentry(frSave, textvariable = file.save, width = largeur)
+	bt.file.save <- tkbutton(frSave, text = "...")
+
+	tkconfigure(bt.file.save, command = function() fileORdir2Save(file.save, isFile = isFile))
+
+	tkgrid(txt.file.save, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(en.file.save, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(bt.file.save, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+
+	###################
+	if(GeneralParameters$data.type == 'cdt'){
+		txtSaveHelp <- 'Enter the full path of the file to save aggregated data'
+	}else{
+		txtSaveHelp <- 'Directory to save aggregated data'
+	}
+
+	infobulle(en.file.save, txtSaveHelp)
+	status.bar.display(en.file.save, TextOutputVar, txtSaveHelp)
+	infobulle(bt.file.save, 'or browse here')
+	status.bar.display(bt.file.save, TextOutputVar, 'or browse here')
+
+	############################################
+	tkgrid(frConvTS, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frDataType, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frameAggr, row = 3, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frSave, row = 4, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	############################################
+
+	tkgrid(frAGGRTS, row = 0, column = 0, sticky = 'news', padx = 5, pady = 1, ipadx = 1, ipady = 1)
 
 	############################################
 
@@ -324,38 +358,47 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 	tkconfigure(bt.prm.OK, command = function(){
 		if(tclvalue(file.stnfl) == ""){
 			tkmessageBox(message = "No input file", icon = "warning", type = "ok")
-		}else if(tclvalue(file.save1) == "" | tclvalue(file.save1) == "NA"){
+		}else if(tclvalue(file.save)%in%c("", "NA")){
 			tkmessageBox(message = "Choose a directory or enter the file to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else if(tclvalue(DataType) != 'CDT data format' & is.null(settingdone)){
 				tkmessageBox(message = "You have to set the options", icon = "warning", type = "ok")
 				tkwait.window(tt)
 		}else{
-			GeneralParameters$period <<- switch(tclvalue(OriginData), 
+			GeneralParameters$in.tstep <<- switch(tclvalue(OriginData), 
 			 									'Daily data' = 'daily',
+			 									'Pentad data' = 'pentad',
 												'Dekadal data' =  'dekadal',
 												'Monthly data' = 'monthly')
-			GeneralParameters$output.time <<- switch(tclvalue(ConvertData),
+			GeneralParameters$out.tstep <<- switch(tclvalue(ConvertData),
+												'Pentad data' = 'pentad',
 												'Dekadal data' = 'dekadal',
 												'Monthly data' = 'monthly',
-												'Yearly data' = 'yearly',
+												'Annual data' = 'annual',
 												'Seasonal data' = 'seasonal',
-												'Rolling Seasonal data' = 'seasonal1')
+												'Rolling Seasonal data' = 'roll.seas')
 			GeneralParameters$Seasonal$start.mon <<- as.numeric(str_trim(tclvalue(start.mon)))
 			GeneralParameters$Seasonal$length.mon <<- as.numeric(str_trim(tclvalue(length.mon)))
 			GeneralParameters$data.type <<- switch(tclvalue(DataType),
-													'One station series' = 'series',
 													'CDT data format' = 'cdt',
 													'NetCDF gridded data' = 'netcdf')
-			GeneralParameters$compute.var$Function <<- str_trim(tclvalue(aggfun))
-			GeneralParameters$compute.var$miss.frac <<- as.numeric(str_trim(tclvalue(MissFrac)))
-			GeneralParameters$IO.files$In.dir.file <<- str_trim(tclvalue(file.stnfl))
-			GeneralParameters$IO.files$Out.dir.file <<- str_trim(tclvalue(file.save1))
-			
+			if(tclvalue(DataType) == 'CDT data format'){
+				GeneralParameters$stn.data <<- str_trim(tclvalue(file.stnfl))
+			}else{
+				GeneralParameters$ncdf.data$dir <<- str_trim(tclvalue(file.stnfl))
+			}
+
+			GeneralParameters$output <<- str_trim(tclvalue(file.save))
+
+			GeneralParameters$aggr.series$aggr.fun <<- str_trim(tclvalue(aggr.fun))
+			GeneralParameters$aggr.series$min.frac <<- as.numeric(str_trim(tclvalue(min.frac)))
+			GeneralParameters$aggr.series$opr.fun <<- str_trim(tclvalue(opr.fun))
+			GeneralParameters$aggr.series$opr.thres <<- as.numeric(str_trim(tclvalue(opr.thres)))
+
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
-		}	
+		}
 	})
 
 	tkconfigure(bt.prm.CA, command = function(){
@@ -396,7 +439,10 @@ mainDialogAggTs <- function(parent.win, GeneralParameters){
 
 ###########################################################################################################
 
-netcdfDataAgg <- function(tt, GeneralParameters, daydek, outts){
+
+AggregateTS_ncdfData <- function(tt, GeneralParameters, ncDIR, tstep = 'Daily data'){
+	listOpenFiles <- openFile_ttkcomboList()
+
 	largeur1 <- if(Sys.info()["sysname"] == "Windows")  27 else 25
 	###################
 
@@ -409,89 +455,114 @@ netcdfDataAgg <- function(tt, GeneralParameters, daydek, outts){
 
 	###################
 
-	frDate <- tkframe(frMRG0, relief = "sunken", borderwidth = 2)
+	frDate <- tkframe(frMRG0, relief = 'sunken', borderwidth = 2)
 
-	day.val0 <- as.numeric(GeneralParameters$Date.Range$start.day)
-	day.val1 <- as.numeric(GeneralParameters$Date.Range$end.day)
-	if(daydek == 'Dekadal data'){
-		day.val0 <- if(day.val0 > 3) 3 else day.val0
-		day.val1 <- if(day.val1 > 3) 3 else day.val1
-	}
 	istart.yrs <- tclVar(GeneralParameters$Date.Range$start.year)
 	istart.mon <- tclVar(GeneralParameters$Date.Range$start.mon)
-	istart.day <- tclVar(day.val0)
+	istart.day <- tclVar(GeneralParameters$Date.Range$start.day)
 	iend.yrs <- tclVar(GeneralParameters$Date.Range$end.year)
 	iend.mon <- tclVar(GeneralParameters$Date.Range$end.mon)
-	iend.day <- tclVar(day.val1)
+	iend.day <- tclVar(GeneralParameters$Date.Range$end.day)
 
-	stdaydek <- if(daydek == 'Monthly data') 'disabled' else 'normal'
+	txtdek <- switch(tstep, 'Dekadal data' = 'Dek', 'Pentad data' = 'Pen', 'Day')
+	day.txtVar <- tclVar(txtdek)
+	stateDay <- if(tstep == 'Monthly data') "disabled" else "normal"
 
-	deb.txt <- tklabel(frDate, text = 'Start date', anchor = 'e', justify = 'right')
-	fin.txt <- tklabel(frDate, text = 'End date', anchor = 'e', justify = 'right')
-	yrs.txt <- tklabel(frDate, text = 'Year')
-	mon.txt <- tklabel(frDate, text = 'Month')
-	txtLabDay <- if(daydek == 'Dekadal data') 'Dek' else 'Day'
-	day.txt <- tklabel(frDate, text = txtLabDay)
+	frtxtDate <- ttklabelframe(frDate, text = "Date Range", relief = 'groove')
 
-	yrs1.v <- tkentry(frDate, width = 4, textvariable = istart.yrs, justify = "right")
-	mon1.v <- tkentry(frDate, width = 4, textvariable = istart.mon, justify = "right")
-	day1.v <- tkentry(frDate, width = 4, textvariable = istart.day, justify = "right", state = stdaydek)
-	yrs2.v <- tkentry(frDate, width = 4, textvariable = iend.yrs, justify = "right")
-	mon2.v <- tkentry(frDate, width = 4, textvariable = iend.mon, justify = "right")
-	day2.v <- tkentry(frDate, width = 4, textvariable = iend.day, justify = "right", state = stdaydek)
+	txt.deb <- tklabel(frtxtDate, text = 'Start date', anchor = 'e', justify = 'right')
+	txt.fin <- tklabel(frtxtDate, text = 'End date', anchor = 'e', justify = 'right')
+	txt.yrs <- tklabel(frtxtDate, text = 'Year')
+	txt.mon <- tklabel(frtxtDate, text = 'Month')
+	txt.day <- tklabel(frtxtDate, text = tclvalue(day.txtVar), textvariable = day.txtVar)
+	en.yrs1 <- tkentry(frtxtDate, width = 4, textvariable = istart.yrs, justify = "right")
+	en.mon1 <- tkentry(frtxtDate, width = 4, textvariable = istart.mon, justify = "right")
+	en.day1 <- tkentry(frtxtDate, width = 4, textvariable = istart.day, justify = "right", state = stateDay)
+	en.yrs2 <- tkentry(frtxtDate, width = 4, textvariable = iend.yrs, justify = "right")
+	en.mon2 <- tkentry(frtxtDate, width = 4, textvariable = iend.mon, justify = "right")
+	en.day2 <- tkentry(frtxtDate, width = 4, textvariable = iend.day, justify = "right", state = stateDay)
 
-	tkgrid(deb.txt, row = 1, column = 0, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(fin.txt, row = 2, column = 0, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(yrs.txt, row = 0, column = 1, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(mon.txt, row = 0, column = 2, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(day.txt, row = 0, column = 3, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(yrs1.v, row = 1, column = 1, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(mon1.v, row = 1, column = 2, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(day1.v, row = 1, column = 3, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(yrs2.v, row = 2, column = 1, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(mon2.v, row = 2, column = 2, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(day2.v, row = 2, column = 3, sticky = 'ew', padx = 1, pady = 1)
+	tkgrid(txt.deb, row = 1, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.fin, row = 2, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.yrs, row = 0, column = 1, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.mon, row = 0, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.day, row = 0, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.yrs1, row = 1, column = 1, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.mon1, row = 1, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.day1, row = 1, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.yrs2, row = 2, column = 1, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.mon2, row = 2, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.day2, row = 2, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	infobulle(frDate, 'Start and end date of data to aggregate')
-	status.bar.display(frDate, TextOutputVar, 'Start and end date of data to aggregate')
+	tkgrid(frtxtDate, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
+
+	infobulle(frtxtDate, 'Start and end date of the netcdf data to be aggregated')
+	status.bar.display(frtxtDate, TextOutputVar, 'Start and end date of the netcdf data to be aggregated')
 
 	###################
 
 	frFF <- tkframe(frMRG0, relief = "sunken", borderwidth = 2)
 
-	inrfeff <- tclVar(GeneralParameters$ncdf.file.format$input)
-	outmrgff <- tclVar(GeneralParameters$ncdf.file.format$output)
+	inrfeff <- tclVar(GeneralParameters$ncdf.data$format)
+	rfesample <- tclVar(GeneralParameters$ncdf.data$sample)
 
-	txt.inrfeff <- tklabel(frFF, text = 'Input NetCDF filenames format', anchor = 'w', justify = 'left')
+	txt.ncsample <- tklabel(frFF, text = "Netcdf data sample file", anchor = 'w', justify = 'left')
+	cb.ncsample <- ttkcombobox(frFF, values = unlist(listOpenFiles), textvariable = rfesample, width = largeur1)
+	bt.ncsample <- tkbutton(frFF, text = "...")
+	txt.inrfeff <- tklabel(frFF, text = 'Netcdf data filenames format', anchor = 'w', justify = 'left')
 	en.inrfeff <- tkentry(frFF, textvariable = inrfeff, width = largeur1)
-	txt.outmrgff <- tklabel(frFF, text = 'Output NetCDF filenames format', anchor = 'w', justify = 'left')
-	en.outmrgff <- tkentry(frFF, textvariable = outmrgff, width = largeur1)
-
-	tkgrid(txt.inrfeff, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-	tkgrid(en.inrfeff, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-	tkgrid(txt.outmrgff, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-	tkgrid(en.outmrgff, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-
-	infobulle(en.inrfeff, 'Enter the filename format of the input NetCDF,\nexample: rfe_19830125.nc')
-	status.bar.display(en.inrfeff, TextOutputVar, 'Enter the filename format of the input NetCDF, example: rfe_1983013.nc')
-	infobulle(en.outmrgff, 'Enter the filename format  of the output aggregated data\nIf the output are yearly or seasonal you have to put only one %s')
-	status.bar.display(en.outmrgff, TextOutputVar, 'Enter the filename format of the output aggregated data\nIf the output are yearly or seasonal you have to put only one %s')
 
 	###################
 
-	tkgrid(frDate, row = 0, column = 0, sticky = 'nsew', padx = 1, pady = 1, ipady = 6)
-	tkgrid(frFF, row = 0, column = 1, sticky = 'nsew', padx = 1, pady = 1)
+	tkconfigure(bt.ncsample, command = function(){
+		initialdir <- if(file.exists(ncDIR)) ncDIR else getwd()
+		nc.opfiles <- getOpenNetcdf(main.win, all.opfiles, initialdir = initialdir)
+		if(!is.null(nc.opfiles)){
+			nopf <- length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
+			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
+
+			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(rfesample) <- AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.ncsample, values = unlist(listOpenFiles), textvariable = rfesample)
+		}else return(NULL)
+	})
+
+	###################
+
+	tkgrid(txt.ncsample, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.ncsample, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.ncsample, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.inrfeff, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.inrfeff, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	ddk <- if(tstep%in%c('Pentad data', 'Dekadal data')) 1 else '01'
+	example <- do.call(sprintf, c(list(fmt = GeneralParameters$ncdf.data$format),
+				as.list(c(1981, '01', ddk)[seq(length(gregexpr('%s', GeneralParameters$ncdf.data$format)[[1]]))])))
+
+	status.bar.display(cb.ncsample, TextOutputVar, 'File containing a sample of the data in netcdf')
+	infobulle(bt.ncsample, 'Browse file if not listed')
+	infobulle(en.inrfeff, paste('Enter the filename format of netcdf data, example:', example))
+	status.bar.display(en.inrfeff, TextOutputVar, paste('Enter the filename format of netcdf data, example:', example))
+
+	###################
+
+	tkgrid(frDate, row = 0, column = 0, sticky = 'ew', padx = 1, pady = 1)
+	tkgrid(frFF, row = 1, column = 0, sticky = 'ew', padx = 1, pady = 1)
 
 	################################
 
-	bt.prm.OK <- tkbutton(frMRG1, text=" OK ")
+	bt.prm.OK <- tkbutton(frMRG1, text = "OK")
 	bt.prm.CA <- tkbutton(frMRG1, text = "Cancel")
 
 	tkconfigure(bt.prm.OK, command = function(){
-		if(outts %in% c('Yearly data', 'Seasonal data', 'Rolling Seasonal data') & str_count(str_trim(tclvalue(outmrgff)), "%s") != 1){
-			tkmessageBox(message = "The output filename format must have a single %s only", icon = "warning", type = "ok")
+		if(str_trim(tclvalue(rfesample)) == ""){
+			tkmessageBox(message = "You have to provide a sample file", icon = "warning", type = "ok")
 			tkwait.window(tt1)
 		}else{
+			GeneralParameters$ncdf.data$format <<- str_trim(tclvalue(inrfeff))
+			GeneralParameters$ncdf.data$sample <<- str_trim(tclvalue(rfesample))
+
 			GeneralParameters$Date.Range$start.year <<- as.numeric(str_trim(tclvalue(istart.yrs)))
 			GeneralParameters$Date.Range$start.mon <<- as.numeric(str_trim(tclvalue(istart.mon)))
 			GeneralParameters$Date.Range$start.day <<- as.numeric(str_trim(tclvalue(istart.day)))
@@ -499,8 +570,13 @@ netcdfDataAgg <- function(tt, GeneralParameters, daydek, outts){
 			GeneralParameters$Date.Range$end.mon <<- as.numeric(str_trim(tclvalue(iend.mon)))
 			GeneralParameters$Date.Range$end.day <<- as.numeric(str_trim(tclvalue(iend.day)))
 
-			GeneralParameters$ncdf.file.format$input <<- str_trim(tclvalue(inrfeff))
-			GeneralParameters$ncdf.file.format$output <<- str_trim(tclvalue(outmrgff))
+			lenS <- length(gregexpr('%s', GeneralParameters$ncdf.data$format)[[1]])
+			if((tstep%in%c('Daily data', 'Pentad data', 'Dekadal data') & lenS != 3) |
+				(tstep == 'Monthly data' & lenS != 2))
+			{
+				tkmessageBox(message = "Wrong filename format", icon = "warning", type = "ok")
+				tkwait.window(tt1)
+			}
 
 			tkgrab.release(tt1)
 			tkdestroy(tt1)
@@ -514,7 +590,7 @@ netcdfDataAgg <- function(tt, GeneralParameters, daydek, outts){
 		tkfocus(tt)
 	})
 
-	tkgrid(bt.prm.OK, row = 0, column = 0, sticky = 'w', padx = 5, pady = 1, ipadx = 5, ipady = 1)
+	tkgrid(bt.prm.OK, row = 0, column = 0, sticky = 'w', padx = 5, pady = 1, ipadx = 10, ipady = 1)
 	tkgrid(bt.prm.CA, row = 0, column = 1, sticky = 'e', padx = 5, pady = 1, ipadx = 1, ipady = 1)
 
 	################################
@@ -534,110 +610,6 @@ netcdfDataAgg <- function(tt, GeneralParameters, daydek, outts){
 
 	tkfocus(tt1)
 	tkbind(tt1, "<Destroy>", function() {tkgrab.release(tt1); tkfocus(tt)})
-	tkwait.window(tt1)
-	return(GeneralParameters)
-}
-
-###########################################################################################################
-
-oneStnDataAgg <- function(top.win, GeneralParameters, speriod){
-	tt1 <- tktoplevel()
-	tkgrab.set(tt1)
-	tkfocus(tt1)
-
-	frMRG0 <- tkframe(tt1, relief = 'raised', borderwidth = 2)
-	frMRG1 <- tkframe(tt1)
-
-	###################
-
-	fr.fileformat1 <- ttklabelframe(frMRG0, text = "File Format", labelanchor = "nw", relief = "groove", borderwidth = 2)
-
-	rbffrmt <- tclVar(GeneralParameters$One.series$file.format)
- 
-	ffrmt1 <- tkradiobutton(fr.fileformat1, text = "One variable", anchor = 'w', justify = 'left')
-	ffrmt2 <- tkradiobutton(fr.fileformat1, text = "Rain Tmax Tmin", anchor = 'w', justify = 'left')
-
-	tkconfigure(ffrmt1, variable = rbffrmt, value = "1")
-	tkconfigure(ffrmt2, variable = rbffrmt, value = "3")
-
-	tkgrid(ffrmt1, row = 0, column = 0, sticky = "we")
-	tkgrid(ffrmt2, row = 1, column = 0, sticky = "we")
-
-	infobulle(ffrmt1, 'In case of single series: The file contains 1 variable')
-	status.bar.display(ffrmt1, TextOutputVar, 'In case of single series: The file contains 1 variable')
-	infobulle(ffrmt2, 'In case of single series: The file contains Rain, Tmax and Tmin in this order')
-	status.bar.display(ffrmt2, TextOutputVar, 'In case of single series:The file contains Rain, Tmax and Tmin in this order')
-
-	###################
-
-	fr.fileformat2 <- ttklabelframe(frMRG0, text = "Dates Format", labelanchor = "nw", relief = "groove", borderwidth = 2)
-
-	rbdtfrmt <- tclVar(GeneralParameters$One.series$date.format)
-	if(speriod == 'Daily data') {txtdtfrmt1 <- "YYYYMMDD"; txtdtfrmt2 <- "YYYY MM DD"}
-	if(speriod == 'Dekadal data') {txtdtfrmt1 <- "YYYYMMD"; txtdtfrmt2 <- "YYYY MM D"}
-	if(speriod == 'Monthly data') {txtdtfrmt1 <- "YYYYMM"; txtdtfrmt2 <- "YYYY MM"}
-
-	dtfrmt1 <- tkradiobutton(fr.fileformat2, text = txtdtfrmt1, anchor = 'w', justify = 'left')
-	dtfrmt2 <- tkradiobutton(fr.fileformat2, text = txtdtfrmt2, anchor = 'w', justify = 'left')
-	dtfrmt3 <- tklabel(fr.fileformat2, text = '')
-
-	tkconfigure(dtfrmt1, variable = rbdtfrmt, value = "1")
-	tkconfigure(dtfrmt2, variable = rbdtfrmt, value = "3")
-
-	tkgrid(dtfrmt1, row = 0, column = 0, sticky = "we")
-	tkgrid(dtfrmt2, row = 1, column = 0, sticky = "we")
-	tkgrid(dtfrmt3, row = 3, column = 0, sticky = "we")
-
-	infobulle(dtfrmt1, 'In case of single series: dates are merged')
-	status.bar.display(dtfrmt1, TextOutputVar, 'In case of single series: dates are merged')
-	infobulle(dtfrmt2, 'In case of single series: dates are separated by space, tabulation or CSV format')
-	status.bar.display(dtfrmt2, TextOutputVar, 'In case of single series: dates are separated by space, tabulation or CSV format')
-
-	#####
-
-	tkgrid(fr.fileformat1, row = 0, column = 0, sticky = 'nswe', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(fr.fileformat2, row = 0, column = 1, sticky = 'nswe', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	################################
-
-	bt.prm.OK <- tkbutton(frMRG1, text = "OK")
-	bt.prm.CA <- tkbutton(frMRG1, text = "Cancel")
-
-	tkconfigure(bt.prm.OK, command = function(){
-		GeneralParameters$One.series$file.format <<- tclvalue(rbffrmt)
-		GeneralParameters$One.series$date.format <<- tclvalue(rbdtfrmt)
-
-		tkgrab.release(tt1)
-		tkdestroy(tt1)
-		tkfocus(top.win)
-	})
-
-	tkconfigure(bt.prm.CA, command = function(){
-		tkgrab.release(tt1)
-		tkdestroy(tt1)
-		tkfocus(top.win)
-	})
-
-	tkgrid(bt.prm.OK, row = 0, column = 0, sticky = 'w', padx = 5, pady = 1, ipadx = 5, ipady = 1)
-	tkgrid(bt.prm.CA, row = 0, column = 1, sticky = 'e', padx = 5, pady = 1, ipadx = 1, ipady = 1)
-
-	################################
-	tkgrid(frMRG0, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frMRG1, row = 1, column = 1, sticky = 'se', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	tkwm.withdraw(tt1)
-	tcl('update')
-	tt.w <- as.integer(tkwinfo("reqwidth", tt1))
-	tt.h <- as.integer(tkwinfo("reqheight", tt1))
-	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
-	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt1, paste('+', tt.x, '+', tt.y, sep = ''))
-	tkwm.transient(tt1)
-	tkwm.title(tt1, 'One Station - Settings')
-	tkwm.deiconify(tt1)
-
-	tkfocus(tt1)
-	tkbind(tt1, "<Destroy>", function() {tkgrab.release(tt1); tkfocus(top.win)})
 	tkwait.window(tt1)
 	return(GeneralParameters)
 }

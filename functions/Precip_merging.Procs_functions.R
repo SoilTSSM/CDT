@@ -227,6 +227,20 @@ Precip_Merging_ALL <- function(origdir){
 		if(ret != 0) return(ret) 
 	}else return(NULL)
 
+	##################
+	# Scaling up data
+	if(GeneralParameters$scale.data$scale){
+		scaled.DIR <- file.path(origdir, "Merged_ScaledData")
+		dir.create(scaled.DIR, showWarnings = FALSE, recursive = TRUE)
+		ncParms <- list(mrg.data = list(tstep = GeneralParameters$period, dir = merge.DIR, sample = "",
+					format = GeneralParameters$output$format), Scaling.Date = GeneralParameters$Merging.Date,
+					scale.data = GeneralParameters$scale.data, outdir = scaled.DIR)
+		ret <- merged_ScalingUpData(ncParms, TRUE)
+		if(!is.null(ret)){
+			if(ret != 0) return(ret) 
+		}else return(NULL)
+	}
+
 	return(0)
 }
 

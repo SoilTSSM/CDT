@@ -25,7 +25,10 @@ getInfoNetcdfData <- function(tt, Parameters, ncDIR, tstep = 'Dekadal data', sca
 		
 		TSTEPVAL <- c('Pentad data', 'Dekadal data', 'Monthly data')
 		if(tstep == 'Pentad data') TSTEPVAL <- c('Dekadal data', 'Monthly data')
-		if(tstep == 'Dekadal data') TSTEPVAL <- c('Monthly data', '')
+		if(tstep == 'Dekadal data'){
+			TSTEPVAL <- c('Monthly data', '')
+			tclvalue(scale.tstep) <- 'Monthly data'
+		}
 		cb.scale.tstep <- ttkcombobox(frFF, values = TSTEPVAL, textvariable = scale.tstep, width = largeur1)
 	}
 

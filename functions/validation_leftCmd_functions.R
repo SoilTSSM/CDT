@@ -74,11 +74,12 @@ ValidationPanelCmd <- function(clim.var){
 	frameStn <- ttklabelframe(subfr1, text = "Gauge validation data file", relief = 'groove')
 
 	file.period <- tclVar()
-	CbperiodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
+	CbperiodVAL <- c('Daily data', 'Pentad data', 'Dekadal data', 'Monthly data')
 	tclvalue(file.period) <- switch(GeneralParameters$stn.file$tstep, 
 									'daily' = CbperiodVAL[1], 
-									'dekadal' = CbperiodVAL[2],
-									'monthly' = CbperiodVAL[3])
+									'pentad' = cb.periodVAL[2],
+									'dekadal' = CbperiodVAL[3],
+									'monthly' = CbperiodVAL[4])
 	file.stnfl <- tclVar(GeneralParameters$stn.file$file)
 
 	cb.tstep <- ttkcombobox(frameStn, values = CbperiodVAL, textvariable = file.period)
@@ -98,6 +99,7 @@ ValidationPanelCmd <- function(clim.var){
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.file.ncdf, values = unlist(listOpenFiles), textvariable = file.grdCDF)
 			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.plotShp)
+			tkconfigure(cb.adddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 		}else return(NULL)
 	})
 
@@ -185,6 +187,7 @@ ValidationPanelCmd <- function(clim.var){
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.file.ncdf, values = unlist(listOpenFiles), textvariable = file.grdCDF)
 			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.plotShp)
+			tkconfigure(cb.adddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 		}else return(NULL)
 	})
 
@@ -351,6 +354,7 @@ ValidationPanelCmd <- function(clim.var){
 			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.plotShp)
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.file.ncdf, values = unlist(listOpenFiles), textvariable = file.grdCDF)
+			tkconfigure(cb.adddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 
 			###
 			shpf <- getShpOpenData(file.plotShp)
@@ -838,6 +842,13 @@ ValidationPanelCmd <- function(clim.var){
 		tkconfigure(bt.stats.maps, state = stateMaps)
 		stateStnID <- if(tclvalue(stat.data) == 'Per station') 'normal' else 'disabled'
 		tkconfigure(cb.stn.graph, state = stateStnID)
+
+		TYPEGRAPH <- c("Scatter", "CDF", "Lines")
+		if(tclvalue(stat.data) == 'All Data'){
+			TYPEGRAPH <- c("Scatter", "CDF")
+			if(tclvalue(EnvHOValidationplot$type.graph) == "Lines") tclvalue(EnvHOValidationplot$type.graph) <- "Scatter"
+		}
+		tkconfigure(cb.stats.graph, values = TYPEGRAPH)
 	})
 
 	#############################
@@ -848,6 +859,7 @@ ValidationPanelCmd <- function(clim.var){
 		GeneralParameters$clim.var <- clim.var
 		GeneralParameters$stn.file$tstep <- switch(tclvalue(file.period),
 		 									'Daily data' = 'daily',
+		 									'Pentad data' = 'pentad',
 											'Dekadal data' =  'dekadal',
 											'Monthly data' = 'monthly')
 		GeneralParameters$stn.file$file <- str_trim(tclvalue(file.stnfl))
@@ -1057,7 +1069,9 @@ ValidationPanelCmd <- function(clim.var){
 
 	frameGraph <- ttklabelframe(subfr4, text = "Graphs", relief = 'groove')
 
-	TYPEGRAPH <- c("Scatter", "CDF")
+	TYPEGRAPH <- c("Scatter", "CDF", 'Lines')
+	if(GeneralParameters$stat.data == 'all') TYPEGRAPH <- c("Scatter", "CDF")
+
 	EnvHOValidationplot$type.graph <- tclVar("Scatter")
 	STNIDGRAPH <- ""
 	EnvHOValidationplot$stnIDGraph <- tclVar()
@@ -1085,9 +1099,62 @@ ValidationPanelCmd <- function(clim.var){
 	tkgrid(txt.stn.graph, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(cb.stn.graph, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 15, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
+	#######################
+
+	frameDEM <- ttklabelframe(subfr4, text = "DEM", relief = 'groove')
+
+	EnvHOValidationplot$add.dem <- tclVar(GeneralParameters$dem.data$add.dem)
+	file.grddem <- tclVar(GeneralParameters$dem.data$dem.file)
+
+	sateDEM <- if(GeneralParameters$dem.data$add.dem) "normal" else "disabled"
+
+	chk.adddem <- tkcheckbutton(frameDEM, variable = EnvHOValidationplot$add.dem, text = "Add DEM  to the Map", anchor = 'w', justify = 'left')
+	cb.adddem <- ttkcombobox(frameDEM, values = unlist(listOpenFiles), textvariable = file.grddem, width = largeur, state = sateDEM)
+	bt.adddem <- tkbutton(frameDEM, text = "...", state = sateDEM)
+
+	tkconfigure(bt.adddem, command = function(){
+		nc.opfiles <- getOpenNetcdf(main.win, all.opfiles)
+		if(!is.null(nc.opfiles)){
+			nopf <- length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
+			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
+
+			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
+			tclvalue(file.grddem) <- AllOpenFilesData[[nopf+1]][[1]]
+			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
+			tkconfigure(cb.file.ncdf, values = unlist(listOpenFiles), textvariable = file.grdCDF)
+			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.plotShp)
+			tkconfigure(cb.adddem, values = unlist(listOpenFiles), textvariable = file.grddem)
+
+			demData <- getDemOpenData(str_trim(tclvalue(file.grddem)), convertNeg2NA = TRUE)
+			if(is.null(demData)) EnvHOValidationplot$dem <- NULL
+			EnvHOValidationplot$dem <- demData
+		}else return(NULL)
+	})
+
+	tkgrid(chk.adddem, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.adddem, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.adddem, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+
+
+	#################
+	tkbind(cb.adddem, "<<ComboboxSelected>>", function(){
+		demData <- getDemOpenData(str_trim(tclvalue(file.grddem)), convertNeg2NA = TRUE)
+		if(is.null(demData)) EnvHOValidationplot$dem <- NULL
+		EnvHOValidationplot$dem <- demData
+	})
+
+	tkbind(chk.adddem, "<Button-1>", function(){
+		sateDEM <- if(tclvalue(EnvHOValidationplot$add.dem) == "1") "disabled" else "normal"
+		tkconfigure(cb.adddem, state = sateDEM)
+		tkconfigure(bt.adddem, state = sateDEM)
+	})
+
 	#############################
 	tkgrid(frameMap, row = 0, column = 0, sticky = 'we')
 	tkgrid(frameGraph, row = 1, column = 0, sticky = 'we', pady = 3)
+	tkgrid(frameDEM, row = 2, column = 0, sticky = 'we', pady = 3)
+
 
 	#######################################################################################################
 	tcl('update')

@@ -67,7 +67,12 @@ HandOutValidationDataProcs <- function(GeneralParameters){
 		dates <- format(seq(dstart, dend, 'day'), '%Y%m%d')
 		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 8))
 	}
-
+	if(timestep == "pentad"){
+		dates <- seq(dstart, dend, 'day')
+		dates <- paste0(format(dates[which(as.numeric(format(dates, '%d')) <= 6)], '%Y%m'),
+						as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 6)], '%d')))
+		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 7))
+	}
 	if(timestep == "dekadal"){
 		dates <- seq(dstart, dend, 'day')
 		dates <- paste0(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%Y%m'),
@@ -214,6 +219,13 @@ HandOutValidationDataProcs <- function(GeneralParameters){
 		EnvHOValidation$opDATA$ncdf[inNA] <- NA
 
 		###################
+		xtm <- EnvHOValidation$opDATA$dates
+		if(timestep == "daily") temps <- as.Date(xtm, format = "%Y%m%d")
+		if(timestep == "pentad") temps <- as.Date(paste0(substr(xtm, 1, 6), c(3, 8, 13, 18, 23, 28)[as.numeric(substr(xtm, 7, 7))]), format = "%Y%m%d")
+		if(timestep == "dekadal") temps <- as.Date(paste0(substr(xtm, 1, 6), c(5, 15, 25)[as.numeric(substr(xtm, 7, 7))]), format = "%Y%m%d")
+		if(timestep == "monthly") temps <- as.Date(paste0(xtm, 15), format = "%Y%m%d")
+
+		###################
 
 		if(GeneralParameters$aggr.series$aggr.data){
 			InsertMessagesTxt(main.txt.out, 'Aggregate data ...')
@@ -239,6 +251,7 @@ HandOutValidationDataProcs <- function(GeneralParameters){
 											rep(as.numeric(substr(finSeas[length(finSeas)], 1, 4)), length(iex)), iex)
 					nend <- sum(nend)
 				}
+				if(timestep == 'pentad') nend <- sum(length(iex))*6
 				if(timestep == 'dekadal') nend <- sum(length(iex))*3
 				if(timestep == 'monthly') nend <- sum(length(iex))
 
@@ -260,6 +273,8 @@ HandOutValidationDataProcs <- function(GeneralParameters){
 			inNA <- missData == len.data
 			AggrcdtData[inNA] <- NA
 			AggrncdfData[inNA] <- NA
+
+			temps <- do.call(c, lapply(indx, function(x) mean(temps[x])))
 			InsertMessagesTxt(main.txt.out, 'Aggregating data finished')
 		}else{
 			AggrcdtData <- EnvHOValidation$opDATA$stn
@@ -268,6 +283,7 @@ HandOutValidationDataProcs <- function(GeneralParameters){
 
 		EnvHOValidation$opDATA$stnStatData <- AggrcdtData
 		EnvHOValidation$opDATA$ncStatData <- AggrncdfData
+		EnvHOValidation$opDATA$temps <- temps
 		EnvHOValidation$opDATA$AggrSeries <- AggrSeries
 
 		InsertMessagesTxt(main.txt.out, 'Calculate statistics ...')

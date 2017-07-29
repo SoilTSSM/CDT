@@ -150,6 +150,14 @@ init.params <- function(action, period){
 		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
 	}
 
+	#################################################################
+	## Scale merged data
+	if(action == 'scale.merged'){
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Scaling_MergedData.json'))
+		ret.params <- c(list(action = action), ret.params)
+		if(str_trim(ret.params$outdir) == "") ret.params$outdir <- getwd()
+	}
+
 	#############################################################################################3
 	
 	if(action == 'chk.coords'){
@@ -179,9 +187,9 @@ init.params <- function(action, period){
 	}
 
 	################
-	if(action == 'agg.ts'){
+	if(action == 'aggregate.ts'){
 		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Aggregate_time_series.json'))
-		ret.params <- c(list(action = action, period = period), ret.params)
+		ret.params <- c(list(action = action, in.tstep = period), ret.params)
 	}
 
 	################

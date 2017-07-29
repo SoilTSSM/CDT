@@ -356,6 +356,14 @@ Execute_All_Functions <- function(get.stn){
 		merging_end_msg(mrg2run, main.txt.out, "Temperature merging finished successfully", "Temperature merging failed")
 	}
 
+	##############################
+	##Scale merged data
+	if(GeneralParameters$action == 'scale.merged'){
+		origdir <- file.path(GeneralParameters$outdir, "Merged_ScaledData")
+		mrg2run <- try(exec_ScalingUpData(origdir), silent = TRUE)
+		merging_end_msg(mrg2run, main.txt.out, "Scaling up merged data finished successfully", "Scaling up merged data failed")
+	}
+
 	################################################################################
 	
 	if(GeneralParameters$action == "chk.coords"){
@@ -442,15 +450,16 @@ Execute_All_Functions <- function(get.stn){
 	}
 
 	#####
-	if(GeneralParameters$action == "agg.ts"){
-		agg2run <- try(ExeAggTimeSeries(GeneralParameters), silent = TRUE)
+	if(GeneralParameters$action == "aggregate.ts"){
+		agg2run <- try(AggregateTS_Execute(GeneralParameters), silent = TRUE)
+		convert2 <- paste("Conversion from", GeneralParameters$in.tstep, "to", GeneralParameters$out.tstep)
 		if(!inherits(agg2run, "try-error")){
 			if(!is.null(agg2run)){
-				if(agg2run == 0) InsertMessagesTxt(main.txt.out, paste("Conversion from", GeneralParameters$period, "to", GeneralParameters$output.time, "data finished successfully"))
-				else InsertMessagesTxt(main.txt.out, paste("Conversion from", GeneralParameters$period, "to", GeneralParameters$output.time, "data failed"), format = TRUE)
-			}else InsertMessagesTxt(main.txt.out, paste("Conversion from", GeneralParameters$period, "to", GeneralParameters$output.time, "data failed"), format = TRUE)
+				if(agg2run == 0) InsertMessagesTxt(main.txt.out, paste(convert2, "data finished successfully"))
+				else InsertMessagesTxt(main.txt.out, paste(convert2, "data failed"), format = TRUE)
+			}else InsertMessagesTxt(main.txt.out, paste(convert2, "data failed"), format = TRUE)
 		}else{
-			InsertMessagesTxt(main.txt.out, paste("Conversion from", GeneralParameters$period, "to", GeneralParameters$output.time, "data failed"), format = TRUE)
+			InsertMessagesTxt(main.txt.out, paste(convert2, "data failed"), format = TRUE)
 			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', agg2run[1]), format = TRUE)
 		}
 		return(NULL)

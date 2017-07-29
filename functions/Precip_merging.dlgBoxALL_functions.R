@@ -511,11 +511,11 @@ Precip_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 
 	tkconfigure(bt.dir2save, command = function(){
 		dir2savepth <- tk_choose.dir(GeneralParameters$output$dir, "")
-			if(is.na(dir2savepth)) tclvalue(dir2save) <- GeneralParameters$output$dir
-			else{
-				dir.create(dir2savepth, showWarnings = FALSE, recursive = TRUE)
-				tclvalue(dir2save) <- dir2savepth
-			}
+		if(is.na(dir2savepth)) tclvalue(dir2save) <- GeneralParameters$output$dir
+		else{
+			dir.create(dir2savepth, showWarnings = FALSE, recursive = TRUE)
+			tclvalue(dir2save) <- dir2savepth
+		}
 	})
 
 	#####
@@ -662,7 +662,7 @@ Precip_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 	tkgrid(frScaleData, row = 3, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	############################################
-	
+
 	tkgrid(frLeft, row = 0, column = 0, sticky = 'news', padx = 5, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frRight, row = 0, column = 1, sticky = 'news', padx = 5, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frRight1, row = 0, column = 2, sticky = 'news', padx = 5, pady = 1, ipadx = 1, ipady = 1)
@@ -757,7 +757,7 @@ Precip_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)
-		}	
+		}
 	})
 
 	#######

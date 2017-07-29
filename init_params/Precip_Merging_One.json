@@ -196,6 +196,8 @@
     "scale.data": {
         // Scaling up the output merged data to match the totals of another aggregated merged data 
         "scale": false,
+        // Function to use to scale up data,  "mean" or "sum"
+        "fun": "sum",
         // Time step of the aggregated data to be used for scaling
         "tstep": "monthly",
         // Full path to the directory of merged data to be use for scaling

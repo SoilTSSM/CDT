@@ -60,6 +60,9 @@ source(file.path(apps.dir, 'functions', 'homogenization_BreakPtPlot_functions.R'
 source(file.path(apps.dir, 'functions', 'merging_functions.R'))
 source(file.path(apps.dir, 'functions', 'merging_dlgBox_functions.R'))
 
+source(file.path(apps.dir, 'functions', 'merging_Scale.dlgBox_functions.R'))
+source(file.path(apps.dir, 'functions', 'merging_Scale.Procs_functions.R'))
+
 source(file.path(apps.dir, 'functions', 'Precip_merging.dlgBoxALL_functions.R'))
 source(file.path(apps.dir, 'functions', 'Precip_merging.Bias_functions.R'))
 source(file.path(apps.dir, 'functions', 'Precip_merging.LMCoef_functions.R'))

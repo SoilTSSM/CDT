@@ -47,13 +47,18 @@ HOValidation.plotStatMaps <- function(ocrds){
 	axis(side = 2, at = axTicks(2), labels = axlabs$yaxl, tcl = -0.2, las = 1, cex.axis = 0.8)
 	title(main = mapstat, cex.main = 1, font.main= 2)
 
+	if(tclvalue(EnvHOValidationplot$add.dem) == "1" & !is.null(EnvHOValidationplot$dem)){
+		image(EnvHOValidationplot$dem$lon, EnvHOValidationplot$dem$lat, EnvHOValidationplot$dem$dem,
+			col = gray(seq(0.6, 0.1, length = 30)), add = TRUE)
+	}
+
 	if(length(xna) > 0) points(xna, yna, pch = '*')
 	image.plot(don, breaks = breaks, col = kolor, horizontal = horizontal, xaxt = 'n', yaxt = 'n', add = TRUE,
 				legend.mar = legend.mar, legend.width = legend.width, legend.args = legend.args,
 				axis.args = list(at = breaks, labels = legendLabel, cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
 
 	abline(h = axTicks(2), v = axTicks(1), col = "lightgray", lty = 3)
-	lines(ocrds[, 1], ocrds[, 2])
+	lines(ocrds[, 1], ocrds[, 2], lwd = 1.5)
 
 	plt <- par("plt")
 	usr <- par("usr")
@@ -82,12 +87,12 @@ HOValidation.plotGraph <- function(){
 		title <- tclvalue(EnvHOValidationplot$stnIDGraph)
 	}
 
-		AggrSeries <- EnvHOValidation$opDATA$AggrSeries
-		if(AggrSeries$aggr.fun == "count"){
-			units <- paste0("(Number of day ", AggrSeries$count.fun, " ", AggrSeries$count.thres, ")")
-		}else{
-			units <- if(EnvHOValidation$GeneralParameters$clim.var == "RR") "(mm)" else "(°C)"
-		}
+	AggrSeries <- EnvHOValidation$opDATA$AggrSeries
+	if(AggrSeries$aggr.fun == "count"){
+		units <- paste0("(Number of day ", AggrSeries$count.fun, " ", AggrSeries$count.thres, ")")
+	}else{
+		units <- if(EnvHOValidation$GeneralParameters$clim.var == "RR") "(mm)" else "(°C)"
+	}
 
 	if(tclvalue(EnvHOValidationplot$type.graph) == "Scatter"){
 		xlab <- paste('Station', units)
@@ -119,6 +124,30 @@ HOValidation.plotGraph <- function(){
 			lines(xax, fy(xax), lwd = 2, col ='red', type = 'l')
 		}
 		legend('bottomright', legendlab, col = c('blue', 'red'), lwd = 3, bg = 'lightgoldenrodyellow')
+	}
+
+	if(tclvalue(EnvHOValidationplot$type.graph) == "Lines"){
+		ylab <- if(EnvHOValidation$GeneralParameters$clim.var == "RR") "Rainfall" else "Temperature"
+		ylab <- paste(ylab, units)
+		legendlab <- c('Station', 'Estimate')
+
+		ymax <- max(c(x, y), na.rm = TRUE)
+		xylim <- c(0, ifelse(is.infinite(ymax), 0, ymax))
+
+		layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.9, 0.1), respect = FALSE)
+		op <- par(mar = c(3, 4, 2, 2))
+		plot(EnvHOValidation$opDATA$temps, x, ylim = xylim, type = 'n', xlab = "", ylab = ylab, main = title)
+		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
+		abline(v = axTicks(1), col = "lightgray", lty = "dotted")
+
+		lines(EnvHOValidation$opDATA$temps, x, lwd = 2, col = 'blue', type = 'l')
+		lines(EnvHOValidation$opDATA$temps, y, lwd = 2, col ='red', type = 'l')
+		par(op)
+
+		op <- par(mar = c(0, 4, 0, 2))
+		plot.new()
+		legend('top', 'groups', legend = legendlab, col = c('blue', 'red'), lwd = 3, lty = 1, horiz = TRUE)
+		par(op)
 	}
 }
 
