@@ -5,14 +5,18 @@ climatoAnalysisPanelCmd <- function(){
 		wscrlwin <- w.scale(26)
 		hscrlwin <- h.scale(45)
 		largeur0 <- as.integer(w.scale(22)/sfont0)
-		largeur1 <- as.integer(w.scale(30)/sfont0)
-		largeur2 <- as.integer(w.scale(28)/sfont0)
+		largeur1 <- as.integer(w.scale(29)/sfont0)
+		largeur2 <- as.integer(w.scale(31)/sfont0)
+		largeur3 <- largeur2-10
+		largeur4 <- largeur1-5
 	}else{
 		wscrlwin <- w.scale(26)
 		hscrlwin <- h.scale(47)
 		largeur0 <- as.integer(w.scale(18)/sfont0)
 		largeur1 <- as.integer(w.scale(22)/sfont0)
 		largeur2 <- as.integer(w.scale(23)/sfont0)
+		largeur3 <- largeur2+2
+		largeur4 <- largeur1
 	}
 
 	GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'ClimatoAnalysis.json'))
@@ -300,7 +304,7 @@ climatoAnalysisPanelCmd <- function(){
 		state2 <- if(GeneralParameters$time.series$nseq.years) 'normal' else 'disabled'
 	}
 
-	chk.allYears <- tkcheckbutton(frameYear, variable = allYears, text =  "Use all years from the input data", anchor = 'w', justify = 'left', width = largeur2+2)
+	chk.allYears <- tkcheckbutton(frameYear, variable = allYears, text =  "Use all years from the input data", anchor = 'w', justify = 'left', width = largeur3)
 	txt.startYear <- tklabel(frameYear, text = "Start Year",  anchor = 'e', justify = 'right')
 	en.startYear <- tkentry(frameYear, textvariable = startYear, width = 6, state = state0)
 	txt.endYear <- tklabel(frameYear, text = "End Year",  anchor = 'e', justify = 'right')
@@ -524,7 +528,7 @@ climatoAnalysisPanelCmd <- function(){
 	statePrc <- if(GeneralParameters$analysis.method$mth.fun == 'percentile') 'normal' else 'disabled'
 	stateFrq <- if(GeneralParameters$analysis.method$mth.fun == 'frequency') 'normal' else 'disabled'
 
-	cb.anMthd <- ttkcombobox(frameAnalysis, values = ANALYSIS, textvariable = analysis.method, width = largeur1)
+	cb.anMthd <- ttkcombobox(frameAnalysis, values = ANALYSIS, textvariable = analysis.method, width = largeur4)
 	txt.Percent <- tklabel(frameAnalysis, text = "Percentile",  anchor = 'e', justify = 'right')
 	en.Percent <- tkentry(frameAnalysis, textvariable = mth.perc, width = 6, state = statePrc)
 	txt.Freq1 <- tklabel(frameAnalysis, text = "Between",  anchor = 'e', justify = 'right')

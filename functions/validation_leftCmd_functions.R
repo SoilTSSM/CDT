@@ -8,6 +8,8 @@ ValidationPanelCmd <- function(clim.var){
 		largeur <- as.integer(w.scale(28)/sfont0)
 		largeur1 <- as.integer(w.scale(30)/sfont0)
 		wncdf_ff <- as.integer(w.scale(20)/sfont0)
+		largeur2 <- 30
+		largeur3 <- 28
 	}else{
 		wscrlwin <- w.scale(26)
 		hscrlwin <- h.scale(46)
@@ -15,6 +17,8 @@ ValidationPanelCmd <- function(clim.var){
 		largeur <- as.integer(w.scale(22)/sfont0)
 		largeur1 <- as.integer(w.scale(23)/sfont0)
 		wncdf_ff <- as.integer(w.scale(16)/sfont0)
+		largeur2 <- 22
+		largeur3 <- 20
 	}
 
 	GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'Hold_Out_Validation.json'))
@@ -942,7 +946,7 @@ ValidationPanelCmd <- function(clim.var){
 	bt.stat.disp <- ttkbutton(frameStatTab, text = "Display Table")
 	bt.stat.prev <- ttkbutton(frameStatTab, text = "<<", state = stateDispSTN, width = 4)
 	bt.stat.next <- ttkbutton(frameStatTab, text = ">>", state = stateDispSTN, width = 4)
-	cb.stat.sel <- ttkcombobox(frameStatTab, values = STATIONIDS, textvariable = stn.stat.tab, width = 20, state = stateDispSTN)
+	cb.stat.sel <- ttkcombobox(frameStatTab, values = STATIONIDS, textvariable = stn.stat.tab, width = largeur3, state = stateDispSTN)
 
 	################
 	validStatTab <- NULL
@@ -1039,7 +1043,7 @@ ValidationPanelCmd <- function(clim.var){
 		CHXSTATS <- c(CHXSTATS, 'Probability Of Detection', 'False Alarm Ratio', 'Frequency Bias', 'Critical Success Index', 'Heidke Skill Score')
 	stateMaps <- if(GeneralParameters$stat.data == 'stn') 'normal' else 'disabled'
 
-	cb.stats.maps <- ttkcombobox(frameMap, values = CHXSTATS, textvariable = EnvHOValidationplot$statistics, width = 21, state = stateMaps)
+	cb.stats.maps <- ttkcombobox(frameMap, values = CHXSTATS, textvariable = EnvHOValidationplot$statistics, width = largeur2, state = stateMaps)
 	bt.stats.maps <- ttkbutton(frameMap, text = "PLOT", state = stateMaps)
 
 	EnvHOValidationplot$notebookTab.maps <- NULL
@@ -1077,7 +1081,7 @@ ValidationPanelCmd <- function(clim.var){
 	EnvHOValidationplot$stnIDGraph <- tclVar()
 	stateStnID <- "disabled"
 
-	cb.stats.graph <- ttkcombobox(frameGraph, values = TYPEGRAPH, textvariable = EnvHOValidationplot$type.graph, width = 21)
+	cb.stats.graph <- ttkcombobox(frameGraph, values = TYPEGRAPH, textvariable = EnvHOValidationplot$type.graph, width = largeur2)
 	bt.stats.graph <- ttkbutton(frameGraph, text = "PLOT")
 	txt.stn.graph <- tklabel(frameGraph, text = "Station",  anchor = 'e', justify = 'right')
 	cb.stn.graph <- ttkcombobox(frameGraph, values = STNIDGRAPH, textvariable = EnvHOValidationplot$stnIDGraph, state = stateStnID)

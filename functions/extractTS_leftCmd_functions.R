@@ -5,10 +5,10 @@ ExtractDataPanelCmd <- function(){
 		wscrlwin <- w.scale(26)
 		hscrlwin <- h.scale(45)
 
-		largeur1 <- as.integer(w.scale(30)/sfont0)
-		largeur2 <- as.integer(w.scale(28)/sfont0)
+		largeur1 <- as.integer(w.scale(28)/sfont0)
+		largeur2 <- as.integer(w.scale(26)/sfont0)
 		largeur3 <- as.integer(w.scale(14)/sfont0)
-		largeur4 <- as.integer(w.scale(32)/sfont0)
+		largeur4 <- as.integer(w.scale(24)/sfont0)
 		largeur5 <- as.integer(w.scale(28)/sfont0)
 	}else{
 		wscrlwin <- w.scale(26)
@@ -1204,7 +1204,7 @@ ExtractDataPanelCmd <- function(){
 	})
 
 	#############################
-	tkgrid(frameZoom, row = 0, column = 0, sticky = 'we')
+	tkgrid(frameZoom, row = 0, column = 0, sticky = '')
 	tkgrid(frameExtract, row = 1, column = 0, sticky = 'we', pady = 3)
 
 	######################################################################################################

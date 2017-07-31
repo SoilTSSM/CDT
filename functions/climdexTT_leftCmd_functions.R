@@ -4,12 +4,14 @@ climdexPanelCmd.TT <- function(){
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(26)
 		hscrlwin <- h.scale(45)
+		hauteur2 <- hscrlwin-40
 		largeur0 <- as.integer(w.scale(22)/sfont0)
-		largeur1 <- as.integer(w.scale(30)/sfont0)
-		largeur2 <- as.integer(w.scale(28)/sfont0)
+		largeur1 <- as.integer(w.scale(29)/sfont0)
+		largeur2 <- as.integer(w.scale(31)/sfont0)
 	}else{
 		wscrlwin <- w.scale(26)
 		hscrlwin <- h.scale(46)
+		hauteur2 <- hscrlwin-50
 		largeur0 <- as.integer(w.scale(18)/sfont0)
 		largeur1 <- as.integer(w.scale(22)/sfont0)
 		largeur2 <- as.integer(w.scale(23.5)/sfont0)
@@ -298,7 +300,7 @@ climdexPanelCmd.TT <- function(){
 	tkgrid(frameData, row = 0, column = 0, sticky = 'we')
 	tkgrid(frameInd, row = 1, column = 0, sticky = 'we', pady = 3)
 	tkgrid(frameDirSav, row = 2, column = 0, sticky = 'we', pady = 3)
-	tkgrid(frameBaseyear, row = 3, column = 0, sticky = 'we', pady = 3)
+	tkgrid(frameBaseyear, row = 3, column = 0, sticky = '', pady = 3)
 
 	#######################################################################################################
 
@@ -310,7 +312,7 @@ climdexPanelCmd.TT <- function(){
 	scrw2 <- bwScrolledWindow(frTab2)
 	tkgrid(scrw2)
 	tkgrid.columnconfigure(scrw2, 0, weight = 1)
-	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin-50)
+	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hauteur2)
 	tkgrid.columnconfigure(subfr2, 0, weight = 1)
 
 	frameCalc <- tkframe(frTab2)

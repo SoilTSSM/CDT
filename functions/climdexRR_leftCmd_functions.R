@@ -4,12 +4,14 @@ climdexPanelCmd.RR <- function(){
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(26)
 		hscrlwin <- h.scale(45)
+		hauteur2 <- hscrlwin-40
 		largeur0 <- as.integer(w.scale(22)/sfont0)
-		largeur1 <- as.integer(w.scale(30)/sfont0)
-		largeur2 <- as.integer(w.scale(28)/sfont0)
+		largeur1 <- as.integer(w.scale(29)/sfont0)
+		largeur2 <- as.integer(w.scale(31)/sfont0)
 	}else{
 		wscrlwin <- w.scale(26)
 		hscrlwin <- h.scale(46)
+		hauteur2 <- hscrlwin-50
 		largeur0 <- as.integer(w.scale(18)/sfont0)
 		largeur1 <- as.integer(w.scale(22)/sfont0)
 		largeur2 <- as.integer(w.scale(23.5)/sfont0)
@@ -236,7 +238,7 @@ climdexPanelCmd.RR <- function(){
 	tkgrid(frameData, row = 0, column = 0, sticky = 'we')
 	tkgrid(frameInd, row = 1, column = 0, sticky = 'we', pady = 3)
 	tkgrid(frameDirSav, row = 2, column = 0, sticky = 'we', pady = 3)
-	tkgrid(frameBaseyear, row = 3, column = 0, sticky = 'we', pady = 3)
+	tkgrid(frameBaseyear, row = 3, column = 0, sticky = '', pady = 3)
 
 	#######################################################################################################
 
@@ -248,11 +250,8 @@ climdexPanelCmd.RR <- function(){
 	scrw2 <- bwScrolledWindow(frTab2)
 	tkgrid(scrw2)
 	tkgrid.columnconfigure(scrw2, 0, weight = 1)
-	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin-50)
+	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hauteur2)
 	tkgrid.columnconfigure(subfr2, 0, weight = 1)
-
-	frameCalc <- tkframe(frTab2)
-	tkgrid(frameCalc)
 
 	#######################
 	frameIndex <- tkframe(subfr2, relief = 'sunken', borderwidth = 2)
@@ -273,10 +272,10 @@ climdexPanelCmd.RR <- function(){
 
 	chk.Rx1day <- tkcheckbutton(frameIndex, variable = is.Rx1day, text = 'Rx1day: Monthly maximum 1-day precipitation', anchor = 'w', justify = 'left')
 	chk.Rx5day <- tkcheckbutton(frameIndex, variable = is.Rx5day, text = 'Rx5day: Monthly maximum consecutive 5-day precipitation', anchor = 'w', justify = 'left')
-	chk.SDII <- tkcheckbutton(frameIndex, variable = is.SDII, text = 'SDII: Simple pricipitation intensity index', anchor = 'w', justify = 'left')
-	chk.R10mm <- tkcheckbutton(frameIndex, variable = is.R10mm, text = 'R10mm: Annual count of days when PRCP ≥ 10mm', anchor = 'w', justify = 'left')
-	chk.R20mm <- tkcheckbutton(frameIndex, variable = is.R20mm, text = 'R20mm: Annual count of days when PRCP ≥ 20mm', anchor = 'w', justify = 'left')
-	chk.Rnnmm <- tkcheckbutton(frameIndex, variable = is.Rnnmm, text = 'Rnnmm: Annual count of days when PRCP ≥ nnmm', anchor = 'w', justify = 'left')
+	chk.SDII <- tkcheckbutton(frameIndex, variable = is.SDII, text = 'SDII: Simple precipitation intensity index', anchor = 'w', justify = 'left')
+	chk.R10mm <- tkcheckbutton(frameIndex, variable = is.R10mm, text = 'R10mm: Annual count of days when PRCP >= 10mm', anchor = 'w', justify = 'left')
+	chk.R20mm <- tkcheckbutton(frameIndex, variable = is.R20mm, text = 'R20mm: Annual count of days when PRCP >= 20mm', anchor = 'w', justify = 'left')
+	chk.Rnnmm <- tkcheckbutton(frameIndex, variable = is.Rnnmm, text = 'Rnnmm: Annual count of days when PRCP >= nnmm', anchor = 'w', justify = 'left')
 
 	frameRnnmm <- tkframe(frameIndex)
 
@@ -312,10 +311,13 @@ climdexPanelCmd.RR <- function(){
 	infobulle(frameIndex, "Check desired indices to calculate")
 	status.bar.display(frameIndex, TextOutputVar, "Check desired indices to calculate")
 
-	#############################
-	tkgrid(frameIndex, row = 0, column = 0, sticky = 'we')
-
 	#######################
+	tkgrid(frameIndex, row = 0, column = 0, sticky = 'we')
+	tcl('update')
+
+	#############################
+	frameCalc <- tkframe(frTab2)
+
 	CalcBut <- ttkbutton(frameCalc, text = "Calculate")
 	tkgrid(CalcBut, padx = 5, pady = 5)
 
@@ -367,6 +369,8 @@ climdexPanelCmd.RR <- function(){
 		}
 	})
 
+	#######################
+	tkgrid(frameCalc)
 
 	#######################################################################################################
 

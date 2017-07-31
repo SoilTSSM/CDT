@@ -2,10 +2,10 @@
 Merging_ScaleDataInfo <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 27
-		largeur2 <- 34
+		largeur1 <- 40
+		largeur2 <- 43
 	}else{
-		largeur1 <- 26
+		largeur1 <- 30
 		largeur2 <- 32
 	}
 
@@ -67,7 +67,7 @@ Merging_ScaleDataInfo <- function(parent.win, GeneralParameters){
 	tkgrid(en.day2, row = 2, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	tkgrid(cb.period, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(frtxtDate, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
+	tkgrid(frtxtDate, row = 1, column = 0, sticky = '', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
 
 	infobulle(cb.period, 'Choose the time step of the merged data to be scaled')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the time step of the merged data to be scaled')
@@ -141,7 +141,7 @@ Merging_ScaleDataInfo <- function(parent.win, GeneralParameters){
 	tkgrid(bt.scaledata, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
 	tkgrid(txt.scalefun, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cb.scalefun, row = 2, column = 2, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.scalefun, row = 2, column = 2, sticky = 'w', rowspan = 1, columnspan = 3, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(en.scaledata, 'Enter the full path to the directory containing the merged data to be used for scaling')
 	status.bar.display(en.scaledata, TextOutputVar, 'Enter the full path to the directory containing the merged data to be used for scaling')

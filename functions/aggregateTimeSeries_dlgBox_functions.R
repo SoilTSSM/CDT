@@ -443,7 +443,7 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 AggregateTS_ncdfData <- function(tt, GeneralParameters, ncDIR, tstep = 'Daily data'){
 	listOpenFiles <- openFile_ttkcomboList()
 
-	largeur1 <- if(Sys.info()["sysname"] == "Windows")  27 else 25
+	largeur1 <- if(Sys.info()["sysname"] == "Windows")  32 else 25
 	###################
 
 	tt1 <- tktoplevel()
@@ -547,7 +547,7 @@ AggregateTS_ncdfData <- function(tt, GeneralParameters, ncDIR, tstep = 'Daily da
 
 	###################
 
-	tkgrid(frDate, row = 0, column = 0, sticky = 'ew', padx = 1, pady = 1)
+	tkgrid(frDate, row = 0, column = 0, sticky = '', padx = 1, pady = 1)
 	tkgrid(frFF, row = 1, column = 0, sticky = 'ew', padx = 1, pady = 1)
 
 	################################

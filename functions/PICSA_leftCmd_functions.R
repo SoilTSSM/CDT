@@ -4,15 +4,19 @@ PICSAPanelCmd <- function(){
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(26)
 		hscrlwin <- h.scale(45)
-		largeur0 <- as.integer(w.scale(32)/sfont0)
-		largeur1 <- as.integer(w.scale(30)/sfont0)
-		largeur2 <- as.integer(w.scale(28)/sfont0)
+		largeur0 <- as.integer(w.scale(27)/sfont0)
+		largeur1 <- as.integer(w.scale(27)/sfont0)
+		largeur2 <- as.integer(w.scale(29)/sfont0)
+		largeur3 <- largeur2-6
+		largeur4 <- 26
 	}else{
 		wscrlwin <- w.scale(26)
 		hscrlwin <- h.scale(50)
 		largeur0 <- as.integer(w.scale(25)/sfont0)
 		largeur1 <- as.integer(w.scale(22)/sfont0)
 		largeur2 <- as.integer(w.scale(23)/sfont0)
+		largeur3 <- largeur2+2
+		largeur4 <- 21
 	}
 
 	GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'PICSA.json'))
@@ -630,7 +634,7 @@ PICSAPanelCmd <- function(){
 
 	stateYr <- if(GeneralParameters$date.range$all.years) 'disabled' else 'normal'
 
-	chk.allYears <- tkcheckbutton(frameYear, variable = allYears, text =  "Use all years from the input data", anchor = 'w', justify = 'left', width = largeur2+2)
+	chk.allYears <- tkcheckbutton(frameYear, variable = allYears, text =  "Use all years from the input data", anchor = 'w', justify = 'left', width = largeur3)
 	txt.startYear <- tklabel(frameYear, text = "Start Year",  anchor = 'e', justify = 'right')
 	en.startYear <- tkentry(frameYear, textvariable = startYear, width = 6, state = stateYr)
 	txt.endYear <- tklabel(frameYear, text = "End Year",  anchor = 'e', justify = 'right')
@@ -1122,7 +1126,7 @@ PICSAPanelCmd <- function(){
 	if(GeneralParameters$compute.ETP == 'temp') varPICSA.val <- c(varPICSA.val, "Maximum temperature", "Minimum temperature")
 	stateDrySpl <- 'disabled'
 
-	cb.TsMap.picsavar <- ttkcombobox(frameTSMaps, values = varPICSA.val, textvariable = EnvPICSAplot$varPICSA, width = 21)
+	cb.TsMap.picsavar <- ttkcombobox(frameTSMaps, values = varPICSA.val, textvariable = EnvPICSAplot$varPICSA, width = largeur4)
 	txt.TsMap.dryspell <- tklabel(frameTSMaps, text = "DrySpell",  anchor = 'w', justify = 'left')
 	EnvPICSAplot$spin.TsMap.dryspell <- ttkspinbox(frameTSMaps, from = 1, to = 40, increment = 1, justify = 'center', width = 2, state = stateDrySpl)
 	tkset(EnvPICSAplot$spin.TsMap.dryspell, 5)
@@ -1172,7 +1176,7 @@ PICSAPanelCmd <- function(){
 	statePrc <- if(tclvalue(EnvPICSAplot$analysis.method) == 'Percentiles') 'normal' else 'disabled'
 	stateFrq <- if(tclvalue(EnvPICSAplot$analysis.method) == 'Frequency') 'normal' else 'disabled'
 
-	cb.anMthd <- ttkcombobox(frameClimMaps, values = ANALYSIS, textvariable = EnvPICSAplot$analysis.method, width = 21)
+	cb.anMthd <- ttkcombobox(frameClimMaps, values = ANALYSIS, textvariable = EnvPICSAplot$analysis.method, width = largeur4)
 	txt.Percent <- tklabel(frameClimMaps, text = "Percentile",  anchor = 'w', justify = 'left')
 	en.Percent <- tkentry(frameClimMaps, textvariable = EnvPICSAplot$mth.perc, width = 3, state = statePrc)
 
@@ -1237,7 +1241,7 @@ PICSAPanelCmd <- function(){
 	statexyLoc <- "disabled"
 	stateStnID <- "disabled"
 
-	cb.varTSp <- ttkcombobox(frameTSPlot, values = varTSPLOT, textvariable = EnvPICSAplot$varTSp, width = 21)
+	cb.varTSp <- ttkcombobox(frameTSPlot, values = varTSPLOT, textvariable = EnvPICSAplot$varTSp, width = largeur4)
 	cb.typeTSp <- ttkcombobox(frameTSPlot, values = typeTSPLOT, textvariable = EnvPICSAplot$typeTSp, width = 10, state = stateTsp)
 
 	chk.meanTSp <- tkcheckbutton(frameTSPlot, variable = EnvPICSAplot$averageTSp, text =  "Add Mean", anchor = 'w', justify = 'left', state = stateType)

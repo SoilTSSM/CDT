@@ -1,10 +1,10 @@
 Temp_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 27
-		largeur2 <- 32
-		largeur3 <- 25
-		largeur4 <- 21
+		largeur1 <- 42
+		largeur2 <- 45
+		largeur3 <- 27
+		largeur4 <- 28
 	}else{
 		largeur1 <- 33
 		largeur2 <- 34
@@ -106,7 +106,7 @@ Temp_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 	txt.bias.years2 <- tklabel(frameBias, text = 'End Year', anchor = 'e', justify = 'right')
 	en.bias.years1 <- tkentry(frameBias, width = 6, textvariable = bias.year1, state = statebias1, justify = 'right')
 	en.bias.years2 <- tkentry(frameBias, width = 6, textvariable = bias.year2, state = statebias1, justify = 'right')
-	bt.bias.interp <- tkbutton(frameBias, text = "Bias Interpolations Parameters", state = statebias1)
+	bt.bias.interp <- ttkbutton(frameBias, text = "Bias Interpolations Parameters", state = statebias1)
 
 	txt.bias.dir <- tklabel(frameBias, text = "Directory of bias files", anchor = 'w', justify = 'left')
 	en.bias.dir <- tkentry(frameBias, textvariable = bias.dir, state = statebias2, width = largeur2)
@@ -189,7 +189,7 @@ Temp_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 
 	txt.mrg <- tklabel(frMrg, text = 'Merging method', anchor = 'w', justify = 'left')
 	cb.mrg <- ttkcombobox(frMrg, values = cb.MrgMthd, textvariable = mrg.method, width = largeur4)
-	bt.mrg.interp <- tkbutton(frMrg, text = "Merging Interpolations Parameters")
+	bt.mrg.interp <- ttkbutton(frMrg, text = "Merging Interpolations Parameters")
 
 	# txt.min.nbrs.stn <- tklabel(frMrg, text = 'Min.Nb.Stn', anchor = 'e', justify = 'right')
 	# en.min.nbrs.stn <- tkentry(frMrg, width = 4, textvariable = mrg.min.stn, justify = 'right')
@@ -365,7 +365,7 @@ Temp_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 	tkgrid(en.day2, row = 2, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	tkgrid(cb.period, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(frtxtDate, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
+	tkgrid(frtxtDate, row = 1, column = 0, sticky = '', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
 
 	infobulle(cb.period, 'Choose the time step of the data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the time step of the data')
@@ -400,7 +400,7 @@ Temp_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 	txt.LMCoef.years2 <- tklabel(frLMCoef, text = 'End Year', anchor = 'e', justify = 'right')
 	en.LMCoef.years1 <- tkentry(frLMCoef, width = 6, textvariable = LMCoef.year1, state = stateLMCoef2, justify = 'right')
 	en.LMCoef.years2 <- tkentry(frLMCoef, width = 6, textvariable = LMCoef.year2, state = stateLMCoef2, justify = 'right')
-	bt.LMCoef.interp <- tkbutton(frLMCoef, text = "LMCoef Interpolations Parameters", state = stateLMCoef2)
+	bt.LMCoef.interp <- ttkbutton(frLMCoef, text = "LMCoef Interpolations Parameters", state = stateLMCoef2)
 
 	txt.LMCoef.dir <- tklabel(frLMCoef, text = "Directory of LMCoef files", anchor = 'w', justify = 'left')
 	en.LMCoef.dir <- tkentry(frLMCoef, textvariable = LMCoef.dir, state = stateLMCoef3, width = largeur2)

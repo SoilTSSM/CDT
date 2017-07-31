@@ -2,8 +2,8 @@
 Temp_coefDownGetInfo <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
-		largeur <- 28
-		largeur1 <- 25
+		largeur <- 38
+		largeur1 <- 35
 	}else{
 		largeur <- 34
 		largeur1 <- 33
@@ -230,8 +230,8 @@ Temp_coefDownGetInfo <- function(parent.win, GeneralParameters){
 Temp_reanalDownGetInfo <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
-		largeur <- 28
-		largeur1 <- 25
+		largeur <- 38
+		largeur1 <- 35
 	}else{
 		largeur <- 28
 		largeur1 <- 27
@@ -347,7 +347,7 @@ Temp_reanalDownGetInfo <- function(parent.win, GeneralParameters){
 	rbt.CreateGrd1 <- tkradiobutton(frGrid, text = "From DEM", anchor = 'w', justify = 'left')
 	rbt.CreateGrd2 <- tkradiobutton(frGrid, text = "New Grid", anchor = 'w', justify = 'left')
 	bt.CreateGrd <- tkbutton(frGrid, text = "Create", state = stategrd)
-	bt.down.interp <- tkbutton(frGrid, text = "Downscaling Interpolations Parameters")
+	bt.down.interp <- ttkbutton(frGrid, text = "Downscaling Interpolations Parameters", width = largeur)
 
 	####
 	tkconfigure(rbt.CreateGrd1, variable = varCreateGrd, value = "1")
@@ -437,7 +437,7 @@ Temp_reanalDownGetInfo <- function(parent.win, GeneralParameters){
 	tkgrid(en.day2, row = 2, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	tkgrid(cb.period, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(frtxtDate, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
+	tkgrid(frtxtDate, row = 1, column = 0, sticky = '', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
 
 	infobulle(cb.period, 'Choose the time step of the data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the time step of the data')
