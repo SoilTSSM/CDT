@@ -245,17 +245,48 @@ AggregateTS_Execute <- function(GeneralParameters){
 	}
 
 	if(period1 == "roll.seas"){
-		InsertMessagesTxt(main.txt.out, 'Not implemented yet!')
-		return(0)
+		seasonLength <- GeneralParameters$Seasonal$length.mon
+		month12 <- str_pad(1:12, width = 2, pad = "0")
+
+		dmon <- substr(dates, 1, 6)
+		roll.mon <- rle(dmon)
+		ij <- 1:length(roll.mon$values)
+		ij <- ij[ij <= (length(ij)-seasonLength+1)]
+		ij <- lapply(ij, function(i) i:(i + seasonLength - 1))
+
+		if(period == 'daily'){
+			ix1 <- ij[[1]]
+			nb1 <- roll.mon$lengths[ix1]
+			x1 <- substr(roll.mon$values[ix1[1]], 5, 6)
+			nb1[1] <- rev((28:31)[!is.na(as.Date(paste(2014, x1, 28:31, sep = '-')))])[1]
+			nbd0 <- sum(nb1)
+
+			ix2 <- ij[[length(ij)]]
+			nb2 <- roll.mon$lengths[ix2]
+			x2 <- substr(roll.mon$values[ix2[seasonLength]], 5, 6)
+			nb2[seasonLength] <- rev((28:31)[!is.na(as.Date(paste(2014, x2, 28:31, sep = '-')))])[1]
+			nbd1 <- sum(nb2)
+		}
+		if(period == 'pentad') nbd0 <- nbd1 <- 6*seasonLength
+		if(period == 'dekadal') nbd0 <- nbd1 <- 3*seasonLength
+		if(period == 'monthly') nbd0 <- nbd1 <- seasonLength
+
+		index <- lapply(ij, function(j) which(dmon %in% roll.mon$values[j]))
+		odaty <- sapply(ij, function(j){
+			mon <- month12[as.numeric(substr(roll.mon$values[j], 5, 6))]
+			an <- substr(roll.mon$values[j], 1, 4)
+			paste(paste(an[1], mon[1], sep = '-'),
+			paste(an[length(j)], mon[length(j)], sep = '-'), sep = '_')
+		})
 	}
 
 	#########################
 
-	nbd <- sapply(index, length)
 	nbd.in <- nbd <- sapply(index, length)
 	nbd[1] <- nbd0
 	nbd[length(nbd)] <- nbd1
-	ifull <- nbd.in == nbd
+	# ifull <- nbd.in == nbd
+	ifull <- (nbd.in/nbd) >= min.frac
 
 	# odaty1 <- odaty[!ifull]
 	# index1 <- index[!ifull]
