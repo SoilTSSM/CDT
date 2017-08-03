@@ -3,7 +3,7 @@ rm(list = ls(all = TRUE))
 library(tools)
 if(getRversion() < "3.0.0") stop("Need R  >= 3.0.0")
 apps.dir <<- dirname(parent.frame(2)$ofile)
-imgdir <<- file.path(apps.dir, 'images', fsep = .Platform$file.sep)
+imgdir <<- file.path(apps.dir, 'images')
 
 pkgs <- c('R.utils', 'stringr', 'jsonlite', 'tkrplot', 'gmt', 'fields', 'latticeExtra', 'sp', 'maptools',
 			'gstat', 'automap', 'reshape2', 'ncdf4', 'foreach', 'doParallel', 'raster', 'rgdal', 'rgeos',
@@ -66,6 +66,12 @@ if(tclPath$UseOtherTclTk == 1){
 	if(Sys.info()["sysname"] == "Windows") {
 		tclbin <- str_trim(tclPath$Windows$Tclbin)
 		tcllib <- str_trim(tclPath$Windows$Tcllib)
+		if(!dir.exists(tclbin)) stop("Tcl installation not found\nchange the paths 'Tclbin' and 'Tcllib' in CDT/configure/configure_default.json")
+		if(!dir.exists(tcllib)){
+			lib <- if(basename(tcllib) == "tcl8.5") "tcl8.6" else "tcl8.5"
+			tcllib <- file.path(dirname(tcllib), lib)
+			if(!dir.exists(tcllib)) stop("TCL_LIBRARY not found")
+		}
 	}else if(Sys.info()["sysname"] == "Darwin") {
 		tclbin <- str_trim(tclPath$MacOS$Tclbin)
 		tcllib <- str_trim(tclPath$MacOS$Tcllib)

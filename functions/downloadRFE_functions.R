@@ -243,8 +243,8 @@ ExecDownload_SatData <- function(datasrc, istart, iend, minlon, maxlon, minlat, 
 downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxlat, outdir){
 	outRet <- 0
 	if(datasrc%in%c('10-DAYS TAMSATv3', '10-DAYS TAMSATv2')){
-		if(datasrc == '10-DAYS TAMSATv2') url <- 'http://www.tamsat.org.uk/public_data'
-		if(datasrc == '10-DAYS TAMSATv3') url <- 'http://www.tamsat.org.uk/public_data/TAMSAT3'
+		if(datasrc == '10-DAYS TAMSATv2') url <- 'https://www.tamsat.org.uk/public_data'
+		if(datasrc == '10-DAYS TAMSATv3') url <- 'https://www.tamsat.org.uk/public_data/TAMSAT3'
 		outdir0 <- file.path(outdir, 'Dekad_TAMSAT_Africa')
 		if(!file.exists(outdir0)) dir.create(outdir0, showWarnings = FALSE, recursive = TRUE)
 		outdir1 <- file.path(outdir, 'Dekad_TAMSAT_Extracted')
@@ -344,8 +344,8 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 	#####################################################
 
 	if(datasrc%in%c('DAILY TAMSATv3', 'DAILY TAMSATv2')){
-		if(datasrc == 'DAILY TAMSATv2') url <- 'http://tamsat.org.uk/public_data'
-		if(datasrc == 'DAILY TAMSATv3') url <- 'http://www.tamsat.org.uk/public_data/TAMSAT3'
+		if(datasrc == 'DAILY TAMSATv2') url <- 'https://www.tamsat.org.uk/public_data'
+		if(datasrc == 'DAILY TAMSATv3') url <- 'https://www.tamsat.org.uk/public_data/TAMSAT3'
 		outdir0 <- file.path(outdir, 'Daily_TAMSAT_Africa')
 		if(!file.exists(outdir0)) dir.create(outdir0, showWarnings = FALSE, recursive = TRUE)
 		outdir1 <- file.path(outdir, 'Daily_TAMSAT_Extracted')
