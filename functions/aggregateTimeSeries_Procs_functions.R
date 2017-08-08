@@ -300,7 +300,7 @@ AggregateTS_Execute <- function(GeneralParameters){
 	if(datatype == 'cdt'){
 		cdtdata <- lapply(index, function(ix){
 			ncdon <- donne$data[ix, , drop = FALSE]
-			miss <- (colSums(is.na(ncdon))/nrow(ncdon)) > min.frac
+			miss <- (colSums(is.na(ncdon))/nrow(ncdon)) >= min.frac
 
 			if(aggr.fun == 'max') out <- matrixStats::colMaxs(ncdon, na.rm = TRUE)
 			if(aggr.fun == 'min') out <- matrixStats::colMins(ncdon, na.rm = TRUE)
@@ -389,7 +389,7 @@ AggregateTS_Execute <- function(GeneralParameters){
 				c(don[xo0, yo0])
 			})
 			ncdon <- do.call(rbind, ncdon)
-			miss <- (colSums(is.na(ncdon))/nrow(ncdon)) > min.frac
+			miss <- (colSums(is.na(ncdon))/nrow(ncdon)) >= min.frac
 
 			if(aggr.fun == 'max') out <- matrixStats::colMaxs(ncdon, na.rm = TRUE)
 			if(aggr.fun == 'min') out <- matrixStats::colMins(ncdon, na.rm = TRUE)

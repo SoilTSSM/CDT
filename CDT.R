@@ -133,25 +133,23 @@ if (Sys.info()["sysname"] == "Windows"){
 	if(file.exists(confpath)){
 		conffile <- fromJSON(confpath)
 		workdir <- str_trim(conffile$working.directory)
-		if(file.exists(workdir)) setwd(workdir)
-		else{
+		if(!dir.exists(workdir)){
 			workdir <- path.expand('~')
 			setwd(workdir)
 			conffile$working.directory <- workdir
 			write_json(conffile, confpath)
-		}
-		if(!file.exists(str_trim(conffile$Tktable.path)) | !file.exists(str_trim(conffile$Bwidget.path))){
-			configCDT()
-		}else{
+		}else setwd(workdir)
+		if(dir.exists(str_trim(conffile$Tktable.path)) &
+			dir.exists(str_trim(conffile$Bwidget.path)))
+		{
 			addTclPath(path = str_trim(conffile$Tktable.path))
 			addTclPath(path = str_trim(conffile$Bwidget.path))
 			tclRequire("Tktable")
 			tclRequire("BWidget")
-		}
-	}else{
-		configCDT()
-	}
-	source(file.path(apps.dir, 'functions', 'cdtMain_window.R', fsep = .Platform$file.sep))
+		}else configCDT()
+	}else configCDT()
+
+	source(file.path(apps.dir, 'functions', 'cdtMain_window.R'))
 
 
 # }
