@@ -89,25 +89,25 @@ filterCDTDataPanelCmd <- function(){
 								valfilter = as.numeric(str_trim(tclvalue(filter.val))),
 								file2save = str_trim(tclvalue(file.save1)))
 
- 		assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
+ 		# assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
 
-		# tkconfigure(main.win, cursor = 'watch')
-		# InsertMessagesTxt(main.txt.out, "Filtering data ...........")
-		# ret <- tryCatch(
-		# 	filterCDTdata(GeneralParameters),
-		# 	#warning = function(w) warningFun(w),
-		# 	error = function(e) errorFun(e),
-		# 	finally = {
-		# 		tkconfigure(main.win, cursor = '')
-		# 	}
-		# )
+		tkconfigure(main.win, cursor = 'watch')
+		InsertMessagesTxt(main.txt.out, "Filtering data ...........")
+		ret <- tryCatch(
+			filterCDTdata(GeneralParameters),
+			#warning = function(w) warningFun(w),
+			error = function(e) errorFun(e),
+			finally = {
+				tkconfigure(main.win, cursor = '')
+			}
+		)
 
-		# if(!is.null(ret)){
-		# 	if(ret == 0) InsertMessagesTxt(main.txt.out, "Filtering CDT data finished successfully")
-		# 	else InsertMessagesTxt(main.txt.out, "Filtering CDT data failed", format = TRUE)
-		# }else{
-		# 	InsertMessagesTxt(main.txt.out, "Filtering CDT data failed", format = TRUE)
-		# }
+		if(!is.null(ret)){
+			if(ret == 0) InsertMessagesTxt(main.txt.out, "Filtering CDT data finished successfully")
+			else InsertMessagesTxt(main.txt.out, "Filtering CDT data failed", format = TRUE)
+		}else{
+			InsertMessagesTxt(main.txt.out, "Filtering CDT data failed", format = TRUE)
+		}
 	})
 
 	tkgrid(mrgDataBut, row = 0, column = 0, sticky = 'e', padx = 5, pady = 5)
