@@ -12,7 +12,7 @@ initialize.parameters <- function(action, freqData, previous = FALSE, gal.params
 		if(!is.null(gal.params$action)){
 			if(gal.params$action == action) initpars <- gal.params
 			else{
-				if(previous) initpars <- init.params(action, as.character(gal.params$period))
+				if(previous & gal.params$action == action) initpars <- init.params(action, as.character(gal.params$period))
 				else initpars <- init.params(action, freqData)
 			}
 		}else initpars <- init.params(action, freqData)

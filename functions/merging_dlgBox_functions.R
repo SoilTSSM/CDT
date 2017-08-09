@@ -258,7 +258,7 @@ getInterpolationPars <- function(tt, Parameters, interpChoix = 0){
 
 	txt.Lab1 <- tklabel(frInterpPars, text = tclvalue(txtvar1), anchor = 'e', justify = 'right')
 	txt.Lab2 <- tklabel(frInterpPars, text = tclvalue(txtvar2), anchor = 'e', justify = 'right')
-	txt.Lab3 <- tklabel(frInterpPars, text = tclvalue(txtvar2), anchor = 'e', justify = 'right')
+	txt.Lab3 <- tklabel(frInterpPars, text = tclvalue(txtvar3), anchor = 'e', justify = 'right')
 	en.pars1 <- tkentry(frInterpPars, width = 4, textvariable = parsenv$pars1, justify = 'right', state = statePars)
 	en.pars2 <- tkentry(frInterpPars, width = 4, textvariable = parsenv$pars2, justify = 'right', state = statePars)
 	en.pars3 <- tkentry(frInterpPars, width = 4, textvariable = parsenv$pars3, justify = 'right', state = statePars)
@@ -329,7 +329,6 @@ getInterpolationPars <- function(tt, Parameters, interpChoix = 0){
 }
 
 ###################################################################################################
-
 
 getNewGridParams <- function(tt, Parameters){
 	tt1 <- tktoplevel()
