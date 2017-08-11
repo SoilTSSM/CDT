@@ -466,6 +466,21 @@ Execute_All_Functions <- function(get.stn){
 	}
 
 	#####
+	if(GeneralParameters$action == "aggregate.nc"){
+		agg2run <- try(AggregateSpNc_Execute(GeneralParameters), silent = TRUE)
+		if(!inherits(agg2run, "try-error")){
+			if(!is.null(agg2run)){
+				if(agg2run == 0) InsertMessagesTxt(main.txt.out, "NetCDF regridding finished successfully")
+				else InsertMessagesTxt(main.txt.out, "NetCDF regridding failed", format = TRUE)
+			}else InsertMessagesTxt(main.txt.out, "NetCDF regridding failed", format = TRUE)
+		}else{
+			InsertMessagesTxt(main.txt.out, "NetCDF regridding failed", format = TRUE)
+			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', agg2run[1]), format = TRUE)
+		}
+		return(NULL)
+	}
+
+	#####
 	if(GeneralParameters$action == "fill.temp"){
 		retfill <- try(fillDekTempMissVal(GeneralParameters), silent = TRUE)
 		if(!inherits(retfill, "try-error")){

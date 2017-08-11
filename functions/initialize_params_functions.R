@@ -193,6 +193,12 @@ init.params <- function(action, period){
 	}
 
 	################
+	if(action == 'aggregate.nc'){
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Aggregate_spatial_netcdf.json'))
+		ret.params <- c(list(action = action), ret.params)
+	}
+
+	################
 	if(action == 'fill.temp'){
 		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Filling_CDT_Temperature.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)

@@ -1295,7 +1295,7 @@ ExtractDataPanelCmd <- function(){
 	})
 
 	tkbind(chk.allYears, "<Button-1>", function(){
-		stateClim1 <- if(tclvalue(UseAllYears) == '1') "normal" else "disabled"
+		stateClim1 <- if(tclvalue(UseAllYears) == '1' & tclvalue(type.series) != 'Raw Time Series') "normal" else "disabled"
 		tkconfigure(en.startYear, state = stateClim1)
 		tkconfigure(en.endYear, state = stateClim1)
 	})

@@ -48,7 +48,7 @@ lcmd.ret <- lapply(cdt.lcmd.container, assign, NULL, envir = .GlobalEnv)
 
 #####**************************** General&Generic functions ************************######
 
-source(file.path(apps.dir, 'functions', 'cdtGeneral_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtGeneral_functions.R'))
 
 #####**************************** MAIN WINDOW ************************######
 
@@ -98,12 +98,12 @@ wbstatus3 <- as.integer(w.scale(15)/sfont0)
 
 top.menu <- tkmenu(main.win, tearoff = FALSE)
 tkconfigure(main.win, menu = top.menu)
-source(file.path(apps.dir, 'functions', 'cdtMenu_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtMenu_functions.R'))
 
 #####**************************** TOOLBARS ************************######
 
 tools.frame <- tkframe(main.win, bd = 2, relief = 'ridge')
-source(file.path(apps.dir, 'functions', 'cdtToolbar_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtToolbar_functions.R'))
 
 #####**************************** MAIN FRAME ************************######
 
@@ -119,17 +119,17 @@ panel.left <- tkframe(main.frame, relief = 'raised', bd = 2, width = wpanel.left
 #right panel
 panel.right <- tkframe(main.frame)
 
-source(file.path(apps.dir, 'functions', 'cdtMainPanel_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtMainPanel_functions.R'))
 
 #####**************************** TEXT OUTPUT ************************######
 
 out.frame <- tkframe(main.pane0, bd = 2, relief = 'groove')
-source(file.path(apps.dir, 'functions', 'cdtOutputmsg_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtOutputmsg_functions.R'))
 
 #####**************************** STATUS BAR ************************######
 
 frstatusbar <- tkframe(main.win)
-source(file.path(apps.dir, 'functions', 'cdtStatusbar_functions.R', fsep = .Platform$file.sep))
+source(file.path(apps.dir, 'functions', 'cdtStatusbar_functions.R'))
 
 #####**************************** Manage grid ************************######
 
@@ -208,7 +208,7 @@ tcl("wm", "protocol", main.win, "WM_DELETE_WINDOW", function() {
 
 #####**************************** LOAD Functions ************************######
 
-tryCatch(source(file.path(apps.dir, 'functions', 'loadAll_functions.R', fsep = .Platform$file.sep)),
+tryCatch(source(file.path(apps.dir, 'functions', 'loadAll_functions.R')),
 		warning = function(w) warningFun(w),
 		error = function(e) errorFun(e))
 

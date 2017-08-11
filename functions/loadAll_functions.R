@@ -103,9 +103,14 @@ source(file.path(apps.dir, 'functions', 'cdtFilterMissing_Procs_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtAggregateOutputData_dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtAggregateOutputData_Procs_functions.R'))
 
+####
 source(file.path(apps.dir, 'functions', 'aggregateTimeSeries_dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'aggregateTimeSeries_Procs_functions.R'))
 
+source(file.path(apps.dir, 'functions', 'aggregateSpNcdf_dlgBox_functions.R'))
+source(file.path(apps.dir, 'functions', 'aggregateSpNcdf_Procs_functions.R'))
+
+####
 source(file.path(apps.dir, 'functions', 'downloadRFE_functions.R'))
 source(file.path(apps.dir, 'functions', 'downloadShapefile_functions.R'))
 source(file.path(apps.dir, 'functions', 'downloadDEM_functions.R'))

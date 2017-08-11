@@ -175,6 +175,13 @@ tkadd(menu.dataprep, "command", label = "Aggregating Time Series", command = fun
 	GeneralParameters <<- AggregateTS_GetInfo(main.win, initpars)
 })
 
+##########
+tkadd(menu.dataprep, "command", label = "Aggregate/Disaggregate Spatial NetCDF data", command = function(){
+	refreshCDT.lcmd.env()
+	initpars <- initialize.parameters('aggregate.nc', 'daily')
+	GeneralParameters <<- AggregateNcdf_GetInfo(main.win, initpars)
+})
+
 ######################################## DOWNLOAD
 tkadd(menu.dataprep, "separator")
 
