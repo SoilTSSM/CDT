@@ -25,10 +25,7 @@ AggregateSpNc_Execute <- function(GeneralParameters){
 		}
 	}
 	ncinfo <- list(xo = ncDataInfo$rfeILon, yo = ncDataInfo$rfeILat, varid = ncDataInfo$rfeVarid)
-
-	Xlon <- ncDataInfo$lon
-	Xlat <- ncDataInfo$lat
-	old.grid <- defSpatialPixels(list(lon = Xlon, lat = Xlat))
+	old.grid <- defSpatialPixels(list(lon = ncDataInfo$lon, lat = ncDataInfo$lat))
 
 	if(GeneralParameters$ncdf.grid$use.ncgrid){
 		ncDataNew <- getRFESampleData(GeneralParameters$ncdf.grid$file)
@@ -39,22 +36,18 @@ AggregateSpNc_Execute <- function(GeneralParameters){
 		grd.lon <- ncDataNew$lon
 		grd.lat <- ncDataNew$lat
 	}else{
+		X0 <- GeneralParameters$res$minlon
+		X1 <- GeneralParameters$res$maxlon
+		Y0 <- GeneralParameters$res$minlat
+		Y1 <- GeneralParameters$res$maxlat
 		pX <- GeneralParameters$res$reslon
 		pY <- GeneralParameters$res$reslat
-		if(GeneralParameters$method == "bilinear"){
-			X0 <- GeneralParameters$res$minlon
-			X1 <- GeneralParameters$res$maxlon
-			Y0 <- GeneralParameters$res$minlat
-			Y1 <- GeneralParameters$res$maxlat
-			grd.lon <- seq(X0, X1, pX)
-			grd.lat <- seq(Y0, Y1, pY)
-		}else{
-			Xlon1 <- seq(min(Xlon), max(Xlon), by = pX)
-			if(Xlon1[length(Xlon1)]+pX/2 < Xlon[length(Xlon)]) Xlon1 <- c(Xlon1, Xlon1[length(Xlon1)]+pX)
-			Xlat1 <- seq(min(Xlat), max(Xlat), by = pY)
-			if(Xlat1[length(Xlat1)]+pY/2 < Xlat[length(Xlat)]) Xlat1 <- c(Xlat1, Xlat1[length(Xlat1)]+pY)
-			grd.lon <- Xlon1
-			grd.lat <-  Xlat1
+		grd.lon <- seq(X0, X1, pX)
+		grd.lat <- seq(Y0, Y1, pY)
+
+		if(GeneralParameters$method != "bilinear"){
+			if(grd.lon[length(grd.lon)]+pX/2 < X1) grd.lon <- c(grd.lon, grd.lon[length(grd.lon)]+pX)
+			if(grd.lat[length(grd.lat)]+pY/2 < Y1) grd.lat <- c(grd.lat, grd.lat[length(grd.lat)]+pY)
 		}
 	}
 	new.grid <- defSpatialPixels(list(lon = grd.lon, lat = grd.lat))
