@@ -242,7 +242,12 @@ PlotMergingOutputCmd <- function(){
 
 		ret <- lapply(list(openStnData, openShpData), function(x){
 				if(!is.null(x)){
-					jfile <- if(length(AllOpenFilesType) > 0) getIndex.AllOpenFiles(x$stnDataFile[[1]]) else 0
+					
+					if(length(AllOpenFilesType) > 0){
+						ijx <- getIndex.AllOpenFiles(x$stnDataFile[[1]])
+						jfile <- if(length(ijx) > 0) ijx else 0
+					}else jfile <- 0
+
 					if(jfile == 0){
 						nopfs <- length(AllOpenFilesType)
 						AllOpenFilesType[[nopfs+1]] <<- x$stnFileType
