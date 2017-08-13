@@ -626,7 +626,10 @@ ExtractDataProcs <- function(GeneralParameters){
 		if(is.null(EnvExtractData$calClim)){
 			computeClimato <- TRUE
 		}else{
-			computeClimato <- if(!isTRUE(all.equal(EnvExtractData$calClim, calClim))) TRUE else FALSE
+			# computeClimato <- if(!isTRUE(all.equal(EnvExtractData$calClim, calClim))) TRUE else FALSE
+			if(isTRUE(all.equal(EnvExtractData$calClim, calClim))){
+				computeClimato <- if(is.null(EnvExtractData$sdOUT)) TRUE else FALSE
+			}else computeClimato <- TRUE
 		}
 
 		if(computeClimato){
@@ -888,7 +891,7 @@ ExtractDataProcs <- function(GeneralParameters){
 		dx <- ncdim_def("Lon", "degreeE", headinfo$x)
 		dy <- ncdim_def("Lat", "degreeN", headinfo$y)
 		xy.dim <- list(dx, dy)
-		grd.out <- ncvar_def(name, units, xy.dim, missval, longname, prec)
+		if(GeneralParameters$type.series %in% c('rawts', 'anom', 'stanom')) grd.out <- ncvar_def(name, units, xy.dim, missval, longname, prec)
 		if(GeneralParameters$type.series %in% c('climato', 'anom', 'stanom')) grd.Clim <- ncvar_def(name1, units1, xy.dim, missval1, longname1, prec1)
 
 		#########

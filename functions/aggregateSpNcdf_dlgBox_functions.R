@@ -3,8 +3,8 @@ AggregateNcdf_GetInfo <- function(parent.win, GeneralParameters){
 	if (Sys.info()["sysname"] == "Windows"){
 		largeur <- 42
 		largeur1 <- 46
-		largeur2 <- 19
-		largeur3 <- 34
+		largeur2 <- 13
+		largeur3 <- 29
 	}else{
 		largeur <- 32
 		largeur1 <- 34
