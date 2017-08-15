@@ -128,6 +128,11 @@ AggregateSpNc_Execute <- function(GeneralParameters){
 	if(GeneralParameters$nb.ncfile == "several"){
 		allncfiles <- list.files(GeneralParameters$ncdf$fileordir, ".nc", full.names = TRUE)
 		fexist <- sapply(allncfiles, file.exists)
+		if(length(fexist) == 0){
+			InsertMessagesTxt(main.txt.out, "No NetCDF files found", format = TRUE)
+			return(NULL)
+		}
+		
 		allncfiles <- allncfiles[fexist]
 		if(length(allncfiles) == 0){
 			InsertMessagesTxt(main.txt.out, "No NetCDF files found", format = TRUE)
