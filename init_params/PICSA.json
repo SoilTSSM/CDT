@@ -95,9 +95,10 @@
 
     // jpeg args
     "JPEG": [{
+        "plot": false,
         "width": 11,
         "height": 7,
         "units": "in",
-        "res": 400
+        "res": 200
     }]
 }

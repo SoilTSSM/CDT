@@ -1318,7 +1318,7 @@ PICSAProcs <- function(GeneralParameters){
 
 	###########################################
 
-	if(data.type == 'cdt'){
+	if(data.type == 'cdt' & GeneralParameters$JPEG$plot){
 		InsertMessagesTxt(main.txt.out, 'Plot stations data ...')
 
 		COLIDX <- seq_along(EnvPICSA$opDATA$lon)

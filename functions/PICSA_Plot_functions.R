@@ -81,6 +81,13 @@ picsa.plot.line <- function(x, y, origindate = NULL, sub = NULL, xlab = '', ylab
 							col = list(line = "red", points = "blue"),
 							col.add = list(mean = "black", tercile1 = "green", tercile2 = "blue", linear = "purple3"))
 {
+	if(length(y[!is.na(y)]) == 0){
+		x0 <- seq_along(x)
+		if(length(x0) == 0) x <- x0
+		y <- rep(0, length(x0))
+		plot(x, y, type = 'n', yaxt = 'n', xlab = '', ylab = '')
+		return(NULL)
+	}
 	ylim <- if(start.zero) c(0, max(pretty(y))) else range(y, na.rm = TRUE)
 
 	layout(matrix(1:3, ncol = 1), widths = 1, heights = c(0.8, 0.1, 0.1), respect = FALSE)

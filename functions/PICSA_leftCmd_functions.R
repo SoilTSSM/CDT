@@ -302,6 +302,11 @@ PICSAPanelCmd <- function(){
 
 		###############
 
+		statePlot2File <- if(tclvalue(DataType) == 'CDT data format') 'normal' else 'disabled'	
+		tkconfigure(chk.Plot2File, state = statePlot2File)
+
+		###############
+
 		tkbind(chk.raindk, "<Button-1>", function(){
 			statedk <- if(tclvalue(use.dekmon) == '0') 'normal' else 'disabled'
 			if(tclvalue(DataType) == 'NetCDF gridded data'){
@@ -735,7 +740,6 @@ PICSAPanelCmd <- function(){
 		tkconfigure(set.raindk, state = statedk1)
 	})
 
-
 	#############################
 
 	frameDirSav <- tkframe(subfr2, relief = 'groove', borderwidth = 2)
@@ -760,11 +764,19 @@ PICSAPanelCmd <- function(){
 	status.bar.display(bt.file.save, TextOutputVar, 'or browse here')
 
 	#############################
+
+	plot2file <- tclVar(GeneralParameters$JPEG$plot)
+	statePlot2File <- if(tclvalue(DataType) == 'CDT data format') 'normal' else 'disabled'
+	chk.Plot2File <- tkcheckbutton(subfr2, variable = plot2file, text =  "Plot PICSA graphs to files", anchor = 'w', justify = 'left', state = statePlot2File)
+
+	infobulle(chk.Plot2File, 'Check this box to plot directly PICSA graphs to files')
+	status.bar.display(chk.Plot2File, TextOutputVar, 'Check this box to plot directly PICSA graphs to files')
+
+	#############################
 	tkgrid(frameYear, row = 0, column = 0, sticky = 'we')
 	tkgrid(frameRaindk, row = 1, column = 0, sticky = 'we', pady = 3)
 	tkgrid(frameDirSav, row = 2, column = 0, sticky = 'we', pady = 3)
-	# tkgrid(frameAggr, row = 2, column = 0, sticky = 'we', pady = 3)
-
+	tkgrid(chk.Plot2File, row = 3, column = 0, sticky = 'we', pady = 3)
 
 	#######################################################################################################
 
@@ -1000,6 +1012,8 @@ PICSAPanelCmd <- function(){
 		GeneralParameters$cessation$first.win.search <- as.numeric(str_trim(tclvalue(tkget(spin.cessat3a))))
 		GeneralParameters$cessation$late.month <- which(MOIS%in%str_trim(tclvalue(cess.late.mon)))
 		GeneralParameters$cessation$late.day <- as.numeric(str_trim(tclvalue(cess.late.day)))
+
+		GeneralParameters$JPEG$plot <- switch(tclvalue(plot2file), '0' = FALSE, '1' = TRUE)
 
 		# assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
