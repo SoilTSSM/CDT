@@ -11,10 +11,10 @@ pkgs <- c('R.utils', 'stringr', 'jsonlite', 'tkrplot', 'gmt', 'fields', 'lattice
 new.pkgs <- pkgs[!(pkgs %in% installed.packages()[,"Package"])]
 if(length(new.pkgs) > 0){
 	if(Sys.info()["sysname"] == "Windows") {
-		locdir <- readline(prompt = "Install Packages Local Directory (yes/no): ")
+		locdir <- readline(prompt = "Install Packages from Local Directory (yes/no): ")
 		rep <- substr(gsub("^\\s+|\\s+$", "", tolower(locdir)), 1, 1)
 		if(rep == 'y' | rep  == 'o'){
-			dirpath <- readline(prompt = "Full path to the directory containing the packages: ")
+			dirpath <- readline(prompt = "Full path to the directory containing the packages (Change the '\\' to '/'): ")
 			path2pkgs <- gsub("^\\s+|\\s+$", "", dirpath)
 			if(file.exists(path2pkgs)){
 				write_PACKAGES(path2pkgs)
