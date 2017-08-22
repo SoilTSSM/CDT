@@ -8,7 +8,7 @@ imgdir <<- file.path(apps.dir, 'images')
 pkgs <- c('R.utils', 'stringr', 'jsonlite', 'tkrplot', 'gmt', 'fields', 'latticeExtra', 'sp', 'maptools',
 			'gstat', 'automap', 'reshape2', 'ncdf4', 'foreach', 'doParallel', 'raster', 'rgdal', 'rgeos',
 			'RCurl', 'fitdistrplus', 'qmap', 'ADGofTest', 'matrixStats', 'data.table')
-new.pkgs <- pkgs[!(pkgs %in% installed.packages()[,"Package"])]
+new.pkgs <- pkgs[!(pkgs %in% installed.packages()[, "Package"])]
 if(length(new.pkgs) > 0){
 	if(Sys.info()["sysname"] == "Windows") {
 		locdir <- readline(prompt = "Install Packages from Local Directory (yes/no): ")

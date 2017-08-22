@@ -37,8 +37,8 @@ mergeOneDekadRain <- function(){
 		dir.create(downrfeDir, showWarnings = FALSE, recursive = TRUE)
 
 		if(dataRFE == 'TAMSAT'){
-			url <- 'http://tamsat.org.uk/public_data'
-			file0 <- paste('rfe', dyear, '_', dmon,'-dk', ddek,'.nc', sep = '')
+			url <- 'https://www.tamsat.org.uk/public_data/TAMSAT3'
+			file0 <- paste('rfe', dyear, '_', dmon,'-dk', ddek,'.v3.nc', sep = '')
 			url <- paste(url, dyear, dmon, file0, sep = '/')
 		}
 		if(dataRFE == 'CHIRP'){
