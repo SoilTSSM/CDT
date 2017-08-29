@@ -231,7 +231,7 @@ Precip_MergingFunctions <- function(mrgParms){
 				rnr.rfe <- xrfe
 				rnr.rfe[] <- 0
 				rnr.rfe[xrfe >= wet.day] <- 1
-				locations.stn$rnr.stn <- ifelse(locations.stn$stn >= wet.day,1,0)
+				locations.stn$rnr.stn <- ifelse(locations.stn$stn >= wet.day, 1, 0)
 				xadd$rnr.stn <- c(rnr.rfe[interp.grid$idxy$ix, interp.grid$idxy$iy])
 
 				###########

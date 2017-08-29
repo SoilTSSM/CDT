@@ -93,7 +93,7 @@ init.params <- function(action, period){
 	if(action == 'merge.dekrain'){
 		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Update_dekadal_RR.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
-		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
+		if(str_trim(ret.params$output$dir) == "") ret.params$output$dir <- getwd()
 	}
 
 	#################################################################

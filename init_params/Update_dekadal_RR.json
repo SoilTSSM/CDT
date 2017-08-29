@@ -5,28 +5,23 @@
         "month": 8,
         "dekad": 1
     }],
-    // If there is no station data: true ifelse false
-    "No.Stn.Data": false,
-    // Input and Output files/directory
-    "IO.files": [{
-        "STN.file": "",
-        "RFE.file": "",
-        "BIAS.dir": "",
-        "LMCoef.dir": "",
-        "dir2save": "",
-        "DEM.file": "",
-        "SHP.file": ""
-    }],
-    // If RFE data is already downloaded : true ifelse false
-    "Downloaded.RFE": true,
-    // RFE data source: "TAMSAT" or "CHIRP"
-    "RFE.data": "TAMSAT",
-    "Prefix": [{
-        // RFE filename format 
-        "RFE.File.Format": "rfe%s_%s-dk%s.nc",
-        // Mean Bias prefix
-        "Mean.Bias.Prefix": "STN_GRID_MeanBias"
-    }],
+
+    "STN": {
+        // If there is no station data: true ifelse false
+        "No.Stn.Data": false,
+        // Station data filename
+        "file": ""
+    },
+
+    "RFE": {
+        // If RFE data is already downloaded : true ifelse false
+        "downloaded": true,
+        // RFE data source: "TAMSATv2",  "TAMSATv3" or "CHIRP"
+        "source": "TAMSATv3",
+        // RFE data filename
+        "file": ""
+    },
+
     //Bounding box to extract RFE data
     "RFE.bbox": [{
         "minlon": 42,
@@ -34,45 +29,81 @@
         "minlat": -26,
         "maxlat": -12
     }],
-    // Correct Bias: true, if there is no bias factors: false
-    "Adjust.Bias": true,
-    //Bias correction method
-    // "Multiplicative.Bias.Var": multiplicative bias correction according to the time step of data
-    //              daily: 365 days bias factors, dekadal: 36 bias factors, monthly: 12 bias factors 
-    // "Multiplicative.Bias.Mon": multiplicative bias correction using one factor for each month
-    // "Quantile.Mapping": Fitting Bernoulli-Gamma distribution
-    "Bias.Method": "Quantile.Mapping",
-    // Merging Method
-    // "Regression Kriging"
-    // "Spatio-Temporal LM"
-    "Mrg.Method": "Spatio-Temporal LM",
+
+    "BIAS": {
+        // Correct Bias: true, if there is no bias factors: false
+        "Adjust": true,
+        //Bias correction method
+        // "Multiplicative.Bias.Var": multiplicative bias correction according to the time step of data
+        //              daily: 365 days bias factors, dekadal: 36 bias factors, monthly: 12 bias factors 
+        // "Multiplicative.Bias.Mon": multiplicative bias correction using one factor for each month
+        // "Quantile.Mapping": Fitting Bernoulli-Gamma distribution
+        "method": "Multiplicative.Bias.Var",
+        // Bias directory
+        "Dir": ""
+    },
+
     // Merging Parameters
-    "Merging.pars": [{
+    "Merging": {
+        // Merging Method:
+        // "Regression Kriging"
+        // "Spatio-Temporal LM"
+        // "Simple Bias Adjustment"
+        "mrg.method": "Regression Kriging",
+
+        // Interpolation method: IDW/Kriging
+        // IDW: Inverse Distance Weighted
+        // Kriging: Ordinary Kriging
+        "interp.method": "IDW",
+
+        // Kriging & IDW interpolation parameters
+        // nmin for gstat
+        "nmin": 3,
+        // nmax for gstat
+        "nmax": 5,
+        // maxdist for gstat (in decimal degree)
+        "maxdist": 0.75,
+        // variogram model, see gstat package for list of available model
+        "vgm.model": ["Sph", "Exp", "Gau"],
+        // using kriging of block mean values (true or false)
+        "use.block": true,
+
         // Minimum number of stations with data to be used to do the merging
         "min.stn": 10,
         // Minimum number of non-zero station values to perform the merging
         "min.non.zero": 7,
+
+        // LMCoef directory
+        "LMCoef.dir": ""
+    },
+
+    "RnoR": {
         // use Rain-no-Rain mask (true or false)
-        "use.RnoR": true,
-        // Smooth Rain-no-Rain mask (true or false)
-        "smooth.RnoR": true,
-        // wet day definition, rainfall >= wet.day
-        "wet.day": 1.0,
+        "mask": true,
         // Maximum distance (in decimal degrees) for interpolating Rain-no-Rain mask
-        "maxdist.RnoR": 0.25
-    }],
-    // Interpolation Parameters
-    "Interpolation.pars": [{
-        // interpolation method: "IDW" or "Kriging"
-        "interp.method": "IDW",
-        "nmin": 3,
-        "nmax": 10,
-        "maxdist": 1
-    }],
-    // variogram model of dependent variable
-    "vgm.model": ["Sph", "Exp", "Gau"],
-    // using kriging of block mean values: true or false
-    "use.block": true,
-    // Blanking grid outside boundaries: "1" = None, "2" = "Use DEM", "3" = "Use ESRI shapefile"
-    "Blank.Grid": "1"
+        "maxdist": 0.25,
+        // Smooth Rain-no-Rain mask (true or false)
+        "smooth": true,
+        // wet day definition, rainfall >= wet.day
+        "wet.day": 1.0
+    },
+
+    "blank": {
+        // Blank grid outside the country boundaries or over ocean
+        // "1" : None
+        // "2" : Use DEM
+        // "3" : Use ESRI shapefile
+        "blank": "1",
+        // ESRI shapefile
+        "SHP.file": "",
+        // Elevation data filename
+        "DEM.file": ""
+    },
+
+    "output": {
+        // Full path to the directory to save results
+        "dir": "",
+        // Merged filename format
+        "format": "rr_mrg_%s%s%s_MON.nc"
+    }
 }

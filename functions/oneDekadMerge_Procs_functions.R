@@ -1,6 +1,6 @@
 
 mergeOneDekadRain <- function(){
-	dir2save <- GeneralParameters$IO.files$dir2save
+	dir2save <- GeneralParameters$output$dir
 	dyear <- GeneralParameters$Merging.Date$year
 	dmon <- GeneralParameters$Merging.Date$month
 	ddek <- as.numeric(GeneralParameters$Merging.Date$dekad)
@@ -10,24 +10,26 @@ mergeOneDekadRain <- function(){
 		return(NULL)
 	}
 
-	daty <- paste(format(as.Date(paste(dyear, dmon, ddek, sep = '-')), '%Y%m'), ddek, sep = '')
+	daty <- paste0(format(as.Date(paste(dyear, dmon, ddek, sep = '-')), '%Y%m'), ddek)
 	dmon <- substr(daty, 5, 6)
 	yeardekad <- expand.grid(1:3, 1:12)
 	dir2save <- file.path(dir2save, paste('DEKAD', daty, sep = '_'))
 	dir.create(dir2save, showWarnings = FALSE, recursive = TRUE)
 
 	## get rfe data
-	if(GeneralParameters$Downloaded.RFE){
-		rfeData <- getNcdfOpenData(GeneralParameters$IO.files$RFE.file)[[2]][1:3]
+	if(GeneralParameters$RFE$downloaded){
+		rfeData <- getNcdfOpenData(GeneralParameters$RFE$file)[[2]][1:3]
 		names(rfeData) <- c('x', 'y', 'z')
 	}else{
+		InsertMessagesTxt(main.txt.out, "Download RFE data .....")
+
 		if(!testConnection()){
-			InsertMessagesTxt(main.txt.out, 'No internet connection', format = TRUE)
+			InsertMessagesTxt(main.txt.out, 'No Internet connection', format = TRUE)
 			tcl("update")
 			return(NULL)
 		}
 
-		dataRFE <- GeneralParameters$RFE.data
+		dataRFE <- GeneralParameters$RFE$source
 		minlon <- GeneralParameters$RFE.bbox$minlon
 		maxlon <- GeneralParameters$RFE.bbox$maxlon
 		minlat <- GeneralParameters$RFE.bbox$minlat
@@ -36,7 +38,12 @@ mergeOneDekadRain <- function(){
 		downrfeDir <- file.path(dir2save, 'downloaded_RFE')
 		dir.create(downrfeDir, showWarnings = FALSE, recursive = TRUE)
 
-		if(dataRFE == 'TAMSAT'){
+		if(dataRFE == 'TAMSATv2'){
+			url <- 'https://www.tamsat.org.uk/public_data'
+			file0 <- paste('rfe', dyear, '_', dmon,'-dk', ddek,'.nc', sep = '')
+			url <- paste(url, dyear, dmon, file0, sep = '/')
+		}
+		if(dataRFE == 'TAMSATv3'){
 			url <- 'https://www.tamsat.org.uk/public_data/TAMSAT3'
 			file0 <- paste('rfe', dyear, '_', dmon,'-dk', ddek,'.v3.nc', sep = '')
 			url <- paste(url, dyear, dmon, file0, sep = '/')
@@ -64,10 +71,18 @@ mergeOneDekadRain <- function(){
 			tcl("update")
 		}
 
-		if(dataRFE == 'TAMSAT'){
+		if(dataRFE%in%c('TAMSATv2', 'TAMSATv3')){
+			if(dataRFE == 'TAMSATv2'){
+				dim.xo <- 2
+				dim.yo <- 1
+			}
+			if(dataRFE == 'TAMSATv3'){
+				dim.xo <- 1
+				dim.yo <- 2
+			}
 			nc <- nc_open(destfile0)
-			xm <- nc$dim[[2]]$vals
-			ym <- nc$dim[[1]]$vals
+			xm <- nc$dim[[dim.xo]]$vals
+			ym <- nc$dim[[dim.yo]]$vals
 			rfe <- ncvar_get(nc, varid = nc$var[[1]]$name)
 			nc_close(nc)
 			xo <- order(xm)
@@ -108,20 +123,19 @@ mergeOneDekadRain <- function(){
 	}
 
 	## correct bias
-	if(GeneralParameters$Adjust.Bias){
-		bias.method <- GeneralParameters$Bias.Method
-		biasDir <- GeneralParameters$IO.files$BIAS.dir
-		meanBiasPrefix <- GeneralParameters$Prefix$Mean.Bias.Prefix
+	if(GeneralParameters$BIAS$Adjust){
+		bias.method <- GeneralParameters$BIAS$method
+		biasDir <- GeneralParameters$BIAS$Dir
 
 		if(bias.method == "Quantile.Mapping"){
-			parsstnf <- paste('Bernoulli-Gamma_Pars.STN', '_', as.numeric(dmon), '.nc', sep = '')
+			parsstnf <- paste0('Bernoulli-Gamma_Pars.STN', '_', as.numeric(dmon), '.nc')
 			pars.stnFile <- file.path(biasDir, parsstnf)
 			if(!file.exists(pars.stnFile)){
 				InsertMessagesTxt(main.txt.out, paste(parsstnf, "doesn't exist"), format = TRUE)
 				tcl("update")
 				return(NULL)
 			}
-			parsrfef <- paste('Bernoulli-Gamma_Pars.RFE', '_', as.numeric(dmon), '.nc', sep = '')
+			parsrfef <- paste0('Bernoulli-Gamma_Pars.RFE', '_', as.numeric(dmon), '.nc')
 			pars.rfeFile <- file.path(biasDir, parsrfef)
 			if(!file.exists(pars.rfeFile)){
 				InsertMessagesTxt(main.txt.out, paste(parsrfef, "doesn't exist"), format = TRUE)
@@ -145,9 +159,8 @@ mergeOneDekadRain <- function(){
 			nc_close(nc)
 			pars.rfe <- list(prob = prob.rfe, scale = scale.rfe, shape = shape.rfe)
 		}else{
-			if(bias.method == "Multiplicative.Bias.Mon") idek <- as.numeric(dmon)
-			else idek <- which(yeardekad[, 2] == as.numeric(dmon) & yeardekad[, 1] == ddek)
-			biasf <- paste(meanBiasPrefix, '_', idek, '.nc', sep = '')	
+			idek <- if(bias.method == "Multiplicative.Bias.Mon") as.numeric(dmon) else which(yeardekad[, 2] == as.numeric(dmon) & yeardekad[, 1] == ddek)
+			biasf <- paste0("STN_GRID_MeanBias_", idek, '.nc')
 			biasFile <- file.path(biasDir, biasf)
 			if(!file.exists(biasFile)){
 				InsertMessagesTxt(main.txt.out, paste(biasf, "doesn't exist"), format = TRUE)
@@ -187,29 +200,30 @@ mergeOneDekadRain <- function(){
 
 	################
 	## merging
-	no.stnData <- GeneralParameters$No.Stn.Data
+	no.stnData <- GeneralParameters$STN$No.Stn.Data
 	if(!no.stnData){
-		interp.method <- GeneralParameters$Interpolation.pars$interp.method
-		nmin <- GeneralParameters$Interpolation.pars$nmin
-		nmax <- GeneralParameters$Interpolation.pars$nmax
-		maxdist <- GeneralParameters$Interpolation.pars$maxdist
-		vgm.model <- GeneralParameters$vgm.model
-		# use.block <- GeneralParameters$use.block
+		interp.method <- GeneralParameters$Merging$interp.method
+		nmin <- GeneralParameters$Merging$nmin
+		nmax <- GeneralParameters$Merging$nmax
+		maxdist <- GeneralParameters$Merging$maxdist
+		vgm.model <- GeneralParameters$Merging$vgm.model
+		use.block <- GeneralParameters$Merging$use.block
 		res.coarse <- maxdist/2
 		res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
 		maxdist <- if(maxdist < res.coarse) res.coarse else maxdist
 
-		Mrg.Method <- GeneralParameters$Mrg.Method
-		min.stn <- GeneralParameters$Merging.pars$min.stn
-		min.non.zero <- GeneralParameters$Merging.pars$min.non.zero
-	 	use.RnoR <- GeneralParameters$Merging.pars$use.RnoR
-	 	smooth.RnoR <- GeneralParameters$Merging.pars$smooth.RnoR
-		wet.day <- GeneralParameters$Merging.pars$wet.day
-		maxdist.RnoR <- GeneralParameters$Merging.pars$maxdist.RnoR
+		Mrg.Method <- GeneralParameters$Merging$mrg.method
+		min.stn <- GeneralParameters$Merging$min.stn
+		min.non.zero <- GeneralParameters$Merging$min.non.zero
+
+	 	use.RnoR <- GeneralParameters$RnoR$mask
+	 	smooth.RnoR <- GeneralParameters$RnoR$smooth
+		wet.day <- GeneralParameters$RnoR$wet.day
+		maxdist.RnoR <- GeneralParameters$RnoR$maxdist
 
 		if(Mrg.Method == "Spatio-Temporal LM"){
-			coeffl <- paste('LM_Coefficient_', as.numeric(dmon), '.nc', sep = '')
-			coefFiles <- file.path(GeneralParameters$IO.files$LMCoef.dir, coeffl)
+			coeffl <- paste0('LM_Coefficient_', as.numeric(dmon), '.nc')
+			coefFiles <- file.path(GeneralParameters$Merging$LMCoef.dir, coeffl)
 			if(!file.exists(coefFiles)){
 				InsertMessagesTxt(main.txt.out, paste(coeffl, "doesn't exist"), format = TRUE)
 				tcl("update")
@@ -237,7 +251,7 @@ mergeOneDekadRain <- function(){
 		newGrid <- defSpatialPixels(list(lon = rfeData$x, lat = rfeData$y))
 
 		#####
-		stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
+		stnData <- getStnOpenData(GeneralParameters$STN$file)
 		stnData <- getCDTdataAndDisplayMsg(stnData, 'dekadal')
 		if(is.null(stnData)) return(NULL)
 		lon.stn <- stnData$lon
@@ -246,10 +260,10 @@ mergeOneDekadRain <- function(){
 		data.stn <- stnData$data
 
 		#####
-		blank.grid <- GeneralParameters$Blank.Grid
+		blank.grid <- GeneralParameters$blank$blank
 		if(blank.grid == "1") outMask <- NULL
 		if(blank.grid == "2"){
-			demData <- getDemOpenDataSPDF(GeneralParameters$IO.files$DEM.file)
+			demData <- getDemOpenDataSPDF(GeneralParameters$blank$DEM.file)
 			if(is.null(demData)) return(NULL)
 			demGrid <- defSpatialPixels(list(lon = demData$lon, lat = demData$lat))
 			is.regridDEM <- is.diffSpatialPixelsObj(newGrid, demGrid, tol = 1e-07)
@@ -260,7 +274,7 @@ mergeOneDekadRain <- function(){
 			outMask[outMask <= 0] <- NA
 		}
 		if(blank.grid == "3"){
-			shpd <- getShpOpenData(GeneralParameters$IO.files$SHP.file)[[2]]
+			shpd <- getShpOpenData(GeneralParameters$blank$SHP.file)[[2]]
 			shpd[['vtmp']] <- 1
 			outMask <- over(newGrid, shpd)[, 'vtmp']
 			dim(outMask) <- c(nlon0, nlat0)
@@ -285,13 +299,21 @@ mergeOneDekadRain <- function(){
 
 		############
 		locations.stn <- interp.grid$coords.stn
-		locations.stn$stn <- data.stn[date.stn == daty, ]
+		exist.daty <- which(date.stn == daty)
+		if(length(exist.daty) == 0){
+			InsertMessagesTxt(main.txt.out, paste("Date", daty, "doesn't exist from station data"), format = TRUE)
+			tcl("update")
+			return(NULL)
+		}
+		locations.stn$stn <- data.stn[exist.daty, ]
 		locations.stn$rfe <- rfeData$z[ijGrd]
+
 		xadd <- as.data.frame(interp.grid$coords.grd)
 		xadd$rfe <- c(rfeData$z[interp.grid$idxy$ix, interp.grid$idxy$iy])
 		xadd$stn <- xadd$rfe
 		xadd$res <- 0
 		interp.grid$newgrid$rfe <- c(rfeData$z)
+		coords.grd <- data.frame(coordinates(interp.grid$newgrid))
 
 		############
 		noNA <- !is.na(locations.stn$stn) & !is.na(locations.stn$rfe)
@@ -305,15 +327,16 @@ mergeOneDekadRain <- function(){
 				if(Mrg.Method == "Spatio-Temporal LM"){
 					sp.trend <- rfeData$z * coef1 + coef2
 					locations.stn$res <- locations.stn$stn - sp.trend[ijGrd][noNA]
-				}else{
+				}else if(Mrg.Method == "Regression Kriging"){
+					if(all(is.na(locations.stn$rfe))) return(NULL)
 					simplediff <- if(var(locations.stn$stn) < 1e-07 | var(locations.stn$rfe, na.rm = TRUE) < 1e-07) TRUE else FALSE
 					glm.stn <- glm(stn~rfe, data = locations.stn, family = gaussian)
 					if(is.na(glm.stn$coefficients[2]) | glm.stn$coefficients[2] < 0) simplediff <- TRUE
 					if(!simplediff){
 						sp.trend <- predict(glm.stn, newdata = interp.grid$newgrid)
 						sp.trend <- matrix(sp.trend, ncol = nlat0, nrow = nlon0)
-						sp.trend[is.na(sp.trend)] <- rfeData$z[is.na(sp.trend)]
-						# locations.stn$res <- residuals(glm.stn)
+						ina.trend <- is.na(sp.trend)
+						sp.trend[ina.trend] <- rfeData$z[ina.trend]
 						locations.stn$res <- NA
 						if(length(glm.stn$na.action) > 0) locations.stn$res[-glm.stn$na.action] <- glm.stn$residuals
 						else locations.stn$res <- glm.stn$residuals
@@ -321,6 +344,9 @@ mergeOneDekadRain <- function(){
 						sp.trend <- rfeData$z
 						locations.stn$res <- locations.stn$stn - locations.stn$rfe
 					}
+				}else{
+					sp.trend <- rfeData$z
+					locations.stn$res <- locations.stn$stn - locations.stn$rfe
 				}
 			}else{
 				sp.trend <- rfeData$z
@@ -328,6 +354,7 @@ mergeOneDekadRain <- function(){
 			}
 			
 			locations.stn <- locations.stn[!is.na(locations.stn$res), ]
+			if(length(locations.stn) < min.stn) do.merging <- FALSE
 		}else do.merging <- FALSE
 
 		############
@@ -337,7 +364,7 @@ mergeOneDekadRain <- function(){
 				rnr.rfe <- rfeData$z
 				rnr.rfe[] <- 0
 				rnr.rfe[rfeData$z >= wet.day] <- 1
-				locations.stn$rnr.stn <- ifelse(locations.stn$stn >= wet.day,1,0)
+				locations.stn$rnr.stn <- ifelse(locations.stn$stn >= wet.day, 1, 0)
 				xadd$rnr.stn <- c(rnr.rfe[interp.grid$idxy$ix, interp.grid$idxy$iy])
 
 				###########
@@ -349,16 +376,13 @@ mergeOneDekadRain <- function(){
 				locations.stn$rnr.res <- residuals(glm.binom)
 				rnr <- predict(glm.binom, newdata = interp.grid$newgrid, type = 'link')
 				rnr <- matrix(rnr, ncol = nlat0, nrow = nlon0)
-			
-				coords.grd <- data.frame(coordinates(interp.grid$newgrid))
 				irnr <- rep(TRUE, nrow(coords.grd))
 			}
 
 			############
 			if(interp.method == 'Kriging'){
 				vgm <- try(autofitVariogram(res~1, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-				if(!inherits(vgm, "try-error")) vgm <- vgm$var_model
-				else vgm <- NULL
+				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
 			}else vgm <- NULL
 
 			###########
@@ -418,8 +442,7 @@ mergeOneDekadRain <- function(){
 				imsk <- matrix(irnr, nrow = nlon0, ncol = nlat0)
 				rnr[imsk] <- rnr.rfe[imsk]
 				if(smooth.RnoR){
-					if(sum(rnr.rfe, na.rm = TRUE) == 0) npix <- 5
-					else npix <- 3
+					npix <- if(sum(rnr.rfe, na.rm = TRUE) == 0) 5 else 3
 					rnr <- smooth.matrix(rnr, npix)
 				}
 			}else rnr <- matrix(1, ncol = nlat0, nrow = nlon0)

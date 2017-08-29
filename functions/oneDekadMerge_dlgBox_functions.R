@@ -1,17 +1,13 @@
 mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
-		largeur <- 28
-		largeur0 <- 33
-		largeur1 <- 25
-		largeur2 <- 18
-		largeur3 <- 28
+		largeur0 <- 39
+		largeur1 <- 36
+		largeur2 <- 25
 	}else{
-		largeur <- 25
-		largeur0 <- 25
-		largeur1 <- 23
-		largeur2 <- 15
-		largeur3 <- 28
+		largeur0 <- 30
+		largeur1 <- 29
+		largeur2 <- 20
 	}
 
 	##
@@ -57,8 +53,8 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 
 	frStnfl <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
 
-	file.stnfl <- tclVar(str_trim(GeneralParameters$IO.files$STN.file))
-	no.stnfl <- tclVar(GeneralParameters$No.Stn.Data)
+	file.stnfl <- tclVar(str_trim(GeneralParameters$STN$file))
+	no.stnfl <- tclVar(GeneralParameters$STN$No.Stn.Data)
 
 	if(tclvalue(no.stnfl) == '0'){
 		state.stnfl <- 'normal'
@@ -102,78 +98,58 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	status.bar.display(bt.stnfl, TextOutputVar, 'Browse file if not listed')
 
 	tkbind(chk.stnfl, "<Button-1>", function(){
+		stateSTN <- if(tclvalue(no.stnfl) == '0') 'disabled' else 'normal'
+		tkconfigure(cb.stnfl, state = stateSTN)
+		tkconfigure(bt.stnfl, state = stateSTN)
+
+		stateMRG <- if(tclvalue(no.stnfl) == '0') 'disabled' else 'normal'
+		tkconfigure(cb.mrg, state = stateMRG)
+		tkconfigure(bt.mrg.interp, state = stateMRG)
+		tkconfigure(en.min.nbrs.stn, state = stateMRG)
+		tkconfigure(en.min.non.zero, state = stateMRG)
+		tkconfigure(cb.blankGrd, state = stateMRG)
+		tkconfigure(chk.use.rnr, state = stateMRG)
+
+		stateRnR <- if(tclvalue(no.stnfl) == '0') 'disabled' else {if(tclvalue(use.RnoR) == '1') 'normal' else 'disabled'}
+		tkconfigure(en.maxdist.rnr, state = stateRnR)
+		tkconfigure(chk.smooth.rnr, state = stateRnR)
+
+		stateLMC <- if(tclvalue(no.stnfl) == '0') 'disabled' else {if(tclvalue(mrg.method) == "Spatio-Temporal LM") 'normal' else 'disabled'}
+		tkconfigure(en.dir.LM, state = stateLMC)
+		tkconfigure(bt.dir.LM, state = stateLMC)
+
 		if(tclvalue(no.stnfl) == '0'){
-			tkconfigure(cb.stnfl, state = 'disabled')
-			tkconfigure(bt.stnfl, state = 'disabled')
-			##
-			tkconfigure(cb.mrg, state = 'disabled')
-			tkconfigure(en.dir.LM, state = 'disabled')
-			tkconfigure(bt.dir.LM, state = 'disabled')
-			tkconfigure(min.nbrs.stn.v, state = 'disabled')
-			tkconfigure(min.non.zero.v, state = 'disabled')
-			tkconfigure(max.rnr.dst.v, state = 'disabled')
-			tkconfigure(cb.RnoR, state = 'disabled')
-			tkconfigure(cb.RnoRs, state = 'disabled')
-			tkconfigure(cb.Interp, state = 'disabled')
-			tkconfigure(min.nbrs.v, state = 'disabled')
-			tkconfigure(max.nbrs.v, state = 'disabled')
-			tkconfigure(max.dst.v, state = 'disabled')
-			tkconfigure(cb.blankGrd, state = 'disabled')
-			tkconfigure(cb.grddem, state = 'disabled')
-			tkconfigure(bt.grddem, state = 'disabled')
-			tkconfigure(cb.blkshp, state = 'disabled')
-			tkconfigure(bt.blkshp, state = 'disabled')
+			stateDEM <- 'disabled'
+			stateSHP <- 'disabled'
 		}else{
-			tkconfigure(cb.stnfl, state = 'normal')
-			tkconfigure(bt.stnfl, state = 'normal')
-			##
-			tkconfigure(cb.mrg, state = 'normal')
-			if(tclvalue(mrg.method) == "Spatio-Temporal LM"){
-				tkconfigure(en.dir.LM, state = 'normal')
-				tkconfigure(bt.dir.LM, state = 'normal')
-			}else{
-				tkconfigure(en.dir.LM, state = 'disabled')
-				tkconfigure(bt.dir.LM, state = 'disabled')
-			}
-			tkconfigure(min.nbrs.stn.v, state = 'normal')
-			tkconfigure(min.non.zero.v, state = 'normal')
-			tkconfigure(max.rnr.dst.v, state = 'normal')
-			tkconfigure(cb.RnoR, state = 'normal')
-			tkconfigure(cb.RnoRs, state = 'normal')
-			tkconfigure(cb.Interp, state = 'normal')
-			tkconfigure(min.nbrs.v, state = 'normal')
-			tkconfigure(max.nbrs.v, state = 'normal')
-			tkconfigure(max.dst.v, state = 'normal')
-			tkconfigure(cb.blankGrd, state = 'normal')
 			if(tclvalue(blankGrd) == "None"){
-				tkconfigure(cb.grddem, state = 'disabled')
-				tkconfigure(bt.grddem, state = 'disabled')
-				tkconfigure(cb.blkshp, state = 'disabled')
-				tkconfigure(bt.blkshp, state = 'disabled')
+				stateDEM <- 'disabled'
+				stateSHP <- 'disabled'
 			}
 			if(tclvalue(blankGrd) == "Use DEM"){
-				tkconfigure(cb.grddem, state = 'normal')
-				tkconfigure(bt.grddem, state = 'normal')
-				tkconfigure(cb.blkshp, state = 'disabled')
-				tkconfigure(bt.blkshp, state = 'disabled')
+				stateDEM <- 'normal'
+				stateSHP <- 'disabled'
 			}
 			if(tclvalue(blankGrd) == "Use ESRI shapefile"){
-				tkconfigure(cb.grddem, state = 'disabled')
-				tkconfigure(bt.grddem, state = 'disabled')
-				tkconfigure(cb.blkshp, state = 'normal')
-				tkconfigure(bt.blkshp, state = 'normal')
+				stateDEM <- 'disabled'
+				stateSHP <- 'normal'
 			}
 		}
+
+		tkconfigure(cb.grddem, state = stateDEM)
+		tkconfigure(bt.grddem, state = stateDEM)
+		tkconfigure(cb.blkshp, state = stateSHP)
+		tkconfigure(bt.blkshp, state = stateSHP)
 	})
 
 	############################################
 	
 	frRfe <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
 
-	down.rfe <- tclVar(GeneralParameters$Downloaded.RFE)
-	file.grdrfe <- tclVar(GeneralParameters$IO.files$RFE.file)
+	down.rfe <- tclVar(GeneralParameters$RFE$downloaded)
+	file.grdrfe <- tclVar(GeneralParameters$RFE$file)
 
-	data.rfe <- tclVar(GeneralParameters$RFE.data)
+	data.rfe <- tclVar(GeneralParameters$RFE$source)
 	minLon <- tclVar(str_trim(GeneralParameters$RFE.bbox$minlon))
 	maxLon <- tclVar(str_trim(GeneralParameters$RFE.bbox$maxlon))
 	minLat <- tclVar(str_trim(GeneralParameters$RFE.bbox$minlat))
@@ -193,7 +169,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	bt.grdrfe <- tkbutton(frRfe, text = "...", state = stateRFE1)
 
 	frDown <- ttklabelframe(frRfe, text = "Download RFE", relief = 'groove')
-	cb.down.rfe <- ttkcombobox(frDown, values = c('TAMSAT', 'CHIRP'), textvariable = data.rfe, width = largeur1, state = stateRFE2)
+	cb.down.rfe <- ttkcombobox(frDown, values = c('TAMSATv2', 'TAMSATv3', 'CHIRP'), textvariable = data.rfe, width = largeur1, state = stateRFE2)
 
 	frbbox <- tkframe(frDown)
 	txt.lon <- tklabel(frbbox, text = "Longitude", anchor = 'e', justify = 'right')
@@ -228,7 +204,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	tkgrid(frDown, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	tkgrid(cb.down.rfe, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frbbox, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frbbox, row = 1, column = 0, sticky = '', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	tkgrid(txt.min, row = 0, column = 2, sticky = "we", rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(txt.max, row = 0, column = 3, sticky = "we", rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -258,249 +234,191 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	status.bar.display(grd_vlat2, TextOutputVar, 'Maximum latitude in degree')
 
 	tkbind(chk.rfe, "<Button-1>", function(){
-		if(tclvalue(down.rfe) == '1'){
-			tkconfigure(cb.grdrfe, state = 'disabled')
-			tkconfigure(bt.grdrfe, state = 'disabled')
-			tkconfigure(cb.down.rfe, state = 'normal')
-			tkconfigure(grd_vlon1, state = 'normal')
-			tkconfigure(grd_vlon2, state = 'normal')
-			tkconfigure(grd_vlat1, state = 'normal')
-			tkconfigure(grd_vlat2, state = 'normal')
-		}else{
-			tkconfigure(cb.grdrfe, state = 'normal')
-			tkconfigure(bt.grdrfe, state = 'normal')
-			tkconfigure(cb.down.rfe, state = 'disabled')
-			tkconfigure(grd_vlon1, state = 'disabled')
-			tkconfigure(grd_vlon2, state = 'disabled')
-			tkconfigure(grd_vlat1, state = 'disabled')
-			tkconfigure(grd_vlat2, state = 'disabled')
-		}
+		stateRFE <- if(tclvalue(down.rfe) == '1') 'disabled' else 'normal'
+		tkconfigure(cb.grdrfe, state = stateRFE)
+		tkconfigure(bt.grdrfe, state = stateRFE)
+
+		stateGRD <- if(tclvalue(down.rfe) == '1') 'normal' else 'disabled'
+		tkconfigure(cb.down.rfe, state = stateGRD)
+		tkconfigure(grd_vlon1, state = stateGRD)
+		tkconfigure(grd_vlon2, state = stateGRD)
+		tkconfigure(grd_vlat1, state = stateGRD)
+		tkconfigure(grd_vlat2, state = stateGRD)
 	})
+
+	############################################
+	tkgrid(frDate, row = 0, column = 0, sticky = '', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frStnfl, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frRfe, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#######################  RIGHT   #####################
 
 	frBias <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
-	adj.bias <- tclVar(GeneralParameters$Adjust.Bias)
-	dir.bias <- tclVar(str_trim(GeneralParameters$IO.files$BIAS.dir))
-	meanbsprefix <- tclVar(str_trim(GeneralParameters$Prefix$Mean.Bias.Prefix))
-	bias.method <- tclVar(str_trim(GeneralParameters$Bias.Method))
-	cb.biasMthd <- c("Quantile.Mapping", "Multiplicative.Bias.Var", "Multiplicative.Bias.Mon")
+	adj.bias <- tclVar(GeneralParameters$BIAS$Adjust)
+	dir.bias <- tclVar(str_trim(GeneralParameters$BIAS$Dir))
+	bias.method <- tclVar(str_trim(GeneralParameters$BIAS$method))
+	cb.biasMthd <- c("Multiplicative.Bias.Var", "Multiplicative.Bias.Mon", "Quantile.Mapping")
 
-	if(tclvalue(adj.bias) == '1'){
-		stateBiasdir <- 'normal'
-		stateBiaspfx <- if(tclvalue(bias.method) == "Quantile.Mapping") 'disabled' else 'normal'
-	}else{
-		stateBiasdir <- 'disabled'
-		stateBiaspfx <- 'disabled'
-	}
-
+	stateBiasdir <- if(tclvalue(adj.bias) == '1') 'normal' else 'disabled'
 	chk.bias <- tkcheckbutton(frBias, variable = adj.bias, text = 'Perform bias correction', anchor = 'w', justify = 'left')
 	txt.mth.bias <- tklabel(frBias, text = 'Bias method', anchor = 'w', justify = 'left')
 	cb.mth.bias <- ttkcombobox(frBias, values = cb.biasMthd, textvariable = bias.method, state = stateBiasdir, width = largeur2)
 	txt.dir.bias <- tklabel(frBias, text = "Directory of bias files", anchor = 'w', justify = 'left')
 	en.dir.bias <- tkentry(frBias, textvariable = dir.bias, state = stateBiasdir, width = largeur0)
 	bt.dir.bias <- tkbutton(frBias, text = "...", state = stateBiasdir)
-	txt.prf.bias <- tklabel(frBias, text = 'Mean bias filename prefix', anchor = 'w', justify = 'left')
-	en.prf.bias <- tkentry(frBias, textvariable = meanbsprefix, state = stateBiaspfx, width = largeur0)
 
 	tkconfigure(bt.dir.bias, command = function(){
-		dir4bias <- tk_choose.dir(str_trim(GeneralParameters$IO.files$BIAS.dir), "")
+		dir4bias <- tk_choose.dir(str_trim(GeneralParameters$BIAS$Dir), "")
 		tclvalue(dir.bias) <- if(!is.na(dir4bias)) dir4bias else ""
 	})
 
-	tkgrid(chk.bias, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.mth.bias, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cb.mth.bias, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.dir.bias, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.dir.bias, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(bt.dir.bias, row = 3, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.prf.bias, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.prf.bias, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(chk.bias, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.mth.bias, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.mth.bias, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.dir.bias, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.dir.bias, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.dir.bias, row = 3, column = 5, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(chk.bias, 'Check to perform a bias correction of RFE data')
 	status.bar.display(chk.bias, TextOutputVar, 'Check to perform a bias correction of RFE data')
 	infobulle(en.dir.bias, 'Enter the full path to directory containing the mean bias files')
 	status.bar.display(en.dir.bias, TextOutputVar, 'Enter the full path to directory containing the mean bias files')
 	infobulle(bt.dir.bias, 'or browse here')
-	infobulle(en.prf.bias, 'Prefix for the file name of the mean bias coefficient')
-	status.bar.display(en.prf.bias, TextOutputVar, 'Prefix for the file name of the mean bias coefficient')
 	infobulle(cb.mth.bias, 'Method used to calculate Bias Factors or Parameters')
 	status.bar.display(cb.mth.bias, TextOutputVar, 'Method used to calculate Bias Factors or Parameters')
 
 	tkbind(chk.bias, "<Button-1>", function(){
-		if(tclvalue(adj.bias) == '1'){
-			tkconfigure(cb.mth.bias, state = 'disabled')
-			tkconfigure(en.dir.bias, state = 'disabled')
-			tkconfigure(bt.dir.bias, state = 'disabled')
-			tkconfigure(en.prf.bias, state = 'disabled')
-		}else{
-			tkconfigure(cb.mth.bias, state = 'normal')
-			tkconfigure(en.dir.bias, state = 'normal')
-			tkconfigure(bt.dir.bias, state = 'normal')
-			stateBSM <- if(tclvalue(bias.method) == "Quantile.Mapping") 'disabled' else 'normal'
-			tkconfigure(en.prf.bias, state = stateBSM)
-		}
-	})
+		stateBS <- if(tclvalue(adj.bias) == '1') 'disabled' else 'normal'
+		tkconfigure(cb.mth.bias, state = stateBS)
+		tkconfigure(en.dir.bias, state = stateBS)
+		tkconfigure(bt.dir.bias, state = stateBS)
 
-	tkbind(cb.mth.bias, "<<ComboboxSelected>>", function(){
-		if(tclvalue(adj.bias) == '1'){
-			stateBSM <- if(tclvalue(bias.method) == "Quantile.Mapping") 'disabled' else 'normal'
-			tkconfigure(en.prf.bias, state = stateBSM)
-		}else tkconfigure(en.prf.bias, state = 'disabled')
 	})
 
 	############################################
 	frMrg <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
-	min.stn <- tclVar(str_trim(GeneralParameters$Merging.pars$min.stn))
-	min.non.zero <- tclVar(str_trim(GeneralParameters$Merging.pars$min.non.zero))
-	use.RnoR <- tclVar(GeneralParameters$Merging.pars$use.RnoR)
-	smooth.RnoR <- tclVar(GeneralParameters$Merging.pars$smooth.RnoR)
-	max.rnr.dst <- tclVar(GeneralParameters$Merging.pars$maxdist.RnoR)
+	cb.MrgMthd <- c("Regression Kriging", "Spatio-Temporal LM", "Simple Bias Adjustment")
+	mrg.method <- tclVar(str_trim(GeneralParameters$Merging$mrg.method))
+	mrg.min.stn <- tclVar(GeneralParameters$Merging$min.stn)
+	mrg.min.non.zero <- tclVar(GeneralParameters$Merging$min.non.zero)
+	dir.LMCoef <- tclVar(GeneralParameters$Merging$LMCoef.dir)
 
-	mrg.method <- tclVar(str_trim(GeneralParameters$Mrg.Method))
-	cb.MrgMthd <- c("Regression Kriging", "Spatio-Temporal LM")
-
-	dir.LMCoef <- tclVar(GeneralParameters$IO.files$LMCoef.dir)
-	if(str_trim(GeneralParameters$Mrg.Method) == "Regression Kriging") stateLMCoef <- 'disabled'
+	if(str_trim(GeneralParameters$Merging$mrg.method) == "Regression Kriging") stateLMCoef <- 'disabled'
 	else{
 		stateLMCoef <- if(tclvalue(no.stnfl) == '0') 'normal' else 'disabled'
 	}
 
-	txt.mrg <- tklabel(frMrg, text = 'Mering method', anchor = 'w', justify = 'left')
-	cb.mrg <- ttkcombobox(frMrg, values = cb.MrgMthd, textvariable = mrg.method, state = stateMrg, width = largeur2)
+	txt.mrg <- tklabel(frMrg, text = 'Merging method', anchor = 'w', justify = 'left')
+	cb.mrg <- ttkcombobox(frMrg, values = cb.MrgMthd, textvariable = mrg.method, width = largeur2)
+	bt.mrg.interp <- ttkbutton(frMrg, text = "Merging Interpolations Parameters")
+
+	txt.min.nbrs.stn <- tklabel(frMrg, text = 'Min.Nb.Stn', anchor = 'e', justify = 'right')
+	en.min.nbrs.stn <- tkentry(frMrg, width = 4, textvariable = mrg.min.stn, justify = 'right')
+	txt.min.non.zero <- tklabel(frMrg, text = 'Min.No.Zero', anchor = 'e', justify = 'right')
+	en.min.non.zero <- tkentry(frMrg, width = 4, textvariable = mrg.min.non.zero, justify = 'right')
+
 	txt.dir.LM <- tklabel(frMrg, text = "Directory of LMCoef files", anchor = 'w', justify = 'left')
 	en.dir.LM <- tkentry(frMrg, textvariable = dir.LMCoef, state = stateLMCoef, width = largeur0)
 	bt.dir.LM <- tkbutton(frMrg, text = "...", state = stateLMCoef)
-	frMrgPars <- ttklabelframe(frMrg, text = "Merging parameters", relief = 'groove')
 
-	min.nbrs.stn.l <- tklabel(frMrgPars, text = 'Min.Nb.Stn', anchor = 'e', justify = 'right')
-	min.nbrs.stn.v <- tkentry(frMrgPars, width = 4, textvariable = min.stn, justify = 'right', state = stateMrg)
-	min.non.zero.l <- tklabel(frMrgPars, text = 'Min.No.Zero', anchor = 'e', justify = 'right')
-	min.non.zero.v <- tkentry(frMrgPars, width = 4, textvariable = min.non.zero, justify = 'right', state = stateMrg)
-	max.rnr.dst.l <- tklabel(frMrgPars, text = 'Maxdist.RnR', anchor = 'e', justify = 'right')
-	max.rnr.dst.v <- tkentry(frMrgPars, width = 4, textvariable = max.rnr.dst, justify = 'right')
-	cb.RnoR <- tkcheckbutton(frMrgPars, variable = use.RnoR, text = 'Apply Rain-no-Rain mask', anchor = 'w', justify = 'left', state = stateMrg)
-	cb.RnoRs <- tkcheckbutton(frMrgPars, variable = smooth.RnoR, text = 'Smooth Rain-no-Rain mask', anchor = 'w', justify = 'left', state = stateMrg)
-
-	#####
-	tkconfigure(bt.dir.LM, command = function(){
-		dir4LM <- tk_choose.dir(GeneralParameters$IO.files$LMCoef.dir, "")
-		tclvalue(dir.LMCoef) <- if(!is.na(dir4LM)) dir4LM else ""
+	tkconfigure(bt.mrg.interp, command = function(){
+		GeneralParameters[["Merging"]] <<- getInterpolationPars(tt, GeneralParameters[["Merging"]], interpChoix = 0)
 	})
-	#####
 
-	tkgrid(txt.mrg, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cb.mrg, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.dir.LM, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.dir.LM, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(bt.dir.LM, row = 2, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frMrgPars, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.mrg, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.mrg, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.mrg.interp, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	tkgrid(min.nbrs.stn.l, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
-	tkgrid(min.nbrs.stn.v, row = 0, column = 1, sticky = 'w', rowspan = 1, columnspan = 1)
-	tkgrid(min.non.zero.l, row = 0, column = 2, sticky = 'e', rowspan = 1, columnspan = 1)
-	tkgrid(min.non.zero.v, row = 0, column = 3, sticky = 'w', rowspan = 1, columnspan = 1)
-	tkgrid(max.rnr.dst.l, row = 1, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
-	tkgrid(max.rnr.dst.v, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1)
-	tkgrid(cb.RnoR, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cb.RnoRs, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.min.nbrs.stn, row = 2, column = 0, sticky = 'e', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.min.nbrs.stn, row = 2, column = 2, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.min.non.zero, row = 2, column = 3, sticky = 'e', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.min.non.zero, row = 2, column = 5, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	tkgrid(txt.dir.LM, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.dir.LM, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.dir.LM, row = 4, column = 5, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(cb.mrg, 'Method to be used to perform merging')
 	status.bar.display(cb.mrg, TextOutputVar, 'Method to be used to perform merging')
+
+	infobulle(en.min.nbrs.stn, 'Minimum number of gauges with data to be used to do the merging')
+	status.bar.display(en.min.nbrs.stn, TextOutputVar, 'Minimum number of gauges with data to be used to do the merging')
+	infobulle(en.min.non.zero, 'Minimum number of non-zero gauge values to perform the merging')
+	status.bar.display(en.min.non.zero, TextOutputVar, 'Minimum number of non-zero gauge values to perform the merging')
+
 	infobulle(en.dir.LM, 'Enter the full path to directory containing the LM coefficients files')
 	status.bar.display(en.dir.LM, TextOutputVar, 'Enter the full path to directory containing the LM coefficients files')
 	infobulle(bt.dir.LM, 'or browse here')
 	status.bar.display(bt.dir.LM, TextOutputVar, 'or browse here')
 
-	infobulle(min.nbrs.stn.l, 'Minimum number of gauges with data to be used to do the merging')
-	status.bar.display(min.nbrs.stn.l, TextOutputVar, 'Minimum number of gauges with data to be used to do the merging')
-	infobulle(min.nbrs.stn.v, 'Minimum number of gauges with data to be used to do the merging')
-	status.bar.display(min.nbrs.stn.v, TextOutputVar, 'Minimum number of gauges with data to be used to do the merging')
-	infobulle(min.non.zero.l, 'Minimum number of non-zero gauge values to perform the merging')
-	status.bar.display(min.non.zero.l, TextOutputVar, 'Minimum number of non-zero gauge values to perform the merging')
-	infobulle(min.non.zero.v, 'Minimum number of non-zero gauge values to perform the merging')
-	status.bar.display(min.non.zero.v, TextOutputVar, 'Minimum number of non-zero gauge values to perform the merging')
-	infobulle(max.rnr.dst.v, 'Maximum distance (in decimal degrees) for interpolating Rain-noRain mask')
-	status.bar.display(max.rnr.dst.v, TextOutputVar, 'Maximum distance (in decimal degrees) for interpolating Rain-noRain mask')
-
-	#####
-
+	###############
 	tkbind(cb.mrg, "<<ComboboxSelected>>", function(){
 		stateLM <- if(tclvalue(mrg.method) == "Spatio-Temporal LM") 'normal' else 'disabled'
 		tkconfigure(en.dir.LM, state = stateLM)
 		tkconfigure(bt.dir.LM, state = stateLM)
 	})
 
+	############################################
+
+	frRnoR <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
+
+	use.RnoR <- tclVar(GeneralParameters$RnoR$mask)
+	maxdist.RnoR <- tclVar(GeneralParameters$RnoR$maxdist)
+	smooth.RnoR <- tclVar(GeneralParameters$RnoR$smooth)
+
+	stateRnoR <- if(GeneralParameters$RnoR$mask) 'normal' else 'disabled'
+
+	########
+	txt.mrg.pars <- tklabel(frRnoR, text = 'Rain-no-Rain mask', anchor = 'w', justify = 'left')
+	chk.use.rnr <- tkcheckbutton(frRnoR, variable = use.RnoR, text = 'Apply Rain-no-Rain mask', anchor = 'w', justify = 'left')
+	txt.maxdist.rnr <- tklabel(frRnoR, text = 'maxdist.RnoR', anchor = 'e', justify = 'right')
+	en.maxdist.rnr <- tkentry(frRnoR, width = 4, textvariable = maxdist.RnoR, justify = 'right', state = stateRnoR)
+	chk.smooth.rnr <- tkcheckbutton(frRnoR, variable = smooth.RnoR, text = 'Smooth Rain-no-Rain mask', anchor = 'w', justify = 'left', state = stateRnoR)
+
+	tkgrid(txt.mrg.pars, row = 0, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(chk.use.rnr, row = 1, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.maxdist.rnr, row = 2, column = 0, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.maxdist.rnr, row = 2, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(chk.smooth.rnr, row = 3, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(chk.use.rnr, 'Check this box to apply a mask over no rain area')
+	status.bar.display(chk.use.rnr, TextOutputVar, 'Check this box to apply a mask over no rain area')
+	infobulle(en.maxdist.rnr, 'Maximum distance (in decimal degrees) to be used to interpolate Rain-noRain mask')
+	status.bar.display(en.maxdist.rnr, TextOutputVar, 'Maximum distance (in decimal degrees) to be used to interpolate Rain-noRain mask')
+	infobulle(chk.smooth.rnr, 'Check this box to smooth the gradient between high value and no rain area')
+	status.bar.display(chk.smooth.rnr, TextOutputVar, 'Check this box to smooth the gradient between high value and no rain area')
+
+	tkbind(chk.use.rnr, "<Button-1>", function(){
+		stateRnoR <- if(tclvalue(use.RnoR) == '0') 'normal' else 'disabled'
+		tkconfigure(en.maxdist.rnr, state = stateRnoR)
+		tkconfigure(chk.smooth.rnr, state = stateRnoR)
+	})
+
+	######
+	tkgrid(frBias, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frMrg, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frRnoR, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#######################  RIGHT1   #####################
 
-	frInterp <- tkframe(frRight1, relief = 'sunken', borderwidth = 2)
-
-	interp.method <- tclVar()
-	cb.InterpVAL <- c('Ordinary Kriging', 'Inverse Distance Weighted')
-	tclvalue(interp.method) <- switch(GeneralParameters$Interpolation.pars$interp.method, 
-										'Kriging' = cb.InterpVAL[1], 
-										'IDW' = cb.InterpVAL[2])
-	nmin <- tclVar(GeneralParameters$Interpolation.pars$nmin)
-	nmax <- tclVar(GeneralParameters$Interpolation.pars$nmax)
-	maxdist <- tclVar(GeneralParameters$Interpolation.pars$maxdist)
-
-	txt.Interp <- tklabel(frInterp, text = 'Interpolation method', anchor = 'w', justify = 'left')
-	cb.Interp <- ttkcombobox(frInterp, values = cb.InterpVAL, textvariable = interp.method, state = stateMrg, width = largeur3)
-	frIDW <- ttklabelframe(frInterp, text = "Interpolation parameters", relief = 'groove')
-
-	########
-	min.nbrs.l <- tklabel(frIDW, text = 'nmin', anchor = 'e', justify = 'right')
-	max.nbrs.l <- tklabel(frIDW, text = 'nmax', anchor = 'e', justify = 'right')
-	max.dst.l <- tklabel(frIDW, text = 'maxdist', anchor = 'e', justify = 'right')
-	min.nbrs.v <- tkentry(frIDW, width = 4, textvariable = nmin, justify = 'right', state = stateMrg)
-	max.nbrs.v <- tkentry(frIDW, width = 4, textvariable = nmax, justify = 'right', state = stateMrg)
-	max.dst.v <- tkentry(frIDW, width = 4, textvariable = maxdist, justify = 'right', state = stateMrg)
-
-	########
-
-	tkgrid(min.nbrs.l, row = 0, column = 0, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(min.nbrs.v, row = 0, column = 1, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(max.nbrs.l, row = 0, column = 2, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(max.nbrs.v, row = 0, column = 3, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(max.dst.l, row = 1, column = 0, sticky = 'ew', padx = 1, pady = 1)
-	tkgrid(max.dst.v, row = 1, column = 1, sticky = 'ew', padx = 1, pady = 1)
-
-	########
-
-	tkgrid(txt.Interp, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cb.Interp, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frIDW, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 5, ipadx = 1, ipady = 1)
-
-	########
-
-	infobulle(min.nbrs.v, 'Minimum number of neighbors to be used to interpolate data')
-	status.bar.display(min.nbrs.v, TextOutputVar, 'Minimum number of neighbors to be used to interpolate data')
-	infobulle(max.nbrs.v, 'Maximum number of neighbors to be used to interpolate data')
-	status.bar.display(max.nbrs.v, TextOutputVar, 'Maximum number of neighbors to be used to interpolate data')
-	infobulle(max.dst.v, 'Maximum distance (in  decimal degree) to be used to interpolate data')
-	status.bar.display(max.dst.v, TextOutputVar, 'Maximum distance (in  decimal degree) to be used to interpolate data')
-
-	###########################################
-
 	frBlank <- tkframe(frRight1, relief = 'sunken', borderwidth = 2)
 
-	blankGrd <- tclVar(str_trim(GeneralParameters$Blank.Grid))
-	file.grddem <- tclVar(str_trim(GeneralParameters$IO.files$DEM.file))
-	file.blkshp <- tclVar(str_trim(GeneralParameters$IO.files$SHP.file))
+	file.grddem <- tclVar(str_trim(GeneralParameters$blank$DEM.file))
+	file.blkshp <- tclVar(str_trim(GeneralParameters$blank$SHP.file))
 
 	blankChx <- c("None", "Use DEM", "Use ESRI shapefile")
-	tclvalue(blankGrd) <- switch(str_trim(GeneralParameters$Blank.Grid),
+	blankGrd <- tclVar()
+	tclvalue(blankGrd) <- switch(str_trim(GeneralParameters$blank$blank),
 									'1' = blankChx[1],
 									'2' = blankChx[2],
 									'3' = blankChx[3])
 
-	if(str_trim(GeneralParameters$Blank.Grid) == '2'){
+	if(str_trim(GeneralParameters$blank$blank) == '2'){
 		statedem <- if(tclvalue(no.stnfl) == '0') 'normal' else 'disabled'
 	}else statedem <- 'disabled'
-	if(str_trim(GeneralParameters$Blank.Grid) == '3'){
+	if(str_trim(GeneralParameters$blank$blank) == '3'){
 		stateshp <- if(tclvalue(no.stnfl) == '0') 'normal' else 'disabled'
 	}else stateshp <- 'disabled'
 
@@ -593,15 +511,15 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	
 	frSavedir <- tkframe(frRight1, relief = 'sunken', borderwidth = 2)
 
-	file.save1 <- tclVar(str_trim(GeneralParameters$IO.files$dir2save))
+	file.save1 <- tclVar(str_trim(GeneralParameters$output$dir))
 
 	txt.file.save <- tklabel(frSavedir, text = 'Directory to save result', anchor = 'w', justify = 'left')
-	en.file.save <- tkentry(frSavedir, textvariable = file.save1, width = largeur)
+	en.file.save <- tkentry(frSavedir, textvariable = file.save1, width = largeur0)
 	bt.file.save <- tkbutton(frSavedir, text = "...")
 
 	tkconfigure(bt.file.save, command = function(){
-		file2save1 <- tk_choose.dir(str_trim(GeneralParameters$IO.files$dir2save), "")
-		if(is.na(file2save1)) tclvalue(file.save1) <- str_trim(GeneralParameters$IO.files$dir2save)
+		file2save1 <- tk_choose.dir(str_trim(GeneralParameters$output$dir), "")
+		if(is.na(file2save1)) tclvalue(file.save1) <- str_trim(GeneralParameters$output$dir)
 		else{
 			dir.create(file2save1, showWarnings = FALSE, recursive = TRUE)
 			tclvalue(file.save1) <- file2save1
@@ -617,18 +535,8 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	infobulle(bt.file.save, 'or browse here')
 
 	############################################
-	tkgrid(frDate, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frStnfl, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frRfe, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	######
-	tkgrid(frBias, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frMrg, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	######
-	tkgrid(frInterp, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frBlank, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frSavedir, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frBlank, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frSavedir, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	############################################
 
@@ -668,44 +576,38 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 			GeneralParameters$Merging.Date$month <<- str_trim(tclvalue(istart.mon))
 			GeneralParameters$Merging.Date$dekad <<- str_trim(tclvalue(istart.day))
 
-			GeneralParameters$IO.files$STN.file <<- str_trim(tclvalue(file.stnfl))
-			GeneralParameters$IO.files$RFE.file <<- str_trim(tclvalue(file.grdrfe))
-			GeneralParameters$IO.files$dir2save <<- str_trim(tclvalue(file.save1))
-			GeneralParameters$IO.files$BIAS.dir <<- str_trim(tclvalue(dir.bias))
-			GeneralParameters$IO.files$DEM.file <<- str_trim(tclvalue(file.grddem))
-			GeneralParameters$IO.files$SHP.file <<- str_trim(tclvalue(file.blkshp))
-			GeneralParameters$IO.files$LMCoef.dir <<- str_trim(tclvalue(dir.LMCoef))
+			GeneralParameters$STN$file <<- str_trim(tclvalue(file.stnfl))
+			GeneralParameters$STN$No.Stn.Data <<- switch(str_trim(tclvalue(no.stnfl)), '0' = FALSE, '1' = TRUE)
 
-			GeneralParameters$Bias.Method <<- str_trim(tclvalue(bias.method))
-			GeneralParameters$Prefix$Mean.Bias.Prefix <<- str_trim(tclvalue(meanbsprefix))
-
-			GeneralParameters$RFE.data <<- str_trim(tclvalue(data.rfe))
-			GeneralParameters$No.Stn.Data <<- switch(str_trim(tclvalue(no.stnfl)), '0' = FALSE, '1' = TRUE)
-			GeneralParameters$Downloaded.RFE <<- switch(str_trim(tclvalue(down.rfe)), '0' = FALSE, '1' = TRUE)
-			GeneralParameters$Adjust.Bias <<- switch(str_trim(tclvalue(adj.bias)), '0' = FALSE, '1' = TRUE)
-			GeneralParameters$Blank.Grid <<- switch(str_trim(tclvalue(blankGrd)), 
-																"None" =  '1',
-																"Use DEM" = '2',
-																"Use ESRI shapefile" = '3')
+			GeneralParameters$RFE$downloaded <<- switch(str_trim(tclvalue(down.rfe)), '0' = FALSE, '1' = TRUE)
+			GeneralParameters$RFE$file <<- str_trim(tclvalue(file.grdrfe))
+			GeneralParameters$RFE$source <<- str_trim(tclvalue(data.rfe))
 
 			GeneralParameters$RFE.bbox$minlon <<- as.numeric(str_trim(tclvalue(minLon)))
 			GeneralParameters$RFE.bbox$maxlon <<- as.numeric(str_trim(tclvalue(maxLon)))
 			GeneralParameters$RFE.bbox$minlat <<- as.numeric(str_trim(tclvalue(minLat)))
 			GeneralParameters$RFE.bbox$maxlat <<- as.numeric(str_trim(tclvalue(maxLat)))
 
-			GeneralParameters$Interpolation.pars$interp.method <<- switch(str_trim(tclvalue(interp.method)),
-																		'Inverse Distance Weighted' = 'IDW',
-																		'Ordinary Kriging' = 'Kriging')
-			GeneralParameters$Interpolation.pars$maxdist <<- as.numeric(str_trim(tclvalue(maxdist)))
-			GeneralParameters$Interpolation.pars$nmin <<- as.numeric(str_trim(tclvalue(nmin)))
-			GeneralParameters$Interpolation.pars$nmax <<- as.numeric(str_trim(tclvalue(nmax)))
+			GeneralParameters$BIAS$Adjust <<- switch(str_trim(tclvalue(adj.bias)), '0' = FALSE, '1' = TRUE)
+			GeneralParameters$BIAS$Dir <<- str_trim(tclvalue(dir.bias))
+			GeneralParameters$BIAS$method <<- str_trim(tclvalue(bias.method))
 
-			GeneralParameters$Mrg.Method <<- str_trim(tclvalue(mrg.method))
-			GeneralParameters$Merging.pars$min.stn <<- as.numeric(str_trim(tclvalue(min.stn)))
-			GeneralParameters$Merging.pars$min.non.zero <<- as.numeric(str_trim(tclvalue(min.non.zero)))
-			GeneralParameters$Merging.pars$use.RnoR <<- switch(str_trim(tclvalue(use.RnoR)), '0' = FALSE, '1' = TRUE)
-			GeneralParameters$Merging.pars$smooth.RnoR <<- switch(str_trim(tclvalue(smooth.RnoR)), '0' = FALSE, '1' = TRUE)
-			GeneralParameters$Merging.pars$maxdist.RnoR <<- as.numeric(str_trim(tclvalue(max.rnr.dst)))
+			GeneralParameters$Merging$mrg.method <<- str_trim(tclvalue(mrg.method))
+			GeneralParameters$Merging$min.stn <<- as.numeric(str_trim(tclvalue(mrg.min.stn)))
+			GeneralParameters$Merging$min.non.zero <<- as.numeric(str_trim(tclvalue(mrg.min.non.zero)))
+			GeneralParameters$Merging$LMCoef.dir <<- str_trim(tclvalue(dir.LMCoef))
+
+			GeneralParameters$RnoR$mask <<- switch(str_trim(tclvalue(use.RnoR)), '0' = FALSE, '1' = TRUE)
+			GeneralParameters$RnoR$maxdist <<- as.numeric(str_trim(tclvalue(maxdist.RnoR)))
+			GeneralParameters$RnoR$smooth <<- switch(str_trim(tclvalue(smooth.RnoR)), '0' = FALSE, '1' = TRUE)
+
+			GeneralParameters$blank$blank <<-switch(str_trim(tclvalue(blankGrd)), 
+														"None" = '1', "Use DEM" = '2',
+														"Use ESRI shapefile" = '3')
+			GeneralParameters$blank$DEM.file <<- str_trim(tclvalue(file.grddem))
+			GeneralParameters$blank$SHP.file <<- str_trim(tclvalue(file.blkshp))
+
+			GeneralParameters$output$dir <<- str_trim(tclvalue(file.save1))
 
 			tkgrab.release(tt)
 			tkdestroy(tt)
