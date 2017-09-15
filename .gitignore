@@ -18,6 +18,7 @@ vignettes/*.pdf
 # All hidden files
 .*
 !/.gitignore
+!/.gitattributes
 
 # Init config
 configure/RHtestsV4_User_Agreement
