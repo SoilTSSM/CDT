@@ -46,5 +46,5 @@ source("/path_to/CDT/CDT.R")
 ```
 ## Windows installation
 
- You can find [here](https://www.dropbox.com/sh/h0ltn8sugu38nie/AAC3WmyPkKY-4RzjXKtffPUza?dl=0) all the resources needed and instruction to install `CDT` on Windows.
+ You can find [here](https://drive.google.com/drive/folders/0B47a4XJ9R4b6cVVycVVWTzZIMlk) all the resources needed and instruction to install `CDT` on Windows.
 
