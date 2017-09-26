@@ -41,7 +41,7 @@ Precip_MergingFunctions <- function(mrgParms){
 	if(any(is.auxvar)){
 		formule <- formula(paste0('res', '~', paste(auxvar[is.auxvar], collapse = '+')))
 		if(mrg.method == "Regression Kriging"){
-			sp.trend.aux <- GeneralParameters$sp.trend.aux
+			sp.trend.aux <- GeneralParameters$Merging$sp.trend.aux
 			if(sp.trend.aux) formuleRK <- formula(paste0('stn', '~', 'rfe', '+', paste(auxvar[is.auxvar], collapse = '+')))
 			else formuleRK <- formula(paste0('stn', '~', 'rfe'))
 		}
@@ -60,8 +60,9 @@ Precip_MergingFunctions <- function(mrgParms){
 
 	#############
 	if(!is.null(demData)){
-		demres <- grdSp@grid@cellsize
-		slpasp <- slope.aspect(demData$z, demres[1], demres[2], filter = "sobel")
+		# demres <- grdSp@grid@cellsize
+		# slpasp <- slope.aspect(demData$z, demres[1], demres[2], filter = "sobel")
+		slpasp <- raster.slope.aspect(demData)
 		demData$slp <- slpasp$slope
 		demData$asp <- slpasp$aspect
 		ijdem <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), xy.grid)
@@ -101,7 +102,8 @@ Precip_MergingFunctions <- function(mrgParms){
 
 	months <- mrgParms$months
 	if(mrg.method == "Spatio-Temporal LM"){
-		coefFiles <- file.path(mrgParms$LMCoef.DIR, paste0('LM_Coefficient_', months, '.nc'))
+		# coefFiles <- file.path(mrgParms$LMCoef.DIR, paste0('LM_Coefficient_', months, '.nc'))
+		coefFiles <- file.path(GeneralParameters$LMCOEF$dir.LMCoef, sprintf(GeneralParameters$LMCOEF$format, months))
 		existLMCfl <- file.exists(coefFiles)
 		if(any(!existLMCfl)){
 			for(i in which(!existLMCfl)) InsertMessagesTxt(main.txt.out, paste(coefFiles[i], "doesn't exist"), format = TRUE)
@@ -138,7 +140,7 @@ Precip_MergingFunctions <- function(mrgParms){
 	ijGrd <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), list(lon = xlon, lat = xlat))
 
 	#############
-	packages <- c('ncdf4', 'gstat', 'automap', 'fields')
+	packages <- c('ncdf4', 'gstat', 'automap', 'fields', 'rgeos', 'maptools')
 	toExports <- 'smooth.matrix'
 
 	is.parallel <- doparallel(length(which(ncInfo$exist)) >= 10)
@@ -169,12 +171,12 @@ Precip_MergingFunctions <- function(mrgParms){
 		locations.stn$stn <- c(donne.stn[1, ])
 		locations.stn$rfe <- xrfe[ijGrd]
 
-		xadd <- as.data.frame(interp.grid$coords.grd)
-		xadd$rfe <- c(xrfe[interp.grid$idxy$ix, interp.grid$idxy$iy])
-		xadd$stn <- xadd$rfe
+		xadd <- interp.grid$coords.grd
+		xadd$rfe <- xadd$stn <- c(xrfe[interp.grid$idxy$ix, interp.grid$idxy$iy])
 		xadd$res <- 0
+
 		interp.grid$newgrid$rfe <- c(xrfe)
-		coords.grd <- data.frame(coordinates(interp.grid$newgrid))
+		newdata <- interp.grid$newgrid
 
 		############
 		noNA <- !is.na(locations.stn$stn)
@@ -231,6 +233,7 @@ Precip_MergingFunctions <- function(mrgParms){
 				rnr.rfe <- xrfe
 				rnr.rfe[] <- 0
 				rnr.rfe[xrfe >= wet.day] <- 1
+
 				locations.stn$rnr.stn <- ifelse(locations.stn$stn >= wet.day, 1, 0)
 				xadd$rnr.stn <- c(rnr.rfe[interp.grid$idxy$ix, interp.grid$idxy$iy])
 
@@ -242,32 +245,52 @@ Precip_MergingFunctions <- function(mrgParms){
 				xadd$rnr.res <- 0
 				locations.stn$rnr.res <- residuals(glm.binom)
 				rnr <- predict(glm.binom, newdata = interp.grid$newgrid, type = 'link')
-				rnr <- matrix(rnr, ncol = nlat0, nrow = nlon0)
-				irnr <- rep(TRUE, nrow(coords.grd))
 			}
 
 			############
 			if(interp.method == 'Kriging'){
-				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+				if(length(locations.stn$res) > 7){
+					vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
+					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+				}else vgm <- NULL
 			}else vgm <- NULL
 
 			############
-			xstn <- as.data.frame(locations.stn)
-			iadd <- rep(TRUE, nrow(xadd))
-			for(k in 1:nrow(xstn)){
-				dst <- sqrt((xstn$lon[k]-xadd$lon)^2+(xstn$lat[k]-xadd$lat)^2)*sqrt(2)
-				iadd <- iadd & (dst >= maxdist)
-				if(use.RnoR){
-					dst.grd <- sqrt((xstn$lon[k]-coords.grd$lon)^2+(xstn$lat[k]-coords.grd$lat)^2)*sqrt(2)
-					irnr <- irnr & (dst.grd >= maxdist.RnoR)
-				}
+			# create buffer for stations
+			buffer.ina <- gBuffer(locations.stn, width = maxdist) ## ina apres interp
+			buffer.grid <- gBuffer(locations.stn, width = maxdist*1.5) ## grid to interp
+			buffer.xaddin <- gBuffer(locations.stn, width = maxdist/sqrt(2)) ## xadd in
+			buffer.xaddout <- gBuffer(locations.stn, width = maxdist*2.5) ## xadd out
+
+			if(use.RnoR){
+				buffer.rnor <- gBuffer(locations.stn, width = maxdist.RnoR/sqrt(2)) ## outside rnor rfe
+				buffer.grid.rnor <- gBuffer(locations.stn, width = maxdist.RnoR*1.5) ## grid rnor to interp
+
+				irnr <- !as.logical(over(newdata, buffer.rnor))
+				irnr[is.na(irnr)] <- TRUE
+
+				igrid.rnr <- as.logical(over(newdata, buffer.grid.rnor))
+				igrid.rnr[is.na(igrid.rnr)] <- FALSE
+				newdata0.rnr <- newdata[igrid.rnr, ]
 			}
 
+			xadd.in <- !as.logical(over(xadd, buffer.xaddin))
+			xadd.in[is.na(xadd.in)] <- TRUE
+			xadd.out <- as.logical(over(xadd, buffer.xaddout))
+			xadd.out[is.na(xadd.out)] <- FALSE
+			iadd <- xadd.in & xadd.out
+
 			xadd <- xadd[iadd, ]
-			locations.stn <- rbind(xstn, xadd)
-			coordinates(locations.stn) <- ~lon+lat
-			newdata <- interp.grid$newgrid
+			row.names(locations.stn) <- 1:length(locations.stn)
+			row.names(xadd) <- length(locations.stn)+(1:length(xadd))
+			locations.stn <- spRbind(locations.stn, xadd)
+
+			igrid <- as.logical(over(newdata, buffer.grid))
+			igrid[is.na(igrid)] <- FALSE
+			newdata0 <- newdata[igrid, ]
+
+			# irfe.out <- !as.logical(over(newdata, buffer.xaddout))
+			# irfe.out[is.na(irfe.out)] <- TRUE
 
 			###########
 			if(any(is.auxvar)){
@@ -276,38 +299,52 @@ Precip_MergingFunctions <- function(mrgParms){
 				block <- NULL
 			}else block <- bGrd
 
-			res.grd <- krige(formule, locations = locations.stn, newdata = newdata, model = vgm,
+			res.grd <- krige(formule, locations = locations.stn, newdata = newdata0, model = vgm,
 							block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 
-			extrm <- c(min(locations.stn$res, na.rm = TRUE), max(locations.stn$res, na.rm = TRUE))
-			ixtrm <- is.na(res.grd$var1.pred) | (res.grd$var1.pred < extrm[1] | res.grd$var1.pred > extrm[2])
-			res.grd$var1.pred[ixtrm] <- NA
+			extrm1 <- min(locations.stn$res, na.rm = TRUE)
+			res.grd$var1.pred[!is.na(res.grd$var1.pred) & res.grd$var1.pred < extrm1] <- extrm1
+			extrm2  <- max(locations.stn$res, na.rm = TRUE)
+			res.grd$var1.pred[!is.na(res.grd$var1.pred) & res.grd$var1.pred > extrm2] <- extrm2
 
-			ina <- is.na(res.grd$var1.pred)
+			inside <- as.logical(over(res.grd, buffer.ina))
+			inside[is.na(inside)] <- FALSE
+			ina <- is.na(res.grd$var1.pred) & inside
 			if(any(ina)){
-				res.grd.na <- krige(var1.pred~1, locations = res.grd[!ina, ], newdata = newdata[ina, ], model = vgm,
+				tmp.res.grd <- res.grd[!ina, ]
+				tmp.res.grd <- tmp.res.grd[!is.na(tmp.res.grd$var1.pred), ]
+				res.grd.na <- krige(var1.pred~1, locations = tmp.res.grd, newdata = newdata0[ina, ], model = vgm,
 										block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 				res.grd$var1.pred[ina] <- res.grd.na$var1.pred
+				rm(tmp.res.grd, res.grd.na)
 			}
 
-			resid <- matrix(res.grd$var1.pred, ncol = nlat0, nrow = nlon0)
+			resid <- rep(NA, length(newdata))
+			resid[igrid] <- res.grd$var1.pred
 			resid[is.na(resid)] <- 0
+			resid <- matrix(resid, ncol = nlat0, nrow = nlon0)
+
+			# sp.trend[irfe.out] <- xrfe[irfe.out]
+			out.mrg <- sp.trend + resid
+			out.mrg[out.mrg < 0] <- 0
 
 			############
 			if(use.RnoR){
-				rnr.res.grd <- krige(rnr.res~1, locations = locations.stn, newdata = newdata,
+				rnr.res.grd <- krige(rnr.res~1, locations = locations.stn, newdata = newdata0.rnr,
 										maxdist = maxdist.RnoR, block = bGrd,  debug.level = 0)
+
 				ina <- is.na(rnr.res.grd$var1.pred)
 				if(any(ina)){
-					rnr.res.grd.na <- krige(var1.pred~1, locations = rnr.res.grd[!ina, ], newdata = newdata[ina, ],
+					rnr.res.grd.na <- krige(var1.pred~1, locations = rnr.res.grd[!ina, ], newdata = newdata0.rnr[ina, ],
 												block = bGrd, maxdist = maxdist.RnoR, debug.level = 0)
 					rnr.res.grd$var1.pred[ina] <- rnr.res.grd.na$var1.pred
 				}
 
-				rnr.res.grd <- matrix(rnr.res.grd$var1.pred, ncol = nlat0, nrow = nlon0)
-				rnr.res.grd[is.na(rnr.res.grd)] <- 0
+				rnr0 <- rep(0, length(newdata))
+				rnr0[igrid.rnr] <- rnr.res.grd$var1.pred
+				rnr0[is.na(rnr0)] <- 0
 
-				rnr <- rnr + rnr.res.grd
+				rnr <- rnr + rnr0
 				rnr[rnr > 100] <- 100
 				rnr <- exp(rnr)/(1+exp(rnr))
 
@@ -315,8 +352,12 @@ Precip_MergingFunctions <- function(mrgParms){
 				rnr[rnr >= 0.6] <- 1
 				rnr[rnr < 0.6] <- 0
 
+				rnr <- matrix(rnr, nrow = nlon0, ncol = nlat0)
 				imsk <- matrix(irnr, nrow = nlon0, ncol = nlat0)
+
 				rnr[imsk] <- rnr.rfe[imsk]
+				rnr[is.na(rnr)] <- 1
+
 				if(smooth.RnoR){
 					npix <- if(sum(rnr.rfe, na.rm = TRUE) == 0) 5 else 3
 					rnr <- smooth.matrix(rnr, npix)
@@ -325,8 +366,6 @@ Precip_MergingFunctions <- function(mrgParms){
 			}else rnr <- matrix(1, ncol = nlat0, nrow = nlon0)
 
 			############
-			out.mrg <- sp.trend + resid
-			out.mrg[out.mrg < 0] <- 0
 			out.mrg <- out.mrg * rnr
 		}else out.mrg <- xrfe
 
@@ -349,6 +388,7 @@ Precip_MergingFunctions <- function(mrgParms){
 		nc_close(nc2)
 
 		rm(out.mrg, sp.trend, rnr, resid, xadd, locations.stn, newdata, res.grd, coords.grd, xrfe)
+		rm(imsk, rnr0, newdata0, newdata0.rnr)
 		gc()
 		return(0)
 	}
