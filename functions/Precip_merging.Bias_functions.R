@@ -246,8 +246,9 @@ Precip_InterpolateBias <- function(biasParms){
 	#############
 	demGrid <- biasParms$demData
 	if(!is.null(demGrid)){
-		demres <- grdSp@grid@cellsize
-		slpasp <- slope.aspect(demGrid$z, demres[1], demres[2], filter = "sobel")
+		# demres <- grdSp@grid@cellsize
+		# slpasp <- slope.aspect(demGrid$z, demres[1], demres[2], filter = "sobel")
+		slpasp <- raster.slope.aspect(demGrid)
 		demGrid$slp <- slpasp$slope
 		demGrid$asp <- slpasp$aspect
 	}else{
@@ -352,8 +353,8 @@ Precip_InterpolateBias <- function(biasParms){
 			locations.stn$pars <- bias.pars[itimes == m, ]
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
 
-			extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
-			locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
+			# extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
+			# locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
 			if(any(is.auxvar) & interp.method != 'NN'){
 				locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
@@ -362,8 +363,10 @@ Precip_InterpolateBias <- function(biasParms){
 
 			if(length(locations.stn$pars) >= 1 & any(locations.stn$pars != 1)){
 				if(interp.method == 'Kriging'){
-					vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+					if(length(locations.stn$pars) > 7){
+						vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
+						vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+					}else vgm <- NULL
 				}else vgm <- NULL
 
 				xstn <- as.data.frame(locations.stn)
@@ -405,10 +408,14 @@ Precip_InterpolateBias <- function(biasParms){
 					pars.grd$var1.pred[ixtrm] <- NA
 
 					ina <- is.na(pars.grd$var1.pred)
-					if(any(ina)){
-						pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
-											block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-						pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
+					if(all(ina)){
+						pars.grd$var1.pred <- 1
+					}else{
+						if(any(ina)){
+							pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
+												block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+							pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
+						}
 					}
 				}
 
@@ -419,7 +426,7 @@ Precip_InterpolateBias <- function(biasParms){
 			}else grdbias <- matrix(1, ncol = nlat0, nrow = nlon0)
 
 			######
-			outnc <- file.path(biasParms$bias.DIR, paste0("STN_GRID_MeanBias_", m, '.nc'))
+			outnc <- file.path(biasParms$bias.DIR, sprintf(GeneralParameters$biasFilenames, m))
 			nc2 <- nc_create(outnc, grd.bs)
 			ncvar_put(nc2, grd.bs, grdbias)
 			nc_close(nc2)
@@ -437,8 +444,9 @@ Precip_InterpolateBias <- function(biasParms){
 				locations.stn$pars <- bias.pars$pars.stn[[m]][, j]
 				if(j > 1) locations.stn$pars[!bias.pars$pars.ad.stn[[m]]] <- NA
 				locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
-				extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.99))
-				locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
+
+				# extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.99))
+				# locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
 				if(any(is.auxvar) & interp.method != 'NN'){
 					locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
@@ -447,8 +455,10 @@ Precip_InterpolateBias <- function(biasParms){
 				if(length(locations.stn$pars) < min.stn) return(NULL)
 
 				if(interp.method == 'Kriging'){
-					vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+					if(length(locations.stn$pars) > 7){
+						vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
+						vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+					}else vgm <- NULL
 				}else vgm <- NULL
 
 				xstn <- as.data.frame(locations.stn)
@@ -462,8 +472,10 @@ Precip_InterpolateBias <- function(biasParms){
 
 				xadd <- rbind(xadd, xaddstn)
 				xadd <- xadd[!is.na(xadd$pars), ]
-				axtrm <- quantile(xadd$pars, probs = c(0.001, 0.99))
-				xadd <- xadd[xadd$pars > axtrm[1] & xadd$pars < axtrm[2], , drop = FALSE]
+
+				# axtrm <- quantile(xadd$pars, probs = c(0.001, 0.99))
+				# xadd <- xadd[xadd$pars > axtrm[1] & xadd$pars < axtrm[2], , drop = FALSE]
+
 				if(length(xadd$pars) < min.stn) return(NULL)
 
 				iadd <- rep(TRUE, nrow(xadd))
@@ -523,8 +535,9 @@ Precip_InterpolateBias <- function(biasParms){
 				locations.rfe <- locations.rfe[!is.na(locations.rfe$pars), ]
 				if(length(locations.rfe$pars) < min.stn) return(NULL)
 
-				extrm <- quantile(locations.rfe$pars, probs = c(0.001, 0.999))
-				locations.rfe <- locations.rfe[locations.rfe$pars > extrm[1] & locations.rfe$pars < extrm[2], ]
+				# extrm <- quantile(locations.rfe$pars, probs = c(0.001, 0.999))
+				# locations.rfe <- locations.rfe[locations.rfe$pars > extrm[1] & locations.rfe$pars < extrm[2], ]
+
 				locations.rfe <- remove.duplicates(locations.rfe)
 
 				if(any(is.auxvar) & interp.method != 'NN'){
@@ -534,8 +547,10 @@ Precip_InterpolateBias <- function(biasParms){
 				if(length(locations.rfe$pars) < min.stn) return(NULL)
 
 				if(interp.method == 'Kriging'){
-					vgm <- try(autofitVariogram(formule, input_data = locations.rfe, model = vgm.model, cressie = TRUE), silent = TRUE)
-					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+					if(length(locations.rfe$pars) > 7){
+						vgm <- try(autofitVariogram(formule, input_data = locations.rfe, model = vgm.model, cressie = TRUE), silent = TRUE)
+						vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+					}else vgm <- NULL
 				}else vgm <- NULL
 
 				if(interp.method == 'NN'){
@@ -638,12 +653,13 @@ Precip_ReadBiasFiles <- function(biasParms){
 	months <- biasParms$months
 
 	if(GeneralParameters$BIAS$bias.method == "Multiplicative.Bias.Mon"){
-		biasFile <- file.path(biasParms$bias.DIR, paste0("STN_GRID_MeanBias_", months, '.nc'))
+		biasFilename <- sprintf(GeneralParameters$biasFilenames, months)
+		biasFile <- file.path(biasParms$bias.DIR, biasFilename)
 		exist.bias <- unlist(lapply(biasFile, file.exists))
 		if(any(!exist.bias)){
 			miss.bias <- months[!exist.bias]
 			for(j in seq_along(miss.bias)){
-				msg <- paste0("STN_GRID_MeanBias_", miss.bias[j], '.nc')
+				msg <- biasFilename[miss.bias[j]]
 				InsertMessagesTxt(main.txt.out, paste(msg, "doesn't exist"), format = TRUE)
 			}
 			return(NULL)
@@ -655,7 +671,8 @@ Precip_ReadBiasFiles <- function(biasParms){
 		BIAS <- vector(mode = 'list', length = 12)
 		BIAS[months] <- lapply(seq_along(months), function(m){
 			nc <- nc_open(biasFile[m])
-			xvar <- ncvar_get(nc, varid = "bias")
+			# xvar <- ncvar_get(nc, varid = "bias")
+			xvar <- ncvar_get(nc, varid = nc$var[[1]]$name)
 			nc_close(nc)
 			xvar
 		})
@@ -707,13 +724,14 @@ Precip_ReadBiasFiles <- function(biasParms){
 			BIAS <- vector(mode = 'list', length = 12)
 		}
 
-		biasFile <- file.path(biasParms$bias.DIR, paste0("STN_GRID_MeanBias_", times.stn, '.nc'))
+		biasFilename <- sprintf(GeneralParameters$biasFilenames, times.stn)
+		biasFile <- file.path(biasParms$bias.DIR, biasFilename)
 		exist.bias <- unlist(lapply(biasFile, file.exists))
 
 		if(any(!exist.bias)){
 			miss.bias <- times.stn[!exist.bias]
 			for(j in seq_along(miss.bias)){
-				msg <- paste0("STN_GRID_MeanBias_", miss.bias[j], '.nc')
+				msg <- biasFilename[miss.bias[j]]
 				InsertMessagesTxt(main.txt.out, paste(msg, "doesn't exist"), format = TRUE)
 			}
 			return(NULL)
@@ -724,7 +742,8 @@ Precip_ReadBiasFiles <- function(biasParms){
 		nc_close(nc)
 		BIAS[times.stn] <- lapply(seq_along(times.stn), function(m){
 			nc <- nc_open(biasFile[m])
-			xvar <- ncvar_get(nc, varid = "bias")
+			# xvar <- ncvar_get(nc, varid = "bias")
+			xvar <- ncvar_get(nc, varid = nc$var[[1]]$name)
 			nc_close(nc)
 			xvar
 		})

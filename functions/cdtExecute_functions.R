@@ -162,8 +162,8 @@ Execute_All_Functions <- function(get.stn){
 			xfin <- format(daty[length(daty)], '%Y%m%d')
 		}
 		if(GeneralParameters$period%in%c('pentad', 'dekadal')){
-			xdeb <- paste(format(daty[1], '%Y%m'), as.numeric(format(daty[1], '%d')), sep = '')
-			xfin <- paste(format(daty[length(daty)], '%Y%m'), as.numeric(format(daty[length(daty)], '%d')), sep = '')
+			xdeb <- paste0(format(daty[1], '%Y%m'), as.numeric(format(daty[1], '%d')))
+			xfin <- paste0(format(daty[length(daty)], '%Y%m'), as.numeric(format(daty[length(daty)], '%d')))
 		}
 		if(GeneralParameters$period == 'monthly'){
 			xdeb <- format(daty[1], '%Y%m')
@@ -177,8 +177,8 @@ Execute_All_Functions <- function(get.stn){
 	###############################
 	##compute mean Gauge-RFE bias
 	if(GeneralParameters$action == 'coefbias.rain'){
-		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('STN_RFE_Bias',
-								getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'))
+		origdir <- file.path(GeneralParameters$output$dir, paste0('BIAS_Data_',
+							 getf.no.ext(GeneralParameters$STN.file)))
 		mrg2run <- try(execBiasRain(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Computing Gauge-RFE bias finished successfully", "Computing Gauge-RFE bias failed")
 	}
@@ -186,16 +186,15 @@ Execute_All_Functions <- function(get.stn){
 	###############################
 	##Adjust bias
 	if(GeneralParameters$action == 'rmbias.rain'){
-
-		daty <- GeneralParameters$Adjust.Date.Range
+		daty <- GeneralParameters$Adjust.Date
 		if(GeneralParameters$period == 'monthly'){
-			xdeb <- paste(format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year, sep = '')
-			xfin <- paste(format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year, sep = '')
+			xdeb <- paste0(format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year)
+			xfin <- paste0(format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year)
 		}else{
-			xdeb <- paste(daty$start.dek, format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year, sep = '')
-			xfin <- paste(daty$end.dek, format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year, sep = '')
+			xdeb <- paste0(daty$start.dek, format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year)
+			xfin <- paste0(daty$end.dek, format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year)
 		}
-		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('Adjusted_RFE_Data', xdeb, xfin, sep = '_'))
+		origdir <- file.path(GeneralParameters$output$dir, paste('ADJUSTED_Data', xdeb, xfin, sep = '_'))
 		mrg2run <- try(execAdjBiasRain(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Adjusting Gauge-RFE bias finished successfully", "Adjusting Gauge-RFE bias failed")
 	}
@@ -203,8 +202,7 @@ Execute_All_Functions <- function(get.stn){
 	###############################
 	##compute spatio-temporal LM coeff
 	if(GeneralParameters$action == 'coefLM.rain'){
-		origdir <- file.path(GeneralParameters$IO.files$dir2save,
-							paste('LMCoef', getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'))
+		origdir <- file.path(GeneralParameters$output$dir, paste0('LMCOEF_Data_', getf.no.ext(GeneralParameters$STN.file)))
 		mrg2run <- try(execLMCoefRain(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Computing LM Coefficients finished successfully", "Computing LM Coefficients failed")
 	}
@@ -212,29 +210,36 @@ Execute_All_Functions <- function(get.stn){
 	###############################
 	##Merging
 	if(GeneralParameters$action == 'merge.rain'){
-		daty <- GeneralParameters$Mrg.Date.Range
+		daty <- GeneralParameters$Merging.Date
 		xdeb <- as.Date(paste(daty$start.year, daty$start.mon, daty$start.dek, sep = '-'))
 		xfin <- as.Date(paste(daty$end.year, daty$end.mon, daty$end.dek, sep = '-'))
 		if(GeneralParameters$period == 'daily') daty <- seq(xdeb, xfin, 'day')
-		if(GeneralParameters$period == 'monthly') daty <- seq(xdeb, xfin, 'month')
+		if(GeneralParameters$period == 'pentad'){
+			daty <- seq(xdeb, xfin, 'day')
+			daty <- daty[as.numeric(format(daty, '%d')) <= 6]
+		}
 		if(GeneralParameters$period == 'dekadal'){
 			daty <- seq(xdeb, xfin, 'day')
 			daty <- daty[as.numeric(format(daty, '%d')) <= 3]
 		}
-		daty <- daty[as.numeric(format(daty, '%m'))%in%GeneralParameters$Mrg.Months]
+		if(GeneralParameters$period == 'monthly') daty <- seq(xdeb, xfin, 'month')
+
+		daty <- daty[as.numeric(format(daty, '%m'))%in%GeneralParameters$Merging.Date$Months]
 		if(GeneralParameters$period == 'daily'){
 			xdeb <- format(daty[1], '%Y%m%d')
 			xfin <- format(daty[length(daty)], '%Y%m%d')
 		}
-		if(GeneralParameters$period == 'dekadal'){
-			xdeb <- paste(format(daty[1], '%Y%m'), as.numeric(format(daty[1], '%d')), sep = '')
-			xfin <- paste(format(daty[length(daty)], '%Y%m'), as.numeric(format(daty[length(daty)], '%d')), sep = '')
+
+		if(GeneralParameters$period%in%c('pentad', 'dekadal')){
+			xdeb <- paste0(format(daty[1], '%Y%m'), as.numeric(format(daty[1], '%d')))
+			xfin <- paste0(format(daty[length(daty)], '%Y%m'), as.numeric(format(daty[length(daty)], '%d')))
 		}
+
 		if(GeneralParameters$period == 'monthly'){
 			xdeb <- format(daty[1], '%Y%m')
 			xfin <- format(daty[length(daty)], '%Y%m')
 		}
-		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('Merged_RR_Data', xdeb, xfin, sep = '_'))
+		origdir <- file.path(GeneralParameters$output$dir, paste("Merged_Data", xdeb, xfin, sep = '_'))
 		mrg2run <- try(execMergeRain(origdir), silent = TRUE)
 		merging_end_msg(mrg2run, main.txt.out, "Rainfall merging finished successfully", "Rainfall merging failed")
 	}

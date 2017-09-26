@@ -64,14 +64,16 @@ source(file.path(apps.dir, 'functions', 'merging_Scale.dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'merging_Scale.Procs_functions.R'))
 
 source(file.path(apps.dir, 'functions', 'Precip_merging.dlgBoxALL_functions.R'))
+source(file.path(apps.dir, 'functions', 'Precip_merging.executeALL_functions.R'))
+
+source(file.path(apps.dir, 'functions', 'Precip_merging.dlgBoxADV_functions.R'))
+source(file.path(apps.dir, 'functions', 'Precip_merging.executeADV_functions.R'))
+
 source(file.path(apps.dir, 'functions', 'Precip_merging.Bias_functions.R'))
 source(file.path(apps.dir, 'functions', 'Precip_merging.LMCoef_functions.R'))
 source(file.path(apps.dir, 'functions', 'Precip_merging.Merge_functions.R'))
-source(file.path(apps.dir, 'functions', 'Precip_merging.Procs_functions.R'))
 
 ###
-source(file.path(apps.dir, 'functions', 'mergingRR_dlgBox_functions.R'))
-source(file.path(apps.dir, 'functions', 'mergingRR_execute_functions.R'))
 source(file.path(apps.dir, 'functions', 'mergingRR_Procs_functions.R'))
 ###
 

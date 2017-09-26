@@ -63,30 +63,30 @@ init.params <- function(action, period){
 
 	###Mean bias
 	if(action == 'coefbias.rain'){
-		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Mean_Bias_Factor_RR.json'))
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Precip_Bias_Factor_Calc.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
-		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
+		if(str_trim(ret.params$output$dir) == "") ret.params$output$dir <- getwd()
 	}
 
 	###Remove bias
 	if(action == 'rmbias.rain'){
-		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Bias_Correction_RR.json'))
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Precip_Bias_Correction.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
-		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
+		if(str_trim(ret.params$output$dir) == "") ret.params$output$dir <- getwd()
 	}
 
 	### Compute LM coef
 	if(action == 'coefLM.rain'){
-		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Compute_LM_Coef_RR.json'))
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Precip_LM_Coef_Calc.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
-		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
+		if(str_trim(ret.params$output$dir) == "") ret.params$output$dir <- getwd()
 	}
 
 	###Merging rainfall
 	if(action == 'merge.rain'){
-		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Merging_RR.json'))
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Precip_Merging_Adv.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
-		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
+		if(str_trim(ret.params$output$dir) == "") ret.params$output$dir <- getwd()
 	}
 
 	####dekadal update

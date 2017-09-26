@@ -1329,6 +1329,17 @@ slope.aspect <- function(mat, xres, yres, filter = "sobel", smoothing = 1){
 	return(ret)
 }
 
+raster.slope.aspect <- function(dem){
+	dem <- raster(dem)
+	slope <- raster::terrain(dem, opt = "slope", unit = 'degrees', neighbors = 8) 
+	aspect <- raster::terrain(dem, opt = "aspect", unit = 'degrees', neighbors = 8) 
+	slope <- t(as.matrix(slope))
+	slope <- slope[, rev(seq(ncol(slope)))]
+	aspect <- t(as.matrix(aspect))
+	aspect <- aspect[, rev(seq(ncol(aspect)))]
+	list(slope = slope, aspect = aspect)
+}
+
 #################################################################################
 ### Merging Method combination
 generateCombnation <- function(){
