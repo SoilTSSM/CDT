@@ -7,7 +7,6 @@ Temp_Merging_ALL <- function(origdir){
 
 	GeneralParameters$biasFilenames <- GeneralParameters$BIAS$format
 	GeneralParameters$lmCoefFilenames <- GeneralParameters$LMCOEF$format
-	# GeneralParameters$sp.trend.aux <- FALSE
 
 	##################
 	## Get data
