@@ -1,5 +1,4 @@
 
-
 Temp_CoefDownscaling <- function(paramsGlmCoef){
 	InsertMessagesTxt(main.txt.out, 'Compute downscaling coefficients ...')
 
@@ -199,8 +198,10 @@ Temp_ReanalysisDownscaling <- function(paramsDownscl){
 			if(length(locations.reanl$res) < 2) return(NULL)
 
 			if(interp.method == 'Kriging'){
-				vgm <- try(autofitVariogram(res~1, input_data = locations.reanl, model = vgm.model, cressie = TRUE), silent = TRUE)
-				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+				if(length(locations.reanl$res) > 7){
+					vgm <- try(autofitVariogram(res~1, input_data = locations.reanl, model = vgm.model, cressie = TRUE), silent = TRUE)
+					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+				}else vgm <- NULL
 			}else vgm <- NULL
 
 			grd.temp <- krige(res~1, locations = locations.reanl, newdata = interp.grid$newgrid, model = vgm,
@@ -218,7 +219,7 @@ Temp_ReanalysisDownscaling <- function(paramsDownscl){
 		year <- substr(date.reanl, 1, 4)
 		month <- substr(date.reanl, 5, 6)
 		if(freqData == 'daily') outncfrmt <- sprintf(Down.File.Format, year, month, substr(date.reanl, 7, 8))
-		else if(freqData == 'dekadal') outncfrmt <- sprintf(Down.File.Format, year, month, substr(date.reanl, 7, 7))
+		else if(freqData%in%c('pentad', 'dekadal')) outncfrmt <- sprintf(Down.File.Format, year, month, substr(date.reanl, 7, 7))
 		else outncfrmt <- sprintf(Down.File.Format, year, month)
 		outfl <- file.path(origdir, outncfrmt)
 

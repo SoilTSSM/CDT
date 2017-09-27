@@ -266,11 +266,11 @@ Execute_All_Functions <- function(get.stn){
 	if(GeneralParameters$action == 'down.temp'){
 		daty <- GeneralParameters$Down.Date.Range
 		if(GeneralParameters$period == 'monthly'){
-			xdeb <- paste(format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year, sep = '')
-			xfin <- paste(format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year, sep = '')
+			xdeb <- paste0(format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year)
+			xfin <- paste0(format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year)
 		}else{
-			xdeb <- paste(daty$start.dek, format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year, sep = '')
-			xfin <- paste(daty$end.dek, format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year, sep = '')
+			xdeb <- paste0(daty$start.dek, format(ISOdate(2014, daty$start.mon, 1), "%b"), daty$start.year)
+			xfin <- paste0(daty$end.dek, format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year)
 		}
 		origdir <- file.path(GeneralParameters$output$dir, paste('Downscaled_Reanalysis', xdeb, xfin, sep = '_'))
 		mrg2run <- try(Temp_execDownscaling(origdir), silent = TRUE)
@@ -299,8 +299,8 @@ Execute_All_Functions <- function(get.stn){
 			xfin <- format(daty[length(daty)], '%Y%m%d')
 		}
 		if(GeneralParameters$period%in%c('pentad', 'dekadal')){
-			xdeb <- paste(format(daty[1], '%Y%m'), as.numeric(format(daty[1], '%d')), sep = '')
-			xfin <- paste(format(daty[length(daty)], '%Y%m'), as.numeric(format(daty[length(daty)], '%d')), sep = '')
+			xdeb <- paste0(format(daty[1], '%Y%m'), as.numeric(format(daty[1], '%d')))
+			xfin <- paste0(format(daty[length(daty)], '%Y%m'), as.numeric(format(daty[length(daty)], '%d')))
 		}
 		if(GeneralParameters$period == 'monthly'){
 			xdeb <- format(daty[1], '%Y%m')

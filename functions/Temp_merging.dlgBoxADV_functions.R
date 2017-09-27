@@ -430,6 +430,14 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 	infobulle(cb.period, 'Select the time step of the data')
 	status.bar.display(cb.period, TextOutputVar, 'Select the time step of the data')
 
+	###########
+	tkbind(cb.period, "<<ComboboxSelected>>", function(){
+		tclvalue(day.txtVar) <- switch(tclvalue(file.period), 'Dekadal data' = 'Dek', 'Pentad data' = 'Pen', 'Day')
+		stateday <- if(tclvalue(file.period) == 'Monthly data') 'disabled' else 'normal'
+		tkconfigure(en.day1, state = stateday)
+		tkconfigure(en.day2, state = stateday)
+	})
+
 	############################################
 
 	frameBias <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
@@ -547,14 +555,6 @@ adjGetInfoTempDownReanal <- function(parent.win, GeneralParameters){
 
 	infobulle(frtxtDate, 'Start and end date for adjusting downscaled data')
 	status.bar.display(frtxtDate, TextOutputVar, 'Start and end date for adjusting downscaled data')
-
-	###########
-	tkbind(cb.period, "<<ComboboxSelected>>", function(){
-		tclvalue(day.txtVar) <- switch(tclvalue(file.period), 'Dekadal data' = 'Dek', 'Pentad data' = 'Pen', 'Day')
-		stateday <- if(tclvalue(file.period) == 'Monthly data') 'disabled' else 'normal'
-		tkconfigure(en.day1, state = stateday)
-		tkconfigure(en.day2, state = stateday)
-	})
 
 	############################################
 

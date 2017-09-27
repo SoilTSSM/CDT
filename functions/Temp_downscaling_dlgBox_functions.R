@@ -90,11 +90,12 @@ Temp_coefDownGetInfo <- function(parent.win, GeneralParameters){
 	frDate <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
 
 	file.period <- tclVar()
-	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
-	tclvalue(file.period) <- switch(GeneralParameters$period, 
-									'daily' = cb.periodVAL[1], 
-									'dekadal' = cb.periodVAL[2],
-									'monthly' = cb.periodVAL[3])
+	cb.periodVAL <- c('Daily data', 'Pentad data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(GeneralParameters$period,
+									'daily' = cb.periodVAL[1],
+									'pentad' = cb.periodVAL[2],
+									'dekadal' = cb.periodVAL[3],
+									'monthly' = cb.periodVAL[4])
 	year1 <- tclVar(GeneralParameters$Down.Date.Range$start.year)
 	year2 <- tclVar(GeneralParameters$Down.Date.Range$end.year)
 
@@ -180,7 +181,8 @@ Temp_coefDownGetInfo <- function(parent.win, GeneralParameters){
 			tkwait.window(tt)
 		}else{
 			GeneralParameters$period <<- switch(str_trim(tclvalue(file.period)), 
-			 									'Daily data' = 'daily',
+												'Daily data' = 'daily',
+												'Pentad data' = 'pentad',
 												'Dekadal data' =  'dekadal',
 												'Monthly data' = 'monthly')
 			GeneralParameters$Down.Date.Range$start.year <<- as.numeric(str_trim(tclvalue(year1)))
@@ -393,14 +395,35 @@ Temp_reanalDownGetInfo <- function(parent.win, GeneralParameters){
 
 	##############################################  RIGHT   ############################################
 
-	frDate <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
+	frtimestep <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
 	file.period <- tclVar()
-	cb.periodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
-	tclvalue(file.period) <- switch(GeneralParameters$period, 
-									'daily' = cb.periodVAL[1], 
-									'dekadal' = cb.periodVAL[2],
-									'monthly' = cb.periodVAL[3])
+	cb.periodVAL <- c('Daily data', 'Pentad data', 'Dekadal data', 'Monthly data')
+	tclvalue(file.period) <- switch(GeneralParameters$period,
+									'daily' = cb.periodVAL[1],
+									'pentad' = cb.periodVAL[2],
+									'dekadal' = cb.periodVAL[3],
+									'monthly' = cb.periodVAL[4])
+
+	cb.period <- ttkcombobox(frtimestep, values = cb.periodVAL, textvariable = file.period, width = largeur1)
+
+	tkgrid(cb.period, row = 0, column = 0, sticky = '', rowspan = 1, columnspan = 1, padx = 1, pady = 5, ipadx = 1, ipady = 1)
+
+	infobulle(cb.period, 'Select the time step of the data')
+	status.bar.display(cb.period, TextOutputVar, 'Select the time step of the data')
+
+	###########
+
+	tkbind(cb.period, "<<ComboboxSelected>>", function(){
+		tclvalue(day.txtVar) <- switch(tclvalue(file.period), 'Dekadal data' = 'Dek', 'Pentad data' = 'Pen', 'Day')
+		stateday <- if(tclvalue(file.period) == 'Monthly data') 'disabled' else 'normal'
+		tkconfigure(en.day1, state = stateday)
+		tkconfigure(en.day2, state = stateday)
+	})
+
+	############################################
+
+	frDate <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
 	istart.yrs <- tclVar(GeneralParameters$Down.Date.Range$start.year)
 	istart.mon <- tclVar(GeneralParameters$Down.Date.Range$start.mon)
@@ -409,10 +432,10 @@ Temp_reanalDownGetInfo <- function(parent.win, GeneralParameters){
 	iend.mon <- tclVar(GeneralParameters$Down.Date.Range$end.mon)
 	iend.day <- tclVar(GeneralParameters$Down.Date.Range$end.dek)
 
-	day.txtVar <- if(GeneralParameters$period == 'dekadal') tclVar('Dek') else tclVar('Day')
+	txtdek <- switch(GeneralParameters$period, 'dekadal' = 'Dek', 'pentad' = 'Pen', 'Day')
+	day.txtVar <- tclVar(txtdek)
 	statedate <- if(GeneralParameters$period == 'monthly') 'disabled' else 'normal'
 
-	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period, width = largeur1)
 	frtxtDate <- ttklabelframe(frDate, text = "Downscaling Date Range", relief = 'groove')
 
 	txt.deb <- tklabel(frtxtDate, text = 'Start date', anchor = 'e', justify = 'right')
@@ -439,22 +462,10 @@ Temp_reanalDownGetInfo <- function(parent.win, GeneralParameters){
 	tkgrid(en.mon2, row = 2, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.day2, row = 2, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	tkgrid(cb.period, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 4, ipadx = 1, ipady = 1)
-	tkgrid(frtxtDate, row = 1, column = 0, sticky = '', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
+	tkgrid(frtxtDate, row = 0, column = 0, sticky = '', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
 
-	infobulle(cb.period, 'Select the time step of the data')
-	status.bar.display(cb.period, TextOutputVar, 'Select the time step of the data')
 	infobulle(frtxtDate, 'Start and end date for downscaling reanalysis data')
 	status.bar.display(frtxtDate, TextOutputVar, 'Start and end date for downscaling reanalysis data')
-
-	###########
-
-	tkbind(cb.period, "<<ComboboxSelected>>", function(){
-		tclvalue(day.txtVar) <- if(tclvalue(file.period) == 'Dekadal data') "Dek" else "Day"
-		stateday <- if(tclvalue(file.period) == 'Monthly data') 'disabled' else 'normal'
-		tkconfigure(en.day1, state = stateday)
-		tkconfigure(en.day2, state = stateday)
-	})
 
 	############################################
 
@@ -495,10 +506,11 @@ Temp_reanalDownGetInfo <- function(parent.win, GeneralParameters){
 	infobulle(en.outdownff, 'Format of the downscaled data files names in NetCDF,\nexample: tmax_down_1981011.nc')
 	status.bar.display(en.outdownff, TextOutputVar, 'Format of the downscaled data files names in NetCDF,\nexample: tmax_down_1981011.nc')
 
-
 	############################################
-	tkgrid(frDate, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frSave, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	tkgrid(frtimestep, row = 0, column = 0, sticky = '', padx = 1, pady = 1, ipadx = 10, ipady = 5)
+	tkgrid(frDate, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frSave, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	############################################
 
@@ -533,9 +545,10 @@ Temp_reanalDownGetInfo <- function(parent.win, GeneralParameters){
 			GeneralParameters$output$format <<- str_trim(tclvalue(outdownff))
 
 			GeneralParameters$period <<- switch(str_trim(tclvalue(file.period)), 
-													'Daily data' = 'daily',
-													'Dekadal data' =  'dekadal',
-													'Monthly data' = 'monthly')
+												'Daily data' = 'daily',
+												'Pentad data' = 'pentad',
+												'Dekadal data' =  'dekadal',
+												'Monthly data' = 'monthly')
 			GeneralParameters$Down.Date.Range$start.year <<- as.numeric(str_trim(tclvalue(istart.yrs)))
 			GeneralParameters$Down.Date.Range$start.mon <<- as.numeric(str_trim(tclvalue(istart.mon)))
 			GeneralParameters$Down.Date.Range$start.dek <<- as.numeric(str_trim(tclvalue(istart.day)))
