@@ -764,17 +764,17 @@ ValidationPanelCmd <- function(clim.var){
 	txt.opfun <- tklabel(frameAggr, text = 'Operator', anchor = 'w', justify = 'left')
 	cb.opfun <- ttkcombobox(frameAggr, values = c(">=", ">", "<=", "<"), textvariable = opr.fun, width = 6, state = stateo1)
 	txt.opthres <- tklabel(frameAggr, text = 'Threshold', anchor = 'w', justify = 'left')
-	en.opthres <- tkentry(frameAggr, textvariable = opr.thres, width = 6, width = 6, state = stateo2)
+	en.opthres <- tkentry(frameAggr, textvariable = opr.thres, width = 6, state = stateo2)
 
-	tkgrid(chk.aggrdata, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.aggfun, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cb.aggfun, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(chk.aggrdata, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.aggfun, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.aggfun, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	# tkgrid(txt.minfrac, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	# tkgrid(en.minfrac, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.opfun, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cb.opfun, row = 2, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.opthres, row = 2, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.opthres, row = 2, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.opfun, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.opfun, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.opthres, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.opthres, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(cb.aggfun, 'Function that have to be applied for aggregating from daily/dekadal/monthly into\na higher time step (e.g., for precipitation FUN=sum and for temperature FUN=mean)')
 	status.bar.display(cb.aggfun, TextOutputVar, 'Function that have to be applied for aggregating from daily/dekadal/monthly into\na higher time step (e.g., for precipitation FUN=sum and for temperature FUN=mean)')
@@ -857,6 +857,27 @@ ValidationPanelCmd <- function(clim.var){
 
 	#############################
 
+	frameDicho <- ttklabelframe(subfr3, text = "Dichotomous validation", relief = 'groove')
+
+	if(clim.var == 'RR') trhesVal <- 1
+	if(clim.var == 'TT') trhesVal <- 20
+	dicho.thres <- tclVar(trhesVal)
+	# dicho.thres <- tclVar(GeneralParameters$dicho.fcst$opr.thres)
+	dicho.opr <- tclVar(GeneralParameters$dicho.fcst$opr.fun)
+
+	txt.dicho <- tklabel(frameDicho, text = 'Threshold', anchor = 'w', justify = 'left')
+	cb.dicho <- ttkcombobox(frameDicho, values = c(">=", ">", "<=", "<"), textvariable = dicho.opr, width = 4, state = 'readonly')
+	en.dicho <- tkentry(frameDicho, textvariable = dicho.thres, width = 6)
+
+	tkgrid(txt.dicho, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.dicho, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.dicho, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	infobulle(en.dicho, 'Threshold to be specified to separate "yes" and "no" events')
+	status.bar.display(en.dicho, TextOutputVar, 'Threshold to be specified to separate "yes" and "no" events')
+
+	#############################
+
 	bt.calc.stat <- ttkbutton(subfr3, text = "Calculate Statistics")
 
 	tkconfigure(bt.calc.stat, command = function(){
@@ -896,6 +917,9 @@ ValidationPanelCmd <- function(clim.var){
 											'All Data' = 'all',
 											'Spatial Average' = 'avg',
 											'Per station' = 'stn')
+
+		GeneralParameters$dicho.fcst$opr.thres <- as.numeric(str_trim(tclvalue(dicho.thres)))
+		GeneralParameters$dicho.fcst$opr.fun <- str_trim(tclvalue(dicho.opr))
 
 		GeneralParameters$Geom <- NULL
 		GeneralParameters$Geom$minlon <- as.numeric(str_trim(tclvalue(EnvHOValidationplot$minlonRect)))
@@ -1017,8 +1041,9 @@ ValidationPanelCmd <- function(clim.var){
 	tkgrid(frameSeason, row = 0, column = 0, sticky = 'we')
 	tkgrid(frameAggr, row = 1, column = 0, sticky = 'we', pady = 3)
 	tkgrid(cb.stat.data, row = 2, column = 0, sticky = 'we', pady = 3)
-	tkgrid(bt.calc.stat, row = 3, column = 0, sticky = 'we', pady = 3)
-	tkgrid(frameStatTab, row = 4, column = 0, sticky = 'we', pady = 3)
+	tkgrid(frameDicho, row = 3, column = 0, sticky = '', pady = 3)
+	tkgrid(bt.calc.stat, row = 4, column = 0, sticky = 'we', pady = 3)
+	tkgrid(frameStatTab, row = 5, column = 0, sticky = 'we', pady = 3)
 
 	#######################################################################################################
 

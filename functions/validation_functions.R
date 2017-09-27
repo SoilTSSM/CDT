@@ -1,5 +1,5 @@
 
-ValidationStatisticsFun <- function(x, y, dichotomous, thres = 1.0){
+ValidationStatisticsFun <- function(x, y, dichotomous){
 	nbcol <- ncol(x)
 	nbrow <- nrow(x)
 	naCol <- base::colSums(is.na(x))
@@ -28,31 +28,49 @@ ValidationStatisticsFun <- function(x, y, dichotomous, thres = 1.0){
 	COV[colNA] <- NA
 	CORR <- sqrt(COV^2 / (varx * vary))
 
-	STATS <- rbind(CORR, NSE, BIAS, MAE, ME)
-	descrip <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error', 'Mean Error')
-	if(dichotomous){
-		N1 <- base::colSums(x >= thres & y >= thres, na.rm = TRUE)
-		N1[colNA] <- NA
-		N2 <- base::colSums(x < thres & y >= thres, na.rm = TRUE)
-		N2[colNA] <- NA
-		N3 <- base::colSums(x >= thres & y < thres, na.rm = TRUE)
-		N3[colNA] <- NA
-		N4 <- base::colSums(x < thres & y < thres, na.rm = TRUE)
-		N4[colNA] <- NA
-		N <- N1+N2+N3+N4
+	##################
+	# Dichotomous
+	thres <- dichotomous$opr.thres
+	fun <- match.fun(dichotomous$opr.fun)
 
-		FBS <- (N1+N2)/(N1+N3)
-		CSI <- N1/(N-N4)
-		POD <- N1/(N1+N3)
-		FAR <- N2/(N1+N2)
+	YesOBS <- fun(x, thres)
+	YesFCST <- fun(y, thres)
 
-		C0 <- N1+N4
-		E0 <- ((N1+N3)*(N1+N2)+(N2+N4)*(N3+N4))/N
-		HSS <- (C0-E0)/(N-E0)
-		STATS <- rbind(STATS, POD, FAR, FBS, CSI, HSS)
-		descrip <- c(descrip, 'Probability Of Detection', 'False Alarm Ratio', 'Frequency Bias',
-								'Critical Success Index', 'Heidke Skill Score')
-	}
+	##################
+
+	# hit
+	N1 <- base::colSums(YesOBS & YesFCST, na.rm = TRUE)
+	N1[colNA] <- NA
+
+	# false alarm
+	N2 <- base::colSums(!YesOBS & YesFCST, na.rm = TRUE)
+	N2[colNA] <- NA
+
+	# miss
+	N3 <- base::colSums(YesOBS & !YesFCST, na.rm = TRUE)
+	N3[colNA] <- NA
+
+	# correct negative
+	N4 <- base::colSums(!YesOBS & !YesFCST, na.rm = TRUE)
+	N4[colNA] <- NA
+
+	##################
+
+	N <- N1+N2+N3+N4
+
+	FBS <- (N1+N2)/(N1+N3)
+	CSI <- N1/(N-N4)
+	POD <- N1/(N1+N3)
+	FAR <- N2/(N1+N2)
+
+	C0 <- N1+N4
+	E0 <- ((N1+N3)*(N1+N2)+(N2+N4)*(N3+N4))/N
+	HSS <- (C0-E0)/(N-E0)
+
+	STATS <- rbind(CORR, NSE, BIAS, MAE, ME, POD, FAR, FBS, CSI, HSS)
+	descrip <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error',
+				'Mean Error', 'Probability Of Detection', 'False Alarm Ratio',
+				'Frequency Bias', 'Critical Success Index', 'Heidke Skill Score')
 
 	STATS[is.nan(STATS)] <- NA
 	STATS[is.infinite(STATS)] <- NA

@@ -51,6 +51,13 @@
         "opr.thres": 0
     }],
 
+    "dicho.fcst": {
+        // Comparison operator to be used to to separate "yes" and "no"
+        "opr.fun": ">=",
+        // user defined threshold filter applied to events
+        "opr.thres": 1
+    },
+
     // Selection type
     // All Stations: "all"
     // Rectangle: "rect"

@@ -285,44 +285,49 @@ HandOutValidationDataProcs <- function(GeneralParameters){
 		EnvHOValidation$opDATA$ncStatData <- AggrncdfData
 		EnvHOValidation$opDATA$temps <- temps
 		EnvHOValidation$opDATA$AggrSeries <- AggrSeries
-
-		InsertMessagesTxt(main.txt.out, 'Calculate statistics ...')
-		dichotomous <- clim.var == 'RR' & timestep == 'daily' & !GeneralParameters$aggr.series$aggr.data
-		EnvHOValidation$Statistics$STN <- ValidationStatisticsFun(AggrcdtData, AggrncdfData, dichotomous)
-		EnvHOValidation$Statistics$ALL <- ValidationStatisticsFun(matrix(AggrcdtData, ncol = 1),
-															matrix(AggrncdfData, ncol = 1), dichotomous)
-		EnvHOValidation$Statistics$AVG <- ValidationStatisticsFun(matrix(rowMeans(AggrcdtData, na.rm = TRUE), ncol = 1),
-										matrix(rowMeans(AggrncdfData, na.rm = TRUE), ncol = 1), dichotomous)
-		InsertMessagesTxt(main.txt.out, 'Statistics calculation done!')
-
-		fileValidOut <- file.path(outValidation, "VALIDATION_DATA_OUT.rds")
-		save(EnvHOValidation, file = fileValidOut)
-
-		###################
-		# Plot to files
-
-		###################
-		# write to table
-		dirSTATS <- file.path(outValidation, "STATS_DATA")
-		dir.create(dirSTATS, showWarnings = FALSE, recursive = TRUE)
-
-		stat.ALL <- EnvHOValidation$Statistics$ALL
-		stat.ALL <- data.frame(Name = rownames(stat.ALL$statistics), Statistics = stat.ALL$statistics, Description = stat.ALL$description)
-		file.stat.all <- file.path(dirSTATS, "All_Data_Statistics.csv")
-		writeFiles(stat.ALL, file.stat.all)
-
-		stat.AVG <- EnvHOValidation$Statistics$AVG
-		stat.AVG <- data.frame(Name = rownames(stat.AVG$statistics), Statistics = stat.AVG$statistics, Description = stat.AVG$description)
-		file.stat.avg <- file.path(dirSTATS, "Spatial_Average_Statistics.csv")
-		writeFiles(stat.AVG, file.stat.avg)
-
-		headinfo <- cbind(c("Station", "LON", "STATS/LAT"), do.call(rbind, EnvHOValidation$opDATA[c('id', 'lon', 'lat')]))
-		stat.STN <- EnvHOValidation$Statistics$STN$statistics
-		stat.STN <- cbind(rownames(stat.STN), stat.STN)
-		stat.STN <- rbind(headinfo, stat.STN)
-		file.stat.stn <- file.path(dirSTATS, "Stations_Statistics.csv")
-		writeFiles(stat.STN, file.stat.stn)
 	}
+
+	InsertMessagesTxt(main.txt.out, 'Calculate statistics ...')
+
+	AggrcdtData <- EnvHOValidation$opDATA$stnStatData
+	AggrncdfData <- EnvHOValidation$opDATA$ncStatData
+	dichotomous <- GeneralParameters$dicho.fcst
+
+	EnvHOValidation$Statistics$STN <- ValidationStatisticsFun(AggrcdtData, AggrncdfData, dichotomous)
+	EnvHOValidation$Statistics$ALL <- ValidationStatisticsFun(matrix(AggrcdtData, ncol = 1),
+												matrix(AggrncdfData, ncol = 1), dichotomous)
+	EnvHOValidation$Statistics$AVG <- ValidationStatisticsFun(matrix(rowMeans(AggrcdtData, na.rm = TRUE), ncol = 1),
+												matrix(rowMeans(AggrncdfData, na.rm = TRUE), ncol = 1), dichotomous)
+
+	InsertMessagesTxt(main.txt.out, 'Statistics calculation done!')
+
+	fileValidOut <- file.path(outValidation, "VALIDATION_DATA_OUT.rds")
+	save(EnvHOValidation, file = fileValidOut)
+
+	###################
+	# Plot to files
+
+	###################
+	# write to table
+	dirSTATS <- file.path(outValidation, "STATS_DATA")
+	dir.create(dirSTATS, showWarnings = FALSE, recursive = TRUE)
+
+	stat.ALL <- EnvHOValidation$Statistics$ALL
+	stat.ALL <- data.frame(Name = rownames(stat.ALL$statistics), Statistics = stat.ALL$statistics, Description = stat.ALL$description)
+	file.stat.all <- file.path(dirSTATS, "All_Data_Statistics.csv")
+	writeFiles(stat.ALL, file.stat.all)
+
+	stat.AVG <- EnvHOValidation$Statistics$AVG
+	stat.AVG <- data.frame(Name = rownames(stat.AVG$statistics), Statistics = stat.AVG$statistics, Description = stat.AVG$description)
+	file.stat.avg <- file.path(dirSTATS, "Spatial_Average_Statistics.csv")
+	writeFiles(stat.AVG, file.stat.avg)
+
+	headinfo <- cbind(c("Station", "LON", "STATS/LAT"), do.call(rbind, EnvHOValidation$opDATA[c('id', 'lon', 'lat')]))
+	stat.STN <- EnvHOValidation$Statistics$STN$statistics
+	stat.STN <- cbind(rownames(stat.STN), stat.STN)
+	stat.STN <- rbind(headinfo, stat.STN)
+	file.stat.stn <- file.path(dirSTATS, "Stations_Statistics.csv")
+	writeFiles(stat.STN, file.stat.stn)
 
 	return(0)
 }
