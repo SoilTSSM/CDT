@@ -132,6 +132,7 @@ Temp_ReanalysisDownscaling <- function(paramsDownscl){
 	demGrid <- paramsDownscl$demGrid
 	# demres <- grdSp@grid@cellsize
 	# slpasp <- slope.aspect(demGrid, demres[1], demres[2], filter = "sobel")
+	# slpasp <- raster.slope.aspect(demGrid)
 	slope <- matrix(0, nlon0, nlat0)
 	aspect <- matrix(0, nlon0, nlat0)
 

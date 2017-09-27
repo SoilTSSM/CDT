@@ -342,7 +342,6 @@ Precip_InterpolateLMCoef <- function(lmCoefParms){
 		MODEL.COEF[[jfl]]$slope[xneg] <- 1
 		MODEL.COEF[[jfl]]$intercept[xneg] <- 0
 
-		# outnc1 <- file.path(lmCoefParms$LMCoef.DIR, paste0('LM_Coefficient_', jfl, '.nc'))
 		outnc1 <- file.path(lmCoefParms$LMCoef.DIR, sprintf(GeneralParameters$lmCoefFilenames, jfl))
 		nc1 <- nc_create(outnc1, list(grd.slope, grd.intercept))
 		ncvar_put(nc1, grd.slope, MODEL.COEF[[jfl]]$slope)

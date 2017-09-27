@@ -68,8 +68,8 @@ h.scale <- function(per) as.integer(per*height.scr/100)
 #######################################################################
 ###dim
 ##font width
-sfont0 <- as.numeric(tclvalue(tkfont.measure(main.win, paste("0123456789",
-			paste(letters[1:26], LETTERS[1:26], collapse = '', sep = ''), sep = ''))))/(10+2*26)
+sfont0 <- as.numeric(tclvalue(tkfont.measure(main.win, paste0("0123456789",
+				paste0(letters[1:26], LETTERS[1:26], collapse = '')))))/(10+2*26)
 
 if(Sys.info()["sysname"] == "Windows"){
 	##Output message, tktext height
@@ -208,7 +208,17 @@ tcl("wm", "protocol", main.win, "WM_DELETE_WINDOW", function() {
 
 #####**************************** LOAD Functions ************************######
 
-tryCatch(source(file.path(apps.dir, 'functions', 'loadAll_functions.R')),
+tryCatch({
+			tkconfigure(main.win, cursor = 'watch')
+			tcl('update')
+			InsertMessagesTxt(main.txt.out, "Loading all Functions....")
+			source(file.path(apps.dir, 'functions', 'cdtLoad_ALL_functions.R'))
+		},
 		warning = function(w) warningFun(w),
-		error = function(e) errorFun(e))
+		error = function(e) errorFun(e),
+		finally = {
+			tkconfigure(main.win, cursor = '')
+			tcl('update')
+			InsertMessagesTxt(main.txt.out, "Ready!")
+		})
 

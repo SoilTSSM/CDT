@@ -242,10 +242,12 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 	demGrid <- list(x = lon.dem, y = lat.dem, z = grd.dem)
 	if(is.regridDEM){
 		demGrid <- interp.surface.grid(demGrid, list(x = xy.grid$lon, y = xy.grid$lat))
+		demGrid <- demGrid[c('x', 'y', 'z')]
 	}
 
-	demres <- grdSp@grid@cellsize
-	slpasp <- slope.aspect(demGrid$z, demres[1], demres[2], filter = "sobel")
+	# demres <- grdSp@grid@cellsize
+	# slpasp <- slope.aspect(demGrid$z, demres[1], demres[2], filter = "sobel")
+	slpasp <- raster.slope.aspect(demGrid)
 	demGrid$slp <- slpasp$slope
 	demGrid$asp <- slpasp$aspect
 
@@ -987,10 +989,12 @@ ComputeLMCoefTemp <- function(comptLMparams){
 	demGrid <- list(x = lon.dem, y = lat.dem, z = grd.dem)
 	if(is.regridDEM){
 		demGrid <- interp.surface.grid(demGrid, list(x = xy.grid$lon, y = xy.grid$lat))
+		demGrid <- demGrid[c('x', 'y', 'z')]
 	}
 
-	demres <- grdSp@grid@cellsize
-	slpasp <- slope.aspect(demGrid$z, demres[1], demres[2], filter = "sobel")
+	# demres <- grdSp@grid@cellsize
+	# slpasp <- slope.aspect(demGrid$z, demres[1], demres[2], filter = "sobel")
+	slpasp <- raster.slope.aspect(demGrid)
 	demGrid$slp <- slpasp$slope
 	demGrid$asp <- slpasp$aspect
 
@@ -1201,8 +1205,9 @@ MergingFunctionTemp <- function(paramsMRG){
 	demData <- paramsMRG$demData
 	if(!is.null(demData)){
 		demData$z[demData$z < 0] <- 0
-		demres <- grdSp@grid@cellsize
-		slpasp <- slope.aspect(demData$z, demres[1], demres[2], filter = "sobel")
+		# demres <- grdSp@grid@cellsize
+		# slpasp <- slope.aspect(demData$z, demres[1], demres[2], filter = "sobel")
+		slpasp <- raster.slope.aspect(demData)
 		demData$slp <- slpasp$slope
 		demData$asp <- slpasp$aspect
 		ijdem <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), xy.grid)

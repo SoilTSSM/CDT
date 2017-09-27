@@ -102,7 +102,6 @@ Precip_MergingFunctions <- function(mrgParms){
 
 	months <- mrgParms$months
 	if(mrg.method == "Spatio-Temporal LM"){
-		# coefFiles <- file.path(mrgParms$LMCoef.DIR, paste0('LM_Coefficient_', months, '.nc'))
 		coefFiles <- file.path(GeneralParameters$LMCOEF$dir.LMCoef, sprintf(GeneralParameters$LMCOEF$format, months))
 		existLMCfl <- file.exists(coefFiles)
 		if(any(!existLMCfl)){
@@ -319,7 +318,7 @@ Precip_MergingFunctions <- function(mrgParms){
 				rm(tmp.res.grd, res.grd.na)
 			}
 
-			resid <- rep(NA, length(newdata))
+			resid <- rep(0, length(newdata))
 			resid[igrid] <- res.grd$var1.pred
 			resid[is.na(resid)] <- 0
 			resid <- matrix(resid, ncol = nlat0, nrow = nlon0)

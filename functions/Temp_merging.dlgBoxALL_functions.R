@@ -72,8 +72,8 @@ Temp_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 	tkgrid(en.TEMP, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 	tkgrid(bt.TEMP, row = 3, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 
-	infobulle(cb.stnfl, 'Choose the file in the list')
-	status.bar.display(cb.stnfl, TextOutputVar, 'Choose the file containing the gauge data')
+	infobulle(cb.stnfl, 'Select the file from the list')
+	status.bar.display(cb.stnfl, TextOutputVar, 'Select the file containing the gauge data')
 	infobulle(bt.stnfl, 'Browse file if not listed')
 	status.bar.display(bt.stnfl, TextOutputVar, 'Browse file if not listed')
 	infobulle(en.TEMP, 'Enter the full path to the directory containing the downscaled data')
@@ -102,10 +102,12 @@ Temp_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 	cb.bias <- ttkcombobox(frameBias, values = cb.biasMthd, textvariable = bias.method, width = largeur3)
 	chk.bias <- tkcheckbutton(frameBias, variable = bias.calc, text =  "Bias factors are already calculated", anchor = 'w', justify = 'left', background = 'lightblue')
 
-	txt.bias.years1 <- tklabel(frameBias, text = 'Start Year', anchor = 'e', justify = 'right')
-	txt.bias.years2 <- tklabel(frameBias, text = 'End Year', anchor = 'e', justify = 'right')
-	en.bias.years1 <- tkentry(frameBias, width = 6, textvariable = bias.year1, state = statebias1, justify = 'right')
-	en.bias.years2 <- tkentry(frameBias, width = 6, textvariable = bias.year2, state = statebias1, justify = 'right')
+	fr.baseBias <- ttklabelframe(frameBias, text = "Base period", relief = 'groove', labelanchor = "n")
+	txt.bias.years1 <- tklabel(fr.baseBias, text = 'Start Year', anchor = 'e', justify = 'right')
+	txt.bias.years2 <- tklabel(fr.baseBias, text = 'End Year', anchor = 'e', justify = 'right')
+	en.bias.years1 <- tkentry(fr.baseBias, width = 6, textvariable = bias.year1, state = statebias1, justify = 'right')
+	en.bias.years2 <- tkentry(fr.baseBias, width = 6, textvariable = bias.year2, state = statebias1, justify = 'right')
+
 	bt.bias.interp <- ttkbutton(frameBias, text = "Bias Interpolations Parameters", state = statebias1)
 
 	txt.bias.dir <- tklabel(frameBias, text = "Directory of bias files", anchor = 'w', justify = 'left')
@@ -134,16 +136,16 @@ Temp_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 	tkgrid(txt.bias, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(cb.bias, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(chk.bias, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	tkgrid(txt.bias.years1, row = 2, column = 0, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.bias.years1, row = 2, column = 1, sticky = 'w', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.bias.years2, row = 2, column = 3, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.bias.years2, row = 2, column = 4, sticky = 'w', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(fr.baseBias, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(bt.bias.interp, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
 	tkgrid(txt.bias.dir, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.bias.dir, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(bt.bias.dir, row = 5, column = 5, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+
+	tkgrid(txt.bias.years1, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.bias.years1, row = 0, column = 1, sticky = 'w', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.bias.years2, row = 0, column = 3, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.bias.years2, row = 0, column = 4, sticky = 'w', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(cb.bias, 'Select the method to be used to calculate the Bias Factors or Parameters')
 	status.bar.display(cb.bias, TextOutputVar, 'Select the method to be used to calculate the Bias Factors or Parameters')
@@ -338,7 +340,7 @@ Temp_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 	statedate <- if(GeneralParameters$period == 'monthly') 'disabled' else 'normal'
 
 	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period, width = largeur1)
-	frtxtDate <- ttklabelframe(frDate, text = "Date Range", relief = 'groove')
+	frtxtDate <- ttklabelframe(frDate, text = "Merging Date Range", relief = 'groove')
 
 	txt.deb <- tklabel(frtxtDate, text = 'Start date', anchor = 'e', justify = 'right')
 	txt.fin <- tklabel(frtxtDate, text = 'End date', anchor = 'e', justify = 'right')
@@ -364,8 +366,8 @@ Temp_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 	tkgrid(en.mon2, row = 2, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.day2, row = 2, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	tkgrid(cb.period, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(frtxtDate, row = 1, column = 0, sticky = '', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
+	tkgrid(cb.period, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
+	tkgrid(frtxtDate, row = 1, column = 0, sticky = '', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
 	infobulle(cb.period, 'Choose the time step of the data')
 	status.bar.display(cb.period, TextOutputVar, 'Choose the time step of the data')
@@ -396,10 +398,12 @@ Temp_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 
 	chk.LMCoef <- tkcheckbutton(frLMCoef, variable = lmcoef.calc, text =  "LMCoef are already calculated", state = stateLMCoef1, anchor = 'w', justify = 'left', background = 'lightblue')
 
-	txt.LMCoef.years1 <- tklabel(frLMCoef, text = 'Start Year', anchor = 'e', justify = 'right')
-	txt.LMCoef.years2 <- tklabel(frLMCoef, text = 'End Year', anchor = 'e', justify = 'right')
-	en.LMCoef.years1 <- tkentry(frLMCoef, width = 6, textvariable = LMCoef.year1, state = stateLMCoef2, justify = 'right')
-	en.LMCoef.years2 <- tkentry(frLMCoef, width = 6, textvariable = LMCoef.year2, state = stateLMCoef2, justify = 'right')
+	fr.baseLM <- ttklabelframe(frLMCoef, text = "Base period", relief = 'groove', labelanchor = "n")
+	txt.LMCoef.years1 <- tklabel(fr.baseLM, text = 'Start Year', anchor = 'e', justify = 'right')
+	txt.LMCoef.years2 <- tklabel(fr.baseLM, text = 'End Year', anchor = 'e', justify = 'right')
+	en.LMCoef.years1 <- tkentry(fr.baseLM, width = 6, textvariable = LMCoef.year1, state = stateLMCoef2, justify = 'right')
+	en.LMCoef.years2 <- tkentry(fr.baseLM, width = 6, textvariable = LMCoef.year2, state = stateLMCoef2, justify = 'right')
+
 	bt.LMCoef.interp <- ttkbutton(frLMCoef, text = "LMCoef Interpolations Parameters", state = stateLMCoef2)
 
 	txt.LMCoef.dir <- tklabel(frLMCoef, text = "Directory of LMCoef files", anchor = 'w', justify = 'left')
@@ -426,16 +430,16 @@ Temp_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 	})
 
 	tkgrid(chk.LMCoef, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	tkgrid(txt.LMCoef.years1, row = 1, column = 0, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.LMCoef.years1, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.LMCoef.years2, row = 1, column = 3, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.LMCoef.years2, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(fr.baseLM, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(bt.LMCoef.interp, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
 	tkgrid(txt.LMCoef.dir, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.LMCoef.dir, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(bt.LMCoef.dir, row = 4, column = 5, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+
+	tkgrid(txt.LMCoef.years1, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.LMCoef.years1, row = 0, column = 1, sticky = 'w', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.LMCoef.years2, row = 0, column = 3, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.LMCoef.years2, row = 0, column = 4, sticky = 'w', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(chk.LMCoef, 'Check this box if the linear model coefficients are already calculated')
 	status.bar.display(chk.LMCoef, TextOutputVar, 'Check this box if the linear model coefficients are already calculated')
@@ -559,8 +563,8 @@ Temp_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 
 	############################################
 	
-	tkgrid(frLeft, row = 0, column = 0, sticky = 'news', padx = 5, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frRight, row = 0, column = 1, sticky = 'news', padx = 5, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frLeft, row = 0, column = 0, sticky = 'we', padx = 5, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frRight, row = 0, column = 1, sticky = 'we', padx = 5, pady = 1, ipadx = 1, ipady = 1)
 
 	############################################
 
@@ -574,7 +578,7 @@ Temp_mergeGetInfoALL <- function(parent.win, GeneralParameters){
 			tkmessageBox(message = "Select the file containing the station data", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else if(str_trim(tclvalue(dir.TEMP))%in%c("", "NA")){
-			tkmessageBox(message = "Choose or enter the  directory containing the downscaled files", icon = "warning", type = "ok")
+			tkmessageBox(message = "Browse or enter the  directory containing the downscaled files", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else if(tclvalue(bias.calc) == '1' & str_trim(tclvalue(bias.dir))%in%c("", "NA"))
 		{

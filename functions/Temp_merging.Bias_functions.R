@@ -218,7 +218,6 @@ Temp_ComputeBias <- function(biasParms){
 	return(bias)
 }
 
-
 ########################################################################################################
 
 Temp_InterpolateBias <- function(biasParms){
@@ -248,8 +247,9 @@ Temp_InterpolateBias <- function(biasParms){
 	#############
 	demGrid <- biasParms$demData
 	if(!is.null(demGrid)){
-		demres <- grdSp@grid@cellsize
-		slpasp <- slope.aspect(demGrid$z, demres[1], demres[2], filter = "sobel")
+		# demres <- grdSp@grid@cellsize
+		# slpasp <- slope.aspect(demGrid$z, demres[1], demres[2], filter = "sobel")
+		slpasp <- raster.slope.aspect(demGrid)
 		demGrid$slp <- slpasp$slope
 		demGrid$asp <- slpasp$aspect
 	}else{
@@ -340,8 +340,8 @@ Temp_InterpolateBias <- function(biasParms){
 			locations.stn$pars <- bias.pars[itimes == m, ]
 			locations.stn <- locations.stn[!is.na(locations.stn$pars), ]
 
-			extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
-			locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
+			# extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
+			# locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
 			if(any(is.auxvar) & interp.method != 'NN'){
 				locations.df <- as.data.frame(!is.na(locations.stn@data[, auxvar[is.auxvar]]))
@@ -350,8 +350,10 @@ Temp_InterpolateBias <- function(biasParms){
 
 			if(length(locations.stn$pars) >= 1 & any(locations.stn$pars != 1)){
 				if(interp.method == 'Kriging'){
-					vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+					if(length(locations.stn$pars) > 7){
+						vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
+						vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+					}else vgm <- NULL
 				}else vgm <- NULL
 
 				xstn <- as.data.frame(locations.stn)
@@ -401,13 +403,13 @@ Temp_InterpolateBias <- function(biasParms){
 				}
 
 				grdbias <- matrix(pars.grd$var1.pred, ncol = nlat0, nrow = nlon0)
-				grdbias[grdbias > 1.5] <- 1
-				grdbias[grdbias < 0.6] <- 1
+				grdbias[grdbias > 1.5] <- 1.5
+				grdbias[grdbias < 0.6] <- 0.6
 				grdbias[is.na(grdbias)] <- 1
 			}else grdbias <- matrix(1, ncol = nlat0, nrow = nlon0)
 
 			######
-			outnc <- file.path(biasParms$bias.DIR, paste0("STN_GRID_MeanBias_", m, '.nc'))
+			outnc <- file.path(biasParms$bias.DIR, sprintf(GeneralParameters$biasFilenames, m))
 			nc2 <- nc_create(outnc, grd.bs)
 			ncvar_put(nc2, grd.bs, grdbias)
 			nc_close(nc2)
@@ -433,8 +435,10 @@ Temp_InterpolateBias <- function(biasParms){
 				if(length(locations.stn$pars) < min.stn) return(NULL)
 
 				if(interp.method == 'Kriging'){
-					vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+					if(length(locations.stn$pars) > 7){
+						vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
+						vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+					}else vgm <- NULL
 				}else vgm <- NULL
 
 				xstn <- as.data.frame(locations.stn)
@@ -465,8 +469,8 @@ Temp_InterpolateBias <- function(biasParms){
 				xadd <- xadd[iadd, ]
 				locations.stn <- rbind(xstn, xadd)
 
-				extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
-				locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
+				# extrm <- quantile(locations.stn$pars, probs = c(0.001, 0.999))
+				# locations.stn <- locations.stn[locations.stn$pars > extrm[1] & locations.stn$pars < extrm[2], ]
 
 				if(interp.method == 'NN'){
 					locations.stn <- locations.stn[!duplicated(locations.stn[, c('lon', 'lat', 'elv')]), ]
@@ -507,8 +511,9 @@ Temp_InterpolateBias <- function(biasParms){
 				locations.down <- locations.down[!is.na(locations.down$pars), ]
 				if(length(locations.down$pars) < min.stn) return(NULL)
 
-				extrm <- quantile(locations.down$pars, probs = c(0.001, 0.999))
-				locations.down <- locations.down[locations.down$pars > extrm[1] & locations.down$pars < extrm[2], ]
+				# extrm <- quantile(locations.down$pars, probs = c(0.001, 0.999))
+				# locations.down <- locations.down[locations.down$pars > extrm[1] & locations.down$pars < extrm[2], ]
+
 				locations.down <- remove.duplicates(locations.down)
 
 				if(any(is.auxvar) & interp.method != 'NN'){
@@ -518,8 +523,10 @@ Temp_InterpolateBias <- function(biasParms){
 				if(length(locations.down$pars) < min.stn) return(NULL)
 
 				if(interp.method == 'Kriging'){
-					vgm <- try(autofitVariogram(formule, input_data = locations.down, model = vgm.model, cressie = TRUE), silent = TRUE)
-					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+					if(length(locations.down$pars) > 7){
+						vgm <- try(autofitVariogram(formule, input_data = locations.down, model = vgm.model, cressie = TRUE), silent = TRUE)
+						vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+					}else vgm <- NULL
 				}else vgm <- NULL
 
 				if(interp.method == 'NN'){
@@ -611,12 +618,13 @@ Temp_ReadBiasFiles <- function(biasParms){
 	months <- biasParms$months
 
 	if(GeneralParameters$BIAS$bias.method == "Multiplicative.Bias.Mon"){
-		biasFile <- file.path(biasParms$bias.DIR, paste0("STN_GRID_MeanBias_", months, '.nc'))
+		biasFilename <- sprintf(GeneralParameters$biasFilenames, months)
+		biasFile <- file.path(biasParms$bias.DIR, biasFilename)
 		exist.bias <- unlist(lapply(biasFile, file.exists))
 		if(any(!exist.bias)){
 			miss.bias <- months[!exist.bias]
 			for(j in seq_along(miss.bias)){
-				msg <- paste0("STN_GRID_MeanBias_", miss.bias[j], '.nc')
+				msg <- biasFilename[miss.bias[j]]
 				InsertMessagesTxt(main.txt.out, paste(msg, "doesn't exist"), format = TRUE)
 			}
 			return(NULL)
@@ -628,7 +636,8 @@ Temp_ReadBiasFiles <- function(biasParms){
 		BIAS <- vector(mode = 'list', length = 12)
 		BIAS[months] <- lapply(seq_along(months), function(m){
 			nc <- nc_open(biasFile[m])
-			xvar <- ncvar_get(nc, varid = "bias")
+			# xvar <- ncvar_get(nc, varid = "bias")
+			xvar <- ncvar_get(nc, varid = nc$var[[1]]$name)
 			nc_close(nc)
 			xvar
 		})
@@ -680,13 +689,14 @@ Temp_ReadBiasFiles <- function(biasParms){
 			BIAS <- vector(mode = 'list', length = 12)
 		}
 
-		biasFile <- file.path(biasParms$bias.DIR, paste0("STN_GRID_MeanBias_", times.stn, '.nc'))
+		biasFilename <- sprintf(GeneralParameters$biasFilenames, times.stn)
+		biasFile <- file.path(biasParms$bias.DIR, biasFilename)
 		exist.bias <- unlist(lapply(biasFile, file.exists))
 
 		if(any(!exist.bias)){
 			miss.bias <- times.stn[!exist.bias]
 			for(j in seq_along(miss.bias)){
-				msg <- paste0("STN_GRID_MeanBias_", miss.bias[j], '.nc')
+				msg <- biasFilename[miss.bias[j]]
 				InsertMessagesTxt(main.txt.out, paste(msg, "doesn't exist"), format = TRUE)
 			}
 			return(NULL)

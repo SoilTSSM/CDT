@@ -80,7 +80,7 @@ Temp_coefDownGetInfo <- function(parent.win, GeneralParameters){
 	tkgrid(cb.grddem, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 	tkgrid(bt.grddem, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 
-	infobulle(cb.grddem, 'Choose the file in the list')
+	infobulle(cb.grddem, 'Select the file from the list')
 	status.bar.display(cb.grddem, TextOutputVar, 'File containing the elevation data in netcdf')
 	infobulle(bt.grddem, 'Browse file if not listed')
 	status.bar.display(bt.grddem, TextOutputVar, 'Browse file if not listed')
@@ -99,20 +99,23 @@ Temp_coefDownGetInfo <- function(parent.win, GeneralParameters){
 	year2 <- tclVar(GeneralParameters$Down.Date.Range$end.year)
 
 	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period, width = largeur1)
-	txt.years1 <- tklabel(frDate, text = 'Start Year', anchor = 'e', justify = 'right')
-	txt.years2 <- tklabel(frDate, text = 'End Year', anchor = 'e', justify = 'right')
-	en.years1 <- tkentry(frDate, width = 6, textvariable = year1, justify = 'right')
-	en.years2 <- tkentry(frDate, width = 6, textvariable = year2, justify = 'right')
+
+	fr.basePeriod <- ttklabelframe(frDate, text = "Base period", relief = 'groove', labelanchor = "n")
+	txt.years1 <- tklabel(fr.basePeriod, text = 'Start Year', anchor = 'e', justify = 'right')
+	txt.years2 <- tklabel(fr.basePeriod, text = 'End Year', anchor = 'e', justify = 'right')
+	en.years1 <- tkentry(fr.basePeriod, width = 6, textvariable = year1, justify = 'right')
+	en.years2 <- tkentry(fr.basePeriod, width = 6, textvariable = year2, justify = 'right')
 
 	tkgrid(cb.period, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 5, ipadx = 1, ipady = 1)
-	tkgrid(txt.years1, row = 1, column = 0, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.years1, row = 1, column = 1, sticky = '', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.years2, row = 1, column = 3, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.years2, row = 1, column = 4, sticky = '', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(fr.basePeriod, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 5, ipadx = 1, ipady = 1)
 
+	tkgrid(txt.years1, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.years1, row = 0, column = 1, sticky = '', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.years2, row = 0, column = 3, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.years2, row = 0, column = 4, sticky = '', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	infobulle(cb.period, 'Choose the time step of the data')
-	status.bar.display(cb.period, TextOutputVar, 'Choose the time step of the data')
+	infobulle(cb.period, 'Select the time step of the data')
+	status.bar.display(cb.period, TextOutputVar, 'Select the time step of the data')
 	infobulle(en.years1, 'Start year to be used to compute regression parameters\nbetween station temperature and elevation')
 	status.bar.display(en.years1, TextOutputVar, 'Start year to be used to compute regression parameters\nbetween station temperature and elevation')
 	infobulle(en.years2, 'End year to be used to compute regression parameters\nbetween station temperature and elevation')
@@ -167,13 +170,13 @@ Temp_coefDownGetInfo <- function(parent.win, GeneralParameters){
 
 	tkconfigure(bt.prm.OK, command = function(){
 		if(str_trim(tclvalue(file.stnfl)) == ""){
-			tkmessageBox(message = "Choose the file containing the gauge data", icon = "warning", type = "ok")
+			tkmessageBox(message = "Select the file containing the gauge data", icon = "warning", type = "ok")
 			#tkwait.window(tt)
 		}else if(str_trim(tclvalue(file.grddem)) == "" ){
 			tkmessageBox(message = "You have to choose DEM data in NetCDF format", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else if(str_trim(tclvalue(file.save1)) == "" | str_trim(tclvalue(file.save1)) == "NA"){
-			tkmessageBox(message = "Choose or enter the path to directory to save results", icon = "warning", type = "ok")
+			tkmessageBox(message = "Select or enter the path to directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{
 			GeneralParameters$period <<- switch(str_trim(tclvalue(file.period)), 
@@ -331,7 +334,7 @@ Temp_reanalDownGetInfo <- function(parent.win, GeneralParameters){
 	tkgrid(cb.grddem, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 	tkgrid(bt.grddem, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 
-	infobulle(cb.grddem, 'Choose the file in the list')
+	infobulle(cb.grddem, 'Select the file from the list')
 	status.bar.display(cb.grddem, TextOutputVar, 'File containing the elevation data in netcdf')
 	infobulle(bt.grddem, 'Browse file if not listed')
 	status.bar.display(bt.grddem, TextOutputVar, 'Browse file if not listed')
@@ -410,7 +413,7 @@ Temp_reanalDownGetInfo <- function(parent.win, GeneralParameters){
 	statedate <- if(GeneralParameters$period == 'monthly') 'disabled' else 'normal'
 
 	cb.period <- ttkcombobox(frDate, values = cb.periodVAL, textvariable = file.period, width = largeur1)
-	frtxtDate <- ttklabelframe(frDate, text = "Date Range", relief = 'groove')
+	frtxtDate <- ttklabelframe(frDate, text = "Downscaling Date Range", relief = 'groove')
 
 	txt.deb <- tklabel(frtxtDate, text = 'Start date', anchor = 'e', justify = 'right')
 	txt.fin <- tklabel(frtxtDate, text = 'End date', anchor = 'e', justify = 'right')
@@ -436,11 +439,11 @@ Temp_reanalDownGetInfo <- function(parent.win, GeneralParameters){
 	tkgrid(en.mon2, row = 2, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.day2, row = 2, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	tkgrid(cb.period, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(cb.period, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 4, ipadx = 1, ipady = 1)
 	tkgrid(frtxtDate, row = 1, column = 0, sticky = '', rowspan = 1, columnspan = 1, padx = 1, pady = 3, ipadx = 1, ipady = 1)
 
-	infobulle(cb.period, 'Choose the time step of the data')
-	status.bar.display(cb.period, TextOutputVar, 'Choose the time step of the data')
+	infobulle(cb.period, 'Select the time step of the data')
+	status.bar.display(cb.period, TextOutputVar, 'Select the time step of the data')
 	infobulle(frtxtDate, 'Start and end date for downscaling reanalysis data')
 	status.bar.display(frtxtDate, TextOutputVar, 'Start and end date for downscaling reanalysis data')
 
@@ -514,13 +517,13 @@ Temp_reanalDownGetInfo <- function(parent.win, GeneralParameters){
 			tkmessageBox(message = "Provide the file containing the coefficients to used for downscaling", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else if(str_trim(tclvalue(dir.REANAL)) == "" | str_trim(tclvalue(dir.REANAL)) == "NA"){
-			tkmessageBox(message = "Choose or enter the path to directory containing the Reanalysis files", icon = "warning", type = "ok")
+			tkmessageBox(message = "Select or enter the path to directory containing the Reanalysis files", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else if(str_trim(tclvalue(file.grddem)) == ""){
 			tkmessageBox(message = "You have to provide DEM data in NetCDF format", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else if(str_trim(tclvalue(dir2save)) == "" | str_trim(tclvalue(dir2save)) == "NA"){
-			tkmessageBox(message = "Choose or enter the path to directory to save results", icon = "warning", type = "ok")
+			tkmessageBox(message = "Select or enter the path to directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{
 			GeneralParameters$DownCoef.file <<- str_trim(tclvalue(file.coef))

@@ -124,30 +124,30 @@ init.params <- function(action, period){
 
 	##Bias coeff
 	if(action == 'coefbias.temp'){
-		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Mean_Bias_Factor_TT.json'))
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Temp_Bias_Factor_Calc.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
-		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
+		if(str_trim(ret.params$output$dir) == "") ret.params$output$dir <- getwd()
 	}
 
 	##Adjustment
 	if(action == 'adjust.temp'){
-		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Bias_Correction_TT.json'))
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Temp_Bias_Correction.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
-		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
+		if(str_trim(ret.params$output$dir) == "") ret.params$output$dir <- getwd()
 	}
 
 	### Compute LM coef
 	if(action == 'coefLM.temp'){
-		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Compute_LM_Coef_TT.json'))
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Temp_LM_Coef_Calc.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
-		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
+		if(str_trim(ret.params$output$dir) == "") ret.params$output$dir <- getwd()
 	}
 
 	##Merging
 	if(action == 'merge.temp'){
-		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Merging_TT.json'))
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Temp_Merging_Adv.json'))
 		ret.params <- c(list(action = action, period = period), ret.params)
-		if(str_trim(ret.params$IO.files$dir2save) == "") ret.params$IO.files$dir2save <- getwd()
+		if(str_trim(ret.params$output$dir) == "") ret.params$output$dir <- getwd()
 	}
 
 	#################################################################

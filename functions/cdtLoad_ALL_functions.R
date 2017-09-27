@@ -5,7 +5,7 @@ source(file.path(apps.dir, 'functions', 'cdtEnvir_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtAccueil_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtAbout_functions.R'))
 
-source(file.path(apps.dir, 'functions', 'initialize_params_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtInitialize_params_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtExecute_functions.R'))
 
 source(file.path(apps.dir, 'functions', 'cdtOpenWriteFiles_functions.R'))
@@ -59,6 +59,7 @@ source(file.path(apps.dir, 'functions', 'homogenization_BreakPtPlot_functions.R'
 ###
 source(file.path(apps.dir, 'functions', 'merging_functions.R'))
 source(file.path(apps.dir, 'functions', 'merging_dlgBox_functions.R'))
+####
 
 source(file.path(apps.dir, 'functions', 'merging_Scale.dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'merging_Scale.Procs_functions.R'))
@@ -73,7 +74,7 @@ source(file.path(apps.dir, 'functions', 'Precip_merging.Bias_functions.R'))
 source(file.path(apps.dir, 'functions', 'Precip_merging.LMCoef_functions.R'))
 source(file.path(apps.dir, 'functions', 'Precip_merging.Merge_functions.R'))
 
-###
+###remove
 source(file.path(apps.dir, 'functions', 'mergingRR_Procs_functions.R'))
 ###
 
@@ -81,15 +82,19 @@ source(file.path(apps.dir, 'functions', 'Temp_downscaling_dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'Temp_downscaling_execute_functions.R'))
 source(file.path(apps.dir, 'functions', 'Temp_downscaling_Procs_functions.R'))
 
+###
 source(file.path(apps.dir, 'functions', 'Temp_merging.dlgBoxALL_functions.R'))
+source(file.path(apps.dir, 'functions', 'Temp_merging.executeALL_functions.R'))
+
 source(file.path(apps.dir, 'functions', 'Temp_merging.Bias_functions.R'))
 source(file.path(apps.dir, 'functions', 'Temp_merging.LMCoef_functions.R'))
 source(file.path(apps.dir, 'functions', 'Temp_merging.Merge_functions.R'))
-source(file.path(apps.dir, 'functions', 'Temp_merging.Procs_functions.R'))
 
 ###
-source(file.path(apps.dir, 'functions', 'Temp_merging_dlgBox_functions.R'))
-source(file.path(apps.dir, 'functions', 'Temp_merging_execute_functions.R'))
+source(file.path(apps.dir, 'functions', 'Temp_merging.dlgBoxADV_functions.R'))
+source(file.path(apps.dir, 'functions', 'Temp_merging.executeADV_functions.R'))
+
+###remove
 source(file.path(apps.dir, 'functions', 'Temp_merging_Procs_functions.R'))
 ###
 

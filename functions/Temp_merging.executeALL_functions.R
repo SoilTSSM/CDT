@@ -4,7 +4,10 @@ Temp_Merging_ALL <- function(origdir){
 
 	freqData <- GeneralParameters$period
 	GeneralParameters$auxvar <- list(dem = FALSE, slope = FALSE, aspect = FALSE, lon = FALSE, lat = FALSE)
-	GeneralParameters$sp.trend.aux <- FALSE
+
+	GeneralParameters$biasFilenames <- GeneralParameters$BIAS$format
+	GeneralParameters$lmCoefFilenames <- GeneralParameters$LMCOEF$format
+	# GeneralParameters$sp.trend.aux <- FALSE
 
 	##################
 	## Get data
@@ -74,8 +77,8 @@ Temp_Merging_ALL <- function(origdir){
 	## Compute BIAS
 	if(!GeneralParameters$BIAS$deja.calc)
 	{
-		start.date1 <- as.Date(paste(GeneralParameters$BIAS$start.year, '0101', sep = ''), format = '%Y%m%d')
-		end.date1 <- as.Date(paste(GeneralParameters$BIAS$end.year, '1231', sep = ''), format = '%Y%m%d')
+		start.date1 <- as.Date(paste0(GeneralParameters$BIAS$start.year, '0101'), format = '%Y%m%d')
+		end.date1 <- as.Date(paste0(GeneralParameters$BIAS$end.year, '1231'), format = '%Y%m%d')
 
 		ncInfoBias <- ncFilesInfo(freqData, start.date1, end.date1, months, TMP.DIR, TMP.Format, errmsg)
 		if(is.null(ncInfoBias)) return(NULL)
@@ -103,13 +106,6 @@ Temp_Merging_ALL <- function(origdir){
 	}else bias.DIR <- GeneralParameters$BIAS$dir.Bias
 
 	##################
-	## READ BIAS FILSES
-	biasParms <- list(bias.DIR = bias.DIR, GeneralParameters = GeneralParameters, dates = ncInfo$dates, months = months)
-	BIAS <- Temp_ReadBiasFiles(biasParms)
-	rm(biasParms)
-	if(is.null(BIAS)) return(NULL)
-
-	##################
 	## APPLY BIAS correction
 	adj.DIR <- file.path(origdir, "ADJUSTED_Data")
 	dir.create(adj.DIR, showWarnings = FALSE, recursive = TRUE)
@@ -124,11 +120,22 @@ Temp_Merging_ALL <- function(origdir){
 		ncInfoAdj <- ncFilesInfo(freqData, start.date1, end.date1, months, TMP.DIR, TMP.Format, errmsg)
 		if(is.null(ncInfoAdj)) return(NULL)
 		ncInfoAdj$ncinfo <- list(xo = tmpDataInfo$rfeILon, yo = tmpDataInfo$rfeILat, varid = tmpDataInfo$rfeVarid)
+		AdjDate <- ncInfoAdj$dates
 		extractADJ <- TRUE
 	}else{
 		ncInfoAdj <- ncInfo
+		AdjDate <- ncInfo$dates
 		extractADJ <- FALSE
 	}
+
+	##################
+	## READ BIAS FILSES
+	biasParms <- list(bias.DIR = bias.DIR, GeneralParameters = GeneralParameters, dates = AdjDate, months = months)
+	BIAS <- Temp_ReadBiasFiles(biasParms)
+	rm(biasParms)
+	if(is.null(BIAS)) return(NULL)
+
+	##################
 
 	biasParms <- list(adj.DIR = adj.DIR, GeneralParameters = GeneralParameters,
 					BIAS = BIAS, ncInfo = ncInfoAdj, stnData = stnData[c('lon', 'lat')])
@@ -161,13 +168,15 @@ Temp_Merging_ALL <- function(origdir){
 						stnData = stnData[c('lon', 'lat')], demData = demData, ncInfo = ncInfo, LMCoef.DIR = LMCoef.DIR,
 						interp.grid = list(grid = xy.grid, nlon = nlon0, nlat = nlat0))
 		ret <- Temp_InterpolateLMCoef(lmCoefParms)
+
+		GeneralParameters$LMCOEF$dir.LMCoef <- LMCoef.DIR
+
 		rm(lmCoefParms, model.coef)
 		gc()
 		if(!is.null(ret)){
 			if(ret != 0) return(ret) 
 		}else return(NULL)
-
-	}else LMCoef.DIR <- GeneralParameters$LMCOEF$dir.LMCoef
+	}
 
 	##################
 	if(freqData%in%c('daily', 'pentad', 'dekadal')) adj.Format <- "temp_adj_%s%s%s.nc"
@@ -199,7 +208,7 @@ Temp_Merging_ALL <- function(origdir){
 	dir.create(merge.DIR, showWarnings = FALSE, recursive = TRUE)
 
 	mrgParms <- list(GeneralParameters = GeneralParameters, months = months, ncInfo = ncInfo,
-					stnData = stnData, demData = demData, LMCoef.DIR = LMCoef.DIR, merge.DIR = merge.DIR,
+					stnData = stnData, demData = demData, merge.DIR = merge.DIR,
 					interp.grid = list(grid = xy.grid, nlon = nlon0, nlat = nlat0), outMask = outMask)
 
 	ret <- Temp_MergingFunctions(mrgParms)

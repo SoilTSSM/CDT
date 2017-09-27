@@ -18,6 +18,8 @@
         "deja.calc": false,
         // Full path to the bias directory
         "dir.Bias": "",
+        // Filename format of the bias files
+        "format": "STN_GRID_MeanBias_%s.nc",
 
         //Bias correction method
         // "Multiplicative.Bias.Var": multiplicative bias correction according to the time step of data
@@ -76,6 +78,8 @@
         "deja.calc": false,
         // Full path to the LM coef directory
         "dir.LMCoef": "",
+        // Filename format of the LM coef files
+        "format": "LM_Coefficient_%s.nc",
 
         // Date range to be used to compute the regression coefficients
         "start.year": 1981,
@@ -148,7 +152,10 @@
         "use.block": true,
 
         // Minimum number of stations with data to be used to do the merging
-        "min.stn": 10
+        "min.stn": 10,
+
+        // Use auxiliary variables with GLM to calculate the spatial trend
+        "sp.trend.aux": false
     },
 
     // Merging date range

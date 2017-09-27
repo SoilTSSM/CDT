@@ -176,8 +176,9 @@ Temp_InterpolateLMCoef <- function(lmCoefParms){
 	#############
 	demGrid <- lmCoefParms$demData
 	if(!is.null(demGrid)){
-		demres <- grdSp@grid@cellsize
-		slpasp <- slope.aspect(demGrid$z, demres[1], demres[2], filter = "sobel")
+		# demres <- grdSp@grid@cellsize
+		# slpasp <- slope.aspect(demGrid$z, demres[1], demres[2], filter = "sobel")
+		slpasp <- raster.slope.aspect(demGrid)
 		demGrid$slp <- slpasp$slope
 		demGrid$asp <- slpasp$aspect
 	}else{
@@ -271,8 +272,10 @@ Temp_InterpolateLMCoef <- function(lmCoefParms){
 			if(length(locations.stn$pars) < min.stn) return(NULL)
 
 			if(interp.method == 'Kriging'){
-				vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+				if(length(locations.stn$pars) > 7){
+					vgm <- try(autofitVariogram(formule, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
+					vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
+				}else vgm <- NULL
 			}else vgm <- NULL
 
 			xstn <- as.data.frame(locations.stn)
@@ -337,7 +340,7 @@ Temp_InterpolateLMCoef <- function(lmCoefParms){
 		MODEL.COEF[[jfl]]$slope[xneg] <- 1
 		MODEL.COEF[[jfl]]$intercept[xneg] <- 0
 
-		outnc1 <- file.path(lmCoefParms$LMCoef.DIR, paste0('LM_Coefficient_', jfl, '.nc'))
+		outnc1 <- file.path(lmCoefParms$LMCoef.DIR, sprintf(GeneralParameters$lmCoefFilenames, jfl))
 		nc1 <- nc_create(outnc1, list(grd.slope, grd.intercept))
 		ncvar_put(nc1, grd.slope, MODEL.COEF[[jfl]]$slope)
 		ncvar_put(nc1, grd.intercept, MODEL.COEF[[jfl]]$intercept)
