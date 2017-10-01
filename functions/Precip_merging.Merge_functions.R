@@ -183,15 +183,21 @@ Precip_MergingFunctions <- function(mrgParms){
 		nb.stn.nonZero <- length(which(noNA & locations.stn$stn > 0))
 		locations.stn <- locations.stn[noNA, ]
 
+		if(all(is.na(locations.stn$rfe))) return(NULL)
+
 		if(min.stn.nonNA >= min.stn){
 			do.merging <- TRUE
+
+			sp.trend <- xrfe
+			locations.stn$res <- locations.stn$stn - locations.stn$rfe
+
 			if(nb.stn.nonZero >= min.non.zero){
 				if(mrg.method == "Spatio-Temporal LM"){
 					mo <- as(substr(ncInfo$dates[jj], 5, 6), 'numeric')
 					sp.trend <- xrfe * MODEL.COEF[[mo]]$slope + MODEL.COEF[[mo]]$intercept
 					locations.stn$res <- locations.stn$stn - sp.trend[ijGrd][noNA]
-				}else if(mrg.method == "Regression Kriging"){
-					if(all(is.na(locations.stn$rfe))) return(NULL)
+				}
+				if(mrg.method == "Regression Kriging"){
 					simplediff <- if(var(locations.stn$stn) < 1e-07 | var(locations.stn$rfe, na.rm = TRUE) < 1e-07) TRUE else FALSE
 					glm.stn <- glm(formuleRK, data = locations.stn, family = gaussian)
 					if(is.na(glm.stn$coefficients[2]) | glm.stn$coefficients[2] < 0) simplediff <- TRUE
@@ -203,17 +209,8 @@ Precip_MergingFunctions <- function(mrgParms){
 						locations.stn$res <- NA
 						if(length(glm.stn$na.action) > 0) locations.stn$res[-glm.stn$na.action] <- glm.stn$residuals
 						else locations.stn$res <- glm.stn$residuals
-					}else{
-						sp.trend <- xrfe
-						locations.stn$res <- locations.stn$stn - locations.stn$rfe
 					}
-				}else{
-					sp.trend <- xrfe
-					locations.stn$res <- locations.stn$stn - locations.stn$rfe
 				}
-			}else{
-				sp.trend <- xrfe
-				locations.stn$res <- locations.stn$stn - locations.stn$rfe
 			}
 
 			locations.stn <- locations.stn[!is.na(locations.stn$res), ]
@@ -278,8 +275,8 @@ Precip_MergingFunctions <- function(mrgParms){
 			xadd.out <- as.logical(over(xadd, buffer.xaddout))
 			xadd.out[is.na(xadd.out)] <- FALSE
 			iadd <- xadd.in & xadd.out
-
 			xadd <- xadd[iadd, ]
+
 			row.names(locations.stn) <- 1:length(locations.stn)
 			row.names(xadd) <- length(locations.stn)+(1:length(xadd))
 			locations.stn <- spRbind(locations.stn, xadd)

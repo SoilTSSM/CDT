@@ -384,6 +384,7 @@ downloadRFE_fun <- function(datasrc, istart, iend, minlon, maxlon, minlat, maxla
 			if(datasrc == 'DAILY TAMSATv3') file0 <- paste('rfe', year, '_', mon, '_', day, '.v3.nc', sep = '')
 			link <- paste(url, year, mon, file0, sep = '/')
 			destfile0 <- file.path(outdir0, file0)
+			## replace by if(RCurl::url.exists(link))
 			test <- try(suppressWarnings(readLines(link, n = 1)), silent = TRUE)
 			if(inherits(test, "try-error")){
 				InsertMessagesTxt(main.txt.out, paste('Cannot open the connection or file does not exist:', file0), format = TRUE)

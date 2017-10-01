@@ -1,9 +1,9 @@
 
-ValidationPanelCmd <- function(clim.var){
+Validation.HOV.PanelCmd <- function(clim.var){
 	listOpenFiles <- openFile_ttkcomboList()
 	if(Sys.info()["sysname"] == "Windows"){
-		wscrlwin <- w.scale(26)
-		hscrlwin <- h.scale(45)
+		wscrlwin <- w.scale(28)
+		hscrlwin <- h.scale(45.5)
 		wttkcombo <- as.integer(w.scale(30)/sfont0)
 		largeur <- as.integer(w.scale(28)/sfont0)
 		largeur1 <- as.integer(w.scale(30)/sfont0)
@@ -11,8 +11,8 @@ ValidationPanelCmd <- function(clim.var){
 		largeur2 <- 30
 		largeur3 <- 28
 	}else{
-		wscrlwin <- w.scale(26)
-		hscrlwin <- h.scale(46)
+		wscrlwin <- w.scale(27)
+		hscrlwin <- h.scale(47)
 		wttkcombo <- as.integer(w.scale(26)/sfont0)
 		largeur <- as.integer(w.scale(22)/sfont0)
 		largeur1 <- as.integer(w.scale(23)/sfont0)
@@ -21,8 +21,8 @@ ValidationPanelCmd <- function(clim.var){
 		largeur3 <- 20
 	}
 
-	GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'Hold_Out_Validation.json'))
-	MOIS <- format(ISOdate(2014, 1:12, 1), "%B")
+	GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'Validation_HOV.json'))
+	MOIS <- format(ISOdate(2014, 1:12, 1), "%b")
 
 	##############
 	EnvZoomPars$xx1 <- tclVar()
@@ -146,11 +146,12 @@ ValidationPanelCmd <- function(clim.var){
 		tkconfigure(en.opthres, state = stateo2)
 		CHXSTATS <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error', 'Mean Error')
 		CHXSTATS1 <- c('Probability Of Detection', 'False Alarm Ratio', 'Frequency Bias', 'Critical Success Index', 'Heidke Skill Score')
-		if(clim.var == 'RR' & tclvalue(file.period) == 'Daily data' & tclvalue(aggr.data) == "0"){
-			CHXSTATS <- c(CHXSTATS, CHXSTATS1)
-		}else{
-			if(tclvalue(EnvHOValidationplot$statistics)%in%CHXSTATS1) tclvalue(EnvHOValidationplot$statistics) <- 'Correlation'
-		}
+		CHXSTATS <- c(CHXSTATS, CHXSTATS1)
+		# if(clim.var == 'RR' & tclvalue(file.period) == 'Daily data' & tclvalue(aggr.data) == "0"){
+		# 	CHXSTATS <- c(CHXSTATS, CHXSTATS1)
+		# }else{
+		# 	if(tclvalue(EnvHOValidationplot$statistics)%in%CHXSTATS1) tclvalue(EnvHOValidationplot$statistics) <- 'Correlation'
+		# }
 		tkconfigure(cb.stats.maps, values = CHXSTATS)
 	})
 
@@ -703,25 +704,27 @@ ValidationPanelCmd <- function(clim.var){
 	start.year <- tclVar(GeneralParameters$date.range$start.year)
 	end.year <- tclVar(GeneralParameters$date.range$end.year)
 
-	txt.year <- tklabel(frameSeason, text = 'Years')
-	txt.month <- tklabel(frameSeason, text = 'Months')
-	txt.start <- tklabel(frameSeason, text = 'Start', anchor = 'e', justify = 'right')
-	txt.end <- tklabel(frameSeason, text = 'End', anchor = 'e', justify = 'right')
-	en.years1 <- tkentry(frameSeason, width = 5, textvariable = start.year, justify = 'right')
-	en.years2 <- tkentry(frameSeason, width = 5, textvariable = end.year, justify = 'right')
-	cb.month1 <- ttkcombobox(frameSeason, values = MOIS, textvariable = start.mois, width = 15)
-	cb.month2 <- ttkcombobox(frameSeason, values = MOIS, textvariable = end.mois, width = 15)
+	fr.seas <- ttklabelframe(frameSeason, text = 'Season', relief = 'sunken', labelanchor = "n", borderwidth = 2)
+	fr.year <- ttklabelframe(frameSeason, text = 'Years', relief = 'sunken', labelanchor = "n", borderwidth = 2)
 
-	tkgrid(txt.year, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-	tkgrid(txt.month, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
+	txt.to1 <- tklabel(fr.year, text = '-to-')
+	en.years1 <- tkentry(fr.year, width = 5, textvariable = start.year, justify = 'right')
+	en.years2 <- tkentry(fr.year, width = 5, textvariable = end.year, justify = 'right')
 
-	tkgrid(txt.start, row = 1, column = 0, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-	tkgrid(txt.end, row = 2, column = 0, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
+	txt.to2 <- tklabel(fr.seas, text = '-to-')
+	cb.month1 <- ttkcombobox(fr.seas, values = MOIS, textvariable = start.mois, width = 4)
+	cb.month2 <- ttkcombobox(fr.seas, values = MOIS, textvariable = end.mois, width = 4)
 
-	tkgrid(en.years1, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-	tkgrid(en.years2, row = 2, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
-	tkgrid(cb.month1, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 5, pady = 1)
-	tkgrid(cb.month2, row = 2, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 5, pady = 1)
+	tkgrid(en.years1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
+	tkgrid(txt.to1, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
+	tkgrid(en.years2, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
+
+	tkgrid(cb.month1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
+	tkgrid(txt.to2, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
+	tkgrid(cb.month2, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1)
+
+	tkgrid(fr.seas, row = 0, column = 0, sticky = 'ns', rowspan = 1, columnspan = 1, padx = 3, pady = 1)
+	tkgrid(fr.year, row = 0, column = 1, sticky = 'ns', rowspan = 1, columnspan = 1, padx = 3, pady = 1)
 
 	infobulle(en.years1, 'Start year of the period to calculate the statistics')
 	status.bar.display(en.years1, TextOutputVar, 'Start year of the period to calculate the statistics')
@@ -813,11 +816,12 @@ ValidationPanelCmd <- function(clim.var){
 
 		CHXSTATS <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error', 'Mean Error')
 		CHXSTATS1 <- c('Probability Of Detection', 'False Alarm Ratio', 'Frequency Bias', 'Critical Success Index', 'Heidke Skill Score')
-		if(clim.var == 'RR' & tclvalue(file.period) == 'Daily data' & tclvalue(aggr.data) == "1"){
-			CHXSTATS <- c(CHXSTATS, CHXSTATS1)
-		}else{
-			if(tclvalue(EnvHOValidationplot$statistics)%in%CHXSTATS1) tclvalue(EnvHOValidationplot$statistics) <- 'Correlation'
-		}
+		CHXSTATS <- c(CHXSTATS, CHXSTATS1)
+		# if(clim.var == 'RR' & tclvalue(file.period) == 'Daily data' & tclvalue(aggr.data) == "1"){
+		# 	CHXSTATS <- c(CHXSTATS, CHXSTATS1)
+		# }else{
+		# 	if(tclvalue(EnvHOValidationplot$statistics)%in%CHXSTATS1) tclvalue(EnvHOValidationplot$statistics) <- 'Correlation'
+		# }
 		tkconfigure(cb.stats.maps, values = CHXSTATS)
 	})
 
@@ -928,7 +932,7 @@ ValidationPanelCmd <- function(clim.var){
 		GeneralParameters$Geom$maxlat <- as.numeric(str_trim(tclvalue(EnvHOValidationplot$maxlatRect)))
 		GeneralParameters$Geom$namePoly <- str_trim(tclvalue(EnvHOValidationplot$namePoly))
 
-		assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
+		# assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
 		tkconfigure(main.win, cursor = 'watch')
 		InsertMessagesTxt(main.txt.out, "Validation .................")
@@ -1064,8 +1068,9 @@ ValidationPanelCmd <- function(clim.var){
 
 	EnvHOValidationplot$statistics <- tclVar('Correlation')
 	CHXSTATS <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error', 'Mean Error')
-	if(clim.var == 'RR' & GeneralParameters$stn.file$tstep == 'daily' & !GeneralParameters$aggr.series$aggr.data)
-		CHXSTATS <- c(CHXSTATS, 'Probability Of Detection', 'False Alarm Ratio', 'Frequency Bias', 'Critical Success Index', 'Heidke Skill Score')
+	# if(clim.var == 'RR' & GeneralParameters$stn.file$tstep == 'daily' & !GeneralParameters$aggr.series$aggr.data)
+	CHXSTATS <- c(CHXSTATS, 'Probability Of Detection', 'False Alarm Ratio', 'Frequency Bias', 'Critical Success Index', 'Heidke Skill Score')
+
 	stateMaps <- if(GeneralParameters$stat.data == 'stn') 'normal' else 'disabled'
 
 	cb.stats.maps <- ttkcombobox(frameMap, values = CHXSTATS, textvariable = EnvHOValidationplot$statistics, width = largeur2, state = stateMaps)

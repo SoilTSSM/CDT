@@ -79,7 +79,7 @@ displayMap4Validation <- function(parent, shpf, ZoomXYval, notebookTab){
 	tcl('raise', canvas)
 	tcl('update')
 
-	if(is.null(lcmd.frame_valid)) return(NULL)
+	if(is.null(lcmd.frame_valid.HOV)) return(NULL)
 
 	tkbind(canvas, "<Enter>", function(){
 		if(tclvalue(EnvZoomPars$pressButP) == "1") tkconfigure(canvas, cursor = 'sizing')

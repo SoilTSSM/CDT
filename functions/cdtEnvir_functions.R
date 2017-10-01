@@ -19,6 +19,10 @@ EnvHomogzData <- new.env()
 EnvHOValidation <- new.env()
 EnvHOValidationplot <- new.env()
 
+#Leave-one-out cross-validation
+EnvLOOCValidation <- new.env()
+EnvLOOCValidationplot <- new.env()
+
 #Climatological analysis data
 EnvClimatoAnalysis <- new.env()
 

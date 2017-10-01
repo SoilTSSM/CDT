@@ -177,11 +177,18 @@ source(file.path(apps.dir, 'functions', 'interpol_Proc_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'validation_functions.R'))
-source(file.path(apps.dir, 'functions', 'validation_leftCmd_functions.R'))
-source(file.path(apps.dir, 'functions', 'validation_Proc_functions.R'))
-source(file.path(apps.dir, 'functions', 'validation_displayGG-Sat_functions.R'))
-source(file.path(apps.dir, 'functions', 'validation_displayMap_functions.R'))
-source(file.path(apps.dir, 'functions', 'mergingRR_ProcsValidation_functions.R'))
+
+#####
+source(file.path(apps.dir, 'functions', 'validation.HOV_leftCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'validation.HOV_displayStat_functions.R'))
+source(file.path(apps.dir, 'functions', 'validation.HOV_displayMap_functions.R'))
+source(file.path(apps.dir, 'functions', 'validation.HOV_Proc_functions.R'))
+
+#####
+source(file.path(apps.dir, 'functions', 'validation.LOOCV_leftCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'validation.LOOCV_Merge_functions.R'))
+source(file.path(apps.dir, 'functions', 'validation.LOOCV_Procs_functions.R'))
+source(file.path(apps.dir, 'functions', 'validation.LOOCV_displayStat_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'gapFillTemp_dlgBox_functions.R'))

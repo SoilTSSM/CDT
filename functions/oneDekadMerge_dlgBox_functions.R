@@ -438,9 +438,8 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
 			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
 			tclvalue(file.grddem) <- AllOpenFilesData[[nopf+1]][[1]]
-
 			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
-			tclvalue(file.grddem) <- AllOpenFilesData[[nopf+1]][[1]]
+
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)
@@ -455,9 +454,8 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 			AllOpenFilesType[[nopf+1]] <<- 'shp'
 			AllOpenFilesData[[nopf+1]] <<- shp.opfiles
 			tclvalue(file.blkshp) <- AllOpenFilesData[[nopf+1]][[1]]
-
 			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
-			tclvalue(file.blkshp) <- AllOpenFilesData[[nopf+1]][[1]]
+
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.grdrfe, values = unlist(listOpenFiles), textvariable = file.grdrfe)

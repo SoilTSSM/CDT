@@ -210,8 +210,8 @@ Temp_MergingFunctions <- function(mrgParms){
 			xadd.out <- as.logical(over(xadd, buffer.xaddout))
 			xadd.out[is.na(xadd.out)] <- FALSE
 			iadd <- xadd.in & xadd.out
-
 			xadd <- xadd[iadd, ]
+
 			row.names(locations.stn) <- 1:length(locations.stn)
 			row.names(xadd) <- length(locations.stn)+(1:length(xadd))
 			locations.stn <- spRbind(locations.stn, xadd)

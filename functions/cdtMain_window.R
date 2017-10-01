@@ -41,9 +41,9 @@ adjDon <- NULL
 assign('lcmd.frame', NULL, envir = .GlobalEnv)
 cdt.lcmd.container <- list('lcmd.frame_homo', 'lcmd.frame_qc', 'lcmd.frame_chk', 'lcmd.frame_extrdata', 'lcmd.frame_assdata',
 						'lcmd.frame_mergePlot', 'lcmd.frame_CDTffrtPlot', 'lcmd.frame_grdNcdfPlot', 'lcmd.frame_rhtests',
-						'lcmd.frame_interpol', 'lcmd.frame_valid', 'lcmd.frame_qc0Chck', 'lcmd.frame_merge2cdt',
+						'lcmd.frame_interpol', 'lcmd.frame_valid.HOV', 'lcmd.frame_qc0Chck', 'lcmd.frame_merge2cdt',
 						'lcmd.frame_filtercdtdat', 'lcmd.frame_climdexRR', 'lcmd.frame_climdexTT', 'lcmd.frame_climatoAnalysis',
-						'lcmd.frame_PICSA')
+						'lcmd.frame_PICSA', 'lcmd.frame_valid.LOOCV')
 lcmd.ret <- lapply(cdt.lcmd.container, assign, NULL, envir = .GlobalEnv)
 
 #####**************************** General&Generic functions ************************######
@@ -211,7 +211,7 @@ tcl("wm", "protocol", main.win, "WM_DELETE_WINDOW", function() {
 tryCatch({
 			tkconfigure(main.win, cursor = 'watch')
 			tcl('update')
-			InsertMessagesTxt(main.txt.out, "Loading all Functions....")
+			InsertMessagesTxt(main.txt.out, "Loading ....")
 			source(file.path(apps.dir, 'functions', 'cdtLoad_ALL_functions.R'))
 		},
 		warning = function(w) warningFun(w),

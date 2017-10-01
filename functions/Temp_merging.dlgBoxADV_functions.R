@@ -1409,9 +1409,8 @@ mrgGetInfoTemp <- function(parent.win, GeneralParameters){
 			AllOpenFilesType[[nopf+1]] <<- 'shp'
 			AllOpenFilesData[[nopf+1]] <<- shp.opfiles
 			tclvalue(file.blkshp) <- AllOpenFilesData[[nopf+1]][[1]]
-
 			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
-			tclvalue(file.blkshp) <- AllOpenFilesData[[nopf+1]][[1]]
+
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			tkconfigure(cb.grddem, values = unlist(listOpenFiles), textvariable = file.grddem)
 			tkconfigure(cb.blkshp, values = unlist(listOpenFiles), textvariable = file.blkshp)

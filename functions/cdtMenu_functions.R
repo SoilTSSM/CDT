@@ -585,9 +585,9 @@ tkadd(menu.valid, "cascade", label = "Hold-Out Validation", menu = menu.valid1)
 tkadd(menu.valid1, "command", label = "Precipitation", command = function(){
 	refreshCDT.lcmd.env()
 	spinbox.state(state = 'normal')
-	if(is.null(lcmd.frame_valid)){
-		lcmd.frame <<- ValidationPanelCmd('RR')
-		lcmd.frame_valid <<- 1
+	if(is.null(lcmd.frame_valid.HOV)){
+		lcmd.frame <<- Validation.HOV.PanelCmd('RR')
+		lcmd.frame_valid.HOV <<- 1
 	}
 })
 
@@ -599,27 +599,28 @@ tkadd(menu.valid1, "separator")
 tkadd(menu.valid1, "command", label = "Temperature", command = function(){
 	refreshCDT.lcmd.env()
 	spinbox.state(state = 'normal')
-	if(is.null(lcmd.frame_valid)){
-		lcmd.frame <<- ValidationPanelCmd('TT')
-		lcmd.frame_valid <<- 1
+	if(is.null(lcmd.frame_valid.HOV)){
+		lcmd.frame <<- Validation.HOV.PanelCmd('TT')
+		lcmd.frame_valid.HOV <<- 1
 	}
 })
 
 ##########
+tkadd(menu.valid, "separator")
+
+##########
 menu.valid2 <- tkmenu(top.menu, tearoff = FALSE)
-tkadd(menu.valid, "cascade", label = "Cross-Validation", menu = menu.valid2, state = 'disabled')
+tkadd(menu.valid, "cascade", label = "Leave-One-Out Cross-Validation", menu = menu.valid2)
 
 ########
 # Precipitation validation
-menu.valid2a <- tkmenu(top.menu, tearoff = FALSE)
-tkadd(menu.valid2, "cascade", label = "Precipitation", menu = menu.valid2a)
-
-tkadd(menu.valid2a, "command", label = "Bias correction", command = function(){
+tkadd(menu.valid2, "command", label = "Precipitation", command = function(){
 	refreshCDT.lcmd.env()
-})
-
-tkadd(menu.valid2a, "command", label = "Merging data", command = function(){
-	refreshCDT.lcmd.env()
+	spinbox.state(state = 'normal')
+	if(is.null(lcmd.frame_valid.LOOCV)){
+		lcmd.frame <<- Validation.LOOCV.PanelCmd('RR')
+		lcmd.frame_valid.LOOCV <<- 1
+	}
 })
 
 ##########
@@ -627,15 +628,13 @@ tkadd(menu.valid2, "separator")
 
 #########
 # Temperature validation
-menu.valid2b <- tkmenu(top.menu, tearoff = FALSE)
-tkadd(menu.valid2, "cascade", label = "Temperature", menu = menu.valid2b)
-
-tkadd(menu.valid2b, "command", label = "Bias correction", command = function(){
+tkadd(menu.valid2, "command", label = "Temperature", command = function(){
 	refreshCDT.lcmd.env()
-})
-
-tkadd(menu.valid2b, "command", label = "Merging data", command = function(){
-	refreshCDT.lcmd.env()
+	spinbox.state(state = 'normal')
+	if(is.null(lcmd.frame_valid.LOOCV)){
+		lcmd.frame <<- Validation.LOOCV.PanelCmd('TT')
+		lcmd.frame_valid.LOOCV <<- 1
+	}
 })
 
 
