@@ -76,7 +76,7 @@
         // Full path to the directory to save results
         "dir": "",
         // Merged filename format
-        "format": "tmax_mrg_%s%s%s_ALL.ncc"
+        "format": "tmax_mrg_%s%s%s_ALL.nc"
     },
 
     "blank": {

@@ -858,11 +858,13 @@ Temp_ApplyBiasCorrection <- function(biasParms, extractADJ = FALSE){
 		############
 		year <- substr(tmp.date, 1, 4)
 		month <- substr(tmp.date, 5, 6)
+
 		if(freqData == 'daily'){
-			adjfrmt <- sprintf("temp_adj_%s%s%s.nc", year, month, substr(tmp.date, 7, 8))
+			adjfrmt <- sprintf(GeneralParameters$output$format, year, month, substr(tmp.date, 7, 8))
 		}else if(freqData%in%c('pentad', 'dekadal')){
-			adjfrmt <- sprintf("temp_adj_%s%s%s.nc", year, month, substr(tmp.date, 7, 7))
-		}else adjfrmt <- sprintf("temp_adj_%s%s.nc", year, month)
+			adjfrmt <- sprintf(GeneralParameters$output$format, year, month, substr(tmp.date, 7, 7))
+		}else  adjfrmt <- sprintf(GeneralParameters$output$format, year, month)
+
 		outfl <- file.path(biasParms$adj.DIR, adjfrmt)
 
 		nc2 <- nc_create(outfl, grd.bsadj)
