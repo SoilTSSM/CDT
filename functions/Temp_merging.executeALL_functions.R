@@ -135,8 +135,13 @@ Temp_Merging_ALL <- function(origdir){
 	if(is.null(BIAS)) return(NULL)
 
 	##################
+	if(freqData%in%c('daily', 'pentad', 'dekadal')) adj.Format <- "temp_adj_%s%s%s.nc"
+	if(freqData == 'monthly') adj.Format <- "temp_adj_%s%s.nc"
+	GeneralParameters0 <- GeneralParameters
+	GeneralParameters0$output$format <- adj.Format
 
-	biasParms <- list(adj.DIR = adj.DIR, GeneralParameters = GeneralParameters,
+	##################
+	biasParms <- list(adj.DIR = adj.DIR, GeneralParameters = GeneralParameters0,
 					BIAS = BIAS, ncInfo = ncInfoAdj, stnData = stnData[c('lon', 'lat')])
 
 	data.adj.stn <- Temp_ApplyBiasCorrection(biasParms, extractADJ)
@@ -178,8 +183,6 @@ Temp_Merging_ALL <- function(origdir){
 	}
 
 	##################
-	if(freqData%in%c('daily', 'pentad', 'dekadal')) adj.Format <- "temp_adj_%s%s%s.nc"
-	if(freqData == 'monthly') adj.Format <- "temp_adj_%s%s.nc"
 
 	errmsg <- "Adjusted data not found"
 	ncInfo <- ncFilesInfo(freqData, start.date, end.date, months, adj.DIR, adj.Format, errmsg)
