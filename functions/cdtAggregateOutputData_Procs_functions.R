@@ -54,7 +54,7 @@ AggregateQcData <- function(){
 	period <- paramsGAL$inputPars$period
 	if(period == 'daily') pdate <- 'DAILY'
 	if(period == 'dekadal') pdate <- 'DEKADAL'
-	if(period == 'Monthly') pdate <- 'MONTHLY'
+	if(period == 'monthly') pdate <- 'MONTHLY'
 
 	if(ncol(infohead) == 3) capition <- c('Stations', 'LON', paste(pdate, 'LAT', sep = '/'))
 	else capition <- c('Stations', 'LON', 'LAT', paste(pdate, 'ELV', sep = '/'))
