@@ -70,7 +70,10 @@
         // or to fit the distribution
         "min.length": 15,
         // Minimum number of non missing stations to interpolate bias
-        "min.stn": 10
+        "min.stn": 10,
+
+        // Use Shapiro-Wilk normality test to test if data follow a normal distribution
+        "SWnorm.test": true
     },
 
     "LMCOEF": {
@@ -124,7 +127,7 @@
         "min.stn": 10,
 
         // true: use quantiles to perform regression; false: use raw data
-        "useQuantile": true
+        "useQuantile": false
     },
 
     "Merging": {

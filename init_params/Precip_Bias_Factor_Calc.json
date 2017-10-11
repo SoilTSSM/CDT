@@ -69,6 +69,10 @@
         "min.length": 15,
         // Minimum number of non missing stations to interpolate bias
         "min.stn": 10,
+
+        // Use Anderson-Darling Test to test if data follow a B-G distribution
+        "AD.test": true,
+
         // Months on which bias factors or distribution parameters will be calculated
         "Months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     },

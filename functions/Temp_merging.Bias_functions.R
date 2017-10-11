@@ -191,11 +191,19 @@ Temp_ComputeBias <- function(biasParms){
 		pars.Down <- extractNormDistrParams(pars.Crs.down, months)
 
 		parsSW <- vector(mode = 'list', length = 12)
-		parsSW[months] <- lapply(months, function(j){
-			istn <- SW.stn[[j]] == 'yes' & SW.downstn[[j]] == 'yes'
-			idown <- SW.down[[j]] == 'yes'
-			list(down = idown, stn = istn)
-		})
+		if(GeneralParameters$BIAS$SWnorm.test){
+			parsSW[months] <- lapply(months, function(j){
+				istn <- SW.stn[[j]] == 'yes' & SW.downstn[[j]] == 'yes'
+				idown <- SW.down[[j]] == 'yes'
+				list(down = idown, stn = istn)
+			})
+		}else{
+			parsSW[months] <- lapply(months, function(j){
+				istn <- rep(TRUE, length(SW.stn[[j]]))
+				idown <- rep(TRUE, length(SW.down[[j]]))
+				list(down = idown, stn = istn)
+			})
+		}
 
 		parsSW.Down <- lapply(parsSW, '[[', 1)
 		parsSW.Stn <- lapply(parsSW, '[[', 2)

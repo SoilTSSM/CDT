@@ -189,11 +189,19 @@ Precip_ComputeBias <- function(biasParms){
 		pars.Rfe <- extractDistrParams(pars.Crs.Rfe, months, distr = "berngamma")
 
 		parsAD <- vector(mode = 'list', length = 12)
-		parsAD[months] <- lapply(months, function(j){
-			istn <- AD.stn[[j]] == 'yes' & AD.rfestn[[j]] == 'yes'
-			irfe <- AD.rfe[[j]] == 'yes'
-			list(rfe = irfe, stn = istn)
-		})
+		if(GeneralParameters$BIAS$AD.test){
+			parsAD[months] <- lapply(months, function(j){
+				istn <- AD.stn[[j]] == 'yes' & AD.rfestn[[j]] == 'yes'
+				irfe <- AD.rfe[[j]] == 'yes'
+				list(rfe = irfe, stn = istn)
+			})
+		}else{
+			parsAD[months] <- lapply(months, function(j){
+				istn <- rep(TRUE, length(AD.stn[[j]]))
+				irfe <- rep(TRUE, length(AD.rfe[[j]]))
+				list(rfe = irfe, stn = istn)
+			})
+		}
 
 		parsAD.Rfe <- lapply(parsAD, '[[', 1)
 		parsAD.Stn <- lapply(parsAD, '[[', 2)

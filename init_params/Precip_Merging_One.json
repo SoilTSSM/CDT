@@ -71,7 +71,10 @@
         // or to fit the distribution
         "min.length": 15,
         // Minimum number of non missing stations to interpolate bias
-        "min.stn": 10
+        "min.stn": 10,
+
+        // Use Anderson-Darling Test to test if data follow a B-G distribution
+        "AD.test": true
     },
 
     "LMCOEF": {

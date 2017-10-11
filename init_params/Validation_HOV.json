@@ -1,10 +1,16 @@
 {
-    "stn.file": [{
-        // Time step of the input data
-        "tstep": "dekadal",
-        // station data file name
-        "file": ""
-    }],
+    // Time step of the input data
+    "Tstep": "dekadal",
+    // Station data filename
+    "STN.file": "",
+
+    // "stn.file": [{
+    //     // Time step of the input data
+    //     "tstep": "dekadal",
+    //     // station data file name
+    //     "file": ""
+    // }],
+
     // ncdf data
     "ncdf.file": [{
         // // Full path to the directory of ncdf data
@@ -14,7 +20,26 @@
         // ncdf sample file
         "sample": ""
     }],
-    // Shapefile
+
+    // Extraction date range
+    "Extract.Date": {
+        "start.year": 1981,
+        "start.mon": 1,
+        "start.dek": 1,
+        "end.year": 2016,
+        "end.mon": 12,
+        "end.dek": 3,
+        // Months on which the extraction will be performed
+        "Months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    },
+
+    // Selection type
+    // All Stations: "all"
+    // Rectangle: "rect"
+    // Polygons: "poly"
+    "type.select": "all",
+
+    // Shapefile to extract polygons
     "shp.file": [{
         // shapefile filename
         "shp": "",
@@ -22,10 +47,7 @@
         "attr": ""
     }],
 
-    // Path to the file or directory to save results
-    "outdir": "",
-
-    // Validation date
+    // Validation date for aggregation
     "date.range": [{
         // start year 
         "start.year": 1983,
@@ -58,12 +80,6 @@
         "opr.thres": 1
     },
 
-    // Selection type
-    // All Stations: "all"
-    // Rectangle: "rect"
-    // Polygons: "poly"
-    "type.select": "all",
-
     // Data to use to calculate statistics
     // All data: "all"
     // Spatial average: "avg"
@@ -71,9 +87,24 @@
     // "climato" = Climatologies
     "stat.data": "all",
 
-    // add elevation map
-    "dem.data": [{
+    // // add elevation map
+    // "dem.data": [{
+    //     "add.dem": false,
+    //     "dem.file": ""
+    // }]
+
+    // add shp or dem to plot
+    "add.to.plot": [{
+        // add boundaries
+        "add.shp": false,
+        // shapefile filename
+        "shp.file": "",
+        // add elevation map
         "add.dem": false,
+        // dem filename
         "dem.file": ""
-    }]
+    }],
+
+    // Path to the file or directory to save results
+    "outdir": ""
 }
