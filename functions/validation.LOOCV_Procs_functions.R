@@ -8,6 +8,11 @@ LOOCValidationDataProcs <- function(GeneralParameters){
 									getf.no.ext(GeneralParameters$STN.file)))
 	}
 
+	if(is.null(EnvLOOCValidation$cdtData)){
+		InsertMessagesTxt(main.txt.out, "No data found", format = TRUE)
+		return(NULL)
+	}
+
 	xvargal <- c("date.range", "aggr.series", "dicho.fcst", "stat.data", "add.to.plot")
 	EnvLOOCValidation$GeneralParameters[xvargal] <- GeneralParameters[xvargal]
 	GeneralParameters <- EnvLOOCValidation$GeneralParameters
