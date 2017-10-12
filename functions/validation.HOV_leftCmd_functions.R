@@ -1037,7 +1037,7 @@ Validation.HOV.PanelCmd <- function(clim.var){
 		GeneralParameters$STN.file <- str_trim(tclvalue(file.stnfl))
 		GeneralParameters$outdir <- str_trim(tclvalue(file.save1))
 
-		assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
+		# assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
 		tkconfigure(main.win, cursor = 'watch')
 		InsertMessagesTxt(main.txt.out, "Validation .................")
