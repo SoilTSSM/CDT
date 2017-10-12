@@ -63,16 +63,16 @@ ValidationStatisticsFun <- function(x, y, dichotomous){
 
 	##################
 
-	N <- N1+N2+N3+N4
+	N <- N1 + N2 + N3 + N4
 
-	FBS <- (N1+N2)/(N1+N3)
-	CSI <- N1/(N-N4)
-	POD <- N1/(N1+N3)
-	FAR <- N2/(N1+N2)
+	FBS <- (N1 + N2) / (N1 + N3)
+	CSI <- N1 / (N - N4)
+	POD <- N1 / (N1 + N3)
+	FAR <- N2 / (N1 + N2)
 
-	C0 <- N1+N4
-	E0 <- ((N1+N3)*(N1+N2)+(N2+N4)*(N3+N4))/N
-	HSS <- (C0-E0)/(N-E0)
+	C0 <- N1 + N4
+	E0 <- ((N1 + N3) * (N1 + N2) + (N2 + N4) * (N3 + N4)) / N
+	HSS <- (C0 - E0) / (N - E0)
 
 	##################
 
