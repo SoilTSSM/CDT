@@ -40,9 +40,13 @@ LOOCValidation.plotStatMaps <- function(){
 	legendLabel <- breaks
 
 	#################
+	xlim <- EnvLOOCValidationplot$xlim.maps
+	ylim <- EnvLOOCValidationplot$ylim.maps
+
+	#################
 
 	opar <- par(mar = mar)
-	plot(1, xlim = EnvLOOCValidationplot$xlim.maps, ylim = EnvLOOCValidationplot$ylim.maps, xlab = "", ylab = "", type = "n", xaxt = 'n', yaxt = 'n')
+	plot(1, xlim = xlim, ylim = ylim, xlab = "", ylab = "", type = "n", xaxt = 'n', yaxt = 'n')
 	axlabsFun <- if(Sys.info()["sysname"] == "Windows") LatLonAxisLabels else LatLonAxisLabels1
 	axlabs <- axlabsFun(axTicks(1), axTicks(2))
 	axis(side = 1, at = axTicks(1), labels = axlabs$xaxl, tcl = -0.2, cex.axis = 0.8)
@@ -50,8 +54,8 @@ LOOCValidation.plotStatMaps <- function(){
 	title(main = mapstat, cex.main = 1, font.main= 2)
 
 	if(tclvalue(EnvLOOCValidationplot$add.dem) == "1" & !is.null(EnvLOOCValidationplot$dem)){
-		image(EnvLOOCValidationplot$dem$lon, EnvLOOCValidationplot$dem$lat, EnvLOOCValidationplot$dem$dem,
-			col = gray(seq(0.6, 0.1, length = 30)), add = TRUE)
+		image(EnvLOOCValidationplot$dem$elv, col = gray.colors(256), add = TRUE)
+		# image(EnvHOValidationplot$dem$hill, col = gray.colors(256), add = TRUE)
 	}
 
 	if(length(xna) > 0) points(xna, yna, pch = '*')
@@ -90,6 +94,7 @@ LOOCValidation.plotGraph <- function(){
 		title <- tclvalue(EnvLOOCValidationplot$stnIDGraph)
 	}
 
+	##############
 	AggrSeries <- EnvLOOCValidation$opDATA$AggrSeries
 	if(AggrSeries$aggr.fun == "count"){
 		units <- paste0("(Number of day ", AggrSeries$count.fun, " ", AggrSeries$count.thres, ")")
@@ -97,25 +102,57 @@ LOOCValidation.plotGraph <- function(){
 		units <- if(EnvLOOCValidation$GeneralParameters$clim.var == "RR") "(mm)" else "(°C)"
 	}
 
-	if(tclvalue(EnvLOOCValidationplot$type.graph) == "Scatter"){
+	##############
+	plotType <- tclvalue(EnvHOValidationplot$type.graph)
+
+	## choix xlim&ylim default
+	xmin <- min(c(x, y), na.rm = TRUE)
+	xmin <- ifelse(is.infinite(xmin), 0, xmin)
+	xmax <- max(c(x, y), na.rm = TRUE)
+	xmax <- ifelse(is.infinite(xmax), 0, xmax)
+
+	if(plotType == "Scatter"){
+		xlim <- c(xmin, xmax)
+		ylim <- c(xmin, xmax)
+
 		xlab <- paste('Station', units)
 		ylab <- paste('Estimate', units)
-		xmax <- max(c(x, y), na.rm = TRUE)
-		xylim <- c(0, ifelse(is.infinite(xmax), 0, xmax))
-		plot(1, xlim = xylim, ylim = xylim, type = 'n', xlab = xlab, ylab = ylab, main = title)
+
+		legendlab <- NA
+	}
+	if(plotType == "CDF"){
+		xlim <- c(xmin, xmax)
+		ylim <- c(0, 1)
+
+		xlab <- if(EnvHOValidation$GeneralParameters$clim.var == "RR") "Rainfall" else "Temperature"
+		xlab <- paste(xlab, units)
+		ylab <- "Cumulative density"
+
+		legendlab <- c('Station', 'Estimate')
+	}
+	if(plotType == "Lines"){
+		xlim <- NA
+		ylim <- c(xmin, xmax)
+
+		xlab <- ""
+		ylab <- if(EnvHOValidation$GeneralParameters$clim.var == "RR") "Rainfall" else "Temperature"
+		ylab <- paste(ylab, units)
+
+		legendlab <- c('Station', 'Estimate')
+	}
+
+	##############
+
+	if(plotType == "Scatter"){
+		plot(1, xlim = xlim, ylim = ylim, type = 'n', xlab = xlab, ylab = ylab, main = title)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 		abline(v = axTicks(1), col = "lightgray", lty = "dotted")
 		points(x, y, pch = 19, col = 'grey10', cex = 0.7)
 		abline(a = 0, b = 1, lwd = 2, col = 'red')
 	}
 
-	if(tclvalue(EnvLOOCValidationplot$type.graph) == "CDF"){
-		xlab <- if(EnvLOOCValidation$GeneralParameters$clim.var == "RR") "Rainfall" else "Temperature"
-		xlab <- paste(xlab, units)
-		legendlab <- c('Station', 'Estimate')
-		xmax <- max(c(x, y), na.rm = TRUE)
-		xylim <- c(0, ifelse(is.infinite(xmax), 0, xmax))
-		plot(1, xlim = xylim, ylim = c(0, 1), type = 'n', xlab = xlab, ylab = "Cumulative density", main = title)
+	if(plotType == "CDF"){
+		plot(1, xlim = xlim, ylim = ylim, type = 'n', xlab = xlab, ylab = ylab, main = title)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 		abline(v = axTicks(1), col = "lightgray", lty = "dotted")
 
@@ -124,27 +161,20 @@ LOOCValidation.plotGraph <- function(){
 			fx <- ecdf(x)
 			fy <- ecdf(y)
 			lines(xax, fx(xax), lwd = 2, col = 'blue', type = 'l')
-			lines(xax, fy(xax), lwd = 2, col ='red', type = 'l')
+			lines(xax, fy(xax), lwd = 2, col = 'red', type = 'l')
 		}
 		legend('bottomright', legendlab, col = c('blue', 'red'), lwd = 3, bg = 'lightgoldenrodyellow')
 	}
 
-	if(tclvalue(EnvLOOCValidationplot$type.graph) == "Lines"){
-		ylab <- if(EnvLOOCValidation$GeneralParameters$clim.var == "RR") "Rainfall" else "Temperature"
-		ylab <- paste(ylab, units)
-		legendlab <- c('Station', 'Estimate')
-
-		ymax <- max(c(x, y), na.rm = TRUE)
-		xylim <- c(0, ifelse(is.infinite(ymax), 0, ymax))
-
+	if(plotType == "Lines"){
 		layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.9, 0.1), respect = FALSE)
 		op <- par(mar = c(3, 4, 2, 2))
-		plot(EnvLOOCValidation$opDATA$temps, x, ylim = xylim, type = 'n', xlab = "", ylab = ylab, main = title)
+		plot(EnvLOOCValidation$opDATA$temps, x, ylim = ylim, type = 'n', xlab = xlab, ylab = ylab, main = title)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 		abline(v = axTicks(1), col = "lightgray", lty = "dotted")
 
 		lines(EnvLOOCValidation$opDATA$temps, x, lwd = 2, col = 'blue', type = 'l')
-		lines(EnvLOOCValidation$opDATA$temps, y, lwd = 2, col ='red', type = 'l')
+		lines(EnvLOOCValidation$opDATA$temps, y, lwd = 2, col = 'red', type = 'l')
 		par(op)
 
 		op <- par(mar = c(0, 4, 0, 2))
@@ -261,11 +291,4 @@ LOOCValidation.DisplayGraph <- function(parent){
 
 	return(list(onglet, img))
 }
-
-
-
-
-
-
-
 

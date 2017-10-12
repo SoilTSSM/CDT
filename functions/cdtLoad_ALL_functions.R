@@ -182,7 +182,8 @@ source(file.path(apps.dir, 'functions', 'validation_functions.R'))
 source(file.path(apps.dir, 'functions', 'validation.HOV_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'validation.HOV_displayStat_functions.R'))
 source(file.path(apps.dir, 'functions', 'validation.HOV_displayMap_functions.R'))
-source(file.path(apps.dir, 'functions', 'validation.HOV_Proc_functions.R'))
+source(file.path(apps.dir, 'functions', 'validation.HOV_Extraction_functions.R'))
+source(file.path(apps.dir, 'functions', 'validation.HOV_Procs_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'validation.LOOCV_leftCmd_functions.R'))

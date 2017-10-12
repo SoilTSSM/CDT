@@ -24,6 +24,13 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'Validation_HOV.json'))
 	MOIS <- format(ISOdate(2014, 1:12, 1), "%b")
 
+	CHXSTATS0 <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error', 'Mean Error', 'Root Mean Square Error')
+	CHXSTATS1 <- c('Probability Of Detection', 'False Alarm Ratio', 'Frequency Bias', 'Critical Success Index', 'Heidke Skill Score')
+	CHXSTATS2 <- c('Volumetric Hit Index', 'Quantile Probability of Detection', 'Volumetric False Alarm Ratio',
+					'Quantile False Alarm Ratio', 'Volumetric Miss Index', 'Volumetric Critical Success Index',
+					'Quantile Critical Success Index')
+	CHXSTATS <- c(CHXSTATS0, CHXSTATS1, CHXSTATS2)
+
 	##############
 	EnvZoomPars$xx1 <- tclVar()
 	EnvZoomPars$xx2 <- tclVar()
@@ -50,7 +57,7 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "General")
-	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Select Stations")
+	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Extractions")
 	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Validation")
 	cmd.tab4 <- bwAddTab(tknote.cmd, text = "Plot")
 
@@ -73,22 +80,29 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	subfr1 <- bwScrollableFrame(scrw1, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr1, 0, weight = 1)
 
-	#######################
+	##############################################
 
-	frameStn <- ttklabelframe(subfr1, text = "Gauge validation data file", relief = 'groove')
+	frInputData <- ttklabelframe(subfr1, text = "Input data", relief = 'groove')
 
 	file.period <- tclVar()
 	CbperiodVAL <- c('Daily data', 'Pentad data', 'Dekadal data', 'Monthly data')
-	tclvalue(file.period) <- switch(GeneralParameters$stn.file$tstep, 
+	tclvalue(file.period) <- switch(GeneralParameters$Tstep, 
 									'daily' = CbperiodVAL[1], 
 									'pentad' = cb.periodVAL[2],
 									'dekadal' = CbperiodVAL[3],
 									'monthly' = CbperiodVAL[4])
-	file.stnfl <- tclVar(GeneralParameters$stn.file$file)
+	file.stnfl <- tclVar(GeneralParameters$STN.file)
+	dirNetCDF <- tclVar(GeneralParameters$ncdf.file$dir)
 
-	cb.tstep <- ttkcombobox(frameStn, values = CbperiodVAL, textvariable = file.period)
-	cb.stnfl <- ttkcombobox(frameStn, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur)
-	bt.stnfl <- tkbutton(frameStn, text = "...")
+	cb.tstep <- ttkcombobox(frInputData, values = CbperiodVAL, textvariable = file.period)
+	txt.stnfl <- tklabel(frInputData, text = 'Station data file', anchor = 'w', justify = 'left')
+	cb.stnfl <- ttkcombobox(frInputData, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur)
+	bt.stnfl <- tkbutton(frInputData, text = "...")
+
+	txt.dir.ncdf <- tklabel(frInputData, text = "Directory of NetCDF files", anchor = 'w', justify = 'left')
+	set.dir.ncdf <- tkbutton(frInputData, text = "Settings")
+	en.dir.ncdf <- tkentry(frInputData, textvariable = dirNetCDF, width = largeur1)
+	bt.dir.ncdf <- tkbutton(frInputData, text = "...")
 
 	#######################
 
@@ -100,29 +114,57 @@ Validation.HOV.PanelCmd <- function(clim.var){
 			AllOpenFilesData[[nopf+1]] <<- dat.opfiles
 			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
 			tclvalue(file.stnfl) <- AllOpenFilesData[[nopf+1]][[1]]
+
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
-			tkconfigure(cb.file.ncdf, values = unlist(listOpenFiles), textvariable = file.grdCDF)
-			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.plotShp)
+			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.dispShp)
 			tkconfigure(cb.adddem, values = unlist(listOpenFiles), textvariable = file.grddem)
+			tkconfigure(cb.addshp, values = unlist(listOpenFiles), textvariable = file.plotShp)
 		}else return(NULL)
+	})
+
+	tkconfigure(set.dir.ncdf, command = function(){
+		GeneralParameters[["ncdf.file"]] <<- getInfoNetcdfData(main.win, GeneralParameters[["ncdf.file"]], str_trim(tclvalue(dirNetCDF)), tclvalue(file.period))
+	})
+
+	tkconfigure(bt.dir.ncdf, command = function(){
+		dirnc <- tk_choose.dir(getwd(), "")
+		tclvalue(dirNetCDF) <- if(!is.na(dirnc)) dirnc else ""
 	})
 
 	#######################
 
-	tkgrid(cb.tstep, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(cb.stnfl, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
-	tkgrid(bt.stnfl, row = 1, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(cb.tstep, row = 0, column = 0, sticky = '', rowspan = 1, columnspan = 5, padx = 1, pady = 2, ipadx = 1, ipady = 1)
+	tkgrid(txt.stnfl, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(cb.stnfl, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(bt.stnfl, row = 2, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 
-	infobulle(cb.tstep, 'Time step of the data')
-	status.bar.display(cb.tstep, TextOutputVar, 'Time step of the data')
-	infobulle(cb.stnfl, 'Select the station data in the list')
+	tkgrid(txt.dir.ncdf, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(set.dir.ncdf, row = 3, column = 3, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(en.dir.ncdf, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+	tkgrid(bt.dir.ncdf, row = 4, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
+
+	infobulle(cb.tstep, 'Select the time step of the data')
+	status.bar.display(cb.tstep, TextOutputVar, 'Select the time step of the data')
+	infobulle(cb.stnfl, 'Select the station data from the list')
 	status.bar.display(cb.stnfl, TextOutputVar, 'Select the file containing the station data in CDT format')
 	infobulle(bt.stnfl, 'Browse file if not listed')
 	status.bar.display(bt.stnfl, TextOutputVar, 'Browse file if not listed')
 
+	infobulle(en.dir.ncdf, 'Enter the full path to the directory containing the NetCDF files')
+	status.bar.display(en.dir.ncdf, TextOutputVar, 'Enter the full path to the directory containing the NetCDF files')
+	infobulle(bt.dir.ncdf, 'Or browse here')
+	status.bar.display(bt.dir.ncdf, TextOutputVar, 'Or browse here')
+	infobulle(set.dir.ncdf, 'Setting netcdf data options')
+	status.bar.display(set.dir.ncdf, TextOutputVar, 'Setting netcdf data options')
+
 	#######################
 
 	tkbind(cb.tstep, "<<ComboboxSelected>>", function(){
+		tclvalue(day.txtVar) <- switch(tclvalue(file.period), 'Dekadal data' = 'Dek', 'Pentad data' = 'Pen', 'Day')
+		statedate <- if(tclvalue(file.period) == 'Monthly data') 'disabled' else 'normal'
+		tkconfigure(en.day1, state = statedate)
+		tkconfigure(en.day2, state = statedate)
+
 		AGGREGFUN <- c("mean", "sum", "count")
 		if(tclvalue(aggr.data) == "0"){
 			stateo0a <- "disabled"
@@ -144,78 +186,52 @@ Validation.HOV.PanelCmd <- function(clim.var){
 		# tkconfigure(en.minfrac, state = stateo0b)
 		tkconfigure(cb.opfun, state = stateo1)
 		tkconfigure(en.opthres, state = stateo2)
-		CHXSTATS <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error', 'Mean Error')
-		CHXSTATS1 <- c('Probability Of Detection', 'False Alarm Ratio', 'Frequency Bias', 'Critical Success Index', 'Heidke Skill Score')
-		CHXSTATS <- c(CHXSTATS, CHXSTATS1)
-		# if(clim.var == 'RR' & tclvalue(file.period) == 'Daily data' & tclvalue(aggr.data) == "0"){
-		# 	CHXSTATS <- c(CHXSTATS, CHXSTATS1)
-		# }else{
-		# 	if(tclvalue(EnvHOValidationplot$statistics)%in%CHXSTATS1) tclvalue(EnvHOValidationplot$statistics) <- 'Correlation'
-		# }
 		tkconfigure(cb.stats.maps, values = CHXSTATS)
 	})
 
+	##############################################
 
-	#######################
+	frtxtDate <- ttklabelframe(subfr1, text = "Extraction Date Range", relief = 'groove')
 
-	frameNcdf <- ttklabelframe(subfr1, text = "NetCDF files", relief = 'groove')
+	istart.yrs <- tclVar(GeneralParameters$Extract.Date$start.year)
+	istart.mon <- tclVar(GeneralParameters$Extract.Date$start.mon)
+	istart.day <- tclVar(GeneralParameters$Extract.Date$start.dek)
+	iend.yrs <- tclVar(GeneralParameters$Extract.Date$end.year)
+	iend.mon <- tclVar(GeneralParameters$Extract.Date$end.mon)
+	iend.day <- tclVar(GeneralParameters$Extract.Date$end.dek)
 
-	dirNetCDF <- tclVar(GeneralParameters$ncdf.file$dir)
-	file.grdCDF <- tclVar(GeneralParameters$ncdf.file$sample)
-	if(clim.var == 'RR') init.ff <- "rr_mrg_%s%s%s.nc"
-	if(clim.var == 'TT') init.ff <- "tmax_mrg_%s%s%s.nc"
-	netCDFff <- tclVar(init.ff)
+	txtdek <- switch(GeneralParameters$Tstep, 'dekadal' = 'Dek', 'pentad' = 'Pen', 'Day')
+	day.txtVar <- tclVar(txtdek)
+	statedate <- if(GeneralParameters$Tstep == 'monthly') 'disabled' else 'normal'
 
-	txt.dir.ncdf <- tklabel(frameNcdf, text = "Directory of NetCDF files", anchor = 'w', justify = 'left')
-	en.dir.ncdf <- tkentry(frameNcdf, textvariable = dirNetCDF, width = largeur1)
-	bt.dir.ncdf <- tkbutton(frameNcdf, text = "...")
-	txt.file.ncdf <- tklabel(frameNcdf, text = "NetCDF's sample file", anchor = 'w', justify = 'left')
-	cb.file.ncdf <- ttkcombobox(frameNcdf, values = unlist(listOpenFiles), textvariable = file.grdCDF, width = largeur)
-	bt.file.ncdf <- tkbutton(frameNcdf, text = "...")
-	txt.ff.ncdf <- tklabel(frameNcdf, text = "NetCDF file format", anchor = 'e', justify = 'right')
-	en.ff.ncdf <- tkentry(frameNcdf, textvariable = netCDFff, width = wncdf_ff)
+	txt.deb <- tklabel(frtxtDate, text = 'Start date', anchor = 'e', justify = 'right')
+	txt.fin <- tklabel(frtxtDate, text = 'End date', anchor = 'e', justify = 'right')
+	txt.yrs <- tklabel(frtxtDate, text = 'Year')
+	txt.mon <- tklabel(frtxtDate, text = 'Month')
+	txt.day <- tklabel(frtxtDate, text = tclvalue(day.txtVar), textvariable = day.txtVar)
+	en.yrs1 <- tkentry(frtxtDate, width = 4, textvariable = istart.yrs, justify = "right")
+	en.mon1 <- tkentry(frtxtDate, width = 4, textvariable = istart.mon, justify = "right")
+	en.day1 <- tkentry(frtxtDate, width = 4, textvariable = istart.day, justify = "right", state = statedate)
+	en.yrs2 <- tkentry(frtxtDate, width = 4, textvariable = iend.yrs, justify = "right")
+	en.mon2 <- tkentry(frtxtDate, width = 4, textvariable = iend.mon, justify = "right")
+	en.day2 <- tkentry(frtxtDate, width = 4, textvariable = iend.day, justify = "right", state = statedate)
 
-	#######################
-	tkconfigure(bt.dir.ncdf, command = function(){
-		dir4cdf <- tk_choose.dir(tclvalue(dirNetCDF), "")
-		tclvalue(dirNetCDF) <- if(is.na(dir4cdf)) "" else dir4cdf
-	})
+	tkgrid(txt.deb, row = 1, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.fin, row = 2, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.yrs, row = 0, column = 1, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.mon, row = 0, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.day, row = 0, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.yrs1, row = 1, column = 1, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.mon1, row = 1, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.day1, row = 1, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.yrs2, row = 2, column = 1, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.mon2, row = 2, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.day2, row = 2, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	tkconfigure(bt.file.ncdf, command = function(){
-		nc.opfiles <- getOpenNetcdf(main.win, all.opfiles, initialdir = tclvalue(dirNetCDF))
-		if(!is.null(nc.opfiles)){
-			nopf <- length(AllOpenFilesType)
-			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
-			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
-			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
-			tclvalue(file.grdCDF) <- AllOpenFilesData[[nopf+1]][[1]]
-			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
-			tkconfigure(cb.file.ncdf, values = unlist(listOpenFiles), textvariable = file.grdCDF)
-			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.plotShp)
-			tkconfigure(cb.adddem, values = unlist(listOpenFiles), textvariable = file.grddem)
-		}else return(NULL)
-	})
+	infobulle(frtxtDate, 'Start and end date to perform the merging')
+	status.bar.display(frtxtDate, TextOutputVar, 'Start and end date to perform the merging')
 
-	#############################
-	tkgrid(txt.dir.ncdf, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.dir.ncdf, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(bt.dir.ncdf, row = 1, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.file.ncdf, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(cb.file.ncdf, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(bt.file.ncdf, row = 3, column = 5, sticky = 'e', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.ff.ncdf, row = 4, column = 0, sticky = 'e', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.ff.ncdf, row = 4, column = 2, sticky = 'w', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	infobulle(en.dir.ncdf, 'Enter the full path to directory containing the NetCDF files')
-	status.bar.display(en.dir.ncdf, TextOutputVar, 'Enter the full path to directory containing the NetCDF files')
-	infobulle(en.ff.ncdf, 'Enter the format of the NetCDF files names, example: rr_mrg_1983011.nc')
-	status.bar.display(en.ff.ncdf, TextOutputVar, 'Enter the format of the NetCDF files names, example: rr_mrg_1983011.nc')
-	infobulle(cb.file.ncdf, 'Select the file in the list')
-	status.bar.display(cb.file.ncdf, TextOutputVar, 'File containing a sample of NetCDF data')
-	infobulle(bt.file.ncdf, 'Browse file if not listed')
-	status.bar.display(bt.file.ncdf, TextOutputVar, 'Browse file if not listed')
-
-	#######################
+	##############################################
 
 	frameDirSav <- ttklabelframe(subfr1, text = "Directory to save result", relief = 'groove')
 
@@ -238,8 +254,8 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	status.bar.display(bt.dir.save, TextOutputVar, 'Browse here the full path to the directory to save result')
 
 	#############################
-	tkgrid(frameStn, row = 0, column = 0, sticky = 'we')
-	tkgrid(frameNcdf, row = 1, column = 0, sticky = 'we', pady = 3)
+	tkgrid(frInputData, row = 0, column = 0, sticky = 'we')
+	tkgrid(frtxtDate, row = 1, column = 0, sticky = '', pady = 1)
 	tkgrid(frameDirSav, row = 2, column = 0, sticky = 'we', pady = 3)
 
 	#######################################################################################################
@@ -255,7 +271,7 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr2, 0, weight = 1)
 
-	#######################
+	##############################################
 
 	frameSelect <- ttklabelframe(subfr2, text = "Selection Type", relief = 'groove')
 
@@ -289,7 +305,7 @@ Validation.HOV.PanelCmd <- function(clim.var){
 			statepolygon <- 'normal'
 
 			if(tclvalue(EnvHOValidationplot$namePoly) != ''){
-				shpfopen <- getShpOpenData(file.plotShp)
+				shpfopen <- getShpOpenData(file.dispShp)
 				if(!is.null(shpfopen)){
 					shpf <- shpfopen[[2]]
 					ids <- as.numeric(tclvalue(tcl(EnvHOValidationplot$cb.shpAttr, 'current')))+1
@@ -327,19 +343,19 @@ Validation.HOV.PanelCmd <- function(clim.var){
 		}
 	})
 
-	#######################
+	##############################################
 
 	frameShp <- ttklabelframe(subfr2, text = "Boundaries Shapefiles", relief = 'groove')
 
-	file.plotShp <- tclVar(GeneralParameters$shp.file$shp)
+	file.dispShp <- tclVar(GeneralParameters$shp.file$shp)
 	shpAttr <- tclVar(GeneralParameters$shp.file$attr)
 	EnvHOValidationplot$namePoly <- tclVar()
 
-	cb.shpF <- ttkcombobox(frameShp, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur)
+	cb.shpF <- ttkcombobox(frameShp, values = unlist(listOpenFiles), textvariable = file.dispShp, width = largeur)
 	bt.shpF <- tkbutton(frameShp, text = "...")
 	txt.attr.shpF <- tklabel(frameShp, text = "Attribute field to be used and displayed", anchor = 'w', justify = 'left')
 	EnvHOValidationplot$cb.shpAttr <- ttkcombobox(frameShp, values='', textvariable = shpAttr, width = wttkcombo, state = 'disabled')
-	cb.Polygon <- ttkcombobox(frameShp, values='', textvariable = EnvHOValidationplot$namePoly, width = wttkcombo, state = 'disabled')
+	cb.Polygon <- ttkcombobox(frameShp, values = '', textvariable = EnvHOValidationplot$namePoly, width = wttkcombo, state = 'disabled')
 
 	tkgrid(cb.shpF, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 7, padx = 1, pady = 1)
 	tkgrid(bt.shpF, row = 0, column = 7, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1)
@@ -355,20 +371,22 @@ Validation.HOV.PanelCmd <- function(clim.var){
 			AllOpenFilesType[[nopf+1]] <<- 'shp'
 			AllOpenFilesData[[nopf+1]] <<- shp.opfiles
 			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
-			tclvalue(file.plotShp) <- AllOpenFilesData[[nopf+1]][[1]]
-			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.plotShp)
+			tclvalue(file.dispShp) <- AllOpenFilesData[[nopf+1]][[1]]
+
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
-			tkconfigure(cb.file.ncdf, values = unlist(listOpenFiles), textvariable = file.grdCDF)
+			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.dispShp)
 			tkconfigure(cb.adddem, values = unlist(listOpenFiles), textvariable = file.grddem)
+			tkconfigure(cb.addshp, values = unlist(listOpenFiles), textvariable = file.plotShp)
 
 			###
-			shpf <- getShpOpenData(file.plotShp)
+			shpf <- getShpOpenData(file.dispShp)
 			dat <- shpf[[2]]@data
 			AttrTable <- names(dat)
 			tclvalue(shpAttr) <- AttrTable[1]
 
 			adminN <- as.character(dat[, 1])
 			name.poly <- levels(as.factor(adminN))
+			if(length(name.poly) < 2) name.poly <- c(name.poly, "")
 			tclvalue(EnvHOValidationplot$namePoly) <- name.poly[1]
 
 			tkconfigure(EnvHOValidationplot$cb.shpAttr, values = AttrTable, textvariable = shpAttr)
@@ -378,13 +396,14 @@ Validation.HOV.PanelCmd <- function(clim.var){
 
 	#######################
 	tkbind(cb.shpF, "<<ComboboxSelected>>", function(){
-		shpf <- getShpOpenData(file.plotShp)
+		shpf <- getShpOpenData(file.dispShp)
 		if(!is.null(shpf)){
 			dat <- shpf[[2]]@data
 			AttrTable <- names(dat)
 			tclvalue(shpAttr) <- AttrTable[1]
 			adminN <- as.character(dat[, as.numeric(tclvalue(tcl(EnvHOValidationplot$cb.shpAttr, 'current')))+1])
 			name.poly <- levels(as.factor(adminN))
+			if(length(name.poly) < 2) name.poly <- c(name.poly, "")
 		}else{
 			AttrTable <- ''
 			tclvalue(shpAttr) <- ''
@@ -397,11 +416,12 @@ Validation.HOV.PanelCmd <- function(clim.var){
 
 	########################
 	tkbind(EnvHOValidationplot$cb.shpAttr, "<<ComboboxSelected>>", function(){
-		shpf <- getShpOpenData(file.plotShp)
+		shpf <- getShpOpenData(file.dispShp)
 		if(!is.null(shpf)){
 			dat <- shpf[[2]]@data
 			adminN <- as.character(dat[, as.numeric(tclvalue(tcl(EnvHOValidationplot$cb.shpAttr, 'current')))+1])
 			name.poly <- levels(as.factor(adminN))
+			if(length(name.poly) < 2) name.poly <- c(name.poly, "")
 		}else{
 			name.poly <- ''
 		}
@@ -412,7 +432,7 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	########################
 	tkbind(cb.Polygon, "<<ComboboxSelected>>", function(){
 		if(tclvalue(EnvHOValidationplot$namePoly) != ''){
-			shpfopen <- getShpOpenData(file.plotShp)
+			shpfopen <- getShpOpenData(file.dispShp)
 			if(!is.null(shpfopen)){
 				shpf <- shpfopen[[2]]
 				ids <- as.numeric(tclvalue(tcl(EnvHOValidationplot$cb.shpAttr, 'current')))+1
@@ -436,10 +456,13 @@ Validation.HOV.PanelCmd <- function(clim.var){
 		}
 	})
 
+	##############################################
+
+	frameIMgMan <- tkframe(subfr2)
 
 	#######################
 
-	frameZoom <- ttklabelframe(subfr2, text = "ZOOM", relief = 'groove')
+	frameZoom <- ttklabelframe(frameIMgMan, text = "ZOOM", relief = 'groove')
 
 	EnvZoomPars$btZoomP <- tkbutton(frameZoom, image = pikZoomPlus, relief = 'raised', bg = 'lightblue', state = 'normal')
 	EnvZoomPars$btZoomM <- tkbutton(frameZoom, image = pikZoomMinus, relief = 'raised', bg = 'lightblue', state = 'normal')
@@ -469,9 +492,9 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	infobulle(EnvZoomPars$btReset,' Zoom Reset')
 	status.bar.display(EnvZoomPars$btReset, TextOutputVar,' Zoom Reset')
 
-	#######################
+	##############################################
 
-	frameDisp <- tkframe(subfr2)
+	frameDisp <- tkframe(frameIMgMan)
 
 	EnvHOValidationplot$minlonRect <- tclVar()
 	EnvHOValidationplot$maxlonRect <- tclVar()
@@ -494,7 +517,7 @@ Validation.HOV.PanelCmd <- function(clim.var){
 
 	tkconfigure(bt.dispMap, command = function(){
 		donne <- getStnOpenData(file.stnfl)
-		shpofile <- getShpOpenData(file.plotShp)
+		shpofile <- getShpOpenData(file.dispShp)
 		if(!is.null(donne)){
 			EnvHOValidation$donne <- donne[1:3, -1]
 			lonStn <- as.numeric(EnvHOValidation$donne[2, ])
@@ -507,19 +530,21 @@ Validation.HOV.PanelCmd <- function(clim.var){
 			shpf <- shpofile[[2]]
 		}else{
 			plotOK <- FALSE
-			InsertMessagesTxt(main.txt.out, 'Provide the station data', format = TRUE)
+			InsertMessagesTxt(main.txt.out, 'No station data found', format = TRUE)
 		}
+
 		if(tclvalue(EnvHOValidationplot$type.select) == 'Polygons' & plotOK){
 			if(!is.null(shpofile)){
 				shpf <- shpofile[[2]]
-				lo1 <- min(lo1, round(bbox(shpf)[1, 1], 4))
-				lo2 <- max(lo2, round(bbox(shpf)[1, 2], 4))
-				la1 <- min(la1, round(bbox(shpf)[2, 1], 4))
-				la2 <- max(la2, round(bbox(shpf)[2, 2], 4))
+				bbxshp <- round(bbox(shpf), 4)
+				lo1 <- min(lo1, bbxshp[1, 1])
+				lo2 <- max(lo2, bbxshp[1, 2])
+				la1 <- min(la1, bbxshp[2, 1])
+				la2 <- max(la2, bbxshp[2, 2])
 				plotOK <- TRUE
 			}else{
 				plotOK <- FALSE
-				InsertMessagesTxt(main.txt.out, 'Provide the ESRI shapfile for for administrative boundaries', format = TRUE)
+				InsertMessagesTxt(main.txt.out, 'No ESRI shapfile for administrative boundaries found', format = TRUE)
 			}
 		}
 
@@ -554,13 +579,82 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	tkgrid(en.maxlat, row = 3, column = 2, sticky = 'we', rowspan = 1, columnspan = 1)
 
 	#######################
+	tkgrid(frameZoom, row = 0, column = 0, sticky = 'ns', columnspan = 2, ipady = 5)
+	tkgrid(frameDisp, row = 0, column = 2, sticky = 'we', columnspan = 4)
 
-	tkgrid(frameSelect, row = 0, column = 0, sticky = 'we', columnspan = 6, pady = 5)
-	tkgrid(frameShp, row = 1, column = 0, sticky = 'we', columnspan = 6)
-	tkgrid(frameZoom, row = 2, column = 0, sticky = 'ns', columnspan = 2, ipady = 5)
-	tkgrid(frameDisp, row = 2, column = 2, sticky = 'we', columnspan = 4)
+	##############################################
 
-	##########################
+	if(!is.null(EnvHOValidationplot$hovd)){
+		stateBTEx <- if(EnvHOValidationplot$hovd == "1") "normal" else "disabled"
+	}else stateBTEx <- "normal"
+
+	bt.extract.station <- ttkbutton(subfr2, text = "Extract Data for Validation", state = stateBTEx)
+
+	tkconfigure(bt.extract.station, command = function(){
+		GeneralParameters$clim.var <- clim.var
+		GeneralParameters$Tstep <- switch(tclvalue(file.period),
+		 								'Daily data' = 'daily',
+		 								'Pentad data' = 'pentad',
+										'Dekadal data' =  'dekadal',
+										'Monthly data' = 'monthly')
+		GeneralParameters$STN.file <- str_trim(tclvalue(file.stnfl))
+		GeneralParameters$ncdf.file$dir <- str_trim(tclvalue(dirNetCDF))
+		GeneralParameters$outdir <- str_trim(tclvalue(file.save1))
+
+		GeneralParameters$Extract.Date$start.year <- as.numeric(str_trim(tclvalue(istart.yrs)))
+		GeneralParameters$Extract.Date$start.mon <- as.numeric(str_trim(tclvalue(istart.mon)))
+		GeneralParameters$Extract.Date$start.dek <- as.numeric(str_trim(tclvalue(istart.day)))
+		GeneralParameters$Extract.Date$end.year <- as.numeric(str_trim(tclvalue(iend.yrs)))
+		GeneralParameters$Extract.Date$end.mon <- as.numeric(str_trim(tclvalue(iend.mon)))
+		GeneralParameters$Extract.Date$end.dek <- as.numeric(str_trim(tclvalue(iend.day)))
+
+
+		GeneralParameters$shp.file$shp <- str_trim(tclvalue(file.dispShp))
+		GeneralParameters$shp.file$attr <- str_trim(tclvalue(shpAttr))
+
+		GeneralParameters$type.select <- switch(tclvalue(EnvHOValidationplot$type.select),
+													'All Stations' = 'all',
+													'Rectangle' = 'rect',
+													'Polygons' = 'poly')
+		GeneralParameters$Geom <- NULL
+		GeneralParameters$Geom$minlon <- as.numeric(str_trim(tclvalue(EnvHOValidationplot$minlonRect)))
+		GeneralParameters$Geom$maxlon <- as.numeric(str_trim(tclvalue(EnvHOValidationplot$maxlonRect)))
+		GeneralParameters$Geom$minlat <- as.numeric(str_trim(tclvalue(EnvHOValidationplot$minlatRect)))
+		GeneralParameters$Geom$maxlat <- as.numeric(str_trim(tclvalue(EnvHOValidationplot$maxlatRect)))
+		GeneralParameters$Geom$namePoly <- str_trim(tclvalue(EnvHOValidationplot$namePoly))
+
+		# assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
+
+		tkconfigure(main.win, cursor = 'watch')
+		InsertMessagesTxt(main.txt.out, "Extract data .................")
+		tcl('update')
+		ret <- tryCatch(
+			HOV_DataExtraction(GeneralParameters),
+			#warning = function(w) warningFun(w),
+			error = function(e){
+				 errorFun(e)
+			},
+			finally = {
+				tkconfigure(main.win, cursor = '')
+			}
+		)
+
+		if(!is.null(ret)){
+			if(ret == 0){
+				InsertMessagesTxt(main.txt.out, "Data extraction finished successfully")
+			}else InsertMessagesTxt(main.txt.out, "Data extraction failed", format = TRUE)
+		}else InsertMessagesTxt(main.txt.out, "Data extraction failed", format = TRUE)
+	})
+
+	#######################
+
+	tkgrid(frameSelect, row = 0, column = 0, sticky = 'we')
+	tkgrid(frameShp, row = 1, column = 0, sticky = 'we', pady = 3)
+	tkgrid(frameIMgMan, row = 2, column = 0, sticky = 'we', pady = 3)
+	tkgrid(bt.extract.station, row = 3, column = 0, sticky = 'we', pady = 3)
+
+	##############################################
+
 	tkconfigure(EnvZoomPars$btReset, command = function(){
 		ZoomXYval <<- ZoomXYval0
 		tclvalue(EnvZoomPars$xx1) <- ZoomXYval0[1]
@@ -693,7 +787,51 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	subfr3 <- bwScrollableFrame(scrw3, width = wscrlwin, height = hscrlwin)
 	tkgrid.columnconfigure(subfr3, 0, weight = 1)
 
-	#######################
+	##############################################
+
+	frameHOV <- ttklabelframe(subfr3, text = "Hold-Out Validation data", relief = 'groove')
+
+	EnvHOValidationplot$hovd <- tclVar(0)
+	file.hovd <- tclVar()
+
+	sateHOVd <- if(EnvHOValidationplot$hovd == "1") "normal" else "disabled"
+
+	chk.hovd <- tkcheckbutton(frameHOV, variable = EnvHOValidationplot$hovd, text = "Hold-Out Validation already performed", anchor = 'w', justify = 'left')
+	en.hovd <- tkentry(frameHOV, textvariable = file.hovd, width = largeur1, state = sateHOVd)
+	bt.hovd <- tkbutton(frameHOV, text = "...", state = sateHOVd)
+
+	tkconfigure(bt.hovd, command = function(){
+		filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
+		path.hovd <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
+		if(path.hovd == "") return(NULL)
+		tclvalue(file.hovd) <- path.hovd
+
+		if(file.exists(tclvalue(file.hovd))){
+			hovd.data <- try(readRDS(tclvalue(file.hovd)), silent = TRUE)
+			if(inherits(hovd.data, "try-error")){
+				InsertMessagesTxt(main.txt.out, 'Unable to load Hold-Out Validation data', format = TRUE)
+				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', hovd.data[1]), format = TRUE)
+				return(NULL)
+			}
+			EnvHOValidation <<- hovd.data
+			EnvHOValidationplot$file.hovd <- tclvalue(file.hovd)
+		} 
+	})
+
+	tkgrid(chk.hovd, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.hovd, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.hovd, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+
+	###############
+	tkbind(chk.hovd, "<Button-1>", function(){
+		sateHOVd <- if(tclvalue(EnvHOValidationplot$hovd) == '1') 'disabled' else 'normal'
+		tkconfigure(en.hovd, state = sateHOVd)
+		tkconfigure(bt.hovd, state = sateHOVd)
+		stateBTEx <- if(tclvalue(EnvHOValidationplot$hovd) == '1') 'normal' else 'disabled'
+		tkconfigure(bt.extract.station, state = stateBTEx)
+	})
+
+	##############################################
 
 	frameSeason <- ttklabelframe(subfr3, text = "Years & Season", relief = 'groove')
 
@@ -735,7 +873,7 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	infobulle(cb.month2, 'End month of the season to calculate the statistics')
 	status.bar.display(cb.month2, TextOutputVar, 'End month of the season to calculate the statistics')
 
-	#############################
+	##############################################
 
 	frameAggr <- ttklabelframe(subfr3, text = "Data aggregation", relief = 'groove')
 
@@ -746,7 +884,7 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	opr.thres <- tclVar(GeneralParameters$aggr.series$opr.thres)
 
 	AGGREGFUN <- c("mean", "sum", "count")
-	if(GeneralParameters$stn.file$tstep != 'daily' & !GeneralParameters$aggr.series$aggr.data) AGGREGFUN <- AGGREGFUN[-3]
+	if(GeneralParameters$Tstep != 'daily' & !GeneralParameters$aggr.series$aggr.data) AGGREGFUN <- AGGREGFUN[-3]
 	if(!GeneralParameters$aggr.series$aggr.data){
 		stateo0a <- 'disabled'
 		stateo0b <- 'disabled'
@@ -813,15 +951,6 @@ Validation.HOV.PanelCmd <- function(clim.var){
 		# tkconfigure(en.minfrac, state = stateo0b)
 		tkconfigure(cb.opfun, state = stateo1)
 		tkconfigure(en.opthres, state = stateo2)
-
-		CHXSTATS <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error', 'Mean Error')
-		CHXSTATS1 <- c('Probability Of Detection', 'False Alarm Ratio', 'Frequency Bias', 'Critical Success Index', 'Heidke Skill Score')
-		CHXSTATS <- c(CHXSTATS, CHXSTATS1)
-		# if(clim.var == 'RR' & tclvalue(file.period) == 'Daily data' & tclvalue(aggr.data) == "1"){
-		# 	CHXSTATS <- c(CHXSTATS, CHXSTATS1)
-		# }else{
-		# 	if(tclvalue(EnvHOValidationplot$statistics)%in%CHXSTATS1) tclvalue(EnvHOValidationplot$statistics) <- 'Correlation'
-		# }
 		tkconfigure(cb.stats.maps, values = CHXSTATS)
 	})
 
@@ -859,7 +988,7 @@ Validation.HOV.PanelCmd <- function(clim.var){
 		tkconfigure(cb.stats.graph, values = TYPEGRAPH)
 	})
 
-	#############################
+	##############################################
 
 	frameDicho <- ttklabelframe(subfr3, text = "Dichotomous validation", relief = 'groove')
 
@@ -880,32 +1009,11 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	infobulle(en.dicho, 'Threshold to be specified to separate "yes" and "no" events')
 	status.bar.display(en.dicho, TextOutputVar, 'Threshold to be specified to separate "yes" and "no" events')
 
-	#############################
+	##############################################
 
 	bt.calc.stat <- ttkbutton(subfr3, text = "Calculate Statistics")
 
 	tkconfigure(bt.calc.stat, command = function(){
-		GeneralParameters$clim.var <- clim.var
-		GeneralParameters$stn.file$tstep <- switch(tclvalue(file.period),
-		 									'Daily data' = 'daily',
-		 									'Pentad data' = 'pentad',
-											'Dekadal data' =  'dekadal',
-											'Monthly data' = 'monthly')
-		GeneralParameters$stn.file$file <- str_trim(tclvalue(file.stnfl))
-
-		GeneralParameters$ncdf.file$dir <- str_trim(tclvalue(dirNetCDF))
-		GeneralParameters$ncdf.file$sample <- str_trim(tclvalue(file.grdCDF))
-		GeneralParameters$ncdf.file$format <- str_trim(tclvalue(netCDFff))
-		GeneralParameters$outdir <- str_trim(tclvalue(file.save1))
-
-		GeneralParameters$shp.file$shp <- str_trim(tclvalue(file.plotShp))
-		GeneralParameters$shp.file$attr <- str_trim(tclvalue(shpAttr))
-
-		GeneralParameters$type.select <- switch(tclvalue(EnvHOValidationplot$type.select),
-													'All Stations' = 'all',
-													'Rectangle' = 'rect',
-													'Polygons' = 'poly')
-
 		GeneralParameters$date.range$start.month <- which(MOIS%in%str_trim(tclvalue(start.mois)))
 		GeneralParameters$date.range$end.month <- which(MOIS%in%str_trim(tclvalue(end.mois)))
 		GeneralParameters$date.range$start.year <- as.numeric(str_trim(tclvalue(start.year)))
@@ -925,14 +1033,11 @@ Validation.HOV.PanelCmd <- function(clim.var){
 		GeneralParameters$dicho.fcst$opr.thres <- as.numeric(str_trim(tclvalue(dicho.thres)))
 		GeneralParameters$dicho.fcst$opr.fun <- str_trim(tclvalue(dicho.opr))
 
-		GeneralParameters$Geom <- NULL
-		GeneralParameters$Geom$minlon <- as.numeric(str_trim(tclvalue(EnvHOValidationplot$minlonRect)))
-		GeneralParameters$Geom$maxlon <- as.numeric(str_trim(tclvalue(EnvHOValidationplot$maxlonRect)))
-		GeneralParameters$Geom$minlat <- as.numeric(str_trim(tclvalue(EnvHOValidationplot$minlatRect)))
-		GeneralParameters$Geom$maxlat <- as.numeric(str_trim(tclvalue(EnvHOValidationplot$maxlatRect)))
-		GeneralParameters$Geom$namePoly <- str_trim(tclvalue(EnvHOValidationplot$namePoly))
+		#####
+		GeneralParameters$STN.file <- str_trim(tclvalue(file.stnfl))
+		GeneralParameters$outdir <- str_trim(tclvalue(file.save1))
 
-		# assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
+		assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
 		tkconfigure(main.win, cursor = 'watch')
 		InsertMessagesTxt(main.txt.out, "Validation .................")
@@ -950,7 +1055,7 @@ Validation.HOV.PanelCmd <- function(clim.var){
 
 		if(!is.null(ret)){
 			if(ret == 0){
-				InsertMessagesTxt(main.txt.out, "Validation finished successfully")
+				InsertMessagesTxt(main.txt.out, "Statistics calculation finished successfully")
 
 				if(tclvalue(stat.data) == 'Per station'){
 					tkconfigure(cb.stat.sel, values = EnvHOValidation$opDATA$id)
@@ -964,8 +1069,29 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	})
 
 	#############################
+	tkgrid(frameHOV, row = 0, column = 0, sticky = 'we')
+	tkgrid(frameSeason, row = 1, column = 0, sticky = 'we', pady = 1)
+	tkgrid(frameAggr, row = 2, column = 0, sticky = 'we', pady = 1)
+	tkgrid(cb.stat.data, row = 3, column = 0, sticky = 'we', pady = 3)
+	tkgrid(frameDicho, row = 4, column = 0, sticky = '', pady = 3)
+	tkgrid(bt.calc.stat, row = 5, column = 0, sticky = 'we', pady = 3)
 
-	frameStatTab <- ttklabelframe(subfr3, text = "Display Statistics Table", relief = 'groove')
+	#######################################################################################################
+
+	#Tab4
+	frTab4 <- tkframe(cmd.tab4)
+	tkgrid(frTab4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab4, 0, weight = 1)
+
+	scrw4 <- bwScrolledWindow(frTab4)
+	tkgrid(scrw4)
+	tkgrid.columnconfigure(scrw4, 0, weight = 1)
+	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr4, 0, weight = 1)
+
+	##############################################
+
+	frameStatTab <- ttklabelframe(subfr4, text = "Display Statistics Table", relief = 'groove')
 
 	STATIONIDS <- ''
 	stn.stat.tab <- tclVar()
@@ -1041,35 +1167,11 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	tkgrid(cb.stat.sel, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(bt.stat.next, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	#############################
-	tkgrid(frameSeason, row = 0, column = 0, sticky = 'we')
-	tkgrid(frameAggr, row = 1, column = 0, sticky = 'we', pady = 3)
-	tkgrid(cb.stat.data, row = 2, column = 0, sticky = 'we', pady = 3)
-	tkgrid(frameDicho, row = 3, column = 0, sticky = '', pady = 3)
-	tkgrid(bt.calc.stat, row = 4, column = 0, sticky = 'we', pady = 3)
-	tkgrid(frameStatTab, row = 5, column = 0, sticky = 'we', pady = 3)
-
-	#######################################################################################################
-
-	#Tab4
-	frTab4 <- tkframe(cmd.tab4)
-	tkgrid(frTab4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid.columnconfigure(frTab4, 0, weight = 1)
-
-	scrw4 <- bwScrolledWindow(frTab4)
-	tkgrid(scrw4)
-	tkgrid.columnconfigure(scrw4, 0, weight = 1)
-	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
-	tkgrid.columnconfigure(subfr4, 0, weight = 1)
-
-	#######################
+	##############################################
 
 	frameMap <- ttklabelframe(subfr4, text = "Statistics Maps", relief = 'groove')
 
 	EnvHOValidationplot$statistics <- tclVar('Correlation')
-	CHXSTATS <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error', 'Mean Error')
-	# if(clim.var == 'RR' & GeneralParameters$stn.file$tstep == 'daily' & !GeneralParameters$aggr.series$aggr.data)
-	CHXSTATS <- c(CHXSTATS, 'Probability Of Detection', 'False Alarm Ratio', 'Frequency Bias', 'Critical Success Index', 'Heidke Skill Score')
 
 	stateMaps <- if(GeneralParameters$stat.data == 'stn') 'normal' else 'disabled'
 
@@ -1079,15 +1181,10 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	EnvHOValidationplot$notebookTab.maps <- NULL
 	tkconfigure(bt.stats.maps, command = function(){
 		if(!is.null(EnvHOValidation$Statistics)){
-			shpofile <- getShpOpenData(file.plotShp)
-			ocrds <- getBoundaries(shpofile[[2]])
-			# EnvHOValidationplot$xlim.maps <- range(c(ocrds[, 1], EnvHOValidation$opDATA$lon), na.rm = TRUE)
-			# EnvHOValidationplot$ylim.maps <- range(c(ocrds[, 2], EnvHOValidation$opDATA$lat), na.rm = TRUE)
-
 			EnvHOValidationplot$xlim.maps <- range(EnvHOValidation$opDATA$lon, na.rm = TRUE)
 			EnvHOValidationplot$ylim.maps <- range(EnvHOValidation$opDATA$lat, na.rm = TRUE)
 
-			imgContainer <- HOValidation.DisplayStatMaps(tknotes, ocrds)
+			imgContainer <- HOValidation.DisplayStatMaps(tknotes)
 
 			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvHOValidationplot$notebookTab.maps, AllOpenTabType, AllOpenTabData)
 			EnvHOValidationplot$notebookTab.maps <- retNBTab$notebookTab
@@ -1099,7 +1196,7 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	tkgrid(cb.stats.maps, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(bt.stats.maps, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
-	#######################
+	##############################################
 
 	frameGraph <- ttklabelframe(subfr4, text = "Graphs", relief = 'groove')
 
@@ -1133,14 +1230,65 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	tkgrid(txt.stn.graph, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 	tkgrid(cb.stn.graph, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 15, padx = 1, pady = 2, ipadx = 1, ipady = 1)
 
-	#######################
+	##############################################
+
+	frameSHP <- ttklabelframe(subfr4, text = "Boundaries", relief = 'groove')
+
+	EnvHOValidationplot$add.shp <- tclVar(GeneralParameters$add.to.plot$add.shp)
+	file.plotShp <- tclVar(GeneralParameters$add.to.plot$shp.file)
+
+	sateSHP <- if(GeneralParameters$add.to.plot$add.shp) "normal" else "disabled"
+
+	chk.addshp <- tkcheckbutton(frameSHP, variable = EnvHOValidationplot$add.shp, text = "Add boundaries to Map", anchor = 'w', justify = 'left')
+	cb.addshp <- ttkcombobox(frameSHP, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur, state = sateSHP)
+	bt.addshp <- tkbutton(frameSHP, text = "...", state = sateSHP)
+
+	########
+	tkconfigure(bt.addshp, command = function(){
+		shp.opfiles <- getOpenShp(main.win, all.opfiles)
+		if(!is.null(shp.opfiles)){
+			nopf <- length(AllOpenFilesType)
+			AllOpenFilesType[[nopf+1]] <<- 'shp'
+			AllOpenFilesData[[nopf+1]] <<- shp.opfiles
+			tclvalue(file.plotShp) <- AllOpenFilesData[[nopf+1]][[1]]
+			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
+
+			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
+			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.dispShp)
+			tkconfigure(cb.adddem, values = unlist(listOpenFiles), textvariable = file.grddem)
+			tkconfigure(cb.addshp, values = unlist(listOpenFiles), textvariable = file.plotShp)
+
+			shpofile <- getShpOpenData(file.plotShp)
+			if(is.null(shpofile)) EnvHOValidationplot$shp <- NULL
+			EnvHOValidationplot$shp <- getBoundaries(shpofile[[2]])
+		}else return(NULL)
+	})
+
+	tkgrid(chk.addshp, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(cb.addshp, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.addshp, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+
+	#################
+	tkbind(cb.addshp, "<<ComboboxSelected>>", function(){
+		shpofile <- getShpOpenData(file.plotShp)
+		if(is.null(shpofile)) EnvHOValidationplot$shp <- NULL
+		EnvHOValidationplot$shp <- getBoundaries(shpofile[[2]])
+	})
+
+	tkbind(chk.addshp, "<Button-1>", function(){
+		sateSHP <- if(tclvalue(EnvHOValidationplot$add.shp) == "1") "disabled" else "normal"
+		tkconfigure(cb.addshp, state = sateSHP)
+		tkconfigure(bt.addshp, state = sateSHP)
+	})
+
+	##############################################
 
 	frameDEM <- ttklabelframe(subfr4, text = "DEM", relief = 'groove')
 
-	EnvHOValidationplot$add.dem <- tclVar(GeneralParameters$dem.data$add.dem)
-	file.grddem <- tclVar(GeneralParameters$dem.data$dem.file)
+	EnvHOValidationplot$add.dem <- tclVar(GeneralParameters$add.to.plot$add.dem)
+	file.grddem <- tclVar(GeneralParameters$add.to.plot$dem.file)
 
-	sateDEM <- if(GeneralParameters$dem.data$add.dem) "normal" else "disabled"
+	sateDEM <- if(GeneralParameters$add.to.plot$add.dem) "normal" else "disabled"
 
 	chk.adddem <- tkcheckbutton(frameDEM, variable = EnvHOValidationplot$add.dem, text = "Add DEM  to the Map", anchor = 'w', justify = 'left')
 	cb.adddem <- ttkcombobox(frameDEM, values = unlist(listOpenFiles), textvariable = file.grddem, width = largeur, state = sateDEM)
@@ -1155,14 +1303,25 @@ Validation.HOV.PanelCmd <- function(clim.var){
 
 			listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
 			tclvalue(file.grddem) <- AllOpenFilesData[[nopf+1]][[1]]
+
 			tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
-			tkconfigure(cb.file.ncdf, values = unlist(listOpenFiles), textvariable = file.grdCDF)
-			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.plotShp)
+			tkconfigure(cb.shpF, values = unlist(listOpenFiles), textvariable = file.dispShp)
 			tkconfigure(cb.adddem, values = unlist(listOpenFiles), textvariable = file.grddem)
+			tkconfigure(cb.addshp, values = unlist(listOpenFiles), textvariable = file.plotShp)
 
 			demData <- getDemOpenData(str_trim(tclvalue(file.grddem)), convertNeg2NA = TRUE)
 			if(is.null(demData)) EnvHOValidationplot$dem <- NULL
-			EnvHOValidationplot$dem <- demData
+			names(demData) <- c('x', 'y', 'z')
+			EnvHOValidationplot$dem$elv <- demData
+			######
+			demr <- raster(demData)
+			slope <- terrain(demr, opt = 'slope')
+			aspect <- terrain(demr, opt = 'aspect')
+			hill <- hillShade(slope, aspect, angle = 40, direction = 270)
+			hill <- t(as.matrix(hill))
+			hill <- hill[, rev(seq(ncol(hill)))]
+			EnvHOValidationplot$dem$hill <- list(x = demData$x, y = demData$y, z = hill)
+			rm(demData, demr, slope, aspect, hill)
 		}else return(NULL)
 	})
 
@@ -1175,7 +1334,17 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	tkbind(cb.adddem, "<<ComboboxSelected>>", function(){
 		demData <- getDemOpenData(str_trim(tclvalue(file.grddem)), convertNeg2NA = TRUE)
 		if(is.null(demData)) EnvHOValidationplot$dem <- NULL
-		EnvHOValidationplot$dem <- demData
+		names(demData) <- c('x', 'y', 'z')
+		EnvHOValidationplot$dem$elv <- demData
+		#####
+		demr <- raster(demData)
+		slope <- terrain(demr, opt = 'slope')
+		aspect <- terrain(demr, opt = 'aspect')
+		hill <- hillShade(slope, aspect, angle = 40, direction = 270)
+		hill <- t(as.matrix(hill))
+		hill <- hill[, rev(seq(ncol(hill)))]
+		EnvHOValidationplot$dem$hill <- list(x = demData$x, y = demData$y, z = hill)
+		rm(demData, demr, slope, aspect, hill)
 	})
 
 	tkbind(chk.adddem, "<Button-1>", function(){
@@ -1185,9 +1354,11 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	})
 
 	#############################
-	tkgrid(frameMap, row = 0, column = 0, sticky = 'we')
-	tkgrid(frameGraph, row = 1, column = 0, sticky = 'we', pady = 3)
-	tkgrid(frameDEM, row = 2, column = 0, sticky = 'we', pady = 3)
+	tkgrid(frameStatTab, row = 0, column = 0, sticky = 'we')
+	tkgrid(frameMap, row = 1, column = 0, sticky = 'we', pady = 3)
+	tkgrid(frameGraph, row = 2, column = 0, sticky = 'we', pady = 1)
+	tkgrid(frameSHP, row = 3, column = 0, sticky = 'we', pady = 1)
+	tkgrid(frameDEM, row = 4, column = 0, sticky = 'we', pady = 1)
 
 
 	#######################################################################################################

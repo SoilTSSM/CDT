@@ -1,197 +1,57 @@
 
 HandOutValidationDataProcs <- function(GeneralParameters){
+	if(tclvalue(EnvHOValidationplot$hovd) == "1"){
+		outValidation <- dirname(EnvHOValidationplot$file.hovd)
+	}else{
+		outValidation <- file.path(GeneralParameters$outdir, paste0('HOValidation_',
+									getf.no.ext(GeneralParameters$STN.file)))
+	}
+
+	xvargal <- c("date.range", "aggr.series", "dicho.fcst", "stat.data", "add.to.plot")
+	EnvHOValidation$GeneralParameters[xvargal] <- GeneralParameters[xvargal]
+	GeneralParameters <- EnvHOValidation$GeneralParameters
 	clim.var <- GeneralParameters$clim.var
-	timestep <- GeneralParameters$stn.file$tstep
+	timestep <- GeneralParameters$Tstep
 	startYear <- GeneralParameters$date.range$start.year
 	endYear <- GeneralParameters$date.range$end.year
 	startMonth <- GeneralParameters$date.range$start.month
 	endMonth <- GeneralParameters$date.range$end.month
-
-	outValidation <- file.path(GeneralParameters$outdir, paste0('Validation_', getf.no.ext(GeneralParameters$stn.file$file)))
-	dir.create(outValidation, showWarnings = FALSE, recursive = TRUE)
-	EnvHOValidation$GeneralParameters <- GeneralParameters
-
-	###################
-
-	stnInfo <- getStnOpenDataInfo(GeneralParameters$stn.file$file)
-	if(!is.null(EnvHOValidation$cdtData)){
-		if(!isTRUE(all.equal(EnvHOValidation$cdtData$stnInfo, stnInfo))){
-			readcdtData <- TRUE
-			EnvHOValidation$cdtData <- NULL
-		}else readcdtData <- FALSE
-	}else readcdtData <- TRUE
-
-	if(readcdtData){
-		cdtTmpVar <- getStnOpenData(GeneralParameters$stn.file$file)
-		if(is.null(cdtTmpVar)) return(NULL)
-		cdtTmpVar <- getCDTdataAndDisplayMsg(cdtTmpVar, timestep)
-		if(is.null(cdtTmpVar)) return(NULL)
-		cdtTmpVar <- cdtTmpVar[c('id', 'lon', 'lat', 'dates', 'data')]
-		cdtTmpVar$index <- seq_along(cdtTmpVar$dates)
-		# cdtTmpVar$colInfo <- seq_along(cdtTmpVar$id)
-		EnvHOValidation$cdtData <- cdtTmpVar
-		EnvHOValidation$cdtData$stnInfo <- stnInfo
-		rm(data.cdtTmpVar)
-	}
-
-	###################
-
-	if(GeneralParameters$type.select != "all"){
-		if(GeneralParameters$type.select == "rect"){
-			ilon <- EnvHOValidation$cdtData$lon >= GeneralParameters$Geom$minlon &
-					EnvHOValidation$cdtData$lon <= GeneralParameters$Geom$maxlon
-			ilat <- EnvHOValidation$cdtData$lat >= GeneralParameters$Geom$minlat &
-					EnvHOValidation$cdtData$lat <= GeneralParameters$Geom$maxlat
-			ixy <- ilon & ilat
-		}
-
-		if(GeneralParameters$type.select == "poly"){
-			shp.dat <- getShpOpenData(GeneralParameters$shp.file$shp)[[2]]
-			shp <- shp.dat[as.character(shp.dat@data[, GeneralParameters$shp.file$attr]) == GeneralParameters$Geom$namePoly, ]
-			pts.dat <- data.frame(x = EnvHOValidation$cdtData$lon, y = EnvHOValidation$cdtData$lat)
-			coordinates(pts.dat)<- ~x+y
-			ixy <- unname(!is.na(over(pts.dat, geometry(shp))))
-		}
-		if(!any(ixy)){
-			InsertMessagesTxt(main.txt.out, 'The selection did not contain any stations', format = TRUE)
-			return(NULL)
-		}
-	}else ixy <- rep(TRUE, length(EnvHOValidation$cdtData$lon))
-
-	###################
 
 	dstart <- as.Date(paste0(startYear, "-1-1"))
 	dend <- as.Date(paste0(endYear, "-12-31"))
 
 	if(timestep == "daily"){
 		dates <- format(seq(dstart, dend, 'day'), '%Y%m%d')
-		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 8))
 	}
 	if(timestep == "pentad"){
 		dates <- seq(dstart, dend, 'day')
 		dates <- paste0(format(dates[which(as.numeric(format(dates, '%d')) <= 6)], '%Y%m'),
 						as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 6)], '%d')))
-		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 7))
 	}
 	if(timestep == "dekadal"){
 		dates <- seq(dstart, dend, 'day')
 		dates <- paste0(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%Y%m'),
 						as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%d')))
-		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 7))
 	}
 	if(timestep == "monthly"){
 		dates <- format(seq(dstart, dend, 'month'), '%Y%m')
-		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6))
 	}
 
 	seasonLength <- (endMonth-startMonth+1)%%12
 	seasonLength <- ifelse(seasonLength == 0, 12, seasonLength)
 	monthtoValid <- (startMonth:(startMonth+(seasonLength-1)))%%12
 	monthtoValid[monthtoValid == 0] <- 12
+
 	imonValid <- as.numeric(substr(dates, 5, 6))%in%monthtoValid
 	dates <- dates[imonValid]
-	ncfiles <- ncfiles[imonValid]
 
-	ncPATH <- file.path(GeneralParameters$ncdf.file$dir, ncfiles)
-	ncflExist <- unlist(lapply(ncPATH, file.exists))
-	if(!any(ncflExist)){
-		InsertMessagesTxt(main.txt.out, "Unable to locate netcdf files", format = TRUE)
-		return(NULL)
-	}
-
-	dates <- dates[ncflExist]
-	ncPATH <- ncPATH[ncflExist]
+	idaty <- dates%in%EnvHOValidation$cdtData$dates
+	dates <- dates[idaty]
 	dates0 <- dates
 
-	if(length(intersect(EnvHOValidation$cdtData$dates, dates)) == 0){
-		InsertMessagesTxt(main.txt.out, "Station and netcdf dates did not overlap", format = TRUE)
-		return(NULL)
-	}
-
-	###################
-
-	ncInfo <- getRFESampleData(GeneralParameters$ncdf.file$sample)
-	if(is.null(ncInfo)){
-		InsertMessagesTxt(main.txt.out, "No netcdf sample file found", format = TRUE)
-		return(NULL)
-	}
-
-	nc <- nc_open(ncPATH[1])
-	lon <- nc$dim[[ncInfo$rfeILon]]$vals
-	lat <- nc$dim[[ncInfo$rfeILat]]$vals
-	nc_close(nc)
-	xo <- order(lon)
-	lon <- lon[xo]
-	yo <- order(lat)
-	lat <- lat[yo]
-	nclon <- length(lon)
-	nclat <- length(lat)
-
-	stnCoords <- list(lon = EnvHOValidation$cdtData$lon, lat = EnvHOValidation$cdtData$lat)
-	ijx <- grid2pointINDEX(stnCoords, list(lon = lon, lat = lat))
-
-	###################
-
-	ncdataInfo <- c(GeneralParameters$ncdf.file$dir, GeneralParameters$ncdf.file$format)
-	bindncdfData <- FALSE
-	if(!is.null(EnvHOValidation$ncdfData)){
-		iexist <- dates%in%EnvHOValidation$ncdfData$dates
-		if(all(iexist)){
-			if(!isTRUE(all.equal(EnvHOValidation$ncdfData$ncdataInfo, ncdataInfo))){
-				readNcdfData <- TRUE
-				EnvHOValidation$ncdfData <- NULL
-			}else readNcdfData <- FALSE
-		}else{
-			if(isTRUE(all.equal(EnvHOValidation$ncdfData$ncdataInfo, ncdataInfo))){
-				bindncdfData <- TRUE
-				if(any(iexist)){
-					dates <- dates[!iexist]
-					ncPATH <- ncPATH[!iexist]
-				}
-			}else EnvHOValidation$ncdfData <- NULL
-			readNcdfData <- TRUE
-		}
-	}else readNcdfData <- TRUE
-
-	if(readNcdfData){
-		InsertMessagesTxt(main.txt.out, 'Read and extract netcdf data ...')
-		is.parallel <- doparallel(length(ncPATH) >= 180)
-		`%parLoop%` <- is.parallel$dofun
-
-		ncData <- foreach(jj = seq_along(ncPATH), .packages = "ncdf4") %parLoop% {
-			nc <- nc_open(ncPATH[jj])
-			vars <- ncvar_get(nc, varid = ncInfo$rfeVarid)
-			nc_close(nc)
-			vars <- vars[xo, yo]
-			if(ncInfo$rfeILat < ncInfo$rfeILon){
-				vars <- matrix(c(vars), nrow = nclon, ncol = nclat, byrow = TRUE)
-			}
-			vars[ijx]
-		}
-		if(is.parallel$stop) stopCluster(is.parallel$cluster)
-		InsertMessagesTxt(main.txt.out, 'Reading netcdf data finished')
-
-		ncData <- do.call(rbind, ncData)
-
-		cdtTmpVar <- NULL
-		idx <- seq(length(dates))
-		if(bindncdfData){
-			cdtTmpVar$data <- rbind(EnvHOValidation$ncdfData$data, ncData)
-			cdtTmpVar$dates <- c(EnvHOValidation$ncdfData$dates, dates)
-			cdtTmpVar$index <- c(EnvHOValidation$ncdfData$index, max(EnvHOValidation$ncdfData$index)+idx)
-		}else{
-			cdtTmpVar$data <- ncData
-			cdtTmpVar$dates <- dates
-			cdtTmpVar$index <- idx
-		}
-		odaty <- order(cdtTmpVar$dates)
-		cdtTmpVar$dates <- cdtTmpVar$dates[odaty]
-		cdtTmpVar$index <- cdtTmpVar$index[odaty]
-
-		cdtTmpVar$ncdataInfo <- ncdataInfo
-		EnvHOValidation$ncdfData <- cdtTmpVar
-		rm(cdtTmpVar, ncData, odaty, idx)
-	}
+	EnvHOValidation$opDATA$id <- EnvHOValidation$cdtData$info$id
+	EnvHOValidation$opDATA$lon <- EnvHOValidation$cdtData$info$lon
+	EnvHOValidation$opDATA$lat <- EnvHOValidation$cdtData$info$lat
 
 	###################
 	AggrSeries <- list(aggr.fun = GeneralParameters$aggr.series$aggr.fun,
@@ -199,20 +59,14 @@ HandOutValidationDataProcs <- function(GeneralParameters){
 						count.thres = GeneralParameters$aggr.series$opr.thres,
 						aggr.data = GeneralParameters$aggr.series$aggr.data)
 
-	if(readcdtData | readNcdfData | is.null(EnvHOValidation$Statistics) |
-		!isTRUE(all.equal(EnvHOValidation$opDATA$dates, dates0)) |
-		!isTRUE(all.equal(EnvHOValidation$opDATA$ixy, ixy)) |
-		!isTRUE(all.equal(EnvHOValidation$opDATA$AggrSeries, AggrSeries)))
+	if(is.null(EnvHOValidation$Statistics) |
+	   !isTRUE(all.equal(EnvHOValidation$opDATA$dates, dates0)) |
+	   !isTRUE(all.equal(EnvHOValidation$opDATA$AggrSeries, AggrSeries)))
 	{
-		idx.stn <- EnvHOValidation$cdtData$index[match(dates0, EnvHOValidation$cdtData$dates)]
-		idx.ncdf <- EnvHOValidation$ncdfData$index[match(dates0, EnvHOValidation$ncdfData$dates)]
+		idx <- match(dates0, EnvHOValidation$cdtData$dates)
 		EnvHOValidation$opDATA$dates <- dates0
-		EnvHOValidation$opDATA$ixy <- ixy
-		EnvHOValidation$opDATA$id <- EnvHOValidation$cdtData$id[ixy]
-		EnvHOValidation$opDATA$lon <- EnvHOValidation$cdtData$lon[ixy]
-		EnvHOValidation$opDATA$lat <- EnvHOValidation$cdtData$lat[ixy]
-		EnvHOValidation$opDATA$stn <- EnvHOValidation$cdtData$data[idx.stn, ixy, drop = FALSE]
-		EnvHOValidation$opDATA$ncdf <- EnvHOValidation$ncdfData$data[idx.ncdf, ixy, drop = FALSE]
+		EnvHOValidation$opDATA$stn <- EnvHOValidation$cdtData$obs[idx, , drop = FALSE]
+		EnvHOValidation$opDATA$ncdf <- EnvHOValidation$cdtData$fcst[idx, , drop = FALSE]
 
 		inNA <- is.na(EnvHOValidation$opDATA$stn) | is.na(EnvHOValidation$opDATA$ncdf)
 		EnvHOValidation$opDATA$stn[inNA] <- NA
@@ -302,7 +156,7 @@ HandOutValidationDataProcs <- function(GeneralParameters){
 	InsertMessagesTxt(main.txt.out, 'Statistics calculation done!')
 
 	fileValidOut <- file.path(outValidation, "VALIDATION_DATA_OUT.rds")
-	save(EnvHOValidation, file = fileValidOut)
+	saveRDS(EnvHOValidation, file = fileValidOut)
 
 	###################
 	# Plot to files

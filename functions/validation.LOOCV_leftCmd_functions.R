@@ -26,6 +26,13 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 	GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'Validation_LOOCV.json'))
 	MOIS <- format(ISOdate(2014, 1:12, 1), "%b")
 
+	CHXSTATS0 <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error', 'Mean Error', 'Root Mean Square Error')
+	CHXSTATS1 <- c('Probability Of Detection', 'False Alarm Ratio', 'Frequency Bias', 'Critical Success Index', 'Heidke Skill Score')
+	CHXSTATS2 <- c('Volumetric Hit Index', 'Quantile Probability of Detection', 'Volumetric False Alarm Ratio',
+					'Quantile False Alarm Ratio', 'Volumetric Miss Index', 'Volumetric Critical Success Index',
+					'Quantile Critical Success Index')
+	CHXSTATS <- c(CHXSTATS0, CHXSTATS1, CHXSTATS2)
+
 	##############
 	EnvZoomPars$xx1 <- tclVar()
 	EnvZoomPars$xx2 <- tclVar()
@@ -95,7 +102,7 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 	cb.stnfl <- ttkcombobox(frInputData, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur)
 	bt.stnfl <- tkbutton(frInputData, text = "...")
 
-	txt.NCDF <- tklabel(frInputData, text = 'Directory containing RFE data', anchor = 'w', justify = 'left')
+	txt.NCDF <- tklabel(frInputData, text = 'Directory of NetCDF files', anchor = 'w', justify = 'left')
 	set.NCDF <- tkbutton(frInputData, text = "Settings")
 	en.NCDF <- tkentry(frInputData, textvariable = dir.NCDF, width = largeur1)
 	bt.NCDF <- tkbutton(frInputData, text = "...")
@@ -155,6 +162,11 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 	#######################
 
 	tkbind(cb.tstep, "<<ComboboxSelected>>", function(){
+		tclvalue(day.txtVar) <- switch(tclvalue(file.period), 'Dekadal data' = 'Dek', 'Pentad data' = 'Pen', 'Day')
+		statedate <- if(tclvalue(file.period) == 'Monthly data') 'disabled' else 'normal'
+		tkconfigure(en.day1, state = statedate)
+		tkconfigure(en.day2, state = statedate)
+
 		AGGREGFUN <- c("mean", "sum", "count")
 		if(tclvalue(aggr.data) == "0"){
 			stateo0a <- "disabled"
@@ -176,14 +188,9 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 		# tkconfigure(en.minfrac, state = stateo0b)
 		tkconfigure(cb.opfun, state = stateo1)
 		tkconfigure(en.opthres, state = stateo2)
-		CHXSTATS <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error', 'Mean Error')
+		CHXSTATS <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error', 'Root Mean Square Error')
 		CHXSTATS1 <- c('Probability Of Detection', 'False Alarm Ratio', 'Frequency Bias', 'Critical Success Index', 'Heidke Skill Score')
 		CHXSTATS <- c(CHXSTATS, CHXSTATS1)
-		# if(clim.var == 'RR' & tclvalue(file.period) == 'Daily data' & tclvalue(aggr.data) == "0"){
-		# 	CHXSTATS <- c(CHXSTATS, CHXSTATS1)
-		# }else{
-		# 	if(tclvalue(EnvLOOCValidationplot$statistics)%in%CHXSTATS1) tclvalue(EnvLOOCValidationplot$statistics) <- 'Correlation'
-		# }
 		tkconfigure(cb.stats.maps, values = CHXSTATS)
 	})
 
@@ -406,8 +413,8 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 	tkgrid(en.mon2, row = 2, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.day2, row = 2, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	infobulle(frtxtDate, 'Start and end date to merge RFE data')
-	status.bar.display(frtxtDate, TextOutputVar, 'Start and end date to merge RFE data')
+	infobulle(frtxtDate, 'Start and end date to perform the merging')
+	status.bar.display(frtxtDate, TextOutputVar, 'Start and end date to perform the merging')
 
 	##############################################
 
@@ -718,15 +725,6 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 		# tkconfigure(en.minfrac, state = stateo0b)
 		tkconfigure(cb.opfun, state = stateo1)
 		tkconfigure(en.opthres, state = stateo2)
-
-		CHXSTATS <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error', 'Mean Error')
-		CHXSTATS1 <- c('Probability Of Detection', 'False Alarm Ratio', 'Frequency Bias', 'Critical Success Index', 'Heidke Skill Score')
-		CHXSTATS <- c(CHXSTATS, CHXSTATS1)
-		# if(clim.var == 'RR' & tclvalue(file.period) == 'Daily data' & tclvalue(aggr.data) == "1"){
-		# 	CHXSTATS <- c(CHXSTATS, CHXSTATS1)
-		# }else{
-		# 	if(tclvalue(EnvLOOCValidationplot$statistics)%in%CHXSTATS1) tclvalue(EnvLOOCValidationplot$statistics) <- 'Correlation'
-		# }
 		tkconfigure(cb.stats.maps, values = CHXSTATS)
 	})
 
@@ -808,6 +806,10 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 
 		GeneralParameters$dicho.fcst$opr.thres <- as.numeric(str_trim(tclvalue(dicho.thres)))
 		GeneralParameters$dicho.fcst$opr.fun <- str_trim(tclvalue(dicho.opr))
+
+		########
+		GeneralParameters$STN.file <- str_trim(tclvalue(file.stnfl))
+		GeneralParameters$outdir <- str_trim(tclvalue(file.save1))
 
 		# assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
@@ -946,10 +948,6 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 
 	EnvLOOCValidationplot$statistics <- tclVar('Correlation')
 
-	CHXSTATS <- c('Correlation', 'Nash-Sutcliffe Efficiency', 'Bias', 'Mean Absolute Error', 'Mean Error')
-	# if(clim.var == 'RR' & GeneralParameters$Tstep == 'daily' & !GeneralParameters$aggr.series$aggr.data)
-	CHXSTATS <- c(CHXSTATS, 'Probability Of Detection', 'False Alarm Ratio', 'Frequency Bias', 'Critical Success Index', 'Heidke Skill Score')
-
 	stateMaps <- if(GeneralParameters$stat.data == 'stn') 'normal' else 'disabled'
 
 	cb.stats.maps <- ttkcombobox(frameMap, values = CHXSTATS, textvariable = EnvLOOCValidationplot$statistics, width = largeur2, state = stateMaps)
@@ -958,7 +956,6 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 	EnvLOOCValidationplot$notebookTab.maps <- NULL
 	tkconfigure(bt.stats.maps, command = function(){
 		if(!is.null(EnvLOOCValidation$Statistics)){
-
 			EnvLOOCValidationplot$xlim.maps <- range(EnvLOOCValidation$opDATA$lon, na.rm = TRUE)
 			EnvLOOCValidationplot$ylim.maps <- range(EnvLOOCValidation$opDATA$lat, na.rm = TRUE)
 
@@ -1090,7 +1087,17 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 
 			demData <- getDemOpenData(str_trim(tclvalue(file.grddem1)), convertNeg2NA = TRUE)
 			if(is.null(demData)) EnvLOOCValidationplot$dem <- NULL
-			EnvLOOCValidationplot$dem <- demData
+			names(demData) <- c('x', 'y', 'z')
+			EnvLOOCValidationplot$dem$elv <- demData
+			######
+			demr <- raster(demData)
+			slope <- terrain(demr, opt = 'slope')
+			aspect <- terrain(demr, opt = 'aspect')
+			hill <- hillShade(slope, aspect, angle = 40, direction = 270)
+			hill <- t(as.matrix(hill))
+			hill <- hill[, rev(seq(ncol(hill)))]
+			EnvLOOCValidationplot$dem$hill <- list(x = demData$x, y = demData$y, z = hill)
+			rm(demData, demr, slope, aspect, hill)
 		}else return(NULL)
 	})
 
@@ -1102,7 +1109,17 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 	tkbind(cb.adddem, "<<ComboboxSelected>>", function(){
 		demData <- getDemOpenData(str_trim(tclvalue(file.grddem1)), convertNeg2NA = TRUE)
 		if(is.null(demData)) EnvLOOCValidationplot$dem <- NULL
-		EnvLOOCValidationplot$dem <- demData
+		names(demData) <- c('x', 'y', 'z')
+		EnvLOOCValidationplot$dem$elv <- demData
+		######
+		demr <- raster(demData)
+		slope <- terrain(demr, opt = 'slope')
+		aspect <- terrain(demr, opt = 'aspect')
+		hill <- hillShade(slope, aspect, angle = 40, direction = 270)
+		hill <- t(as.matrix(hill))
+		hill <- hill[, rev(seq(ncol(hill)))]
+		EnvLOOCValidationplot$dem$hill <- list(x = demData$x, y = demData$y, z = hill)
+		rm(demData, demr, slope, aspect, hill)
 	})
 
 	tkbind(chk.adddem, "<Button-1>", function(){

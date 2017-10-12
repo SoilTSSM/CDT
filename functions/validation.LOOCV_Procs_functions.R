@@ -5,7 +5,7 @@ LOOCValidationDataProcs <- function(GeneralParameters){
 		outValidation <- dirname(EnvLOOCValidationplot$file.loocv)
 	}else{
 		outValidation <- file.path(GeneralParameters$outdir, paste0('LOOCValidation_',
-			getf.no.ext(GeneralParameters$STN.file)))
+									getf.no.ext(GeneralParameters$STN.file)))
 	}
 
 	xvargal <- c("date.range", "aggr.series", "dicho.fcst", "stat.data", "add.to.plot")

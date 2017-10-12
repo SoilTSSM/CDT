@@ -86,6 +86,8 @@ LOOCV_MergingDataExec <- function(GeneralParameters){
 
 }
 
+############################################################
+
 LOOCV_MergingDataProcs <- function(mrgParms){
 	InsertMessagesTxt(main.txt.out, 'Leave-one-out cross-validation ...')
 
@@ -553,7 +555,9 @@ LOOCV_MergingDataProcs <- function(mrgParms){
 	OBS <- do.call(rbind, lapply(ret, function(x) x$obs))
 	FCST <- do.call(rbind, lapply(ret, function(x) x$fcst))
 
-	xhead <- cbind(c("STN", "LON", "DATE/LAT"), rbind(mrgParms$stnData$id, mrgParms$stnData$lon, mrgParms$stnData$lat))
+	xhead <- cbind(c("STN", "LON", "DATE/LAT"), rbind(mrgParms$stnData$id,
+					mrgParms$stnData$lon, mrgParms$stnData$lat))
+
 	obs2file <- rbind(xhead, cbind(mrgParms$stnData$dates, OBS))
 	fcst2file <- rbind(xhead, cbind(mrgParms$stnData$dates, FCST))
 	obs2file[is.na(obs2file)] <- -99

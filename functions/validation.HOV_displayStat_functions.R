@@ -1,5 +1,5 @@
 
-HOValidation.plotStatMaps <- function(ocrds){
+HOValidation.plotStatMaps <- function(){
 	mapstat <- tclvalue(EnvHOValidationplot$statistics)
 	istat <- which(EnvHOValidation$Statistics$STN$description == mapstat)
 	don <- EnvHOValidation$Statistics$STN$statistics[istat, ]
@@ -7,6 +7,8 @@ HOValidation.plotStatMaps <- function(ocrds){
 	xna <- EnvHOValidation$opDATA$lon[is.na(don)]
 	yna <- EnvHOValidation$opDATA$lat[is.na(don)]
 	don <- as.image(don, x = cbind(EnvHOValidation$opDATA$lon, EnvHOValidation$opDATA$lat), nx = 60, ny = 60)
+
+	ocrds <- EnvHOValidationplot$shp
 
 	#################
 
@@ -38,9 +40,13 @@ HOValidation.plotStatMaps <- function(ocrds){
 	legendLabel <- breaks
 
 	#################
+	xlim <- EnvHOValidationplot$xlim.maps
+	ylim <- EnvHOValidationplot$ylim.maps
+
+	#################
 
 	opar <- par(mar = mar)
-	plot(1, xlim = EnvHOValidationplot$xlim.maps, ylim = EnvHOValidationplot$ylim.maps, xlab = "", ylab = "", type = "n", xaxt = 'n', yaxt = 'n')
+	plot(1, xlim = xlim, ylim = ylim, xlab = "", ylab = "", type = "n", xaxt = 'n', yaxt = 'n')
 	axlabsFun <- if(Sys.info()["sysname"] == "Windows") LatLonAxisLabels else LatLonAxisLabels1
 	axlabs <- axlabsFun(axTicks(1), axTicks(2))
 	axis(side = 1, at = axTicks(1), labels = axlabs$xaxl, tcl = -0.2, cex.axis = 0.8)
@@ -48,8 +54,8 @@ HOValidation.plotStatMaps <- function(ocrds){
 	title(main = mapstat, cex.main = 1, font.main= 2)
 
 	if(tclvalue(EnvHOValidationplot$add.dem) == "1" & !is.null(EnvHOValidationplot$dem)){
-		image(EnvHOValidationplot$dem$lon, EnvHOValidationplot$dem$lat, EnvHOValidationplot$dem$dem,
-			col = gray(seq(0.6, 0.1, length = 30)), add = TRUE)
+		image(EnvHOValidationplot$dem$elv, col = gray.colors(256), add = TRUE)
+		# image(EnvHOValidationplot$dem$hill, col = gray.colors(256), add = TRUE)
 	}
 
 	if(length(xna) > 0) points(xna, yna, pch = '*')
@@ -58,7 +64,7 @@ HOValidation.plotStatMaps <- function(ocrds){
 				axis.args = list(at = breaks, labels = legendLabel, cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
 
 	abline(h = axTicks(2), v = axTicks(1), col = "lightgray", lty = 3)
-	lines(ocrds[, 1], ocrds[, 2], lwd = 1.5)
+	if(tclvalue(EnvHOValidationplot$add.shp) == "1") lines(ocrds[, 1], ocrds[, 2], lwd = 1.5)
 
 	plt <- par("plt")
 	usr <- par("usr")
@@ -87,6 +93,7 @@ HOValidation.plotGraph <- function(){
 		title <- tclvalue(EnvHOValidationplot$stnIDGraph)
 	}
 
+	##############
 	AggrSeries <- EnvHOValidation$opDATA$AggrSeries
 	if(AggrSeries$aggr.fun == "count"){
 		units <- paste0("(Number of day ", AggrSeries$count.fun, " ", AggrSeries$count.thres, ")")
@@ -94,25 +101,57 @@ HOValidation.plotGraph <- function(){
 		units <- if(EnvHOValidation$GeneralParameters$clim.var == "RR") "(mm)" else "(°C)"
 	}
 
-	if(tclvalue(EnvHOValidationplot$type.graph) == "Scatter"){
+	##############
+	plotType <- tclvalue(EnvHOValidationplot$type.graph)
+
+	## choix xlim&ylim default
+	xmin <- min(c(x, y), na.rm = TRUE)
+	xmin <- ifelse(is.infinite(xmin), 0, xmin)
+	xmax <- max(c(x, y), na.rm = TRUE)
+	xmax <- ifelse(is.infinite(xmax), 0, xmax)
+
+	if(plotType == "Scatter"){
+		xlim <- c(xmin, xmax)
+		ylim <- c(xmin, xmax)
+
 		xlab <- paste('Station', units)
 		ylab <- paste('Estimate', units)
-		xmax <- max(c(x, y), na.rm = TRUE)
-		xylim <- c(0, ifelse(is.infinite(xmax), 0, xmax))
-		plot(1, xlim = xylim, ylim = xylim, type = 'n', xlab = xlab, ylab = ylab, main = title)
+
+		legendlab <- NA
+	}
+	if(plotType == "CDF"){
+		xlim <- c(xmin, xmax)
+		ylim <- c(0, 1)
+
+		xlab <- if(EnvHOValidation$GeneralParameters$clim.var == "RR") "Rainfall" else "Temperature"
+		xlab <- paste(xlab, units)
+		ylab <- "Cumulative density"
+
+		legendlab <- c('Station', 'Estimate')
+	}
+	if(plotType == "Lines"){
+		xlim <- NA
+		ylim <- c(xmin, xmax)
+
+		xlab <- ""
+		ylab <- if(EnvHOValidation$GeneralParameters$clim.var == "RR") "Rainfall" else "Temperature"
+		ylab <- paste(ylab, units)
+
+		legendlab <- c('Station', 'Estimate')
+	}
+
+	##############
+
+	if(plotType == "Scatter"){
+		plot(1, xlim = xlim, ylim = ylim, type = 'n', xlab = xlab, ylab = ylab, main = title)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 		abline(v = axTicks(1), col = "lightgray", lty = "dotted")
 		points(x, y, pch = 19, col = 'grey10', cex = 0.7)
 		abline(a = 0, b = 1, lwd = 2, col = 'red')
 	}
 
-	if(tclvalue(EnvHOValidationplot$type.graph) == "CDF"){
-		xlab <- if(EnvHOValidation$GeneralParameters$clim.var == "RR") "Rainfall" else "Temperature"
-		xlab <- paste(xlab, units)
-		legendlab <- c('Station', 'Estimate')
-		xmax <- max(c(x, y), na.rm = TRUE)
-		xylim <- c(0, ifelse(is.infinite(xmax), 0, xmax))
-		plot(1, xlim = xylim, ylim = c(0, 1), type = 'n', xlab = xlab, ylab = "Cumulative density", main = title)
+	if(plotType == "CDF"){
+		plot(1, xlim = xlim, ylim = ylim, type = 'n', xlab = xlab, ylab = ylab, main = title)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 		abline(v = axTicks(1), col = "lightgray", lty = "dotted")
 
@@ -121,27 +160,20 @@ HOValidation.plotGraph <- function(){
 			fx <- ecdf(x)
 			fy <- ecdf(y)
 			lines(xax, fx(xax), lwd = 2, col = 'blue', type = 'l')
-			lines(xax, fy(xax), lwd = 2, col ='red', type = 'l')
+			lines(xax, fy(xax), lwd = 2, col = 'red', type = 'l')
 		}
 		legend('bottomright', legendlab, col = c('blue', 'red'), lwd = 3, bg = 'lightgoldenrodyellow')
 	}
 
-	if(tclvalue(EnvHOValidationplot$type.graph) == "Lines"){
-		ylab <- if(EnvHOValidation$GeneralParameters$clim.var == "RR") "Rainfall" else "Temperature"
-		ylab <- paste(ylab, units)
-		legendlab <- c('Station', 'Estimate')
-
-		ymax <- max(c(x, y), na.rm = TRUE)
-		xylim <- c(0, ifelse(is.infinite(ymax), 0, ymax))
-
+	if(plotType == "Lines"){
 		layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.9, 0.1), respect = FALSE)
 		op <- par(mar = c(3, 4, 2, 2))
-		plot(EnvHOValidation$opDATA$temps, x, ylim = xylim, type = 'n', xlab = "", ylab = ylab, main = title)
+		plot(EnvHOValidation$opDATA$temps, x, ylim = ylim, type = 'n', xlab = xlab, ylab = ylab, main = title)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 		abline(v = axTicks(1), col = "lightgray", lty = "dotted")
 
 		lines(EnvHOValidation$opDATA$temps, x, lwd = 2, col = 'blue', type = 'l')
-		lines(EnvHOValidation$opDATA$temps, y, lwd = 2, col ='red', type = 'l')
+		lines(EnvHOValidation$opDATA$temps, y, lwd = 2, col = 'red', type = 'l')
 		par(op)
 
 		op <- par(mar = c(0, 4, 0, 2))
@@ -153,14 +185,14 @@ HOValidation.plotGraph <- function(){
 
 ###############################
 
-HOValidation.DisplayStatMaps <- function(parent, ocrds){
+HOValidation.DisplayStatMaps <- function(parent){
 	varplot <- c("parPlotSize1", "parPlotSize2", "parPlotSize3", "parPlotSize4",
 				 "usrCoords1", "usrCoords2", "usrCoords3", "usrCoords4")
 	parPltCrd <- setNames(lapply(varplot, function(x) assign(x, tclVar(), env = parent.frame())), varplot)
 
 	plotIt <- function(){
 		op <- par(bg = "white")
-		pltusr <- HOValidation.plotStatMaps(ocrds)
+		pltusr <- HOValidation.plotStatMaps()
 		par(op)
 		for(j in seq_along(varplot)) tclvalue(parPltCrd[[varplot[j]]]) <- pltusr$par[j]
 	}
@@ -258,11 +290,4 @@ HOValidation.DisplayGraph <- function(parent){
 
 	return(list(onglet, img))
 }
-
-
-
-
-
-
-
 
