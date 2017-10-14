@@ -4,16 +4,9 @@
     // Station data filename
     "STN.file": "",
 
-    // "stn.file": [{
-    //     // Time step of the input data
-    //     "tstep": "dekadal",
-    //     // station data file name
-    //     "file": ""
-    // }],
-
     // ncdf data
     "ncdf.file": [{
-        // // Full path to the directory of ncdf data
+        // Full path to the directory of ncdf data
         "dir": "",
         // ncdf filename format 
         "format": "rr_mrg_%s%s%s.nc",

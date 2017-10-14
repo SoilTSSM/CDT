@@ -117,28 +117,39 @@ Execute_All_Functions <- function(get.stn){
 		}
 	}
 
+	################################################################################
+	
+	if(GeneralParameters$action == "chk.coords"){
+		RetChkCrd <- try(excludeOutStnFun(GeneralParameters), silent = TRUE)
+		if(!inherits(RetChkCrd, "try-error")){
+			if(is.na(RetChkCrd$Stndoute[1, 1])) InsertMessagesTxt(main.txt.out, "All station's coordinates are OK!")
+			GeneralParameters$period <<- RetChkCrd$period
+			InsertMessagesTxt(main.txt.out, paste("Stations coordinates checked successfully for",
+								getf.no.ext(GeneralParameters$IO.files$STN.file)))
+			return(RetChkCrd)
+		}else{
+			InsertMessagesTxt(main.txt.out, paste("Stations coordinates checking failed",
+								getf.no.ext(GeneralParameters$IO.files$STN.file)), format = TRUE)
+			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', RetChkCrd[1]), format = TRUE)
+			return(NULL)
+		}
+	}
+
 	####################################################################
 
 	##Output message
-	merging_end_msg <- function(outret, outtxt, msgOK, msgFail){
+	Execute_end_msg <- function(outret, msgOK, msgFail){
 		if(!inherits(outret, "try-error")){
-			if(!is.null(outret)){
-				if(outret == 0) InsertMessagesTxt(outtxt, msgOK)
-				else{
-					InsertMessagesTxt(outtxt, msgFail, format = TRUE)
-					InsertMessagesTxt(outtxt, gsub('[\r\n]', '', outret[1]), format = TRUE)
-				}
-			}else{
-				InsertMessagesTxt(outtxt, msgFail, format = TRUE)
-				InsertMessagesTxt(outtxt, gsub('[\r\n]', '', outret[1]), format = TRUE)
-			}
+			if(!is.null(outret) & (outret == 0)) InsertMessagesTxt(main.txt.out, msgOK)
+			else InsertMessagesTxt(main.txt.out, msgFail, format = TRUE)
 		}else{
-			InsertMessagesTxt(outtxt, msgFail, format = TRUE)
-			InsertMessagesTxt(outtxt, gsub('[\r\n]', '', outret[1]), format = TRUE)
+			InsertMessagesTxt(main.txt.out, msgFail, format = TRUE)
+			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', outret[1]), format = TRUE)
 		}
+		return(NULL)
 	}
-	
-	############################### 
+
+	####################################################################
 	##Merge Rainfall
 
 	# Mering rainfall once
@@ -170,8 +181,11 @@ Execute_All_Functions <- function(get.stn){
 			xfin <- format(daty[length(daty)], '%Y%m')
 		}
 		origdir <- file.path(GeneralParameters$output$dir, paste('Merging_Precip_Data', xdeb, xfin, sep = '_'))
-		mrg2run <- try(Precip_Merging_ALL(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Rainfall merging finished successfully", "Rainfall merging failed")
+		ret <- try(Precip_Merging_ALL(origdir), silent = TRUE)
+
+		msg0 <- "Rainfall merging finished successfully"
+		msg1 <- "Rainfall merging failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	###############################
@@ -179,8 +193,11 @@ Execute_All_Functions <- function(get.stn){
 	if(GeneralParameters$action == 'coefbias.rain'){
 		origdir <- file.path(GeneralParameters$output$dir, paste0('BIAS_Data_',
 							 getf.no.ext(GeneralParameters$STN.file)))
-		mrg2run <- try(execBiasRain(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Computing Gauge-RFE bias finished successfully", "Computing Gauge-RFE bias failed")
+		ret <- try(execBiasRain(origdir), silent = TRUE)
+
+		msg0 <- "Computing Gauge-RFE bias finished successfully"
+		msg1 <- "Computing Gauge-RFE bias failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	###############################
@@ -195,16 +212,23 @@ Execute_All_Functions <- function(get.stn){
 			xfin <- paste0(daty$end.dek, format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year)
 		}
 		origdir <- file.path(GeneralParameters$output$dir, paste('ADJUSTED_Precip_Data', xdeb, xfin, sep = '_'))
-		mrg2run <- try(execAdjBiasRain(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Adjusting Gauge-RFE bias finished successfully", "Adjusting Gauge-RFE bias failed")
+		ret <- try(execAdjBiasRain(origdir), silent = TRUE)
+
+		msg0 <- "Adjusting Gauge-RFE bias finished successfully"
+		msg1 <- "Adjusting Gauge-RFE bias failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	###############################
 	##compute spatio-temporal LM coeff
 	if(GeneralParameters$action == 'coefLM.rain'){
-		origdir <- file.path(GeneralParameters$output$dir, paste0('LMCOEF_Data_', getf.no.ext(GeneralParameters$STN.file)))
-		mrg2run <- try(execLMCoefRain(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Computing LM Coefficients finished successfully", "Computing LM Coefficients failed")
+		origdir <- file.path(GeneralParameters$output$dir, paste0('LMCOEF_Data_',
+							getf.no.ext(GeneralParameters$STN.file)))
+		ret <- try(execLMCoefRain(origdir), silent = TRUE)
+
+		msg0 <- "Computing LM Coefficients finished successfully"
+		msg1 <- "Computing LM Coefficients failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	###############################
@@ -240,15 +264,21 @@ Execute_All_Functions <- function(get.stn){
 			xfin <- format(daty[length(daty)], '%Y%m')
 		}
 		origdir <- file.path(GeneralParameters$output$dir, paste("Merged_Precip_Data", xdeb, xfin, sep = '_'))
-		mrg2run <- try(execMergeRain(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Rainfall merging finished successfully", "Rainfall merging failed")
+		ret <- try(execMergeRain(origdir), silent = TRUE)
+
+		msg0 <- "Rainfall merging finished successfully"
+		msg1 <- "Rainfall merging failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	###############################
 	####Merging 1 dekad
 	if(GeneralParameters$action == 'merge.dekrain'){
-		mrg2run <- try(mergeOneDekadRain(), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Rainfall merging finished successfully", "Rainfall merging failed")
+		ret <- try(mergeOneDekadRain(), silent = TRUE)
+
+		msg0 <- "Rainfall merging finished successfully"
+		msg1 <- "Rainfall merging failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	#########################################################################
@@ -256,9 +286,13 @@ Execute_All_Functions <- function(get.stn){
 
 	##compute regression coef
 	if(GeneralParameters$action == 'coefdown.temp'){
-		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('CoefDownTemp', getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'))
-		mrg2run <- try(Temp_execCoefDown(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Computing regression parameters finished successfully", "Computing regression parameters failed")
+		origdir <- file.path(GeneralParameters$IO.files$dir2save, paste('CoefDownTemp',
+							getf.no.ext(GeneralParameters$IO.files$STN.file), sep = '_'))
+		ret <- try(Temp_execCoefDown(origdir), silent = TRUE)
+
+		msg0 <- "Computing regression parameters finished successfully"
+		msg1 <- "Computing regression parameters failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	##############################
@@ -273,8 +307,11 @@ Execute_All_Functions <- function(get.stn){
 			xfin <- paste0(daty$end.dek, format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year)
 		}
 		origdir <- file.path(GeneralParameters$output$dir, paste('Downscaled_Reanalysis', xdeb, xfin, sep = '_'))
-		mrg2run <- try(Temp_execDownscaling(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Downscaling finished successfully", "Downscaling failed")
+		ret <- try(Temp_execDownscaling(origdir), silent = TRUE)
+
+		msg0 <- "Downscaling finished successfully"
+		msg1 <- "Downscaling failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	##############################
@@ -308,8 +345,11 @@ Execute_All_Functions <- function(get.stn){
 		}
 
 		origdir <- file.path(GeneralParameters$output$dir, paste('Merging_Temp_Data', xdeb, xfin, sep = '_'))
-		mrg2run <- try(Temp_Merging_ALL(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Temperature merging finished successfully", "Temperature merging failed")
+		ret <- try(Temp_Merging_ALL(origdir), silent = TRUE)
+
+		msg0 <- "Temperature merging finished successfully"
+		msg1 <- "Temperature merging failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	##############################
@@ -317,8 +357,11 @@ Execute_All_Functions <- function(get.stn){
 	if(GeneralParameters$action == 'coefbias.temp'){
 		origdir <- file.path(GeneralParameters$output$dir, paste0('BIAS_Data_',
 							getf.no.ext(GeneralParameters$STN.file)))
-		mrg2run <- try(execBiasTemp(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Computing bias coefficients finished successfully", "Computing bias coefficients failed")
+		ret <- try(execBiasTemp(origdir), silent = TRUE)
+
+		msg0 <- "Computing bias coefficients finished successfully"
+		msg1 <- "Computing bias coefficients failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	##############################
@@ -333,8 +376,11 @@ Execute_All_Functions <- function(get.stn){
 			xfin <- paste0(daty$end.dek, format(ISOdate(2014, daty$end.mon, 1), "%b"), daty$end.year)
 		}
 		origdir <- file.path(GeneralParameters$output$dir, paste('ADJUSTED_Temp_Data', xdeb, xfin, sep = '_'))
-		mrg2run <- try(execAjdBiasDownTemp(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Adjustment of downscaled data finished successfully", "Adjustment of downscaled data failed")
+		ret <- try(execAjdBiasDownTemp(origdir), silent = TRUE)
+
+		msg0 <- "Adjustment of downscaled data finished successfully"
+		msg1 <- "Adjustment of downscaled data failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	###############################
@@ -342,8 +388,11 @@ Execute_All_Functions <- function(get.stn){
 	if(GeneralParameters$action == 'coefLM.temp'){
 		origdir <- file.path(GeneralParameters$output$dir, paste0('LMCOEF_Data_',
 							getf.no.ext(GeneralParameters$STN.file)))
-		mrg2run <- try(execLMCoefTemp(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Computing LM Coefficients finished successfully", "Computing LM Coefficients failed")
+		ret <- try(execLMCoefTemp(origdir), silent = TRUE)
+
+		msg0 <- "Computing LM Coefficients finished successfully"
+		msg1 <- "Computing LM Coefficients failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	##############################
@@ -379,148 +428,102 @@ Execute_All_Functions <- function(get.stn){
 			xfin <- format(daty[length(daty)], '%Y%m')
 		}
 		origdir <- file.path(GeneralParameters$output$dir, paste("Merged_Temp_Data", xdeb, xfin, sep = '_'))
-		mrg2run <- try(execMergeTemp(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Temperature merging finished successfully", "Temperature merging failed")
+		ret <- try(execMergeTemp(origdir), silent = TRUE)
+
+		msg0 <- "Temperature merging finished successfully"
+		msg1 <- "Temperature merging failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	##############################
 	##Scale merged data
 	if(GeneralParameters$action == 'scale.merged'){
 		origdir <- file.path(GeneralParameters$outdir, "Merged_ScaledData")
-		mrg2run <- try(exec_ScalingUpData(origdir), silent = TRUE)
-		merging_end_msg(mrg2run, main.txt.out, "Scaling up merged data finished successfully", "Scaling up merged data failed")
+		ret <- try(exec_ScalingUpData(origdir), silent = TRUE)
+
+		msg0 <- "Scaling up merged data finished successfully"
+		msg1 <- "Scaling up merged data failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	################################################################################
-	
-	if(GeneralParameters$action == "chk.coords"){
-		RetChkCrd <- try(excludeOutStnFun(GeneralParameters), silent = TRUE)
-		if(!inherits(RetChkCrd, "try-error")){
-			if(is.na(RetChkCrd$Stndoute[1, 1])) InsertMessagesTxt(main.txt.out, "All station's coordinates are OK!")
-			GeneralParameters$period <<- RetChkCrd$period
-			InsertMessagesTxt(main.txt.out, paste("Stations coordinates checked successfully for",
-								getf.no.ext(GeneralParameters$IO.files$STN.file)))
-			return(RetChkCrd)
-		}else{
-			InsertMessagesTxt(main.txt.out, paste("Stations coordinates checking failed",
-								getf.no.ext(GeneralParameters$IO.files$STN.file)), format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', RetChkCrd[1]), format = TRUE)
-			return(NULL)
-		}
-	}
 
-	#####
 	if(GeneralParameters$action == "agg.qc"){
-		agg2run <- try(AggregateQcData(), silent = TRUE)
-		if(!inherits(agg2run, "try-error")){
-			if(!is.null(agg2run)){
-				if(agg2run == 0) InsertMessagesTxt(main.txt.out, "Aggregation finished successfully")
-				else InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
-			} else InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
-		}else{
-			InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', agg2run[1]), format = TRUE)
-		}
-		return(NULL)
+		ret <- try(AggregateQcData(), silent = TRUE)
+
+		msg0 <- "Aggregation finished successfully"
+		msg1 <- "Aggregation failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	#####
 	if(GeneralParameters$action == "agg.zc"){
-		agg2run <- try(AggregateZeroChkData(), silent = TRUE)
-		if(!inherits(agg2run, "try-error")){
-			if(!is.null(agg2run)){
-				if(agg2run == 0) InsertMessagesTxt(main.txt.out, "Aggregation finished successfully")
-				else InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
-			} else InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
-		}else{
-			InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', agg2run[1]), format = TRUE)
-		}
-		return(NULL)
+		ret <- try(AggregateZeroChkData(), silent = TRUE)
+
+		msg0 <- "Aggregation finished successfully"
+		msg1 <- "Aggregation failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	#####
 	if(GeneralParameters$action == "agg.hom"){
 		orgdir <- file.path(as.character(GeneralParameters$file.io),'Data')
-		if(file.exists(orgdir)) agg2run <- try(AggregateHomData(), silent = TRUE)
-		else agg2run <- try(AggregateHomData0(), silent = TRUE)
+		agg.hom.Fun <- if(file.exists(orgdir)) AggregateHomData else AggregateHomData0
+		ret <- try(agg.hom.Fun(), silent = TRUE)
 
-		if(!inherits(agg2run, "try-error")){
-			if(!is.null(agg2run)){
-				if(agg2run == 0) 	InsertMessagesTxt(main.txt.out, "Aggregation finished successfully")
-				else InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
-			} else InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
-		}else{
-			InsertMessagesTxt(main.txt.out, "Aggregation failed", format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', agg2run[1]), format = TRUE)
-		}
-		return(NULL)
+		msg0 <- "Aggregation finished successfully"
+		msg1 <- "Aggregation failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	#####
 	if(GeneralParameters$action == "cdtInput.stn"){		
-		if(GeneralParameters$data.type == "Multiple Files") conversionFunc <- "formatCDTDataMultiple.Files"
-		if(GeneralParameters$data.type == "Single File") conversionFunc <- "formatCDTDataSingle.File"
-		conversionFunc <- match.fun(conversionFunc)
+		if(GeneralParameters$data.type == "Multiple Files") cdtInput.stn.Fun <- formatCDTDataMultiple.Files
+		if(GeneralParameters$data.type == "Single File") cdtInput.stn.Fun <- formatCDTDataSingle.File
+		ret <- try(cdtInput.stn.Fun(GeneralParameters), silent = TRUE)
 
-		agg2run <- try(conversionFunc(GeneralParameters), silent = TRUE)
-		if(!inherits(agg2run, "try-error")){
-			if(!is.null(agg2run)){
-				if(agg2run == 0) 	InsertMessagesTxt(main.txt.out, "Conversion to CDT data finished successfully")
-				else InsertMessagesTxt(main.txt.out, "Conversion to CDT data failed", format = TRUE)
-			}else InsertMessagesTxt(main.txt.out, "Conversion to CDT data failed", format = TRUE)
-		}else{
-			InsertMessagesTxt(main.txt.out, "Conversion to CDT data failed", format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', agg2run[1]), format = TRUE)
-		}
-		return(NULL)
+		msg0 <- "Conversion to CDT data finished successfully"
+		msg1 <- "Conversion to CDT data failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	#####
 	if(GeneralParameters$action == "aggregate.ts"){
-		agg2run <- try(AggregateTS_Execute(GeneralParameters), silent = TRUE)
+		ret <- try(AggregateTS_Execute(GeneralParameters), silent = TRUE)
+
 		convert2 <- paste("Conversion from", GeneralParameters$in.tstep, "to", GeneralParameters$out.tstep)
-		if(!inherits(agg2run, "try-error")){
-			if(!is.null(agg2run)){
-				if(agg2run == 0) InsertMessagesTxt(main.txt.out, paste(convert2, "data finished successfully"))
-				else InsertMessagesTxt(main.txt.out, paste(convert2, "data failed"), format = TRUE)
-			}else InsertMessagesTxt(main.txt.out, paste(convert2, "data failed"), format = TRUE)
-		}else{
-			InsertMessagesTxt(main.txt.out, paste(convert2, "data failed"), format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', agg2run[1]), format = TRUE)
-		}
-		return(NULL)
+		msg0 <- paste(convert2, "data finished successfully")
+		msg1 <- paste(convert2, "data failed")
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	#####
 	if(GeneralParameters$action == "aggregate.nc"){
-		agg2run <- try(AggregateSpNc_Execute(GeneralParameters), silent = TRUE)
-		if(!inherits(agg2run, "try-error")){
-			if(!is.null(agg2run)){
-				if(agg2run == 0) InsertMessagesTxt(main.txt.out, "NetCDF regridding finished successfully")
-				else InsertMessagesTxt(main.txt.out, "NetCDF regridding failed", format = TRUE)
-			}else InsertMessagesTxt(main.txt.out, "NetCDF regridding failed", format = TRUE)
-		}else{
-			InsertMessagesTxt(main.txt.out, "NetCDF regridding failed", format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', agg2run[1]), format = TRUE)
-		}
-		return(NULL)
+		ret <- try(AggregateSpNc_Execute(GeneralParameters), silent = TRUE)
+
+		msg0 <- "NetCDF regridding finished successfully"
+		msg1 <- "NetCDF regridding failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
 
 	#####
 	if(GeneralParameters$action == "fill.temp"){
-		retfill <- try(fillDekTempMissVal(GeneralParameters), silent = TRUE)
-		if(!inherits(retfill, "try-error")){
-			if(!is.null(retfill)){
-				if(retfill == 0) InsertMessagesTxt(main.txt.out, "Filling missing dekadal temperature values finished successfully")
-				else InsertMessagesTxt(main.txt.out, "Filling missing dekadal temperature values failed", format = TRUE)
-			}else InsertMessagesTxt(main.txt.out, "Filling missing dekadal temperature values failed", format = TRUE)
-		}else{
-			InsertMessagesTxt(main.txt.out, "Filling missing dekadal temperature values failed", format = TRUE)
-			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', retfill[1]), format = TRUE)
-		}
-		return(NULL)
+		ret <- try(fillDekTempMissVal(GeneralParameters), silent = TRUE)
+
+		msg0 <- "Filling missing dekadal temperature values finished successfully"
+		msg1 <- "Filling missing dekadal temperature values failed"
+		Execute_end_msg(ret, msg0, msg1)
 	}
+
+	#####
+	if(GeneralParameters$action == "create.cdtData"){
+		ret <- try(cdtDataset_readData(GeneralParameters), silent = TRUE)
+
+		msg0 <- "CDT dataset creation finished successfully"
+		msg1 <- "CDT dataset creation values failed"
+		Execute_end_msg(ret, msg0, msg1)
+	}
+
 	###################
 
 }

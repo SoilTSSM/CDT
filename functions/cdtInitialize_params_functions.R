@@ -205,7 +205,7 @@ init.params <- function(action, period){
 	}
 
 	###########################################
-
+	## remove
 	if(action == 'extrct.ts'){
 		file.io <- data.frame(c('NetCDF.dir', 'Shp.file', 'file2save'), c('', '', getwd()))
 		names(file.io) <- c('Parameters', 'Values')
@@ -216,6 +216,14 @@ init.params <- function(action, period){
 		names(dates.ts) <- c('Parameters', 'Values')
 
 		ret.params <- list(action = action, period = period, file.io = file.io, prefix = prefix, dates.ts = dates.ts)
+	}
+
+	#################################################################
+	# create cdt dataset from ncdf files
+	if(action == 'create.cdtData'){
+		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Create_CDT_Dataset.json'))
+		ret.params <- c(list(action = action, Tstep = period), ret.params)
+		if(str_trim(ret.params$output$dir) == "") ret.params$output$dir <- getwd()
 	}
 
 	#############

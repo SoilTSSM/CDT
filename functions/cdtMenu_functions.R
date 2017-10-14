@@ -214,6 +214,16 @@ tkadd(menu.dataprep, "command", label = "Filling missing dekadal temperature val
 	GeneralParameters <<- fillMissDekTemp(main.win, initpars)
 })
 
+######################################## Create CDT dataset for data analysis
+tkadd(menu.dataprep, "separator")
+
+##########
+tkadd(menu.dataprep, "command", label = "Transform NetCDF files into CDT Dataset", command = function(){
+	refreshCDT.lcmd.env()
+	initpars <- initialize.parameters('create.cdtData', 'dekadal')
+	GeneralParameters <<- cdtDataset_getParams(main.win, initpars)
+})
+
 ######################################## CONVERSION
 tkadd(menu.dataprep, "separator")
 

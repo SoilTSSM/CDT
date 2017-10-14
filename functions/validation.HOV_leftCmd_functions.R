@@ -585,7 +585,7 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	##############################################
 
 	if(!is.null(EnvHOValidationplot$hovd)){
-		stateBTEx <- if(EnvHOValidationplot$hovd == "1") "normal" else "disabled"
+		stateBTEx <- if(tclvalue(EnvHOValidationplot$hovd) == "1") "normal" else "disabled"
 	}else stateBTEx <- "normal"
 
 	bt.extract.station <- ttkbutton(subfr2, text = "Extract Data for Validation", state = stateBTEx)
@@ -794,11 +794,11 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	EnvHOValidationplot$hovd <- tclVar(0)
 	file.hovd <- tclVar()
 
-	sateHOVd <- if(EnvHOValidationplot$hovd == "1") "normal" else "disabled"
+	stateHOVd <- if(tclvalue(EnvHOValidationplot$hovd) == "1") "normal" else "disabled"
 
 	chk.hovd <- tkcheckbutton(frameHOV, variable = EnvHOValidationplot$hovd, text = "Hold-Out Validation already performed", anchor = 'w', justify = 'left')
-	en.hovd <- tkentry(frameHOV, textvariable = file.hovd, width = largeur1, state = sateHOVd)
-	bt.hovd <- tkbutton(frameHOV, text = "...", state = sateHOVd)
+	en.hovd <- tkentry(frameHOV, textvariable = file.hovd, width = largeur1, state = stateHOVd)
+	bt.hovd <- tkbutton(frameHOV, text = "...", state = stateHOVd)
 
 	tkconfigure(bt.hovd, command = function(){
 		filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
@@ -824,9 +824,9 @@ Validation.HOV.PanelCmd <- function(clim.var){
 
 	###############
 	tkbind(chk.hovd, "<Button-1>", function(){
-		sateHOVd <- if(tclvalue(EnvHOValidationplot$hovd) == '1') 'disabled' else 'normal'
-		tkconfigure(en.hovd, state = sateHOVd)
-		tkconfigure(bt.hovd, state = sateHOVd)
+		stateHOVd <- if(tclvalue(EnvHOValidationplot$hovd) == '1') 'disabled' else 'normal'
+		tkconfigure(en.hovd, state = stateHOVd)
+		tkconfigure(bt.hovd, state = stateHOVd)
 		stateBTEx <- if(tclvalue(EnvHOValidationplot$hovd) == '1') 'normal' else 'disabled'
 		tkconfigure(bt.extract.station, state = stateBTEx)
 	})
@@ -1237,11 +1237,11 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	EnvHOValidationplot$add.shp <- tclVar(GeneralParameters$add.to.plot$add.shp)
 	file.plotShp <- tclVar(GeneralParameters$add.to.plot$shp.file)
 
-	sateSHP <- if(GeneralParameters$add.to.plot$add.shp) "normal" else "disabled"
+	stateSHP <- if(GeneralParameters$add.to.plot$add.shp) "normal" else "disabled"
 
 	chk.addshp <- tkcheckbutton(frameSHP, variable = EnvHOValidationplot$add.shp, text = "Add boundaries to Map", anchor = 'w', justify = 'left')
-	cb.addshp <- ttkcombobox(frameSHP, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur, state = sateSHP)
-	bt.addshp <- tkbutton(frameSHP, text = "...", state = sateSHP)
+	cb.addshp <- ttkcombobox(frameSHP, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur, state = stateSHP)
+	bt.addshp <- tkbutton(frameSHP, text = "...", state = stateSHP)
 
 	########
 	tkconfigure(bt.addshp, command = function(){
@@ -1276,9 +1276,9 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	})
 
 	tkbind(chk.addshp, "<Button-1>", function(){
-		sateSHP <- if(tclvalue(EnvHOValidationplot$add.shp) == "1") "disabled" else "normal"
-		tkconfigure(cb.addshp, state = sateSHP)
-		tkconfigure(bt.addshp, state = sateSHP)
+		stateSHP <- if(tclvalue(EnvHOValidationplot$add.shp) == "1") "disabled" else "normal"
+		tkconfigure(cb.addshp, state = stateSHP)
+		tkconfigure(bt.addshp, state = stateSHP)
 	})
 
 	##############################################
@@ -1288,11 +1288,11 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	EnvHOValidationplot$add.dem <- tclVar(GeneralParameters$add.to.plot$add.dem)
 	file.grddem <- tclVar(GeneralParameters$add.to.plot$dem.file)
 
-	sateDEM <- if(GeneralParameters$add.to.plot$add.dem) "normal" else "disabled"
+	stateDEM <- if(GeneralParameters$add.to.plot$add.dem) "normal" else "disabled"
 
 	chk.adddem <- tkcheckbutton(frameDEM, variable = EnvHOValidationplot$add.dem, text = "Add DEM  to the Map", anchor = 'w', justify = 'left')
-	cb.adddem <- ttkcombobox(frameDEM, values = unlist(listOpenFiles), textvariable = file.grddem, width = largeur, state = sateDEM)
-	bt.adddem <- tkbutton(frameDEM, text = "...", state = sateDEM)
+	cb.adddem <- ttkcombobox(frameDEM, values = unlist(listOpenFiles), textvariable = file.grddem, width = largeur, state = stateDEM)
+	bt.adddem <- tkbutton(frameDEM, text = "...", state = stateDEM)
 
 	tkconfigure(bt.adddem, command = function(){
 		nc.opfiles <- getOpenNetcdf(main.win, all.opfiles)
@@ -1348,9 +1348,9 @@ Validation.HOV.PanelCmd <- function(clim.var){
 	})
 
 	tkbind(chk.adddem, "<Button-1>", function(){
-		sateDEM <- if(tclvalue(EnvHOValidationplot$add.dem) == "1") "disabled" else "normal"
-		tkconfigure(cb.adddem, state = sateDEM)
-		tkconfigure(bt.adddem, state = sateDEM)
+		stateDEM <- if(tclvalue(EnvHOValidationplot$add.dem) == "1") "disabled" else "normal"
+		tkconfigure(cb.adddem, state = stateDEM)
+		tkconfigure(bt.adddem, state = stateDEM)
 	})
 
 	#############################

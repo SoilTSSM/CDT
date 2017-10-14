@@ -220,6 +220,9 @@ source(file.path(apps.dir, 'functions', 'PICSA_Plot_functions.R'))
 source(file.path(apps.dir, 'functions', 'PICSA_displayPLOT_functions.R'))
 source(file.path(apps.dir, 'functions', 'SkewNormalDistribution_functions.R'))
 
+#####
+source(file.path(apps.dir, 'functions', 'cdtDataset_Create_dlgBox_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtDataset_Create_Procs_functions.R'))
 
 #####
 #

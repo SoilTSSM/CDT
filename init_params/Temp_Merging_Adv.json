@@ -55,9 +55,11 @@
     "Merging.Date": {
         "start.year": 1981,
         "start.mon": 1,
+        // day, pentad or dekad
         "start.dek": 1,
         "end.year": 2015,
         "end.mon": 12,
+        // day, pentad or dekad
         "end.dek": 3,
         // Months on which merging will be performed
         "Months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]

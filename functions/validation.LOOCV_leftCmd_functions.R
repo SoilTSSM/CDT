@@ -477,7 +477,7 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 	##############################################
 
 	if(!is.null(EnvLOOCValidationplot$loocv)){
-		stateBTCV <- if(EnvLOOCValidationplot$loocv == "1") "normal" else "disabled"
+		stateBTCV <- if(tclvalue(EnvLOOCValidationplot$loocv) == "1") "normal" else "disabled"
 	}else stateBTCV <- "normal"
 	
 	bt.cross.valid <- ttkbutton(subfr2, text = "Leave-One-Out Cross-Validation", state = stateBTCV)
@@ -568,11 +568,11 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 	EnvLOOCValidationplot$loocv <- tclVar(0)
 	file.loocv <- tclVar()
 
-	sateLOOCV <- if(EnvLOOCValidationplot$loocv == "1") "normal" else "disabled"
+	stateLOOCV <- if(tclvalue(EnvLOOCValidationplot$loocv) == "1") "normal" else "disabled"
 
 	chk.loocv <- tkcheckbutton(frameLOOCV, variable = EnvLOOCValidationplot$loocv, text = "LOOCV already performed", anchor = 'w', justify = 'left')
-	en.loocv <- tkentry(frameLOOCV, textvariable = file.loocv, width = largeur1, state = sateLOOCV)
-	bt.loocv <- tkbutton(frameLOOCV, text = "...", state = sateLOOCV)
+	en.loocv <- tkentry(frameLOOCV, textvariable = file.loocv, width = largeur1, state = stateLOOCV)
+	bt.loocv <- tkbutton(frameLOOCV, text = "...", state = stateLOOCV)
 
 	tkconfigure(bt.loocv, command = function(){
 		filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
@@ -598,9 +598,9 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 
 	###############
 	tkbind(chk.loocv, "<Button-1>", function(){
-		sateLOOCV <- if(tclvalue(EnvLOOCValidationplot$loocv) == '1') 'disabled' else 'normal'
-		tkconfigure(en.loocv, state = sateLOOCV)
-		tkconfigure(bt.loocv, state = sateLOOCV)
+		stateLOOCV <- if(tclvalue(EnvLOOCValidationplot$loocv) == '1') 'disabled' else 'normal'
+		tkconfigure(en.loocv, state = stateLOOCV)
+		tkconfigure(bt.loocv, state = stateLOOCV)
 		stateBTCV <- if(tclvalue(EnvLOOCValidationplot$loocv) == '1') 'normal' else 'disabled'
 		tkconfigure(bt.cross.valid, state = stateBTCV)
 	})
@@ -1012,11 +1012,11 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 	EnvLOOCValidationplot$add.shp <- tclVar(GeneralParameters$add.to.plot$add.shp)
 	file.plotShp <- tclVar(GeneralParameters$add.to.plot$shp.file)
 
-	sateSHP <- if(GeneralParameters$add.to.plot$add.shp) "normal" else "disabled"
+	stateSHP <- if(GeneralParameters$add.to.plot$add.shp) "normal" else "disabled"
 
 	chk.addshp <- tkcheckbutton(frameSHP, variable = EnvLOOCValidationplot$add.shp, text = "Add boundaries to Map", anchor = 'w', justify = 'left')
-	cb.addshp <- ttkcombobox(frameSHP, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur, state = sateSHP)
-	bt.addshp <- tkbutton(frameSHP, text = "...", state = sateSHP)
+	cb.addshp <- ttkcombobox(frameSHP, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur, state = stateSHP)
+	bt.addshp <- tkbutton(frameSHP, text = "...", state = stateSHP)
 
 	########
 	tkconfigure(bt.addshp, command = function(){
@@ -1051,9 +1051,9 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 	})
 
 	tkbind(chk.addshp, "<Button-1>", function(){
-		sateSHP <- if(tclvalue(EnvLOOCValidationplot$add.shp) == "1") "disabled" else "normal"
-		tkconfigure(cb.addshp, state = sateSHP)
-		tkconfigure(bt.addshp, state = sateSHP)
+		stateSHP <- if(tclvalue(EnvLOOCValidationplot$add.shp) == "1") "disabled" else "normal"
+		tkconfigure(cb.addshp, state = stateSHP)
+		tkconfigure(bt.addshp, state = stateSHP)
 	})
 
 
@@ -1064,11 +1064,11 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 	EnvLOOCValidationplot$add.dem <- tclVar(GeneralParameters$add.to.plot$add.dem)
 	file.grddem1 <- tclVar(GeneralParameters$add.to.plot$dem.file)
 
-	sateDEM <- if(GeneralParameters$add.to.plot$add.dem) "normal" else "disabled"
+	stateDEM <- if(GeneralParameters$add.to.plot$add.dem) "normal" else "disabled"
 
 	chk.adddem <- tkcheckbutton(frameDEM, variable = EnvLOOCValidationplot$add.dem, text = "Add DEM to Map", anchor = 'w', justify = 'left')
-	cb.adddem <- ttkcombobox(frameDEM, values = unlist(listOpenFiles), textvariable = file.grddem1, width = largeur, state = sateDEM)
-	bt.adddem <- tkbutton(frameDEM, text = "...", state = sateDEM)
+	cb.adddem <- ttkcombobox(frameDEM, values = unlist(listOpenFiles), textvariable = file.grddem1, width = largeur, state = stateDEM)
+	bt.adddem <- tkbutton(frameDEM, text = "...", state = stateDEM)
 
 	tkconfigure(bt.adddem, command = function(){
 		nc.opfiles <- getOpenNetcdf(main.win, all.opfiles)
@@ -1123,9 +1123,9 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 	})
 
 	tkbind(chk.adddem, "<Button-1>", function(){
-		sateDEM <- if(tclvalue(EnvLOOCValidationplot$add.dem) == "1") "disabled" else "normal"
-		tkconfigure(cb.adddem, state = sateDEM)
-		tkconfigure(bt.adddem, state = sateDEM)
+		stateDEM <- if(tclvalue(EnvLOOCValidationplot$add.dem) == "1") "disabled" else "normal"
+		tkconfigure(cb.adddem, state = stateDEM)
+		tkconfigure(bt.adddem, state = stateDEM)
 	})
 
 	#############################

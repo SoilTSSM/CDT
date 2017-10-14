@@ -27,7 +27,7 @@ Precip_MergingFunctions <- function(mrgParms){
 	min.non.zero <- GeneralParameters$Merging$min.non.zero
 
 	res.coarse <- maxdist/2
-	res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
+	res.coarse <- if(res.coarse >= 0.25) res.coarse else 0.25
 	maxdist <- if(maxdist < res.coarse) res.coarse else maxdist
 
 	use.RnoR <- GeneralParameters$RnoR$use.RnoR

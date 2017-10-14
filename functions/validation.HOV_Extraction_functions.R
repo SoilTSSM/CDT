@@ -58,7 +58,7 @@ HOV_DataExtraction <- function(GeneralParameters){
 	}else ixy <- rep(TRUE, length(EnvHOValidation$stnData$lon))
 
 	##################
-	## RFE sample file
+	## ncdf data sample file
 	ncDataInfo <- getRFESampleData(GeneralParameters$ncdf.file$sample)
 	if(is.null(ncDataInfo)){
 		InsertMessagesTxt(main.txt.out, "No netcdf data sample found", format = TRUE)
