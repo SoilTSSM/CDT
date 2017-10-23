@@ -533,11 +533,13 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 			}
 		)
 
+		msg0 <- "Calculation of the data for validation finished successfully"
+		msg1 <- "Cross-Validation failed"
 		if(!is.null(ret)){
 			if(ret == 0){
-				InsertMessagesTxt(main.txt.out, "Calculation of the data for validation finished successfully")
-			}else InsertMessagesTxt(main.txt.out, "Cross-Validation failed", format = TRUE)
-		}else InsertMessagesTxt(main.txt.out, "Cross-Validation failed", format = TRUE)
+				InsertMessagesTxt(main.txt.out, msg0)
+			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
+		}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 	})
 
 	#############################
@@ -827,9 +829,11 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 			}
 		)
 
+		msg0 <- "Statistics calculation finished successfully"
+		msg1 <- "Validation failed"
 		if(!is.null(ret)){
 			if(ret == 0){
-				InsertMessagesTxt(main.txt.out, "Statistics calculation finished successfully")
+				InsertMessagesTxt(main.txt.out, msg0)
 
 				if(tclvalue(stat.data) == 'Per station'){
 					tkconfigure(cb.stat.sel, values = EnvLOOCValidation$opDATA$id)
@@ -838,10 +842,9 @@ Validation.LOOCV.PanelCmd <- function(clim.var){
 					tkconfigure(cb.stn.graph, values = EnvLOOCValidation$opDATA$id, state = 'normal')
 					tclvalue(EnvLOOCValidationplot$stnIDGraph) <- EnvLOOCValidation$opDATA$id[1]
 				}
-			}else InsertMessagesTxt(main.txt.out, "Validation failed", format = TRUE)
-		}else InsertMessagesTxt(main.txt.out, "Validation failed", format = TRUE)
+			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
+		}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 	})
-
 
 	#############################
 	tkgrid(frameLOOCV, row = 0, column = 0, sticky = 'we')

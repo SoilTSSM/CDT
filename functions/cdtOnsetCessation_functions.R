@@ -145,7 +145,9 @@ onsetDectection <- function(jj, DATA, dates, pars, min.frac){
 		is.onset <- sapply(ipos, function(i){
 			x1 <- x[i+(1:win1.search)]
 			x1 <- ifelse(x1 > thres.rain.day, 0, 1)
-			!any(rle(x1)$lengths >= dry.spell)
+			x2 <-rle(x1)
+			!any(x2$lengths[x2$values == 1] >= dry.spell)
+			# !any(rle(x1)$lengths >= dry.spell)
 		})
 		if(!any(is.onset)) return(NA)
 		ipos <- ipos[is.onset]

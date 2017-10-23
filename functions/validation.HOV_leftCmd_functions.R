@@ -7,7 +7,6 @@ Validation.HOV.PanelCmd <- function(clim.var){
 		wttkcombo <- as.integer(w.scale(30)/sfont0)
 		largeur <- as.integer(w.scale(28)/sfont0)
 		largeur1 <- as.integer(w.scale(30)/sfont0)
-		wncdf_ff <- as.integer(w.scale(20)/sfont0)
 		largeur2 <- 30
 		largeur3 <- 28
 	}else{
@@ -16,7 +15,6 @@ Validation.HOV.PanelCmd <- function(clim.var){
 		wttkcombo <- as.integer(w.scale(26)/sfont0)
 		largeur <- as.integer(w.scale(22)/sfont0)
 		largeur1 <- as.integer(w.scale(23)/sfont0)
-		wncdf_ff <- as.integer(w.scale(16)/sfont0)
 		largeur2 <- 22
 		largeur3 <- 20
 	}
@@ -639,11 +637,13 @@ Validation.HOV.PanelCmd <- function(clim.var){
 			}
 		)
 
+		msg0 <- "Data extraction finished successfully"
+		msg1 <- "Data extraction failed"
 		if(!is.null(ret)){
 			if(ret == 0){
-				InsertMessagesTxt(main.txt.out, "Data extraction finished successfully")
-			}else InsertMessagesTxt(main.txt.out, "Data extraction failed", format = TRUE)
-		}else InsertMessagesTxt(main.txt.out, "Data extraction failed", format = TRUE)
+				InsertMessagesTxt(main.txt.out, msg0)
+			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
+		}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 	})
 
 	#######################
@@ -1053,9 +1053,11 @@ Validation.HOV.PanelCmd <- function(clim.var){
 			}
 		)
 
+		msg0 <- "Statistics calculation finished successfully"
+		msg1 <- "Validation failed"
 		if(!is.null(ret)){
 			if(ret == 0){
-				InsertMessagesTxt(main.txt.out, "Statistics calculation finished successfully")
+				InsertMessagesTxt(main.txt.out, msg0)
 
 				if(tclvalue(stat.data) == 'Per station'){
 					tkconfigure(cb.stat.sel, values = EnvHOValidation$opDATA$id)
@@ -1064,8 +1066,8 @@ Validation.HOV.PanelCmd <- function(clim.var){
 					tkconfigure(cb.stn.graph, values = EnvHOValidation$opDATA$id, state = 'normal')
 					tclvalue(EnvHOValidationplot$stnIDGraph) <- EnvHOValidation$opDATA$id[1]
 				}
-			}else InsertMessagesTxt(main.txt.out, "Validation failed", format = TRUE)
-		}else InsertMessagesTxt(main.txt.out, "Validation failed", format = TRUE)
+			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
+		}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 	})
 
 	#############################

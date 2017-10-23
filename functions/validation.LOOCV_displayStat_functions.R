@@ -103,7 +103,7 @@ LOOCValidation.plotGraph <- function(){
 	}
 
 	##############
-	plotType <- tclvalue(EnvHOValidationplot$type.graph)
+	plotType <- tclvalue(EnvLOOCValidationplot$type.graph)
 
 	## choix xlim&ylim default
 	xmin <- min(c(x, y), na.rm = TRUE)
@@ -124,7 +124,7 @@ LOOCValidation.plotGraph <- function(){
 		xlim <- c(xmin, xmax)
 		ylim <- c(0, 1)
 
-		xlab <- if(EnvHOValidation$GeneralParameters$clim.var == "RR") "Rainfall" else "Temperature"
+		xlab <- if(EnvLOOCValidation$GeneralParameters$clim.var == "RR") "Rainfall" else "Temperature"
 		xlab <- paste(xlab, units)
 		ylab <- "Cumulative density"
 
@@ -135,7 +135,7 @@ LOOCValidation.plotGraph <- function(){
 		ylim <- c(xmin, xmax)
 
 		xlab <- ""
-		ylab <- if(EnvHOValidation$GeneralParameters$clim.var == "RR") "Rainfall" else "Temperature"
+		ylab <- if(EnvLOOCValidation$GeneralParameters$clim.var == "RR") "Rainfall" else "Temperature"
 		ylab <- paste(ylab, units)
 
 		legendlab <- c('Station', 'Estimate')
