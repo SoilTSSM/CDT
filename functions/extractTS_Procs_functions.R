@@ -600,6 +600,7 @@ ExtractDataProcs <- function(GeneralParameters){
 		}else{
 			aggregatData <- if(!isTRUE(all.equal(EnvExtractData$toAggr, toAggr))) TRUE else FALSE
 		}
+		aggregatData <- aggregatData | extractGeom | readNCDFdata
 
 		if(aggregatData){
 			AggrSeries <- list(aggr.fun = GeneralParameters$aggr.series$aggr.fun,
