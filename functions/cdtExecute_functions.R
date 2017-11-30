@@ -140,8 +140,10 @@ Execute_All_Functions <- function(get.stn){
 	##Output message
 	Execute_end_msg <- function(outret, msgOK, msgFail){
 		if(!inherits(outret, "try-error")){
-			if(!is.null(outret) & (outret == 0)) InsertMessagesTxt(main.txt.out, msgOK)
-			else InsertMessagesTxt(main.txt.out, msgFail, format = TRUE)
+			if(!is.null(outret)){
+				if(outret == 0) InsertMessagesTxt(main.txt.out, msgOK)
+				else InsertMessagesTxt(main.txt.out, msgFail, format = TRUE)
+			}else InsertMessagesTxt(main.txt.out, msgFail, format = TRUE)
 		}else{
 			InsertMessagesTxt(main.txt.out, msgFail, format = TRUE)
 			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', outret[1]), format = TRUE)
