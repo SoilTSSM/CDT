@@ -23,8 +23,9 @@ EnvHOValidationplot <- new.env()
 EnvLOOCValidation <- new.env()
 EnvLOOCValidationplot <- new.env()
 
-#Climatological analysis data
+#Climatological analysis data/ spatial analysis
 EnvClimatoAnalysis <- new.env()
+EnvClimatoAnalysisplot <- new.env()
 
 # Zoom parameters and bbox
 EnvZoomPars <- new.env()
@@ -32,4 +33,18 @@ EnvZoomPars <- new.env()
 # PICSA
 EnvPICSA <- new.env()
 EnvPICSAplot <- new.env()
+
+# Compute climatologies
+EnvClimatoCalcPlot <- new.env()
+
+# Compute anomalies
+EnvAnomalyCalcPlot <- new.env()
+
+# Onset, Cessation, Length
+EnvOnsetCalcPlot <- new.env()
+EnvCessationCalcPlot <- new.env()
+EnvSeasLengthCalcPlot <- new.env()
+
+# daily rainfall analysis
+EnvDailyRainAnalysisplot <- new.env()
 

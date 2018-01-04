@@ -107,7 +107,9 @@ PICSA.plotTSMaps <- function(ocrds){
 	if(EnvPICSA$Pars$data.type == "cdt"){
 		xna <- EnvPICSA$PICSA.Coords$lon[is.na(don)]
 		yna <- EnvPICSA$PICSA.Coords$lat[is.na(don)]
-		don <- as.image(don, x = cbind(EnvPICSA$PICSA.Coords$lon, EnvPICSA$PICSA.Coords$lat), nx = 60, ny = 60)
+		nx <- as.integer(diff(range(EnvPICSA$PICSA.Coords$lon))/(0.0375*2.5))
+		ny <- as.integer(diff(range(EnvPICSA$PICSA.Coords$lat))/(0.0375*2.5))
+		don <- as.image(don, x = cbind(EnvPICSA$PICSA.Coords$lon, EnvPICSA$PICSA.Coords$lat), nx = nx, ny = ny)
 	}else{
 		xna <- NULL
 		lon <- sort(unique(EnvPICSA$PICSA.Coords$lon))
@@ -117,9 +119,8 @@ PICSA.plotTSMaps <- function(ocrds){
 
 	#################
 
-	breaks <- pretty(range(don$z, na.rm = TRUE))
+	breaks <- pretty(don$z, n = 10, min.n = 7)
 	breaks <- if(length(breaks) > 0) breaks else c(0, 1) 
-	if(length(breaks) < 7) breaks <- round(seq(breaks[1], breaks[length(breaks)], length.out = 7), 4)
 
 	kolFonction <- match.fun("tim.colors")
 	kolor <- kolFonction(length(breaks)-1)
@@ -201,7 +202,7 @@ PICSA.plotClimMaps <- function(ocrds){
 	if(StatOp == "Percentiles")
 		aggrFonction <- function(Y, X = NULL, O = NULL){
 			Q <- as.numeric(tclvalue(EnvPICSAplot$mth.perc))/100
-			apply(Y, 2, quantile8, probs = Q)
+			# apply(Y, 2, quantile8, probs = Q)
 			matrixStats::colQuantiles(Y, probs = Q, na.rm = TRUE)
 		}
 	if(StatOp == "Frequency")
@@ -410,7 +411,9 @@ PICSA.plotClimMaps <- function(ocrds){
 	if(EnvPICSA$Pars$data.type == "cdt"){
 		xna <- EnvPICSA$PICSA.Coords$lon[is.na(don)]
 		yna <- EnvPICSA$PICSA.Coords$lat[is.na(don)]
-		don <- as.image(don, x = cbind(EnvPICSA$PICSA.Coords$lon, EnvPICSA$PICSA.Coords$lat), nx = 60, ny = 60)
+		nx <- as.integer(diff(range(EnvPICSA$PICSA.Coords$lon))/(0.0375*2.5))
+		ny <- as.integer(diff(range(EnvPICSA$PICSA.Coords$lat))/(0.0375*2.5))
+		don <- as.image(don, x = cbind(EnvPICSA$PICSA.Coords$lon, EnvPICSA$PICSA.Coords$lat), nx = nx, ny = ny)
 	}else{
 		xna <- NULL
 		lon <- sort(unique(EnvPICSA$PICSA.Coords$lon))
@@ -430,9 +433,8 @@ PICSA.plotClimMaps <- function(ocrds){
 
 	#################
 
-	breaks <- pretty(range(don$z, na.rm = TRUE))
+	breaks <- pretty(don$z, n = 10, min.n = 7)
 	breaks <- if(length(breaks) > 0) breaks else c(0, 1) 
-	if(length(breaks) < 7) breaks <- round(seq(breaks[1], breaks[length(breaks)], length.out = 7), 4)
 
 	kolFonction <- match.fun("tim.colors")
 	kolor <- kolFonction(length(breaks)-1)
@@ -506,7 +508,8 @@ PICSA.plotTSGraph <- function(){
 			InsertMessagesTxt(main.txt.out, "Coordinates outside of data range", format = TRUE)
 			return(NULL)
 		}
-		ixy <- matrix(seq(length(EnvPICSA$PICSA.Coords$lon)), length(xlon), length(xlat))[ilo, ila]
+		# ixy <- matrix(seq(length(EnvPICSA$PICSA.Coords$lon)), length(xlon), length(xlat))[ilo, ila]
+		ixy <- ilo + length(xlon) * (ila-1)
 		EnvPICSAplot$location <- paste0("Longitude: ", round(ilon, 5), ", Latitude: ", round(ilat, 5))
 	}
 
@@ -515,10 +518,10 @@ PICSA.plotTSGraph <- function(){
 	if(str_trim(tclvalue(EnvPICSAplot$varTSp)) == "From Maps"){
 		if(tclvalue(EnvPICSAplot$varPICSA) %in% c("Maximum temperature", "Minimum temperature")){
 			tmaxDir <- file.path(outdirPICSAData, "cdtTMAXSEAS")
-			tmax <- readcdtDATAchunk(ixy, EnvPICSA$cdtONSET$colInfo, tmaxDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
+			tmax <- readCdtDatasetChunk.picsa(ixy, EnvPICSA$cdtONSET$colInfo, tmaxDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
 			tmax <- tmax[, 1]
 			tminDir <- file.path(outdirPICSAData, "cdtTMINSEAS")
-			tmin <- readcdtDATAchunk(ixy, EnvPICSA$cdtONSET$colInfo, tminDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
+			tmin <- readCdtDatasetChunk.picsa(ixy, EnvPICSA$cdtONSET$colInfo, tminDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
 			tmin <- tmin[, 1]
 			picsa.plot.TxTn(EnvPICSA$cdtONSET$years, tmax, tmin, axis.font = 1)
 		}else{
@@ -669,10 +672,10 @@ PICSA.plotTSGraph <- function(){
 			####
 			if(str_trim(tclvalue(EnvPICSAplot$typeTSp))%in%c("ENSO-Line", "ENSO-Barplot", "ENSO-Proba")){
 				onsetDir <- file.path(outdirPICSAData, "cdtONSET")
-				onset <- readcdtDATAchunk(ixy, EnvPICSA$cdtONSET$colInfo, onsetDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
+				onset <- readCdtDatasetChunk.picsa(ixy, EnvPICSA$cdtONSET$colInfo, onsetDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
 				onset <- onset[, 1]
 				cessatDir <- file.path(outdirPICSAData, "cdtCESSAT")
-				cessat <- readcdtDATAchunk(ixy, EnvPICSA$cdtONSET$colInfo, cessatDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
+				cessat <- readCdtDatasetChunk.picsa(ixy, EnvPICSA$cdtONSET$colInfo, cessatDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
 				cessat <- cessat[, 1]
 
 				onset.dates <- format(as.Date(onset, origin = EnvPICSA$cdtONSET$days.since), "%Y%m%d")
@@ -712,7 +715,7 @@ PICSA.plotTSGraph <- function(){
 		}
 	}else{
 		precipDir <- file.path(outdirPICSAData, "cdtPrecip")
-		don <- readcdtDATAchunk(EnvPICSA$opDATA$cdtPrecip$pid[ixy], EnvPICSA$cdtPrecip$colInfo, precipDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
+		don <- readCdtDatasetChunk.picsa(EnvPICSA$opDATA$cdtPrecip$pid[ixy], EnvPICSA$cdtPrecip$colInfo, precipDir, EnvPICSA$Pars$chunksize, chunk.par = FALSE)
 		don <- don[EnvPICSA$opDATA$cdtPrecip$index, 1]
 		picsa.plot.daily(EnvPICSA$opDATA$dates, don, EnvPICSA$Pars$thres.rain.day)
 	}

@@ -1,75 +1,4 @@
 
-readcdtDATAchunk <- function(col, colInfo, indir, chunksize = 100, chunk.par = TRUE)
-{
-	col.id <- match(col, colInfo$id)
-	col.idx <- colInfo$index[col.id]
-	col.grp <- split(col.id, col.idx)
-	col.grp <- lapply(col.grp, function(l){
-		ix <- (l-chunksize)%%chunksize
-		ifelse(ix == 0, chunksize, ix)
-	})
-	chunk <- unique(col.idx)
-
-	is.parallel <- doparallel(chunk.par & (length(chunk) >= 10))
-	`%parLoop%` <- is.parallel$dofun
-	don <- foreach(j = seq_along(chunk)) %parLoop% {
-		file.rds <- file.path(indir, paste0(chunk[j], ".rds"))
-		# con <- file(file.rds)
-		# open(con, "rb")
-		# x <- readRDS(con)
-		# close(con)
-		x <- readRDS(file.rds)
-		x[, col.grp[[j]], drop = FALSE]
-	}
-	if(is.parallel$stop) stopCluster(is.parallel$cluster)
-	do.call(cbind, don)
-}
-
-writecdtDATAchunk <- function(x, outdir, chunksize = 100, chunk.par = TRUE)
-{
-	col.id <- seq(ncol(x))
-	col.grp <- split(col.id, ceiling(col.id/chunksize))
-	col.idx <- rep(seq_along(col.grp), sapply(col.grp, length))
-
-	is.parallel <- doparallel(chunk.par & (length(col.grp) >= 10))
-	`%parLoop%` <- is.parallel$dofun
-	ret <- foreach(j = seq_along(col.grp)) %parLoop% {
-		tmp <- x[, col.grp[[j]], drop = FALSE]
-		file.rds <- file.path(outdir, paste0(j, ".rds"))
-		con <- gzfile(file.rds, compression = 5)
-		open(con, "wb")
-		saveRDS(tmp, con)
-		close(con)
-		rm(tmp); gc()
-	}
-	if(is.parallel$stop) stopCluster(is.parallel$cluster)
-	return(list(id = col.id, index = col.idx))
-}
-
-writebindcdtDATAchunk <- function(x, outdir, chunksize = 100, chunk.par = TRUE)
-{
-	col.id <- seq(ncol(x))
-	col.grp <- split(col.id, ceiling(col.id/chunksize))
-	col.idx <- rep(seq_along(col.grp), sapply(col.grp, length))
-
-	is.parallel <- doparallel(chunk.par & (length(col.grp) >= 10))
-	`%parLoop%` <- is.parallel$dofun
-	ret <- foreach(j = seq_along(col.grp)) %parLoop% {
-		file.rds <- file.path(outdir, paste0(j, ".rds"))
-		y <- readRDS(file.rds)
-		z <- x[, col.grp[[j]], drop = FALSE]
-		tmp <- rbind(y, z)
-		con <- gzfile(file.rds, compression = 5)
-		open(con, "wb")
-		saveRDS(tmp, con)
-		close(con)
-		rm(y, z, tmp); gc()
-	}
-	if(is.parallel$stop) stopCluster(is.parallel$cluster)
-	return(list(id = col.id, index = col.idx))
-}
-
-#################################################################################
 ## Climdex,  Extraction
 ## Index for sliding window, climatology
 
@@ -232,6 +161,10 @@ getIndexSeason <- function(dates, inTimestep, yearSeas, startMonth, seasonLength
 	list(index = indx, dates = odaty, full.len = len.data)
 }
 
+#############################################
+# A verifier
+# getIndexSeasonVarsRow
+# getIndexSeasonVars
 
 getIndexSeasonVars <- function(startSeas, endSeas, dates, inTimestep){
 	idx <- vector(mode = "list", length = length(startSeas))
@@ -253,8 +186,8 @@ getIndexSeasonVars <- function(startSeas, endSeas, dates, inTimestep){
 		end.seas1 <- as.numeric(substr(endSeas, 1, 6))
 		start.seas2 <- as.numeric(substr(startSeas, 7, 8))
 		end.seas2 <- as.numeric(substr(endSeas, 7, 8))
-		start.seas2 <- ifelse(start.seas2 <= 10, 1, ifelse(start.seas2 > 20, 3, 2))
-		end.seas2 <- ifelse(end.seas2 <= 10, 1, ifelse(end.seas2 > 20, 3, 2))
+		start.seas2 <- findInterval(start.seas2, c(1, 10, 20, 31), rightmost.closed = TRUE, left.open = TRUE)
+		end.seas2 <- findInterval(end.seas2, c(1, 10, 20, 31), rightmost.closed = TRUE, left.open = TRUE)
 		start.seas <- as.numeric(paste0(start.seas1, start.seas2))
 		end.seas <- as.numeric(paste0(end.seas1, end.seas2))
 	}
@@ -298,6 +231,8 @@ getIndexSeasonVars <- function(startSeas, endSeas, dates, inTimestep){
 	return(idx)
 }
 
+#############################################
+
 getIndexSeasonVarsRow <- function(startSeas, endSeas, dates, inTimestep){
 	idx <- vector(mode = "list", length = length(startSeas))
 	ina <- is.na(startSeas) | is.na(endSeas)
@@ -319,8 +254,18 @@ getIndexSeasonVarsRow <- function(startSeas, endSeas, dates, inTimestep){
 		end.seas1 <- as.numeric(substr(endSeas, 1, 6))
 		start.seas2 <- as.numeric(substr(startSeas, 7, 8))
 		end.seas2 <- as.numeric(substr(endSeas, 7, 8))
-		start.seas2 <- ifelse(start.seas2 <= 10, 1, ifelse(start.seas2 > 20, 3, 2))
-		end.seas2 <- ifelse(end.seas2 <= 10, 1, ifelse(end.seas2 > 20, 3, 2))
+		start.seas2 <- findInterval(start.seas2, c(1, 10, 20, 31), rightmost.closed = TRUE, left.open = TRUE)
+		end.seas2 <- findInterval(end.seas2, c(1, 10, 20, 31), rightmost.closed = TRUE, left.open = TRUE)
+		start.seas <- as.numeric(paste0(start.seas1, start.seas2))
+		end.seas <- as.numeric(paste0(end.seas1, end.seas2))
+	}
+	if(inTimestep == "pentad"){
+		start.seas1 <- as.numeric(substr(startSeas, 1, 6))
+		end.seas1 <- as.numeric(substr(endSeas, 1, 6))
+		start.seas2 <- as.numeric(substr(startSeas, 7, 8))
+		end.seas2 <- as.numeric(substr(endSeas, 7, 8))
+		start.seas2 <- findInterval(start.seas2, c(1, 5, 10, 15, 20, 25, 31), rightmost.closed = TRUE, left.open = TRUE)
+		end.seas2 <- findInterval(end.seas2, c(1, 5, 10, 15, 20, 25, 31), rightmost.closed = TRUE, left.open = TRUE)
 		start.seas <- as.numeric(paste0(start.seas1, start.seas2))
 		end.seas <- as.numeric(paste0(end.seas1, end.seas2))
 	}
@@ -342,6 +287,10 @@ getIndexSeasonVarsRow <- function(startSeas, endSeas, dates, inTimestep){
 	if(length(ystart) > 0) cdates <- c(ystart, cdates)
 	if(length(yend) > 0) cdates <- c(cdates, yend)
 	if(inTimestep == 'daily') cdates <- format(cdates, "%Y%m%d")
+	if(inTimestep == 'pentad'){
+		pen <- as.numeric(format(cdates, '%d'))
+		cdates <- paste0(format(cdates, "%Y%m")[pen <= 6], pen[pen <= 6])
+	}
 	if(inTimestep == 'dekadal'){
 		dek <- as.numeric(format(cdates, '%d'))
 		cdates <- paste0(format(cdates, "%Y%m")[dek <= 3], dek[dek <= 3])
@@ -362,6 +311,54 @@ getIndexSeasonVarsRow <- function(startSeas, endSeas, dates, inTimestep){
 	})
 	idx[!ina] <- idrow
 	return(idx)
+}
+
+#############################################
+
+getClimatologiesIndex <- function(daty, freqData = "daily", xwin = 0){
+	monval <- as.numeric(substr(daty, 5, 6))
+	if(freqData == 'daily'){
+		endmon <- c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+		vtimes <- cbind(unlist(sapply(endmon, function(j) 1:j)), rep(1:12, endmon), 1:365)
+		xdaty <- paste(as.numeric(substr(daty, 7, 8)), monval, sep = '_')
+		xvtm <- paste(vtimes[, 1], vtimes[, 2], sep = '_')
+		times.stn <- vtimes[match(xdaty, xvtm), 3]
+		times.stn[is.na(times.stn)] <- 59
+
+		## sliding windows xwin
+		ixmovwin <- lapply(unique(times.stn), function(nt){
+			ix1 <- which(times.stn == nt)
+			ix1 <- c(sapply(ix1, function(x) x + (-xwin:xwin)))
+			cbind(nt, ix1[ix1 > 0 & ix1 <= length(daty)])
+		})
+		ixmovwin <- do.call(rbind, ixmovwin)
+		times.stn <- ixmovwin[, 1]
+		idx.stn <- ixmovwin[, 2]
+	}
+
+	if(freqData == 'pentad'){
+		vtimes <- cbind(expand.grid(1:6, 1:12), 1:72)
+		xdaty <- paste(as.numeric(substr(daty, 7, 7)), monval, sep = '_')
+		xvtm <- paste(vtimes[, 1], vtimes[, 2], sep = '_')
+		times.stn <- vtimes[match(xdaty, xvtm), 3]
+		idx.stn <- seq_along(daty)
+	}
+
+	if(freqData == 'dekadal'){
+		vtimes <- cbind(expand.grid(1:3, 1:12), 1:36)
+		xdaty <- paste(as.numeric(substr(daty, 7, 7)), monval, sep = '_')
+		xvtm <- paste(vtimes[, 1], vtimes[, 2], sep = '_')
+		times.stn <- vtimes[match(xdaty, xvtm), 3]
+		idx.stn <- seq_along(daty)
+	}
+
+	if(freqData == 'monthly'){
+		times.stn <- monval
+		idx.stn <- seq_along(daty)
+	}
+
+	index <- split(idx.stn, times.stn)
+	return(list(id = as.numeric(names(index)), index = index))
 }
 
 ###############################################

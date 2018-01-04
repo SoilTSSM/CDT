@@ -18,6 +18,7 @@ ExtraterrestrialRadiation <- function(lat){
 	} 
 	Ra <- (37.58603 * dr) * (ws * sin2 + cos2 * sin(ws))
 	Ra[Ra < 0] <- 0
+	# Ra in MJ m-2 d-1
 	return(Ra)
 }
 
@@ -27,15 +28,19 @@ ETPHargreaves <- function(Tmax, Tmin, Ra, Precip = NULL){
 	TD[TD < 0] <- 0
 	if(is.null(Precip)){
 		# Original Hargreaves equation
-		ETP <- 0.0009384 * Ra * (TM + 17.8) * TD^0.5
+		ETP <- 0.0023 * (0.408 * Ra) * (TM + 17.8) * TD^0.5
 	}else{
 		# Hargreaves modified method
 		PRE <- (TD - 0.0123*Precip)^0.76
 		PRE[is.nan(PRE)] <- 0
-		ETP <- 0.0005304 * Ra * (TM + 17) * PRE
+		ETP <- 0.0013 * (0.408 * Ra) * (TM + 17) * PRE
 	}
 	return(ETP)
 }
+
+# /Users/rijaf/Desktop/network/ONSET_WATERBALANCE_ETP/MITJPSPGC_Rpt195.pdf
+# http://www.fao.org/docrep/X0490E/x0490e07.htm
+# 1 MJ m-2 day-1 = 0.408 mm day-1
 
 #################################################################################
 ## Water Balance
@@ -145,10 +150,11 @@ onsetDectection <- function(jj, DATA, dates, pars, min.frac){
 		is.onset <- sapply(ipos, function(i){
 			x1 <- x[i+(1:win1.search)]
 			x1 <- ifelse(x1 > thres.rain.day, 0, 1)
-			x2 <-rle(x1)
+			x2 <- rle(x1)
 			!any(x2$lengths[x2$values == 1] >= dry.spell)
 			# !any(rle(x1)$lengths >= dry.spell)
 		})
+		is.onset[is.na(is.onset)] <- FALSE
 		if(!any(is.onset)) return(NA)
 		ipos <- ipos[is.onset]
 		istart <- NA

@@ -23,7 +23,7 @@ PICSAProcs <- function(GeneralParameters){
 			cdtTmpVar$index <- seq_along(cdtTmpVar$dates)
 
 			dir.create(dir.cdtTmpVar, showWarnings = FALSE, recursive = TRUE)
-			colInfo <- writecdtDATAchunk(data.cdtTmpVar, dir.cdtTmpVar, chunksize)
+			colInfo <- writeCdtDatasetChunk.create(data.cdtTmpVar, dir.cdtTmpVar, chunksize)
 			cdtTmpVar$colInfo <- colInfo
 
 			EnvPICSA[[cdtData]] <- cdtTmpVar
@@ -189,7 +189,7 @@ PICSAProcs <- function(GeneralParameters){
 	extractPICSArdsData <- function(cdtData, index, pid, outdir, chunksize = 100, chunk.par = TRUE)
 	{
 		dir.cdtData <- file.path(outdir, cdtData)
-		data.cdtData <- readcdtDATAchunk(pid, get(cdtData)$colInfo, dir.cdtData, chunksize, chunk.par)
+		data.cdtData <- readCdtDatasetChunk.picsa(pid, get(cdtData)$colInfo, dir.cdtData, chunksize, chunk.par)
 		tmp <- data.cdtData[index, , drop = FALSE]
 		rm(data.cdtData); gc()
 		return(tmp)
@@ -197,7 +197,7 @@ PICSAProcs <- function(GeneralParameters){
 
 	extractPICSArdsData1 <- function(cdtData, loc, opDATA, outdir, chunksize = 100, chunk.par = TRUE){
 		dir.cdtData <- file.path(outdir, cdtData)
-		data.cdtData <- readcdtDATAchunk(opDATA[[cdtData]]$pid[loc], get(cdtData)$colInfo, dir.cdtData, chunksize, chunk.par)
+		data.cdtData <- readCdtDatasetChunk.picsa(opDATA[[cdtData]]$pid[loc], get(cdtData)$colInfo, dir.cdtData, chunksize, chunk.par)
 		tmp <- data.cdtData[opDATA[[cdtData]]$index, , drop = FALSE]
 		rm(data.cdtData); gc()
 		return(tmp)
@@ -648,7 +648,7 @@ PICSAProcs <- function(GeneralParameters){
 			is.parallel <- doparallel(length(loopCOL) >= 6)
 			`%parLoop%` <- is.parallel$dofun
 
-			toExports <- c("ExtraterrestrialRadiation", "ETPHargreaves", "doparallel", "readcdtDATAchunk")
+			toExports <- c("ExtraterrestrialRadiation", "ETPHargreaves", "doparallel", "readCdtDatasetChunk.picsa")
 			etpData <- foreach(j = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %parLoop% {
 				loc <- loopCOL[[j]]
 				latRa <- unique(opDATA$lat[loc])
@@ -685,7 +685,7 @@ PICSAProcs <- function(GeneralParameters){
 			cdtETP[c('lon', 'lat')] <- opDATA[c('lon', 'lat')]
 
 			if(!file.exists(dir.cdtETP)) dir.create(dir.cdtETP, showWarnings = FALSE, recursive = TRUE)
-			write.cdtETP <- if(bindPicsaData) writebindcdtDATAchunk else writecdtDATAchunk
+			write.cdtETP <- if(bindPicsaData) writeCdtDatasetChunk.rbind else writeCdtDatasetChunk.create
 			colInfo <- write.cdtETP(etpData, dir.cdtETP, chunksize)
 			cdtETP$colInfo <- colInfo
 
@@ -730,7 +730,7 @@ PICSAProcs <- function(GeneralParameters){
 	EnvPICSA$Pars$col.max <- GeneralParameters$COL.MAX
 	EnvPICSA$Pars$chunksize <- GeneralParameters$chunksize
 
-	load(file.path(apps.dir, 'data', 'ONI_50-2016.RData'))
+	load(file.path(apps.dir, 'data', 'ONI_50-2017.RData'))
 	EnvPICSA$ONI$date <- format(seq(as.Date('1950-1-15'), as.Date('2017-12-15'), "month"), "%Y%m")
 	EnvPICSA$ONI$data <- ONI$ts[, 3]
 
@@ -835,7 +835,7 @@ PICSAProcs <- function(GeneralParameters){
 
 	dir.cdtONSET <- file.path(outPICSAData, "cdtONSET")
 	dir.create(dir.cdtONSET, showWarnings = FALSE, recursive = TRUE)
-	colInfo <- writecdtDATAchunk(ONSET, dir.cdtONSET, chunksize)
+	colInfo <- writeCdtDatasetChunk.create(ONSET, dir.cdtONSET, chunksize)
 	saveRDS(ONSET, file.path(dir.cdtONSET, "seas.rds"))
 
 	cdtONSET <- NULL
@@ -923,7 +923,7 @@ PICSAProcs <- function(GeneralParameters){
 
 	dir.cdtCESSAT <- file.path(outPICSAData, "cdtCESSAT")
 	dir.create(dir.cdtCESSAT, showWarnings = FALSE, recursive = TRUE)
-	colInfo <- writecdtDATAchunk(CESSAT, dir.cdtCESSAT, chunksize)
+	colInfo <- writeCdtDatasetChunk.create(CESSAT, dir.cdtCESSAT, chunksize)
 	saveRDS(CESSAT, file.path(dir.cdtCESSAT, "seas.rds"))
 
 	cdtCESSAT <- NULL
@@ -966,7 +966,7 @@ PICSAProcs <- function(GeneralParameters){
 		if(write.rds){
 			dir.cdtData <- file.path(outPICSAData, cdtData)
 			dir.create(dir.cdtData, showWarnings = FALSE, recursive = TRUE)
-			colInfo <- writecdtDATAchunk(data.cdtData, dir.cdtData, chunksize)
+			colInfo <- writeCdtDatasetChunk.create(data.cdtData, dir.cdtData, chunksize)
 			rm(colInfo)
 			saveRDS(data.cdtData, file.path(dir.cdtData, "seas.rds"))
 		}
@@ -983,10 +983,10 @@ PICSAProcs <- function(GeneralParameters){
 
 	is.parallel <- doparallel(okparallel)
 	`%dofun%` <- is.parallel$dofun
-	toExports <- c("doparallel", "readcdtDATAchunk")
+	toExports <- c("doparallel", "readCdtDatasetChunk.picsa")
 	SEASON.LENGTH <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
-		ONSET <- readcdtDATAchunk(loopCOL[[ii]], cdtONSET$colInfo, file.path(outPICSAData, "cdtONSET"), chunksize, chunk.par = FALSE)
-		CESSAT <- readcdtDATAchunk(loopCOL[[ii]], cdtCESSAT$colInfo, file.path(outPICSAData, "cdtCESSAT"), chunksize, chunk.par = FALSE)
+		ONSET <- readCdtDatasetChunk.picsa(loopCOL[[ii]], cdtONSET$colInfo, file.path(outPICSAData, "cdtONSET"), chunksize, chunk.par = FALSE)
+		CESSAT <- readCdtDatasetChunk.picsa(loopCOL[[ii]], cdtCESSAT$colInfo, file.path(outPICSAData, "cdtCESSAT"), chunksize, chunk.par = FALSE)
 		dimONSET <- dim(ONSET)
 		ONSET <- as.Date(ONSET, origin = cdtONSET$days.since)
 		dim(ONSET) <- dimONSET
@@ -1009,11 +1009,11 @@ PICSAProcs <- function(GeneralParameters){
 
 	is.parallel <- doparallel(okparallel)
 	`%dofun%` <- is.parallel$dofun
-	toExports <- c("getIndexSeasonVarsRow", "doparallel", "readcdtDATAchunk")
+	toExports <- c("getIndexSeasonVarsRow", "doparallel", "readCdtDatasetChunk.picsa")
 	transPose <- if(length(opDATA$lon) > 1) t else as.matrix
 	SEASON.IDX <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
-		ONSET <- readcdtDATAchunk(loopCOL[[ii]], cdtONSET$colInfo, file.path(outPICSAData, "cdtONSET"), chunksize, chunk.par = FALSE)
-		CESSAT <- readcdtDATAchunk(loopCOL[[ii]], cdtCESSAT$colInfo, file.path(outPICSAData, "cdtCESSAT"), chunksize, chunk.par = FALSE)
+		ONSET <- readCdtDatasetChunk.picsa(loopCOL[[ii]], cdtONSET$colInfo, file.path(outPICSAData, "cdtONSET"), chunksize, chunk.par = FALSE)
+		CESSAT <- readCdtDatasetChunk.picsa(loopCOL[[ii]], cdtCESSAT$colInfo, file.path(outPICSAData, "cdtCESSAT"), chunksize, chunk.par = FALSE)
 		dimONSET <- dim(ONSET)
 		ONSET <- format(as.Date(ONSET, origin = cdtONSET$days.since), "%Y%m%d")
 		dim(ONSET) <- dimONSET
@@ -1051,7 +1051,7 @@ PICSAProcs <- function(GeneralParameters){
 
 	is.parallel <- doparallel(okparallel)
 	`%dofun%` <- is.parallel$dofun
-	toExports <- c( "doparallel", "readcdtDATAchunk", "cdtPrecip")
+	toExports <- c( "doparallel", "readCdtDatasetChunk.picsa", "cdtPrecip")
 	NAFRAC <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
 		precip <- extractPICSArdsData1("cdtPrecip", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
 		days.idx <- debfin.idx[, loopCOL[[ii]], drop = FALSE]
@@ -1075,7 +1075,7 @@ PICSAProcs <- function(GeneralParameters){
 	if(dekmonUse){
 		is.parallel <- doparallel(okparallel)
 		`%dofun%` <- is.parallel$dofun
-		toExports <- c("doparallel", "readcdtDATAchunk", "cdtPrecip1")
+		toExports <- c("doparallel", "readCdtDatasetChunk.picsa", "cdtPrecip1")
 		NAFRACS <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
 			precip <- extractPICSArdsData1("cdtPrecip1", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
 			days.idx <- debfin.seas[, loopCOL[[ii]], drop = FALSE]
@@ -1101,7 +1101,7 @@ PICSAProcs <- function(GeneralParameters){
 
 	is.parallel <- doparallel(okparallel)
 	`%dofun%` <- is.parallel$dofun
-	toExports <- c("funAggrVEC", "doparallel", "readcdtDATAchunk")
+	toExports <- c("funAggrVEC", "doparallel", "readCdtDatasetChunk.picsa")
 	toExports1 <- if(dekmonUse) c(toExports, "cdtPrecip1") else c(toExports, "cdtPrecip")
 	RAINTOTAL <- foreach(ii = seq_along(loopCOL), .export = toExports1, .packages = "doParallel") %dofun% {
 		if(dekmonUse){
@@ -1131,7 +1131,7 @@ PICSAProcs <- function(GeneralParameters){
 	if(compute.ETP == "temp"){
 		is.parallel <- doparallel(okparallel)
 		`%dofun%` <- is.parallel$dofun
-		toExports <- c("funAggrVEC", "doparallel", "readcdtDATAchunk", "cdtTmax", "cdtTmin")
+		toExports <- c("funAggrVEC", "doparallel", "readCdtDatasetChunk.picsa", "cdtTmax", "cdtTmin")
 		TXTN <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
 			days.idx <- debfin.idx[, loopCOL[[ii]], drop = FALSE]
 
@@ -1163,7 +1163,7 @@ PICSAProcs <- function(GeneralParameters){
 	###################
 	is.parallel <- doparallel(okparallel)
 	`%dofun%` <- is.parallel$dofun
-	toExports <- c("NumberOfSpell.AllVEC", "doparallel", "readcdtDATAchunk", "cdtPrecip")
+	toExports <- c("NumberOfSpell.AllVEC", "doparallel", "readCdtDatasetChunk.picsa", "cdtPrecip")
 	DRYSPELLS <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
 		days.idx <- debfin.idx[, loopCOL[[ii]], drop = FALSE]
 		precip <- extractPICSArdsData1("cdtPrecip", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
@@ -1180,7 +1180,7 @@ PICSAProcs <- function(GeneralParameters){
 
 	dir.cdtDRYSPELLS <- file.path(outPICSAData, "cdtDRYSPELLS")
 	dir.create(dir.cdtDRYSPELLS, showWarnings = FALSE, recursive = TRUE)
-	colInfo <- writecdtDATAchunk(DRYSPELLS, dir.cdtDRYSPELLS, chunksize)
+	colInfo <- writeCdtDatasetChunk.create(DRYSPELLS, dir.cdtDRYSPELLS, chunksize)
 	rm(colInfo)
 	saveRDS(DRYSPELLS, file = file.path(dir.cdtDRYSPELLS, "seas.rds"))
 
@@ -1222,7 +1222,7 @@ PICSAProcs <- function(GeneralParameters){
 	###################
 	is.parallel <- doparallel(okparallel)
 	`%dofun%` <- is.parallel$dofun
-	toExports <- c("funAggrVEC", "doparallel", "readcdtDATAchunk", "cdtPrecip")
+	toExports <- c("funAggrVEC", "doparallel", "readCdtDatasetChunk.picsa", "cdtPrecip")
 	NBRAINDAYS <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
 		days.idx <- debfin.idx[, loopCOL[[ii]], drop = FALSE]
 		precip <- extractPICSArdsData1("cdtPrecip", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
@@ -1244,7 +1244,7 @@ PICSAProcs <- function(GeneralParameters){
 	###################
 	is.parallel <- doparallel(okparallel)
 	`%dofun%` <- is.parallel$dofun
-	toExports <- c("funAggrVEC", "doparallel", "readcdtDATAchunk", "cdtPrecip")
+	toExports <- c("funAggrVEC", "doparallel", "readCdtDatasetChunk.picsa", "cdtPrecip")
 	RAINMAX24H <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
 		days.idx <- debfin.idx[, loopCOL[[ii]], drop = FALSE]
 		precip <- extractPICSArdsData1("cdtPrecip", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
@@ -1266,7 +1266,7 @@ PICSAProcs <- function(GeneralParameters){
 
 	is.parallel <- doparallel(okparallel)
 	`%dofun%` <- is.parallel$dofun
-	toExports <- c("funAggrVEC", "quantile8", "doparallel", "readcdtDATAchunk", "cdtPrecip")
+	toExports <- c("funAggrVEC", "quantile8", "doparallel", "readCdtDatasetChunk.picsa", "cdtPrecip")
 	Q95DATA <- foreach(ii = seq_along(loopCOL), .export = toExports, .packages = "doParallel") %dofun% {
 		days.idx <- debfin.idx[, loopCOL[[ii]], drop = FALSE]
 		precip <- extractPICSArdsData1("cdtPrecip", loopCOL[[ii]], opDATA, outPICSAData, chunksize, chunk.par = FALSE)
@@ -1330,7 +1330,7 @@ PICSAProcs <- function(GeneralParameters){
 		toExport1 <- c("fit.distributions", "startnorm", "startsnorm", "startlnorm", "startgamma", "startweibull")
 		allfonct <- unlist(Map(function_name, Filter(is_function, parse(file.path(apps.dir, 'functions', 'PICSA_Plot_functions.R')))))
 		toExport1 <- c(toExport1, allfonct, "quantile8", "writeFiles", "table.annuel", "getIndexSeasonVars",
-						"EnvPICSAplot", "doparallel", "readcdtDATAchunk")
+						"EnvPICSAplot", "doparallel", "readCdtDatasetChunk.picsa")
 
 		###
 		outPICSAdir <- file.path(outputDIR, "PICSA.OUT.Stations")
@@ -1406,7 +1406,7 @@ PICSAProcs <- function(GeneralParameters){
 				oni.idx <- sapply(ijoni, function(x) mean(EnvPICSA$ONI$data[x], na.rm = TRUE))
 				oni.idx <- ifelse(oni.idx >= 0.5, 3, ifelse(oni.idx <= -0.5, 1, 2))
 
-				precip <- readcdtDATAchunk(EnvPICSA$opDATA$cdtPrecip$pid[IDCOL[j]], EnvPICSA$cdtPrecip$colInfo, file.path(outPICSAData, "cdtPrecip"), chunksize, chunk.par = FALSE)
+				precip <- readCdtDatasetChunk.picsa(EnvPICSA$opDATA$cdtPrecip$pid[IDCOL[j]], EnvPICSA$cdtPrecip$colInfo, file.path(outPICSAData, "cdtPrecip"), chunksize, chunk.par = FALSE)
 				precip <- precip[EnvPICSA$opDATA$cdtPrecip$index, 1]
 				daty <- EnvPICSA$opDATA$dates
 

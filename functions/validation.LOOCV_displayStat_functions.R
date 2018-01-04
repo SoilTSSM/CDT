@@ -6,15 +6,16 @@ LOOCValidation.plotStatMaps <- function(){
 
 	xna <- EnvLOOCValidation$opDATA$lon[is.na(don)]
 	yna <- EnvLOOCValidation$opDATA$lat[is.na(don)]
-	don <- as.image(don, x = cbind(EnvLOOCValidation$opDATA$lon, EnvLOOCValidation$opDATA$lat), nx = 60, ny = 60)
+	nx <- as.integer(diff(range(EnvLOOCValidation$opDATA$lon))/(0.0375*2.5))
+	ny <- as.integer(diff(range(EnvLOOCValidation$opDATA$lat))/(0.0375*2.5))
+	don <- as.image(don, x = cbind(EnvLOOCValidation$opDATA$lon, EnvLOOCValidation$opDATA$lat), nx = nx, ny = ny)
 
 	ocrds <- EnvLOOCValidationplot$shp
 
 	#################
 
-	breaks <- pretty(range(don$z, na.rm = TRUE))
+	breaks <- pretty(don$z, n = 10, n.min = 7)
 	breaks <- if(length(breaks) > 0) breaks else c(0, 1) 
-	if(length(breaks) < 7) breaks <- round(seq(breaks[1], breaks[length(breaks)], length.out = 7), 4)
 
 	kolFonction <- match.fun("tim.colors")
 	kolor <- kolFonction(length(breaks)-1)

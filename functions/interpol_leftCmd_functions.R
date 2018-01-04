@@ -840,7 +840,8 @@ InterpolationPanelCmd <- function(){
 			donne <- getCDTdata(file.stnfl, file.period)
 			donne <- getCDTdata1Date(donne, tclvalue(idate_yrs), tclvalue(idate_mon), tclvalue(idate_day))
 			if(!is.null(donne)){
-				atLev <- pretty(donne$z, n = n+1)
+				min.n <- if(n < 7) n else 7
+				atLev <- pretty(donne$z, n = n+1, min.n = min.n)
 			}
 		}
 		atLev <<- customLevels(main.win, atLev)

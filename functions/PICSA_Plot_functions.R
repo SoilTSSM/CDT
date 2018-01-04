@@ -214,7 +214,7 @@ picsa.plot.proba <- function(dat, origindate = NULL, sub = NULL, xlab = '', titl
 		axis(1, at = axTicks(1), labels = xaxlab, font = axis.font)
 	}else{
 		axis(1, at = axTicks(1), font = axis.font)
-	}	
+	}
 	mtext(xlab, side = 1, line = 2)
 	if(!is.null(sub)) mtext(sub, side = 1, line = 3, font = 3, cex = 0.8)
 
@@ -316,7 +316,7 @@ picsa.plot.bar.ENSO <- function(x, y, oni, origindate = NULL, sub = NULL, xlab =
 }
 
 picsa.plot.line.ENSO <- function(x, y, oni, origindate = NULL, sub = NULL, xlab = '', ylab = '',
-							title = title, mean = FALSE, tercile = FALSE, linear = FALSE,
+							title = '', mean = FALSE, tercile = FALSE, linear = FALSE,
 							axis.font = 1, start.zero = FALSE,
 							col = list(line = "black", points = c("blue", "gray", "red")),
 							col.add = list(mean = "darkblue", tercile1 = "chartreuse4", tercile2 = "darkgoldenrod4", linear = "purple3"))

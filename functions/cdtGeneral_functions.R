@@ -29,8 +29,14 @@ refreshCDT.lcmd.env <- function(lcmdf = lcmd.frame, choixStn = lchoixStnFr){
 	tclvalue(choixStn$env$stn.choix.val) <- choixStn$env$stn.choix[1]
 
 	all.cdt.env <- list(EnvQcOutlierData, EnvQcZeroChkData, EnvInterpolation, EnvExtractData,
-						EnvHomogzData, EnvHOValidation, EnvHOValidationplot, EnvClimatoAnalysis,
-						EnvZoomPars, EnvPICSA, EnvPICSAplot, EnvLOOCValidation, EnvLOOCValidationplot)
+						EnvHomogzData, EnvZoomPars,
+						EnvHOValidation, EnvHOValidationplot,
+						EnvClimatoAnalysis, EnvClimatoAnalysisplot,
+						EnvPICSA, EnvPICSAplot,
+						EnvLOOCValidation, EnvLOOCValidationplot,
+						EnvClimatoCalcPlot, EnvAnomalyCalcPlot,
+						EnvOnsetCalcPlot, EnvCessationCalcPlot, EnvSeasLengthCalcPlot,
+						EnvDailyRainAnalysisplot)
 	ret <- lapply(cdt.lcmd.container, assign, NULL, envir = .GlobalEnv)
 	ret <- lapply(all.cdt.env, function(x) rm(list = ls(envir = x), envir = x))
 }
@@ -43,7 +49,7 @@ getf.no.ext <- function(flname){
 		fret <- flname
 	}else{
 		fsplit <- unlist(strsplit(flname, '\\.'))
-		fret <- sub(paste('.', fsplit[length(fsplit)], sep = ''), '', flname)
+		fret <- sub(paste0('.', fsplit[length(fsplit)]), '', flname)
 	}
 	return(fret)
 }
@@ -126,7 +132,7 @@ bwNoteBook <- function(parent, side = 'top', ...){
 
 ##arg ... pass to insert
 bwAddTab <- function(parent, text = "Tab", ...){
-	IDtab <- paste('_BwNb', isaTabBwNb(), sep = '')
+	IDtab <- paste0('_BwNb', isaTabBwNb())
 	tab <- tkinsert(parent, 'end', IDtab, text = text, ...)
 	win <- .Tk.newwin(tclvalue(tab))
 	win$IDtab <- IDtab
@@ -229,6 +235,14 @@ is.leapyear <- function(year){
 	leap <- year%%c(4, 100, 400)
 	((leap[1] == 0) & (leap[2] != 0)) | (leap[3] == 0)
 }
+
+is.leapyears <- function(years){
+	leap <- sapply(years, function(x) x%%c(4, 100, 400))
+	((leap[1, ] == 0) & (leap[2, ] != 0)) | (leap[3, ] == 0)
+}
+
+# is.leapyear <- function(year){return(((year %% 4 == 0) & (year %% 100 != 0)) | (year %% 400 == 0))}
+
 
 ###############################################################################
 #Cycle month, start month, n: number of month (DJF, start = 'December', n = 3)
@@ -728,7 +742,7 @@ getCDTdata1Date <- function(donne, yrs, mon, day){
 		return(NULL)
 	}
 	if(freqData == 'daily') daty <- format(daty, '%Y%m%d')
-	if(freqData == 'dekadal') daty <- paste(format(daty, '%Y%m'), as.numeric(format(daty, '%d')), sep = '')
+	if(freqData == 'dekadal') daty <- paste0(format(daty, '%Y%m'), as.numeric(format(daty, '%d')))
 	if(freqData == 'monthly') daty <- format(daty, '%Y%m')
 	idate <- match(daty, dates)
 	if(is.na(idate)) return(NULL)
@@ -1026,9 +1040,11 @@ read.NetCDF.Data <- function(read.ncdf.parms){
 	toExports <- c('ncInfo', 'read.ncdf.parms')
 	ncdata <- foreach(jj = seq_along(ncInfo$nc.files), .packages = packages, .export = toExports) %parLoop% {
 		if(ncInfo$exist[jj]){
-			nc <- nc_open(ncInfo$nc.files[jj])
+			nc <- try(nc_open(ncInfo$nc.files[jj]), silent = TRUE)
+			if(inherits(nc, "try-error")) return(NULL)
 			xvar <- ncvar_get(nc, varid = read.ncdf.parms$ncinfo$varid)
 			nc_close(nc)
+			if(nlon != nrow(xvar) | nlat != ncol(xvar)) return(NULL)
 			xvar <- xvar[xo, yo]
 			if(read.ncdf.parms$ncinfo$yo == 1){
 				xvar <- matrix(c(xvar), nrow = length(lon), ncol = length(lat), byrow = TRUE)
@@ -1073,9 +1089,11 @@ read.NetCDF.Data2Points <- function(read.ncdf.parms, list.lonlat.pts){
 
 	ncdata <- foreach(jj = seq_along(ncInfo$nc.files), .packages = 'ncdf4') %parLoop% {
 		if(ncInfo$exist[jj]){
-			nc <- nc_open(ncInfo$nc.files[jj])
+			nc <- try(nc_open(ncInfo$nc.files[jj]), silent = TRUE)
+			if(inherits(nc, "try-error")) return(NULL)
 			xvar <- ncvar_get(nc, varid = read.ncdf.parms$ncinfo$varid)
 			nc_close(nc)
+			if(nlon != nrow(xvar) | nlat != ncol(xvar)) return(NULL)
 			xvar <- xvar[xo, yo]
 			if(read.ncdf.parms$ncinfo$yo == 1){
 				xvar <- matrix(c(xvar), nrow = length(lon), ncol = length(lat), byrow = TRUE)
@@ -1115,6 +1133,7 @@ readNetCDFData2Points <- function(ncInfo, list.lonlat.pts, msg){
 			if(inherits(nc, "try-error")) return(NULL)
 			xvar <- ncvar_get(nc, varid = ncInfo$ncinfo$varid)
 			nc_close(nc)
+			if(nlon != nrow(xvar) | nlat != ncol(xvar)) return(NULL)
 			xvar <- xvar[xo, yo]
 			if(ncInfo$ncinfo$yo == 1){
 				xvar <- matrix(c(xvar), nrow = nlon, ncol = nlat, byrow = TRUE)
@@ -1444,4 +1463,135 @@ is_function <- function (expr){
 function_name <- function (expr) as.character(expr[[2]])
 
 # unlist(Map(function_name, Filter(is_function, parse(filename))))
+
+#################################################################################
+## Vectorization, regression 
+
+regression.Vector <- function(X, Y, min.len){
+	# regression by column with a vector
+	# Y~X
+	# X vector
+	# Y matrix, nrow(Y) == length(X) 
+	Y[is.na(X) | is.na(Y)] <- NA
+	nbY <- base::colSums(!is.na(Y))
+	ix <- nbY >= min.len
+	RES <- matrix(NA, nrow = 9, ncol = ncol(Y))
+	dimnames(RES)[[1]] <- c("slope", "std.slope", "t-value.slope", "p-value.slope", "intercept",
+							"std.intercept", "t-value.intercept", "p-value.intercept", "R2")
+	if(!any(ix)) return(RES)
+	Y <- Y[, ix, drop = FALSE]
+	nbY <- nbY[ix]
+
+	mX <- mean(X, na.rm = TRUE)
+	mY <- base::colMeans(Y, na.rm = TRUE)
+	vX <- var(X, na.rm = TRUE)
+	vY <- matrixStats::colVars(Y, na.rm = TRUE)
+
+	X1 <- X - mX
+	Y1 <- sweep(Y, 2, mY, FUN = "-")
+	COV <- base::colSums(X1 * Y1, na.rm = TRUE) / (nbY - 1)
+	alpha <- COV / vX
+	beta <- mY - alpha * mX
+
+	hatY <- t(sapply(X, `*`, e2 = alpha) + beta)
+	SSE <- base::colSums((hatY - Y)^2, na.rm = TRUE)
+	MSE <- SSE/(nbY-2)
+	sigma <- sqrt(MSE)
+	std.alpha <- sigma / (sqrt(nbY-1)*sqrt(vX))
+	std.beta <- sigma * sqrt((1/nbY) + (mX^2/((nbY-1)*vX)))
+	SXX <- (nbY-1)*vX
+	tvalue.alpha <- alpha / sqrt(MSE/SXX)
+	tvalue.beta <- beta / sqrt(MSE * ((1/nbY) + (mX^2/SXX)))
+	pvalue.alpha <- 2 * pt(-abs(tvalue.alpha), nbY-2)
+	pvalue.beta <- 2 * pt(-abs(tvalue.beta), nbY-2)
+	R2 <- COV^2 / (vX * vY)
+	RES[, ix] <- rbind(alpha, std.alpha, tvalue.alpha, pvalue.alpha,
+						beta, std.beta, tvalue.beta, pvalue.beta, R2)
+	return(RES)
+}
+
+regression.Matrix <- function(X, Y, min.len){
+	# regression column by column between 2 matrices
+	# Y~X
+	# X, Y matrix same dim 
+	ina <- is.na(X) | is.na(Y)
+	X[ina] <- NA
+	Y[ina] <- NA
+	nbY <- base::colSums(!is.na(Y))
+	ix <- nbY >= min.len
+	RES <- matrix(NA, nrow = 9, ncol = ncol(Y))
+	dimnames(RES)[[1]] <- c("slope", "std.slope", "t-value.slope", "p-value.slope", "intercept",
+							"std.intercept", "t-value.intercept", "p-value.intercept", "R2")
+	if(!any(ix)) return(RES)
+	Y <- Y[, ix, drop = FALSE]
+	X <- X[, ix, drop = FALSE]
+	nbY <- nbY[ix]
+
+	mX <- base::colMeans(X, na.rm = TRUE)
+	mY <- base::colMeans(Y, na.rm = TRUE)
+	vX <- matrixStats::colVars(X, na.rm = TRUE)
+	vY <- matrixStats::colVars(Y, na.rm = TRUE)
+
+	X1 <- sweep(X, 2, mX, FUN = "-")
+	Y1 <- sweep(Y, 2, mY, FUN = "-")
+	COV <- base::colSums(X1 * Y1, na.rm = TRUE) / (nbY - 1)
+	alpha <- COV / vX
+	beta <- mY - alpha * mX
+
+	hatY <- sweep(sweep(X, 2, alpha, FUN = "*"), 2, beta, FUN = "+")
+	SSE <- base::colSums((hatY - Y)^2, na.rm = TRUE)
+	MSE <- SSE/(nbY-2)
+	sigma <- sqrt(MSE)
+	std.alpha <- sigma / (sqrt(nbY-1)*sqrt(vX))
+	std.beta <- sigma * sqrt((1/nbY) + (mX^2/((nbY-1)*vX)))
+	SXX <- (nbY-1)*vX
+	tvalue.alpha <- alpha / sqrt(MSE/SXX)
+	tvalue.beta <- beta / sqrt(MSE * ((1/nbY) + (mX^2/SXX)))
+	pvalue.alpha <- 2 * pt(-abs(tvalue.alpha), nbY-2)
+	pvalue.beta <- 2 * pt(-abs(tvalue.beta), nbY-2)
+	R2 <- COV^2 / (vX * vY)
+
+	RES[, ix] <- rbind(alpha, std.alpha, tvalue.alpha, pvalue.alpha,
+						beta, std.beta, tvalue.beta, pvalue.beta, R2)
+	return(RES)
+}
+
+#################################################################################
+## nx and ny for as.image
+# x: diff(range( lon or lat ))
+
+nx_ny_as.image <- function(x) round(x / (0.0167323 * x^0.9602))
+
+#################################################################################
+## get index
+# x0: x coord of points (vector)
+# y0: y coord of points (vector)
+# x: x coords of the matrix (vector, sorted increasingly)
+# y: y coords of the matrix (vector, sorted increasingly)
+# if expanded grid, transform first
+# xy <- expand.grid(x, y)
+# x <- sort(unique(xy[, 1]))
+# y <- sort(unique(xy[, 2]))
+
+cdt.which <- function(x0, y0, x, y, arr.ind = FALSE){
+	iclo <- findInterval(x0, x)
+	ilo <- iclo + (2 * x0 > x[iclo] + x[iclo+1])
+	icla <- findInterval(y0, y)
+	ila <- icla + (2 * y0 > y[icla] + y[icla+1])
+
+	if(length(ilo) == 0) ilo <- rep(NA, length(x0))
+	ilo[ilo == 0 & !is.na(ilo)] <- NA
+	if(length(ila) == 0) ila <- rep(NA, length(x0))
+	ila[ila == 0 & !is.na(ila)] <- NA
+	ina <- is.na(ilo) | is.na(ila)
+	ilo[ina] <- NA
+	ila[ina] <- NA
+
+	if(arr.ind) cbind(row = ilo, col = ila) else ilo + length(x) * (ila-1)
+}
+
+
+
+
+
 

@@ -2,6 +2,9 @@
     // Update existing data
     "Update": false,
 
+    // if Update TRUE, Full path to the index file of the dataset
+    "cdtDataSet": "",
+
     // ncdf data
     "NCDF": {
         // Full path to the directory of ncdf data
@@ -34,7 +37,7 @@
     "chunk": {
         // Number of pixels per chunk
         "chunksize": 100,
-        // Number of pixels for each computation
-        "chunkcalc": 500
+        // Number of chunk files to be used for each calculation
+        "chunkfac": 5
     }
 }

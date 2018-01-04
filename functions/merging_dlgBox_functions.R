@@ -130,9 +130,9 @@ getInfoNetcdfData <- function(tt, Parameters, ncDIR, tstep = 'Dekadal data', sca
 	tcl('update')
 	tt.w <- as.integer(tkwinfo("reqwidth", tt1))
 	tt.h <- as.integer(tkwinfo("reqheight", tt1))
-	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
-	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt1, paste('+', tt.x, '+', tt.y, sep = ''))
+	tt.x <- as.integer(width.scr*0.5 - tt.w*0.5)
+	tt.y <- as.integer(height.scr*0.5 - tt.h*0.5)
+	tkwm.geometry(tt1, paste0('+', tt.x, '+', tt.y))
 	tkwm.transient(tt1)
 	tkwm.title(tt1, 'NetCDF Data - Settings')
 	tkwm.deiconify(tt1)
@@ -315,9 +315,9 @@ getInterpolationPars <- function(tt, Parameters, interpChoix = 0){
 	tcl('update')
 	tt.w <- as.integer(tkwinfo("reqwidth", tt1))
 	tt.h <- as.integer(tkwinfo("reqheight", tt1))
-	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
-	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt1, paste('+', tt.x, '+', tt.y, sep = ''))
+	tt.x <- as.integer(width.scr*0.5 - tt.w*0.5)
+	tt.y <- as.integer(height.scr*0.5 - tt.h*0.5)
+	tkwm.geometry(tt1, paste0('+', tt.x, '+', tt.y))
 	tkwm.transient(tt1)
 	tkwm.title(tt1, 'Interpolation parameters')
 	tkwm.deiconify(tt1)
@@ -393,7 +393,7 @@ getNewGridParams <- function(tt, Parameters){
 
 	################################
 
-	bt.prm.OK <- tkbutton(frGrd1, text=" OK ")
+	bt.prm.OK <- tkbutton(frGrd1, text = "OK")
 	bt.prm.CA <- tkbutton(frGrd1, text = "Cancel")
 
 	tkconfigure(bt.prm.OK, command = function(){
@@ -427,9 +427,9 @@ getNewGridParams <- function(tt, Parameters){
 	tcl('update')
 	tt.w <- as.integer(tkwinfo("reqwidth", tt1))
 	tt.h <- as.integer(tkwinfo("reqheight", tt1))
-	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
-	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt1, paste('+', tt.x, '+', tt.y, sep = ''))
+	tt.x <- as.integer(width.scr*0.5 - tt.w*0.5)
+	tt.y <- as.integer(height.scr*0.5 - tt.h*0.5)
+	tkwm.geometry(tt1, paste0('+', tt.x, '+', tt.y))
 	tkwm.transient(tt1)
 	tkwm.title(tt1, 'Grid Parameters')
 	tkwm.deiconify(tt1)

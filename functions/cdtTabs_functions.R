@@ -301,27 +301,27 @@ SaveNotebookTabArray <- function(parent){
 
 ####################################################
 
-SavePlot <- function(){
-	tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
-	if(length(AllOpenTabType) > 0){
-		if(AllOpenTabType[[tabid]] == "img"){
-			filetypes <- "{JPEG {.jpeg .jpg}} {{All files} {*.*}}"
-			if(Sys.info()["sysname"] == "Windows"){
-				filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes, defaultextension = TRUE))
-			}else filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes))
-			if (filename != ""){
-				#jpeg(file = filename, width = 960, height = 480)
-				#AllOpenTabData[[tabid]][[2]]$fun()
-				width <- as.numeric(tclvalue(tkget(spinH)))*480
-				height <- as.numeric(tclvalue(tkget(spinV)))*480
-				jpeg(file = filename, width = width, height = height)
-				if(class(AllOpenTabData[[tabid]][[2]]) == "tkwin") AllOpenTabData[[tabid]][[2]]$fun()
-				else AllOpenTabData[[tabid]][[2]][[2]]$fun()
-				dev.off()
-			}
-		}
-	}else return(NULL)
-}
+# SavePlot <- function(){
+# 	tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
+# 	if(length(AllOpenTabType) > 0){
+# 		if(AllOpenTabType[[tabid]] == "img"){
+# 			filetypes <- "{JPEG {.jpeg .jpg}} {{All files} {*.*}}"
+# 			if(Sys.info()["sysname"] == "Windows"){
+# 				filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes, defaultextension = TRUE))
+# 			}else filename <- tclvalue(tkgetSaveFile(initialfile = "", filetypes = filetypes))
+# 			if (filename != ""){
+# 				#jpeg(file = filename, width = 960, height = 480)
+# 				#AllOpenTabData[[tabid]][[2]]$fun()
+# 				width <- as.numeric(tclvalue(tkget(spinH)))*480
+# 				height <- as.numeric(tclvalue(tkget(spinV)))*480
+# 				jpeg(file = filename, width = width, height = height)
+# 				if(class(AllOpenTabData[[tabid]][[2]]) == "tkwin") AllOpenTabData[[tabid]][[2]]$fun()
+# 				else AllOpenTabData[[tabid]][[2]][[2]]$fun()
+# 				dev.off()
+# 			}
+# 		}
+# 	}else return(NULL)
+# }
 
 ############################################
 

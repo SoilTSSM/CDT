@@ -204,27 +204,79 @@ init.params <- function(action, period){
 		ret.params <- c(list(action = action, period = period), ret.params)
 	}
 
-	###########################################
-	## remove
-	if(action == 'extrct.ts'){
-		file.io <- data.frame(c('NetCDF.dir', 'Shp.file', 'file2save'), c('', '', getwd()))
-		names(file.io) <- c('Parameters', 'Values')
-		prefix <- data.frame(c('cdfFileFormat', 'tsPrefix'), c("rr_mrg_%s%s%s.nc", "rr_adj"))
-		names(prefix) <- c('Parameters', 'Values')
-		dates.ts <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek', 'iend.yrs', 'iend.mon', 'iend.dek'),
-								c('1983', '1', '1', '2014', '12', '3'))
-		names(dates.ts) <- c('Parameters', 'Values')
+	# ###########################################
+	# ## remove
+	# if(action == 'extrct.ts'){
+	# 	file.io <- data.frame(c('NetCDF.dir', 'Shp.file', 'file2save'), c('', '', getwd()))
+	# 	names(file.io) <- c('Parameters', 'Values')
+	# 	prefix <- data.frame(c('cdfFileFormat', 'tsPrefix'), c("rr_mrg_%s%s%s.nc", "rr_adj"))
+	# 	names(prefix) <- c('Parameters', 'Values')
+	# 	dates.ts <- data.frame(c('istart.yrs', 'istart.mon', 'istart.dek', 'iend.yrs', 'iend.mon', 'iend.dek'),
+	# 							c('1983', '1', '1', '2014', '12', '3'))
+	# 	names(dates.ts) <- c('Parameters', 'Values')
 
-		ret.params <- list(action = action, period = period, file.io = file.io, prefix = prefix, dates.ts = dates.ts)
-	}
+	# 	ret.params <- list(action = action, period = period, file.io = file.io, prefix = prefix, dates.ts = dates.ts)
+	# }
 
 	#################################################################
 	# create cdt dataset from ncdf files
-	if(action == 'create.cdtData'){
+	if(action == 'create.CdtDataset'){
 		ret.params <- fromJSON(file.path(apps.dir, 'init_params', 'Create_CDT_Dataset.json'))
 		ret.params <- c(list(action = action, Tstep = period), ret.params)
 		if(str_trim(ret.params$output$dir) == "") ret.params$output$dir <- getwd()
 	}
+
+	#################################################################
+	## compute temperature variables
+	if(action == 'compute.dervTemp'){
+		# cdtstation, cdtdataset, cdtnetcdf
+		# Mean, Range
+		# ret.params <- list(action = action, Tstep = period,
+		# 				variable = "Mean", data.type = "cdtstation",
+		# 				station = list(tmin = "", tmax = ""),
+		# 				cdtdataset = list(tmin = "", tmax = ""),
+		# 				ncdf.tmin = list(dir = "", sample = "", format = "tmin_%s%s%s.nc"),
+		# 				ncdf.tmax = list(dir = "", sample = "", format = "tmax_%s%s%s.nc"),
+		# 				output = "")
+
+		ret.params <- list(action = action, Tstep = period,
+						variable = "Mean", data.type = "cdtstation",
+						cdtstation = list(tmin = "", tmax = ""),
+						cdtdataset = list(tmin = "", tmax = ""),
+						cdtnetcdf = list(tmin = list(dir = "", sample = "", format = "tmin_%s%s%s.nc"),
+										tmax = list(dir = "", sample = "", format = "tmax_%s%s%s.nc")),
+						output = "")
+	}
+
+	################
+	## compute potential/reference evapotranspiration
+	if(action == 'compute.PET'){
+		# cdtstation, cdtdataset, cdtnetcdf
+		# Hargreaves (HAR), Modified-Hargreaves (MHAR)
+		ret.params <- list(action = action, Tstep = period,
+						method = "HAR", data.type = "cdtstation",
+						cdtstation = list(tmin = "", tmax = "", prec = ""),
+						cdtdataset = list(tmin = "", tmax = "", prec = ""),
+						cdtnetcdf = list(tmin = list(dir = "", sample = "", format = "tmin_%s%s%s.nc"),
+										tmax = list(dir = "", sample = "", format = "tmax_%s%s%s.nc"),
+										prec = list(dir = "", sample = "", format = "precip_%s%s%s.nc")),
+						output = "")
+	}
+
+	################
+	## compute water balance
+	if(action == 'compute.WB'){
+		# cdtstation, cdtdataset
+		ret.params <- list(action = action, Tstep = period, data.type = "cdtstation",
+						cdtstation = list(etp = "", prec = ""),
+						cdtdataset = list(etp = "", prec = ""),
+						hdate = list(start.month = 1, start.day = 1, separate.year = FALSE),
+						wb = list(wb1 = 0, multi = FALSE, file = ""),
+						swhc = list(cap.max = 100, multi = FALSE, file = ""),
+						output = "")
+	}
+
+	#################################################################
 
 	#############
 	return(ret.params)

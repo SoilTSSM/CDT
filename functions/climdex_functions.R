@@ -169,7 +169,7 @@ quantile8 <- function(x, probs){
 	xs <- .Internal(sort(x, FALSE))
 	xq <- nl * probs + 0.3333 * probs + 0.3333
 	ix <- trunc(xq)
-	xs[ix] + (xq - ix) * (xs[ix + 1] - xs[ix])
+	if(ix >= nl) xs[ix] else xs[ix] + (xq - ix) * (xs[ix + 1] - xs[ix])
 }
 
 ################

@@ -14,7 +14,8 @@ Precip_MergingFunctions <- function(mrgParms){
 	## Def ncdf
 	dx <- ncdim_def("Lon", "degreeE", xy.grid$lon)
 	dy <- ncdim_def("Lat", "degreeN", xy.grid$lat)
-	grd.nc.out <- ncvar_def("precip", "mm", list(dx, dy), -99, longname = "Merged Station-Satellite Rainfall", prec = "short")
+	grd.nc.out <- ncvar_def("precip", "mm", list(dx, dy), -99, longname = "Merged Station-Satellite Rainfall", prec = "short",
+							shuffle = TRUE, compression = 9)
 
 	#############
 	mrg.method <- GeneralParameters$Merging$mrg.method

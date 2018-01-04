@@ -21,6 +21,7 @@ source(file.path(apps.dir, 'functions', 'cdtClimato_functions.R'))
 
 source(file.path(apps.dir, 'functions', 'cdtTables_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtTabs_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtSavePlot_functions.R'))
 
 source(file.path(apps.dir, 'functions', 'cdtPopupMenu_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtOpenSave_Session_functions.R'))
@@ -133,7 +134,7 @@ source(file.path(apps.dir, 'functions', 'AssessDataAvail_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'AssessDataAvail_displayNA_functions.R'))
 
 source(file.path(apps.dir, 'functions', 'chkCoords_dlgBox_functions.R'))
-source(file.path(apps.dir, 'functions', 'chkCoords_lelfCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'chkCoords_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'chkCoords_Procs_functions.R'))
 
 source(file.path(apps.dir, 'functions', 'oneDekadMerge_dlgBox_functions.R'))
@@ -209,8 +210,10 @@ source(file.path(apps.dir, 'functions', 'climdexTT_Procs_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'climatoAnalysis_dlgBox_functions.R'))
-source(file.path(apps.dir, 'functions', 'climatoAnalysis_lelfCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'climatoAnalysis_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'climatoAnalysis_Procs_functions.R'))
+source(file.path(apps.dir, 'functions', 'climatoAnalysis_displayAnalysis_functions.R'))
+source(file.path(apps.dir, 'functions', 'climatoAnalysis_Plot_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'PICSA_leftCmd_functions.R'))
@@ -223,6 +226,48 @@ source(file.path(apps.dir, 'functions', 'SkewNormalDistribution_functions.R'))
 #####
 source(file.path(apps.dir, 'functions', 'cdtDataset_Create_dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtDataset_Create_Procs_functions.R'))
+
+#####
+source(file.path(apps.dir, 'functions', 'cdtCompute_Clim_Vars_functions.R'))
+
+#####
+source(file.path(apps.dir, 'functions', 'cdtCompute_Tvars_dlgBox_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_Tvars_Procs_functions.R'))
+
+#####
+source(file.path(apps.dir, 'functions', 'cdtCompute_PET_dlgBox_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_PET_Procs_functions.R'))
+
+#####
+source(file.path(apps.dir, 'functions', 'cdtCompute_WB_dlgBox_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_WB_Procs_functions.R'))
+
+#####
+source(file.path(apps.dir, 'functions', 'climatoCalculate_leftCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'climatoCalculate_Procs_functions.R'))
+
+#####
+source(file.path(apps.dir, 'functions', 'climatoAnomalies_leftCmd_functions.R'))
+
+#####
+source(file.path(apps.dir, 'functions', 'cdtCompute_Onset_leftCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_Onset_Procs_functions.R'))
+
+#####
+source(file.path(apps.dir, 'functions', 'cdtCompute_Cessation_leftCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_Cessation_Procs_functions.R'))
+
+#####
+source(file.path(apps.dir, 'functions', 'cdtCompute_SeasonLength_leftCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_SeasonLength_Procs_functions.R'))
+
+#####
+source(file.path(apps.dir, 'functions', 'dailyRainfallAnalysis_leftCmd_functions.R'))
+
+#####
+source(file.path(apps.dir, 'functions', 'cdtCompute_PICSA_leftCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_PICSA_Procs_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_PICSA_displayPLOT_functions.R'))
 
 #####
 #

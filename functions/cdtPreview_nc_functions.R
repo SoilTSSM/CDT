@@ -87,19 +87,19 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 	Y.choix <- c('')
 	Y.dim <- tclVar(Y.choix[1])
 
-	txtlb1 <- tklabel(dim.choose, text = 'Variable:', anchor = 'e', justify = 'right')
-	txtlb2 <- tklabel(dim.choose, text = 'Longitude:', anchor = 'e', justify = 'right')
-	txtlb3 <- tklabel(dim.choose, text = 'Latitude:', anchor = 'e', justify = 'right')
+	txt.lb1 <- tklabel(dim.choose, text = 'Variable:', anchor = 'e', justify = 'right')
+	txt.lb2 <- tklabel(dim.choose, text = 'Longitude:', anchor = 'e', justify = 'right')
+	txt.lb3 <- tklabel(dim.choose, text = 'Latitude:', anchor = 'e', justify = 'right')
 
 	cb.var <- ttkcombobox(dim.choose, values = var.choix, textvariable = var.dim, state = "readonly", width = largeur)
 	cb.X <- ttkcombobox(dim.choose, values = X.choix, textvariable = X.dim, state = 'disabled', width = largeur)
 	cb.Y <- ttkcombobox(dim.choose, values = Y.choix, textvariable = Y.dim, state = 'disabled', width = largeur)
 
-	tkgrid(txtlb1, row = 0, column = 0, sticky = 'we', padx = 5, pady = 5)
+	tkgrid(txt.lb1, row = 0, column = 0, sticky = 'we', padx = 5, pady = 5)
 	tkgrid(cb.var, row = 0, column = 1, sticky = 'we', padx = 5, pady = 5)
-	tkgrid(txtlb2, row = 1, column = 0, sticky = 'we', padx = 5, pady = 5)
+	tkgrid(txt.lb2, row = 1, column = 0, sticky = 'we', padx = 5, pady = 5)
 	tkgrid(cb.X, row = 1, column = 1, sticky = 'we', padx = 5, pady = 5)
-	tkgrid(txtlb3, row = 2, column = 0, sticky = 'we', padx = 5, pady = 5)
+	tkgrid(txt.lb3, row = 2, column = 0, sticky = 'we', padx = 5, pady = 5)
 	tkgrid(cb.Y, row = 2, column = 1, sticky = 'we', padx = 5, pady = 5)
 
 	####
@@ -129,44 +129,47 @@ preview.data.nc <- function(parent.win, openncf, title.pop){
 
 	retval <- NULL
 	tkconfigure(OK.but, command = function() {
-		if(!is.null(ivar)){
-			v.size <- var.size[[ivar]]
-			v.unit <- var.info[ivar, 3]
-			v.ndims <- var.info[ivar, 2]
-			d.units <- var.dim.info[[ivar]][1:v.ndims, 3]
-			d.dim <- var.dim.info[[ivar]][1:v.ndims, 1]
-			idx <- which(d.dim == as.character(tclvalue(X.dim)))
-			idy <- which(d.dim == as.character(tclvalue(Y.dim)))
-			lon <- var.dim.val[[ivar]][[idx]]
-			lat <- var.dim.val[[ivar]][[idy]]
-
-			d.units <- d.units[c(idx, idy)]
-			dat <- ncvar_get(nc, varid = as.character(var.info[ivar, 1]))
-
-			irevlat <- all(lat == cummax(lat))
-			xo <- order(lon)
-			lon <- lon[xo]
-			yo <- order(lat)
-			lat <- lat[yo]
-		
-			if(idx == 1){
-				dat <- dat[xo, yo]
-			}else{
-				dat <- matrix(c(dat), nrow = v.size[idx], ncol = v.size[idy], byrow = TRUE)
-				dat <- dat[xo, yo]
-			}
-
-			retval <<- list(x = lon, y = lat, value = dat, var.unit = v.unit,
-							dim.units = d.units, varid = as.character(var.info[ivar, 1]),
-							ilon = idx, ilat = idy, irevlat = irevlat,
-							file = openncf)
-
-			tkgrab.release(tt)
-			tkdestroy(tt)
-			tkfocus(parent.win)
-			nc_close(nc)
+		if(str_trim(tclvalue(X.dim)) == ""){
+			tkmessageBox(message = "Select longitude dim", icon = "warning", type = "ok")
+			tkwait.window(tt)
+		}else if(str_trim(tclvalue(Y.dim)) == ""){
+			tkmessageBox(message = "Select latitude dim", icon = "warning", type = "ok")
+			tkwait.window(tt)
 		}else{
-			retval <<- NULL
+			if(!is.null(ivar)){
+				v.size <- var.size[[ivar]]
+				v.unit <- var.info[ivar, 3]
+				v.ndims <- var.info[ivar, 2]
+				d.units <- var.dim.info[[ivar]][1:v.ndims, 3]
+				d.dim <- var.dim.info[[ivar]][1:v.ndims, 1]
+				idx <- which(d.dim == str_trim(tclvalue(X.dim)))
+				idy <- which(d.dim == str_trim(tclvalue(Y.dim)))
+				lon <- var.dim.val[[ivar]][[idx]]
+				lat <- var.dim.val[[ivar]][[idy]]
+
+				d.units <- d.units[c(idx, idy)]
+				dat <- ncvar_get(nc, varid = as.character(var.info[ivar, 1]))
+
+				irevlat <- all(lat == cummax(lat))
+				xo <- order(lon)
+				lon <- lon[xo]
+				yo <- order(lat)
+				lat <- lat[yo]
+			
+				if(idx == 1){
+					dat <- dat[xo, yo]
+				}else{
+					dat <- matrix(c(dat), nrow = v.size[idx], ncol = v.size[idy], byrow = TRUE)
+					dat <- dat[xo, yo]
+				}
+
+				retval <<- list(x = lon, y = lat, value = dat, var.unit = v.unit,
+								dim.units = d.units, varid = as.character(var.info[ivar, 1]),
+								ilon = idx, ilat = idy, irevlat = irevlat,
+								file = openncf)
+
+			}else retval <<- NULL
+
 			tkgrab.release(tt)
 			tkdestroy(tt)
 			tkfocus(parent.win)

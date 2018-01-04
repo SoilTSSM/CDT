@@ -148,7 +148,7 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 
 	##############
 
-	settingdone <- NULL
+	settingdone <- GeneralParameters$settingdone
 	tkconfigure(set.datatype, command = function(){
 		GeneralParameters <<- AggregateTS_ncdfData(tt, GeneralParameters,
 												str_trim(tclvalue(file.stnfl)),
@@ -198,6 +198,7 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 		tkdestroy(cb.stnfl)
 		tclvalue(file.stnfl) <- ''
 
+		####
 		if(tclvalue(DataType) == 'CDT data format'){
 			tclvalue(fileINdir) <- 'File containing stations input data'
 			tclvalue(fileORdir) <- 'File to save aggregated data'
@@ -226,6 +227,7 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 			status.bar.display(en.file.save, TextOutputVar, 'Enter the full path of the file to save aggregated data')
 		}
 
+		####
 		if(tclvalue(DataType) == 'NetCDF gridded data'){
 			tclvalue(fileINdir) <- 'Directory containing the NetCDF data'
 			tclvalue(fileORdir) <- 'Directory to save result'
@@ -237,19 +239,22 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 				file2convert <- tk_choose.dir(getwd(), "")
 				tclvalue(file.stnfl) <- if(!is.na(file2convert)) file2convert else ""
 			})
-			tkconfigure(bt.file.save, command = function() fileORdir2Save(file.save, isFile = FALSE))
-			tkconfigure(set.datatype, state = 'normal', command = function(){
+
+			tkconfigure(set.datatype, command = function(){
 				GeneralParameters <<- AggregateTS_ncdfData(tt, GeneralParameters,
 														str_trim(tclvalue(file.stnfl)),
 														tclvalue(OriginData))
 				settingdone <<- 1
 			})
 
+			tkconfigure(bt.file.save, command = function() fileORdir2Save(file.save, isFile = FALSE))
+			tkconfigure(set.datatype, state = 'normal')
+
 			#######
 			infobulle(cb.stnfl, 'Enter the full path to directory containing the NetCDF data')
 			status.bar.display(cb.stnfl, TextOutputVar, 'Enter the full path to directory containing the NetCDF data')
-			infobulle(en.file.save, 'Enter the full path to directory to save result')
-			status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to directory to save result')
+			infobulle(en.file.save, 'Enter the full path to the directory to save result')
+			status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to the directory to save result')
 		}
 		
 		#######
@@ -362,7 +367,7 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 			tkmessageBox(message = "Choose a directory or enter the file to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else if(tclvalue(DataType) != 'CDT data format' & is.null(settingdone)){
-				tkmessageBox(message = "You have to set the options", icon = "warning", type = "ok")
+				tkmessageBox(message = "You have to set the NetCDF files parameters", icon = "warning", type = "ok")
 				tkwait.window(tt)
 		}else{
 			GeneralParameters$in.tstep <<- switch(tclvalue(OriginData), 
@@ -394,6 +399,8 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 			GeneralParameters$aggr.series$min.frac <<- as.numeric(str_trim(tclvalue(min.frac)))
 			GeneralParameters$aggr.series$opr.fun <<- str_trim(tclvalue(opr.fun))
 			GeneralParameters$aggr.series$opr.thres <<- as.numeric(str_trim(tclvalue(opr.thres)))
+
+			GeneralParameters$settingdone <<- settingdone
 
 			tkgrab.release(tt)
 			tkdestroy(tt)

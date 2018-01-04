@@ -57,7 +57,7 @@
         "min.stn": 10,
 
         // true: use quantiles to perform regression; false: use raw data
-        "useQuantile": false,
+        "useQuantile": true,
 
         // Months on which the regression coefficients will be calculated
         "Months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]

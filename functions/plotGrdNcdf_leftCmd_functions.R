@@ -390,7 +390,8 @@ PlotGriddedNcdfCmd <- function(){
 			# donne <- getNCdonnnees.wrap()
 			donne <- getNCdonnnees()
 			if(!is.null(donne)){
-				atLev <- pretty(donne$z, n = n+1)
+				min.n <- if(n < 7) n else 7
+				atLev <- pretty(donne$z, n = n+1, min.n = min.n)
 			}
 		}
 		atLev <<- customLevels(main.win, atLev)
@@ -400,6 +401,7 @@ PlotGriddedNcdfCmd <- function(){
 
 	getNCdonnnees <- function(){
 		ichoix <- which(var.names == tclvalue(var.choix))
+		if(length(ichoix) == 0) return(NULL)
 		if(ichoix != 1){
 			ivar <- ichoix-1
 			dim.names <- c(sapply(ncvar[[2]][[ivar]]$dimInfo, function(x) x$name))
@@ -456,7 +458,10 @@ PlotGriddedNcdfCmd <- function(){
 		# donne <- getNCdonnnees.wrap()
 		donne <- getNCdonnnees()
 		if(tclvalue(custom.level) == '0' | length(atLev) == 0){
-			if(!is.null(donne)) atLev <- pretty(donne$z, n = n+1)
+			if(!is.null(donne)){
+				min.n <- if(n < 7) n else 7
+				atLev <- pretty(donne$z, n = n+1, min.n = min.n)
+			}
 		}
 
 		if(tclvalue(custom.color) == '0' | length(listCol) == 0){

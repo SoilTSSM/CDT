@@ -1,10 +1,15 @@
-plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
+plotMergingOutData <- function(allDATA, atLev, listCol, units, shpf){
 	##color and tick
 	loko <- colorRampPalette(listCol)
 	ticks <- as.numeric(atLev)
 	nticks <- length(ticks)
 	labticks <- ticks  #paste(ticks, expression(paste(degree, "C", sep = ''))) 
 	units <- str_trim(units)
+
+	ocrds <- getBoundaries(shpf)
+
+	# atColKey <- if(colkeyEqDist) 1:nticks else ticks
+	atColKey <- ticks
 
 	if(!is.na(units)){
 		 if(units != "") colorkeyTitle <- paste('(', units, ')', sep = '')
@@ -34,7 +39,7 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 	#########################################
 	donStn <- allDATA[[1]][[1]]
 
-	donStn <- as.image(donStn$value, x = cbind(donStn$x, donStn$y), nx = 60, ny = 60)
+	donStn <- as.image(donStn$value, x = cbind(donStn$x, donStn$y), nx = 40, ny = 40)
 	plotStn <- levelplot(donStn$z, row.values = donStn$x, column.values = donStn$y, at = ticks,
 		interpolate = TRUE, region = TRUE, 
 		panel = function(...){
@@ -56,8 +61,15 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 	donNetCDF <- donNetCDF[ijc]
 	donNcdf2Plot <- lapply(donNetCDF, function(x) x[[1]])
 
+	# xydon <- donNcdf2Plot[[1]]
+	# shpf[['vtmp']] <- 1
+	# mask <- over(defSpatialPixels(list(lon = xydon$x, lat = xydon$y)), shpf)[, 'vtmp']
+	# dim(mask) <- dim(xydon$value)
+
 	for(jj in 1:length(donNcdf2Plot)){
 		xydon <- donNcdf2Plot[[jj]]
+		# xydon$value[is.na(mask)] <- NA
+
 		donne1 <- data.frame(expand.grid(x = xydon$x, y = xydon$y), z = c(xydon$value))
 		# plotXYdon <- levelplot(xydon$value, row.values = xydon$x, column.values = xydon$y, at = ticks, 
 		plotXYdon <- levelplot(z~x+y, data = donne1, at = ticks, 
@@ -105,10 +117,15 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 						layout.heights = list(top.padding = layout.pad[3], bottom.padding = layout.pad[4]))
 
 	##Colorkey
+	# colorkey <- list(space = colorkeyPlace, col = loko, width = 1.5, height = 1,
+	# 				raster = TRUE, interpolate = TRUE, at = 1:nticks,
+	# 				labels = list(labels = labticks, at = 1:nticks, cex = 0.8, col = 'black', rot = 0),
+	# 				axis.line = list(alpha = 0.5, lty = 1, lwd = 1, col = 'black'))
 	colorkey <- list(space = colorkeyPlace, col = loko, width = 1.5, height = 1,
-					raster = TRUE, interpolate = TRUE, at = 1:nticks,
-					labels = list(labels = labticks, at = 1:nticks, cex = 0.8, col = 'black', rot = 0),
+					raster = FALSE, interpolate = FALSE, at = atColKey,
+					labels = list(labels = labticks, at = atColKey, cex = 0.8, col = 'black', rot = 0),
 					axis.line = list(alpha = 0.5, lty = 1, lwd = 1, col = 'black'))
+
 	colorkeyFrame <- draw.colorkey(key = colorkey, draw = FALSE, vp = NULL)
 	grobObj <- textGrob(colorkeyTitle, x = xyposTitle[1], y = xyposTitle[2], just = justTitle, rot = rotTitle,
 						gp = gpar(fontsize = 12, fontface = 'plain', col = "black", cex = 0.8))
@@ -131,6 +148,9 @@ plotMergingOutData <- function(allDATA, atLev, listCol, ocrds, units){
 	print(update(PlotObj, aspect = 'fill', as.table = TRUE, par.settings = parSettings, xlab = '', ylab = '',
 				xlim = xlim, ylim = ylim, col.regions = loko, par.strip.text = parStripText, strip = stripCust,
 				scales = list(x = Xaxis, y = Yaxis), legend = lezandy))
+	# print(update(PlotObj[c(3, 4, 5, 1, 2)], aspect = 'fill', as.table = FALSE, par.settings = parSettings, xlab = '', ylab = '',
+	# 			xlim = xlim, ylim = ylim, col.regions = loko, par.strip.text = parStripText, strip = stripCust,
+	# 			scales = list(x = Xaxis, y = Yaxis), legend = lezandy))
 
 }
 
@@ -156,10 +176,9 @@ displayPlotMerging <- function(parent, notebookTab, allDATA, atLev, listCol, shp
 		return(NULL)
 	}
 	
-	ocrds <- getBoundaries(shpf)
 	
 	plotIt <- function(){
-		plotMergingOutData(allDATA, atLev, listCol, ocrds, units)
+		plotMergingOutData(allDATA, atLev, listCol, units, shpf)
 	}
 	
 	###################################################################	

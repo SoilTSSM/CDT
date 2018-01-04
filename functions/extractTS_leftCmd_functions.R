@@ -76,14 +76,14 @@ ExtractDataPanelCmd <- function(){
 
 	frameTimeS <- ttklabelframe(subfr1, text = "Time step of input data", relief = 'groove')
 
-	file.period <- tclVar()
+	timeSteps <- tclVar()
 	CbperiodVAL <- c('Daily data', 'Dekadal data', 'Monthly data')
-	tclvalue(file.period) <- switch(GeneralParameters$in.series, 
+	tclvalue(timeSteps) <- switch(GeneralParameters$in.series, 
 									'daily' = CbperiodVAL[1], 
 									'dekadal' = CbperiodVAL[2],
 									'monthly' = CbperiodVAL[3])
 
-	cb.fperiod <- ttkcombobox(frameTimeS, values = CbperiodVAL, textvariable = file.period, width = largeur1)
+	cb.fperiod <- ttkcombobox(frameTimeS, values = CbperiodVAL, textvariable = timeSteps, width = largeur1)
 
 	tkgrid(cb.fperiod, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
@@ -93,11 +93,11 @@ ExtractDataPanelCmd <- function(){
 	#################
 	tkbind(cb.fperiod, "<<ComboboxSelected>>", function(){
 		OUTSeries <- c('Daily', 'Dekadal', 'Monthly', '3-Months', '6-Months', 'Annual')
-		if(tclvalue(file.period) == 'Daily data'){
+		if(tclvalue(timeSteps) == 'Daily data'){
 			stateDR <- 'normal'
 			tclvalue(DayDek.txtVar) <- 'Day'
 		}
-		if(tclvalue(file.period) == 'Dekadal data'){
+		if(tclvalue(timeSteps) == 'Dekadal data'){
 			stateDR <- 'normal'
 			OUTSeries <- OUTSeries[-1]
 			tclvalue(DayDek.txtVar) <- 'Dek'
@@ -105,7 +105,7 @@ ExtractDataPanelCmd <- function(){
  			tclvalue(istart.day) <- if(as.numeric(tclvalue(istart.day)) > 3) 3 else tclvalue(istart.day)
 			tclvalue(iend.day) <- if(as.numeric(tclvalue(iend.day)) > 3) 3 else tclvalue(iend.day)
 		}
-		if(tclvalue(file.period) == 'Monthly data'){
+		if(tclvalue(timeSteps) == 'Monthly data'){
 			stateDR <- 'disabled'
 			OUTSeries <- OUTSeries[-(1:2)]
 			tclvalue(out.series) <- if(tclvalue(out.series) %in% c('Daily', 'Dekadal')) 'Monthly' else tclvalue(out.series)
@@ -117,15 +117,15 @@ ExtractDataPanelCmd <- function(){
 
 		####
 		AGGREGFUN <- c("mean", "sum", "count")
-		if((tclvalue(out.series) == 'Daily' & tclvalue(file.period) == 'Daily data') |
-			(tclvalue(out.series) == 'Dekadal' & tclvalue(file.period) == 'Dekadal data') |
-			(tclvalue(out.series) == 'Monthly' & tclvalue(file.period) == 'Monthly data')){
+		if((tclvalue(out.series) == 'Daily' & tclvalue(timeSteps) == 'Daily data') |
+			(tclvalue(out.series) == 'Dekadal' & tclvalue(timeSteps) == 'Dekadal data') |
+			(tclvalue(out.series) == 'Monthly' & tclvalue(timeSteps) == 'Monthly data')){
 			stateo0a <- "disabled"
 			stateo0b <- "disabled"
 			stateo1 <- "disabled"
 			stateo2 <- "disabled"
 		}else{
-			if(tclvalue(file.period) != 'Daily data'){
+			if(tclvalue(timeSteps) != 'Daily data'){
 				AGGREGFUN <- AGGREGFUN[-3]
 				tclvalue(aggr.fun) <- if(tclvalue(aggr.fun) == "count") "sum" else tclvalue(aggr.fun)
 			}
@@ -141,7 +141,7 @@ ExtractDataPanelCmd <- function(){
 		tkconfigure(en.opthres, state = stateo2)
 
 		####
-		stateClim2 <- if(tclvalue(file.period) == 'Daily data' & tclvalue(type.series) != 'Raw Time Series') "normal" else "disable"
+		stateClim2 <- if(tclvalue(timeSteps) == 'Daily data' & tclvalue(type.series) != 'Raw Time Series') "normal" else "disable"
 		tkconfigure(en.winsize, state = stateClim2)
 	})
 
@@ -472,15 +472,15 @@ ExtractDataPanelCmd <- function(){
 
 		######
 		AGGREGFUN <- c("mean", "sum", "count")
-		if((tclvalue(out.series) == 'Daily' & tclvalue(file.period) == 'Daily data') |
-			(tclvalue(out.series) == 'Dekadal' & tclvalue(file.period) == 'Dekadal data') |
-			(tclvalue(out.series) == 'Monthly' & tclvalue(file.period) == 'Monthly data')){
+		if((tclvalue(out.series) == 'Daily' & tclvalue(timeSteps) == 'Daily data') |
+			(tclvalue(out.series) == 'Dekadal' & tclvalue(timeSteps) == 'Dekadal data') |
+			(tclvalue(out.series) == 'Monthly' & tclvalue(timeSteps) == 'Monthly data')){
 			stateo0a <- "disabled"
 			stateo0b <- "disabled"
 			stateo1 <- "disabled"
 			stateo2 <- "disabled"
 		}else{
-			if(tclvalue(file.period) != 'Daily data'){
+			if(tclvalue(timeSteps) != 'Daily data'){
 				AGGREGFUN <- AGGREGFUN[-3]
 				tclvalue(aggr.fun) <- if(tclvalue(aggr.fun) == "count") "sum" else tclvalue(aggr.fun)
 			}
@@ -1281,7 +1281,7 @@ ExtractDataPanelCmd <- function(){
 		if(tclvalue(type.series) != 'Raw Time Series'){
 			stateClim0 <- "normal"
 			stateClim1 <- if(tclvalue(UseAllYears) == '1') "disabled" else "normal"
-			stateClim2 <- if(tclvalue(file.period) == 'Daily data') "normal" else "disabled"
+			stateClim2 <- if(tclvalue(timeSteps) == 'Daily data') "normal" else "disabled"
 		}else{
 			stateClim0 <- "disabled"
 			stateClim1 <- "disabled"
@@ -1413,7 +1413,7 @@ ExtractDataPanelCmd <- function(){
 	bt.Extract.Data <- ttkbutton(subfr4, text = "EXTRACT DATA")
 
 	tkconfigure(bt.Extract.Data, command = function(){
-		GeneralParameters$in.series <- switch(tclvalue(file.period),
+		GeneralParameters$in.series <- switch(tclvalue(timeSteps),
 		 									'Daily data' = 'daily',
 											'Dekadal data' =  'dekadal',
 											'Monthly data' = 'monthly')

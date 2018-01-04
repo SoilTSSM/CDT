@@ -65,7 +65,7 @@
         // Minimum number of non missing stations to interpolate bias
         "min.stn": 10,
 
-        // Use Shapiro-Wilk normality test to test if data follow a normal distribution
+        // Use Shapiro-Wilk normality test to test if data (follow) (are compatible with) a normal distribution
         "SWnorm.test": true,
 
         // Months on which bias factors or distribution parameters will be calculated

@@ -58,7 +58,8 @@ cdtDataset_getParams <- function(parent.win, GeneralParameters){
 
 	######
 	tkconfigure(set.NCDF, command = function(){
-		GeneralParameters[["NCDF"]] <<- getInfoNetcdfData(tt, GeneralParameters[["NCDF"]], str_trim(tclvalue(dir.NCDF)), tclvalue(file.period))
+		GeneralParameters[["NCDF"]] <<- getInfoNetcdfData(tt, GeneralParameters[["NCDF"]],
+										str_trim(tclvalue(dir.NCDF)), tclvalue(file.period))
 	})
 
 	tkconfigure(bt.NCDF, command = function(){
@@ -130,7 +131,7 @@ cdtDataset_getParams <- function(parent.win, GeneralParameters){
 	frUpdate <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
 
 	update.data <- tclVar(GeneralParameters$Update)
-	file.dataRDS <- tclVar()
+	file.dataRDS <- tclVar(GeneralParameters$cdtDataSet)
 
 	stateUp <- if(tclvalue(update.data) == "1") "normal" else "disabled"
 
@@ -147,7 +148,7 @@ cdtDataset_getParams <- function(parent.win, GeneralParameters){
 		if(file.exists(tclvalue(file.dataRDS))){
 			tclvalue(dir2save) <- dirname(dirname(tclvalue(file.dataRDS)))
 			tclvalue(nom.data) <- basename(dirname(tclvalue(file.dataRDS)))
-		} 
+		}
 	})
 
 	tkgrid(chk.update, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -284,9 +285,9 @@ cdtDataset_getParams <- function(parent.win, GeneralParameters){
 	tcl('update')
 	tt.w <- as.integer(tkwinfo("reqwidth", tt))
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
-	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
-	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
+	tt.x <- as.integer(width.scr*0.5 - tt.w*0.5)
+	tt.y <- as.integer(height.scr*0.5 - tt.h*0.5)
+	tkwm.geometry(tt, paste0('+', tt.x, '+', tt.y))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Import NetCDF files into CDT Dataset')
 	tkwm.deiconify(tt)

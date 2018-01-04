@@ -89,7 +89,7 @@ if(tclPath$UseOtherTclTk == 1){
 #########Load library
 
 packages <- list('tcltk', 'tkrplot', 'grid', 'lattice', 'latticeExtra', 'sp', 'ncdf4', 'gmt', 'fields',
-				'gstat', 'automap', 'reshape2', 'compiler', 'parallel', 'foreach', 'doParallel',
+				'maps', 'gstat', 'automap', 'reshape2', 'compiler', 'parallel', 'foreach', 'doParallel',
 				'raster', 'rgeos', 'rgdal', 'maptools', 'RCurl', 'fitdistrplus', 'qmap', 'ADGofTest',
 				'matrixStats', 'data.table')
 ret.pkgs <- sapply(packages, library, character.only = TRUE, logical.return = TRUE)

@@ -518,13 +518,45 @@ Execute_All_Functions <- function(get.stn){
 	}
 
 	#####
-	if(GeneralParameters$action == "create.cdtData"){
+	if(GeneralParameters$action == "create.CdtDataset"){
 		ret <- try(cdtDataset_readData(GeneralParameters), silent = TRUE)
 
 		msg0 <- "CDT dataset creation finished successfully"
 		msg1 <- "CDT dataset creation values failed"
 		Execute_end_msg(ret, msg0, msg1)
 	}
+
+	###################
+
+	if(GeneralParameters$action == "compute.dervTemp"){
+		ret <- try(computeTvarsProcs(GeneralParameters), silent = TRUE)
+
+		msg <- paste("Computing", GeneralParameters$Tstep, tolower(GeneralParameters$variable), "temperature")
+		msg0 <- paste(msg, "finished successfully")
+		msg1 <- paste(msg, "failed")
+		Execute_end_msg(ret, msg0, msg1)
+	}
+
+	#####
+	if(GeneralParameters$action == "compute.PET"){
+		ret <- try(computePETProcs(GeneralParameters), silent = TRUE)
+
+		msg <- paste("Computing", GeneralParameters$Tstep, "potential evapotranspiration")
+		msg0 <- paste(msg, "finished successfully")
+		msg1 <- paste(msg, "failed")
+		Execute_end_msg(ret, msg0, msg1)
+	}
+
+	#####
+	if(GeneralParameters$action == "compute.WB"){
+		ret <- try(computeWBProcs(GeneralParameters), silent = TRUE)
+
+		msg <- paste("Computing", GeneralParameters$Tstep, "water balance")
+		msg0 <- paste(msg, "finished successfully")
+		msg1 <- paste(msg, "failed")
+		Execute_end_msg(ret, msg0, msg1)
+	}
+
 
 	###################
 

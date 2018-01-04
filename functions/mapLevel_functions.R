@@ -26,7 +26,7 @@ customLevels <- function(parent.win, atLev){
 	tkgrid(textLevel, yscrLevel)
 	tkgrid.configure(yscrLevel, sticky = "ns")
 	tkgrid.configure(textLevel, sticky = 'nswe') 
-	if(length(atLev) > 0) for(j in seq_along(atLev)) tkinsert(textLevel, "end", paste(atLev[j], ', ',sep = ''))
+	if(length(atLev) > 0) for(j in seq_along(atLev)) tkinsert(textLevel, "end", paste0(atLev[j], ', '))
 
 	#########
 	bt.opt.OK <- tkbutton(frButt, text = "OK") 

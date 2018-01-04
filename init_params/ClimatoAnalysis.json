@@ -1,36 +1,53 @@
 {
     // Type of data:  
-    // "series": One station series
-    // "cdt": CDT data format
-    // "netcdf": NetCDF gridded data
-    "data.type": "cdt",
+    // "cdtstation": CDT stations data format
+    // "cdtdataset": CDT gridded dataset
+    "data.type": "cdtstation",
     // Time step of the input data
-    "in.series": "daily",
-    // Input and Output files/directory
-    "IO.files": [{
-        // Full path to the directory of netcdf data
-        // or file containing the data
-        "In.dir.file": "",
-        // Full path to the directory  or file to save results
-        "Out.dir.file": ""
-    }],
+    "in.tstep": "daily",
+    // Full path to the file containing the data (<dataset name>.rds for cdtdataset)
+    "in.file": "",
+    // Full path to the directory to save results
+    "out.dir": "",
 
     "analysis.method": [{
         // Analysis method
-        // 'average' = Average
+        // 'mean' = Mean
         // 'median' = Median
         // 'std' = Standard deviation
         // 'cv' = Coefficient of variation
         // 'trend' = Trend
         // 'percentile' = Percentile
         // 'frequency' = Frequency
-        "mth.fun": "average",
+        // 'anomaly' = 'Anomaly'
+        "mth.fun": "mean",
+
+        // Percentile
         // percentile rank 
         "mth.perc": 90,
+
+        // Frequency
         // lower bound of the interval for frequency analysis
         "low.thres": 0,
         // upper bound of the interval
-        "up.thres": 200
+        "up.thres": 200,
+
+        // Anomaly
+        // use percentage of mean for anomaly
+        "perc.anom": false,
+        // base period to compute climatology
+        // start year
+        "startYr.anom": 1981,
+        // end year
+        "endYr.anom": 2010,
+
+        // Trend
+        // trend/year: 1
+        // trend over the period: 2
+        // trend/average (%): 3
+        "trend.unit": 1,
+        // Minimum number (in year) of non-missing values to calculate the trend
+        "trend.min.year": 10
     }],
 
     "aggr.series": [{
@@ -45,6 +62,9 @@
     }],
 
     "time.series": [{
+        // Time step of the output time series
+        "out.series": "monthly",
+
         // Use all years from the input data
         "all.years": true,
         // Start year of the period to analyze
@@ -55,36 +75,16 @@
         "nseq.years": false,
         // customized years
         "custom.years": [null],
-        // Start month to include in the analysis
+        // Start month for seasonal & annual, start month to include in the analysis (monthly)
         "start.month": 1,
-        // Start month to include in the analysis
+        // Width of the season (e.g., 3 for three-month season)
+        "len.seas": 3,
+
+        // End month to include in the analysis (monthly)
         "end.month": 12,
         // select non-sequential months
         "nseq.months": false,
         // customized months
         "custom.months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-    }],
-
-    "out.series": [{
-        // Time step of the output time series
-        "out.series": "monthly",
-        // Start month of the season (1 to 12)
-        "start.seas": 1,
-        // Width of the season (e.g., 3 for three-month season)
-        "len.seas": 3
-    }],
-
-    "ncdf.file": [{
-        // daily rainfall data sample filename
-        "sample": "",
-        "format": "rr_mrg_%s%s%s_CLM.nc",
-        "start.year": 1981,
-        "start.mon": 1,
-        "start.day": 1,
-        "end.year": 2015,
-        "end.mon": 12,
-        "end.day": 31
-    }],
-    // Minimum number (in year) of non-missing values to calculate the trend
-    "Trend.min.year": 10
+    }]
 }

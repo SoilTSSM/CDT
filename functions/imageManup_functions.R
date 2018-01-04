@@ -280,7 +280,7 @@ getGradientColor <- function(listCol, cW){
 		gEd <- rep(verte, ncolors)
 		bEd <- rep(bleue, ncolors)
 	}
-	gradientColor <- paste('#', sprintf("%2.2x", rEd), sprintf("%2.2x", gEd), sprintf("%2.2x", bEd), sep = '')
+	gradientColor <- paste0('#', sprintf("%2.2x", rEd), sprintf("%2.2x", gEd), sprintf("%2.2x", bEd))
 	return(gradientColor)
 }
 
