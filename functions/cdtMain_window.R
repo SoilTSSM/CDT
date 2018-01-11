@@ -45,7 +45,7 @@ cdt.lcmd.container <- list('lcmd.frame_homo', 'lcmd.frame_qc', 'lcmd.frame_chk',
 						'lcmd.frame_filtercdtdat', 'lcmd.frame_climdexRR', 'lcmd.frame_climdexTT', 'lcmd.frame_climatoAnalysis',
 						'lcmd.frame_PICSA', 'lcmd.frame_valid.LOOCV', 'lcmd.frame_climatoCalc', 'lcmd.frame_anomaliesCalc',
 						'lcmd.frame_onsetCalc', 'lcmd.frame_cessationCalc', 'lcmd.frame_seaslengthCalc',
-						'lcmd.frame_dailyRainAnalysis', 'lcmd.frame_PICSA1')
+						'lcmd.frame_dailyRainAnalysis', 'lcmd.frame_PICSA1', 'lcmd.frame_summariesData')
 lcmd.ret <- lapply(cdt.lcmd.container, assign, NULL, envir = .GlobalEnv)
 
 #####**************************** General&Generic functions ************************######

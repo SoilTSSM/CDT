@@ -671,12 +671,12 @@ tkadd(top.menu, "cascade", label = "Data Analysis", menu = menu.dataproc, active
 		## convert CDTdataset to CDTnetcdf (possibility to save CDTdataset output to ncdf)
 		## 
 
-		# refreshCDT.lcmd.env()
-		# spinbox.state(state = 'normal')
-		# if(is.null(lcmd.frame_extrdata)){
-		# 	lcmd.frame <<- ExtractDataPanelCmd()
-		# 	lcmd.frame_extrdata <<- 1
-		# }
+		refreshCDT.lcmd.env()
+		spinbox.state(state = 'normal')
+		if(is.null(lcmd.frame_summariesData)){
+			lcmd.frame <<- summariesDataPanelCmd()
+			lcmd.frame_summariesData <<- 1
+		}
 	})
 
 	######################################## Compute Climate Variables

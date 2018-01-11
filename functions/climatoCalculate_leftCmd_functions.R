@@ -378,7 +378,7 @@ climatologiesCalcPanelCmd <- function(){
 				return(NULL)
 			}
 
-			assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
+			# assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
 
 			tkconfigure(main.win, cursor = 'watch')
 			InsertMessagesTxt(main.txt.out, "Calculate climatology ......")

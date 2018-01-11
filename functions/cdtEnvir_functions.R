@@ -48,3 +48,9 @@ EnvSeasLengthCalcPlot <- new.env()
 # daily rainfall analysis
 EnvDailyRainAnalysisplot <- new.env()
 
+# Summary data
+EnvSummaryDataplot <- new.env()
+
+
+
+

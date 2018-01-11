@@ -332,9 +332,8 @@ climatoAnalysis.plotTSGraph <- function(){
 			InsertMessagesTxt(main.txt.out, "Coordinates outside of data range", format = TRUE)
 			return(NULL)
 		}
-		ixy0 <- ilo + length(xlon) * (ila-1)
+		ixy <- ilo + length(xlon) * (ila-1)
 
-		ixy <- cdtdataset$colInfo$id[ixy0]
 		don <- readCdtDatasetChunk.locations(ixy, cdtdataset$fileInfo, cdtdataset, do.par = FALSE)
 		don <- as.numeric(don$data[, 1])
 		dates <- cdtdataset$dateInfo$date

@@ -8,9 +8,9 @@ anomaliesCalcPanelCmd <- function(){
 		largeur1 <- as.integer(w.scale(29)/sfont0)
 		largeur2 <- as.integer(w.scale(31)/sfont0)
 		largeur3 <- 20
-		largeur4 <- largeur1-5
-		largeur5 <- 30
-		largeur6 <- 22
+		# largeur4 <- largeur1-5
+		# largeur5 <- 30
+		# largeur6 <- 22
 	}else{
 		wscrlwin <- w.scale(27)
 		hscrlwin <- h.scale(47)
@@ -18,9 +18,9 @@ anomaliesCalcPanelCmd <- function(){
 		largeur1 <- as.integer(w.scale(22)/sfont0)
 		largeur2 <- as.integer(w.scale(23)/sfont0)
 		largeur3 <- 15
-		largeur4 <- largeur1
-		largeur5 <- 22
-		largeur6 <- 14
+		# largeur4 <- largeur1
+		# largeur5 <- 22
+		# largeur6 <- 14
 	}
 
 	# GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'ClimatoAnalysis.json'))
@@ -88,8 +88,11 @@ anomaliesCalcPanelCmd <- function(){
 		############
 
 		tkbind(cb.fperiod, "<<ComboboxSelected>>", function(){
-			statedayW <- if(str_trim(tclvalue(timeSteps)) == 'Daily data' &
-							tclvalue(climDataExist) == '0') "normal" else "disabled"
+			if(tclvalue(updateAnom) == '0'){
+				statedayW <- if(str_trim(tclvalue(timeSteps)) == 'Daily data' &
+								tclvalue(climDataExist) == '0') "normal" else "disabled"
+			}else statedayW <- "disabled"
+
 			tkconfigure(en.daywin, state = statedayW)
 			tclvalue(day.txtVar) <- switch(tclvalue(timeSteps), 'Dekadal data' = 'Dek', 'Pentad data' = 'Pen', 'Day')
 			stateday <- if(tclvalue(timeSteps) == 'Monthly data') 'disabled' else 'normal'
@@ -102,7 +105,8 @@ anomaliesCalcPanelCmd <- function(){
 		frameInData <- ttklabelframe(subfr1, text = "Input Data", relief = 'groove')
 
 		DataType <- tclVar()
-		CbdatatypeVAL <- c('CDT stations data format', 'CDT dataset format (gridded)', 'NetCDF gridded data')
+		CbdatatypeVAL <- c('CDT stations data format', 'CDT dataset format (gridded)')
+		# CbdatatypeVAL <- c('CDT stations data format', 'CDT dataset format (gridded)', 'NetCDF gridded data')
 		tclvalue(DataType) <- switch(GeneralParameters$data.type,
 									'cdtstation' = CbdatatypeVAL[1],
 									'cdtdataset' = CbdatatypeVAL[2],
@@ -127,7 +131,7 @@ anomaliesCalcPanelCmd <- function(){
 		cb.datatype <- ttkcombobox(frameInData, values = CbdatatypeVAL, textvariable = DataType, width = largeur0)
 
 		txt.infile <- tklabel(frameInData, text = tclvalue(txt.INData.var), textvariable = txt.INData.var, anchor = 'w', justify = 'left')
-		set.infile <- tkbutton(frameInData, text = "Settings", width = 5, state = stateSetNC)
+		# set.infile <- tkbutton(frameInData, text = "Settings", width = 5, state = stateSetNC)
 
 		if(GeneralParameters$data.type == 'cdtstation'){
 			cb.en.infile <- ttkcombobox(frameInData, values = unlist(listOpenFiles), textvariable = input.file, width = largeur1)
@@ -138,12 +142,12 @@ anomaliesCalcPanelCmd <- function(){
 
 		############
 		settingINData <- GeneralParameters$settingINData
-		tkconfigure(set.infile, command = function(){
-			GeneralParameters$cdtnetcdf <<- getInfoNetcdfData(main.win, GeneralParameters$cdtnetcdf,
-																str_trim(tclvalue(input.file)),
-																tclvalue(timeSteps))
-			settingINData <<- 1
-		})
+		# tkconfigure(set.infile, command = function(){
+		# 	GeneralParameters$cdtnetcdf <<- getInfoNetcdfData(main.win, GeneralParameters$cdtnetcdf,
+		# 														str_trim(tclvalue(input.file)),
+		# 														tclvalue(timeSteps))
+		# 	settingINData <<- 1
+		# })
 
 		tkconfigure(bt.infile, command = function(){
 			if(GeneralParameters$data.type == 'cdtstation'){
@@ -172,7 +176,7 @@ anomaliesCalcPanelCmd <- function(){
 		tkgrid(txt.datatype, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(cb.datatype, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 8, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(txt.infile, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 8, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(set.infile, row = 1, column = 8, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		# tkgrid(set.infile, row = 1, column = 8, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(cb.en.infile, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 9, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(bt.infile, row = 2, column = 9, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
@@ -205,7 +209,7 @@ anomaliesCalcPanelCmd <- function(){
 
 			###
 			stateSetNC <- if(str_trim(tclvalue(DataType)) == 'NetCDF gridded data') "normal" else "disabled"
-			tkconfigure(set.infile, state = stateSetNC)
+			# tkconfigure(set.infile, state = stateSetNC)
 
 			###
 			if(str_trim(tclvalue(DataType)) == 'CDT stations data format'){
@@ -256,12 +260,12 @@ anomaliesCalcPanelCmd <- function(){
 
 				cb.en.infile <- tkentry(frameInData, textvariable = input.file, width = largeur2)
 
-				tkconfigure(set.infile, command = function(){
-					GeneralParameters$cdtnetcdf <<- getInfoNetcdfData(main.win, GeneralParameters$cdtnetcdf,
-																	str_trim(tclvalue(input.file)),
-																	tclvalue(timeSteps))
-					settingINData <<- 1
-				})
+				# tkconfigure(set.infile, command = function(){
+				# 	GeneralParameters$cdtnetcdf <<- getInfoNetcdfData(main.win, GeneralParameters$cdtnetcdf,
+				# 													str_trim(tclvalue(input.file)),
+				# 													tclvalue(timeSteps))
+				# 	settingINData <<- 1
+				# })
 
 				tkconfigure(bt.infile, command = function(){
 					dirnc <- tk_choose.dir(getwd(), "")
@@ -395,6 +399,33 @@ anomaliesCalcPanelCmd <- function(){
 				infobulle(en.outAnom, 'Enter the full path to directory to save outputs')
 				status.bar.display(en.outAnom, TextOutputVar, 'Enter the full path to directory to save outputs')
 			}
+
+			if(tclvalue(updateAnom) == '1'){
+				stateClim.Ex <- 'normal'
+				stateClim <- if(tclvalue(climDataExist) == '1') 'normal' else 'disabled'
+				stateBaseP <- if(tclvalue(climDataExist) == '1') 'disabled' else 'normal'
+				statedayW <- if(str_trim(tclvalue(timeSteps)) == 'Daily data' & 
+								tclvalue(climDataExist) == '0') "normal" else "disabled"
+				stateAnomC <- 'normal'
+			}else{
+				stateClim.Ex <- 'disabled'
+				stateClim <- 'disabled'
+				stateBaseP <- 'disabled'
+				statedayW <- 'disabled'
+				stateAnomC <- 'disabled'
+			}
+
+			tkconfigure(chk.climIdx, state = stateClim.Ex)
+			tkconfigure(en.climIdx, state = stateClim)
+			tkconfigure(bt.climIdx, state = stateClim)
+
+			tkconfigure(en.sYear, state = stateBaseP)
+			tkconfigure(en.eYear, state = stateBaseP)
+			tkconfigure(en.minYear, state = stateBaseP)
+
+			tkconfigure(en.daywin, state = statedayW)
+
+			tkconfigure(cb.anomaly, state = stateAnomC)
 		})
 
 		############################################
@@ -408,7 +439,7 @@ anomaliesCalcPanelCmd <- function(){
 
 	#Tab2
 	frTab2 <- tkframe(cmd.tab2)
-	tkgrid(frTab2, padx = 5, pady = 5, ipadx = 2, ipady = 2)
+	tkgrid(frTab2, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid.columnconfigure(frTab2, 0, weight = 1)
 
 	scrw2 <- bwScrolledWindow(frTab2)
@@ -428,12 +459,20 @@ anomaliesCalcPanelCmd <- function(){
 		minYear <- tclVar(GeneralParameters$climato$minyear)
 		dayWin <- tclVar(GeneralParameters$climato$window)
 
-		stateClim <- if(GeneralParameters$climato$clim.exist) 'normal' else 'disabled'
-		stateBaseP <- if(GeneralParameters$climato$clim.exist) 'disabled' else 'normal'
-		statedayW <- if(GeneralParameters$intstep == "daily" & 
-						!GeneralParameters$climato$clim.exist) "normal" else "disabled"
+		if(!GeneralParameters$outdir$update){
+			stateClim.Ex <- 'normal'
+			stateClim <- if(GeneralParameters$climato$clim.exist) 'normal' else 'disabled'
+			stateBaseP <- if(GeneralParameters$climato$clim.exist) 'disabled' else 'normal'
+			statedayW <- if(GeneralParameters$intstep == "daily" & 
+							!GeneralParameters$climato$clim.exist) "normal" else "disabled"
+		}else{
+			stateClim.Ex <- 'disabled'
+			stateClim <- 'disabled'
+			stateBaseP <- 'disabled'
+			statedayW <- 'disabled'
+		}
 
-		chk.climIdx <- tkcheckbutton(frameBaseP, variable = climDataExist, text = "Climatologies data already computed", anchor = 'w', justify = 'left')
+		chk.climIdx <- tkcheckbutton(frameBaseP, variable = climDataExist, text = "Climatologies data already computed", anchor = 'w', justify = 'left', state = stateClim.Ex)
 		en.climIdx <- tkentry(frameBaseP, textvariable = file.ClimIndex, width = largeur2, state = stateClim)
 		bt.climIdx <- tkbutton(frameBaseP, text = "...", state = stateClim)
 
@@ -497,15 +536,24 @@ anomaliesCalcPanelCmd <- function(){
 		#######
 
 		tkbind(chk.climIdx, "<Button-1>", function(){
-			stateClim <- if(tclvalue(climDataExist) == '1') 'disabled' else 'normal'
+			if(tclvalue(updateAnom) == '0'){
+				stateClim <- if(tclvalue(climDataExist) == '1') 'disabled' else 'normal'
+				stateBaseP <- if(tclvalue(climDataExist) == '1') 'normal' else 'disabled'
+				statedayW <- if(str_trim(tclvalue(timeSteps)) == 'Daily data' &
+								tclvalue(climDataExist) == '1') 'normal' else 'disabled'
+			}else{
+				stateClim <- 'disabled'
+				stateBaseP <- 'disabled'
+				statedayW <- 'disabled'
+			}
+
 			tkconfigure(en.climIdx, state = stateClim)
 			tkconfigure(bt.climIdx, state = stateClim)
-			stateBaseP <- if(tclvalue(climDataExist) == '1') 'normal' else 'disabled'
+
 			tkconfigure(en.sYear, state = stateBaseP)
 			tkconfigure(en.eYear, state = stateBaseP)
 			tkconfigure(en.minYear, state = stateBaseP)
-			statedayW <- if(str_trim(tclvalue(timeSteps)) == 'Daily data' &
-							tclvalue(climDataExist) == '1') 'normal' else 'disabled'
+
 			tkconfigure(en.daywin, state = statedayW)
 		})
 
@@ -516,8 +564,10 @@ anomaliesCalcPanelCmd <- function(){
 		AnomType <- c("Difference", "Percentage", "Standardized")
 		anomaly <- tclVar(GeneralParameters$anomaly)
 
+		stateAnomC <- if(!GeneralParameters$outdir$update) 'normal' else 'disabled'
+
 		txt.anomaly <- tklabel(frameAnom, text = "Anomaly",  anchor = 'e', justify = 'right')
-		cb.anomaly <- ttkcombobox(frameAnom, values = AnomType, textvariable = anomaly, width = largeur3)
+		cb.anomaly <- ttkcombobox(frameAnom, values = AnomType, textvariable = anomaly, width = largeur3, state = stateAnomC)
 
 		tkgrid(txt.anomaly, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(cb.anomaly, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -582,7 +632,29 @@ anomaliesCalcPanelCmd <- function(){
 
 			assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
 
+			tkconfigure(main.win, cursor = 'watch')
+			InsertMessagesTxt(main.txt.out, "Calculate anomaly ......")
 
+			ret <- tryCatch(
+				anomaliesCalcProcs(GeneralParameters),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e),
+				finally = tkconfigure(main.win, cursor = '')
+			)
+
+			msg0 <- "Anomaly calculation finished successfully"
+			msg1 <- "Anomaly calculation failed"
+
+			if(!is.null(ret)){
+				if(ret == 0){
+					InsertMessagesTxt(main.txt.out, msg0)
+
+					###################
+
+					# load.PICSA.Data()
+
+				}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
+			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 		})
 
 		############################################

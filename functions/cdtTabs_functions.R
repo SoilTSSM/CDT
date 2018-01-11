@@ -67,6 +67,24 @@ infoTabs <- function(parent){
 	return(id.tabs+1)
 }
 
+
+########################################################################
+
+Display_data.frame_Table <- function(parent, data.df, title){
+	onglet <- addNewTab(parent, title)
+	dtab <- tclArrayVar(data.df)
+	table1 <- displayTable(onglet[[2]], tclArray = dtab, colwidth = 10)
+	return(list(onglet, table1))
+}
+
+########################################################################
+DisplayHomInfo <- function(parent, homInfo, title, colwidth = '24'){
+	onglet <- addNewTab(parent, tab.title = title)
+	dtab <- tclArrayVar(homInfo)
+	table1 <- displayTable(onglet[[2]], tclArray = dtab, colwidth = colwidth)
+	return(list(onglet, table1))
+}
+
 ########################################################################
 #display array in Onglet
 
@@ -120,7 +138,6 @@ displayConsOutputTabs <- function(parent, out2disp, title, rhtests = FALSE){ #tk
 	return(onglet)
 }
 
-
 ########################################################################
 
 DisplayQcHom <- function(parent, outqchom, title){
@@ -129,14 +146,6 @@ DisplayQcHom <- function(parent, outqchom, title){
 	col <- if(ReturnExecResults$action == 'homog' | GeneralParameters$action == "rhtests") '15' else '10'
 	table1 <- displayTable(onglet[[2]], tclArray = dtab, colwidth = col)
 	return(list(onglet, table1, outqchom[-1]))
-}
-
-########################################################################
-DisplayHomInfo <- function(parent, homInfo, title, colwidth = '24'){
-	onglet <- addNewTab(parent, tab.title = title)
-	dtab <- tclArrayVar(homInfo)
-	table1 <- displayTable(onglet[[2]], tclArray = dtab, colwidth = colwidth)
-	return(list(onglet, table1))
 }
 
 ########################################################################
@@ -156,7 +165,8 @@ CloseNotebookTab <- function(index){
 		return(NULL)
 	}else{
 		arrTypes <- c("arr", "arrhom", "arrRHtest", "arrqc", "arrzc", "arrInterp",
-						"homInfo", "StnInfo", "arrValid", "arrAssess")
+						"homInfo", "StnInfo", "arrValid", "arrAssess",
+						"arrSummary")
 		if(AllOpenTabType[[tabid]]%in%arrTypes){
 			tkdestroy(AllOpenTabData[[tabid]][[1]][[1]])
 		}else if(AllOpenTabType[[tabid]] == "ctxt"){
@@ -295,6 +305,15 @@ SaveNotebookTabArray <- function(parent){
 			dat2sav <- tclArray2dataframe(Objarray)
 			writeFiles(dat2sav, f2save)
 			tkconfigure(main.win, cursor = '')
+		}else if(AllOpenTabType[[tabid]] == "arrSummary"){
+			filetypes  <-  "{{CSV Files} {.csv .CSV}} {{Text Files} {.txt .TXT}} {{All files} *}"
+			if (Sys.info()["sysname"] == "Windows"){
+				f2save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "",
+									filetypes = filetypes, defaultextension = TRUE))
+			}else f2save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
+
+			summary.df <- SummaryData.Get.Table()
+			writeFiles(as.matrix(summary.df), f2save, col.names = TRUE)
 		}else return(NULL)
 	}else return(NULL)
 }

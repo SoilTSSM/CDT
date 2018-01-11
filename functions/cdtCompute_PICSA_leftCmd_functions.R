@@ -493,7 +493,6 @@ PICSACalcPanelCmd <- function(){
 
 				load.PICSA.Data()
 			}
-
 		})
 
 		tkgrid(chk.PICSAIdx, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)

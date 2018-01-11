@@ -361,8 +361,7 @@ PICSA.plot.TSGraph <- function(){
 			InsertMessagesTxt(main.txt.out, "Coordinates outside of data range", format = TRUE)
 			return(NULL)
 		}
-		ixy0 <- ilo + length(xlon) * (ila-1)
-		ixy <- cdtdataset$colInfo$id[ixy0]
+		ixy <- ilo + length(xlon) * (ila-1)
 
 		if(tclvalue(EnvPICSAplot$graph$varTSp) == "From Maps"){
 			don <- readCdtDatasetChunk.locations(ixy, cdtdataset$fileInfo, cdtdataset, chunkDir = tsdata.dir, do.par = FALSE)

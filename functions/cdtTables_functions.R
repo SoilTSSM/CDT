@@ -90,11 +90,11 @@ assign("[<-.tclArrayVar", function(object, i, j = NULL, value) {
 
 displayTable <- function(parent, tclArray = NULL, colwidth = "10"){
 	if(!is.null(tclArray)){
-		for(j in (tclArray$ncol+1):(tclArray$ncol+20)) tclArray[0, j] <- paste('X', j, sep = '')
+		for(j in (tclArray$ncol+1):(tclArray$ncol+20)) tclArray[0, j] <- paste0('X', j)
 		for(i in (tclArray$nrow+1):(tclArray$nrow+50)) tclArray[i, 0] <- i
 	}else{
 		tclArray <- tclArrayVar()
-		for(j in 1:40) tclArray[0, j] <- paste('X', j, sep = '')
+		for(j in 1:40) tclArray[0, j] <- paste0('X', j)
 		for(i in 1:100) tclArray[i, 0] <- i
 	}
 
@@ -130,13 +130,13 @@ tclArray2dataframe0 <- function(object){
 	ncol <- as.numeric(tclvalue(tkindex(object[[1]], 'end', 'col')))
 	nrow <- as.numeric(tclvalue(tkindex(object[[1]], 'end', 'row')))
 	Rarray <- ls(object[[2]]$env)
-	rownom <- unlist(lapply(paste(Rarray, "(", 1:nrow, ",", 0, ")", sep = ""), function(x) tclvalue(x)))
-	colnom <- unlist(lapply(paste(Rarray, "(", 0, ",", 1:ncol, ")", sep = ""), function(x) tclvalue(x)))
+	rownom <- unlist(lapply(paste0(Rarray, "(", 1:nrow, ",", 0, ")"), function(x) tclvalue(x)))
+	colnom <- unlist(lapply(paste0(Rarray, "(", 0, ",", 1:ncol, ")"), function(x) tclvalue(x)))
 	colnames <- colnom[-grep('^X[[:digit:]]+$', colnom)]
 	ncolnames <- length(colnames)
 
 	grid.array <- expand.grid(1:nrow, 1:ncol)
-	amat.array <- paste(Rarray, "(", grid.array[, 1], ",", grid.array[, 2], ")", sep = "")
+	amat.array <- paste0(Rarray, "(", grid.array[, 1], ",", grid.array[, 2], ")")
 	exist.array <- unlist(lapply(paste("info", "exists", amat.array, sep = " "), function(x) ifelse(tclvalue(.Tcl(x)) == "1", TRUE, FALSE)))
 	amat.array <- amat.array[exist.array]
 	grid.array <- grid.array[exist.array, ]

@@ -126,7 +126,7 @@ climatologiesCalcProcs <- function(GeneralParameters){
 			return(NULL)
 		}
 		if(freqData != don$TimeStep){
-			InsertMessagesTxt(main.txt.out, paste("Precip dataset is not a", freqData, "data"), format = TRUE)
+			InsertMessagesTxt(main.txt.out, paste("The dataset is not a", freqData, "data"), format = TRUE)
 			return(NULL)
 		}
 
@@ -205,7 +205,11 @@ climatologiesCalcProcs <- function(GeneralParameters){
 			don.data <- don.data[iyear, , drop = FALSE]
 
 			dat.clim <- lapply(seq_along(index$id), function(j){
-				if(Tstep.miss[j]) return(rep(NA, ncol(don.data)))
+				if(Tstep.miss[jj]){
+					tmp <- rep(NA, ncol(don.data))
+					 return(list(moy = tmp, sds = tmp))
+				}
+
 				xx <- don.data[index$index[[j]], , drop = FALSE]
 				ina <- (colSums(!is.na(xx))/div) <  minyear
 				moy <- colMeans(xx, na.rm = TRUE)

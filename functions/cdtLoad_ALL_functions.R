@@ -248,6 +248,7 @@ source(file.path(apps.dir, 'functions', 'climatoCalculate_Procs_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'climatoAnomalies_leftCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'climatoAnomalies_Procs_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'cdtCompute_Onset_leftCmd_functions.R'))
@@ -263,11 +264,17 @@ source(file.path(apps.dir, 'functions', 'cdtCompute_SeasonLength_Procs_functions
 
 #####
 source(file.path(apps.dir, 'functions', 'dailyRainfallAnalysis_leftCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'dailyRainfallAnalysis_Procs_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'cdtCompute_PICSA_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtCompute_PICSA_Procs_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtCompute_PICSA_displayPLOT_functions.R'))
+
+#####
+source(file.path(apps.dir, 'functions', 'cdtCompute_Summary_leftCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_Summary_Procs_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_Summary_displayPLOT_functions.R'))
 
 #####
 #
