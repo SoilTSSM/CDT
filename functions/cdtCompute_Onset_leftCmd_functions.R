@@ -338,6 +338,20 @@ OnsetCalcPanelCmd <- function(){
 				tkconfigure(cb.en.INEtp, state = stateETP)
 				tkconfigure(bt.INEtp, state = stateETP)
 			})
+
+			#######
+			tkbind(cb.mthd, "<<ComboboxSelected>>", function(){
+				tclvalue(txt.method) <- switch(str_trim(tclvalue(onset.method)),
+												"1" = "Total rainfall",
+												"2" = "Fraction of evapotranspiration",
+												"3" = "Minimum number of rainy days",
+												"4" = "Dry spell lengths",
+												"5" = "Number of rainy days and spell lengths")
+
+				stateETP <- if(str_trim(tclvalue(onset.method)) == '2') 'normal' else 'disabled'
+				tkconfigure(cb.en.INEtp, state = stateETP)
+				tkconfigure(bt.INEtp, state = stateETP)
+			})
 		})
 
 		############################################
