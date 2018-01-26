@@ -73,7 +73,7 @@ infoTabs <- function(parent){
 Display_data.frame_Table <- function(parent, data.df, title){
 	onglet <- addNewTab(parent, title)
 	dtab <- tclArrayVar(data.df)
-	table1 <- displayTable(onglet[[2]], tclArray = dtab, colwidth = 10)
+	table1 <- displayTable(onglet[[2]], tclArray = dtab, colwidth = 8)
 	return(list(onglet, table1))
 }
 

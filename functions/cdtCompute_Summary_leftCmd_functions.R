@@ -8,8 +8,8 @@ summariesDataPanelCmd <- function(){
 		largeur1 <- as.integer(w.scale(29)/sfont0)
 		largeur2 <- as.integer(w.scale(31)/sfont0)
 		largeur3 <- 20
-		# largeur4 <- largeur1-5
-		# largeur5 <- 30
+		largeur4 <- 30
+		largeur5 <- 22
 		largeur6 <- 22
 	}else{
 		wscrlwin <- w.scale(27)
@@ -18,8 +18,8 @@ summariesDataPanelCmd <- function(){
 		largeur1 <- as.integer(w.scale(22)/sfont0)
 		largeur2 <- as.integer(w.scale(23)/sfont0)
 		largeur3 <- 15
-		# largeur4 <- largeur1
-		# largeur5 <- 22
+		largeur4 <- 22
+		largeur5 <- 14
 		largeur6 <- 14
 	}
 
@@ -265,7 +265,7 @@ summariesDataPanelCmd <- function(){
 
 			GeneralParameters$outdir <- str_trim(tclvalue(outAnom))
 
-			assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
+			# assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
 
 			tkconfigure(main.win, cursor = 'watch')
 			InsertMessagesTxt(main.txt.out, "Summarizing data ......")
@@ -404,13 +404,102 @@ summariesDataPanelCmd <- function(){
 
 		frameSumGraph <- ttklabelframe(subfr2, text = "Summary Graph", relief = 'groove')
 
+		mois <- c(format(ISOdate(2014, 1:12, 1), "%b"), "ALL")
+		EnvSummaryDataplot$plotType <- tclVar("Boxplot")
+		EnvSummaryDataplot$plotMois <- tclVar(mois[1])
 
+		cb.SumGraph.Type <- ttkcombobox(frameSumGraph, values = c("Boxplot", "Histogram"), textvariable = EnvSummaryDataplot$plotType, width = largeur4)
+		bt.SumGraph.Plot <- ttkbutton(frameSumGraph, text = "PLOT")
+		cb.SumGraph.Mois <- ttkcombobox(frameSumGraph, values = mois, textvariable = EnvSummaryDataplot$plotMois, width = largeur5, state = "disabled")
+		bt.SumGraph.Opt <- ttkbutton(frameSumGraph, text = "Options")
+
+		EnvSummaryDataplot$notebookTab.Graph <- NULL
+		tkconfigure(bt.SumGraph.Plot, command = function(){
+			if(!is.null(EnvSummaryDataplot$output)){
+				imgContainer <- SummaryData.Display.Graph(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSummaryDataplot$notebookTab.Graph, AllOpenTabType, AllOpenTabData)
+				EnvSummaryDataplot$notebookTab.Graph <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		###################
+		tkgrid(cb.SumGraph.Type, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.SumGraph.Plot, row = 0, column = 4, sticky = '', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(cb.SumGraph.Mois, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.SumGraph.Opt, row = 1, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+		tkbind(cb.SumGraph.Type, "<<ComboboxSelected>>", function(){
+			stateMois <- if(str_trim(tclvalue(EnvSummaryDataplot$plotType)) == "Boxplot") "disabled" else "normal"
+			tkconfigure(cb.SumGraph.Mois, state = stateMois)
+		})
+
+		##############################################
+
+		frameSHP <- ttklabelframe(subfr2, text = "Boundaries", relief = 'groove')
+
+		EnvSummaryDataplot$shp$add.shp <- tclVar(0)
+		file.plotShp <- tclVar()
+		stateSHP <- "disabled"
+
+		chk.addshp <- tkcheckbutton(frameSHP, variable = EnvSummaryDataplot$shp$add.shp, text = "Add boundaries to Map", anchor = 'w', justify = 'left')
+		bt.addshpOpt <- ttkbutton(frameSHP, text = "Options", state = stateSHP)
+		cb.addshp <- ttkcombobox(frameSHP, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur1, state = stateSHP)
+		bt.addshp <- tkbutton(frameSHP, text = "...", state = stateSHP)
+
+		########
+		tkconfigure(bt.addshp, command = function(){
+			shp.opfiles <- getOpenShp(main.win, all.opfiles)
+			if(!is.null(shp.opfiles)){
+				nopf <- length(AllOpenFilesType)
+				AllOpenFilesType[[nopf+1]] <<- 'shp'
+				AllOpenFilesData[[nopf+1]] <<- shp.opfiles
+				tclvalue(file.plotShp) <- AllOpenFilesData[[nopf+1]][[1]]
+				listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
+
+				# tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
+				tkconfigure(cb.addshp, values = unlist(listOpenFiles), textvariable = file.plotShp)
+
+				shpofile <- getShpOpenData(file.plotShp)
+				if(is.null(shpofile)) EnvSummaryDataplot$shp$ocrds <- NULL
+				EnvSummaryDataplot$shp$ocrds <- getBoundaries(shpofile[[2]])
+			}else return(NULL)
+		})
+
+		########
+		EnvSummaryDataplot$SHPOp <- list(col = "black", lwd = 1.5)
+
+		tkconfigure(bt.addshpOpt, command = function(){
+			EnvSummaryDataplot$SHPOp <- climatoAnalysis.GraphOptions.LineSHP(main.win, EnvSummaryDataplot$SHPOp)
+		})
+
+		########
+		tkgrid(chk.addshp, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1)
+		tkgrid(bt.addshpOpt, row = 0, column = 6, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1)
+		tkgrid(cb.addshp, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 7, padx = 1, pady = 1)
+		tkgrid(bt.addshp, row = 1, column = 7, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1)
+
+		#################
+		tkbind(cb.addshp, "<<ComboboxSelected>>", function(){
+			shpofile <- getShpOpenData(file.plotShp)
+			if(is.null(shpofile)) EnvSummaryDataplot$shp$ocrds <- NULL
+			EnvSummaryDataplot$shp$ocrds <- getBoundaries(shpofile[[2]])
+		})
+
+		tkbind(chk.addshp, "<Button-1>", function(){
+			stateSHP <- if(tclvalue(EnvSummaryDataplot$shp$add.shp) == "1") "disabled" else "normal"
+			tkconfigure(cb.addshp, state = stateSHP)
+			tkconfigure(bt.addshp, state = stateSHP)
+			tkconfigure(bt.addshpOpt, state = stateSHP)
+		})
 
 		##############################################
 
 		tkgrid(frameSumData, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(bt.SumTable, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
 		tkgrid(frameSumGraph, row = 2, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		tkgrid(frameSHP, row = 3, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#######################################################################################################
 

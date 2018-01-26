@@ -2,9 +2,13 @@ ExtractDataProcs <- function(GeneralParameters){
 	start.year <- GeneralParameters$date.range$start.year
 	start.mon <- GeneralParameters$date.range$start.mon
 	start.day <- GeneralParameters$date.range$start.day
+	start.hour <- GeneralParameters$date.range$start.hour
+
 	end.year <- GeneralParameters$date.range$end.year
 	end.mon <- GeneralParameters$date.range$end.mon
 	end.day <- GeneralParameters$date.range$end.day
+	end.hour <- GeneralParameters$date.range$end.hour
+
 	startMonth <- GeneralParameters$date.range$start.month
 	endMonth <- GeneralParameters$date.range$end.month
 
@@ -18,13 +22,18 @@ ExtractDataProcs <- function(GeneralParameters){
 	####
 	outputDIR <- GeneralParameters$out.data$outdir
 	if(outputDIR == "" | outputDIR == "NA" | is.na(outputDIR)){
-		if(GeneralParameters$out.data$format == 'ncdf') msg <- "No directory to save the extracted data"
-		else msg <- "No File to save the extracted data"
+		msg <- if(GeneralParameters$out.data$format == 'ncdf') "No directory to save the extracted data" else "No File to save the extracted data"
 		InsertMessagesTxt(main.txt.out, msg, format = TRUE)
 		return(NULL)
 	}
 
-	if(GeneralParameters$in.series %in% c("daily", "dekadal")){
+	if(GeneralParameters$in.series == "hourly"){
+		if(is.na(start.year) | is.na(start.mon) | is.na(start.day) | is.na(start.hour) |
+			is.na(end.year) | is.na(end.mon) | is.na(end.day) | is.na(end.hour)){
+			InsertMessagesTxt(main.txt.out, "Invalid date for time series extraction", format = TRUE)
+			return(NULL)
+		}
+	}else if(GeneralParameters$in.series %in% c("daily", "pentad", "dekadal")){
 		if(is.na(start.year) | is.na(start.mon) | is.na(start.day) |
 			is.na(end.year) | is.na(end.mon) | is.na(end.day)){
 			InsertMessagesTxt(main.txt.out, "Invalid date for time series extraction", format = TRUE)
@@ -37,8 +46,15 @@ ExtractDataProcs <- function(GeneralParameters){
 		}
 	}
 
+	if(GeneralParameters$in.series == "pentad"){
+		if(GeneralParameters$date.range$start.day > 6 | GeneralParameters$date.range$end.day > 6){
+			InsertMessagesTxt(main.txt.out, "Invalid pentad date", format = TRUE)
+			return(NULL)
+		}
+	}
+
 	if(GeneralParameters$in.series == "dekadal"){
-		if(GeneralParameters$date.range$start.day > 3 | GeneralParameters$date.range$end.day >3){
+		if(GeneralParameters$date.range$start.day > 3 | GeneralParameters$date.range$end.day > 3){
 			InsertMessagesTxt(main.txt.out, "Invalid dekad date", format = TRUE)
 			return(NULL)
 		}
@@ -108,7 +124,12 @@ ExtractDataProcs <- function(GeneralParameters){
 	}
 
 	####
-	if(GeneralParameters$in.series %in% c('daily', 'dekadal')){
+	if(GeneralParameters$in.series == 'hourly'){
+		daty1 <- try(strptime(paste(start.year, start.mon, start.day, start.hour, sep = '-'), "%Y-%m-%d-%H"), silent = TRUE)
+		daty2 <- try(strptime(paste(end.year, end.mon, end.day, end.hour, sep = '-'), "%Y-%m-%d-%H"), silent = TRUE)
+	}
+
+	if(GeneralParameters$in.series %in% c('daily', 'pentad', 'dekadal')){
 		daty1 <- try(as.Date(paste(start.year, start.mon, start.day, sep = '-')), silent = TRUE)
 		daty2 <- try(as.Date(paste(end.year, end.mon, end.day, sep = '-')), silent = TRUE)
 	}
@@ -124,15 +145,28 @@ ExtractDataProcs <- function(GeneralParameters){
 	}
 
 	####
+	if(GeneralParameters$in.series == 'hourly'){
+		dates <- format(seq(daty1, daty2, 'hour'), '%Y%m%d%H')
+		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6),
+																substr(dates, 7, 8), substr(dates, 9, 10))
+	}
+
 	if(GeneralParameters$in.series == 'daily'){
 		dates <- format(seq(daty1, daty2, 'day'), '%Y%m%d')
 		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 8))
 	}
 
+	if(GeneralParameters$in.series == 'pentad'){
+		dates <- seq(daty1, daty2, 'day')
+		dates <- paste0(format(dates[which(as.numeric(format(dates, '%d')) <= 6)], '%Y%m'),
+					as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 6)], '%d')))
+		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 7))
+	}
+
 	if(GeneralParameters$in.series == 'dekadal'){
 		dates <- seq(daty1, daty2, 'day')
-		dates <- paste(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%Y%m'),
-					as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%d')), sep = '')
+		dates <- paste0(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%Y%m'),
+					as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%d')))
 		ncfiles <- sprintf(GeneralParameters$ncdf.file$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 7))
 	}
 
@@ -496,23 +530,41 @@ ExtractDataProcs <- function(GeneralParameters){
 	if(GeneralParameters$in.series == 'monthly'){
 		dtmp <- range(as.Date(paste0(cdtdata$dates, '01'), '%Y%m%d'), na.rm = TRUE)
 		pastemps <- 'month'
+	}else if(GeneralParameters$in.series == 'hourly'){
+		dtmp <- range(strptime(cdtdata$dates, '%Y%m%d%H'), na.rm = TRUE)
+		pastemps <- 'hour'
 	}else{
 		dtmp <- range(as.Date(cdtdata$dates, '%Y%m%d'), na.rm = TRUE)
 		pastemps <- 'day'
 	}
 	cdates <- seq(dtmp[1], dtmp[2], pastemps)
-	ystart <- seq(as.Date(paste0(format(cdates[1], '%Y'), '-1-1')), cdates[1], pastemps)
-	ystart <- ystart[-length(ystart)]
-	yend <- seq(cdates[length(cdates)], as.Date(paste0(format(cdates[length(cdates)], '%Y'), '-12-31')), pastemps)
-	yend <- yend[-1]
-	if(length(ystart) > 0) cdates <- c(ystart, cdates)
-	if(length(yend) > 0) cdates <- c(cdates, yend)
-	if(GeneralParameters$in.series == 'daily') cdates <- format(cdates, "%Y%m%d")
-	if(GeneralParameters$in.series == 'dekadal'){
-		dek <- as.numeric(format(cdates, '%d'))
-		cdates <- paste0(format(cdates, "%Y%m")[dek <= 3], dek[dek <= 3])
+
+	if(GeneralParameters$in.series != 'hourly'){
+		ystart <- seq(as.Date(paste0(format(cdates[1], '%Y'), '-1-1')), cdates[1], pastemps)
+		ystart <- ystart[-length(ystart)]
+		yend <- seq(cdates[length(cdates)], as.Date(paste0(format(cdates[length(cdates)], '%Y'), '-12-31')), pastemps)
+		yend <- yend[-1]
+		if(length(ystart) > 0) cdates <- c(ystart, cdates)
+		if(length(yend) > 0) cdates <- c(cdates, yend)
+		if(GeneralParameters$in.series == 'daily') cdates <- format(cdates, "%Y%m%d")
+		if(GeneralParameters$in.series == 'pentad'){
+			dek <- as.numeric(format(cdates, '%d'))
+			cdates <- paste0(format(cdates, "%Y%m")[dek <= 6], dek[dek <= 6])
+		}
+		if(GeneralParameters$in.series == 'dekadal'){
+			dek <- as.numeric(format(cdates, '%d'))
+			cdates <- paste0(format(cdates, "%Y%m")[dek <= 3], dek[dek <= 3])
+		}
+		if(GeneralParameters$in.series == 'monthly') cdates <- format(cdates, "%Y%m")
+	}else{
+		ystart <- seq(strptime(paste0(format(cdates[1], '%Y'), '-1-1-0'), '%Y-%m-%d-%H'), cdates[1], pastemps)
+		ystart <- ystart[-length(ystart)]
+		yend <- seq(cdates[length(cdates)], strptime(paste0(format(cdates[length(cdates)], '%Y'), '-12-31-23'), '%Y-%m-%d-%H'), pastemps)
+		yend <- yend[-1]
+		if(length(ystart) > 0) cdates <- c(ystart, cdates)
+		if(length(yend) > 0) cdates <- c(cdates, yend)
+		 cdates <- format(cdates, "%Y%m%d%H")
 	}
-	if(GeneralParameters$in.series == 'monthly') cdates <- format(cdates, "%Y%m")
 
 	##################
 
@@ -533,11 +585,19 @@ ExtractDataProcs <- function(GeneralParameters){
 		indx <- xrow
 	}else{
 		InsertMessagesTxt(main.txt.out, 'Aggregate data ...')
-		if(GeneralParameters$out.series$out.series == "dekadal"){
+		if(GeneralParameters$out.series$out.series == "daily"){
+			indx <- tapply(xrow, substr(xdaty, 1, 8), identity)
+			odaty <- names(indx)
+			len.data <- sapply(indx, length)
+		}else if(GeneralParameters$out.series$out.series == "pentad"){
 			jour <- as.numeric(substr(xdaty, 7, 8))
-			jour[jour <= 10] <- 1
-			jour[jour > 10 & jour <= 20] <- 2
-			jour[jour > 20] <- 3
+			jour <- findInterval(jour, c(1, 5, 10, 15, 20, 25, 31), rightmost.closed = TRUE, left.open = TRUE)
+			indx <- tapply(xrow, paste0(substr(xdaty, 1, 6), jour), identity)
+			odaty <- names(indx)
+			len.data <- sapply(indx, length)
+		}else if(GeneralParameters$out.series$out.series == "dekadal"){
+			jour <- as.numeric(substr(xdaty, 7, 8))
+			jour <- findInterval(jour, c(1, 10, 20, 31), rightmost.closed = TRUE, left.open = TRUE)
 			indx <- tapply(xrow, paste0(substr(xdaty, 1, 6), jour), identity)
 			odaty <- names(indx)
 			len.data <- sapply(indx, length)
@@ -565,11 +625,17 @@ ExtractDataProcs <- function(GeneralParameters){
 				iex <- (rleMois$values[length(rleMois$lengths)] + (1:iex))%%12
 				iex[iex == 0] <- 12
 
+				if(GeneralParameters$in.series == 'hourly'){
+					nend <- mapply(function(an, mon) rev((28:31)[!is.na(as.Date(paste(an, mon, 28:31, sep = '-')))])[1],
+											rep(as.numeric(substr(finSeas[length(finSeas)], 1, 4)), length(iex)), iex)
+					nend <- sum(nend)*24
+				}
 				if(GeneralParameters$in.series == 'daily'){
 					nend <- mapply(function(an, mon) rev((28:31)[!is.na(as.Date(paste(an, mon, 28:31, sep = '-')))])[1],
 											rep(as.numeric(substr(finSeas[length(finSeas)], 1, 4)), length(iex)), iex)
 					nend <- sum(nend)
 				}
+				if(GeneralParameters$in.series == 'pentad') nend <- sum(length(iex))*6
 				if(GeneralParameters$in.series == 'dekadal') nend <- sum(length(iex))*3
 				if(GeneralParameters$in.series == 'monthly') nend <- sum(length(iex))
 
@@ -615,6 +681,10 @@ ExtractDataProcs <- function(GeneralParameters){
 		}else AggrData <- EnvExtractData$AggrData
 		InsertMessagesTxt(main.txt.out, 'Aggregating data finished')
 	}
+
+	#####################################
+	## no data
+	outIndex <- sapply(indx, function(x) isTRUE(all(is.na(x))))
 
 	#####################################
 	## Climatologies
@@ -682,10 +752,10 @@ ExtractDataProcs <- function(GeneralParameters){
 				climMAT <- AggrData[iyear, , drop = FALSE]
 				cdaty <- odaty[iyear]
 
-				if(GeneralParameters$out.series$out.series %in% c("dekadal", "monthly")){
-					if(GeneralParameters$out.series$out.series == "dekadal"){
-						idxc <- substr(cdaty, 5, 7)
-					}else idxc <- substr(cdaty, 5, 6)
+				if(GeneralParameters$out.series$out.series %in% c("pentad", "dekadal", "monthly")){
+					if(GeneralParameters$out.series$out.series == "monthly"){
+						idxc <- substr(cdaty, 5, 6)
+					}else idxc <- substr(cdaty, 5, 7)
 
 					idxclim <- tapply(seq(length(cdaty)), idxc, identity)
 					climOUT <- lapply(idxclim, function(x){
@@ -743,13 +813,13 @@ ExtractDataProcs <- function(GeneralParameters){
 				outMAT <- do.call(rbind, climOUT)
 				outMAT <- outMAT[idxc, , drop = FALSE]
 			}else{
-				if(GeneralParameters$out.series$out.series %in% c("dekadal", "monthly")){
-					if(GeneralParameters$out.series$out.series == "dekadal"){
-						idtclim <- substr(climdates, 11, 13)
-						idtseries <- substr(odaty, 5, 7)
-					}else{
+				if(GeneralParameters$out.series$out.series %in% c("pentad", "dekadal", "monthly")){
+					if(GeneralParameters$out.series$out.series == "montly"){
 						idtclim <- substr(climdates, 11, 12)
 						idtseries <- substr(odaty, 5, 6)
+					}else{
+						idtclim <- substr(climdates, 11, 13)
+						idtseries <- substr(odaty, 5, 7)
 					}
 
 					idxc <- match(idtseries, idtclim)
@@ -777,13 +847,13 @@ ExtractDataProcs <- function(GeneralParameters){
 				outMAT1 <- do.call(rbind, sdOUT)
 				outMAT1 <- outMAT1[idxc, , drop = FALSE]
 			}else{
-				if(GeneralParameters$out.series$out.series %in% c("dekadal", "monthly")){
-					if(GeneralParameters$out.series$out.series == "dekadal"){
-						idtclim <- substr(climdates, 11, 13)
-						idtseries <- substr(odaty, 5, 7)
-					}else{
+				if(GeneralParameters$out.series$out.series %in% c("pentad", "dekadal", "monthly")){
+					if(GeneralParameters$out.series$out.series == "monthly"){
 						idtclim <- substr(climdates, 11, 12)
 						idtseries <- substr(odaty, 5, 6)
+					}else{
+						idtclim <- substr(climdates, 11, 13)
+						idtseries <- substr(odaty, 5, 7)
 					}
 
 					idxc <- match(idtseries, idtclim)
@@ -808,35 +878,40 @@ ExtractDataProcs <- function(GeneralParameters){
 	## Write data
 	InsertMessagesTxt(main.txt.out, 'Writing data ...')
 
+	#####################################
+
 	if(GeneralParameters$out.data$format == "ncdf"){
 		if(GeneralParameters$type.series == 'rawts'){
 			if(GeneralParameters$in.series == GeneralParameters$out.series$out.series){
-				if(GeneralParameters$in.series == "daily" & GeneralParameters$aggr.series$aggr.fun == "count"){
+				name <- nc.name
+				units <- nc.units
+				longname <- nc.longname
+				prec <- nc.prec
+			}else{
+				if(GeneralParameters$in.series%in%c("hourly", "daily") & GeneralParameters$aggr.series$aggr.fun == "count"){
 					name <- 'number'
 					units <- 'count'
 					longname <- paste0("Number of (", paste(nc.name, GeneralParameters$aggr.series$opr.fun, GeneralParameters$aggr.series$opr.thres), ") from ", nc.longname)
 					prec <- "short"
 				}else{
+					if(GeneralParameters$out.series$out.series == "daily") outFormat <- "Daily"
+					if(GeneralParameters$out.series$out.series == "pentad") outFormat <- "Pentad"
+					if(GeneralParameters$out.series$out.series == "dekadal") outFormat <- "Dekadal"
+					if(GeneralParameters$out.series$out.series == "monthly") outFormat <- "Monthly"
+					if(GeneralParameters$out.series$out.series == "seasonal3") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
+					if(GeneralParameters$out.series$out.series == "seasonal6") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
+					if(GeneralParameters$out.series$out.series == "annual") outFormat <- paste("Annual", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
 					name <- nc.name
 					units <- nc.units
-					longname <- nc.longname
+					longname <- paste(outFormat, "from", nc.longname)
 					prec <- nc.prec
 				}
-			}else{
-				if(GeneralParameters$out.series$out.series == "dekadal") outFormat <- "Dekadal"
-				if(GeneralParameters$out.series$out.series == "monthly") outFormat <- "Monthly"
-				if(GeneralParameters$out.series$out.series == "seasonal3") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
-				if(GeneralParameters$out.series$out.series == "seasonal6") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
-				if(GeneralParameters$out.series$out.series == "annual") outFormat <- paste("Annual", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
-				name <- nc.name
-				units <- nc.units
-				longname <- paste(outFormat, "from", nc.longname)
-				prec <- nc.prec
 			}
 		}
 
 		if(GeneralParameters$type.series %in% c('climato', 'anom', 'stanom')){
 			if(GeneralParameters$out.series$out.series == "daily") outFormat <- "Daily"
+			if(GeneralParameters$out.series$out.series == "pentad") outFormat <- "Pentad"
 			if(GeneralParameters$out.series$out.series == "dekadal") outFormat <- "Dekadal"
 			if(GeneralParameters$out.series$out.series == "monthly") outFormat <- "Monthly"
 			if(GeneralParameters$out.series$out.series == "seasonal3") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
@@ -855,6 +930,7 @@ ExtractDataProcs <- function(GeneralParameters){
 
 		if(GeneralParameters$type.series == 'anom'){
 			if(GeneralParameters$out.series$out.series == "daily") outFormat <- "Daily"
+			if(GeneralParameters$out.series$out.series == "pentad") outFormat <- "Pentad"
 			if(GeneralParameters$out.series$out.series == "dekadal") outFormat <- "Dekadal"
 			if(GeneralParameters$out.series$out.series == "monthly") outFormat <- "Monthly"
 			if(GeneralParameters$out.series$out.series == "seasonal3") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
@@ -873,6 +949,7 @@ ExtractDataProcs <- function(GeneralParameters){
 
 		if(GeneralParameters$type.series == 'stanom'){
 			if(GeneralParameters$out.series$out.series == "daily") outFormat <- "Daily"
+			if(GeneralParameters$out.series$out.series == "pentad") outFormat <- "Pentad"
 			if(GeneralParameters$out.series$out.series == "dekadal") outFormat <- "Dekadal"
 			if(GeneralParameters$out.series$out.series == "monthly") outFormat <- "Monthly"
 			if(GeneralParameters$out.series$out.series == "seasonal3") outFormat <- paste("Seasonal", paste0(substr(odaty, 6, 7), "-", substr(odaty, 14, 15)))
@@ -900,6 +977,7 @@ ExtractDataProcs <- function(GeneralParameters){
 			outputDIR <- file.path(GeneralParameters$out.data$outdir, "Extracted_Data")
 			dir.create(outputDIR, showWarnings = FALSE, recursive = TRUE)
 			for(j in seq_along(odaty)){
+				if(outIndex[j]) next
 				xtmp <- AggrData[j, ]
 				xtmp <- xtmp[headinfo$z]
 				dim(xtmp) <- dim(headinfo$z)
@@ -948,6 +1026,7 @@ ExtractDataProcs <- function(GeneralParameters){
 				outputDIR <- file.path(GeneralParameters$out.data$outdir, odir)
 				dir.create(outputDIR, showWarnings = FALSE, recursive = TRUE)
 				for(j in seq_along(odaty)){
+					if(outIndex[j]) next
 					xtmp <- outMAT[j, ]
 					xtmp <- xtmp[headinfo$z]
 					dim(xtmp) <- dim(headinfo$z)
@@ -973,6 +1052,7 @@ ExtractDataProcs <- function(GeneralParameters){
 			outfile <- file.path(dirname(outputFile), paste0("TS_", basename(outputFile)))
 
 			ret <- lapply(seq_along(odaty), function(j){
+				if(outIndex[j]) return(NULL)
 				xtmp <- AggrData[j, ]
 				xtmp <- round(xtmp[headinfo$z], 3)
 				xtmp[is.na(xtmp)] <- -9999
@@ -1015,6 +1095,7 @@ ExtractDataProcs <- function(GeneralParameters){
 				outfile <- file.path(dirname(outputFile), paste0(odir, "_", basename(outputFile)))
 
 				ret <- lapply(seq_along(odaty), function(j){
+					if(outIndex[j]) return(NULL)
 					xtmp <- outMAT[j, ]
 					xtmp <- round(xtmp[headinfo$z], 3)
 					xtmp[is.na(xtmp)] <- -9999
@@ -1037,9 +1118,11 @@ ExtractDataProcs <- function(GeneralParameters){
 		if(GeneralParameters$type.series == 'rawts'){
 			outfile <- file.path(dirname(outputFile), paste0("TS_", basename(outputFile)))
 			xtmp <- round(AggrData, 3)
+			xtmp <- xtmp[!outIndex, , drop = FALSE]
+			odaty1 <- odaty[!outIndex]
 			xtmp[is.na(xtmp)] <- -9999
 			xtmp <- rbind(xhead, xtmp)
-			xtmp <- cbind(c(caption, odaty), xtmp)
+			xtmp <- cbind(c(caption, odaty1), xtmp)
 			writeFiles(xtmp, outfile)
 		}else{
 			if(GeneralParameters$type.series %in% c('climato', 'anom', 'stanom')){
@@ -1066,9 +1149,11 @@ ExtractDataProcs <- function(GeneralParameters){
 				odir <- if(GeneralParameters$type.series == 'anom') "Anomaly" else "STDAnomaly"
 				outfile <- file.path(dirname(outputFile), paste0(odir, "_", basename(outputFile)))
 				xtmp <- round(outMAT, 3)
+				xtmp <- xtmp[!outIndex, , drop = FALSE]
+				odaty1 <- odaty[!outIndex]
 				xtmp[is.na(xtmp)] <- -9999
 				xtmp <- rbind(xhead, xtmp)
-				xtmp <- cbind(c(caption, odaty), xtmp)
+				xtmp <- cbind(c(caption, odaty1), xtmp)
 				writeFiles(xtmp, outfile)
 			}
 		}

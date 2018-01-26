@@ -6,10 +6,8 @@ SummaryData.Initial.Map <- function(){
 	kolor <- tim.colors(length(breaks)-1)
 
 	### shape files
-	# shpf <- EnvPICSAplot$shp
-	# ocrds <- if(tclvalue(shpf$add.shp) == "1" & !is.null(shpf$ocrds)) shpf$ocrds else matrix(NA, 1, 2)
-
-	ocrds <- matrix(NA, 1, 2)
+	shpf <- EnvSummaryDataplot$shp
+	ocrds <- if(tclvalue(shpf$add.shp) == "1" & !is.null(shpf$ocrds)) shpf$ocrds else matrix(NA, 1, 2)
 
 	#################
 
@@ -20,7 +18,6 @@ SummaryData.Initial.Map <- function(){
 		xlim <- range(range(don$x, na.rm = TRUE), range(ocrds[, 1], na.rm = TRUE))
 		ylim <- range(range(don$y, na.rm = TRUE), range(ocrds[, 2], na.rm = TRUE))
 	}
-
 
 	opar <- par(mar = c(4, 4, 2.5, 2.5))
 	plot(1, xlim = xlim, ylim = ylim, xlab = "", ylab = "", type = "n", xaxt = 'n', yaxt = 'n')
@@ -33,7 +30,7 @@ SummaryData.Initial.Map <- function(){
 
 	abline(h = axTicks(2), v = axTicks(1), col = "lightgray", lty = 3)
 
-	lines(ocrds[, 1], ocrds[, 2], lwd = 2, col = "black")
+	lines(ocrds[, 1], ocrds[, 2], lwd = EnvSummaryDataplot$SHPOp$lwd, col = EnvSummaryDataplot$SHPOp$col)
 
 	plt <- par("plt")
 	usr <- par("usr")
@@ -42,7 +39,88 @@ SummaryData.Initial.Map <- function(){
 }
 
 SummaryData.Plot.Graph <- function(){
+	if(EnvSummaryDataplot$output$params$data.type == "cdtstation"){
+		ixy <- which(EnvSummaryDataplot$output$data$id == str_trim(tclvalue(EnvSummaryDataplot$graph$stnIDTSp)))
+		if(length(ixy) == 0){
+			InsertMessagesTxt(main.txt.out, "Station not found", format = TRUE)
+			return(NULL)
+		}
+		stn <- EnvSummaryDataplot$output$data$id[ixy]
+		pts <- c(EnvSummaryDataplot$output$data$lon[ixy], EnvSummaryDataplot$output$data$lat[ixy])
+		don <- EnvSummaryDataplot$output$data$data[, ixy]
+	}else{
+		cdtdataset <- EnvSummaryDataplot$output$data
+		xlon <- cdtdataset$coords$mat$x
+		xlat <- cdtdataset$coords$mat$y
+		ilon <- as.numeric(str_trim(tclvalue(EnvSummaryDataplot$graph$lonLOC)))
+		ilat <- as.numeric(str_trim(tclvalue(EnvSummaryDataplot$graph$latLOC)))
 
+		iclo <- findInterval(ilon, xlon)
+		ilo <- iclo + (2 * ilon > xlon[iclo] + xlon[iclo+1])
+		icla <- findInterval(ilat, xlat)
+		ila <- icla + (2 * ilat > xlat[icla] + xlat[icla+1])
+
+		if(is.na(ilo) | is.na(ila)){
+			InsertMessagesTxt(main.txt.out, "Coordinates outside of data range", format = TRUE)
+			return(NULL)
+		}
+		ixy <- ilo + length(xlon) * (ila-1)
+
+		don <- readCdtDatasetChunk.locations(ixy, EnvSummaryDataplot$output$index.file, cdtdataset, do.par = FALSE)
+		pts <- don$coords
+		stn <- "Pixel"
+		don <- as.numeric(don$data[cdtdataset$dateInfo$index, 1])
+	}
+
+	index <- EnvSummaryDataplot$output$index
+	mois <- format(ISOdate(2014, 1:12, 1), "%b")
+
+	if(str_trim(tclvalue(EnvSummaryDataplot$plotType)) == "Boxplot"){
+		mdon <- lapply(seq_along(index), function(j){
+			data.frame(mois[as.numeric(names(index[j]))], don[index[[j]]])
+		})
+		ylim <- range(pretty(don))
+		mdon <- do.call(rbind, mdon)
+		names(mdon) <- c("group", "value")
+		don <- data.frame(group = "ALL", value = don)
+		don <- rbind(mdon, don)
+
+		xlab <- ''
+		ylab <- ''
+		title <- ''
+		plot(don$value, xlim = c(1, 13), ylim = ylim, type = 'n', xaxt = 'n', las = 2, xlab = xlab, ylab = ylab, main = title)
+		abline(h = axTicks(2), col = "lightgray", lty = "dotted", lwd = 0.8)
+
+		boxplot(value ~ group, data = don, add = TRUE, notch = FALSE,
+				col = "lightblue", medcol = "red", whiskcol = "blue",
+				staplecol = "blue", boxcol = "blue", outcol = 'blue', outbg = "lightblue",
+				outcex = 0.7, outpch = 21, yaxt = 'n', range = round(ylim[2]*0.25))
+	}else{
+		if(str_trim(tclvalue(EnvSummaryDataplot$plotMois)) != "ALL")
+			don <- don[index[[which(mois == str_trim(tclvalue(EnvSummaryDataplot$plotMois)))]]]
+		xlab <- ''
+		ylab <- 'Density'
+		title <- ''
+		hst <- hist(don, freq = FALSE, plot = FALSE)
+		dst <- density(don, bw = 1.0, na.rm = TRUE)
+		xhst <- range(hst$breaks)
+		yhst <- range(hst$density)
+		xdst <- range(dst$x)
+		ydst <- range(dst$y)
+		xlim <- c(min(xhst[1], xdst[1]), max(xhst[2], xdst[2]))
+		ylim <- c(min(yhst[1], ydst[1]), max(yhst[2], ydst[2]))
+		plot(1, xlim = xlim, ylim = ylim, type = 'n', xaxt = 'n', yaxt = 'n', xlab = xlab, ylab = ylab, main = title)
+		abline(v = axTicks(1), col = "lightgray", lty = "dotted", lwd = 0.8)
+		abline(h = axTicks(2), col = "lightgray", lty = "dotted", lwd = 0.8)
+		xTck <- axTicks(1)
+		xminor <- hst$breaks
+		xminor <- xminor[!xminor%in%xTck]
+		axis(1, at = axTicks(1))
+		axis(1, at = xminor, labels = NA, tcl = par("tcl")*0.5)
+		axis(2, at = axTicks(2), las = 2)
+		hist(don, freq = FALSE, add = TRUE, xlab = '', ylab = '', main = '', axes = FALSE, col = "lightblue", border = "blue")
+		lines(dst, col = "red", lwd = 1.5)
+	}
 }
 
 ##############################################################################
@@ -134,13 +212,13 @@ SummaryData.Display.Map <- function(parent){
 			}else plotTS <- FALSE
 		}
 
-		# if(plotTS){
-		# 	imgContainer <- SummaryData.Plot.Graph(tknotes)
-		# 	retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSummaryDataplot$notebookTab.Graph, AllOpenTabType, AllOpenTabData)
-		# 	EnvSummaryDataplot$notebookTab.Graph <- retNBTab$notebookTab
-		# 	AllOpenTabType <<- retNBTab$AllOpenTabType
-		# 	AllOpenTabData <<- retNBTab$AllOpenTabData
-		# }
+		if(plotTS){
+			imgContainer <- SummaryData.Display.Graph(tknotes)
+			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSummaryDataplot$notebookTab.Graph, AllOpenTabType, AllOpenTabData)
+			EnvSummaryDataplot$notebookTab.Graph <- retNBTab$notebookTab
+			AllOpenTabType <<- retNBTab$AllOpenTabType
+			AllOpenTabData <<- retNBTab$AllOpenTabData
+		}
 	})
 
 	tkbind(img, "<Enter>", function() tkconfigure(img, cursor = 'crosshair'))
@@ -149,6 +227,34 @@ SummaryData.Display.Map <- function(parent){
 	return(list(onglet, img))
 }
 
+###################
+
+SummaryData.Display.Graph <- function(parent){
+	plotIt <- function(){
+		SummaryData.Plot.Graph()
+	}
+
+	#########
+	onglet <- imageNotebookTab_open(parent, EnvSummaryDataplot$notebookTab.Graph, 'Summary-Plot', AllOpenTabType, AllOpenTabData)
+	hscale <- as.numeric(tclvalue(tkget(spinH)))
+	vscale <- as.numeric(tclvalue(tkget(spinV)))
+	hscrFrame <- as.integer(tclvalue(tkwinfo("height", panel.right)))
+	wscrFrame <- as.integer(tclvalue(tkwinfo("width", panel.right)))
+
+	scrollwin <- bwScrolledWindow(onglet[[2]])
+	tkgrid(scrollwin)
+	tkgrid.rowconfigure(scrollwin, 0, weight = 1)
+	tkgrid.columnconfigure(scrollwin, 0, weight = 1)
+	containerFrame <- bwScrollableFrame(scrollwin, width = wscrFrame, height = hscrFrame)
+
+	img <- tkrplot(containerFrame, fun = plotIt, hscale = hscale, vscale = vscale)
+	tkgrid(img)
+	tkgrid.rowconfigure(img, 0, weight = 1)
+	tkgrid.columnconfigure(img, 0, weight = 1)
+	tcl("update")
+
+	return(list(onglet, img))
+}
 
 ##############################################################################
 
@@ -197,10 +303,15 @@ SummaryData.Get.Table <- function(){
 	mdon <- do.call(cbind, summ)
 	adon <- as.numeric(summary(don))
 	adon <- if(length(adon) == 7) adon else if(length(adon) == 6) c(adon, NA) else c(rep(NA, 5), adon)
-
 	mdon <- cbind(mdon, adon)
+
+	std <- sapply(index, function(ix) sd(don[ix], na.rm = TRUE))
+	std <- c(std, sd(don, na.rm = TRUE))
+	std <- round(std, 4)
+
+	mdon <- rbind(mdon[1:6, ], std, mdon[7, ])
 	mdon <- rbind(mdon, c(stn, "Longitude", pts[1], "Latitude", pts[2], rep(NA, 8)))
-	stats <- c("Minimum", "1st Quartile", "Median", "Mean", "3rd Quartile", "Maximum", "Missing", "Station")
+	stats <- c("Minimum", "1st Quartile", "Median", "Mean", "3rd Quartile", "Maximum", "Standard Deviation", "Missing", "Station")
 	mdon <- data.frame(stats, mdon)
 	names(mdon) <- c("Statistics", format(ISOdate(2014, 1:12, 1), "%b"), "ALL")
 	return(mdon)

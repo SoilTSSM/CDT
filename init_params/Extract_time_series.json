@@ -22,9 +22,11 @@
         "start.year": 1983,
         "start.mon": 1,
         "start.day": 1,
+        "start.hour": 0,
         "end.year": 2015,
         "end.mon": 12,
         "end.day": 31,
+        "end.hour": 23,
         // start month to extract (1:12)
         "start.month": 1,
         // end month to extract (1:12)
