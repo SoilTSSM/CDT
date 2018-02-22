@@ -78,10 +78,12 @@ summarizeDataProcs <- function(GeneralParameters){
 	}
 
 	saveRDS(output, out.dat.index)
+	close(out.dat.index)
 	EnvSummaryDataplot$output <- output
 	EnvSummaryDataplot$PathSum <- outDIR
 
 	rm(moy, output, don)
+	gc()
 
 	return(0)
 }
