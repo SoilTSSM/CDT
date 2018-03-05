@@ -141,7 +141,7 @@ SavePlot <- function(){
 			tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
 			if(length(AllOpenTabType) > 0){
 				if(AllOpenTabType[[tabid]] == "img"){
-					image.fun(file = filename, width = width, height = height, res = res)
+					image.fun(file = filename, width = width, height = height, units = units, res = res)
 					if(class(AllOpenTabData[[tabid]][[2]]) == "tkwin") AllOpenTabData[[tabid]][[2]]$fun()
 					else AllOpenTabData[[tabid]][[2]][[2]]$fun()
 					dev.off()

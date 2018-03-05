@@ -281,49 +281,6 @@ anomaliesCalcPanelCmd <- function(){
 			tkgrid(cb.en.infile, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 9, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 		})
 
-
-		#############################
-
-		frametDate <- ttklabelframe(subfr1, text = "Anomalies Date Range", relief = 'groove')
-
-		istart.yrs <- tclVar(GeneralParameters$Dates$start.year)
-		istart.mon <- tclVar(GeneralParameters$Dates$start.mon)
-		istart.day <- tclVar(GeneralParameters$Dates$start.dek)
-		iend.yrs <- tclVar(GeneralParameters$Dates$end.year)
-		iend.mon <- tclVar(GeneralParameters$Dates$end.mon)
-		iend.day <- tclVar(GeneralParameters$Dates$end.dek)
-
-		txtdek <- switch(GeneralParameters$intstep, 'dekadal' = 'Dek', 'pentad' = 'Pen', 'Day')
-		day.txtVar <- tclVar(txtdek)
-		statedate <- if(GeneralParameters$intstep == 'monthly') 'disabled' else 'normal'
-
-		txt.deb <- tklabel(frametDate, text = 'Start date', anchor = 'e', justify = 'right')
-		txt.fin <- tklabel(frametDate, text = 'End date', anchor = 'e', justify = 'right')
-		txt.yrs <- tklabel(frametDate, text = 'Year')
-		txt.mon <- tklabel(frametDate, text = 'Month')
-		txt.day <- tklabel(frametDate, text = tclvalue(day.txtVar), textvariable = day.txtVar)
-		en.yrs1 <- tkentry(frametDate, width = 4, textvariable = istart.yrs, justify = "right")
-		en.mon1 <- tkentry(frametDate, width = 4, textvariable = istart.mon, justify = "right")
-		en.day1 <- tkentry(frametDate, width = 4, textvariable = istart.day, justify = "right", state = statedate)
-		en.yrs2 <- tkentry(frametDate, width = 4, textvariable = iend.yrs, justify = "right")
-		en.mon2 <- tkentry(frametDate, width = 4, textvariable = iend.mon, justify = "right")
-		en.day2 <- tkentry(frametDate, width = 4, textvariable = iend.day, justify = "right", state = statedate)
-
-		tkgrid(txt.deb, row = 1, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(txt.fin, row = 2, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(txt.yrs, row = 0, column = 1, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(txt.mon, row = 0, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(txt.day, row = 0, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(en.yrs1, row = 1, column = 1, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(en.mon1, row = 1, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(en.day1, row = 1, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(en.yrs2, row = 2, column = 1, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(en.mon2, row = 2, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(en.day2, row = 2, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-		infobulle(frametDate, 'Start and end date to calculate the anomalies')
-		status.bar.display(frametDate, TextOutputVar, 'Start and end date to calculate the anomalies')
-
 		#############################
 
 		frameDirSav <- tkframe(subfr1, relief = 'groove', borderwidth = 2)
@@ -432,8 +389,7 @@ anomaliesCalcPanelCmd <- function(){
 
 		tkgrid(frameTimeS, row = 0, column = 0, sticky = '', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(frameInData, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-		tkgrid(frametDate, row = 2, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-		tkgrid(frameDirSav, row = 3, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		tkgrid(frameDirSav, row = 2, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
 
 	#######################################################################################################
 
@@ -449,6 +405,48 @@ anomaliesCalcPanelCmd <- function(){
 	tkgrid.columnconfigure(subfr2, 0, weight = 1)
 
 		##############################################
+
+		frametDate <- ttklabelframe(subfr2, text = "Anomalies Date Range", relief = 'groove')
+
+		istart.yrs <- tclVar(GeneralParameters$Dates$start.year)
+		istart.mon <- tclVar(GeneralParameters$Dates$start.mon)
+		istart.day <- tclVar(GeneralParameters$Dates$start.dek)
+		iend.yrs <- tclVar(GeneralParameters$Dates$end.year)
+		iend.mon <- tclVar(GeneralParameters$Dates$end.mon)
+		iend.day <- tclVar(GeneralParameters$Dates$end.dek)
+
+		txtdek <- switch(GeneralParameters$intstep, 'dekadal' = 'Dek', 'pentad' = 'Pen', 'Day')
+		day.txtVar <- tclVar(txtdek)
+		statedate <- if(GeneralParameters$intstep == 'monthly') 'disabled' else 'normal'
+
+		txt.deb <- tklabel(frametDate, text = 'Start date', anchor = 'e', justify = 'right')
+		txt.fin <- tklabel(frametDate, text = 'End date', anchor = 'e', justify = 'right')
+		txt.yrs <- tklabel(frametDate, text = 'Year')
+		txt.mon <- tklabel(frametDate, text = 'Month')
+		txt.day <- tklabel(frametDate, text = tclvalue(day.txtVar), textvariable = day.txtVar)
+		en.yrs1 <- tkentry(frametDate, width = 4, textvariable = istart.yrs, justify = "right")
+		en.mon1 <- tkentry(frametDate, width = 4, textvariable = istart.mon, justify = "right")
+		en.day1 <- tkentry(frametDate, width = 4, textvariable = istart.day, justify = "right", state = statedate)
+		en.yrs2 <- tkentry(frametDate, width = 4, textvariable = iend.yrs, justify = "right")
+		en.mon2 <- tkentry(frametDate, width = 4, textvariable = iend.mon, justify = "right")
+		en.day2 <- tkentry(frametDate, width = 4, textvariable = iend.day, justify = "right", state = statedate)
+
+		tkgrid(txt.deb, row = 1, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(txt.fin, row = 2, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(txt.yrs, row = 0, column = 1, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(txt.mon, row = 0, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(txt.day, row = 0, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(en.yrs1, row = 1, column = 1, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(en.mon1, row = 1, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(en.day1, row = 1, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(en.yrs2, row = 2, column = 1, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(en.mon2, row = 2, column = 2, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(en.day2, row = 2, column = 3, rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+		infobulle(frametDate, 'Start and end date to calculate the anomalies')
+		status.bar.display(frametDate, TextOutputVar, 'Start and end date to calculate the anomalies')
+
+		#############################
 
 		frameBaseP <- ttklabelframe(subfr2, text = "Climatology", relief = 'groove')
 
@@ -575,7 +573,6 @@ anomaliesCalcPanelCmd <- function(){
 		infobulle(cb.anomaly, 'Select the method to calculate the anomalies')
 		status.bar.display(cb.anomaly, TextOutputVar, 'Select the method to calculate the anomalies')
 
-
 		#############################
 
 		if(!is.null(EnvAnomalyCalcPlot$DirExist)){
@@ -659,10 +656,10 @@ anomaliesCalcPanelCmd <- function(){
 
 		############################################
 
-		tkgrid(frameBaseP, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(frameAnom, row = 1, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		tkgrid(frametDate, row = 0, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		tkgrid(frameBaseP, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameAnom, row = 2, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
 		tkgrid(calculateBut, row = 3, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-
 
 	#######################################################################################################
 

@@ -88,27 +88,49 @@ SummaryData.Plot.Graph <- function(){
 		xlab <- ''
 		ylab <- ''
 		title <- ''
+		col.fill <- "lightblue"
+		col.med <- "red"
+		col.box <- "blue"
+
+		# col.whisk <- "blue"
+		# col.staple <- "blue"
+		# col.box <- "blue"
+		# col.out <- 'blue'
+		# col.outbg <- 'lightblue'
+
 		plot(don$value, xlim = c(1, 13), ylim = ylim, type = 'n', xaxt = 'n', las = 2, xlab = xlab, ylab = ylab, main = title)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted", lwd = 0.8)
 
 		boxplot(value ~ group, data = don, add = TRUE, notch = FALSE,
-				col = "lightblue", medcol = "red", whiskcol = "blue",
-				staplecol = "blue", boxcol = "blue", outcol = 'blue', outbg = "lightblue",
+				col = col.fill, medcol = col.med, whiskcol = col.box,
+				staplecol = col.box, boxcol = col.box, outcol = col.box, outbg = col.fill,
 				outcex = 0.7, outpch = 21, yaxt = 'n', range = round(ylim[2]*0.25))
 	}else{
 		if(str_trim(tclvalue(EnvSummaryDataplot$plotMois)) != "ALL")
 			don <- don[index[[which(mois == str_trim(tclvalue(EnvSummaryDataplot$plotMois)))]]]
+
 		xlab <- ''
 		ylab <- 'Density'
 		title <- ''
+
+		col.fill <- "lightblue"
+		col.border <- "blue"
+
+		add.density <- TRUE
+		bw.denst <- 1.0
+		col.denst <- "red"
+		lwd.denst <- 1.5
+
 		hst <- hist(don, freq = FALSE, plot = FALSE)
-		dst <- density(don, bw = 1.0, na.rm = TRUE)
+		dst <- density(don, bw = bw.denst, na.rm = TRUE)
+
 		xhst <- range(hst$breaks)
 		yhst <- range(hst$density)
 		xdst <- range(dst$x)
 		ydst <- range(dst$y)
 		xlim <- c(min(xhst[1], xdst[1]), max(xhst[2], xdst[2]))
 		ylim <- c(min(yhst[1], ydst[1]), max(yhst[2], ydst[2]))
+
 		plot(1, xlim = xlim, ylim = ylim, type = 'n', xaxt = 'n', yaxt = 'n', xlab = xlab, ylab = ylab, main = title)
 		abline(v = axTicks(1), col = "lightgray", lty = "dotted", lwd = 0.8)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted", lwd = 0.8)
@@ -118,8 +140,8 @@ SummaryData.Plot.Graph <- function(){
 		axis(1, at = axTicks(1))
 		axis(1, at = xminor, labels = NA, tcl = par("tcl")*0.5)
 		axis(2, at = axTicks(2), las = 2)
-		hist(don, freq = FALSE, add = TRUE, xlab = '', ylab = '', main = '', axes = FALSE, col = "lightblue", border = "blue")
-		lines(dst, col = "red", lwd = 1.5)
+		hist(don, freq = FALSE, add = TRUE, xlab = '', ylab = '', main = '', axes = FALSE, col = col.fill, border = col.border)
+		if(add.density) lines(dst, col = col.denst, lwd = lwd.denst)
 	}
 }
 

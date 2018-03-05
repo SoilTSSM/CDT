@@ -162,6 +162,75 @@ getIndexSeason <- function(dates, inTimestep, yearSeas, startMonth, seasonLength
 }
 
 #############################################
+## daily analysis
+
+# getIndexSeasonDailyData <- function(start.mon, start.day, end.mon, end.day, dates){
+# 	dtmp <- range(as.Date(dates, '%Y%m%d'), na.rm = TRUE)
+
+# 	cdates <- seq(dtmp[1], dtmp[2], 'day')
+# 	ystart <- seq(as.Date(paste0(format(cdates[1], '%Y'), '-1-1')), cdates[1], 'day')
+# 	ystart <- ystart[-length(ystart)]
+# 	yend <- seq(cdates[length(cdates)], as.Date(paste0(format(cdates[length(cdates)], '%Y'), '-12-31')), 'day')
+# 	yend <- yend[-1]
+# 	if(length(ystart) > 0) cdates <- c(ystart, cdates)
+# 	if(length(yend) > 0) cdates <- c(cdates, yend)
+# 	cdates <- format(cdates, "%Y%m%d")
+
+# 	idrow <- seq(length(dates))
+# 	idrow <- idrow[match(cdates, dates)]
+
+# 	mon <- as.numeric(substr(cdates, 5, 6))
+# 	day <- as.numeric(substr(cdates, 7, 8))
+
+# 	sstart <- which(mon == start.mon & day == start.day)
+# 	send <- which(mon == end.mon & day == end.day)
+
+# 	if(sstart[1] <= send[1]){
+# 		if(length(sstart) != length(send)) send <- c(send, length(cdates))
+# 		idx <- lapply(seq_along(sstart), function(j) idrow[sstart[j]:send[j]])
+# 	}else{
+# 		# if(length(sstart) == length(send)){
+# 			sstart <- c(1, sstart)
+# 			send <- c(send, length(cdates))
+# 			idx <- lapply(seq_along(sstart), function(j) idrow[sstart[j]:send[j]])
+# 		# }
+# 	}
+
+# 	idx <- idx[!sapply(idx, function(x) isTRUE(all(is.na(x))))]
+# 	return(idx)
+# }
+
+getIndexSeasonDailyData <- function(start.mon, start.day, end.mon, end.day, dates){
+	dtmp <- range(as.Date(dates, '%Y%m%d'), na.rm = TRUE)
+
+	cdates <- seq(dtmp[1], dtmp[2], 'day')
+	ystart <- seq(as.Date(paste0(as.numeric(format(cdates[1], '%Y'))-1, '-', start.mon, '-', start.day)), cdates[1], 'day')
+	ystart <- ystart[-length(ystart)]
+	yend <- seq(cdates[length(cdates)], as.Date(paste0(as.numeric(format(cdates[length(cdates)], '%Y'))+1, '-', end.mon, '-', end.day)), 'day')
+	yend <- yend[-1]
+	if(length(ystart) > 0) cdates <- c(ystart, cdates)
+	if(length(yend) > 0) cdates <- c(cdates, yend)
+	cdates <- format(cdates, "%Y%m%d")
+
+	idrow <- seq(length(dates))
+	idrow <- idrow[match(cdates, dates)]
+
+	mon <- as.numeric(substr(cdates, 5, 6))
+	day <- as.numeric(substr(cdates, 7, 8))
+
+	sstart <- which(mon == start.mon & day == start.day)
+	send <- which(mon == end.mon & day == end.day)
+
+	idx <- lapply(seq_along(sstart), function(j) idrow[sstart[j]:send[j]])
+	outdates <- lapply(seq_along(sstart), function(j) c(cdates[sstart[j]], cdates[send[j]]))
+
+	ina <- sapply(idx, function(x) isTRUE(all(is.na(x))))
+	idx <- idx[!ina]
+	outdates <- outdates[!ina]
+	return(list(date = outdates, idx = idx))
+}
+
+#############################################
 # A verifier
 # getIndexSeasonVarsRow
 # getIndexSeasonVars

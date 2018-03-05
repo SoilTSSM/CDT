@@ -765,7 +765,7 @@ climatoAnalysisPanelCmd <- function(){
 				}
 			}
 
-			assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
+			# assign("GeneralParameters", GeneralParameters, envir = .GlobalEnv)
 
 			tkconfigure(main.win, cursor = 'watch')
 			InsertMessagesTxt(main.txt.out, paste("Calculating", tclvalue(analysis.method), "......."))

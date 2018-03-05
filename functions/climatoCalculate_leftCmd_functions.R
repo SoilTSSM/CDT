@@ -371,7 +371,7 @@ climatologiesCalcPanelCmd <- function(){
 			GeneralParameters$climato$start <- as.numeric(str_trim(tclvalue(startYear)))
 			GeneralParameters$climato$end <- as.numeric(str_trim(tclvalue(endYear)))
 			GeneralParameters$climato$minyear <- as.numeric(str_trim(tclvalue(minYear)))
-			GeneralParameters$climato$window <- as.numeric(str_trim(tclvalue(dayWin)))
+			GeneralParameters$climato$window <- if(GeneralParameters$intstep == 'daily') as.numeric(str_trim(tclvalue(dayWin))) else 0
 
 			if(str_trim(tclvalue(DataType)) == 'NetCDF gridded data' & is.null(settingINData)){
 				InsertMessagesTxt(main.txt.out, "You have to set the netcdf files parameters", format = TRUE)

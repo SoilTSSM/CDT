@@ -309,15 +309,15 @@ dailyRainAnalysisPanelCmd <- function(){
 
 		##############################################
 
-		GeneralParameters$daily.Stats <- 'tot.rain'
-		GeneralParameters$yearly.Stats <- 'mean'
+		GeneralParameters$stats$daily <- 'tot.rain'
+		GeneralParameters$stats$yearly <- 'mean'
 
 		frameStats <- ttklabelframe(subfr2, text = "Statistics", relief = 'groove')
 
 		daily.Stats <- tclVar()
 		CbDailyStatsVAL <- c('Total Rainfall', 'Rainfall Intensity', 'Number of Wet Days',
 							'Number of Dry Days', 'Number of Wet Spells', 'Number of Dry Spells')
-		tclvalue(daily.Stats) <- switch(GeneralParameters$daily.Stats,
+		tclvalue(daily.Stats) <- switch(GeneralParameters$stats$daily,
 										'tot.rain' = CbDailyStatsVAL[1],
 										'rain.int' = CbDailyStatsVAL[2],
 										'nb.wet.day' = CbDailyStatsVAL[3],
@@ -327,7 +327,7 @@ dailyRainAnalysisPanelCmd <- function(){
 
 		yearly.Stats <- tclVar()
 		CbYearlyStatsVAL <- c('Mean', 'Standard deviation', 'Coefficient of variation', 'Probability of exceeding')
-		tclvalue(yearly.Stats) <- switch(GeneralParameters$yearly.Stats,
+		tclvalue(yearly.Stats) <- switch(GeneralParameters$stats$yearly,
 										'mean' = CbYearlyStatsVAL[1],
 										'stdev' = CbYearlyStatsVAL[2],
 										'coefvar' = CbYearlyStatsVAL[3],
@@ -348,9 +348,11 @@ dailyRainAnalysisPanelCmd <- function(){
 
 		##############################################
 
+		GeneralParameters$def$drywet.day <- 0.85
+
 		frameDryDay <- ttklabelframe(subfr2, text = "Wet/Dry Day definition", relief = 'groove')
 
-		drywet.day <- tclVar(0.85)
+		drywet.day <- tclVar(GeneralParameters$def$drywet.day)
 
 		txt.DryDay1 <- tklabel(frameDryDay, text = 'Rainfall amount above/below', anchor = 'w', justify = 'left')
 		en.DryDay <- tkentry(frameDryDay, textvariable = drywet.day, width = 5)
@@ -360,15 +362,92 @@ dailyRainAnalysisPanelCmd <- function(){
 
 		##############################################
 
+		GeneralParameters$def$drywet.spell <- 7
+
 		frameDrySpell <- ttklabelframe(subfr2, text = "Wet/Dry Spell definition", relief = 'groove')
 
-		drywet.spell <- tclVar(7)
+		drywet.spell <- tclVar(GeneralParameters$def$drywet.spell)
 
 		txt.DrySpell1 <- tklabel(frameDrySpell, text = 'Defined as', anchor = 'w', justify = 'left')
 		en.DrySpell <- tkentry(frameDrySpell, textvariable = drywet.spell, width = 2)
 		txt.DrySpell2 <- tklabel(frameDrySpell, text = 'continuous wet/dry days', anchor = 'w', justify = 'left')
 
 		tkgrid(txt.DrySpell1, en.DrySpell, txt.DrySpell2)
+
+		##############################################
+
+		GeneralParameters$def$proba.thres <- switch(GeneralParameters$stats$daily,
+													'tot.rain' = 400,
+													'rain.int' = 10,
+													'nb.wet.day' = 30,
+													'nb.dry.day' = 30,
+													'nb.wet.spell' = 5,
+													'nb.dry.spell' = 5)
+		txt.units.thres <- switch(GeneralParameters$stats$daily,
+										'tot.rain' = 'mm',
+										'rain.int' = 'mm/day',
+										'nb.wet.day' = 'days',
+										'nb.dry.day' = 'days',
+										'nb.wet.spell' = 'spells',
+										'nb.dry.spell' = 'spells')
+
+		frameProba <- tkframe(subfr2)
+		# frameProba <- ttklabelframe(subfr2, text = "Probability of exceeding", relief = 'groove')
+
+		proba.thres <- tclVar(GeneralParameters$def$proba.thres)
+		units.thres <- tclVar(txt.units.thres)
+		stateProba <- if(GeneralParameters$stats$yearly == 'proba') 'normal' else 'disabled'
+
+		txt.Proba1 <- tklabel(frameProba, text = 'Probability of exceeding', anchor = 'w', justify = 'left')
+		en.Proba <- tkentry(frameProba, textvariable = proba.thres, width = 4, state = stateProba)
+		txt.Proba2 <- tklabel(frameProba, text = tclvalue(units.thres), textvariable = units.thres, anchor = 'w', justify = 'left')
+
+		tkgrid(txt.Proba1, en.Proba, txt.Proba2)
+
+		###################
+
+		tkbind(cb.StatYear, "<<ComboboxSelected>>", function(){
+			stateProba <- if(str_trim(tclvalue(yearly.Stats)) == 'Probability of exceeding') 'normal' else 'disabled'
+			tkconfigure(en.Proba, state = stateProba)
+
+			if(str_trim(tclvalue(yearly.Stats)) == 'Probability of exceeding'){
+				tclvalue(units.thres) <- switch(str_trim(tclvalue(daily.Stats)),
+												'Total Rainfall' = 'mm',
+												'Rainfall Intensity' = 'mm/day',
+												'Number of Wet Days' = 'days',
+												'Number of Dry Days' = 'days',
+												'Number of Wet Spells' = 'spells',
+												'Number of Dry Spells' = 'spells')
+
+				tclvalue(proba.thres) <- switch(str_trim(tclvalue(daily.Stats)),
+												'Total Rainfall' = 400,
+												'Rainfall Intensity' = 10,
+												'Number of Wet Days' = 30,
+												'Number of Dry Days' = 30,
+												'Number of Wet Spells' = 5,
+												'Number of Dry Spells' = 5)
+			}
+		})
+
+		tkbind(cb.StatDay, "<<ComboboxSelected>>", function(){
+			if(str_trim(tclvalue(yearly.Stats)) == 'Probability of exceeding'){
+				tclvalue(units.thres) <- switch(str_trim(tclvalue(daily.Stats)),
+												'Total Rainfall' = 'mm',
+												'Rainfall Intensity' = 'mm/day',
+												'Number of Wet Days' = 'days',
+												'Number of Dry Days' = 'days',
+												'Number of Wet Spells' = 'spells',
+												'Number of Dry Spells' = 'spells')
+
+				tclvalue(proba.thres) <- switch(str_trim(tclvalue(daily.Stats)),
+												'Total Rainfall' = 400,
+												'Rainfall Intensity' = 10,
+												'Number of Wet Days' = 30,
+												'Number of Dry Days' = 30,
+												'Number of Wet Spells' = 5,
+												'Number of Dry Spells' = 5)
+			}
+		})
 
 		##############################################
 
@@ -393,15 +472,60 @@ dailyRainAnalysisPanelCmd <- function(){
 				GeneralParameters$cdtdataset <- str_trim(tclvalue(input.Prec))
 			}
 
+			GeneralParameters$min.frac <- as.numeric(str_trim(tclvalue(min.frac)))
 			GeneralParameters$output <- str_trim(tclvalue(dir.save))
 
-			# GeneralParameters$onset.reg$region <- str_trim(tclvalue(onset.region))
-			# GeneralParameters$onset.reg$subdiv <- str_trim(tclvalue(onset.subdiv))
+			GeneralParameters$seas$all.years <- switch(tclvalue(allYears), '0' = FALSE, '1' = TRUE)
+			GeneralParameters$seas$startYear <- as.numeric(str_trim(tclvalue(startYear)))
+			GeneralParameters$seas$endYear <- as.numeric(str_trim(tclvalue(endYear)))
+			GeneralParameters$seas$startMon <- which(MOIS%in%str_trim(tclvalue(startMon)))
+			GeneralParameters$seas$startDay <- as.numeric(str_trim(tclvalue(tkget(spin.startDay))))
+			GeneralParameters$seas$endMon <- which(MOIS%in%str_trim(tclvalue(endMon)))
+			GeneralParameters$seas$endDay <- as.numeric(str_trim(tclvalue(tkget(spin.endDay))))
 
+			GeneralParameters$stats$daily <- switch(str_trim(tclvalue(daily.Stats)),
+												'Total Rainfall' = 'tot.rain',
+												'Rainfall Intensity' = 'rain.int',
+												'Number of Wet Days' = 'nb.wet.day',
+												'Number of Dry Days' = 'nb.dry.day',
+												'Number of Wet Spells' = 'nb.wet.spell',
+												'Number of Dry Spells' = 'nb.dry.spell')
 
+			GeneralParameters$stats$yearly <- switch(str_trim(tclvalue(yearly.Stats)),
+													'Mean' = 'mean',
+													'Standard deviation' = 'stdev',
+													'Coefficient of variation' = 'coefvar',
+													'Probability of exceeding' = 'proba')
+
+			GeneralParameters$def$drywet.day <- as.numeric(str_trim(tclvalue(drywet.day)))
+			GeneralParameters$def$drywet.spell <- as.numeric(str_trim(tclvalue(drywet.spell)))
+			GeneralParameters$def$proba.thres <- as.numeric(str_trim(tclvalue(proba.thres)))
 
 			assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
+			tkconfigure(main.win, cursor = 'watch')
+			analysis.method <- paste(str_trim(tclvalue(daily.Stats)), ":", str_trim(tclvalue(yearly.Stats)))
+			InsertMessagesTxt(main.txt.out, paste("Calculating", analysis.method, "......."))
+			ret <- tryCatch(
+				dailyRainAnalysisCalcProcs(GeneralParameters),
+				#warning = function(w) warningFun(w),
+				error = function(e) errorFun(e),
+				finally = tkconfigure(main.win, cursor = '')
+			)
+
+			msg0 <- paste(analysis.method, "calculation finished successfully")
+			msg1 <- paste(analysis.method, "calculation failed")
+
+			if(!is.null(ret)){
+				if(ret == 0){
+					InsertMessagesTxt(main.txt.out, msg0)
+
+					###################
+
+					# load.ClimatoAnalysis.Data()
+
+				}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
+			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 		})
 
 		####################
@@ -413,7 +537,8 @@ dailyRainAnalysisPanelCmd <- function(){
 		tkgrid(frameStats, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(frameDryDay, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 2)
 		tkgrid(frameDrySpell, row = 2, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 2)
-		tkgrid(frameCalc, row = 3, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		tkgrid(frameProba, row = 3, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 2)
+		tkgrid(frameCalc, row = 4, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
 
 	#######################################################################################################
 

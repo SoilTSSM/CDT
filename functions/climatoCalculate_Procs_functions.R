@@ -309,8 +309,6 @@ climatologiesCalcProcs <- function(GeneralParameters){
 		dir.create(outDIR, showWarnings = FALSE, recursive = TRUE)
 		out.dat.index <- gzfile(file.path(outDIR, "Climatology.rds"), compression = 7)
 
-
-
 		# ncdfOUT <- file.path(outDIR, 'DATA_NetCDF')
 		# dir.create(ncdfOUT, showWarnings = FALSE, recursive = TRUE)
 
@@ -318,7 +316,6 @@ climatologiesCalcProcs <- function(GeneralParameters){
 		# datadir <- file.path(dataOUT, 'DATA')
 		# dir.create(datadir, showWarnings = FALSE, recursive = TRUE)
 		# file.index <- file.path(dataOUT, 'CDTMEAN.rds')
-
 
 		ncdfOUT1 <- file.path(outDIR, 'DATA_NetCDF', 'CDTMEAN')
 		dir.create(ncdfOUT1, showWarnings = FALSE, recursive = TRUE)
