@@ -118,17 +118,22 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 	frDataType <- ttklabelframe(frAGGRTS, text = 'Type of Data', labelanchor = "nw", relief = "groove", borderwidth = 2)
 
 	DataType <- tclVar()
-	CbdatatypeVAL <- c('CDT data format', 'NetCDF gridded data')
+	CbdatatypeVAL <- c('CDT stations data format', 'CDT dataset format (gridded)', 'NetCDF gridded data')
 	tclvalue(DataType) <- switch(GeneralParameters$data.type,
-								'cdt' = CbdatatypeVAL[1], 
-								'netcdf' = CbdatatypeVAL[2])
+								'cdtstation' = CbdatatypeVAL[1],
+								'cdtdataset' = CbdatatypeVAL[2],
+								'cdtnetcdf' = CbdatatypeVAL[3])
 
-	if(GeneralParameters$data.type == 'cdt'){
-		file.stnfl <- tclVar(GeneralParameters$stn.data)
+	if(GeneralParameters$data.type == 'cdtstation'){
+		file.stnfl <- tclVar(GeneralParameters$cdtstation)
 		txtFileDir <- 'File containing stations input data'
 		stateSetData <- "disabled"
+	}else if(GeneralParameters$data.type == 'cdtdataset'){
+		file.stnfl <- tclVar(GeneralParameters$cdtdataset)
+		txtFileDir <- 'Index file (*.rds) of the dataset'
+		stateSetData <- "disabled"
 	}else{
-		file.stnfl <- tclVar(GeneralParameters$ncdf.data$dir)
+		file.stnfl <- tclVar(GeneralParameters$cdtnetcdf$dir)
 		txtFileDir <- 'Directory containing the NetCDF data'
 		stateSetData <- "normal"
 	}
@@ -139,7 +144,7 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 	set.datatype <- ttkbutton(frDataType, text = "Settings", state = stateSetData)
 
 	txt.stnfl <- tklabel(frDataType, text = tclvalue(fileINdir), textvariable = fileINdir, anchor = 'w', justify = 'left')
-	if(GeneralParameters$data.type == 'cdt'){
+	if(GeneralParameters$data.type == 'cdtstation'){
 		cb.stnfl <- ttkcombobox(frDataType, values = unlist(listOpenFiles), textvariable = file.stnfl, width = largeur1)
 	}else{
 		cb.stnfl <- tkentry(frDataType, textvariable = file.stnfl, width = largeur)
@@ -157,7 +162,7 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 	})
 
 	tkconfigure(bt.stnfl, command = function(){
-		if(GeneralParameters$data.type == 'cdt'){
+		if(GeneralParameters$data.type == 'cdtstation'){
 			dat.opfiles <- getOpenFiles(tt, all.opfiles)
 			if(!is.null(dat.opfiles)){
 				nopf <- length(AllOpenFilesType)
@@ -168,9 +173,13 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 				tclvalue(file.stnfl) <- AllOpenFilesData[[nopf+1]][[1]]
 				tkconfigure(cb.stnfl, values = unlist(listOpenFiles), textvariable = file.stnfl)
 			}else return(NULL)
+		}else if(GeneralParameters$data.type == 'cdtdataset'){
+			filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
+			path.rds <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
+			tclvalue(file.stnfl) <- if(path.rds%in%c("", "NA") | is.na(path.rds)) "" else path.rds
 		}else{
-			file2convert <- tk_choose.dir(getwd(), "")
-			tclvalue(file.stnfl) <- if(!is.na(file2convert)) file2convert else ""
+			dirnc <- tk_choose.dir(getwd(), "")
+			tclvalue(file.stnfl) <- if(dirnc%in%c("", "NA") | is.na(dirnc)) "" else dirnc
 		}
 	})
 
@@ -182,14 +191,21 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 	tkgrid(bt.stnfl, row = 2, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
 	##############
-	if(GeneralParameters$data.type == 'cdt'){
+	if(GeneralParameters$data.type == 'cdtstation'){
 		infobulle(cb.stnfl, 'Select the file containing the data to aggregate')
 		status.bar.display(cb.stnfl, TextOutputVar, 'Select the file containing the data to aggregate')
 		infobulle(bt.stnfl, 'Browse file if not listed')
 		status.bar.display(bt.stnfl, TextOutputVar, 'Browse file if not listed')
+	}else if(GeneralParameters$data.type == 'cdtdataset'){
+		infobulle(cb.stnfl, 'Enter the full path to the file <dataset name>.rds')
+		status.bar.display(cb.stnfl, TextOutputVar, 'Enter the full path to the file <dataset name>.rds')
+		infobulle(bt.stnfl, 'or browse here')
+		status.bar.display(bt.stnfl, TextOutputVar, 'or browse here')
 	}else{
 		infobulle(cb.stnfl, 'Enter the full path to directory containing the NetCDF data')
 		status.bar.display(cb.stnfl, TextOutputVar, 'Enter the full path to directory containing the NetCDF data')
+		infobulle(bt.stnfl, 'or browse here')
+		status.bar.display(bt.stnfl, TextOutputVar, 'or browse here')
 	}
 
 	##############
@@ -199,7 +215,7 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 		tclvalue(file.stnfl) <- ''
 
 		####
-		if(tclvalue(DataType) == 'CDT data format'){
+		if(str_trim(tclvalue(DataType)) == 'CDT stations data format'){
 			tclvalue(fileINdir) <- 'File containing stations input data'
 			tclvalue(fileORdir) <- 'File to save aggregated data'
 
@@ -223,12 +239,40 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 
 			infobulle(cb.stnfl, 'Select the file in the list')
 			status.bar.display(cb.stnfl, TextOutputVar, 'Select the file containing the data to aggregate')
+			infobulle(bt.stnfl, 'Browse file if not listed')
+			status.bar.display(bt.stnfl, TextOutputVar, 'Browse file if not listed')
 			infobulle(en.file.save, 'Enter the full path of the file to save result')
 			status.bar.display(en.file.save, TextOutputVar, 'Enter the full path of the file to save aggregated data')
 		}
 
 		####
-		if(tclvalue(DataType) == 'NetCDF gridded data'){
+		if(str_trim(tclvalue(DataType)) == 'CDT dataset format (gridded)'){
+			tclvalue(fileINdir) <- 'Index file (*.rds) of the dataset'
+			tclvalue(fileORdir) <- 'Directory to save result'
+
+			cb.stnfl <- tkentry(frDataType, textvariable = file.stnfl, width = largeur)
+
+			#######
+			tkconfigure(bt.stnfl, command = function(){
+				filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
+				path.rds <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
+				tclvalue(file.stnfl) <- if(path.rds%in%c("", "NA") | is.na(path.rds)) "" else path.rds
+			})
+
+			tkconfigure(bt.file.save, command = function() fileORdir2Save(file.save, isFile = FALSE))
+			tkconfigure(set.datatype, state = 'disabled')
+
+			#######
+			infobulle(cb.stnfl, 'Enter the full path to the file <dataset name>.rds')
+			status.bar.display(cb.stnfl, TextOutputVar, 'Enter the full path to the file <dataset name>.rds')
+			infobulle(bt.stnfl, 'or browse here')
+			status.bar.display(bt.stnfl, TextOutputVar, 'or browse here')
+			infobulle(en.file.save, 'Enter the full path to the directory to save result')
+			status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to the directory to save result')
+		}
+
+		####
+		if(str_trim(tclvalue(DataType)) == 'NetCDF gridded data'){
 			tclvalue(fileINdir) <- 'Directory containing the NetCDF data'
 			tclvalue(fileORdir) <- 'Directory to save result'
 
@@ -236,8 +280,8 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 
 			#######
 			tkconfigure(bt.stnfl, command = function(){
-				file2convert <- tk_choose.dir(getwd(), "")
-				tclvalue(file.stnfl) <- if(!is.na(file2convert)) file2convert else ""
+				dirnc <- tk_choose.dir(getwd(), "")
+				tclvalue(file.stnfl) <- if(dirnc%in%c("", "NA") | is.na(dirnc)) "" else dirnc
 			})
 
 			tkconfigure(set.datatype, command = function(){
@@ -253,6 +297,8 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 			#######
 			infobulle(cb.stnfl, 'Enter the full path to directory containing the NetCDF data')
 			status.bar.display(cb.stnfl, TextOutputVar, 'Enter the full path to directory containing the NetCDF data')
+			infobulle(bt.stnfl, 'or browse here')
+			status.bar.display(bt.stnfl, TextOutputVar, 'or browse here')
 			infobulle(en.file.save, 'Enter the full path to the directory to save result')
 			status.bar.display(en.file.save, TextOutputVar, 'Enter the full path to the directory to save result')
 		}
@@ -313,7 +359,7 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 
 	file.save <- tclVar(GeneralParameters$output)
 
-	if(GeneralParameters$data.type == 'cdt'){
+	if(GeneralParameters$data.type == 'cdtstation'){
 		txtSaveDir <- 'File to save aggregated data'
 		isFile <- TRUE
 	}else{
@@ -333,7 +379,7 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 	tkgrid(bt.file.save, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 
 	###################
-	if(GeneralParameters$data.type == 'cdt'){
+	if(GeneralParameters$data.type == 'cdtstation'){
 		txtSaveHelp <- 'Enter the full path of the file to save aggregated data'
 	}else{
 		txtSaveHelp <- 'Directory to save aggregated data'
@@ -356,7 +402,7 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 
 	############################################
 
-	bt.prm.OK <- tkbutton(frMRG1, text=" OK ")
+	bt.prm.OK <- tkbutton(frMRG1, text = "OK")
 	bt.prm.CA <- tkbutton(frMRG1, text = "Cancel")
 
 	####
@@ -366,7 +412,7 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 		}else if(tclvalue(file.save)%in%c("", "NA")){
 			tkmessageBox(message = "Choose a directory or enter the file to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
-		}else if(tclvalue(DataType) != 'CDT data format' & is.null(settingdone)){
+		}else if(str_trim(tclvalue(DataType)) == 'NetCDF gridded data' & is.null(settingdone)){
 				tkmessageBox(message = "You have to set the NetCDF files parameters", icon = "warning", type = "ok")
 				tkwait.window(tt)
 		}else{
@@ -384,13 +430,16 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 												'Rolling Seasonal data' = 'roll.seas')
 			GeneralParameters$Seasonal$start.mon <<- as.numeric(str_trim(tclvalue(start.mon)))
 			GeneralParameters$Seasonal$length.mon <<- as.numeric(str_trim(tclvalue(length.mon)))
-			GeneralParameters$data.type <<- switch(tclvalue(DataType),
-													'CDT data format' = 'cdt',
-													'NetCDF gridded data' = 'netcdf')
-			if(tclvalue(DataType) == 'CDT data format'){
-				GeneralParameters$stn.data <<- str_trim(tclvalue(file.stnfl))
+			GeneralParameters$data.type <<- switch(str_trim(tclvalue(DataType)),
+													'CDT stations data format' = 'cdtstation',
+													'CDT dataset format (gridded)' = 'cdtdataset',
+													'NetCDF gridded data' = 'cdtnetcdf')
+			if(str_trim(tclvalue(DataType)) == 'CDT stations data format'){
+				GeneralParameters$cdtstation <<- str_trim(tclvalue(file.stnfl))
+			}else if(str_trim(tclvalue(DataType)) == 'CDT dataset format (gridded)'){
+				GeneralParameters$cdtdataset <<- str_trim(tclvalue(file.stnfl))
 			}else{
-				GeneralParameters$ncdf.data$dir <<- str_trim(tclvalue(file.stnfl))
+				GeneralParameters$cdtnetcdf$dir <<- str_trim(tclvalue(file.stnfl))
 			}
 
 			GeneralParameters$output <<- str_trim(tclvalue(file.save))
@@ -430,7 +479,7 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
+	tkwm.geometry(tt, paste0('+', tt.x, '+', tt.y))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Time Series - Aggregation')
 	tkwm.deiconify(tt)
@@ -510,8 +559,8 @@ AggregateTS_ncdfData <- function(tt, GeneralParameters, ncDIR, tstep = 'Daily da
 
 	frFF <- tkframe(frMRG0, relief = "sunken", borderwidth = 2)
 
-	inrfeff <- tclVar(GeneralParameters$ncdf.data$format)
-	rfesample <- tclVar(GeneralParameters$ncdf.data$sample)
+	inrfeff <- tclVar(GeneralParameters$cdtnetcdf$format)
+	rfesample <- tclVar(GeneralParameters$cdtnetcdf$sample)
 
 	txt.ncsample <- tklabel(frFF, text = "Netcdf data sample file", anchor = 'w', justify = 'left')
 	cb.ncsample <- ttkcombobox(frFF, values = unlist(listOpenFiles), textvariable = rfesample, width = largeur1)
@@ -544,8 +593,8 @@ AggregateTS_ncdfData <- function(tt, GeneralParameters, ncDIR, tstep = 'Daily da
 	tkgrid(en.inrfeff, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	ddk <- if(tstep%in%c('Pentad data', 'Dekadal data')) 1 else '01'
-	example <- do.call(sprintf, c(list(fmt = GeneralParameters$ncdf.data$format),
-				as.list(c(1981, '01', ddk)[seq(length(gregexpr('%s', GeneralParameters$ncdf.data$format)[[1]]))])))
+	example <- do.call(sprintf, c(list(fmt = GeneralParameters$cdtnetcdf$format),
+				as.list(c(1981, '01', ddk)[seq(length(gregexpr('%s', GeneralParameters$cdtnetcdf$format)[[1]]))])))
 
 	status.bar.display(cb.ncsample, TextOutputVar, 'File containing a sample of the data in netcdf')
 	infobulle(bt.ncsample, 'Browse file if not listed')
@@ -567,8 +616,8 @@ AggregateTS_ncdfData <- function(tt, GeneralParameters, ncDIR, tstep = 'Daily da
 			tkmessageBox(message = "You have to provide a sample file", icon = "warning", type = "ok")
 			tkwait.window(tt1)
 		}else{
-			GeneralParameters$ncdf.data$format <<- str_trim(tclvalue(inrfeff))
-			GeneralParameters$ncdf.data$sample <<- str_trim(tclvalue(rfesample))
+			GeneralParameters$cdtnetcdf$format <<- str_trim(tclvalue(inrfeff))
+			GeneralParameters$cdtnetcdf$sample <<- str_trim(tclvalue(rfesample))
 
 			GeneralParameters$Date.Range$start.year <<- as.numeric(str_trim(tclvalue(istart.yrs)))
 			GeneralParameters$Date.Range$start.mon <<- as.numeric(str_trim(tclvalue(istart.mon)))
@@ -577,7 +626,7 @@ AggregateTS_ncdfData <- function(tt, GeneralParameters, ncDIR, tstep = 'Daily da
 			GeneralParameters$Date.Range$end.mon <<- as.numeric(str_trim(tclvalue(iend.mon)))
 			GeneralParameters$Date.Range$end.day <<- as.numeric(str_trim(tclvalue(iend.day)))
 
-			lenS <- length(gregexpr('%s', GeneralParameters$ncdf.data$format)[[1]])
+			lenS <- length(gregexpr('%s', GeneralParameters$cdtnetcdf$format)[[1]])
 			if((tstep%in%c('Daily data', 'Pentad data', 'Dekadal data') & lenS != 3) |
 				(tstep == 'Monthly data' & lenS != 2))
 			{
@@ -610,13 +659,16 @@ AggregateTS_ncdfData <- function(tt, GeneralParameters, ncDIR, tstep = 'Daily da
 	tt.h <- as.integer(tkwinfo("reqheight", tt1))
 	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
 	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt1, paste('+', tt.x, '+', tt.y, sep = ''))
+	tkwm.geometry(tt1, paste0('+', tt.x, '+', tt.y))
 	tkwm.transient(tt1)
 	tkwm.title(tt1, 'NetCDF Data - Settings')
 	tkwm.deiconify(tt1)
 
 	tkfocus(tt1)
-	tkbind(tt1, "<Destroy>", function() {tkgrab.release(tt1); tkfocus(tt)})
+	tkbind(tt1, "<Destroy>", function(){
+		tkgrab.release(tt1)
+		tkfocus(tt)
+	})
 	tkwait.window(tt1)
 	return(GeneralParameters)
 }

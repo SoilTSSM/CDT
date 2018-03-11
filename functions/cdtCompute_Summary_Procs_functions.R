@@ -13,10 +13,12 @@ summarizeDataProcs <- function(GeneralParameters){
 		GeneralParameters$outdir <- getwd()
 	}
 
+	#####################
 	outDIR <- file.path(GeneralParameters$outdir, "SUMMARY_Statistics")
 	dir.create(outDIR, showWarnings = FALSE, recursive = TRUE)
 	out.dat.index <- gzfile(file.path(outDIR, "Summary.rds"), compression = 7)
 
+	#####################
 	if(GeneralParameters$data.type == "cdtstation"){
 		don <- getStnOpenData(input.file)
 		if(is.null(don)) return(NULL)

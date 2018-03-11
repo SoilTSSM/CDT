@@ -302,6 +302,7 @@ readCdtDatasetChunk.sepdir.dates.order <- function(fileInfo, datadir, dates, do.
 	# dates <- dates[!is.na(idaty)]
 	idaty <- idaty[!is.na(idaty)]
 	if(length(idaty) == 0) return(NULL)
+	if(onedate) idaty <- idaty[1]
 
 	if(do.par){
 		is.parallel <- doparallel(length(chunk) >= 50)
@@ -319,15 +320,6 @@ readCdtDatasetChunk.sepdir.dates.order <- function(fileInfo, datadir, dates, do.
 			x[idaty, , drop = FALSE]
 		})
 	}
-
-	# is.parallel <- doparallel(do.par & (length(chunk) >= 20))
-	# `%parLoop%` <- is.parallel$dofun
-	# don <- foreach(j = chunk) %parLoop% {
-	# 	file.rds <- file.path(datadir, paste0(j, ".rds"))
-	# 	x <- readRDS(file.rds)
-	# 	x[idaty, , drop = FALSE]
-	# }
-	# if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 	don <- do.call(cbind, don)
 	don <- don[, cdtdata$colInfo$order, drop = FALSE]
@@ -358,15 +350,6 @@ readCdtDatasetChunk.multi.dates.order <- function(fileInfo, dates, do.par = TRUE
 	# dates <- dates[!is.na(idaty)]
 	idaty <- idaty[!is.na(idaty)]
 	if(onedate) idaty <- idaty[1]
-
-	# is.parallel <- doparallel(do.par & (length(chunk) >= 50))
-	# `%parLoop%` <- is.parallel$dofun
-	# don <- foreach(j = chunk) %parLoop% {
-	# 	file.rds <- file.path(datadir, paste0(j, ".rds"))
-	# 	x <- readRDS(file.rds)
-	# 	x[idaty, , drop = FALSE]
-	# }
-	# if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 	if(do.par){
 		is.parallel <- doparallel(length(chunk) >= 50)

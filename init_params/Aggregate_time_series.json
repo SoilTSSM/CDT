@@ -1,8 +1,9 @@
 {
     // Type of data:  
-    // "cdt": CDT data format
-    // "netcdf": NetCDF gridded data
-    "data.type": "cdt",
+    // 'cdtstation': CDT stations data format
+    // 'cdtdataset': CDT gridded dataset format
+    // 'cdtnetcdf': NetCDF gridded data
+    "data.type": "cdtstation",
 
     // Time step of the aggregated data
     // "dekadal": Dekadal data
@@ -20,11 +21,14 @@
         "length.mon": 3
     }],
 
-    // Station data filename
-    "stn.data": "",
+    // CDT stations data format filename
+    "cdtstation": "",
+
+    // CDT gridded dataset index file
+    "cdtdataset": "",
 
     // Netcdf data
-    "ncdf.data": [{
+    "cdtnetcdf": [{
         // Full path to the directory of ncdf files
         "dir": "",
         // ncdf sample file

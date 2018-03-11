@@ -51,6 +51,7 @@ EnvDailyRainAnalysisplot <- new.env()
 # Summary data
 EnvSummaryDataplot <- new.env()
 
-
+# SPI
+EnvSPICalcPlot <- new.env()
 
 

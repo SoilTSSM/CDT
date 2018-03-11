@@ -501,7 +501,7 @@ dailyRainAnalysisPanelCmd <- function(){
 			GeneralParameters$def$drywet.spell <- as.numeric(str_trim(tclvalue(drywet.spell)))
 			GeneralParameters$def$proba.thres <- as.numeric(str_trim(tclvalue(proba.thres)))
 
-			assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
+			# assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
 			tkconfigure(main.win, cursor = 'watch')
 			analysis.method <- paste(str_trim(tclvalue(daily.Stats)), ":", str_trim(tclvalue(yearly.Stats)))

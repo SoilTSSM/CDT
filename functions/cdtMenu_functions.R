@@ -907,32 +907,44 @@ tkadd(top.menu, "cascade", label = "Data Analysis", menu = menu.dataproc, active
 	tkadd(menu.dataproc, "cascade", label = "Drought Indices", menu = menu.drought)
 
 		########
-		# SPI 
-		tkadd(menu.drought, "command", label = "Standardized Precipitation Index", command = function(){
-			## data type
-			## CDTstations & CDTdataset
-			## convert CDTdataset to CDTnetcdf
-
-
-			# refreshCDT.lcmd.env()
-			# spinbox.state(state = 'normal')
-			# if(is.null(lcmd.frame_climdexRR)){
-			# 	lcmd.frame <<- climdexPanelCmd.RR()
-			# 	lcmd.frame_climdexRR <<- 1
-			# }
+		## Standardized Precipitation Index (SPI)
+		## https://climatedataguide.ucar.edu/climate-data/standardized-precipitation-index-spi
+		tkadd(menu.drought, "command", label = "Standardized Precipitation Index (SPI)", command = function(){
+			refreshCDT.lcmd.env()
+			spinbox.state(state = 'normal')
+			if(is.null(lcmd.frame_SPIData)){
+				lcmd.frame <<- SPICalcPanelCmd()
+				lcmd.frame_SPIData <<- 1
+			}
 		})
 
 		##########
 		# tkadd(menu.drought, "separator")
 
 		#########
-		# Others Drought Indices
-		# tkadd(menu.drought, "command", label = "Others Drought Indices", command = function(){
+		# ## Standardized Precipitation Evapotranspiration Index (SPEI)
+		# ## https://climatedataguide.ucar.edu/climate-data/standardized-precipitation-evapotranspiration-index-spei
+		# tkadd(menu.drought, "command", label = "Standardized Precipitation Evapotranspiration Index (SPEI)", command = function(){
 		# 	refreshCDT.lcmd.env()
 		# 	spinbox.state(state = 'normal')
-		# 	if(is.null(lcmd.frame_climdexTT)){
-		# 		lcmd.frame <<- climdexPanelCmd.TT()
-		# 		lcmd.frame_climdexTT <<- 1
+		# 	if(is.null(lcmd.frame_SPEIData)){
+		# 		lcmd.frame <<- SPEICalcPanelCmd()
+		# 		lcmd.frame_SPEIData <<- 1
+		# 	}
+		# })
+
+		##########
+		# tkadd(menu.drought, "separator")
+
+		#########
+		## Palmer Drought Severity Index (PDSI)
+		## https://climatedataguide.ucar.edu/climate-data/palmer-drought-severity-index-pdsi
+		# tkadd(menu.drought, "command", label = "Palmer Drought Severity Index (PDSI)", command = function(){
+		# 	refreshCDT.lcmd.env()
+		# 	spinbox.state(state = 'normal')
+		# 	if(is.null(lcmd.frame_PDSIData)){
+		# 		lcmd.frame <<- PDSICalcPanelCmd()
+		# 		lcmd.frame_PDSIData <<- 1
 		# 	}
 		# })
 

@@ -12,17 +12,31 @@ AggregateTS_Execute <- function(GeneralParameters){
 
 	datatype <- GeneralParameters$data.type
 
-	if(datatype == 'cdt'){
-		donne <- getStnOpenData(GeneralParameters$stn.data)
+	if(datatype == 'cdtstation'){
+		donne <- getStnOpenData(GeneralParameters$cdtstation)
 		if(is.null(donne)) return(NULL)
-		donneInfo <- getStnOpenDataInfo(GeneralParameters$stn.data)
+		donneInfo <- getStnOpenDataInfo(GeneralParameters$cdtstation)
 		if(is.null(donneInfo)) return(NULL)
 		donne <- getCDTdataAndDisplayMsg(donne, period)
 		if(is.null(donne)) return(NULL)
 		miss.val <- donneInfo[[3]]$miss.val
 		dates <- donne$dates
 	}
-	if(datatype == 'netcdf'){
+
+	if(datatype == 'cdtdataset'){
+		donne <- try(readRDS(GeneralParameters$cdtdataset), silent = TRUE)
+		if(inherits(donne, "try-error")){
+			InsertMessagesTxt(main.txt.out, paste("Unable to read", GeneralParameters$cdtdataset), format = TRUE)
+			return(NULL)
+		}
+		if(period != donne$TimeStep){
+			InsertMessagesTxt(main.txt.out, paste("The dataset is not a", period, "data"), format = TRUE)
+			return(NULL)
+		}
+		dates <- donne$dateInfo$date
+	}
+
+	if(datatype == 'cdtnetcdf'){
 		istart.yrs <- GeneralParameters$Date.Range$start.year
 		istart.mon <- GeneralParameters$Date.Range$start.mon
 		istart.day <- GeneralParameters$Date.Range$start.day
@@ -43,33 +57,33 @@ AggregateTS_Execute <- function(GeneralParameters){
 
 		if(period == "daily"){
 			dates <- format(seq(dstart, dend, 'day'), '%Y%m%d')
-			ncfiles <- sprintf(GeneralParameters$ncdf.data$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 8))
+			ncfiles <- sprintf(GeneralParameters$cdtnetcdf$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 8))
 		}
 		if(period == "pentad"){
 			dates <- seq(dstart, dend, 'day')
 			dates <- paste0(format(dates[which(as.numeric(format(dates, '%d')) <= 6)], '%Y%m'),
 							as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 6)], '%d')))
-			ncfiles <- sprintf(GeneralParameters$ncdf.data$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 7))
+			ncfiles <- sprintf(GeneralParameters$cdtnetcdf$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 7))
 		}
 		if(period == "dekadal"){
 			dates <- seq(dstart, dend, 'day')
 			dates <- paste0(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%Y%m'),
 							as.numeric(format(dates[which(as.numeric(format(dates, '%d')) <= 3)], '%d')))
-			ncfiles <- sprintf(GeneralParameters$ncdf.data$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 7))
+			ncfiles <- sprintf(GeneralParameters$cdtnetcdf$format, substr(dates, 1, 4), substr(dates, 5, 6), substr(dates, 7, 7))
 		}
 		if(period == "monthly"){
 			dates <- format(seq(dstart, dend, 'month'), '%Y%m')
-			ncfiles <- sprintf(GeneralParameters$ncdf.data$format, substr(dates, 1, 4), substr(dates, 5, 6))
+			ncfiles <- sprintf(GeneralParameters$cdtnetcdf$format, substr(dates, 1, 4), substr(dates, 5, 6))
 		}
 
-		ncPATH <- file.path(GeneralParameters$ncdf.data$dir, ncfiles)
+		ncPATH <- file.path(GeneralParameters$cdtnetcdf$dir, ncfiles)
 		ncEXIST <- unlist(lapply(ncPATH, file.exists))
 		if(!any(ncEXIST)){
 			InsertMessagesTxt(main.txt.out, "Unable to locate netcdf files", format = TRUE)
 			return(NULL)
 		}
 
-		ncsample <- getRFESampleData(GeneralParameters$ncdf.data$sample)
+		ncsample <- getRFESampleData(GeneralParameters$cdtnetcdf$sample)
 		if(is.null(ncsample)){
 			InsertMessagesTxt(main.txt.out, "Netcdf data sample not found", format = TRUE)
 			return(NULL)
@@ -79,7 +93,6 @@ AggregateTS_Execute <- function(GeneralParameters){
 
 	#########################
 	## index dates
-
 
 	if(period1 == "pentad"){
 		yymm <- substr(dates, 1, 6)
@@ -297,7 +310,7 @@ AggregateTS_Execute <- function(GeneralParameters){
 
 	#########################
 
-	if(datatype == 'cdt'){
+	if(datatype == 'cdtstation'){
 		cdtdata <- lapply(index, function(ix){
 			ncdon <- donne$data[ix, , drop = FALSE]
 			miss <- (colSums(is.na(ncdon))/nrow(ncdon)) >= min.frac
@@ -332,7 +345,63 @@ AggregateTS_Execute <- function(GeneralParameters){
 		rm(cdtdata)
 	}
 
-	if(datatype == 'netcdf'){
+	if(datatype == 'cdtdataset'){
+		outputDIR <- file.path(GeneralParameters$output, "Aggregated_Data")
+		dataDIR <- file.path(outputDIR, "DATA")
+		dir.create(dataDIR, showWarnings = FALSE, recursive = TRUE)
+		file.index <- file.path(outputDIR, "Aggregated_Data.rds")
+
+		index.agg <- donne
+		index.agg$TimeStep <- period1
+		index.agg$dateInfo$date <- odaty
+		index.agg$dateInfo$index <- seq_along(odaty)
+
+		saveRDS(index.agg, gzfile(file.index, compression = 7))
+
+		##########
+
+		chunkfile <- sort(unique(donne$colInfo$index))
+		chunkcalc <- split(chunkfile, ceiling(chunkfile/donne$chunkfac))
+
+		do.parChunk <- if(donne$chunkfac > length(chunkcalc)) TRUE else FALSE
+		do.parCALC <- if(do.parChunk) FALSE else TRUE
+
+		toExports <- c("readCdtDatasetChunk.sequence", "writeCdtDatasetChunk.sequence", "doparallel")
+		packages <- c("doParallel")
+
+		is.parallel <- doparallel(do.parCALC & (length(chunkcalc) > 10))
+		`%parLoop%` <- is.parallel$dofun
+		ret <- foreach(jj = seq_along(chunkcalc), .export = toExports, .packages = packages) %parLoop% {
+			don.data <- readCdtDatasetChunk.sequence(chunkcalc[[jj]], GeneralParameters$cdtdataset, do.par = do.parChunk)
+			don.data <- don.data[donne$dateInfo$index, , drop = FALSE]
+
+			cdtdata <- lapply(index, function(ix){
+				ncdon <- don.data[ix, , drop = FALSE]
+				miss <- (colSums(is.na(ncdon))/nrow(ncdon)) >= min.frac
+
+				if(aggr.fun == 'max') out <- matrixStats::colMaxs(ncdon, na.rm = TRUE)
+				if(aggr.fun == 'min') out <- matrixStats::colMins(ncdon, na.rm = TRUE)
+				if(aggr.fun == 'sum') out <- colSums(ncdon, na.rm = TRUE)
+				if(aggr.fun == 'mean') out <- colMeans(ncdon, na.rm = TRUE)
+				if(aggr.fun == 'count'){
+					count.fun <- match.fun(opr.fun)
+					ncdon <- count.fun(ncdon, opr.thres) & !is.na(ncdon)
+					out <- colSums(ncdon, na.rm = TRUE)
+				}
+
+				out[miss] <- NA
+				out[is.na(out) | is.nan(out) | is.infinite(out)] <- NA
+				out
+			})
+			cdtdata <- do.call(rbind, cdtdata)
+
+			writeCdtDatasetChunk.sequence(cdtdata, chunkcalc[[jj]], index.agg, dataDIR, do.par = do.parChunk)
+			rm(don.data, cdtdata); gc()
+		}
+		if(is.parallel$stop) stopCluster(is.parallel$cluster)
+	}
+
+	if(datatype == 'cdtnetcdf'){
 		outputDIR <- file.path(GeneralParameters$output, "Aggregated_Data")
 		dir.create(outputDIR, showWarnings = FALSE, recursive = TRUE)
 
@@ -353,7 +422,7 @@ AggregateTS_Execute <- function(GeneralParameters){
 		xnlat0 <- length(xlat0)
 
 		########
-		outnc <- paste0(strsplit(GeneralParameters$ncdf.data$format, "%")[[1]][1], odaty, '.nc')
+		outnc <- paste0(strsplit(GeneralParameters$cdtnetcdf$format, "%")[[1]][1], odaty, '.nc')
 		out.ncfiles <- file.path(outputDIR, outnc)
 
 		#######

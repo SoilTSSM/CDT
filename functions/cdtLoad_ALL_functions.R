@@ -277,6 +277,11 @@ source(file.path(apps.dir, 'functions', 'cdtCompute_Summary_Procs_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtCompute_Summary_displayPLOT_functions.R'))
 
 #####
+source(file.path(apps.dir, 'functions', 'cdtCompute_drought_Indices_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_SPI_leftCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_SPI_Procs_functions.R'))
+
+#####
 #
 #source(file.path(apps.dir, 'functions', ''))
 #source(file.path(apps.dir, 'functions', ''))
