@@ -35,9 +35,12 @@ computeSPIProcs <- function(GeneralParameters){
 	#####################
 	outDIR <- file.path(GeneralParameters$outdir, "SPI_data")
 	dir.create(outDIR, showWarnings = FALSE, recursive = TRUE)
-	out.spi.index <- gzfile(file.path(outDIR, "SPI.rds"), compression = 7)
 	dataCDTdir <- file.path(outDIR, 'CDTDATASET')
 	dir.create(dataCDTdir, showWarnings = FALSE, recursive = TRUE)
+
+	out.spi.index <- gzfile(file.path(outDIR, "SPI.rds"), compression = 7)
+	output <- NULL
+	output$params <- GeneralParameters
 
 	#####################
 
@@ -138,9 +141,14 @@ computeSPIProcs <- function(GeneralParameters){
 			file.month <- EnvSPICalcPlot$file.month
 			don <- readRDS(file.month)
 		}else{
+			if(GeneralParameters$data.type == "cdtstation") file.month <- GeneralParameters$cdtstation
 			if(GeneralParameters$data.type == "cdtdataset") file.month <- GeneralParameters$cdtdataset
 		}
 	}
+
+	#####################
+
+	output$month <- list(file = file.month, data = don)
 
 	#####################
 	if(GeneralParameters$data.type == "cdtstation"){
@@ -164,8 +172,6 @@ computeSPIProcs <- function(GeneralParameters){
 		writeFiles(data.spi, file.SPI.csv)
 
 		index.spi <- list(id = don$id, lon = don$lon, lat = don$lat, date = don$dates)
-
-		# EnvSPICalcPlot$index.spi <- index.spi
 	}
 
 	if(GeneralParameters$data.type == "cdtdataset"){
@@ -251,11 +257,11 @@ computeSPIProcs <- function(GeneralParameters){
 			return(0)
 		}
 		if(is.parallel$stop) stopCluster(is.parallel$cluster)
-
-		# EnvSPICalcPlot$index.spi <- index.spi
 	}
 
-	saveRDS(index.spi, out.spi.index)
+	output$index <- index.spi
+	saveRDS(output, out.spi.index)
+
 	return(0)
 }
 

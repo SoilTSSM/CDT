@@ -8,8 +8,8 @@ SPICalcPanelCmd <- function(){
 		largeur1 <- as.integer(w.scale(29)/sfont0)
 		largeur2 <- as.integer(w.scale(31)/sfont0)
 		largeur3 <- 20
-		# largeur4 <- largeur1-5
-		# largeur5 <- 30
+		largeur4 <- 28
+		largeur5 <- 22
 		# largeur6 <- 22
 	}else{
 		wscrlwin <- w.scale(27)
@@ -18,8 +18,8 @@ SPICalcPanelCmd <- function(){
 		largeur1 <- as.integer(w.scale(22)/sfont0)
 		largeur2 <- as.integer(w.scale(23)/sfont0)
 		largeur3 <- 15
-		# largeur4 <- largeur1
-		# largeur5 <- 22
+		largeur4 <- 20
+		largeur5 <- 14
 		# largeur6 <- 14
 	}
 
@@ -354,6 +354,29 @@ SPICalcPanelCmd <- function(){
 		bt.dirStat <- tkbutton(frameSPIDat, text = "...", state = statedirStat)
 
 		tkconfigure(bt.dirStat, command = function(){
+			filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
+			path.Stat <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
+			if(path.Stat%in%c("", "NA") | is.na(path.Stat)) return(NULL)
+			tclvalue(file.Stat) <- path.Stat
+
+
+			if(file.exists(str_trim(tclvalue(file.Stat)))){
+				OutSPIdata <- try(readRDS(str_trim(tclvalue(file.Stat))), silent = TRUE)
+				if(inherits(OutSPIdata, "try-error")){
+					InsertMessagesTxt(main.txt.out, 'Unable to load SPI data', format = TRUE)
+					InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', OutSPIdata[1]), format = TRUE)
+					tkconfigure(cb.spi.maps, values = "")
+					tclvalue(EnvSPICalcPlot$spi.tscale) <- ""
+					return(NULL)
+				}
+
+				EnvSPICalcPlot$output <- OutSPIdata
+				EnvSPICalcPlot$PathSPI <- dirname(str_trim(tclvalue(file.Stat)))
+
+				###################
+
+				widgets.Station.Pixel()
+			}
 
 		})
 
@@ -375,12 +398,105 @@ SPICalcPanelCmd <- function(){
 
 		frameSPIMap <- ttklabelframe(subfr2, text = "SPI Map", relief = 'groove')
 
+		EnvSPICalcPlot$spi.tscale <- tclVar()
+		EnvSPICalcPlot$spi.date <- tclVar()
 
+		cb.spi.maps <- ttkcombobox(frameSPIMap, values = "", textvariable = EnvSPICalcPlot$spi.tscale, width = largeur4)
+		bt.spi.maps <- ttkbutton(frameSPIMap, text = "PLOT", width = 7)
+		cb.spi.Date <- ttkcombobox(frameSPIMap, values = "", textvariable = EnvSPICalcPlot$spi.date, width = largeur5)
+		bt.spi.Date.prev <- ttkbutton(frameSPIMap, text = "<<", width = 3)
+		bt.spi.Date.next <- ttkbutton(frameSPIMap, text = ">>", width = 3)
+		bt.spi.MapOpt <- ttkbutton(frameSPIMap, text = "Options", width = 7)
+
+
+		tkgrid(cb.spi.maps, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.spi.maps, row = 0, column = 4, sticky = '', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.spi.Date.prev, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(cb.spi.Date, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.spi.Date.next, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.spi.MapOpt, row = 1, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 		##############################################
 
 		frameSPITS <- ttklabelframe(subfr2, text = "SPI Graph", relief = 'groove')
 
+		typeTSPLOT <- c("Line", "Barplot")
+		EnvSPICalcPlot$graph$typeTSp <- tclVar("Line")
+
+		cb.typeTSp <- ttkcombobox(frameSPITS, values = typeTSPLOT, textvariable = EnvSPICalcPlot$graph$typeTSp, width = largeur5)
+		bt.TsGraph.plot <- ttkbutton(frameSPITS, text = "PLOT", width = 7)
+		bt.TSGraphOpt <- ttkbutton(frameSPITS, text = "Options", width = 8)
+
+		frTS2 <- tkframe(frameSPITS)
+		EnvSPICalcPlot$graph$lonLOC <- tclVar()
+		EnvSPICalcPlot$graph$latLOC <- tclVar()
+		EnvSPICalcPlot$graph$stnIDTSp <- tclVar()
+
+
+
+		tkgrid(cb.typeTSp, row = 0, column = 0, sticky = 'we', pady = 1, columnspan = 1)
+		tkgrid(bt.TSGraphOpt, row = 0, column = 1, sticky = 'we', padx = 4, pady = 1, columnspan = 1)
+		tkgrid(bt.TsGraph.plot, row = 0, column = 2, sticky = 'we', pady = 1, columnspan = 1)
+		tkgrid(frTS2, row = 1, column = 0, sticky = 'e', pady = 1, columnspan = 3)
+
+
+		##############################################
+
+		frameSHP <- ttklabelframe(subfr2, text = "Boundaries", relief = 'groove')
+
+		EnvSPICalcPlot$shp$add.shp <- tclVar(0)
+		file.plotShp <- tclVar()
+		stateSHP <- "disabled"
+
+		chk.addshp <- tkcheckbutton(frameSHP, variable = EnvSPICalcPlot$shp$add.shp, text = "Add boundaries to Map", anchor = 'w', justify = 'left')
+		bt.addshpOpt <- ttkbutton(frameSHP, text = "Options", state = stateSHP)
+		cb.addshp <- ttkcombobox(frameSHP, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur1, state = stateSHP)
+		bt.addshp <- tkbutton(frameSHP, text = "...", state = stateSHP)
+
+		########
+		tkconfigure(bt.addshp, command = function(){
+			shp.opfiles <- getOpenShp(main.win, all.opfiles)
+			if(!is.null(shp.opfiles)){
+				nopf <- length(AllOpenFilesType)
+				AllOpenFilesType[[nopf+1]] <<- 'shp'
+				AllOpenFilesData[[nopf+1]] <<- shp.opfiles
+				tclvalue(file.plotShp) <- AllOpenFilesData[[nopf+1]][[1]]
+				listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
+
+				tkconfigure(cb.addshp, values = unlist(listOpenFiles), textvariable = file.plotShp)
+
+				shpofile <- getShpOpenData(file.plotShp)
+				if(is.null(shpofile)) EnvSPICalcPlot$shp$ocrds <- NULL
+				EnvSPICalcPlot$shp$ocrds <- getBoundaries(shpofile[[2]])
+			}else return(NULL)
+		})
+
+		########
+		EnvSPICalcPlot$SHPOp <- list(col = "black", lwd = 1.5)
+
+		tkconfigure(bt.addshpOpt, command = function(){
+			EnvSPICalcPlot$SHPOp <- climatoAnalysis.GraphOptions.LineSHP(main.win, EnvSPICalcPlot$SHPOp)
+		})
+
+		########
+		tkgrid(chk.addshp, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1)
+		tkgrid(bt.addshpOpt, row = 0, column = 6, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1)
+		tkgrid(cb.addshp, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 7, padx = 1, pady = 1)
+		tkgrid(bt.addshp, row = 1, column = 7, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1)
+
+		#################
+		tkbind(cb.addshp, "<<ComboboxSelected>>", function(){
+			shpofile <- getShpOpenData(file.plotShp)
+			if(is.null(shpofile)) EnvSPICalcPlot$shp$ocrds <- NULL
+			EnvSPICalcPlot$shp$ocrds <- getBoundaries(shpofile[[2]])
+		})
+
+		tkbind(chk.addshp, "<Button-1>", function(){
+			stateSHP <- if(tclvalue(EnvSPICalcPlot$shp$add.shp) == "1") "disabled" else "normal"
+			tkconfigure(cb.addshp, state = stateSHP)
+			tkconfigure(bt.addshp, state = stateSHP)
+			tkconfigure(bt.addshpOpt, state = stateSHP)
+		})
 
 
 		##############################################
@@ -388,6 +504,32 @@ SPICalcPanelCmd <- function(){
 		tkgrid(frameSPIDat, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(frameSPIMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
 		tkgrid(frameSPITS, row = 2, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		tkgrid(frameSHP, row = 3, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#######################################################################################################
+
+	widgets.Station.Pixel <- function(){
+		tkdestroy(frTS2)
+		frTS2 <<- tkframe(frameSPITS)
+
+		if(EnvSPICalcPlot$output$params$data.type == "cdtstation"){
+			stnIDTSPLOT <- EnvSPICalcPlot$output$index$id
+			txt.stnID <- tklabel(frTS2, text = "Station", anchor = 'e', justify = 'right')
+			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvSPICalcPlot$graph$stnIDTSp, width = largeur5)
+			tclvalue(EnvSPICalcPlot$graph$stnIDTSp) <- stnIDTSPLOT[1]
+			tkgrid(txt.stnID, cb.stnID)
+		}else{
+			txt.lonLoc <- tklabel(frTS2, text = "Longitude", anchor = 'e', justify = 'right')
+			en.lonLoc <- tkentry(frTS2, textvariable = EnvSPICalcPlot$graph$lonLOC, width = 8)
+			txt.latLoc <- tklabel(frTS2, text = "Latitude", anchor = 'e', justify = 'right')
+			en.latLoc <- tkentry(frTS2, textvariable = EnvSPICalcPlot$graph$latLOC, width = 8)
+			tkgrid(txt.lonLoc, en.lonLoc, txt.latLoc, en.latLoc)
+			stnIDTSPLOT <- ""
+			tclvalue(EnvSPICalcPlot$graph$stnIDTSp) <- ""
+		}
+
+		tkgrid(frTS2, row = 1, column = 0, sticky = 'e', pady = 1, columnspan = 3)
+	}
 
 	#######################################################################################################
 

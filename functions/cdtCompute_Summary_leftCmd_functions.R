@@ -341,7 +341,7 @@ summariesDataPanelCmd <- function(){
 			if(file.exists(str_trim(tclvalue(file.Stat)))){
 				OutSummary <- try(readRDS(str_trim(tclvalue(file.Stat))), silent = TRUE)
 				if(inherits(OutSummary, "try-error")){
-					InsertMessagesTxt(main.txt.out, 'Unable to load PICSA data', format = TRUE)
+					InsertMessagesTxt(main.txt.out, 'Unable to load Summary data', format = TRUE)
 					InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', OutSummary[1]), format = TRUE)
 					return(NULL)
 				}
@@ -505,7 +505,7 @@ summariesDataPanelCmd <- function(){
 
 	widgets.Station.Pixel <- function(){
 		tkdestroy(frameSTNPX)
-		frameSTNPX <- tkframe(frameSumData)
+		frameSTNPX <<- tkframe(frameSumData)
 
 		if(EnvSummaryDataplot$output$params$data.type == "cdtstation"){
 			stnIDTSPLOT <- EnvSummaryDataplot$output$data$id
