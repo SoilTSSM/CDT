@@ -21,9 +21,9 @@ AggregateQcData <- function(){
 	existStn <- stnID%in%corrctID
 	noChck <- !stnID%in%outptID
 	stnID <- stnID[existStn]
-	noTraiteStn <- infohead[!existStn, ]
-	noQcChkStn <- infohead[noChck, ]
-	infohead <- infohead[existStn, ]
+	noTraiteStn <- infohead[!existStn, , drop = FALSE]
+	noQcChkStn <- infohead[noChck, , drop = FALSE]
+	infohead <- infohead[existStn, , drop = FALSE]
 	if(length(stnID) == 0){
 		InsertMessagesTxt(main.txt.out, 'No checked stations found or Wrong directory', format = TRUE)
 		return(NULL)
