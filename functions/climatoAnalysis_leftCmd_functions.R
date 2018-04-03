@@ -933,7 +933,7 @@ climatoAnalysisPanelCmd <- function(){
 			EnvClimatoAnalysisplot$statpars <- params
 
 			###################
-			ret <- read.ClimStat()
+			ret <- EnvClimatoAnalysisplot$read.ClimStat()
 			if(is.null(ret)) return(NULL)
 
 			###################
@@ -947,14 +947,14 @@ climatoAnalysisPanelCmd <- function(){
 			}
 
 			###################
-			ret1 <- read.ClimTSData()
+			ret1 <- EnvClimatoAnalysisplot$read.ClimTSData()
 			if(is.null(ret1)) return(NULL)
 		})
 
 		###############
 
 		tkbind(cb.climDate, "<<ComboboxSelected>>", function(){
-			ret <- read.ClimStat()
+			ret <- EnvClimatoAnalysisplot$read.ClimStat()
 			if(is.null(ret)) return(NULL)
 
 			###################
@@ -963,7 +963,7 @@ climatoAnalysisPanelCmd <- function(){
 			tclvalue(EnvClimatoAnalysisplot$TSDate) <- EnvClimatoAnalysisplot$statpars$timeseries[[ipos]][[2]][1]
 
 			###################
-			ret1 <- read.ClimTSData()
+			ret1 <- EnvClimatoAnalysisplot$read.ClimTSData()
 			if(is.null(ret1)) return(NULL)
 		})
 
@@ -1026,7 +1026,7 @@ climatoAnalysisPanelCmd <- function(){
 				idaty <- idaty-1
 				if(idaty < 1) idaty <- length(EnvClimatoAnalysisplot$statpars$timeseries[[ipos]][[2]])
 				tclvalue(EnvClimatoAnalysisplot$TSDate) <- EnvClimatoAnalysisplot$statpars$timeseries[[ipos]][[2]][idaty]
-				ret1 <- read.ClimTSData()
+				ret1 <- EnvClimatoAnalysisplot$read.ClimTSData()
 				if(is.null(ret1)) return(NULL)
 
 				imgContainer <- climatoAnalysis.DisplayTSMaps(tknotes)
@@ -1044,7 +1044,7 @@ climatoAnalysisPanelCmd <- function(){
 				idaty <- idaty+1
 				if(idaty > length(EnvClimatoAnalysisplot$statpars$timeseries[[ipos]][[2]])) idaty <- 1
 				tclvalue(EnvClimatoAnalysisplot$TSDate) <- EnvClimatoAnalysisplot$statpars$timeseries[[ipos]][[2]][idaty]
-				ret1 <- read.ClimTSData()
+				ret1 <- EnvClimatoAnalysisplot$read.ClimTSData()
 				if(is.null(ret1)) return(NULL)
 
 				imgContainer <- climatoAnalysis.DisplayTSMaps(tknotes)
@@ -1067,7 +1067,7 @@ climatoAnalysisPanelCmd <- function(){
 		###############
 
 		tkbind(cb.TSDate, "<<ComboboxSelected>>", function(){
-			ret1 <- read.ClimTSData()
+			ret1 <- EnvClimatoAnalysisplot$read.ClimTSData()
 			if(is.null(ret1)) return(NULL)
 		})
 
@@ -1355,7 +1355,7 @@ climatoAnalysisPanelCmd <- function(){
 		EnvClimatoAnalysisplot$statpars <- params
 
 		###################
-		ret <- read.ClimStat()
+		ret <- EnvClimatoAnalysisplot$read.ClimStat()
 		if(is.null(ret)) return(NULL)
 
 		###################
@@ -1363,7 +1363,7 @@ climatoAnalysisPanelCmd <- function(){
 		tclvalue(EnvClimatoAnalysisplot$TSDate) <- params$timeseries[[1]][[2]][1]
 
 		###################
-		ret1 <- read.ClimTSData()
+		ret1 <- EnvClimatoAnalysisplot$read.ClimTSData()
 		if(is.null(ret1)) return(NULL)
 
 		###################
@@ -1401,7 +1401,7 @@ climatoAnalysisPanelCmd <- function(){
 
 	#######################################################################################################
 
-	read.ClimStat <- function(){
+	EnvClimatoAnalysisplot$read.ClimStat <- function(){
 		tkconfigure(main.win, cursor = 'watch')
 		tcl('update')
 		on.exit({
@@ -1507,7 +1507,7 @@ climatoAnalysisPanelCmd <- function(){
 
 	##############################################
 
-	read.ClimTSData <- function(){
+	EnvClimatoAnalysisplot$read.ClimTSData <- function(){
 		tkconfigure(main.win, cursor = 'watch')
 		tcl('update')
 		on.exit({

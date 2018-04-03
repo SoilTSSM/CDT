@@ -1,4 +1,23 @@
 
+splitCDTData0 <- function(donne){
+	seph <- rle(grepl('[[:digit:]]', as.character(donne[, 1])))
+	ipos <- which(!seph$values & seph$lengths >= 3 & seph$lengths <= 4)
+	if(length(ipos) == 0 | ipos[1] != 1){
+		InsertMessagesTxt(main.txt.out, 'Station data is not in a standard unambiguous CDT format', format = TRUE)
+		return(NULL)
+	}
+	pos <- seph$lengths[ipos[1]]
+
+	dat <- list(id = as.character(donne[1, -1]),
+		lon = as.numeric(donne[2, -1]),
+		lat = as.numeric(donne[3, -1]),
+		date = as.character(donne[-(1:pos), 1]),
+		data = as.matrix(donne[-(1:pos), -1]))
+	dimnames(dat$data)[[2]] <- NULL
+	dat$data <- apply(dat$data, 2, as.numeric)
+	return(dat)
+}
+
 splitCDTData <- function(donne, period){
 	ideb <- nrow(donne)
 	datylen <- nchar(as.character(donne[ideb, 1]))
