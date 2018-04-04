@@ -2,9 +2,9 @@ computeWB_getParams <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
 		# largeur0 <- 12
-		largeur1 <- 30
-		largeur2 <- 45
-		largeur3 <- 43
+		largeur1 <- 45
+		largeur2 <- 55
+		largeur3 <- 52
 	}else{
 		# largeur0 <- 10
 		largeur1 <- 30
@@ -23,27 +23,6 @@ computeWB_getParams <- function(parent.win, GeneralParameters){
 	frMRG0 <- tkframe(tt, relief = 'raised', borderwidth = 2)
 	frMRG1 <- tkframe(tt)
 	frLeft <- tkframe(frMRG0, relief = "groove", borderwidth = 2)
-
-	############################################
-
-	# frtimestep <- tkframe(frLeft, relief = 'sunken', borderwidth = 2)
-
-	# file.period <- tclVar()
-	# cb.periodVAL <- c('Daily data', 'Pentad data', 'Dekadal data', 'Monthly data')
-	# tclvalue(file.period) <- switch(GeneralParameters$Tstep,
-	# 								'daily' = cb.periodVAL[1],
-	# 								'pentad' = cb.periodVAL[2],
-	# 								'dekadal' = cb.periodVAL[3],
-	# 								'monthly' = cb.periodVAL[4])
-
-	# txt.period <- tklabel(frtimestep, text = 'Time step', anchor = 'e', justify = 'right')
-	# cb.period <- ttkcombobox(frtimestep, values = cb.periodVAL, textvariable = file.period, width = largeur0)
-
-	# tkgrid(txt.period, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 5, ipadx = 1, ipady = 1)
-	# tkgrid(cb.period, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 5, ipadx = 1, ipady = 1)
-
-	# infobulle(cb.period, 'Select the time step of the input data')
-	# status.bar.display(cb.period, TextOutputVar, 'Select the time step of the input data')
 
 	############################################
 
@@ -512,9 +491,13 @@ computeWB_getParams <- function(parent.win, GeneralParameters){
 computeWB_get.WB.SWHC <- function(parent.win, Parameters, dataType, donne)
 {
 	listOpenFiles <- openFile_ttkcomboList()
-
-	largeur <- if(Sys.info()["sysname"] == "Windows")  29 else 34
-	largeur1 <- if(Sys.info()["sysname"] == "Windows")  29 else 30
+	if(Sys.info()["sysname"] == "Windows"){
+		largeur <- 45
+		largeur1 <- 29
+	}else{
+		largeur <- 34
+		largeur1 <- 30
+	}
 
 	###################
 

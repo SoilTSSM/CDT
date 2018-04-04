@@ -5,11 +5,11 @@ SPICalcPanelCmd <- function(){
 		wscrlwin <- w.scale(26)
 		hscrlwin <- h.scale(45)
 		largeur0 <- as.integer(w.scale(22)/sfont0)
-		largeur1 <- as.integer(w.scale(29)/sfont0)
-		largeur2 <- as.integer(w.scale(31)/sfont0)
+		largeur1 <- as.integer(w.scale(27)/sfont0)
+		largeur2 <- as.integer(w.scale(29)/sfont0)
 		largeur3 <- 20
-		largeur4 <- 28
-		largeur5 <- 22
+		largeur4 <- 26
+		largeur5 <- 20
 		# largeur6 <- 22
 	}else{
 		wscrlwin <- w.scale(27)

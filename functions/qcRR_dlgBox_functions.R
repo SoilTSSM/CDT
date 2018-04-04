@@ -1,7 +1,7 @@
 qc.get.info.rain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
-		largeur <- 46
+		largeur <- 47
 		largeur1 <- 44
 		largeur2 <- 25
 		spady <- 0

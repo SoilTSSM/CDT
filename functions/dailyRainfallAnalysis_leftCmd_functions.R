@@ -3,11 +3,11 @@ dailyRainAnalysisPanelCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(26)
-		hscrlwin <- h.scale(45)
+		hscrlwin <- h.scale(46)
 		hscrlwin1 <- h.scale(27)
 		largeur0 <- as.integer(w.scale(22)/sfont0)
-		largeur1 <- as.integer(w.scale(29)/sfont0)
-		largeur2 <- as.integer(w.scale(31)/sfont0)
+		largeur1 <- as.integer(w.scale(27)/sfont0)
+		largeur2 <- as.integer(w.scale(29)/sfont0)
 
 		largeur3 <- 24
 		# largeur4 <- largeur1-5
@@ -15,7 +15,7 @@ dailyRainAnalysisPanelCmd <- function(){
 		# largeur6 <- 22
 	}else{
 		wscrlwin <- w.scale(27)
-		hscrlwin <- h.scale(50)
+		hscrlwin <- h.scale(47)
 		hscrlwin1 <- h.scale(28)
 		largeur0 <- as.integer(w.scale(20)/sfont0)
 		largeur1 <- as.integer(w.scale(21)/sfont0)
@@ -457,7 +457,7 @@ dailyRainAnalysisPanelCmd <- function(){
 			stateCaclBut <- if(tclvalue(EnvDailyRainAnalysisplot$DirExist) == "1") "normal" else "disabled"
 		}else stateCaclBut <- "normal"
 
-		bt.CalcDaily <- tkbutton(frameCalc, text = 'Calculate', state = stateCaclBut)
+		bt.CalcDaily <- ttkbutton(frameCalc, text = 'Calculate', state = stateCaclBut)
 
 		tkconfigure(bt.CalcDaily, command = function(){
 			GeneralParameters$data.type <- switch(str_trim(tclvalue(DataType)),

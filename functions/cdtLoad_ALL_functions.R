@@ -123,8 +123,12 @@ source(file.path(apps.dir, 'functions', 'downloadRFE_functions.R'))
 source(file.path(apps.dir, 'functions', 'downloadShapefile_functions.R'))
 source(file.path(apps.dir, 'functions', 'downloadDEM_functions.R'))
 
-source(file.path(apps.dir, 'functions', 'cdtCPT_functions.R'))
+####
+source(file.path(apps.dir, 'functions', 'cdtCPT_Conversion_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCPT_dlgBox_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCPT_Procs_functions.R'))
 
+####
 source(file.path(apps.dir, 'functions', 'extractTS_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'extractTS_dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'extractTS_displayMap_functions.R'))

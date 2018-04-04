@@ -7,10 +7,10 @@ OnsetCalcPanelCmd <- function(){
 		hscrlwin <- h.scale(45)
 		hscrlwin1 <- h.scale(27)
 		largeur0 <- as.integer(w.scale(22)/sfont0)
-		largeur1 <- as.integer(w.scale(29)/sfont0)
-		largeur2 <- as.integer(w.scale(31)/sfont0)
+		largeur1 <- as.integer(w.scale(27)/sfont0)
+		largeur2 <- as.integer(w.scale(29)/sfont0)
 
-		largeur3 <- 45
+		largeur3 <- 36
 		# largeur4 <- largeur1-5
 		# largeur5 <- 30
 		# largeur6 <- 22
@@ -22,7 +22,7 @@ OnsetCalcPanelCmd <- function(){
 		largeur1 <- as.integer(w.scale(21)/sfont0)
 		largeur2 <- as.integer(w.scale(23)/sfont0)
 
-		largeur3 <- 35
+		largeur3 <- 33
 		# largeur4 <- largeur1
 		# largeur5 <- 22
 		# largeur6 <- 14
@@ -92,10 +92,10 @@ OnsetCalcPanelCmd <- function(){
 		txt.mthd2 <- tklabel(frameMthd, text = "criterion based on", anchor = 'w', justify = 'left')
 		txt.mthd3 <- tklabel(frameMthd, text = tclvalue(txt.method), textvariable = txt.method, anchor = 'w', justify = 'left', width = largeur3)
 
-		tkgrid(txt.mthd1, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(cb.mthd, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(txt.mthd2, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(txt.mthd3, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(txt.mthd1, row = 0, column = 0, sticky = '', columnspan = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(cb.mthd, row = 0, column = 1, sticky = '', columnspan = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(txt.mthd2, row = 0, column = 2, sticky = '', columnspan = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(txt.mthd3, row = 1, column = 0, sticky = 'we', columnspan = 3, pady = 1, ipadx = 1, ipady = 1)
 
 		############
 

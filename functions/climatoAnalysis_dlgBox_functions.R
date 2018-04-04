@@ -1,11 +1,11 @@
 
 climatoAnalysisEditYrsMon <- function(parent.win, vedit, titre, help, year){
 	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 30
-		largeur2 <- 32
+		largeur1 <- 35
+		largeur2 <- 35
 	}else{
 		largeur1 <- 40
-		largeur2 <- 42
+		largeur2 <- 40
 	}
 
 	#########
@@ -29,14 +29,19 @@ climatoAnalysisEditYrsMon <- function(parent.win, vedit, titre, help, year){
 
 	tkgrid(text.Edit, yscr.Edit)
 	tkgrid.configure(yscr.Edit, sticky = "ns")
-	tkgrid.configure(text.Edit, sticky = 'nswe') 
+	tkgrid.configure(text.Edit, sticky = 'nswe')
 
 	tkinsert(text.Edit, "end", vedit)
 
 	#########
 
-	txta.Info <- tktext(frameInfo, cursor = "", wrap = "word", height = 4, width = largeur2)
-	tkgrid(txta.Info)
+	yscr.Info <- tkscrollbar(frameInfo, repeatinterval = 4, command = function(...) tkyview(txta.Info, ...))
+	txta.Info <- tktext(frameInfo, cursor = "", wrap = "word", height = 4, width = largeur2,
+						yscrollcommand = function(...) tkset(yscr.Info, ...))
+
+	tkgrid(txta.Info, yscr.Info)
+	tkgrid.configure(yscr.Info, sticky = "ns")
+	tkgrid.configure(txta.Info, sticky = 'nswe')
 
 	tkinsert(txta.Info, "1.0", help)
 	tkconfigure(txta.Info, state = "disabled")
@@ -125,11 +130,11 @@ climatoAnalysisEditYrsMon <- function(parent.win, vedit, titre, help, year){
 
 climatoAnalysis.MapOptions <- function(parent.win, climMapOpt){
 	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 13
-		largeur2 <- 30
+		largeur1 <- 28
+		largeur2 <- 31
 		largeur3 <- w.scale(21)
-		largeur4 <- 30
-		largeur5 <- 15
+		largeur4 <- 40
+		largeur5 <- 22
 	}else{
 		largeur1 <- 13
 		largeur2 <- 34
@@ -160,7 +165,7 @@ climatoAnalysis.MapOptions <- function(parent.win, climMapOpt){
 	stateKol2 <- if(climMapOpt$userCol$custom) "normal" else "disabled"
 
 	cb.colkey <- ttkcombobox(frameColkey, values = preset.colkey, textvariable = preset.color, width = largeur1, state = stateKol1)
-	chk.colkey <- tkcheckbutton(frameColkey, variable = reverse.color, text = 'Reverse', anchor = 'w', justify = 'left', state = stateKol1)
+	chk.colkey <- tkcheckbutton(frameColkey, variable = reverse.color, text = 'Reverse', anchor = 'e', justify = 'right', state = stateKol1)
 	chk.userKol <- tkcheckbutton(frameColkey, variable = custom.color, text = 'User customized colorkey', anchor = 'w', justify = 'left')
 	bt.userKol <- tkbutton(frameColkey, text = "Custom", state = stateKol2)
 	canvas.preview <- tkcanvas(frameColkey, width = largeur3, height = 20, bg = 'white')
@@ -324,11 +329,20 @@ climatoAnalysis.MapOptions <- function(parent.win, climMapOpt){
 	add.scale <- tclVar(climMapOpt$scalebar$add)
 	pos.scale <- tclVar(climMapOpt$scalebar$pos)
 
+	stateSclBr <- if(climMapOpt$scalebar$add) 'normal' else 'disabled'
+
 	chk.MpScl <- tkcheckbutton(frameMpScale, variable = add.scale, text = 'Add a map scale', anchor = 'w', justify = 'left')
-	cb.MpScl <- ttkcombobox(frameMpScale, values = place.scale, textvariable = pos.scale, width = largeur5)
+	cb.MpScl <- ttkcombobox(frameMpScale, values = place.scale, textvariable = pos.scale, width = largeur5, state = stateSclBr)
 
 	tkgrid(chk.MpScl, row = 0, column = 0, sticky = 'we', padx = 1)
-	tkgrid(cb.MpScl, row = 0, column = 1, sticky = 'we', padx = 1)
+	tkgrid(cb.MpScl, row = 0, column = 1, sticky = 'e', padx = 1)
+
+	#########
+
+	tkbind(chk.MpScl, "<Button-1>", function(){
+		stateSclBr <- if(tclvalue(add.scale) == '0') 'normal' else 'disabled'
+		tkconfigure(cb.MpScl, state = stateSclBr)
+	})
 
 	#####################
 	tkgrid(frameColkey, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -410,8 +424,8 @@ climatoAnalysis.MapOptions <- function(parent.win, climMapOpt){
 
 climatoAnalysis.GraphOptions.Anomaly <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 27
-		largeur2 <- 30
+		largeur1 <- 30
+		largeur2 <- 34
 	}else{
 		largeur1 <- 26
 		largeur2 <- 29
@@ -589,12 +603,12 @@ climatoAnalysis.GraphOptions.Anomaly <- function(parent.win, climGraphOpt){
 	chk.GpTlt <- tkcheckbutton(frameGraphTitle, variable = is.title, anchor = 'e', justify = 'right')
 	en.GpTlt <- tkentry(frameGraphTitle, textvariable = text.title, width = largeur2, state = stateGpTlt)
 	txt.GpTlt <- tklabel(frameGraphTitle, text = "Title Position",  anchor = 'e', justify = 'right')
-	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 10, state = stateGpTlt)
+	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 7, state = stateGpTlt)
 
 	tkgrid(chk.GpTlt, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
 	tkgrid(en.GpTlt, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 7)
-	tkgrid(txt.GpTlt, row = 1, column = 2, sticky = 'e', rowspan = 1, columnspan = 3)
-	tkgrid(cb.GpTlt, row = 1, column = 5, sticky = 'we', rowspan = 1, columnspan = 3)
+	tkgrid(txt.GpTlt, row = 1, column = 1, sticky = 'e', rowspan = 1, columnspan = 6)
+	tkgrid(cb.GpTlt, row = 1, column = 7, sticky = 'we', rowspan = 1, columnspan = 1)
 
 	#########
 
@@ -722,8 +736,8 @@ climatoAnalysis.GraphOptions.Anomaly <- function(parent.win, climGraphOpt){
 
 climatoAnalysis.GraphOptions.Bar <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 27
-		largeur2 <- 30
+		largeur1 <- 30
+		largeur2 <- 34
 	}else{
 		largeur1 <- 26
 		largeur2 <- 29
@@ -857,12 +871,12 @@ climatoAnalysis.GraphOptions.Bar <- function(parent.win, climGraphOpt){
 	chk.GpTlt <- tkcheckbutton(frameGraphTitle, variable = is.title, anchor = 'e', justify = 'right')
 	en.GpTlt <- tkentry(frameGraphTitle, textvariable = text.title, width = largeur2, state = stateGpTlt)
 	txt.GpTlt <- tklabel(frameGraphTitle, text = "Title Position",  anchor = 'e', justify = 'right')
-	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 10, state = stateGpTlt)
+	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 7, state = stateGpTlt)
 
 	tkgrid(chk.GpTlt, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
 	tkgrid(en.GpTlt, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 7)
-	tkgrid(txt.GpTlt, row = 1, column = 2, sticky = 'e', rowspan = 1, columnspan = 3)
-	tkgrid(cb.GpTlt, row = 1, column = 5, sticky = 'we', rowspan = 1, columnspan = 3)
+	tkgrid(txt.GpTlt, row = 1, column = 1, sticky = 'e', rowspan = 1, columnspan = 6)
+	tkgrid(cb.GpTlt, row = 1, column = 7, sticky = 'we', rowspan = 1, columnspan = 1)
 
 	#########
 
@@ -970,9 +984,9 @@ climatoAnalysis.GraphOptions.Bar <- function(parent.win, climGraphOpt){
 
 climatoAnalysis.GraphOptions.Line <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 45
-		largeur2 <- 49
-		largeur3 <- 24
+		largeur1 <- 50
+		largeur2 <- 54
+		largeur3 <- 27
 	}else{
 		largeur1 <- 44
 		largeur2 <- 47
@@ -1102,11 +1116,11 @@ climatoAnalysis.GraphOptions.Line <- function(parent.win, climGraphOpt){
 	chk.GpTlt <- tkcheckbutton(frameGraphTitle, variable = is.title, anchor = 'e', justify = 'right')
 	en.GpTlt <- tkentry(frameGraphTitle, textvariable = text.title, width = largeur2, state = stateGpTlt)
 	txt.GpTlt <- tklabel(frameGraphTitle, text = "Title Position",  anchor = 'e', justify = 'right')
-	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 8, state = stateGpTlt)
+	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 7, state = stateGpTlt)
 
 	tkgrid(chk.GpTlt, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
 	tkgrid(en.GpTlt, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 7)
-	tkgrid(txt.GpTlt, row = 1, column = 5, sticky = 'e', rowspan = 1, columnspan = 2)
+	tkgrid(txt.GpTlt, row = 1, column = 1, sticky = 'e', rowspan = 1, columnspan = 6)
 	tkgrid(cb.GpTlt, row = 1, column = 7, sticky = 'we', rowspan = 1, columnspan = 1)
 
 	#########
@@ -1407,9 +1421,9 @@ climatoAnalysis.GraphOptions.Line <- function(parent.win, climGraphOpt){
 
 climatoAnalysis.GraphOptions.Proba <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 45
-		largeur2 <- 49
-		# largeur3 <- 24
+		largeur1 <- 50
+		largeur2 <- 54
+		# largeur3 <- 27
 	}else{
 		largeur1 <- 44
 		largeur2 <- 47
@@ -1540,11 +1554,11 @@ climatoAnalysis.GraphOptions.Proba <- function(parent.win, climGraphOpt){
 	chk.GpTlt <- tkcheckbutton(frameGraphTitle, variable = is.title, anchor = 'e', justify = 'right')
 	en.GpTlt <- tkentry(frameGraphTitle, textvariable = text.title, width = largeur2, state = stateGpTlt)
 	txt.GpTlt <- tklabel(frameGraphTitle, text = "Title Position",  anchor = 'e', justify = 'right')
-	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 8, state = stateGpTlt)
+	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 7, state = stateGpTlt)
 
 	tkgrid(chk.GpTlt, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
 	tkgrid(en.GpTlt, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 7)
-	tkgrid(txt.GpTlt, row = 1, column = 5, sticky = 'e', rowspan = 1, columnspan = 2)
+	tkgrid(txt.GpTlt, row = 1, column = 1, sticky = 'e', rowspan = 1, columnspan = 6)
 	tkgrid(cb.GpTlt, row = 1, column = 7, sticky = 'we', rowspan = 1, columnspan = 1)
 
 	#########
@@ -1725,9 +1739,9 @@ climatoAnalysis.GraphOptions.Proba <- function(parent.win, climGraphOpt){
 
 climatoAnalysis.GraphOptions.LineENSO <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 45
-		largeur2 <- 49
-		largeur3 <- 24
+		largeur1 <- 50
+		largeur2 <- 54
+		largeur3 <- 27
 	}else{
 		largeur1 <- 44
 		largeur2 <- 47
@@ -1857,11 +1871,11 @@ climatoAnalysis.GraphOptions.LineENSO <- function(parent.win, climGraphOpt){
 	chk.GpTlt <- tkcheckbutton(frameGraphTitle, variable = is.title, anchor = 'e', justify = 'right')
 	en.GpTlt <- tkentry(frameGraphTitle, textvariable = text.title, width = largeur2, state = stateGpTlt)
 	txt.GpTlt <- tklabel(frameGraphTitle, text = "Title Position",  anchor = 'e', justify = 'right')
-	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 8, state = stateGpTlt)
+	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 7, state = stateGpTlt)
 
 	tkgrid(chk.GpTlt, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
 	tkgrid(en.GpTlt, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 7)
-	tkgrid(txt.GpTlt, row = 1, column = 5, sticky = 'e', rowspan = 1, columnspan = 2)
+	tkgrid(txt.GpTlt, row = 1, column = 1, sticky = 'e', rowspan = 1, columnspan = 6)
 	tkgrid(cb.GpTlt, row = 1, column = 7, sticky = 'we', rowspan = 1, columnspan = 1)
 
 	#########
@@ -2167,8 +2181,8 @@ climatoAnalysis.GraphOptions.LineENSO <- function(parent.win, climGraphOpt){
 
 climatoAnalysis.GraphOptions.BarENSO <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 27
-		largeur2 <- 30
+		largeur1 <- 30
+		largeur2 <- 34
 	}else{
 		largeur1 <- 26
 		largeur2 <- 29
@@ -2302,12 +2316,12 @@ climatoAnalysis.GraphOptions.BarENSO <- function(parent.win, climGraphOpt){
 	chk.GpTlt <- tkcheckbutton(frameGraphTitle, variable = is.title, anchor = 'e', justify = 'right')
 	en.GpTlt <- tkentry(frameGraphTitle, textvariable = text.title, width = largeur2, state = stateGpTlt)
 	txt.GpTlt <- tklabel(frameGraphTitle, text = "Title Position",  anchor = 'e', justify = 'right')
-	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 10, state = stateGpTlt)
+	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 7, state = stateGpTlt)
 
 	tkgrid(chk.GpTlt, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
 	tkgrid(en.GpTlt, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 7)
-	tkgrid(txt.GpTlt, row = 1, column = 2, sticky = 'e', rowspan = 1, columnspan = 3)
-	tkgrid(cb.GpTlt, row = 1, column = 5, sticky = 'we', rowspan = 1, columnspan = 3)
+	tkgrid(txt.GpTlt, row = 1, column = 1, sticky = 'e', rowspan = 1, columnspan = 6)
+	tkgrid(cb.GpTlt, row = 1, column = 7, sticky = 'we', rowspan = 1, columnspan = 1)
 
 	#########
 
@@ -2439,8 +2453,8 @@ climatoAnalysis.GraphOptions.BarENSO <- function(parent.win, climGraphOpt){
 
 climatoAnalysis.GraphOptions.ProbaENSO <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 27
-		largeur2 <- 30
+		largeur1 <- 30
+		largeur2 <- 34
 	}else{
 		largeur1 <- 26
 		largeur2 <- 29
@@ -2574,11 +2588,11 @@ climatoAnalysis.GraphOptions.ProbaENSO <- function(parent.win, climGraphOpt){
 	chk.GpTlt <- tkcheckbutton(frameGraphTitle, variable = is.title, anchor = 'e', justify = 'right')
 	en.GpTlt <- tkentry(frameGraphTitle, textvariable = text.title, width = largeur2, state = stateGpTlt)
 	txt.GpTlt <- tklabel(frameGraphTitle, text = "Title Position",  anchor = 'e', justify = 'right')
-	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 8, state = stateGpTlt)
+	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 7, state = stateGpTlt)
 
 	tkgrid(chk.GpTlt, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
 	tkgrid(en.GpTlt, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 7)
-	tkgrid(txt.GpTlt, row = 1, column = 5, sticky = 'e', rowspan = 1, columnspan = 2)
+	tkgrid(txt.GpTlt, row = 1, column = 1, sticky = 'e', rowspan = 1, columnspan = 6)
 	tkgrid(cb.GpTlt, row = 1, column = 7, sticky = 'we', rowspan = 1, columnspan = 1)
 
 	#########

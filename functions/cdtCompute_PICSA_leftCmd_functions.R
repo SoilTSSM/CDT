@@ -3,21 +3,21 @@ PICSACalcPanelCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(26)
-		hscrlwin <- h.scale(45)
-		largeur0 <- as.integer(w.scale(31)/sfont0)
+		hscrlwin <- h.scale(46)
+		largeur0 <- as.integer(w.scale(29)/sfont0)
 		largeur1 <- as.integer(w.scale(22)/sfont0)
-		largeur2 <- as.integer(w.scale(29)/sfont0)
+		largeur2 <- as.integer(w.scale(27)/sfont0)
 
 		largeur3 <- 26
-		largeur4 <- 16
-		largeur5 <- 15
+		largeur4 <- 15
+		largeur5 <- 14
 		largeur6 <- 22
 	}else{
 		wscrlwin <- w.scale(30)
 		hscrlwin <- h.scale(48)
-		largeur0 <- as.integer(w.scale(23)/sfont0)
+		largeur0 <- as.integer(w.scale(23.5)/sfont0)
 		largeur1 <- as.integer(w.scale(20)/sfont0)
-		largeur2 <- as.integer(w.scale(21)/sfont0)
+		largeur2 <- as.integer(w.scale(22.5)/sfont0)
 
 		largeur3 <- 21
 		largeur4 <- 11
@@ -45,14 +45,16 @@ PICSACalcPanelCmd <- function(){
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "Input")
 	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Output")
-	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Plot")
-	cmd.tab4 <- bwAddTab(tknote.cmd, text = "Boundaries")
+	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Maps")
+	cmd.tab4 <- bwAddTab(tknote.cmd, text = "Graphs")
+	cmd.tab5 <- bwAddTab(tknote.cmd, text = "Boundaries")
 
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab4, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab5, 0, weight = 1)
 
 	#######################################################################################################
 
@@ -748,7 +750,26 @@ PICSACalcPanelCmd <- function(){
 
 		##############################################
 
-		framePICSATSGRAPH <- ttklabelframe(subfr3, text = "Time Series Graph", relief = 'groove')
+		tkgrid(framePICSADat, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(framePICSATSMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(framePICSACLMMap, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#######################################################################################################
+
+	#Tab4
+	frTab4 <- tkframe(cmd.tab4)
+	tkgrid(frTab4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab4, 0, weight = 1)
+
+	scrw4 <- bwScrolledWindow(frTab4)
+	tkgrid(scrw4)
+	tkgrid.columnconfigure(scrw4, 0, weight = 1)
+	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr4, 0, weight = 1)
+
+		##############################################
+
+		framePICSATSGRAPH <- ttklabelframe(subfr4, text = "Time Series Graph", relief = 'groove')
 
 		varTSPLOT <- c("From Maps", "Daily Rainfall")
 		EnvPICSAplot$graph$varTSp <- tclVar("From Maps")
@@ -773,11 +794,6 @@ PICSACalcPanelCmd <- function(){
 		chk.tercTSp <- tkcheckbutton(frTS1, variable = EnvPICSAplot$graph$tercileTSp, text =  "Add Terciles", anchor = 'w', justify = 'left', state = stateType)
 		chk.trendTSp <- tkcheckbutton(frTS1, variable = EnvPICSAplot$graph$trendTSp, text =  "Add Trend", anchor = 'w', justify = 'left', state = stateType)
 		tkgrid(chk.meanTSp, chk.tercTSp, chk.trendTSp)
-
-		frTS2 <- tkframe(framePICSATSGRAPH)
-		EnvPICSAplot$graph$lonLOC <- tclVar()
-		EnvPICSAplot$graph$latLOC <- tclVar()
-		EnvPICSAplot$graph$stnIDTSp <- tclVar()
 
 		bt.TsGraph.Opt <- ttkbutton(framePICSATSGRAPH, text = "Options", width = 8, state = stateTsp)
 
@@ -857,18 +873,18 @@ PICSACalcPanelCmd <- function(){
 						)
 					)
 
-			tkconfigure(bt.TsGraph.Opt, command = function(){
-				suffix.fun <- switch(tclvalue(EnvPICSAplot$graph$typeTSp),
-										"Anomaly" = "Anomaly",
-										"Barplot" = "Bar",
-										"Line" = "Line",
-										"Probability" = "Proba",
-										"ENSO-Line" = "LineENSO",
-										"ENSO-Barplot" = "BarENSO",
-										"ENSO-Proba" = "ProbaENSO")
-				plot.fun <- match.fun(paste0("climatoAnalysis.GraphOptions.", suffix.fun))
-				EnvPICSAplot$TSGraphOp <- plot.fun(main.win, EnvPICSAplot$TSGraphOp)
-			})
+		tkconfigure(bt.TsGraph.Opt, command = function(){
+			suffix.fun <- switch(tclvalue(EnvPICSAplot$graph$typeTSp),
+									"Anomaly" = "Anomaly",
+									"Barplot" = "Bar",
+									"Line" = "Line",
+									"Probability" = "Proba",
+									"ENSO-Line" = "LineENSO",
+									"ENSO-Barplot" = "BarENSO",
+									"ENSO-Proba" = "ProbaENSO")
+			plot.fun <- match.fun(paste0("climatoAnalysis.GraphOptions.", suffix.fun))
+			EnvPICSAplot$TSGraphOp <- plot.fun(main.win, EnvPICSAplot$TSGraphOp)
+		})
 
 		EnvPICSAplot$notebookTab.tsplot <- NULL
 		tkconfigure(bt.TsGraph.plot, command = function(){
@@ -883,8 +899,7 @@ PICSACalcPanelCmd <- function(){
 
 		tkgrid(frTS0, row = 0, column = 0, sticky = 'we', pady = 1, columnspan = 3)
 		tkgrid(frTS1, row = 1, column = 0, sticky = 'we', pady = 1, columnspan = 3)
-		tkgrid(frTS2, row = 2, column = 0, sticky = 'e', pady = 1, columnspan = 3)
-		tkgrid(bt.TsGraph.Opt, row = 3, column = 2, sticky = 'e', pady = 1, columnspan = 1)
+		tkgrid(bt.TsGraph.Opt, row = 2, column = 2, sticky = 'e', pady = 1, columnspan = 1)
 
 		#################
 
@@ -929,27 +944,36 @@ PICSACalcPanelCmd <- function(){
 
 		##############################################
 
-		tkgrid(framePICSADat, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(framePICSATSMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(framePICSACLMMap, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(framePICSATSGRAPH, row = 3, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		frameSTNCrds <- ttklabelframe(subfr4, text = "Station/Coordinates", relief = 'groove')
 
-	#######################################################################################################
+		frTS2 <- tkframe(frameSTNCrds)
+		EnvPICSAplot$graph$lonLOC <- tclVar()
+		EnvPICSAplot$graph$latLOC <- tclVar()
+		EnvPICSAplot$graph$stnIDTSp <- tclVar()
 
-	#Tab4
-	frTab4 <- tkframe(cmd.tab4)
-	tkgrid(frTab4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid.columnconfigure(frTab4, 0, weight = 1)
-
-	scrw4 <- bwScrolledWindow(frTab4)
-	tkgrid(scrw4)
-	tkgrid.columnconfigure(scrw4, 0, weight = 1)
-	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
-	tkgrid.columnconfigure(subfr4, 0, weight = 1)
+		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
 
 		##############################################
 
-		frameSHP <- ttklabelframe(subfr4, text = "Boundaries", relief = 'groove')
+		tkgrid(framePICSATSGRAPH, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+
+	#######################################################################################################
+
+	#Tab5
+	frTab5 <- tkframe(cmd.tab5)
+	tkgrid(frTab5, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab5, 0, weight = 1)
+
+	scrw5 <- bwScrolledWindow(frTab5)
+	tkgrid(scrw5)
+	tkgrid.columnconfigure(scrw5, 0, weight = 1)
+	subfr5 <- bwScrollableFrame(scrw5, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr5, 0, weight = 1)
+
+		##############################################
+
+		frameSHP <- ttklabelframe(subfr5, text = "Boundaries", relief = 'groove')
 
 		EnvPICSAplot$shp$add.shp <- tclVar(FALSE)
 		file.plotShp <- tclVar()
@@ -1008,7 +1032,7 @@ PICSACalcPanelCmd <- function(){
 
 		##############################################
 
-		tkgrid(frameSHP, row = 04, column = 0, sticky = 'we', pady = 1)
+		tkgrid(frameSHP, row = 0, column = 0, sticky = 'we', pady = 1)
 
 	#######################################################################################################
 
@@ -1031,24 +1055,34 @@ PICSACalcPanelCmd <- function(){
 		###################
 
 		tkdestroy(frTS2)
-		frTS2 <- tkframe(framePICSATSGRAPH)
+		frTS2 <<- tkframe(frameSTNCrds)
 
 		if(EnvPICSAplot$output$data.type == "cdtstation"){
 			stnIDTSPLOT <- EnvPICSAplot$output$data$id
+			txt.stnSel <- tklabel(frTS2, text = "Select a station to plot", anchor = 'w', justify = 'left')
 			txt.stnID <- tklabel(frTS2, text = "Station", anchor = 'e', justify = 'right')
 			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvPICSAplot$graph$stnIDTSp, width = largeur6)
 			tclvalue(EnvPICSAplot$graph$stnIDTSp) <- stnIDTSPLOT[1]
-			tkgrid(txt.stnID, cb.stnID)
+
+			tkgrid(txt.stnSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.stnID, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(cb.stnID, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		}else{
+			txt.crdSel <- tklabel(frTS2, text = "Enter longitude and latitude to plot", anchor = 'w', justify = 'left')
 			txt.lonLoc <- tklabel(frTS2, text = "Longitude", anchor = 'e', justify = 'right')
 			en.lonLoc <- tkentry(frTS2, textvariable = EnvPICSAplot$graph$lonLOC, width = 8)
 			txt.latLoc <- tklabel(frTS2, text = "Latitude", anchor = 'e', justify = 'right')
 			en.latLoc <- tkentry(frTS2, textvariable = EnvPICSAplot$graph$latLOC, width = 8)
-			tkgrid(txt.lonLoc, en.lonLoc, txt.latLoc, en.latLoc)
 			stnIDTSPLOT <- ""
 			tclvalue(EnvPICSAplot$graph$stnIDTSp) <- ""
+
+			tkgrid(txt.crdSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.lonLoc, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(en.lonLoc, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.latLoc, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(en.latLoc, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		}
-		tkgrid(frTS2, row = 2, column = 0, sticky = 'e', pady = 1, columnspan = 3)
+		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
 
 		###################
 		# load daily precip

@@ -3,14 +3,14 @@ climatoAnalysisPanelCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(26)
-		hscrlwin <- h.scale(45)
+		hscrlwin <- h.scale(46)
 		largeur0 <- as.integer(w.scale(22)/sfont0)
-		largeur1 <- as.integer(w.scale(29)/sfont0)
-		largeur2 <- as.integer(w.scale(31)/sfont0)
+		largeur1 <- as.integer(w.scale(27)/sfont0)
+		largeur2 <- as.integer(w.scale(29)/sfont0)
 		largeur3 <- largeur2-10
 		largeur4 <- largeur1-5
-		largeur5 <- 30
-		largeur6 <- 22
+		largeur5 <- 28
+		largeur6 <- 21
 	}else{
 		wscrlwin <- w.scale(27)
 		hscrlwin <- h.scale(47)
@@ -36,12 +36,16 @@ climatoAnalysisPanelCmd <- function(){
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "Input")
 	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Analysis")
-	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Plot")
+	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Maps")
+	cmd.tab4 <- bwAddTab(tknote.cmd, text = "Graphs")
+	cmd.tab5 <- bwAddTab(tknote.cmd, text = "Boundaries")
 
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab4, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab5, 0, weight = 1)
 
 	#######################################################################################################
 
@@ -1083,7 +1087,26 @@ climatoAnalysisPanelCmd <- function(){
 
 		##############################################
 
-		frameTSPlot <- ttklabelframe(subfr3, text = "Time Series Graph", relief = 'groove')
+		tkgrid(frameAnDat, row = 0, column = 0, sticky = 'we')
+		tkgrid(frameClimatoMap, row = 1, column = 0, sticky = 'we')
+		tkgrid(frameTSMaps, row = 2, column = 0, sticky = 'we', pady = 1)
+
+	#######################################################################################################
+
+	#Tab4
+	frTab4 <- tkframe(cmd.tab4)
+	tkgrid(frTab4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab4, 0, weight = 1)
+
+	scrw4 <- bwScrolledWindow(frTab4)
+	tkgrid(scrw4)
+	tkgrid.columnconfigure(scrw4, 0, weight = 1)
+	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr4, 0, weight = 1)
+
+		##############################################
+
+		frameTSPlot <- ttklabelframe(subfr4, text = "Time Series Graph", relief = 'groove')
 
 		typeTSPLOT <- c("Line", "Barplot", "Probability", "ENSO-Line", "ENSO-Barplot", "ENSO-Proba", "Anomaly")
 		EnvClimatoAnalysisplot$graph$typeTSp <- tclVar("Line")
@@ -1102,11 +1125,6 @@ climatoAnalysisPanelCmd <- function(){
 		chk.tercTSp <- tkcheckbutton(frTS1, variable = EnvClimatoAnalysisplot$graph$tercileTSp, text = "Add Terciles", anchor = 'w', justify = 'left', state = stateType)
 		chk.trendTSp <- tkcheckbutton(frTS1, variable = EnvClimatoAnalysisplot$graph$trendTSp, text = "Add Trend", anchor = 'w', justify = 'left', state = stateType)
 		tkgrid(chk.meanTSp, chk.tercTSp, chk.trendTSp)
-
-		frTS2 <- tkframe(frameTSPlot)
-		EnvClimatoAnalysisplot$graph$lonLOC <- tclVar()
-		EnvClimatoAnalysisplot$graph$latLOC <- tclVar()
-		EnvClimatoAnalysisplot$graph$stnIDTSp <- tclVar()
 
 		#################
 
@@ -1211,11 +1229,10 @@ climatoAnalysisPanelCmd <- function(){
 
 		#################
 
-		tkgrid(cb.typeTSp, row = 0, column = 0, sticky = 'we', pady = 1, columnspan = 1)
+		tkgrid(cb.typeTSp, row = 0, column = 0, sticky = 'we', pady = 3, columnspan = 1)
 		tkgrid(bt.TSGraphOpt, row = 0, column = 1, sticky = 'we', padx = 4, pady = 1, columnspan = 1)
-		tkgrid(bt.TsGraph.plot, row = 0, column = 2, sticky = 'we', pady = 1, columnspan = 1)
-		tkgrid(frTS1, row = 1, column = 0, sticky = 'we', pady = 1, columnspan = 3)
-		tkgrid(frTS2, row = 2, column = 0, sticky = 'e', pady = 1, columnspan = 3)
+		tkgrid(bt.TsGraph.plot, row = 0, column = 2, sticky = 'we', pady = 3, columnspan = 1)
+		tkgrid(frTS1, row = 1, column = 0, sticky = 'we', pady = 3, columnspan = 3)
 
 		#################
 
@@ -1249,7 +1266,36 @@ climatoAnalysisPanelCmd <- function(){
 
 		##############################################
 
-		frameSHP <- ttklabelframe(subfr3, text = "Boundaries", relief = 'groove')
+		frameSTNCrds <- ttklabelframe(subfr4, text = "Station/Coordinates", relief = 'groove')
+
+		frTS2 <- tkframe(frameSTNCrds)
+		EnvClimatoAnalysisplot$graph$lonLOC <- tclVar()
+		EnvClimatoAnalysisplot$graph$latLOC <- tclVar()
+		EnvClimatoAnalysisplot$graph$stnIDTSp <- tclVar()
+
+		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
+
+		##############################################
+
+		tkgrid(frameTSPlot, row = 0, column = 0, sticky = 'we', pady = 1)
+		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = 'we', pady = 3)
+
+	#######################################################################################################
+
+	#Tab5
+	frTab5 <- tkframe(cmd.tab5)
+	tkgrid(frTab5, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab5, 0, weight = 1)
+
+	scrw5 <- bwScrolledWindow(frTab5)
+	tkgrid(scrw5)
+	tkgrid.columnconfigure(scrw5, 0, weight = 1)
+	subfr5 <- bwScrollableFrame(scrw5, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr5, 0, weight = 1)
+
+		##############################################
+
+		frameSHP <- ttklabelframe(subfr5, text = "Boundaries", relief = 'groove')
 
 		EnvClimatoAnalysisplot$shp$add.shp <- tclVar(FALSE)
 		file.plotShp <- tclVar()
@@ -1308,11 +1354,7 @@ climatoAnalysisPanelCmd <- function(){
 
 		##############################################
 
-		tkgrid(frameAnDat, row = 0, column = 0, sticky = 'we')
-		tkgrid(frameClimatoMap, row = 1, column = 0, sticky = 'we')
-		tkgrid(frameTSMaps, row = 2, column = 0, sticky = 'we', pady = 1)
-		tkgrid(frameTSPlot, row = 3, column = 0, sticky = 'we', pady = 1)
-		tkgrid(frameSHP, row = 4, column = 0, sticky = 'we', pady = 1)
+		tkgrid(frameSHP, row = 0, column = 0, sticky = 'we', pady = 1)
 
 	#######################################################################################################
 
@@ -1379,24 +1421,34 @@ climatoAnalysisPanelCmd <- function(){
 		###################
 
 		tkdestroy(frTS2)
-		frTS2 <<- tkframe(frameTSPlot)
+		frTS2 <<- tkframe(frameSTNCrds)
 
 		if(EnvClimatoAnalysisplot$statpars$params$data.type == "cdtstation"){
 			stnIDTSPLOT <- EnvClimatoAnalysisplot$tsdata$id
+			txt.stnSel <- tklabel(frTS2, text = "Select a station to plot", anchor = 'w', justify = 'left')
 			txt.stnID <- tklabel(frTS2, text = "Station", anchor = 'e', justify = 'right')
 			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvClimatoAnalysisplot$graph$stnIDTSp, width = largeur6)
 			tclvalue(EnvClimatoAnalysisplot$graph$stnIDTSp) <- stnIDTSPLOT[1]
-			tkgrid(txt.stnID, cb.stnID)
+
+			tkgrid(txt.stnSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.stnID, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(cb.stnID, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		}else{
+			txt.crdSel <- tklabel(frTS2, text = "Enter longitude and latitude to plot", anchor = 'w', justify = 'left')
 			txt.lonLoc <- tklabel(frTS2, text = "Longitude", anchor = 'e', justify = 'right')
 			en.lonLoc <- tkentry(frTS2, textvariable = EnvClimatoAnalysisplot$graph$lonLOC, width = 8)
 			txt.latLoc <- tklabel(frTS2, text = "Latitude", anchor = 'e', justify = 'right')
 			en.latLoc <- tkentry(frTS2, textvariable = EnvClimatoAnalysisplot$graph$latLOC, width = 8)
-			tkgrid(txt.lonLoc, en.lonLoc, txt.latLoc, en.latLoc)
 			stnIDTSPLOT <- ""
 			tclvalue(EnvClimatoAnalysisplot$graph$stnIDTSp) <- ""
+
+			tkgrid(txt.crdSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.lonLoc, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(en.lonLoc, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.latLoc, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(en.latLoc, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		}
-		tkgrid(frTS2, row = 2, column = 0, sticky = 'e', pady = 1, columnspan = 3)
+		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
 	}
 
 	#######################################################################################################

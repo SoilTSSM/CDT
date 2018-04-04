@@ -2,9 +2,9 @@ computePET_getParams <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
 		largeur0 <- 12
-		largeur1 <- 14
-		largeur2 <- 45
-		largeur3 <- 43
+		largeur1 <- 19
+		largeur2 <- 55
+		largeur3 <- 52
 	}else{
 		largeur0 <- 10
 		largeur1 <- 16

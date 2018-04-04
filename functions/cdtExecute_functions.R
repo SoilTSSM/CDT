@@ -557,6 +557,15 @@ Execute_All_Functions <- function(get.stn){
 		Execute_end_msg(ret, msg0, msg1)
 	}
 
+	###################
+
+	if(GeneralParameters$action == "convert.CPTdata"){
+		ret <- try(CPT.convertProcs(GeneralParameters), silent = TRUE)
+
+		msg0 <- "Converting data into CPT data format finished successfully"
+		msg1 <- "Converting data into CPT data format failed"
+		Execute_end_msg(ret, msg0, msg1)
+	}
 
 	###################
 

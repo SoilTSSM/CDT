@@ -7,10 +7,10 @@ CessationCalcPanelCmd <- function(){
 		hscrlwin <- h.scale(45)
 		hscrlwin1 <- h.scale(27)
 		largeur0 <- as.integer(w.scale(22)/sfont0)
-		largeur1 <- as.integer(w.scale(29)/sfont0)
-		largeur2 <- as.integer(w.scale(31)/sfont0)
+		largeur1 <- as.integer(w.scale(27)/sfont0)
+		largeur2 <- as.integer(w.scale(29)/sfont0)
 
-		largeur3 <- 45
+		largeur3 <- 36
 		# largeur4 <- largeur1-5
 		# largeur5 <- 30
 		# largeur6 <- 22
@@ -22,7 +22,7 @@ CessationCalcPanelCmd <- function(){
 		largeur1 <- as.integer(w.scale(21)/sfont0)
 		largeur2 <- as.integer(w.scale(23)/sfont0)
 
-		largeur3 <- 35
+		largeur3 <- 33
 		# largeur4 <- largeur1
 		# largeur5 <- 22
 		# largeur6 <- 14

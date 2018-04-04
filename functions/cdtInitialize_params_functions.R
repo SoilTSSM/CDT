@@ -277,6 +277,15 @@ init.params <- function(action, period){
 	}
 
 	#################################################################
+	## conversion to CPT data format
+	if(action == 'convert.CPTdata'){
+		ret.params <- list(action = action,
+						data.type = "cdtstation",
+						cdtstation = "",
+						cdtnetcdf = list(dir = "", sample = "", format = "onset_%Y%M%D.nc"),
+						cptinfo = list(name = "onset", units = "days since", missval = '-9999'),
+						output = "")
+	}
 
 	#############
 	return(ret.params)

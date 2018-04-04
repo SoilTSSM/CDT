@@ -2,9 +2,9 @@ computeTvars_getParams <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
 		largeur0 <- 12
-		largeur1 <- 12
-		largeur2 <- 45
-		largeur3 <- 43
+		largeur1 <- 11
+		largeur2 <- 47
+		largeur3 <- 44
 	}else{
 		largeur0 <- 11
 		largeur1 <- 10

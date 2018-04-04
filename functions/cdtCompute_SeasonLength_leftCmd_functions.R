@@ -5,7 +5,7 @@ SeasonLengthCalcPanelCmd <- function(){
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(26)
 		hscrlwin <- h.scale(45)
-		largeur0 <- as.integer(w.scale(31)/sfont0)
+		largeur0 <- as.integer(w.scale(29)/sfont0)
 
 		# largeur0 <- as.integer(w.scale(22)/sfont0)
 		# largeur1 <- as.integer(w.scale(29)/sfont0)

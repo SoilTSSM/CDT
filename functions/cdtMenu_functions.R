@@ -196,11 +196,38 @@ tkadd(top.menu, "cascade", label = "Data Preparation", menu = menu.dataprep, act
 	tkadd(menu.dataprep, "separator")
 
 	##########
-	tkadd(menu.dataprep, "command", label = "Data Format Conversion", state = 'disabled', command = function(){
-		refreshCDT.lcmd.env()
-		# initpars <- initialize.parameters('data.convrs', 'dekadal')
-		# GeneralParameters <<- DataConversion(main.win, initpars)
-	})
+	menu.dataConv <- tkmenu(top.menu, tearoff = FALSE)
+	tkadd(menu.dataprep, "cascade", label = "Data Format Conversion", menu = menu.dataConv)
+
+		########
+		# CPT
+		tkadd(menu.dataConv, "command", label = "Conversion to CPT data format", command = function(){
+			refreshCDT.lcmd.env()
+			initpars <- initialize.parameters('convert.CPTdata', 'daily')
+			GeneralParameters <<- CPT.convert_getParams(main.win, initpars)
+		})
+
+		##########
+		tkadd(menu.dataConv, "separator")
+
+		########
+		# Geotiff 
+		tkadd(menu.dataConv, "command", label = "Converting NetCDF to GeoTIFF", state = 'disabled', command = function(){
+			refreshCDT.lcmd.env()
+			# initpars <- initialize.parameters('compute.PET', 'daily')
+			# GeneralParameters <<- computePET_getParams(main.win, initpars)
+		})
+
+		##########
+		tkadd(menu.dataConv, "separator")
+
+		########
+		# Grads
+		tkadd(menu.dataConv, "command", label = "Create GrADS Descriptor File", state = 'disabled', command = function(){
+			refreshCDT.lcmd.env()
+			# initpars <- initialize.parameters('compute.WB', 'daily')
+			# GeneralParameters <<- computeWB_getParams(main.win, initpars)
+		})
 
 ##########xxxxxxxxxxxxxxxxxx Data Aggregation xxxxxxxxxxxxxxxxxx##########
 
