@@ -1,56 +1,78 @@
 
-SPI_monthly_function <- function(precip.mat, tscale, distribution = 'Gamma'){
-	nl <- nrow(precip.mat)
-	don.tmp <- precip.mat
-	don.tmp[] <- NA
-	don.tmp0 <- don.tmp
-	icol <- which(colSums(!is.na(precip.mat)) > 5)
+SPEI_function <- function(data.mat, tscale = 1, frequency = 12, distribution = 'Gamma'){
+	nl <- nrow(data.mat)
+	don.tmp0 <- data.mat*NA
+	icol <- which(colSums(!is.na(data.mat)) > 4)
 	if(length(icol) == 0) return(don.tmp0)
-	don.tmp <- don.tmp[, icol, drop = FALSE]
-	precip.mat <- precip.mat[, icol, drop = FALSE]
+	data.mat <- data.mat[, icol, drop = FALSE]
 
-	for(k in 1:(nl-tscale+1))
-		don.tmp[k+tscale-1, ] <- colSums(precip.mat[k:(k+tscale-1), , drop = FALSE], na.rm = TRUE)
+	if(tscale > 1){
+		don.tmp <- don.tmp0
+		for(k in 1:(nl-tscale+1))
+			don.tmp[k+tscale-1, ] <- colSums(data.mat[k:(k+tscale-1), , drop = FALSE], na.rm = TRUE)
+	}else don.tmp <- data.mat
 
-	spi <- lapply(1:12, function(k){
-		don.mon <- don.tmp[seq(k+tscale-1, nl, 12), , drop = FALSE]
-		if(distribution == 'Gamma'){
-			pzero <- colSums(!is.na(don.mon) & don.mon == 0)/colSums(!is.na(don.mon))
-			don.mon[don.mon == 0] <- NA
-			don.mean <- colMeans(don.mon, na.rm = TRUE)
+	estime.pars.fun <- switch(distribution,
+						"Gamma" = list(pargam, cdfgam),
+						"Pearson Type III" = list(parpe3, cdfpe3),
+						"log-Logistic" = list(parglo, cdfglo))
 
-			beta <- don.mean
-			alpha <- rep(1, length(beta))
-			nonzero <- colSums(!is.na(don.mon))
-			iz <- nonzero > 0
-			if(any(iz)){
-				A <- log(don.mean[iz]) - colSums(log(don.mon[, iz, drop = FALSE]), na.rm = TRUE)/nonzero[iz]
-				alpha[iz] <- (1 + sqrt(1 + 4 * A / 3)) / (4 * A)
-				beta[iz] <- don.mean[iz]/alpha
+	estime.pars <- function(x){
+		x <- x[!is.na(x)]
+		if(length(x) < 5) return(NULL)
+		lmr <- lmoms(x)
+		if(!are.lmom.valid(lmr)) return(NULL)
+		estime.pars.fun[[1]](lmr)
+	}
+
+	spi <- lapply(1:frequency, function(k){
+		iseq <- seq(k+tscale-1, nl, frequency)
+		don.mon <- don.tmp[iseq, , drop = FALSE]
+		spi.out <- don.mon*NA
+
+		no.na <- colSums(!is.na(don.mon))
+		don.sd <- matrixStats::colSds(don.mon, na.rm = TRUE)
+		icol1 <- no.na > 4 & !is.na(don.sd) & don.sd != 0
+		if(!any(icol1)) return(spi.out)
+
+		don.mon <- don.mon[, icol1, drop = FALSE]
+		don.sd <- don.sd[icol1]
+
+		if(distribution %in% c("Gamma", "Pearson Type III", "log-Logistic")){
+			don.mon1 <- don.mon
+			SPI <- don.mon*NA
+
+			if(distribution %in% c("Gamma", "Pearson Type III")){
+				pzero <- colSums(!is.na(don.mon) & don.mon == 0)/colSums(!is.na(don.mon))
+				don.mon[don.mon <= 0] <- NA
 			}
 
-			G <- pgamma(don.tmp[seq(k+tscale-1, nl, 12), , drop = FALSE], shape = alpha, scale = beta)
-			pzero <- matrix(pzero, nrow = nrow(G), ncol = ncol(G), byrow = TRUE)
-			H <- pzero + (1-pzero) * G
-			H[is.nan(H)] <- NA
-			tt <- H
-			ix <- !is.na(H) & H > 0 & H <= 0.5
-			tt[ix] <- sqrt(log(1/(H[ix])^2))
-			tt[!ix] <- sqrt(log(1/(1-H[!ix])^2))
+			PARS <- lapply(seq(ncol(don.mon)), function(j) estime.pars(don.mon[, j]))
+			inull <- sapply(PARS, is.null)
+			if(all(inull)) return(spi.out)
 
-			spi <- tt-((2.515517+0.802853*tt+0.010328*(tt^2))/(1+1.432788*tt+0.189269*(tt^2)+0.001308*(tt^3)))
-			spi[ix] <- -spi[ix]
+			PARS <- PARS[!inull]
+			don.mon1 <- don.mon1[, !inull, drop = FALSE]
+
+			spi <- lapply(seq(ncol(don.mon1)), function(j) qnorm(estime.pars.fun[[2]](don.mon1[, j], PARS[[j]])))
+			spi <- do.call(cbind, spi)
+
+			if(distribution %in% c("Gamma", "Pearson Type III")){
+				pzero <- matrix(pzero[!inull], nrow(spi), ncol(spi), byrow = TRUE)
+				SPI[, !inull] <- qnorm(pzero + (1-pzero)*pnorm(spi))
+			}else SPI[, !inull] <- spi
 		}
 
-		if(distribution == 'Normal'){
+		if(distribution == 'Z-Score'){
 			don.mean <- colMeans(don.mon, na.rm = TRUE)
-			don.sd <- matrixStats::colSds(don.mon, na.rm = TRUE)
-			spi <- sweep(sweep(don.mon, 2, don.mean, FUN = "-"), 2, don.sd, FUN = "/")
+			SPI <- sweep(sweep(don.mon, 2, don.mean, FUN = "-"), 2, don.sd, FUN = "/")
 		}
-		return(spi)
+
+		spi.out[, icol1] <- SPI
+		return(spi.out)
 	})
 
-	for(k in 1:12) don.tmp[seq(k+tscale-1, nl, 12), ] <- spi[[k]]
+	for(k in 1:frequency) don.tmp[seq(k+tscale-1, nl, frequency), ] <- spi[[k]]
 	don.tmp0[, icol] <- don.tmp
 	rm(spi, don.tmp)
 	return(don.tmp0)

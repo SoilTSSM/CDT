@@ -4,10 +4,12 @@ geodist.km <- function(lon0, lat0, lon1, lat1) 6371*acos(sin(lat0*pi/180)*sin(la
 
 choose.neignbors <- function(mvar, xpos, lon, lat, elv, max.dist, min.stn){
 	x0 <- mvar[, xpos]
-	Y <- mvar[, -xpos]
+	Y <- mvar[, -xpos, drop = FALSE]
 
-	idNA <- apply(Y, 2, function(x) (length(x[!is.na(x)])/length(x)) > 0.8)
-	Y <- Y[, idNA]
+	# idNA <- apply(Y, 2, function(x) (length(x[!is.na(x)])/length(x)) > 0.8)
+	idNA <- colSums(!is.na(Y))/nrow(Y) > 0.5
+
+	Y <- Y[, idNA, drop = FALSE]
 	if(ncol(Y) < min.stn){
 		msg <- paste('Neighbor stations have too much missing values', 'with min.stn >=', min.stn)
 		ret <- list(x = x0, Y = NULL, rho = NULL, dist = NULL, cov = NULL, delv = NULL, msg = msg)
@@ -31,7 +33,7 @@ choose.neignbors <- function(mvar, xpos, lon, lat, elv, max.dist, min.stn){
 		dist <- geodist.km(xl0, yl0, xl1, yl1)
 		idR <- which(dist <= max.dist)
 		if(!is.null(Y) & (length(idR) >= min.stn)){
-			Y <- Y[, order(dist[idR])]
+			Y <- Y[, order(dist[idR]), drop = FALSE]
 			dist0 <- dist[idR]
 			dist0 <- dist0[order(dist0)]
 			rho <- cor(x0, Y, use = "pairwise.complete.obs")
@@ -53,7 +55,7 @@ use.elevation <- function(ret, uselv, elv.diff, min.stn){
 		if(uselv & !is.null(ret$delv)){
 			idELV <- which(ret$delv <= elv.diff)
 			if((length(idELV) >= min.stn)){
-				res <- list(x = ret$x, Y = ret$Y[, idELV], rho = ret$rho[idELV],
+				res <- list(x = ret$x, Y = ret$Y[, idELV, drop = FALSE], rho = ret$rho[idELV],
 							dist = ret$dist[idELV], cov = ret$cov[idELV], msg = ret$msg)
 			}else{
 				res <- list(x = ret$x, Y = NULL, rho = NULL, dist = NULL, cov = NULL,
@@ -78,11 +80,11 @@ weighting.factors <- function(ret, weight.fac, min.stn, min.rho, max.stn){
 		if(!is.null(Y)){
 			idRHO <- which(rho >= min.rho)
 			if((length(idRHO) >= min.stn)){
-				Y <- Y[, order(rho[idRHO], decreasing = TRUE)]
+				Y <- Y[, order(rho[idRHO], decreasing = TRUE), drop = FALSE]
 				rhor <- rho[idRHO]
 				rho <- rhor[order(rhor, decreasing = TRUE)]
 				if(ncol(Y) >= max.stn){
-					Y <- Y[, 1:max.stn]
+					Y <- Y[, 1:max.stn, drop = FALSE]
 					rho <- rho[1:max.stn]
 				}
 				lambda <- as.vector((rho*rho)/sum(rho*rho))
@@ -96,7 +98,7 @@ weighting.factors <- function(ret, weight.fac, min.stn, min.rho, max.stn){
 	}else if(weight.fac == '2'){ #distance
 		if(!is.null(Y)){
 			if(ncol(Y) >= max.stn){
-				Y <- Y[, 1:max.stn]
+				Y <- Y[, 1:max.stn, drop = FALSE]
 				dist <- dist[1:max.stn]
 			}
 			lambda <- as.vector((1/(dist*dist))/sum(1/(dist*dist)))
@@ -105,7 +107,7 @@ weighting.factors <- function(ret, weight.fac, min.stn, min.rho, max.stn){
 	}else if(weight.fac == '3'){ #optimal
 		if(!is.null(Y)){
 			if(ncol(Y) >= max.stn){
-				Y <- Y[, 1:max.stn]
+				Y <- Y[, 1:max.stn, drop = FALSE]
 				vcov <- as.matrix(vcov[1:max.stn, 1])
 			}
 			ones <- matrix(1, ncol = 1, nrow = ncol(Y))
@@ -123,7 +125,7 @@ weighting.factors <- function(ret, weight.fac, min.stn, min.rho, max.stn){
 
 weighting.factors.usr <- function(xpos, ypos, mvar, lon, lat, weight.fac){
 	x0 <- mvar[, xpos]
-	Y <- mvar[, ypos]
+	Y <- mvar[, ypos, drop = FALSE]
 	xl0 <- lon[xpos]
 	yl0 <- lat[xpos]
 	xl1 <- lon[ypos]

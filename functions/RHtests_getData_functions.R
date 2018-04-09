@@ -28,6 +28,8 @@ getRHtestsData <- function(GeneralParameters){
 	infoDonne <- getStnOpenDataInfo(GeneralParameters$IO.files$Cand.file)[2:3]
 	MissingValue <- infoDonne[[2]]$miss.val
 
+	## a changer complement
+	## /Users/rijaf/Desktop/ECHANGE/github/CDT/functions/cdtClimato0_functions.R
 	retval <- NULL
 	if(!single.series){
 		donne <- getCDTdataAndDisplayMsg(donne, freqdata)

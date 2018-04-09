@@ -7,7 +7,7 @@ imgdir <<- file.path(apps.dir, 'images')
 
 pkgs <- c('R.utils', 'stringr', 'jsonlite', 'tkrplot', 'gmt', 'fields', 'latticeExtra', 'sp', 'maptools',
 			'gstat', 'automap', 'reshape2', 'ncdf4', 'foreach', 'doParallel', 'raster', 'rgdal', 'rgeos',
-			'RCurl', 'fitdistrplus', 'qmap', 'ADGofTest', 'matrixStats', 'data.table')
+			'RCurl', 'fitdistrplus', 'qmap', 'ADGofTest', 'matrixStats', 'data.table', 'lmomco')
 new.pkgs <- pkgs[!(pkgs %in% installed.packages()[, "Package"])]
 if(length(new.pkgs) > 0){
 	if(Sys.info()["sysname"] == "Windows") {
@@ -91,7 +91,7 @@ if(tclPath$UseOtherTclTk == 1){
 packages <- list('tcltk', 'tkrplot', 'grid', 'lattice', 'latticeExtra', 'sp', 'ncdf4', 'gmt', 'fields',
 				'maps', 'gstat', 'automap', 'reshape2', 'compiler', 'parallel', 'foreach', 'doParallel',
 				'raster', 'rgeos', 'rgdal', 'maptools', 'RCurl', 'fitdistrplus', 'qmap', 'ADGofTest',
-				'matrixStats', 'data.table')
+				'matrixStats', 'data.table', 'lmomco')
 ret.pkgs <- sapply(packages, library, character.only = TRUE, logical.return = TRUE)
 #compilePKGS(enable = TRUE)
 #enableJIT(3)

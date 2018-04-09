@@ -1475,7 +1475,7 @@ MergingFunctionRain <- function(paramsMRG){
 				rnr.rfe <- xrfe
 				rnr.rfe[] <- 0
 				rnr.rfe[xrfe >= wet.day] <- 1
-				locations.stn$rnr.stn <- ifelse(locations.stn$stn >= wet.day,1,0)
+				locations.stn$rnr.stn <- ifelse(locations.stn$stn >= wet.day, 1, 0)
 				xadd$rnr.stn <- c(rnr.rfe[interp.grid$idxy$ix, interp.grid$idxy$iy])
 
 				###########
@@ -1546,8 +1546,8 @@ MergingFunctionRain <- function(paramsMRG){
 							block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 
 			extrm <- c(min(locations.stn$res, na.rm = TRUE), max(locations.stn$res, na.rm = TRUE))
-			ixtrm <- is.na(res.grd$var1.pred) | (res.grd$var1.pred < extrm[1] | res.grd$var1.pred > extrm[2])
-			res.grd$var1.pred[ixtrm] <- NA
+			# ixtrm <- is.na(res.grd$var1.pred) | (res.grd$var1.pred < extrm[1] | res.grd$var1.pred > extrm[2])
+			# res.grd$var1.pred[ixtrm] <- NA
 
 			ina <- is.na(res.grd$var1.pred)
 			if(any(ina)){

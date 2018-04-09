@@ -7,8 +7,8 @@ HOValidation.plotStatMaps <- function(){
 	xna <- EnvHOValidation$opDATA$lon[is.na(don)]
 	yna <- EnvHOValidation$opDATA$lat[is.na(don)]
 
-	nx <- as.integer(diff(range(EnvHOValidation$opDATA$lon))/(0.0375*2.5))
-	ny <- as.integer(diff(range(EnvHOValidation$opDATA$lat))/(0.0375*2.5))
+	nx <- nx_ny_as.image(diff(range(EnvHOValidation$opDATA$lon)))
+	ny <- nx_ny_as.image(diff(range(EnvHOValidation$opDATA$lat)))
 	don <- as.image(don, x = cbind(EnvHOValidation$opDATA$lon, EnvHOValidation$opDATA$lat), nx = nx, ny = ny)
 
 	ocrds <- EnvHOValidationplot$shp

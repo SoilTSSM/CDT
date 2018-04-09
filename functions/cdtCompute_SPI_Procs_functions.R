@@ -33,6 +33,18 @@ computeSPIProcs <- function(GeneralParameters){
 	}
 
 	#####################
+	# dekadal: frequency = 36, tscale = 1
+	# monthly: frequency = 12
+
+	spi.frequency <- 12
+	spi.tscale <- GeneralParameters$tscale
+	spi.distribution <- GeneralParameters$distr
+	## monthly
+	spi.out.suffix <- GeneralParameters$tscale
+	## dekadal
+	# spi.out.suffix <- "1dek"
+
+	#####################
 	outDIR <- file.path(GeneralParameters$outdir, "SPI_data")
 	dir.create(outDIR, showWarnings = FALSE, recursive = TRUE)
 	dataCDTdir <- file.path(outDIR, 'CDTDATASET')
@@ -154,10 +166,10 @@ computeSPIProcs <- function(GeneralParameters){
 	if(GeneralParameters$data.type == "cdtstation"){
 		dataSTNdir <- file.path(outDIR, 'CDTSTATIONS')
 		dir.create(dataSTNdir, showWarnings = FALSE, recursive = TRUE)
-		file.SPI.csv <- file.path(dataSTNdir, paste0("SPI", GeneralParameters$tscale, ".csv"))
-		file.SPI.rds <- file.path(dataCDTdir, paste0("SPI", GeneralParameters$tscale, ".rds"))
+		file.SPI.csv <- file.path(dataSTNdir, paste0("SPI", spi.out.suffix, ".csv"))
+		file.SPI.rds <- file.path(dataCDTdir, paste0("SPI", spi.out.suffix, ".rds"))
 
-		data.spi <- SPI_monthly_function(don$data, GeneralParameters$tscale, GeneralParameters$distr)
+		data.spi <- SPEI_function(don$data, spi.tscale, spi.frequency, spi.distribution)
 
 		saveRDS(data.spi, gzfile(file.SPI.rds, compression = 7))
 
@@ -166,7 +178,7 @@ computeSPIProcs <- function(GeneralParameters){
 		infohead <- cbind(chead, xhead)
 
 		xdata <- cbind(don$dates, data.spi)
-		if(GeneralParameters$tscale > 1) xdata <- xdata[-(1:(GeneralParameters$tscale-1)), ]
+		if(spi.tscale > 1) xdata <- xdata[-(1:(spi.tscale-1)), ]
 		data.spi <- rbind(infohead, xdata)
 		data.spi[is.na(data.spi)] <- -9999
 		writeFiles(data.spi, file.SPI.csv)
@@ -175,9 +187,9 @@ computeSPIProcs <- function(GeneralParameters){
 	}
 
 	if(GeneralParameters$data.type == "cdtdataset"){
-		dataNCdir <- file.path(outDIR, 'DATA_NetCDF', paste0("SPI", GeneralParameters$tscale))
+		dataNCdir <- file.path(outDIR, 'DATA_NetCDF', paste0("SPI", spi.out.suffix))
 		dir.create(dataNCdir, showWarnings = FALSE, recursive = TRUE)
-		dataSPIdir <- file.path(dataCDTdir, paste0("SPI", GeneralParameters$tscale))
+		dataSPIdir <- file.path(dataCDTdir, paste0("SPI", spi.out.suffix))
 		dir.create(dataSPIdir, showWarnings = FALSE, recursive = TRUE)
 		file.spi.index <- file.path(dataCDTdir, "SPI.rds")
 
@@ -197,8 +209,8 @@ computeSPIProcs <- function(GeneralParameters){
 		do.parChunk <- if(don$chunkfac > length(chunkcalc)) TRUE else FALSE
 		do.parCALC <- if(do.parChunk) FALSE else TRUE
 
-		toExports <- c("readCdtDatasetChunk.sequence", "writeCdtDatasetChunk.sequence", "doparallel", "SPI_monthly_function")
-		packages <- c("doParallel")
+		toExports <- c("readCdtDatasetChunk.sequence", "writeCdtDatasetChunk.sequence", "doparallel", "SPEI_function")
+		packages <- c("doParallel", "lmomco")
 
 		is.parallel <- doparallel(do.parCALC & (length(chunkcalc) > 10))
 		`%parLoop%` <- is.parallel$dofun
@@ -206,7 +218,7 @@ computeSPIProcs <- function(GeneralParameters){
 			don.data <- readCdtDatasetChunk.sequence(chunkcalc[[chkj]], file.month, do.par = do.parChunk)
 			don.data <- don.data[don$dateInfo$index, , drop = FALSE]
 
-			data.spi <- SPI_monthly_function(don.data, GeneralParameters$tscale, GeneralParameters$distr)
+			data.spi <- SPEI_function(don.data, spi.tscale, spi.frequency, spi.distribution)
 
 			writeCdtDatasetChunk.sequence(data.spi, chunkcalc[[chkj]], index.spi, dataSPIdir, do.par = do.parChunk)
 			rm(data.spi, don.data); gc()
@@ -226,7 +238,7 @@ computeSPIProcs <- function(GeneralParameters){
 
 		######################
 
-		daty <- if(GeneralParameters$tscale > 1) index.spi$dateInfo$date[-(1:(GeneralParameters$tscale-1))] else index.spi$dateInfo$date
+		daty <- if(spi.tscale > 1) index.spi$dateInfo$date[-(1:(spi.tscale-1))] else index.spi$dateInfo$date
 
 		chunkfile <- sort(unique(index.spi$colInfo$index))
 		datyread <- split(daty, ceiling(seq_along(daty)/50))

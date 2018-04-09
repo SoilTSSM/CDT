@@ -101,11 +101,11 @@ SPICalcPanelCmd <- function(){
 
 		if(GeneralParameters$data.type == 'cdtstation'){
 			input.file <- tclVar(GeneralParameters$cdtstation)
-			txt.INData <- 'File containing stations data'
+			txt.INData <- 'File containing stations Precip data'
 			stateSetNC <- "disabled"
 		}else{
 			input.file <- tclVar(GeneralParameters$cdtdataset)
-			txt.INData <- 'Index file (*.rds) of the dataset'
+			txt.INData <- 'Index file (*.rds) for Precip dataset'
 			stateSetNC <- "disabled"
 		}
 
@@ -176,7 +176,7 @@ SPICalcPanelCmd <- function(){
 
 			###
 			if(str_trim(tclvalue(DataType)) == 'CDT stations data format'){
-				tclvalue(txt.INData.var) <- 'File containing stations data'
+				tclvalue(txt.INData.var) <- 'File containing stations Precip data'
 
 				cb.en.infile <- ttkcombobox(frameInData, values = unlist(listOpenFiles), textvariable = input.file, width = largeur1)
 
@@ -201,7 +201,7 @@ SPICalcPanelCmd <- function(){
 
 			###
 			if(str_trim(tclvalue(DataType)) == 'CDT dataset format (gridded)'){
-				tclvalue(txt.INData.var) <- 'Index file (*.rds) of the dataset'
+				tclvalue(txt.INData.var) <- 'Index file (*.rds) for Precip dataset'
 
 				cb.en.infile <- tkentry(frameInData, textvariable = input.file, width = largeur2)
 
@@ -222,8 +222,9 @@ SPICalcPanelCmd <- function(){
 
 		#############################
 
-		frameTscale <- tkframe(subfr1, relief = 'groove', borderwidth = 2)
+		frameParams <- tkframe(subfr1, relief = 'groove', borderwidth = 2)
 
+		frameTscale <- tkframe(frameParams)
 		txt.Tscale1 <- tklabel(frameTscale, text = "SPI timescale", anchor = 'e', justify = 'right')
 		spin.Tscale <- ttkspinbox(frameTscale, from = 1, to = 60, increment = 1, justify = 'center', width = 2)
 		tkset(spin.Tscale, GeneralParameters$tscale)
@@ -231,10 +232,20 @@ SPICalcPanelCmd <- function(){
 
 		tkgrid(txt.Tscale1, spin.Tscale, txt.Tscale2)
 
-		#############################
+		########
+		frameDistrb <- tkframe(frameParams)
 
-		# Gammadistribution
-		# Pearson Type III distribution
+		DistrbVAL <- c("Gamma", "Pearson Type III", "log-Logistic", "Z-Score")
+		DistrbFun <- tclVar(GeneralParameters$distr)
+
+		txt.Distrb <- tklabel(frameDistrb, text = "Distribution function", anchor = 'e', justify = 'right')
+		cb.Distrb <- ttkcombobox(frameDistrb, values = DistrbVAL, textvariable = DistrbFun, width = largeur3)
+
+		tkgrid(txt.Distrb, cb.Distrb)
+
+		########
+		tkgrid(frameTscale, row = 0, column = 0, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameDistrb, row = 1, column = 0, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 		#############################
 
@@ -291,6 +302,7 @@ SPICalcPanelCmd <- function(){
 
 			GeneralParameters$outdir <- str_trim(tclvalue(outSPIdir))
 			GeneralParameters$tscale <- as.numeric(str_trim(tclvalue(tkget(spin.Tscale))))
+			GeneralParameters$distr <- str_trim(tclvalue(DistrbFun))
 
 			assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
@@ -323,7 +335,7 @@ SPICalcPanelCmd <- function(){
 
 		tkgrid(frameTimeS, row = 0, column = 0, sticky = '', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(frameInData, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-		tkgrid(frameTscale, row = 2, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		tkgrid(frameParams, row = 2, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
 		tkgrid(frameDirSav, row = 3, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
 		tkgrid(calculateBut, row = 4, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
 
