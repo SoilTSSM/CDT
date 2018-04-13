@@ -8,7 +8,7 @@ anomaliesCalcPanelCmd <- function(){
 		largeur1 <- as.integer(w.scale(27)/sfont0)
 		largeur2 <- as.integer(w.scale(29)/sfont0)
 		largeur3 <- 20
-		# largeur4 <- largeur1-5
+		largeur4 <- 21
 		# largeur5 <- 30
 		# largeur6 <- 22
 	}else{
@@ -18,7 +18,7 @@ anomaliesCalcPanelCmd <- function(){
 		largeur1 <- as.integer(w.scale(22)/sfont0)
 		largeur2 <- as.integer(w.scale(23)/sfont0)
 		largeur3 <- 15
-		# largeur4 <- largeur1
+		largeur4 <- 14
 		# largeur5 <- 22
 		# largeur6 <- 14
 	}
@@ -45,13 +45,16 @@ anomaliesCalcPanelCmd <- function(){
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "Input")
 	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Anomalies")
-	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Plot")
+	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Maps")
+	cmd.tab4 <- bwAddTab(tknote.cmd, text = "Graphs")
+	cmd.tab5 <- bwAddTab(tknote.cmd, text = "Boundaries")
 
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
-
+	tkgrid.columnconfigure(cmd.tab4, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab5, 0, weight = 1)
 
 	#######################################################################################################
 
@@ -634,7 +637,7 @@ anomaliesCalcPanelCmd <- function(){
 
 			ret <- tryCatch(
 				anomaliesCalcProcs(GeneralParameters),
-				#warning = function(w) warningFun(w),
+				# warning = function(w) warningFun(w),
 				error = function(e) errorFun(e),
 				finally = tkconfigure(main.win, cursor = '')
 			)
@@ -648,8 +651,10 @@ anomaliesCalcPanelCmd <- function(){
 
 					###################
 
-					# load.PICSA.Data()
-
+					set.anomaly.dates()
+					widgets.Station.Pixel()
+					res <- EnvAnomalyCalcPlot$read.Anomaly.Map()
+					if(inherits(res, "try-error") | is.null(res)) return(NULL)
 				}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 		})
@@ -679,49 +684,463 @@ anomaliesCalcPanelCmd <- function(){
 		frameAnomalyDat <- ttklabelframe(subfr3, text = "Anomalies data", relief = 'groove')
 
 		EnvAnomalyCalcPlot$DirExist <- tclVar(0)
-		file.Stat <- tclVar()
+		file.AnomIndex <- tclVar()
 
-		statedirStat <- if(tclvalue(EnvAnomalyCalcPlot$DirExist) == "1") "normal" else "disabled"
+		stateAnomDat <- if(tclvalue(EnvAnomalyCalcPlot$DirExist) == "1") "normal" else "disabled"
 
-		chk.dirStat <- tkcheckbutton(frameAnomalyDat, variable = EnvAnomalyCalcPlot$DirExist, text = "Anomalies data already computed", anchor = 'w', justify = 'left')
-		en.dirStat <- tkentry(frameAnomalyDat, textvariable = file.Stat, width = largeur2, state = statedirStat)
-		bt.dirStat <- tkbutton(frameAnomalyDat, text = "...", state = statedirStat)
+		chk.anomIdx <- tkcheckbutton(frameAnomalyDat, variable = EnvAnomalyCalcPlot$DirExist, text = "Anomalies data already computed", anchor = 'w', justify = 'left')
+		en.anomIdx <- tkentry(frameAnomalyDat, textvariable = file.AnomIndex, width = largeur2, state = stateAnomDat)
+		bt.anomIdx <- tkbutton(frameAnomalyDat, text = "...", state = stateAnomDat)
 
-		tkconfigure(bt.dirStat, command = function(){
+		tkconfigure(bt.anomIdx, command = function(){
+			filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
+			path.Anom <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
+			if(path.Anom%in%c("", "NA") | is.na(path.Anom)) return(NULL)
+			tclvalue(file.AnomIndex) <- path.Anom
 
+			if(file.exists(str_trim(tclvalue(file.AnomIndex)))){
+				OutAnomdata <- try(readRDS(str_trim(tclvalue(file.AnomIndex))), silent = TRUE)
+				if(inherits(OutAnomdata, "try-error")){
+					InsertMessagesTxt(main.txt.out, 'Unable to load anomalies data', format = TRUE)
+					InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', OutAnomdata[1]), format = TRUE)
+					tkconfigure(cb.anom.Date, values = "")
+					tclvalue(EnvAnomalyCalcPlot$anomDate) <- ""
+					return(NULL)
+				}
+
+				EnvAnomalyCalcPlot$output <- OutAnomdata
+				EnvAnomalyCalcPlot$PathAnom <- dirname(str_trim(tclvalue(file.AnomIndex)))
+
+				###################
+				set.anomaly.dates()
+				widgets.Station.Pixel()
+				ret <- EnvAnomalyCalcPlot$read.Anomaly.Map()
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+			}
 		})
 
-
-		tkgrid(chk.dirStat, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(en.dirStat, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(bt.dirStat, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(chk.anomIdx, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(en.anomIdx, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.anomIdx, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
 		###############
-		tkbind(chk.dirStat, "<Button-1>", function(){
-			statedirStat <- if(tclvalue(EnvAnomalyCalcPlot$DirExist) == '1') 'disabled' else 'normal'
-			tkconfigure(en.dirStat, state = statedirStat)
-			tkconfigure(bt.dirStat, state = statedirStat)
+		tkbind(chk.anomIdx, "<Button-1>", function(){
+			stateAnomDat <- if(tclvalue(EnvAnomalyCalcPlot$DirExist) == '1') 'disabled' else 'normal'
+			tkconfigure(en.anomIdx, state = stateAnomDat)
+			tkconfigure(bt.anomIdx, state = stateAnomDat)
 			stateCaclBut <- if(tclvalue(EnvAnomalyCalcPlot$DirExist) == '1') 'normal' else 'disabled'
 			tkconfigure(calculateBut, state = stateCaclBut)
 		})
-
 		##############################################
 
-		frameClimatoMap <- ttklabelframe(subfr3, text = "Anomalies Map", relief = 'groove')
+		frameAnomalyMap <- ttklabelframe(subfr3, text = "Anomaly Map", relief = 'groove')
 
+		EnvAnomalyCalcPlot$anomDate <- tclVar()
 
+		cb.anom.Date <- ttkcombobox(frameAnomalyMap, values = "", textvariable = EnvAnomalyCalcPlot$anomDate, width = largeur4)
+		bt.anom.Date.prev <- ttkbutton(frameAnomalyMap, text = "<<", width = 3)
+		bt.anom.Date.next <- ttkbutton(frameAnomalyMap, text = ">>", width = 3)
+		bt.anom.maps <- ttkbutton(frameAnomalyMap, text = "PLOT", width = 7)
+		bt.anom.MapOpt <- ttkbutton(frameAnomalyMap, text = "Options", width = 7)
 
-		##############################################
+		###############
 
-		frameClimatoTS <- ttklabelframe(subfr3, text = "Anomalies Graph", relief = 'groove')
+		EnvAnomalyCalcPlot$anomMapOp <- list(presetCol = list(color = 'tim.colors', reverse = FALSE),
+												userCol = list(custom = FALSE, color = NULL),
+												userLvl = list(custom = FALSE, levels = NULL, equidist = FALSE),
+												title = list(user = FALSE, title = ''),
+												colkeyLab = list(user = FALSE, label = ''),
+												scalebar = list(add = FALSE, pos = 'bottomleft'))
 
+		tkconfigure(bt.anom.MapOpt, command = function(){
+			if(!is.null(EnvAnomalyCalcPlot$anomdata$map)){
+				atlevel <- pretty(EnvAnomalyCalcPlot$anomdata$map$z, n = 10, min.n = 7)
+				if(is.null(EnvAnomalyCalcPlot$anomMapOp$userLvl$levels)){
+					EnvAnomalyCalcPlot$anomMapOp$userLvl$levels <- atlevel
+				}else{
+					if(!EnvAnomalyCalcPlot$anomMapOp$userLvl$custom)
+						EnvAnomalyCalcPlot$anomMapOp$userLvl$levels <- atlevel
+				}
+			}
+			EnvAnomalyCalcPlot$anomMapOp <- climatoAnalysis.MapOptions(main.win, EnvAnomalyCalcPlot$anomMapOp)
+		})
 
+		#########
+		EnvAnomalyCalcPlot$notebookTab.AnomMap <- NULL
+
+		tkconfigure(bt.anom.maps, command = function(){
+			if(str_trim(tclvalue(EnvAnomalyCalcPlot$anomDate)) != "" &
+				!is.null(EnvAnomalyCalcPlot$anomdata))
+			{
+				imgContainer <- anomaliesCalc.Display.Maps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvAnomalyCalcPlot$notebookTab.AnomMap, AllOpenTabType, AllOpenTabData)
+				EnvAnomalyCalcPlot$notebookTab.AnomMap <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		tkconfigure(bt.anom.Date.prev, command = function(){
+			if(str_trim(tclvalue(EnvAnomalyCalcPlot$anomDate)) != ""){
+				if(EnvAnomalyCalcPlot$output$params$data.type == "cdtstation")
+					anomDates <- EnvAnomalyCalcPlot$output$data$dates
+				else anomDates <- EnvAnomalyCalcPlot$output$dates
+
+				idaty <- which(anomDates == str_trim(tclvalue(EnvAnomalyCalcPlot$anomDate)))
+				idaty <- idaty-1
+				if(idaty < 1) idaty <- length(anomDates)
+				tclvalue(EnvAnomalyCalcPlot$anomDate) <- anomDates[idaty]
+
+				ret <- try(EnvAnomalyCalcPlot$read.Anomaly.Map(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+
+				imgContainer <- anomaliesCalc.Display.Maps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvAnomalyCalcPlot$notebookTab.AnomMap, AllOpenTabType, AllOpenTabData)
+				EnvAnomalyCalcPlot$notebookTab.AnomMap <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		tkconfigure(bt.anom.Date.next, command = function(){
+			if(str_trim(tclvalue(EnvAnomalyCalcPlot$anomDate)) != ""){
+				if(EnvAnomalyCalcPlot$output$params$data.type == "cdtstation")
+					anomDates <- EnvAnomalyCalcPlot$output$data$dates
+				else anomDates <- EnvAnomalyCalcPlot$output$dates
+
+				idaty <- which(anomDates == str_trim(tclvalue(EnvAnomalyCalcPlot$anomDate)))
+				idaty <- idaty+1
+				if(idaty > length(anomDates)) idaty <- 1
+				tclvalue(EnvAnomalyCalcPlot$anomDate) <- anomDates[idaty]
+
+				ret <- try(EnvAnomalyCalcPlot$read.Anomaly.Map(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+
+				imgContainer <- anomaliesCalc.Display.Maps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvAnomalyCalcPlot$notebookTab.AnomMap, AllOpenTabType, AllOpenTabData)
+				EnvAnomalyCalcPlot$notebookTab.AnomMap <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		###############
+
+		tkgrid(bt.anom.Date.prev, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(cb.anom.Date, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.anom.Date.next, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.anom.maps, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.anom.MapOpt, row = 1, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+		###############
+
+		tkbind(cb.anom.Date, "<<ComboboxSelected>>", function(){
+			if(!is.null(EnvAnomalyCalcPlot$anomdata)){
+				ret <- try(EnvAnomalyCalcPlot$read.Anomaly.Map(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+			}
+		})
 
 		##############################################
 
 		tkgrid(frameAnomalyDat, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(frameClimatoMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-		tkgrid(frameClimatoTS, row = 2, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		tkgrid(frameAnomalyMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+
+	#######################################################################################################
+
+	#Tab4
+	frTab4 <- tkframe(cmd.tab4)
+	tkgrid(frTab4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab4, 0, weight = 1)
+
+	scrw4 <- bwScrolledWindow(frTab4)
+	tkgrid(scrw4)
+	tkgrid.columnconfigure(scrw4, 0, weight = 1)
+	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr4, 0, weight = 1)
+
+		##############################################
+
+		frameAnomalyTS <- ttklabelframe(subfr4, text = "Anomaly Graph", relief = 'groove')
+
+		typeTSPLOT <- c("Bar", "Line")
+		EnvAnomalyCalcPlot$graph$typeTSp <- tclVar("Bar")
+
+		cb.typeTSp <- ttkcombobox(frameAnomalyTS, values = typeTSPLOT, textvariable = EnvAnomalyCalcPlot$graph$typeTSp, width = largeur4)
+		bt.TsGraph.plot <- ttkbutton(frameAnomalyTS, text = "PLOT", width = 7)
+		bt.TSGraphOpt <- ttkbutton(frameAnomalyTS, text = "Options", width = 8)
+
+		#################
+
+		EnvAnomalyCalcPlot$TSGraphOp <- list(
+					anomaly = list(
+							anom = NULL,
+							xlim = list(is.min = FALSE, min = "1981-1-1", is.max = FALSE, max = "2017-12-31"),
+							ylim = list(is.min = FALSE, min = -100, is.max = FALSE, max = 100),
+							axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+							title = list(is.title = FALSE, title = '', position = 'top'),
+							colors = list(negative = "blue", positive = "red")
+						),
+					line = list(
+						xlim = list(is.min = FALSE, min = "1981-1-1", is.max = FALSE, max = "2017-12-31"),
+						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+						title = list(is.title = FALSE, title = '', position = 'top'),
+						plot = list(type = 'both',
+							col = list(line = "red", points = "blue"),
+							lwd = 2, cex = 1.4),
+						legend = NULL)
+					)
+
+		tkconfigure(bt.TSGraphOpt, command = function(){
+			suffix.fun <- switch(str_trim(tclvalue(EnvAnomalyCalcPlot$graph$typeTSp)),
+									"Bar" = "Anomaly",
+									"Line" = "Line")
+			plot.fun <- match.fun(paste0("climatoAnalysis.GraphOptions.", suffix.fun))
+			EnvAnomalyCalcPlot$TSGraphOp <- plot.fun(main.win, EnvAnomalyCalcPlot$TSGraphOp)
+		})
+
+		#########
+		EnvAnomalyCalcPlot$notebookTab.AnomGraph <- NULL
+
+		tkconfigure(bt.TsGraph.plot, command = function(){
+			if(!is.null(EnvAnomalyCalcPlot$anomdata)){
+				imgContainer <- anomaliesCalc.Display.Graph(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvAnomalyCalcPlot$notebookTab.AnomGraph, AllOpenTabType, AllOpenTabData)
+				EnvAnomalyCalcPlot$notebookTab.AnomGraph <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		#################
+
+		tkgrid(cb.typeTSp, row = 0, column = 0, sticky = 'we', pady = 1, columnspan = 1)
+		tkgrid(bt.TSGraphOpt, row = 0, column = 1, sticky = 'we', padx = 4, pady = 1, columnspan = 1)
+		tkgrid(bt.TsGraph.plot, row = 0, column = 2, sticky = 'we', pady = 1, columnspan = 1)
+
+		##############################################
+
+		frameSTNCrds <- ttklabelframe(subfr4, text = "Station/Coordinates", relief = 'groove')
+
+		frTS2 <- tkframe(frameSTNCrds)
+		EnvAnomalyCalcPlot$graph$lonLOC <- tclVar()
+		EnvAnomalyCalcPlot$graph$latLOC <- tclVar()
+		EnvAnomalyCalcPlot$graph$stnIDTSp <- tclVar()
+
+		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
+
+		##############################################
+
+		tkgrid(frameAnomalyTS, row = 0, column = 0, sticky = 'we', pady = 1)
+		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = 'we', pady = 3)
+
+	#######################################################################################################
+
+	#Tab5
+	frTab5 <- tkframe(cmd.tab5)
+	tkgrid(frTab5, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab5, 0, weight = 1)
+
+	scrw5 <- bwScrolledWindow(frTab5)
+	tkgrid(scrw5)
+	tkgrid.columnconfigure(scrw5, 0, weight = 1)
+	subfr5 <- bwScrollableFrame(scrw5, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr5, 0, weight = 1)
+
+		##############################################
+
+		frameSHP <- ttklabelframe(subfr5, text = "Boundaries", relief = 'groove')
+
+		EnvAnomalyCalcPlot$shp$add.shp <- tclVar(FALSE)
+		file.plotShp <- tclVar()
+		stateSHP <- "disabled"
+
+		chk.addshp <- tkcheckbutton(frameSHP, variable = EnvAnomalyCalcPlot$shp$add.shp, text = "Add boundaries to Map", anchor = 'w', justify = 'left')
+		bt.addshpOpt <- ttkbutton(frameSHP, text = "Options", state = stateSHP)
+		cb.addshp <- ttkcombobox(frameSHP, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur1, state = stateSHP)
+		bt.addshp <- tkbutton(frameSHP, text = "...", state = stateSHP)
+
+		########
+		tkconfigure(bt.addshp, command = function(){
+			shp.opfiles <- getOpenShp(main.win, all.opfiles)
+			if(!is.null(shp.opfiles)){
+				nopf <- length(AllOpenFilesType)
+				AllOpenFilesType[[nopf+1]] <<- 'shp'
+				AllOpenFilesData[[nopf+1]] <<- shp.opfiles
+				tclvalue(file.plotShp) <- AllOpenFilesData[[nopf+1]][[1]]
+				listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
+
+				tkconfigure(cb.addshp, values = unlist(listOpenFiles), textvariable = file.plotShp)
+
+				shpofile <- getShpOpenData(file.plotShp)
+				if(is.null(shpofile)) EnvAnomalyCalcPlot$shp$ocrds <- NULL
+				EnvAnomalyCalcPlot$shp$ocrds <- getBoundaries(shpofile[[2]])
+			}else return(NULL)
+		})
+
+		########
+		EnvAnomalyCalcPlot$SHPOp <- list(col = "black", lwd = 1.5)
+
+		tkconfigure(bt.addshpOpt, command = function(){
+			EnvAnomalyCalcPlot$SHPOp <- climatoAnalysis.GraphOptions.LineSHP(main.win, EnvAnomalyCalcPlot$SHPOp)
+		})
+
+		########
+		tkgrid(chk.addshp, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1)
+		tkgrid(bt.addshpOpt, row = 0, column = 6, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1)
+		tkgrid(cb.addshp, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 7, padx = 1, pady = 1)
+		tkgrid(bt.addshp, row = 1, column = 7, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1)
+
+		#################
+		tkbind(cb.addshp, "<<ComboboxSelected>>", function(){
+			shpofile <- getShpOpenData(file.plotShp)
+			if(is.null(shpofile)) EnvAnomalyCalcPlot$shp$ocrds <- NULL
+			EnvAnomalyCalcPlot$shp$ocrds <- getBoundaries(shpofile[[2]])
+		})
+
+		tkbind(chk.addshp, "<Button-1>", function(){
+			stateSHP <- if(tclvalue(EnvAnomalyCalcPlot$shp$add.shp) == "1") "disabled" else "normal"
+			tkconfigure(cb.addshp, state = stateSHP)
+			tkconfigure(bt.addshp, state = stateSHP)
+			tkconfigure(bt.addshpOpt, state = stateSHP)
+		})
+
+		##############################################
+
+		tkgrid(frameSHP, row = 0, column = 0, sticky = 'we', pady = 1)
+
+	#######################################################################################################
+
+	widgets.Station.Pixel <- function(){
+		tkdestroy(frTS2)
+		frTS2 <<- tkframe(frameSTNCrds)
+
+		if(EnvAnomalyCalcPlot$output$params$data.type == "cdtstation"){
+			stnIDTSPLOT <- EnvAnomalyCalcPlot$output$data$id
+			txt.stnSel <- tklabel(frTS2, text = "Select a station to plot", anchor = 'w', justify = 'left')
+			txt.stnID <- tklabel(frTS2, text = "Station", anchor = 'e', justify = 'right')
+			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvAnomalyCalcPlot$graph$stnIDTSp, width = largeur4)
+			tclvalue(EnvAnomalyCalcPlot$graph$stnIDTSp) <- stnIDTSPLOT[1]
+
+			tkgrid(txt.stnSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.stnID, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(cb.stnID, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		}else{
+			txt.crdSel <- tklabel(frTS2, text = "Enter longitude and latitude to plot", anchor = 'w', justify = 'left')
+			txt.lonLoc <- tklabel(frTS2, text = "Longitude", anchor = 'e', justify = 'right')
+			en.lonLoc <- tkentry(frTS2, textvariable = EnvAnomalyCalcPlot$graph$lonLOC, width = 8)
+			txt.latLoc <- tklabel(frTS2, text = "Latitude", anchor = 'e', justify = 'right')
+			en.latLoc <- tkentry(frTS2, textvariable = EnvAnomalyCalcPlot$graph$latLOC, width = 8)
+			stnIDTSPLOT <- ""
+			tclvalue(EnvAnomalyCalcPlot$graph$stnIDTSp) <- ""
+
+			tkgrid(txt.crdSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.lonLoc, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(en.lonLoc, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.latLoc, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(en.latLoc, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		}
+
+		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
+		return(0)
+	}
+
+	set.anomaly.dates <- function(){
+		if(EnvAnomalyCalcPlot$output$params$data.type == "cdtstation")
+			anomDates <- EnvAnomalyCalcPlot$output$data$dates
+		else anomDates <- EnvAnomalyCalcPlot$output$dates
+		tkconfigure(cb.anom.Date, values = anomDates)
+		tclvalue(EnvAnomalyCalcPlot$anomDate) <- anomDates[1]
+		return(0)
+	}
+
+	#######################################################################################################
+
+
+	EnvAnomalyCalcPlot$read.Anomaly.Map <- function(){
+		tkconfigure(main.win, cursor = 'watch')
+		tcl('update')
+		on.exit({
+			tkconfigure(main.win, cursor = '')
+			tcl('update')
+		})
+
+		if(EnvAnomalyCalcPlot$output$params$data.type == "cdtstation"){
+			fileAnomdata <- file.path(EnvAnomalyCalcPlot$PathAnom, "CDTANOM/CDTANOM.rds")
+			if(!file.exists(fileAnomdata)){
+				InsertMessagesTxt(main.txt.out, paste(fileAnomdata, 'not found'), format = TRUE)
+				return(NULL)
+			}
+
+			readAnomData <- TRUE
+			if(!is.null(EnvAnomalyCalcPlot$anomdata))
+				if(!is.null(EnvAnomalyCalcPlot$fileAnomdata))
+					if(EnvAnomalyCalcPlot$fileAnomdata == fileAnomdata) readAnomData <- FALSE
+
+			if(readAnomData){
+				EnvAnomalyCalcPlot$anomdata$data <- readRDS(fileAnomdata)
+				EnvAnomalyCalcPlot$fileAnomdata <- fileAnomdata
+			}
+
+			########
+			rasterAnomData <- TRUE
+			if(!rasterAnomData)
+				if(!is.null(EnvAnomalyCalcPlot$anomdata$rasterDate))
+					if(EnvAnomalyCalcPlot$fileAnomdata == fileAnomdata)
+						if(EnvAnomalyCalcPlot$anomdata$rasterDate == str_trim(tclvalue(EnvAnomalyCalcPlot$anomDate))) rasterAnomData <- FALSE
+
+			if(rasterAnomData){
+				idt <- which(EnvAnomalyCalcPlot$output$data$dates == as.numeric(str_trim(tclvalue(EnvAnomalyCalcPlot$anomDate))))
+				nx <- nx_ny_as.image(diff(range(EnvAnomalyCalcPlot$output$data$lon)))
+				ny <- nx_ny_as.image(diff(range(EnvAnomalyCalcPlot$output$data$lat)))
+				tmp <- as.image(as.numeric(EnvAnomalyCalcPlot$anomdata$data[idt, ]), nx = nx, ny = ny,
+								x = cbind(EnvAnomalyCalcPlot$output$data$lon, EnvAnomalyCalcPlot$output$data$lat))
+				EnvAnomalyCalcPlot$anomdata$map$x <- tmp$x
+				EnvAnomalyCalcPlot$anomdata$map$y <- tmp$y
+				EnvAnomalyCalcPlot$anomdata$map$z <- tmp$z
+				EnvAnomalyCalcPlot$anomdata$rasterDate <- str_trim(tclvalue(EnvAnomalyCalcPlot$anomDate))
+				rm(tmp)
+			}
+		}else{
+			fileAnomdata <- file.path(EnvAnomalyCalcPlot$PathAnom, "DATA_NetCDF/CDTANOM",
+							paste0("anomaly_", str_trim(tclvalue(EnvAnomalyCalcPlot$anomDate)), ".nc"))
+			if(!file.exists(fileAnomdata)){
+				InsertMessagesTxt(main.txt.out, paste(fileAnomdata, 'not found'), format = TRUE)
+				return(NULL)
+			}
+
+			readAnomData <- TRUE
+			if(!is.null(EnvAnomalyCalcPlot$anomdata))
+				if(!is.null(EnvAnomalyCalcPlot$fileAnomdata))
+					if(EnvAnomalyCalcPlot$fileAnomdata == fileAnomdata) readAnomData <- FALSE
+
+			if(readAnomData){
+				nc <- nc_open(fileAnomdata)
+				EnvAnomalyCalcPlot$anomdata$map$x <- nc$dim[[1]]$vals
+				EnvAnomalyCalcPlot$anomdata$map$y <- nc$dim[[2]]$vals
+				EnvAnomalyCalcPlot$anomdata$map$z <- ncvar_get(nc, varid = nc$var[[1]]$name)
+				nc_close(nc)
+				EnvAnomalyCalcPlot$fileAnomdata <- fileAnomdata
+			}
+
+			###################
+
+			fileAnomIdx <- file.path(EnvAnomalyCalcPlot$PathAnom, "CDTANOM/CDTANOM.rds")
+
+			readAnomIdx<- TRUE
+			if(!is.null(EnvAnomalyCalcPlot$cdtdataset))
+				if(!is.null(EnvAnomalyCalcPlot$fileAnomIdx))
+					if(EnvAnomalyCalcPlot$fileAnomIdx == fileAnomIdx) readAnomIdx <- FALSE
+			if(readAnomIdx){
+				EnvAnomalyCalcPlot$cdtdataset <- readRDS(fileAnomIdx)
+				EnvAnomalyCalcPlot$cdtdataset$fileInfo <- fileAnomIdx
+				EnvAnomalyCalcPlot$fileAnomIdx <- fileAnomIdx
+			}
+		}
+
+		return(0)
+	}
 
 	#######################################################################################################
 

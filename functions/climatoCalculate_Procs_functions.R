@@ -33,9 +33,6 @@ climatologiesCalcProcs <- function(GeneralParameters){
 			return(NULL)
 		}
 
-		### anom
-		# index <- getClimatologiesIndex(daty, freqData, xwin)
-
 		### Clim
 		iyear <- year >= year1 & year <= year2
 		daty <- daty[iyear]

@@ -60,11 +60,12 @@ fit.distributions <- function(x, distr = c("norm", "snorm", "lnorm", "gamma", "w
 							  method = 'mle', ...)
 {
 	fit.distr <- lapply(distr, function(dm){
+		if(dm%in%c("lnorm", "gamma", "weibull") & any(x <= 0)) return(NULL)
 		start.pars <- do.call(paste0("start", dm), list(x))
 		fit.mod <- try(fitdist(x, dm, method = method, start = start.pars, ...), silent = TRUE)
 		fit.mod
 	})
-	idist <- sapply(fit.distr, function(d) !inherits(d, "try-error"))
+	idist <- sapply(fit.distr, function(d) if(!is.null(d)) !inherits(d, "try-error") else FALSE)
 	fit.distr <- if(any(idist)) fit.distr[idist] else NULL
 	return(fit.distr)
 }

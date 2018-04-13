@@ -216,7 +216,7 @@ source(file.path(apps.dir, 'functions', 'climdexTT_Procs_functions.R'))
 source(file.path(apps.dir, 'functions', 'climatoAnalysis_dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'climatoAnalysis_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'climatoAnalysis_Procs_functions.R'))
-source(file.path(apps.dir, 'functions', 'climatoAnalysis_displayAnalysis_functions.R'))
+source(file.path(apps.dir, 'functions', 'climatoAnalysis_displayPLOT_functions.R'))
 source(file.path(apps.dir, 'functions', 'climatoAnalysis_Plot_functions.R'))
 
 #####
@@ -249,26 +249,32 @@ source(file.path(apps.dir, 'functions', 'cdtCompute_WB_Procs_functions.R'))
 #####
 source(file.path(apps.dir, 'functions', 'climatoCalculate_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'climatoCalculate_Procs_functions.R'))
+source(file.path(apps.dir, 'functions', 'climatoCalculate_displayPLOT_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'climatoAnomalies_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'climatoAnomalies_Procs_functions.R'))
+source(file.path(apps.dir, 'functions', 'climatoAnomalies_displayPLOT_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'cdtCompute_Onset_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtCompute_Onset_Procs_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_Onset_displayPLOT_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'cdtCompute_Cessation_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtCompute_Cessation_Procs_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_Cessation_displayPLOT_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'cdtCompute_SeasonLength_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtCompute_SeasonLength_Procs_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_SeasonLength_displayPLOT_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'dailyRainfallAnalysis_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'dailyRainfallAnalysis_Procs_functions.R'))
+source(file.path(apps.dir, 'functions', 'dailyRainfallAnalysis_displayPLOT_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'cdtCompute_PICSA_leftCmd_functions.R'))

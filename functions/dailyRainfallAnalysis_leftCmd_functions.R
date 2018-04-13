@@ -8,10 +8,9 @@ dailyRainAnalysisPanelCmd <- function(){
 		largeur0 <- as.integer(w.scale(22)/sfont0)
 		largeur1 <- as.integer(w.scale(27)/sfont0)
 		largeur2 <- as.integer(w.scale(29)/sfont0)
-
 		largeur3 <- 24
-		# largeur4 <- largeur1-5
-		# largeur5 <- 30
+		largeur4 <- 28
+		largeur5 <- 21
 		# largeur6 <- 22
 	}else{
 		wscrlwin <- w.scale(27)
@@ -20,15 +19,21 @@ dailyRainAnalysisPanelCmd <- function(){
 		largeur0 <- as.integer(w.scale(20)/sfont0)
 		largeur1 <- as.integer(w.scale(21)/sfont0)
 		largeur2 <- as.integer(w.scale(23)/sfont0)
-
 		largeur3 <- 24
-		# largeur4 <- largeur1
-		# largeur5 <- 22
+		largeur4 <- 22
+		largeur5 <- 14
 		# largeur6 <- 14
 	}
 
 	# GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'ClimatoAnalysis.json'))
 	MOIS <- format(ISOdate(2014, 1:12, 1), "%b")
+	varsname <- list(name = c("TOTALRAIN", "RAININT", "WETDAY", "DRYDAY", "WETSPELL", "DRYSPELL"),
+					longname = c('Total Rainfall', 'Rainfall Intensity', 'Number of Wet Days',
+					'Number of Dry Days', 'Number of Wet Spells', 'Number of Dry Spells'))
+	statsname <- list(name = c('mean', 'stdev', 'coefvar', 'proba'),
+					longname = c('Mean', 'Standard deviation', 'Coefficient of variation',
+								'Probability of exceeding'))
+
 	GeneralParameters <- list(data.type = "cdtstation", cdtstation = "", cdtdataset = "",
 							min.frac = 0.95, output = "")
 
@@ -42,12 +47,16 @@ dailyRainAnalysisPanelCmd <- function(){
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "Input")
 	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Analysis")
-	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Plot")
+	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Maps")
+	cmd.tab4 <- bwAddTab(tknote.cmd, text = "Graphs")
+	cmd.tab5 <- bwAddTab(tknote.cmd, text = "Boundaries")
 
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab4, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab5, 0, weight = 1)
 
 	#######################################################################################################
 
@@ -521,9 +530,12 @@ dailyRainAnalysisPanelCmd <- function(){
 					InsertMessagesTxt(main.txt.out, msg0)
 
 					###################
-
-					# load.ClimatoAnalysis.Data()
-
+					set.Data.VarStat.Dates_1st()
+					widgets.Station.Pixel()
+					res1 <- EnvDailyRainAnalysisplot$read.Data.MapVarStat()
+					if(inherits(res1, "try-error") | is.null(res1)) return(NULL)
+					res2 <- EnvDailyRainAnalysisplot$read.Data.MapVarTS()
+					if(inherits(res2, "try-error") | is.null(res2)) return(NULL)
 				}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 		})
@@ -555,53 +567,711 @@ dailyRainAnalysisPanelCmd <- function(){
 
 		##############################################
 
-		frameOnsetDat <- ttklabelframe(subfr3, text = "Analysis data", relief = 'groove')
+		frameDataExist <- ttklabelframe(subfr3, text = "Analysis data", relief = 'groove')
 
 		EnvDailyRainAnalysisplot$DirExist <- tclVar(0)
-		file.OnsetIndex <- tclVar()
+		file.dataIndex <- tclVar()
 
-		stateOnsetDat <- if(tclvalue(EnvDailyRainAnalysisplot$DirExist) == "1") "normal" else "disabled"
+		stateExistData <- if(tclvalue(EnvDailyRainAnalysisplot$DirExist) == "1") "normal" else "disabled"
 
-		chk.OnsetIdx <- tkcheckbutton(frameOnsetDat, variable = EnvDailyRainAnalysisplot$DirExist, text = "Analysis data already computed", anchor = 'w', justify = 'left')
-		en.OnsetIdx <- tkentry(frameOnsetDat, textvariable = file.OnsetIndex, width = largeur2, state = stateOnsetDat)
-		bt.OnsetIdx <- tkbutton(frameOnsetDat, text = "...", state = stateOnsetDat)
+		chk.dataIdx <- tkcheckbutton(frameDataExist, variable = EnvDailyRainAnalysisplot$DirExist, text = "Analysis data already computed", anchor = 'w', justify = 'left')
+		en.dataIdx <- tkentry(frameDataExist, textvariable = file.dataIndex, width = largeur2, state = stateExistData)
+		bt.dataIdx <- tkbutton(frameDataExist, text = "...", state = stateExistData)
 
-		tkconfigure(bt.OnsetIdx, command = function(){
+		tkconfigure(bt.dataIdx, command = function(){
+			filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
+			path.dataIdx <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
+			if(path.dataIdx%in%c("", "NA") | is.na(path.dataIdx)) return(NULL)
+			tclvalue(file.dataIndex) <- path.dataIdx
 
+			if(file.exists(str_trim(tclvalue(file.dataIndex)))){
+				OutIndexdata <- try(readRDS(str_trim(tclvalue(file.dataIndex))), silent = TRUE)
+				if(inherits(OutIndexdata, "try-error")){
+					InsertMessagesTxt(main.txt.out, 'Unable to load daily rainfall analysis data', format = TRUE)
+					InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', OutIndexdata[1]), format = TRUE)
+
+					tkconfigure(cb.varstat.var, values = "")
+					tclvalue(EnvDailyRainAnalysisplot$anaVars) <- ""
+					tkconfigure(cb.varstat.stat, values = "")
+					tclvalue(EnvDailyRainAnalysisplot$anaStat) <- ""
+					tkconfigure(cb.data.Index, values = "")
+					tclvalue(EnvDailyRainAnalysisplot$donDate) <- ""
+					return(NULL)
+				}
+
+				EnvDailyRainAnalysisplot$output <- OutIndexdata
+				EnvDailyRainAnalysisplot$PathData <- dirname(str_trim(tclvalue(file.dataIndex)))
+
+				###################
+				set.Data.VarStat.Dates_1st()
+				widgets.Station.Pixel()
+				ret1 <- EnvDailyRainAnalysisplot$read.Data.MapVarStat()
+				if(inherits(ret1, "try-error") | is.null(ret1)) return(NULL)
+				ret2 <- EnvDailyRainAnalysisplot$read.Data.MapVarTS()
+				if(inherits(ret2, "try-error") | is.null(ret2)) return(NULL)
+			}
 		})
 
-
-		tkgrid(chk.OnsetIdx, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(en.OnsetIdx, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(bt.OnsetIdx, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(chk.dataIdx, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(en.dataIdx, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.dataIdx, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
 		###############
-		tkbind(chk.OnsetIdx, "<Button-1>", function(){
-			stateOnsetDat <- if(tclvalue(EnvDailyRainAnalysisplot$DirExist) == '1') 'disabled' else 'normal'
-			tkconfigure(en.OnsetIdx, state = stateOnsetDat)
-			tkconfigure(bt.OnsetIdx, state = stateOnsetDat)
+		tkbind(chk.dataIdx, "<Button-1>", function(){
+			stateExistData <- if(tclvalue(EnvDailyRainAnalysisplot$DirExist) == '1') 'disabled' else 'normal'
+			tkconfigure(en.dataIdx, state = stateExistData)
+			tkconfigure(bt.dataIdx, state = stateExistData)
 			stateCaclBut <- if(tclvalue(EnvDailyRainAnalysisplot$DirExist) == '1') 'normal' else 'disabled'
 			tkconfigure(bt.CalcDaily, state = stateCaclBut)
 		})
 
 		##############################################
 
-		frameOnsetMap <- ttklabelframe(subfr3, text = "Analysis Map", relief = 'groove')
+		frameDataStatMap <- ttklabelframe(subfr3, text = "Statistics Maps", relief = 'groove')
 
+		EnvDailyRainAnalysisplot$anaVars <- tclVar()
+		EnvDailyRainAnalysisplot$anaStat <- tclVar()
 
+		cb.varstat.var <- ttkcombobox(frameDataStatMap, values = "", textvariable = EnvDailyRainAnalysisplot$anaVars, width = largeur4)
+		bt.varstat.maps <- ttkbutton(frameDataStatMap, text = "PLOT")
+		cb.varstat.stat <- ttkcombobox(frameDataStatMap, values = "", textvariable = EnvDailyRainAnalysisplot$anaStat, width = largeur4)
+		bt.varstat.MapOpt <- ttkbutton(frameDataStatMap, text = "Options")
+
+		###################
+
+		EnvDailyRainAnalysisplot$varstatMapOp <- list(presetCol = list(color = 'tim.colors', reverse = FALSE),
+												userCol = list(custom = FALSE, color = NULL),
+												userLvl = list(custom = FALSE, levels = NULL, equidist = FALSE),
+												title = list(user = FALSE, title = ''),
+												colkeyLab = list(user = FALSE, label = ''),
+												scalebar = list(add = FALSE, pos = 'bottomleft'))
+
+		tkconfigure(bt.varstat.MapOpt, command = function(){
+			if(!is.null(EnvDailyRainAnalysisplot$varData$map)){
+				atlevel <- pretty(EnvDailyRainAnalysisplot$varData$map$z, n = 10, min.n = 7)
+				if(is.null(EnvDailyRainAnalysisplot$dataMapOp$userLvl$levels)){
+					EnvDailyRainAnalysisplot$dataMapOp$userLvl$levels <- atlevel
+				}else{
+					if(!EnvDailyRainAnalysisplot$dataMapOp$userLvl$custom)
+						EnvDailyRainAnalysisplot$dataMapOp$userLvl$levels <- atlevel
+				}
+			}
+			EnvDailyRainAnalysisplot$varstatMapOp <- climatoAnalysis.MapOptions(main.win, EnvDailyRainAnalysisplot$varstatMapOp)
+		})
+
+		###################
+
+		EnvDailyRainAnalysisplot$notebookTab.dataMapStat <- NULL
+
+		tkconfigure(bt.varstat.maps, command = function(){
+			if(str_trim(tclvalue(EnvDailyRainAnalysisplot$anaVars)) != "" &
+				str_trim(tclvalue(EnvDailyRainAnalysisplot$anaStat)) != "")
+			{
+				ret <- try(EnvDailyRainAnalysisplot$read.Data.MapVarStat(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+
+				imgContainer <- dailyRainAnalysis.Display.MapsVarStats(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvDailyRainAnalysisplot$notebookTab.dataMapStat, AllOpenTabType, AllOpenTabData)
+				EnvDailyRainAnalysisplot$notebookTab.dataMapStat <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		###################
+
+		tkgrid(cb.varstat.var, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.varstat.maps, row = 0, column = 4, sticky = '', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(cb.varstat.stat, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.varstat.MapOpt, row = 1, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+		###################
+
+		tkbind(cb.varstat.var, "<<ComboboxSelected>>", function(){
+			vars <- str_trim(tclvalue(EnvDailyRainAnalysisplot$anaVars))
+			if(vars == "") return(NULL)
+			varstats <- EnvDailyRainAnalysisplot$output$exist.vars.dates
+			statsval <- varstats[[varsname$name[which(varsname$longname == vars)]]]
+
+			STATSVAL <- statsname$longname[statsname$name%in%names(statsval)]
+			if(length(STATSVAL) == 1) STATSVAL <- c(STATSVAL, "")
+			tkconfigure(cb.varstat.stat, values = STATSVAL)
+			tclvalue(EnvDailyRainAnalysisplot$anaStat) <- STATSVAL[1]
+
+			tkconfigure(cb.data.Index, values = statsval$date)
+			tclvalue(EnvDailyRainAnalysisplot$donDate) <- statsval$date[length(statsval$date)]
+			return(0)
+		})
 
 		##############################################
 
-		frameOnsetTS <- ttklabelframe(subfr3, text = "Analysis Graph", relief = 'groove')
+		frameDataMap <- ttklabelframe(subfr3, text = "Seasonal Maps", relief = 'groove')
 
+		EnvDailyRainAnalysisplot$donDate <- tclVar()
 
+		cb.data.Index <- ttkcombobox(frameDataMap, values = "", textvariable = EnvDailyRainAnalysisplot$donDate, width = largeur5)
+		bt.data.Index.prev <- ttkbutton(frameDataMap, text = "<<", width = 3)
+		bt.data.Index.next <- ttkbutton(frameDataMap, text = ">>", width = 3)
+		bt.data.maps <- ttkbutton(frameDataMap, text = "PLOT", width = 7)
+		bt.data.MapOpt <- ttkbutton(frameDataMap, text = "Options", width = 7)
+
+		###############
+
+		EnvDailyRainAnalysisplot$dataMapOp <- list(presetCol = list(color = 'tim.colors', reverse = FALSE),
+												userCol = list(custom = FALSE, color = NULL),
+												userLvl = list(custom = FALSE, levels = NULL, equidist = FALSE),
+												title = list(user = FALSE, title = ''),
+												colkeyLab = list(user = FALSE, label = ''),
+												scalebar = list(add = FALSE, pos = 'bottomleft'))
+
+		tkconfigure(bt.data.MapOpt, command = function(){
+			if(!is.null(EnvDailyRainAnalysisplot$varData$map)){
+				atlevel <- pretty(EnvDailyRainAnalysisplot$varData$map$z, n = 10, min.n = 7)
+				if(is.null(EnvDailyRainAnalysisplot$dataMapOp$userLvl$levels)){
+					EnvDailyRainAnalysisplot$dataMapOp$userLvl$levels <- atlevel
+				}else{
+					if(!EnvDailyRainAnalysisplot$dataMapOp$userLvl$custom)
+						EnvDailyRainAnalysisplot$dataMapOp$userLvl$levels <- atlevel
+				}
+			}
+			EnvDailyRainAnalysisplot$dataMapOp <- climatoAnalysis.MapOptions(main.win, EnvDailyRainAnalysisplot$dataMapOp)
+		})
+
+		###############
+
+		EnvDailyRainAnalysisplot$notebookTab.dataMapTS <- NULL
+
+		tkconfigure(bt.data.maps, command = function(){
+			if(str_trim(tclvalue(EnvDailyRainAnalysisplot$donDate)) != "" &
+				!is.null(EnvDailyRainAnalysisplot$tsData))
+			{
+				imgContainer <- dailyRainAnalysis.Display.MapVarTS(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvDailyRainAnalysisplot$notebookTab.dataMapTS, AllOpenTabType, AllOpenTabData)
+				EnvDailyRainAnalysisplot$notebookTab.dataMapTS <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		tkconfigure(bt.data.Index.prev, command = function(){
+			if(str_trim(tclvalue(EnvDailyRainAnalysisplot$donDate)) != ""){
+				vars <- str_trim(tclvalue(EnvDailyRainAnalysisplot$anaVars))
+				this.vars <- varsname$name[which(varsname$longname == vars)]
+				donDates <- EnvDailyRainAnalysisplot$output$exist.vars.dates[[this.vars]]$date
+				idaty <- which(donDates == str_trim(tclvalue(EnvDailyRainAnalysisplot$donDate)))
+				idaty <- idaty-1
+				if(idaty < 1) idaty <- length(donDates)
+				tclvalue(EnvDailyRainAnalysisplot$donDate) <- donDates[idaty]
+
+				ret <- try(EnvDailyRainAnalysisplot$read.Data.MapVarTS(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+
+				imgContainer <- dailyRainAnalysis.Display.MapVarTS(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvDailyRainAnalysisplot$notebookTab.dataMapTS, AllOpenTabType, AllOpenTabData)
+				EnvDailyRainAnalysisplot$notebookTab.dataMapTS <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		tkconfigure(bt.data.Index.next, command = function(){
+			if(str_trim(tclvalue(EnvDailyRainAnalysisplot$donDate)) != ""){
+				vars <- str_trim(tclvalue(EnvDailyRainAnalysisplot$anaVars))
+				this.vars <- varsname$name[which(varsname$longname == vars)]
+				donDates <- EnvDailyRainAnalysisplot$output$exist.vars.dates[[this.vars]]$date
+				idaty <- which(donDates == str_trim(tclvalue(EnvDailyRainAnalysisplot$donDate)))
+				idaty <- idaty+1
+				if(idaty > length(donDates)) idaty <- 1
+				tclvalue(EnvDailyRainAnalysisplot$donDate) <- donDates[idaty]
+
+				ret <- try(EnvDailyRainAnalysisplot$read.Data.MapVarTS(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+
+				imgContainer <- dailyRainAnalysis.Display.MapVarTS(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvDailyRainAnalysisplot$notebookTab.dataMapTS, AllOpenTabType, AllOpenTabData)
+				EnvDailyRainAnalysisplot$notebookTab.dataMapTS <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		###############
+
+		tkgrid(bt.data.Index.prev, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(cb.data.Index, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.data.Index.next, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.data.maps, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.data.MapOpt, row = 1, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+		###############
+
+		tkbind(cb.data.Index, "<<ComboboxSelected>>", function(){
+			if(!is.null(EnvDailyRainAnalysisplot$tsData)){
+				ret <- try(EnvDailyRainAnalysisplot$read.Data.MapVarTS(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+			}
+		})
 
 		##############################################
 
-		tkgrid(frameOnsetDat, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(frameOnsetMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-		tkgrid(frameOnsetTS, row = 2, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		tkgrid(frameDataExist, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameDataStatMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		tkgrid(frameDataMap, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
+	#######################################################################################################
+
+	#Tab4
+	frTab4 <- tkframe(cmd.tab4)
+	tkgrid(frTab4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab4, 0, weight = 1)
+
+	scrw4 <- bwScrolledWindow(frTab4)
+	tkgrid(scrw4)
+	tkgrid.columnconfigure(scrw4, 0, weight = 1)
+	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr4, 0, weight = 1)
+
+		##############################################
+
+		frameDataTS <- ttklabelframe(subfr4, text = "Analysis Graph", relief = 'groove')
+
+		typeTSPLOT <- c("Line", "Barplot", "Probability", "Anomaly")
+		EnvDailyRainAnalysisplot$graph$typeTSp <- tclVar("Line")
+		EnvDailyRainAnalysisplot$graph$averageTSp <- tclVar(FALSE)
+		EnvDailyRainAnalysisplot$graph$tercileTSp <- tclVar(FALSE)
+		EnvDailyRainAnalysisplot$graph$trendTSp <- tclVar(FALSE)
+
+		stateType <- if(str_trim(tclvalue(EnvDailyRainAnalysisplot$graph$typeTSp)) == "Line") "normal" else "disabled"
+
+		cb.typeTSp <- ttkcombobox(frameDataTS, values = typeTSPLOT, textvariable = EnvDailyRainAnalysisplot$graph$typeTSp, width = largeur5)
+		bt.TsGraph.plot <- ttkbutton(frameDataTS, text = "PLOT", width = 7)
+		bt.TSGraphOpt <- ttkbutton(frameDataTS, text = "Options", width = 8)
+
+		frTS1 <- tkframe(frameDataTS)
+		chk.meanTSp <- tkcheckbutton(frTS1, variable = EnvDailyRainAnalysisplot$graph$averageTSp, text = "Add Mean", anchor = 'w', justify = 'left', state = stateType)
+		chk.tercTSp <- tkcheckbutton(frTS1, variable = EnvDailyRainAnalysisplot$graph$tercileTSp, text = "Add Terciles", anchor = 'w', justify = 'left', state = stateType)
+		chk.trendTSp <- tkcheckbutton(frTS1, variable = EnvDailyRainAnalysisplot$graph$trendTSp, text = "Add Trend", anchor = 'w', justify = 'left', state = stateType)
+		tkgrid(chk.meanTSp, chk.tercTSp, chk.trendTSp)
+
+		#################
+
+		EnvDailyRainAnalysisplot$TSGraphOp <- list(
+					anomaly = list(
+							anom = list(perc.anom = FALSE, basePeriod = FALSE, startYr.anom = 1981, endYr.anom = 2010),
+							xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+							ylim = list(is.min = FALSE, min = -100, is.max = FALSE, max = 100),
+							axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+							title = list(is.title = FALSE, title = '', position = 'top'),
+							colors = list(negative = "blue", positive = "red")
+						),
+					bar = list(
+						xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+						title = list(is.title = FALSE, title = '', position = 'top'),
+						colors = list(col = "darkblue")
+					),
+					line = list(
+						xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+						title = list(is.title = FALSE, title = '', position = 'top'),
+						plot = list(type = 'both',
+							col = list(line = "red", points = "blue"),
+							lwd = 2, cex = 1.4),
+						legend = list(
+							is = list(mean = FALSE, tercile = FALSE, linear = FALSE),
+							add = list(mean = FALSE, tercile = FALSE, linear = FALSE),
+							col = list(mean = "black", tercile1 = "green", tercile2 = "blue", linear = "purple3"),
+							text = list(mean = "Average", tercile1 = "Tercile 0.33333", tercile2 = "Tercile 0.66666", linear = "Trend line"),
+							lwd = list(mean = 2, tercile = 2, linear = 2))
+					),
+					proba = list(
+						xlim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+						title = list(is.title = FALSE, title = '', position = 'top'),
+						plot = list(type = 'both',
+							col = list(line = "red", points = "blue"),
+							lwd = 2, cex = 0.8),
+						proba = list(theoretical = FALSE, col = 'black', lwd = 2)
+					)
+				)
+
+		tkconfigure(bt.TSGraphOpt, command = function(){
+			suffix.fun <- switch(tclvalue(EnvDailyRainAnalysisplot$graph$typeTSp),
+									"Anomaly" = "Anomaly",
+									"Barplot" = "Bar",
+									"Line" = "Line",
+									"Probability" = "Proba")
+			plot.fun <- match.fun(paste0("climatoAnalysis.GraphOptions.", suffix.fun))
+			EnvDailyRainAnalysisplot$TSGraphOp <- plot.fun(main.win, EnvDailyRainAnalysisplot$TSGraphOp)
+		})
+
+		#################
+
+		EnvDailyRainAnalysisplot$notebookTab.dataGraph <- NULL
+
+		tkconfigure(bt.TsGraph.plot, command = function(){
+			if(!is.null(EnvDailyRainAnalysisplot$tsData)){
+				imgContainer <- dailyRainAnalysis.Display.VarGraph(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvDailyRainAnalysisplot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
+				EnvDailyRainAnalysisplot$notebookTab.dataGraph <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		#################
+
+		tkgrid(cb.typeTSp, row = 0, column = 0, sticky = 'we', pady = 3, columnspan = 1)
+		tkgrid(bt.TSGraphOpt, row = 0, column = 1, sticky = 'we', padx = 4, pady = 1, columnspan = 1)
+		tkgrid(bt.TsGraph.plot, row = 0, column = 2, sticky = 'we', pady = 3, columnspan = 1)
+		tkgrid(frTS1, row = 1, column = 0, sticky = 'we', pady = 3, columnspan = 3)
+
+		#################
+
+		tkbind(cb.typeTSp, "<<ComboboxSelected>>", function(){
+			stateType <- if(str_trim(tclvalue(EnvDailyRainAnalysisplot$graph$typeTSp)) == "Line") "normal" else "disabled"
+			tkconfigure(chk.meanTSp, state = stateType)
+			tkconfigure(chk.tercTSp, state = stateType)
+			tkconfigure(chk.trendTSp, state = stateType)
+		})
+
+		tkbind(chk.meanTSp, "<Button-1>", function(){
+			EnvDailyRainAnalysisplot$TSGraphOp$line$legend$add$mean <- 
+						if(tclvalue(EnvDailyRainAnalysisplot$graph$averageTSp) == '0') TRUE else FALSE
+			EnvDailyRainAnalysisplot$TSGraphOp$line.enso$legend$add$mean <- 
+						if(tclvalue(EnvDailyRainAnalysisplot$graph$averageTSp) == '0') TRUE else FALSE
+		})
+
+		tkbind(chk.tercTSp, "<Button-1>", function(){
+			EnvDailyRainAnalysisplot$TSGraphOp$line$legend$add$tercile <- 
+						if(tclvalue(EnvDailyRainAnalysisplot$graph$tercileTSp) == '0') TRUE else FALSE
+			EnvDailyRainAnalysisplot$TSGraphOp$line.enso$legend$add$tercile <- 
+						if(tclvalue(EnvDailyRainAnalysisplot$graph$tercileTSp) == '0') TRUE else FALSE
+		})
+
+		tkbind(chk.trendTSp, "<Button-1>", function(){
+			EnvDailyRainAnalysisplot$TSGraphOp$line$legend$add$linear <- 
+						if(tclvalue(EnvDailyRainAnalysisplot$graph$trendTSp) == '0') TRUE else FALSE
+			EnvDailyRainAnalysisplot$TSGraphOp$line.enso$legend$add$linear <- 
+						if(tclvalue(EnvDailyRainAnalysisplot$graph$trendTSp) == '0') TRUE else FALSE
+		})
+
+		##############################################
+
+		frameSTNCrds <- ttklabelframe(subfr4, text = "Station/Coordinates", relief = 'groove')
+
+		frTS2 <- tkframe(frameSTNCrds)
+		EnvDailyRainAnalysisplot$graph$lonLOC <- tclVar()
+		EnvDailyRainAnalysisplot$graph$latLOC <- tclVar()
+		EnvDailyRainAnalysisplot$graph$stnIDTSp <- tclVar()
+
+		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
+
+		##############################################
+
+		tkgrid(frameDataTS, row = 0, column = 0, sticky = 'we', pady = 1)
+		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = 'we', pady = 3)
+
+	#######################################################################################################
+
+	#Tab5
+	frTab5 <- tkframe(cmd.tab5)
+	tkgrid(frTab5, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab5, 0, weight = 1)
+
+	scrw5 <- bwScrolledWindow(frTab5)
+	tkgrid(scrw5)
+	tkgrid.columnconfigure(scrw5, 0, weight = 1)
+	subfr5 <- bwScrollableFrame(scrw5, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr5, 0, weight = 1)
+
+		##############################################
+
+		frameSHP <- ttklabelframe(subfr5, text = "Boundaries", relief = 'groove')
+
+		EnvDailyRainAnalysisplot$shp$add.shp <- tclVar(FALSE)
+		file.plotShp <- tclVar()
+		stateSHP <- "disabled"
+
+		chk.addshp <- tkcheckbutton(frameSHP, variable = EnvDailyRainAnalysisplot$shp$add.shp, text = "Add boundaries to Map", anchor = 'w', justify = 'left')
+		bt.addshpOpt <- ttkbutton(frameSHP, text = "Options", state = stateSHP)
+		cb.addshp <- ttkcombobox(frameSHP, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur1, state = stateSHP)
+		bt.addshp <- tkbutton(frameSHP, text = "...", state = stateSHP)
+
+		########
+		tkconfigure(bt.addshp, command = function(){
+			shp.opfiles <- getOpenShp(main.win, all.opfiles)
+			if(!is.null(shp.opfiles)){
+				nopf <- length(AllOpenFilesType)
+				AllOpenFilesType[[nopf+1]] <<- 'shp'
+				AllOpenFilesData[[nopf+1]] <<- shp.opfiles
+				tclvalue(file.plotShp) <- AllOpenFilesData[[nopf+1]][[1]]
+				listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
+
+				tkconfigure(cb.addshp, values = unlist(listOpenFiles), textvariable = file.plotShp)
+
+				shpofile <- getShpOpenData(file.plotShp)
+				if(is.null(shpofile)) EnvDailyRainAnalysisplot$shp$ocrds <- NULL
+				EnvDailyRainAnalysisplot$shp$ocrds <- getBoundaries(shpofile[[2]])
+			}else return(NULL)
+		})
+
+		########
+		EnvDailyRainAnalysisplot$SHPOp <- list(col = "black", lwd = 1.5)
+
+		tkconfigure(bt.addshpOpt, command = function(){
+			EnvDailyRainAnalysisplot$SHPOp <- climatoAnalysis.GraphOptions.LineSHP(main.win, EnvDailyRainAnalysisplot$SHPOp)
+		})
+
+		########
+		tkgrid(chk.addshp, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1)
+		tkgrid(bt.addshpOpt, row = 0, column = 6, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1)
+		tkgrid(cb.addshp, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 7, padx = 1, pady = 1)
+		tkgrid(bt.addshp, row = 1, column = 7, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1)
+
+		#################
+		tkbind(cb.addshp, "<<ComboboxSelected>>", function(){
+			shpofile <- getShpOpenData(file.plotShp)
+			if(is.null(shpofile)) EnvDailyRainAnalysisplot$shp$ocrds <- NULL
+			EnvDailyRainAnalysisplot$shp$ocrds <- getBoundaries(shpofile[[2]])
+		})
+
+		tkbind(chk.addshp, "<Button-1>", function(){
+			stateSHP <- if(tclvalue(EnvDailyRainAnalysisplot$shp$add.shp) == "1") "disabled" else "normal"
+			tkconfigure(cb.addshp, state = stateSHP)
+			tkconfigure(bt.addshp, state = stateSHP)
+			tkconfigure(bt.addshpOpt, state = stateSHP)
+		})
+
+		##############################################
+
+		tkgrid(frameSHP, row = 0, column = 0, sticky = 'we', pady = 1)
+
+	#######################################################################################################
+
+	widgets.Station.Pixel <- function(){
+		tkdestroy(frTS2)
+		frTS2 <<- tkframe(frameSTNCrds)
+
+		if(EnvDailyRainAnalysisplot$output$params$data.type == "cdtstation"){
+			stnIDTSPLOT <- EnvDailyRainAnalysisplot$output$data$id
+			txt.stnSel <- tklabel(frTS2, text = "Select a station to plot", anchor = 'w', justify = 'left')
+			txt.stnID <- tklabel(frTS2, text = "Station", anchor = 'e', justify = 'right')
+			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvDailyRainAnalysisplot$graph$stnIDTSp, width = largeur4)
+			tclvalue(EnvDailyRainAnalysisplot$graph$stnIDTSp) <- stnIDTSPLOT[1]
+
+			tkgrid(txt.stnSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.stnID, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(cb.stnID, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		}else{
+			txt.crdSel <- tklabel(frTS2, text = "Enter longitude and latitude to plot", anchor = 'w', justify = 'left')
+			txt.lonLoc <- tklabel(frTS2, text = "Longitude", anchor = 'e', justify = 'right')
+			en.lonLoc <- tkentry(frTS2, textvariable = EnvDailyRainAnalysisplot$graph$lonLOC, width = 8)
+			txt.latLoc <- tklabel(frTS2, text = "Latitude", anchor = 'e', justify = 'right')
+			en.latLoc <- tkentry(frTS2, textvariable = EnvDailyRainAnalysisplot$graph$latLOC, width = 8)
+			stnIDTSPLOT <- ""
+			tclvalue(EnvDailyRainAnalysisplot$graph$stnIDTSp) <- ""
+
+			tkgrid(txt.crdSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.lonLoc, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(en.lonLoc, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.latLoc, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(en.latLoc, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		}
+
+		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
+		return(0)
+	}
+
+	###################
+
+	set.Data.VarStat.Dates_1st <- function(){
+		varstats <- EnvDailyRainAnalysisplot$output$exist.vars.dates
+		if(length(names(varstats)) == 0) return(NULL)
+
+		VARSVAL <- varsname$longname[varsname$name%in%names(varstats)]
+		if(length(VARSVAL) == 1) VARSVAL <- c(VARSVAL, "")
+		tkconfigure(cb.varstat.var, values = VARSVAL)
+		last.vars <- varsname$longname[which(varsname$name == EnvDailyRainAnalysisplot$output$last[1])]
+		tclvalue(EnvDailyRainAnalysisplot$anaVars) <- last.vars
+
+		statsval <- varstats[[EnvDailyRainAnalysisplot$output$last[1]]]
+		STATSVAL <- statsname$longname[statsname$name%in%names(statsval)]
+		if(length(STATSVAL) == 1) STATSVAL <- c(STATSVAL, "")
+		tkconfigure(cb.varstat.stat, values = STATSVAL)
+		last.stats <- statsname$longname[which(statsname$name == EnvDailyRainAnalysisplot$output$last[2])]
+		tclvalue(EnvDailyRainAnalysisplot$anaStat) <- last.stats
+
+		tkconfigure(cb.data.Index, values = statsval$date)
+		tclvalue(EnvDailyRainAnalysisplot$donDate) <- statsval$date[length(statsval$date)]
+
+		return(0)
+	}
+
+	#######################################################################################################
+
+	EnvDailyRainAnalysisplot$read.Data.MapVarStat <- function(){
+		tkconfigure(main.win, cursor = 'watch')
+		tcl('update')
+		on.exit({
+			tkconfigure(main.win, cursor = '')
+			tcl('update')
+		})
+
+		vars <- str_trim(tclvalue(EnvDailyRainAnalysisplot$anaVars))
+		stats <- str_trim(tclvalue(EnvDailyRainAnalysisplot$anaStat))
+		this.vars <- varsname$name[which(varsname$longname == vars)]
+		this.stats <- statsname$name[which(statsname$longname == stats)]
+		
+		if(vars == "" | stats == "") return(NULL)
+
+		if(EnvDailyRainAnalysisplot$output$params$data.type == "cdtstation"){
+			filePathData <- file.path(EnvDailyRainAnalysisplot$PathData, "CDTDATASET", paste0(this.vars, "_", this.stats, ".rds"))
+			if(!file.exists(filePathData)){
+				InsertMessagesTxt(main.txt.out, paste(filePathData, 'not found'), format = TRUE)
+				return(NULL)
+			}
+
+			readVarData <- TRUE
+			if(!is.null(EnvDailyRainAnalysisplot$statData))
+				if(!is.null(EnvDailyRainAnalysisplot$statData$filePathData))
+					if(EnvDailyRainAnalysisplot$statData$filePathData == filePathData) readVarData <- FALSE
+
+			if(readVarData){
+				EnvDailyRainAnalysisplot$statData$data <- readRDS(filePathData)
+				nx <- nx_ny_as.image(diff(range(EnvDailyRainAnalysisplot$output$data$lon)))
+				ny <- nx_ny_as.image(diff(range(EnvDailyRainAnalysisplot$output$data$lat)))
+				tmp <- as.image(EnvDailyRainAnalysisplot$statData$data, nx = nx, ny = ny,
+								x = cbind(EnvDailyRainAnalysisplot$output$data$lon, EnvDailyRainAnalysisplot$output$data$lat))
+				EnvDailyRainAnalysisplot$statData$map$x <- tmp$x
+				EnvDailyRainAnalysisplot$statData$map$y <- tmp$y
+				EnvDailyRainAnalysisplot$statData$map$z <- tmp$z
+				rm(tmp)
+
+				EnvDailyRainAnalysisplot$statData$filePathData <- filePathData
+			}
+		}else{
+			filePathData <- file.path(EnvDailyRainAnalysisplot$PathData, "DATA_NetCDF_STATS", paste0(this.vars, "_", this.stats, ".nc"))
+			if(!file.exists(filePathData)){
+				InsertMessagesTxt(main.txt.out, paste(filePathData, 'not found'), format = TRUE)
+				return(NULL)
+			}
+
+			readVarData <- TRUE
+			if(!is.null(EnvDailyRainAnalysisplot$statData))
+				if(!is.null(EnvDailyRainAnalysisplot$statData$filePathData))
+					if(EnvDailyRainAnalysisplot$statData$filePathData == filePathData) readVarData <- FALSE
+
+			if(readVarData){
+				nc <- nc_open(filePathData)
+				EnvDailyRainAnalysisplot$statData$map$x <- nc$dim[[1]]$vals
+				EnvDailyRainAnalysisplot$statData$map$y <- nc$dim[[2]]$vals
+				EnvDailyRainAnalysisplot$statData$map$z <- ncvar_get(nc, varid = nc$var[[1]]$name)
+				nc_close(nc)
+				EnvDailyRainAnalysisplot$statData$filePathData <- filePathData
+			}
+		}
+
+		EnvDailyRainAnalysisplot$now$this.vars <- this.vars
+		EnvDailyRainAnalysisplot$now$this.stats <- this.stats
+
+		return(0)
+	}
+
+	###################
+
+	EnvDailyRainAnalysisplot$read.Data.MapVarTS <- function(){
+		tkconfigure(main.win, cursor = 'watch')
+		tcl('update')
+		on.exit({
+			tkconfigure(main.win, cursor = '')
+			tcl('update')
+		})
+
+		vars <- str_trim(tclvalue(EnvDailyRainAnalysisplot$anaVars))
+		this.vars <- varsname$name[which(varsname$longname == vars)]
+		this.daty <- str_trim(tclvalue(EnvDailyRainAnalysisplot$donDate))
+
+		if(vars == "" | this.daty == "") return(NULL)
+
+		if(EnvDailyRainAnalysisplot$output$params$data.type == "cdtstation"){
+			filePathData <- file.path(EnvDailyRainAnalysisplot$PathData, this.vars, paste0(this.vars, ".rds"))
+			if(!file.exists(filePathData)){
+				InsertMessagesTxt(main.txt.out, paste(filePathData, 'not found'), format = TRUE)
+				return(NULL)
+			}
+
+			readVarData <- TRUE
+			if(!is.null(EnvDailyRainAnalysisplot$tsData))
+				if(!is.null(EnvDailyRainAnalysisplot$tsData$filePathData))
+					if(EnvDailyRainAnalysisplot$tsData$filePathData == filePathData) readVarData <- FALSE
+
+			if(readVarData){
+				EnvDailyRainAnalysisplot$tsData$data <- readRDS(filePathData)
+				EnvDailyRainAnalysisplot$tsData$filePathData <- filePathData
+			}
+
+			########
+			rasterVarData <- TRUE
+			if(!rasterVarData)
+				if(!is.null(EnvDailyRainAnalysisplot$tsData$rasterDate))
+					if(EnvDailyRainAnalysisplot$tsData$filePathData == filePathData)
+						if(EnvDailyRainAnalysisplot$tsData$rasterDate == this.daty) rasterVarData <- FALSE
+
+			if(rasterVarData){
+				idt <- which(EnvDailyRainAnalysisplot$output$exist.vars.dates[[this.vars]]$date == this.daty)
+				nx <- nx_ny_as.image(diff(range(EnvDailyRainAnalysisplot$output$data$lon)))
+				ny <- nx_ny_as.image(diff(range(EnvDailyRainAnalysisplot$output$data$lat)))
+				tmp <- as.image(as.numeric(EnvDailyRainAnalysisplot$tsData$data[idt, ]), nx = nx, ny = ny,
+								x = cbind(EnvDailyRainAnalysisplot$output$data$lon, EnvDailyRainAnalysisplot$output$data$lat))
+				EnvDailyRainAnalysisplot$tsData$map$x <- tmp$x
+				EnvDailyRainAnalysisplot$tsData$map$y <- tmp$y
+				EnvDailyRainAnalysisplot$tsData$map$z <- tmp$z
+				EnvDailyRainAnalysisplot$tsData$rasterDate <- this.daty
+				rm(tmp)
+			}
+		}else{
+			filePathData <- file.path(EnvDailyRainAnalysisplot$PathData, this.vars, "DATA_NetCDF", paste0("Seas_", this.daty, ".nc"))
+			if(!file.exists(filePathData)){
+				InsertMessagesTxt(main.txt.out, paste(filePathData, 'not found'), format = TRUE)
+				return(NULL)
+			}
+
+			readVarData <- TRUE
+			if(!is.null(EnvDailyRainAnalysisplot$tsData))
+				if(!is.null(EnvDailyRainAnalysisplot$tsData$filePathData))
+					if(EnvDailyRainAnalysisplot$tsData$filePathData == filePathData) readVarData <- FALSE
+
+			if(readVarData){
+				nc <- nc_open(filePathData)
+				EnvDailyRainAnalysisplot$tsData$map$x <- nc$dim[[1]]$vals
+				EnvDailyRainAnalysisplot$tsData$map$y <- nc$dim[[2]]$vals
+				EnvDailyRainAnalysisplot$tsData$map$z <- ncvar_get(nc, varid = nc$var[[1]]$name)
+				nc_close(nc)
+				EnvDailyRainAnalysisplot$tsData$filePathData <- filePathData
+			}
+
+			###################
+
+			file.CDT.Idx <- file.path(EnvDailyRainAnalysisplot$PathData, this.vars, paste0(this.vars, ".rds"))
+
+			read.cdt.dataIdx<- TRUE
+			if(!is.null(EnvDailyRainAnalysisplot$cdtdataset))
+				if(!is.null(EnvDailyRainAnalysisplot$file.CDT.Idx))
+					if(EnvDailyRainAnalysisplot$file.CDT.Idx == file.CDT.Idx) read.cdt.dataIdx <- FALSE
+
+			if(read.cdt.dataIdx){
+				EnvDailyRainAnalysisplot$cdtdataset <- readRDS(file.CDT.Idx)
+				EnvDailyRainAnalysisplot$cdtdataset$fileInfo <- file.CDT.Idx
+				EnvDailyRainAnalysisplot$file.CDT.Idx <- file.CDT.Idx
+			}
+		}
+
+		return(0)
+	}
 
 	#######################################################################################################
 	tcl('update')

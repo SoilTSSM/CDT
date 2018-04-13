@@ -4,11 +4,11 @@ climatologiesCalcPanelCmd <- function(){
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(26)
 		hscrlwin <- h.scale(46)
-		largeur0 <- as.integer(w.scale(16)/sfont0)
-		largeur1 <- as.integer(w.scale(26)/sfont0)
-		largeur2 <- as.integer(w.scale(28)/sfont0)
-		# largeur3 <- largeur2-10
-		# largeur4 <- largeur1-5
+		largeur0 <- as.integer(w.scale(22)/sfont0)
+		largeur1 <- as.integer(w.scale(27)/sfont0)
+		largeur2 <- as.integer(w.scale(29)/sfont0)
+		largeur3 <- 30
+		largeur4 <- 21
 		# largeur5 <- 30
 		# largeur6 <- 22
 	}else{
@@ -17,8 +17,8 @@ climatologiesCalcPanelCmd <- function(){
 		largeur0 <- as.integer(w.scale(18)/sfont0)
 		largeur1 <- as.integer(w.scale(22)/sfont0)
 		largeur2 <- as.integer(w.scale(23)/sfont0)
-		# largeur3 <- largeur2+2
-		# largeur4 <- largeur1
+		largeur3 <- 23
+		largeur4 <- 14
 		# largeur5 <- 22
 		# largeur6 <- 14
 	}
@@ -41,11 +41,15 @@ climatologiesCalcPanelCmd <- function(){
 	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "Climatologies")
-	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Plot")
+	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Maps")
+	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Graphs")
+	cmd.tab4 <- bwAddTab(tknote.cmd, text = "Boundaries")
 
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab4, 0, weight = 1)
 
 	#######################################################################################################
 
@@ -291,18 +295,18 @@ climatologiesCalcPanelCmd <- function(){
 		txt.daywin2 <- tklabel(frameBaseP, text = "days",  anchor = 'w', justify = 'left')
 
 		######
-		tkgrid(txt.BaseP, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(txt.sYear, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(en.sYear, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(txt.eYear, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(en.eYear, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(txt.BaseP, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
+		tkgrid(txt.sYear, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
+		tkgrid(en.sYear, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
+		tkgrid(txt.eYear, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
+		tkgrid(en.eYear, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
 
 		tkgrid(txt.minYear, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(en.minYear, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-		tkgrid(txt.daywin1, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(en.daywin, row = 2, column = 3, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(txt.daywin2, row = 2, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(txt.daywin1, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 3, padx = 1, pady = 0, ipadx = 1, ipady = 1)
+		tkgrid(en.daywin, row = 2, column = 3, sticky = 'w', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
+		tkgrid(txt.daywin2, row = 2, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 0, ipadx = 1, ipady = 1)
 
 		infobulle(en.sYear, 'Enter the start year of the base period')
 		status.bar.display(en.sYear, TextOutputVar, 'Enter the start year of the base period')
@@ -399,8 +403,10 @@ climatologiesCalcPanelCmd <- function(){
 
 					###################
 
-					# load.PICSA.Data()
-
+					set.climato.index()
+					widgets.Station.Pixel()
+					res <- EnvClimatoCalcPlot$read.Climatology.Map()
+					if(inherits(res, "try-error") | is.null(res)) return(NULL)
 				}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 		})
@@ -409,9 +415,9 @@ climatologiesCalcPanelCmd <- function(){
 
 		tkgrid(frameTimeS, row = 0, column = 0, sticky = '', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(frameInData, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-		tkgrid(frameBaseP, row = 2, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		tkgrid(frameBaseP, row = 2, column = 0, sticky = '', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(frameDirSav, row = 3, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-		tkgrid(calculateBut, row = 4, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		tkgrid(calculateBut, row = 4, column = 0, sticky = '', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#######################################################################################################
 
@@ -440,9 +446,31 @@ climatologiesCalcPanelCmd <- function(){
 		bt.climIdx <- tkbutton(frameClimatoDat, text = "...", state = stateClimatoDat)
 
 		tkconfigure(bt.climIdx, command = function(){
+			filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
+			path.Clim <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
+			if(path.Clim%in%c("", "NA") | is.na(path.Clim)) return(NULL)
+			tclvalue(file.ClimIndex) <- path.Clim
 
+			if(file.exists(str_trim(tclvalue(file.ClimIndex)))){
+				OutClimdata <- try(readRDS(str_trim(tclvalue(file.ClimIndex))), silent = TRUE)
+				if(inherits(OutClimdata, "try-error")){
+					InsertMessagesTxt(main.txt.out, 'Unable to load climatology data', format = TRUE)
+					InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', OutClimdata[1]), format = TRUE)
+					tkconfigure(cb.clim.Date, values = "")
+					tclvalue(EnvClimatoCalcPlot$climDate) <- ""
+					return(NULL)
+				}
+
+				EnvClimatoCalcPlot$output <- OutClimdata
+				EnvClimatoCalcPlot$PathClim <- dirname(str_trim(tclvalue(file.ClimIndex)))
+
+				###################
+				set.climato.index()
+				widgets.Station.Pixel()
+				ret <- EnvClimatoCalcPlot$read.Climatology.Map()
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+			}
 		})
-
 
 		tkgrid(chk.climIdx, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(en.climIdx, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -459,21 +487,415 @@ climatologiesCalcPanelCmd <- function(){
 
 		##############################################
 
-		frameClimatoMap <- ttklabelframe(subfr2, text = "Climatologies Map", relief = 'groove')
+		frameClimatoMap <- ttklabelframe(subfr2, text = "Climatology Map", relief = 'groove')
 
+		EnvClimatoCalcPlot$climVar <- tclVar("Mean")
+		EnvClimatoCalcPlot$climDate <- tclVar()
 
+		cb.clim.Var <- ttkcombobox(frameClimatoMap, values = c("Mean", "Standard deviation"), textvariable = EnvClimatoCalcPlot$climVar, width = largeur3)
+		bt.clim.maps <- ttkbutton(frameClimatoMap, text = "PLOT", width = 8)
+		cb.clim.Date <- ttkcombobox(frameClimatoMap, values = "", textvariable = EnvClimatoCalcPlot$climDate, width = 3)
+		bt.clim.Date.prev <- ttkbutton(frameClimatoMap, text = "<<", width = 3)
+		bt.clim.Date.next <- ttkbutton(frameClimatoMap, text = ">>", width = 3)
+		bt.clim.MapOpt <- ttkbutton(frameClimatoMap, text = "Options", width = 8)
 
-		##############################################
+		###############
+		EnvClimatoCalcPlot$climMapOp <- list(presetCol = list(color = 'tim.colors', reverse = FALSE),
+												userCol = list(custom = FALSE, color = NULL),
+												userLvl = list(custom = FALSE, levels = NULL, equidist = FALSE),
+												title = list(user = FALSE, title = ''),
+												colkeyLab = list(user = FALSE, label = ''),
+												scalebar = list(add = FALSE, pos = 'bottomleft'))
 
-		frameClimatoTS <- ttklabelframe(subfr2, text = "Climatologies Graph", relief = 'groove')
+		tkconfigure(bt.clim.MapOpt, command = function(){
+			if(!is.null(EnvClimatoCalcPlot$climdata$map)){
+				atlevel <- pretty(EnvClimatoCalcPlot$climdata$map$z, n = 10, min.n = 7)
+				if(is.null(EnvClimatoCalcPlot$climMapOp$userLvl$levels)){
+					EnvClimatoCalcPlot$climMapOp$userLvl$levels <- atlevel
+				}else{
+					if(!EnvClimatoCalcPlot$climMapOp$userLvl$custom)
+						EnvClimatoCalcPlot$climMapOp$userLvl$levels <- atlevel
+				}
+			}
+			EnvClimatoCalcPlot$climMapOp <- climatoAnalysis.MapOptions(main.win, EnvClimatoCalcPlot$climMapOp)
+		})
 
+		#########
+		EnvClimatoCalcPlot$notebookTab.ClimMap <- NULL
 
+		tkconfigure(bt.clim.maps, command = function(){
+			if(str_trim(tclvalue(EnvClimatoCalcPlot$climVar)) != "" &
+				str_trim(tclvalue(EnvClimatoCalcPlot$climDate)) != "" &
+				!is.null(EnvClimatoCalcPlot$climdata))
+			{
+				imgContainer <- climatologiesCalc.Display.Maps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvClimatoCalcPlot$notebookTab.ClimMap, AllOpenTabType, AllOpenTabData)
+				EnvClimatoCalcPlot$notebookTab.ClimMap <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		tkconfigure(bt.clim.Date.prev, command = function(){
+			if(str_trim(tclvalue(EnvClimatoCalcPlot$climDate)) != ""){
+				idaty <- which(EnvClimatoCalcPlot$output$index == as.numeric(str_trim(tclvalue(EnvClimatoCalcPlot$climDate))))
+				idaty <- idaty-1
+				if(idaty < 1) idaty <- length(EnvClimatoCalcPlot$output$index)
+				tclvalue(EnvClimatoCalcPlot$climDate) <- EnvClimatoCalcPlot$output$index[idaty]
+
+				ret <- try(EnvClimatoCalcPlot$read.Climatology.Map(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+
+				imgContainer <- climatologiesCalc.Display.Maps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvClimatoCalcPlot$notebookTab.ClimMap, AllOpenTabType, AllOpenTabData)
+				EnvClimatoCalcPlot$notebookTab.ClimMap <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		tkconfigure(bt.clim.Date.next, command = function(){
+			if(str_trim(tclvalue(EnvClimatoCalcPlot$climDate)) != ""){
+				idaty <- which(EnvClimatoCalcPlot$output$index == as.numeric(str_trim(tclvalue(EnvClimatoCalcPlot$climDate))))
+				idaty <- idaty+1
+				if(idaty > length(EnvClimatoCalcPlot$output$index)) idaty <- 1
+				tclvalue(EnvClimatoCalcPlot$climDate) <- EnvClimatoCalcPlot$output$index[idaty]
+
+				ret <- try(EnvClimatoCalcPlot$read.Climatology.Map(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+
+				imgContainer <- climatologiesCalc.Display.Maps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvClimatoCalcPlot$notebookTab.ClimMap, AllOpenTabType, AllOpenTabData)
+				EnvClimatoCalcPlot$notebookTab.ClimMap <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		###############
+
+		tkgrid(cb.clim.Var, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.clim.maps, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.clim.Date.prev, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(cb.clim.Date, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.clim.Date.next, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.clim.MapOpt, row = 1, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+		###############
+
+		tkbind(cb.clim.Var, "<<ComboboxSelected>>", function(){
+			if(!is.null(EnvClimatoCalcPlot$output)){
+				ret <- try(EnvClimatoCalcPlot$read.Climatology.Map(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+			}
+		})
+
+		tkbind(cb.clim.Date, "<<ComboboxSelected>>", function(){
+			if(!is.null(EnvClimatoCalcPlot$climdata)){
+				ret <- try(EnvClimatoCalcPlot$read.Climatology.Map(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+			}
+		})
 
 		##############################################
 
 		tkgrid(frameClimatoDat, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(frameClimatoMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-		tkgrid(frameClimatoTS, row = 2, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+
+	#######################################################################################################
+
+	#Tab3
+	frTab3 <- tkframe(cmd.tab3)
+	tkgrid(frTab3, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab3, 0, weight = 1)
+
+	scrw3 <- bwScrolledWindow(frTab3)
+	tkgrid(scrw3)
+	tkgrid.columnconfigure(scrw3, 0, weight = 1)
+	subfr3 <- bwScrollableFrame(scrw3, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr3, 0, weight = 1)
+
+		##############################################
+
+		frameClimatoTS <- ttklabelframe(subfr3, text = "Climatology Graph", relief = 'groove')
+
+		typeTSPLOT <- c("Line", "Barplot")
+		EnvClimatoCalcPlot$graph$typeTSp <- tclVar("Line")
+
+		cb.typeTSp <- ttkcombobox(frameClimatoTS, values = typeTSPLOT, textvariable = EnvClimatoCalcPlot$graph$typeTSp, width = largeur4)
+		bt.TsGraph.plot <- ttkbutton(frameClimatoTS, text = "PLOT", width = 7)
+		bt.TSGraphOpt <- ttkbutton(frameClimatoTS, text = "Options", width = 8)
+
+		#################
+
+		EnvClimatoCalcPlot$TSGraphOp <- list(
+					bar = list(
+							xlim = list(is.min = FALSE, min = "2015-1-1", is.max = FALSE, max = "2015-12-31"),
+							ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+							axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+							title = list(is.title = FALSE, title = '', position = 'top'),
+							colors = list(col = "darkblue")
+						),
+					line = list(
+						xlim = list(is.min = FALSE, min = "2015-1-1", is.max = FALSE, max = "2015-12-31"),
+						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+						title = list(is.title = FALSE, title = '', position = 'top'),
+						plot = list(type = 'both',
+							col = list(line = "red", points = "blue"),
+							lwd = 2, cex = 1.4),
+						legend = NULL)
+					)
+
+		tkconfigure(bt.TSGraphOpt, command = function(){
+			suffix.fun <- switch(str_trim(tclvalue(EnvClimatoCalcPlot$graph$typeTSp)),
+									"Barplot" = "Bar",
+									"Line" = "Line")
+			plot.fun <- match.fun(paste0("climatoAnalysis.GraphOptions.", suffix.fun))
+			EnvClimatoCalcPlot$TSGraphOp <- plot.fun(main.win, EnvClimatoCalcPlot$TSGraphOp)
+		})
+
+		#########
+		EnvClimatoCalcPlot$notebookTab.ClimGraph <- NULL
+
+		tkconfigure(bt.TsGraph.plot, command = function(){
+			if(!is.null(EnvClimatoCalcPlot$climdata)){
+				imgContainer <- climatologiesCalc.Display.Graph(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvClimatoCalcPlot$notebookTab.ClimGraph, AllOpenTabType, AllOpenTabData)
+				EnvClimatoCalcPlot$notebookTab.ClimGraph <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		#################
+
+		tkgrid(cb.typeTSp, row = 0, column = 0, sticky = 'we', pady = 1, columnspan = 1)
+		tkgrid(bt.TSGraphOpt, row = 0, column = 1, sticky = 'we', padx = 4, pady = 1, columnspan = 1)
+		tkgrid(bt.TsGraph.plot, row = 0, column = 2, sticky = 'we', pady = 1, columnspan = 1)
+
+		##############################################
+
+		frameSTNCrds <- ttklabelframe(subfr3, text = "Station/Coordinates", relief = 'groove')
+
+		frTS2 <- tkframe(frameSTNCrds)
+		EnvClimatoCalcPlot$graph$lonLOC <- tclVar()
+		EnvClimatoCalcPlot$graph$latLOC <- tclVar()
+		EnvClimatoCalcPlot$graph$stnIDTSp <- tclVar()
+
+		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
+
+		##############################################
+
+		tkgrid(frameClimatoTS, row = 0, column = 0, sticky = 'we', pady = 1)
+		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = 'we', pady = 3)
+
+	#######################################################################################################
+
+	#Tab4
+	frTab4 <- tkframe(cmd.tab4)
+	tkgrid(frTab4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab4, 0, weight = 1)
+
+	scrw4 <- bwScrolledWindow(frTab4)
+	tkgrid(scrw4)
+	tkgrid.columnconfigure(scrw4, 0, weight = 1)
+	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr3, 0, weight = 1)
+
+		##############################################
+
+		frameSHP <- ttklabelframe(subfr4, text = "Boundaries", relief = 'groove')
+
+		EnvClimatoCalcPlot$shp$add.shp <- tclVar(FALSE)
+		file.plotShp <- tclVar()
+		stateSHP <- "disabled"
+
+		chk.addshp <- tkcheckbutton(frameSHP, variable = EnvClimatoCalcPlot$shp$add.shp, text = "Add boundaries to Map", anchor = 'w', justify = 'left')
+		bt.addshpOpt <- ttkbutton(frameSHP, text = "Options", state = stateSHP)
+		cb.addshp <- ttkcombobox(frameSHP, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur1, state = stateSHP)
+		bt.addshp <- tkbutton(frameSHP, text = "...", state = stateSHP)
+
+		########
+		tkconfigure(bt.addshp, command = function(){
+			shp.opfiles <- getOpenShp(main.win, all.opfiles)
+			if(!is.null(shp.opfiles)){
+				nopf <- length(AllOpenFilesType)
+				AllOpenFilesType[[nopf+1]] <<- 'shp'
+				AllOpenFilesData[[nopf+1]] <<- shp.opfiles
+				tclvalue(file.plotShp) <- AllOpenFilesData[[nopf+1]][[1]]
+				listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
+
+				tkconfigure(cb.addshp, values = unlist(listOpenFiles), textvariable = file.plotShp)
+
+				shpofile <- getShpOpenData(file.plotShp)
+				if(is.null(shpofile)) EnvClimatoCalcPlot$shp$ocrds <- NULL
+				EnvClimatoCalcPlot$shp$ocrds <- getBoundaries(shpofile[[2]])
+			}else return(NULL)
+		})
+
+		########
+		EnvClimatoCalcPlot$SHPOp <- list(col = "black", lwd = 1.5)
+
+		tkconfigure(bt.addshpOpt, command = function(){
+			EnvClimatoCalcPlot$SHPOp <- climatoAnalysis.GraphOptions.LineSHP(main.win, EnvClimatoCalcPlot$SHPOp)
+		})
+
+		########
+		tkgrid(chk.addshp, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1)
+		tkgrid(bt.addshpOpt, row = 0, column = 6, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1)
+		tkgrid(cb.addshp, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 7, padx = 1, pady = 1)
+		tkgrid(bt.addshp, row = 1, column = 7, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1)
+
+		#################
+		tkbind(cb.addshp, "<<ComboboxSelected>>", function(){
+			shpofile <- getShpOpenData(file.plotShp)
+			if(is.null(shpofile)) EnvClimatoCalcPlot$shp$ocrds <- NULL
+			EnvClimatoCalcPlot$shp$ocrds <- getBoundaries(shpofile[[2]])
+		})
+
+		tkbind(chk.addshp, "<Button-1>", function(){
+			stateSHP <- if(tclvalue(EnvClimatoCalcPlot$shp$add.shp) == "1") "disabled" else "normal"
+			tkconfigure(cb.addshp, state = stateSHP)
+			tkconfigure(bt.addshp, state = stateSHP)
+			tkconfigure(bt.addshpOpt, state = stateSHP)
+		})
+
+		##############################################
+
+		tkgrid(frameSHP, row = 0, column = 0, sticky = 'we', pady = 1)
+
+	#######################################################################################################
+
+	widgets.Station.Pixel <- function(){
+		tkdestroy(frTS2)
+		frTS2 <<- tkframe(frameSTNCrds)
+
+		if(EnvClimatoCalcPlot$output$params$data.type == "cdtstation"){
+			stnIDTSPLOT <- EnvClimatoCalcPlot$output$data$id
+			txt.stnSel <- tklabel(frTS2, text = "Select a station to plot", anchor = 'w', justify = 'left')
+			txt.stnID <- tklabel(frTS2, text = "Station", anchor = 'e', justify = 'right')
+			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvClimatoCalcPlot$graph$stnIDTSp, width = largeur4)
+			tclvalue(EnvClimatoCalcPlot$graph$stnIDTSp) <- stnIDTSPLOT[1]
+
+			tkgrid(txt.stnSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.stnID, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(cb.stnID, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		}else{
+			txt.crdSel <- tklabel(frTS2, text = "Enter longitude and latitude to plot", anchor = 'w', justify = 'left')
+			txt.lonLoc <- tklabel(frTS2, text = "Longitude", anchor = 'e', justify = 'right')
+			en.lonLoc <- tkentry(frTS2, textvariable = EnvClimatoCalcPlot$graph$lonLOC, width = 8)
+			txt.latLoc <- tklabel(frTS2, text = "Latitude", anchor = 'e', justify = 'right')
+			en.latLoc <- tkentry(frTS2, textvariable = EnvClimatoCalcPlot$graph$latLOC, width = 8)
+			stnIDTSPLOT <- ""
+			tclvalue(EnvClimatoCalcPlot$graph$stnIDTSp) <- ""
+
+			tkgrid(txt.crdSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.lonLoc, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(en.lonLoc, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.latLoc, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(en.latLoc, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		}
+
+		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
+		return(0)
+	}
+
+	set.climato.index <- function(){
+		tkconfigure(cb.clim.Date, values = EnvClimatoCalcPlot$output$index)
+		tclvalue(EnvClimatoCalcPlot$climDate) <- EnvClimatoCalcPlot$output$index[1]
+		return(0)
+	}
+
+	#######################################################################################################
+
+	EnvClimatoCalcPlot$read.Climatology.Map <- function(){
+		tkconfigure(main.win, cursor = 'watch')
+		tcl('update')
+		on.exit({
+			tkconfigure(main.win, cursor = '')
+			tcl('update')
+		})
+
+		cilmdata.Var <- if(str_trim(tclvalue(EnvClimatoCalcPlot$climVar)) == "Mean") "CDTMEAN" else "CDTSTD"
+
+		if(EnvClimatoCalcPlot$output$params$data.type == "cdtstation"){
+			fileClimdata <- file.path(EnvClimatoCalcPlot$PathClim, cilmdata.Var, paste0(cilmdata.Var, ".rds"))
+			if(!file.exists(fileClimdata)){
+				InsertMessagesTxt(main.txt.out, paste(fileClimdata, 'not found'), format = TRUE)
+				return(NULL)
+			}
+
+			readClimData <- TRUE
+			if(!is.null(EnvClimatoCalcPlot$climdata))
+				if(!is.null(EnvClimatoCalcPlot$fileClimdata))
+					if(EnvClimatoCalcPlot$fileClimdata == fileClimdata) readClimData <- FALSE
+
+			if(readClimData){
+				EnvClimatoCalcPlot$climdata$data <- readRDS(fileClimdata)
+				EnvClimatoCalcPlot$fileClimdata <- fileClimdata
+			}
+
+			########
+			rasterClimData <- TRUE
+			if(!rasterClimData)
+				if(!is.null(EnvClimatoCalcPlot$climdata$rasterIdx))
+					if(EnvClimatoCalcPlot$fileClimdata == fileClimdata)
+						if(EnvClimatoCalcPlot$climdata$rasterIdx == str_trim(tclvalue(EnvClimatoCalcPlot$climDate))) rasterClimData <- FALSE
+
+			if(rasterClimData){
+				idt <- which(EnvClimatoCalcPlot$output$index == as.numeric(str_trim(tclvalue(EnvClimatoCalcPlot$climDate))))
+				nx <- nx_ny_as.image(diff(range(EnvClimatoCalcPlot$output$data$lon)))
+				ny <- nx_ny_as.image(diff(range(EnvClimatoCalcPlot$output$data$lat)))
+				tmp <- as.image(as.numeric(EnvClimatoCalcPlot$climdata$data[idt, ]), nx = nx, ny = ny,
+								x = cbind(EnvClimatoCalcPlot$output$data$lon, EnvClimatoCalcPlot$output$data$lat))
+				EnvClimatoCalcPlot$climdata$map$x <- tmp$x
+				EnvClimatoCalcPlot$climdata$map$y <- tmp$y
+				EnvClimatoCalcPlot$climdata$map$z <- tmp$z
+				EnvClimatoCalcPlot$climdata$rasterIdx <- str_trim(tclvalue(EnvClimatoCalcPlot$climDate))
+				EnvClimatoCalcPlot$climdata$Var <- cilmdata.Var
+				rm(tmp)
+			}
+		}else{
+			fileClimdata <- file.path(EnvClimatoCalcPlot$PathClim, "DATA_NetCDF", cilmdata.Var,
+							paste0("clim_", as.numeric(str_trim(tclvalue(EnvClimatoCalcPlot$climDate))), ".nc"))
+			if(!file.exists(fileClimdata)){
+				InsertMessagesTxt(main.txt.out, paste(fileClimdata, 'not found'), format = TRUE)
+				return(NULL)
+			}
+
+			readClimData <- TRUE
+			if(!is.null(EnvClimatoCalcPlot$climdata))
+				if(!is.null(EnvClimatoCalcPlot$fileClimdata))
+					if(EnvClimatoCalcPlot$fileClimdata == fileClimdata) readClimData <- FALSE
+
+			if(readClimData){
+				nc <- nc_open(fileClimdata)
+				EnvClimatoCalcPlot$climdata$map$x <- nc$dim[[1]]$vals
+				EnvClimatoCalcPlot$climdata$map$y <- nc$dim[[2]]$vals
+				EnvClimatoCalcPlot$climdata$map$z <- ncvar_get(nc, varid = nc$var[[1]]$name)
+				nc_close(nc)
+				EnvClimatoCalcPlot$fileClimdata <- fileClimdata
+				EnvClimatoCalcPlot$climdata$Var <- cilmdata.Var
+			}
+
+			###################
+
+			fileClimIdx <- file.path(EnvClimatoCalcPlot$PathClim, cilmdata.Var, paste0(cilmdata.Var, ".rds"))
+
+			readClimIdx <- TRUE
+			if(!is.null(EnvClimatoCalcPlot$cdtdataset))
+				if(!is.null(EnvClimatoCalcPlot$fileClimIdx))
+					if(EnvClimatoCalcPlot$fileClimIdx == fileClimIdx) rreadClimIdx <- FALSE
+			if(readClimIdx){
+				EnvClimatoCalcPlot$cdtdataset <- readRDS(fileClimIdx)
+				EnvClimatoCalcPlot$cdtdataset$fileInfo <- fileClimIdx
+				EnvClimatoCalcPlot$fileClimIdx <- fileClimIdx
+			}
+		}
+
+		return(0)
+	}
 
 	#######################################################################################################
 	tcl('update')

@@ -89,26 +89,48 @@ compute_SeasonCessation_Procs <- function(GeneralParameters){
 
 		##################
 
-		stn.data <- list(id = stn.id, lon = stn.lon, lat = stn.lat, date = daty, wb = wb$data)
-		output <- list(params = GeneralParameters, data = stn.data, cessation = cessation.num, start.date = start.date)
-		EnvCessationCalcPlot$output <- output
-
-		##################
-
 		outDIR <- file.path(GeneralParameters$output, "CESSATION_data")
 		dir.create(outDIR, showWarnings = FALSE, recursive = TRUE)
 
 		datadir <- file.path(outDIR, 'CDTSTATIONS')
 		dir.create(datadir, showWarnings = FALSE, recursive = TRUE)
 
+		dataOUT <- file.path(outDIR, 'CDTDATASET')
+		dir.create(dataOUT, showWarnings = FALSE, recursive = TRUE)
+
 		file.cessation <- file.path(datadir, "Cessation_dates.txt")
 		file.cessation1 <- file.path(datadir, "Cessation_days.txt")
 		file.index <- file.path(outDIR, "Cessation.rds")
+		file.cdt.wb <- file.path(dataOUT, "WB.rds")
+		file.cdt.cessation <- file.path(dataOUT, "CESSATION.rds")
+
+		##################
+
+		# stn.data <- list(id = stn.id, lon = stn.lon, lat = stn.lat, date = daty, wb = wb$data)
+		# output <- list(params = GeneralParameters, data = stn.data, cessation = cessation.num, start.date = start.date)
+
+		stn.data <- list(id = stn.id, lon = stn.lon, lat = stn.lat, date = daty)
+		output <- list(params = GeneralParameters, data = stn.data, start.date = start.date)
+
+		EnvCessationCalcPlot$output <- output
+		EnvCessationCalcPlot$PathData <- outDIR
 
 		##################
 		con <- gzfile(file.index, compression = 7)
 		open(con, "wb")
 		saveRDS(output, con)
+		close(con)
+
+		##################
+		con <- gzfile(file.cdt.wb, compression = 7)
+		open(con, "wb")
+		saveRDS(wb$data, con)
+		close(con)
+
+		##################
+		con <- gzfile(file.cdt.cessation, compression = 7)
+		open(con, "wb")
+		saveRDS(cessation.num, con)
 		close(con)
 
 		##################
@@ -278,6 +300,7 @@ compute_SeasonCessation_Procs <- function(GeneralParameters){
 		start.date <- as.Date(matrixStats::rowMins(do.call(cbind, ret)), origin = "1970-1-1")
 		output <- list(params = GeneralParameters, start.date = start.date)
 		EnvCessationCalcPlot$output <- output
+		EnvCessationCalcPlot$PathData <- outDIR
 
 		##################
 		con <- gzfile(file.index, compression = 6)

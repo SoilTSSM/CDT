@@ -318,8 +318,6 @@ climatoAnalysis.plotTSGraph <- function(){
 		cdtdataset <- EnvClimatoAnalysisplot$cdtdataset
 		xlon <- cdtdataset$coords$mat$x
 		xlat <- cdtdataset$coords$mat$y
-		# xlon <- sort(unique(cdtdataset$coords$df$x))
-		# xlat <- sort(unique(cdtdataset$coords$df$y))
 		ilon <- as.numeric(str_trim(tclvalue(EnvClimatoAnalysisplot$graph$lonLOC)))
 		ilat <- as.numeric(str_trim(tclvalue(EnvClimatoAnalysisplot$graph$latLOC)))
 
@@ -364,8 +362,11 @@ climatoAnalysis.plotTSGraph <- function(){
 	if(GRAPHTYPE == "Line"){
 		optsgph <- TSGraphOp$line
 		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- optsgph$xlim$min
-		if(optsgph$xlim$is.max) xlim[2] <- optsgph$xlim$max
+		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
+		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
+		idt <- daty >= xlim[1] & daty <= xlim[2]
+		daty <- daty[idt]
+		don <- don[idt]
 		ylim <- range(pretty(don))
 		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
 		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
@@ -419,8 +420,11 @@ climatoAnalysis.plotTSGraph <- function(){
 	if(GRAPHTYPE == "Barplot"){
 		optsgph <- TSGraphOp$bar
 		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- optsgph$xlim$min
-		if(optsgph$xlim$is.max) xlim[2] <- optsgph$xlim$max
+		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
+		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
+		idt <- daty >= xlim[1] & daty <= xlim[2]
+		daty <- daty[idt]
+		don <- don[idt]
 		ylim <- range(pretty(don))
 		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
 		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
@@ -446,8 +450,8 @@ climatoAnalysis.plotTSGraph <- function(){
 	if(GRAPHTYPE == "Probability"){
 		optsgph <- TSGraphOp$proba
 		xlim <- range(don, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- optsgph$xlim$min
-		if(optsgph$xlim$is.max) xlim[2] <- optsgph$xlim$max
+		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
+		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
 		ylim <- c(0, 100)
 		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
 		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
@@ -495,8 +499,12 @@ climatoAnalysis.plotTSGraph <- function(){
 	if(GRAPHTYPE == "ENSO-Line"){
 		optsgph <- TSGraphOp$line.enso
 		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- optsgph$xlim$min
-		if(optsgph$xlim$is.max) xlim[2] <- optsgph$xlim$max
+		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
+		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
+		idt <- daty >= xlim[1] & daty <= xlim[2]
+		daty <- daty[idt]
+		don <- don[idt]
+		oni <- oni[idt]
 		ylim <- range(pretty(don))
 		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
 		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
@@ -550,8 +558,12 @@ climatoAnalysis.plotTSGraph <- function(){
 	if(GRAPHTYPE == "ENSO-Barplot"){
 		optsgph <- TSGraphOp$bar.enso
 		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- optsgph$xlim$min
-		if(optsgph$xlim$is.max) xlim[2] <- optsgph$xlim$max
+		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
+		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
+		idt <- daty >= xlim[1] & daty <= xlim[2]
+		daty <- daty[idt]
+		don <- don[idt]
+		oni <- oni[idt]
 		ylim <- range(pretty(don))
 		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
 		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
@@ -576,8 +588,8 @@ climatoAnalysis.plotTSGraph <- function(){
 	if(GRAPHTYPE == "ENSO-Proba"){
 		optsgph <- TSGraphOp$proba.enso
 		xlim <- range(don, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- optsgph$xlim$min
-		if(optsgph$xlim$is.max) xlim[2] <- optsgph$xlim$max
+		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
+		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
 		ylim <- c(0, 100)
 		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
 		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
@@ -602,9 +614,12 @@ climatoAnalysis.plotTSGraph <- function(){
 	if(GRAPHTYPE == "Anomaly"){
 		optsgph <- TSGraphOp$anomaly
 		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- optsgph$xlim$min
-		if(optsgph$xlim$is.max) xlim[2] <- optsgph$xlim$max
-		ylim <- c(-100, 100)
+		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
+		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
+		idt <- daty >= xlim[1] & daty <= xlim[2]
+		daty <- daty[idt]
+		don <- don[idt]
+		ylim <- range(pretty(don))
 		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
 		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
 		if(!optsgph$ylim$is.min & !optsgph$ylim$is.max) ylim <- NULL

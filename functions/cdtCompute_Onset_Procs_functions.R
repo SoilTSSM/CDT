@@ -127,27 +127,57 @@ compute_SeasonOnset_Procs <- function(GeneralParameters){
 
 		##################
 
-		stn.data <- list(id = stn.id, lon = stn.lon, lat = stn.lat, date = daty, prec = prec$data, etp = etp$data)
-		output <- list(params = GeneralParameters, data = stn.data, onset = onset.num,
-						start.date = start.date, ts.date = daty)
-		EnvOnsetCalcPlot$output <- output
-
-		##################
-
 		outDIR <- file.path(GeneralParameters$output, "ONSET_data")
 		dir.create(outDIR, showWarnings = FALSE, recursive = TRUE)
 
 		datadir <- file.path(outDIR, 'CDTSTATIONS')
 		dir.create(datadir, showWarnings = FALSE, recursive = TRUE)
 
+		dataOUT <- file.path(outDIR, 'CDTDATASET')
+		dir.create(dataOUT, showWarnings = FALSE, recursive = TRUE)
+
 		file.onset <- file.path(datadir, "Onset_dates.txt")
 		file.onset1 <- file.path(datadir, "Onset_days.txt")
 		file.index <- file.path(outDIR, "Onset.rds")
+		file.cdt.prec <- file.path(dataOUT, "PRECIP.rds")
+		file.cdt.etp <- file.path(dataOUT, "PET.rds")
+		file.cdt.onset <- file.path(dataOUT, "ONSET.rds")
+
+		##################
+
+		# stn.data <- list(id = stn.id, lon = stn.lon, lat = stn.lat, date = daty, prec = prec$data, etp = etp$data)
+		# output <- list(params = GeneralParameters, data = stn.data, onset = onset.num,
+		# 				start.date = start.date, ts.date = daty)
+
+		stn.data <- list(id = stn.id, lon = stn.lon, lat = stn.lat, date = daty)
+		output <- list(params = GeneralParameters, data = stn.data, start.date = start.date, ts.date = daty)
+
+		EnvOnsetCalcPlot$output <- output
+		EnvOnsetCalcPlot$PathData <- outDIR
 
 		##################
 		con <- gzfile(file.index, compression = 7)
 		open(con, "wb")
 		saveRDS(output, con)
+		close(con)
+
+		##################
+		con <- gzfile(file.cdt.prec, compression = 7)
+		open(con, "wb")
+		saveRDS(prec$data, con)
+		close(con)
+
+		if(!is.null(etp)){
+			con <- gzfile(file.cdt.etp, compression = 7)
+			open(con, "wb")
+			saveRDS(etp$data, con)
+			close(con)
+		}
+
+		##################
+		con <- gzfile(file.cdt.onset, compression = 7)
+		open(con, "wb")
+		saveRDS(onset.num, con)
 		close(con)
 
 		##################
@@ -369,6 +399,7 @@ compute_SeasonOnset_Procs <- function(GeneralParameters){
 		start.date <- as.Date(matrixStats::rowMins(do.call(cbind, ret)), origin = "1970-1-1")
 		output <- list(params = GeneralParameters, start.date = start.date, ts.date = prec$dateInfo$date)
 		EnvOnsetCalcPlot$output <- output
+		EnvOnsetCalcPlot$PathData <- outDIR
 
 		##################
 		con <- gzfile(file.index, compression = 6)

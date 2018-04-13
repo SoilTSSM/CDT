@@ -133,6 +133,47 @@ getParUsrPlot <- function(x, factor = 0.04){
 }
 
 ######################################
+## axis Date ticks
+
+axTicks.Date <- function(x, side = 1){
+	# https://stackoverflow.com/a/39307885
+	# This functions is almost a copy of axis.Date
+	x <- as.Date(x)
+	range <- par("usr")[if(side%%2) 1L:2L else 3:4L]
+	range[1L] <- ceiling(range[1L])
+	range[2L] <- floor(range[2L])
+	d <- range[2L] - range[1L]
+	z <- c(range, x[is.finite(x)])
+	class(z) <- "Date"
+	if(d < 7) format <- "%a"
+	if(d < 100){
+		z <- structure(pretty(z), class = "Date")
+		format <- "%b %d"
+	}else if(d < 1.1 * 365){
+		zz <- as.POSIXlt(z)
+		zz$mday <- 1
+		zz$mon <- pretty(zz$mon)
+		m <- length(zz$mon)
+		m <- rep.int(zz$year[1L], m)
+		zz$year <- c(m, m + 1)
+		z <- as.Date(zz)
+		format <- "%b"
+	}else{
+		zz <- as.POSIXlt(z)
+		zz$mday <- 1
+		zz$mon <- 0
+		zz$year <- pretty(zz$year)
+		z <- as.Date(zz)
+		format <- "%Y"
+	}
+	keep <- z >= range[1L] & z <= range[2L]
+	z <- z[keep]
+	z <- sort(unique(z))
+	class(z) <- "Date"
+	z
+}
+
+######################################
 ## Plot one gridded data
 
 PlotImage <- function(donne, at = NULL, col = rainbow(20), shpd = NULL, units = NULL,

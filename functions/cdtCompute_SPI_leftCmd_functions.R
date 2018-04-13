@@ -326,6 +326,9 @@ SPICalcPanelCmd <- function(){
 					###################
 
 					# load.PICSA.Data()
+					###################
+
+					widgets.Station.Pixel()
 
 				}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
@@ -379,6 +382,8 @@ SPICalcPanelCmd <- function(){
 					InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', OutSPIdata[1]), format = TRUE)
 					tkconfigure(cb.spi.maps, values = "")
 					tclvalue(EnvSPICalcPlot$spi.tscale) <- ""
+					tkconfigure(cb.spi.Date, values = "")
+					tclvalue(EnvSPICalcPlot$spi.date) <- ""
 					return(NULL)
 				}
 

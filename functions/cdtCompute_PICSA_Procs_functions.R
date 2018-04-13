@@ -68,6 +68,20 @@ compute_PICSA_Procs <- function(GeneralParameters){
 			return(NULL)
 		}
 
+		onset.file <- file.path(dirname(GeneralParameters$onset), 'CDTDATASET', "ONSET.rds")
+		cessa.file <- file.path(dirname(GeneralParameters$cessation), 'CDTDATASET', "CESSATION.rds")
+
+		precip.file <- file.path(dirname(GeneralParameters$onset), 'CDTDATASET',"PRECIP.rds")
+		# etp.file <- file.path(dirname(GeneralParameters$onset), 'CDTDATASET',"PET.rds")
+		# wb.file <- file.path(dirname(GeneralParameters$cessation), 'CDTDATASET',"WB.rds")
+
+		onset$onset <- readRDS(onset.file)
+		cessation$cessation <- readRDS(cessa.file)
+
+		onset$data$prec <- readRDS(precip.file)
+		# onset$data$etp <- readRDS(etp.file)
+		# cessation$data$wb <- readRDS(wb.file)
+
 		##################
 		jnx <- match(onset$data$id, cessation$data$id)
 		jnx <- jnx[!is.na(jnx)]

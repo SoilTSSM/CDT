@@ -40,12 +40,18 @@ climatoAnalysis.plot.line <- function(x, y, xlim = NULL, ylim = NULL, origindate
 	if(xlim[1] == xlim[2]) xlim <- xlim[1]+c(-0.5, 0.5)
 	if(xlim[2]-xlim[1] == 1) xlim <- xlim+c(-0.5, 0.5)
 
+	nylab <- if(is.null(origindate)) as.character(pretty(y)) else 6
+	nylab <- max(nchar(nylab), na.rm = TRUE)
+	line.ylab <- nylab-1
+
 	draw.title <- if(missing(title) | str_trim(title) == "") FALSE else TRUE
 	plt.h <- if(legends$add$mean | legends$add$tercile | legends$add$linear) 0.13 else 0.05
 	nr.ylab <- str_count(ylab, pattern = "\n")
 	par.mar.2 <- ifelse(ylab == '', 6.0,
 					ifelse(nr.ylab == 0, 6.5,
 					ifelse(nr.ylab == 1, 7.5, 8.8)))
+	par.mar.2 <- par.mar.2 + nylab/6
+
 	if(draw.title){
 		if(missing(title.position)) title.position <- 'top'
 		nr.title <- str_count(title, pattern = "\n")
@@ -76,8 +82,28 @@ climatoAnalysis.plot.line <- function(x, y, xlim = NULL, ylim = NULL, origindate
 	op <- par(mar = par.plot)
 	plot(x, y, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '', xlim = xlim, ylim = ylim)
 
-	xTck <- axTicks(1)
-	xTck <- xTck[sapply(xTck, function(e) min(abs(c(e%%1, e%%1-1))) < 1e-10)]
+	if(is(x, "Date")){
+		xTck <- axTicks.Date(x, 1)
+		axis.foo <- axis.Date
+	}else{
+		xTck <- axTicks(1)
+		xTck <- xTck[sapply(xTck, function(e) min(abs(c(e%%1, e%%1-1))) < 1e-10)]
+		axis.foo <- axis
+	}
+
+	axis.foo(1, at = xTck, font = axis.font, cex.axis = 1.5)
+	if(!is.null(origindate)){
+		yaxlab <- format(as.Date(axTicks(2), origin = origindate), '%d-%b')
+		axis(2, at = axTicks(2), labels = yaxlab, las = 2, font = axis.font, cex.axis = 1.5)
+	}else axis(2, at = axTicks(2), font = axis.font, las = 1, cex.axis = 1.5)
+
+	mtext(xlab, side = 1, line = 2.5)
+	# line <- if(max(nchar(as.character(axTicks(2)))) > 2) 4 else 3
+	if(!is.null(ylab.sub)){
+		mtext(ylab, side = 2, line = line.ylab+1)
+		mtext(ylab.sub, side = 2, line = line.ylab, font = 3, cex = 0.8)
+	}else mtext(ylab, side = 2, line = line.ylab)
+	if(!is.null(location)) mtext(location, side = 3, outer = FALSE, adj = 1, line = 0, cex = 0.6) 
 
 	abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 	abline(v = xTck, col = "lightgray", lty = "dotted")
@@ -105,20 +131,6 @@ climatoAnalysis.plot.line <- function(x, y, xlim = NULL, ylim = NULL, origindate
 		collegend <- c(collegend, legends$col$tercile1, legends$col$tercile2)
 		txtlegend <- c(txtlegend, legends$text$tercile1, legends$text$tercile2)
 	}
-
-	axis(1, at = xTck, font = axis.font, cex.axis = 1.5)
-	mtext(xlab, side = 1, line = 2.5)
-	if(!is.null(origindate)){
-		yaxlab <- format(as.Date(axTicks(2), origin = origindate), '%d-%b')
-		axis(2, at = axTicks(2), labels = yaxlab, las = 2, font = axis.font, cex.axis = 1.5)
-	}else axis(2, at = axTicks(2), font = axis.font, las = 1, cex.axis = 1.5)
-
-	line <- if(max(nchar(as.character(axTicks(2)))) > 2) 4 else 3
-	if(!is.null(ylab.sub)){
-		mtext(ylab, side = 2, line = line+1)
-		mtext(ylab.sub, side = 2, line = line, font = 3, cex = 0.8)
-	}else mtext(ylab, side = 2, line = line)
-	if(!is.null(location)) mtext(location, side = 3, outer = FALSE, adj = 1, line = 0, cex = 0.6) 
 	par(op)
 
 	op <- par(mar = par.legend)
@@ -157,11 +169,17 @@ climatoAnalysis.plot.bar <- function(x, y, xlim = NULL, ylim = NULL, origindate 
 	if(xlim[1] == xlim[2]) xlim <- xlim+c(-0.5, 0.5)
 	if(xlim[2]-xlim[1] == 1) xlim <- xlim+c(-0.5, 0.5)
 
+	nylab <- if(is.null(origindate)) as.character(pretty(y)) else 6
+	nylab <- max(nchar(nylab), na.rm = TRUE)
+	line.ylab <- nylab-1
+
 	draw.title <- if(missing(title) | str_trim(title) == "") FALSE else TRUE
 	nr.ylab <- str_count(ylab, pattern = "\n")
 	par.mar.2 <- ifelse(ylab == '', 4.5,
 					ifelse(nr.ylab == 0, 5.1,
 					ifelse(nr.ylab == 1, 5.5, 6.0)))
+	par.mar.2 <- par.mar.2 + nylab/6
+
 	if(draw.title){
 		if(missing(title.position)) title.position <- 'top'
 		nr.title <- str_count(title, pattern = "\n")
@@ -194,24 +212,31 @@ climatoAnalysis.plot.bar <- function(x, y, xlim = NULL, ylim = NULL, origindate 
 	abline(h = axTicks(2), col = "lightgray", lty = "solid", lwd = 0.8)
 	abline(h = minTck, col = "lightgray", lty = "dotted")
 
-	bar.width <- round(60*diff(range(xlim))^(-0.508775))
+	if(is(x, "Date")){
+		xTck <- axTicks.Date(x, 1)
+		axis.foo <- axis.Date
+		bar.width <- round(60*(as.numeric(diff(range(xlim)))/min(as.numeric(diff(x)), na.rm = TRUE))^(-0.508775))
+	}else{
+		xTck <- axTicks(1)
+		# xTck <- xTck[!xTck%%1]
+		xTck <- xTck[sapply(xTck, function(e) min(abs(c(e%%1, e%%1-1))) < 1e-10)]
+		axis.foo <- axis
+		bar.width <- round(60*as.numeric(diff(range(xlim)))^(-0.508775))
+	}
+
 	lines(x, y, type = "h", lwd = bar.width, lend = "butt", col = barcol)
 
-	xTck <- axTicks(1)
-	# xTck <- xTck[!xTck%%1]
-	xTck <- xTck[sapply(xTck, function(e) min(abs(c(e%%1, e%%1-1))) < 1e-10)]
-	axis(1, at = xTck, font = axis.font)
-	mtext(xlab, side = 1, line = 2.5)
+	axis.foo(1, at = xTck, font = axis.font)
 	if(!is.null(origindate)){
 		yaxlab <- format(as.Date(axTicks(2), origin = origindate), '%d-%b')
 		axis(2, at = axTicks(2), labels = yaxlab, las = 2, font = axis.font)
 	}else axis(2, at = axTicks(2), font = axis.font, las = 1)
 
-	line <- if(max(nchar(as.character(axTicks(2)))) > 2) 3 else 2
+	mtext(xlab, side = 1, line = 2.5)
 	if(!is.null(ylab.sub)){
-		mtext(ylab, side = 2, line = line+1)
-		mtext(ylab.sub, side = 2, line = line, font = 3, cex = 0.8)
-	}else mtext(ylab, side = 2, line = line)
+		mtext(ylab, side = 2, line = line.ylab+1)
+		mtext(ylab.sub, side = 2, line = line.ylab, font = 3, cex = 0.8)
+	}else mtext(ylab, side = 2, line = line.ylab)
 
 	box(bty = 'l')
 	box(bty = '7', col = 'gray')
@@ -331,9 +356,11 @@ climatoAnalysis.plot.proba <- function(dat, xlim = NULL, ylim = NULL, origindate
 	if(proba$theoretical){
 		fit.distrs <- fit.distributions(x, proba$distr)
 		if(!is.null(fit.distrs)){
-			gof <- gofstat(fit.distrs)
-			imin <- which.min(gof[[proba$gof.c]])
-			plotTheo <- TRUE
+			gof <- try(gofstat(fit.distrs), silent = TRUE)
+			if(!inherits(gof, "try-error")){
+				imin <- which.min(gof[[proba$gof.c]])
+				plotTheo <- TRUE
+			}else plotTheo <- FALSE
 		}else plotTheo <- FALSE
 
 		if(plotTheo){
@@ -764,12 +791,15 @@ climatoAnalysis.plot.bar.Anomaly <- function(x, y, period = c(1981, 2010), perce
 		if(length(x0) == 0) x <- x0
 		y <- rep(0, length(x0))
 		plot(x, y, type = 'n', yaxt = 'n', xlab = xlab, ylab = ylab, main = title)
-		InsertMessagesTxt(main.txt.out, "Not enough data to compute climatology", format = TRUE)
+		if(is.null(period)) InsertMessagesTxt(main.txt.out, "No data to plot", format = TRUE)
+		else InsertMessagesTxt(main.txt.out, "Not enough data to compute climatology", format = TRUE)
 		return(NULL)
 	}
 
-	moy <- mean(y[x >= period[1] & x <= period[2]], na.rm = TRUE)
-	y <- if(percent) 100*(y-moy)/(moy+0.01) else y-moy
+	if(!is.null(period)){
+		moy <- mean(y[x >= period[1] & x <= period[2]], na.rm = TRUE)
+		y <- if(percent) 100*(y-moy)/(moy+0.01) else y-moy
+	}
 	kol <- ifelse(y > 0, 2, 1)
 
 	if(is.null(xlim)) xlim <- range(x, na.rm = TRUE)
@@ -815,16 +845,23 @@ climatoAnalysis.plot.bar.Anomaly <- function(x, y, period = c(1981, 2010), perce
 	abline(h = axTicks(2), col = "lightgray", lty = "solid", lwd = 0.8)
 	abline(h = minTck, col = "lightgray", lty = "dotted")
 
-	bar.width <- round(60*diff(range(xlim))^(-0.508775))
+	if(is(x, "Date")){
+		xTck <- axTicks.Date(x, 1)
+		axis.foo <- axis.Date
+		bar.width <- round(58*(as.numeric(diff(range(xlim)))/min(as.numeric(diff(x)), na.rm = TRUE))^(-0.508775))
+	}else{
+		xTck <- axTicks(1)
+		xTck <- xTck[sapply(xTck, function(e) min(abs(c(e%%1, e%%1-1))) < 1e-10)]
+		axis.foo <- axis
+		bar.width <- round(60*as.numeric(diff(range(xlim)))^(-0.508775))
+	}
+
 	lines(x, y, type = "h", lwd = bar.width, lend = "butt", col = barcol[kol])
 
-	xTck <- axTicks(1)
-	xTck <- xTck[sapply(xTck, function(e) min(abs(c(e%%1, e%%1-1))) < 1e-10)]
-	axis(1, at = xTck, font = axis.font)
-	mtext(xlab, side = 1, line = 2.5)
+	axis.foo(1, at = xTck, font = axis.font)
 	axis(2, at = axTicks(2), las = 1, font = axis.font)
 
-	# ylab <- if(ylab == "" & percent) "Anomaly (% of Mean)" else ylab
+	mtext(xlab, side = 1, line = 2.5)
 	line <- if(max(nchar(as.character(axTicks(2)))) > 2) 3 else 2
 	if(!is.null(ylab.sub)){
 		mtext(ylab, side = 2, line = line+1)

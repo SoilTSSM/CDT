@@ -84,6 +84,10 @@ dailyRainAnalysisCalcProcs <- function(GeneralParameters){
 
 	#########################################
 
+	out.daty <- sapply(index$date, paste0, collapse = '_')
+
+	#########################################
+
 	aggregate.season.from.daily <- function(don.data){
 		dat.analys <- lapply(seq_along(index$idx), function(jj){
 			if(miss.day[jj]) return(rep(NA, ncol(don.data)))
@@ -156,9 +160,10 @@ dailyRainAnalysisCalcProcs <- function(GeneralParameters){
 
 			dat.tmp <- dat.analys
 			dat.tmp[is.na(dat.tmp)] <- -99
-			dat.tmp <- rbind(infohead, cbind(sapply(index$date, paste0, collapse = '_'), dat.tmp))
+			dat.tmp <- rbind(infohead, cbind(out.daty, dat.tmp))
 			writeFiles(dat.tmp, out.cdt.csv)
 			saveRDS(dat.analys, out.cdt.rds)
+			close(out.cdt.rds)
 			rm(dat.tmp)
 		}
 
@@ -203,10 +208,12 @@ dailyRainAnalysisCalcProcs <- function(GeneralParameters){
 												'nb.dry.spell' = "spells")
 			index.out$varInfo$longname <- paste(stats.prefix, ":", stats.season, ";", stats.params)
 			
-			index.out$dateInfo$date <- sapply(index$date, paste0, collapse = '_')
+			index.out$dateInfo$date <- out.daty
 			index.out$dateInfo$index <- seq_along(index$date)
 
-			saveRDS(index.out, gzfile(file.index, compression = 7))
+			file.index.gz <- gzfile(file.index, compression = 7)
+			saveRDS(index.out, file.index.gz)
+			close(file.index.gz)
 			
 			#########################################
 
@@ -234,11 +241,6 @@ dailyRainAnalysisCalcProcs <- function(GeneralParameters){
 			if(is.parallel$stop) stopCluster(is.parallel$cluster)
 
 			######################
-
-			out.daty <- sapply(index$date, paste0, collapse = '_')
-			dat.analys <- readCdtDatasetChunk.multi.dates.order(file.index, out.daty)
-
-			######################
 			x <- index.out$coords$mat$x
 			y <- index.out$coords$mat$y
 			dx <- ncdim_def("Lon", "degreeE", x)
@@ -247,6 +249,9 @@ dailyRainAnalysisCalcProcs <- function(GeneralParameters){
 			nc.grd <- ncvar_def(index.out$varInfo$name, index.out$varInfo$units, xy.dim, -99, index.out$varInfo$longname, "float", compression = 9)
 
 			######################
+
+			dat.analys <- readCdtDatasetChunk.multi.dates.order(file.index, out.daty)
+
 			for(j in seq_along(out.daty)){
 				ncdat.seas <- dat.analys[j, ]
 				dim(ncdat.seas) <- c(length(x), length(y))
@@ -277,11 +282,45 @@ dailyRainAnalysisCalcProcs <- function(GeneralParameters){
 
 	################################################
 
+	out.index.file <- file.path(outDIR, "DailyRainfallAnalysis.rds")
+
+	if(file.exists(out.index.file)){
+		outIdx <- readRDS(out.index.file)
+		calc.stats <- outIdx$exist.vars.dates
+	}else calc.stats <- list()
+	
+	calc.stats[[stats.directory]]$date <- out.daty
+	daty.range <- out.daty[c(1, length(out.daty))]
+	daty.range <- cbind(substr(daty.range, 1, 4), substr(daty.range, 10, 13))
+	vars.def <- c(GeneralParameters$def$drywet.day, GeneralParameters$def$drywet.spell, GeneralParameters$def$proba.thres)
+	calc.stats[[stats.directory]][[GeneralParameters$stats$yearly]] <- list(year = daty.range, season = stats.season, pars = vars.def)
+
+	last.vars <- c(stats.directory, GeneralParameters$stats$yearly)
+
+	################################################
+
 	if(GeneralParameters$data.type == "cdtstation"){
+		stn.data <- list(id = don$id, lon = don$lon, lat = don$lat)
+		output <- list(params = GeneralParameters, data = stn.data, exist.vars.dates = calc.stats, last = last.vars)
+
+		##################
 		datadir <- file.path(outDIR, 'CDTSTATIONS_STATS')
 		dir.create(datadir, showWarnings = FALSE, recursive = TRUE)
-		out.cdt.stats <- file.path(datadir, paste0(stats.directory, '_', GeneralParameters$stats$yearly, '.csv'))
 
+		dataOUT <- file.path(outDIR, 'CDTDATASET')
+		dir.create(dataOUT, showWarnings = FALSE, recursive = TRUE)
+
+		out.cdt.stats.csv <- file.path(datadir, paste0(stats.directory, '_', GeneralParameters$stats$yearly, '.csv'))
+		out.cdt.stats.rds <- file.path(dataOUT, paste0(stats.directory, '_', GeneralParameters$stats$yearly, '.rds'))
+
+		##################
+
+		con <- gzfile(out.cdt.stats.rds, compression = 7)
+		open(con, "wb")
+		saveRDS(dat.yearly, con)
+		close(con)
+
+		##################
 		xhead <- rbind(don$id, don$lon, don$lat)
 		chead <- c('ID.STN', 'LON', 'STAT/LAT')
 		infohead <- cbind(chead, xhead)
@@ -289,10 +328,13 @@ dailyRainAnalysisCalcProcs <- function(GeneralParameters){
 		dat.yearly <- round(dat.yearly, 3)
 		dat.yearly[is.na(dat.yearly)] <- -99
 		dat.yearly <- rbind(infohead, c(paste0(GeneralParameters$stats$yearly, ':', stats.season), dat.yearly))
-		writeFiles(dat.yearly, out.cdt.stats)
+		writeFiles(dat.yearly, out.cdt.stats.csv)
 	}
 
 	if(GeneralParameters$data.type == "cdtdataset"){
+		output <- list(params = GeneralParameters, exist.vars.dates = calc.stats, last = last.vars)
+
+		######################
 		ncdfOUT <- file.path(outDIR, 'DATA_NetCDF_STATS')
 		dir.create(ncdfOUT, showWarnings = FALSE, recursive = TRUE)
 
@@ -321,6 +363,16 @@ dailyRainAnalysisCalcProcs <- function(GeneralParameters){
 		ncvar_put(nc, nc.grd, dat.yearly)
 		nc_close(nc)
 	}
+
+	##################
+	con <- gzfile(out.index.file, compression = 9)
+	open(con, "wb")
+	saveRDS(output, con)
+	close(con)
+
+	##################
+	EnvDailyRainAnalysisplot$output <- output
+	EnvDailyRainAnalysisplot$PathData <- outDIR
 
 	return(0)
 }

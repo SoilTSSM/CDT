@@ -52,6 +52,20 @@ compute_SeasonLength_Procs <- function(GeneralParameters){
 			return(NULL)
 		}
 
+		onset.file <- file.path(dirname(GeneralParameters$onset), 'CDTDATASET', "ONSET.rds")
+		cessa.file <- file.path(dirname(GeneralParameters$cessation), 'CDTDATASET', "CESSATION.rds")
+
+		# precip.file <- file.path(dirname(GeneralParameters$onset), 'CDTDATASET',"PRECIP.rds")
+		# etp.file <- file.path(dirname(GeneralParameters$onset), 'CDTDATASET',"PET.rds")
+		# wb.file <- file.path(dirname(GeneralParameters$cessation), 'CDTDATASET',"WB.rds")
+
+		onset$onset <- readRDS(onset.file)
+		cessation$cessation <- readRDS(cessa.file)
+
+		# onset$data$prec <- readRDS(precip.file)
+		# onset$data$etp <- readRDS(etp.file)
+		# cessation$data$wb <- readRDS(wb.file)
+
 		##################
 		jnx <- match(onset$data$id, cessation$data$id)
 		jnx <- jnx[!is.na(jnx)]
@@ -65,9 +79,9 @@ compute_SeasonLength_Procs <- function(GeneralParameters){
 		inx <- onset$data$id%in%cessation$data$id
 		onset$onset <- onset$onset[, inx, drop = FALSE]
 
-		onset$data$prec <- onset$data$prec[, inx, drop = FALSE]
-		onset$data$etp <- onset$data$etp[, inx, drop = FALSE]
-		cessation$data$wb <- cessation$data$wb[, jnx, drop = FALSE]
+		# onset$data$prec <- onset$data$prec[, inx, drop = FALSE]
+		# onset$data$etp <- onset$data$etp[, inx, drop = FALSE]
+		# cessation$data$wb <- cessation$data$wb[, jnx, drop = FALSE]
 
 		##################
 
@@ -79,23 +93,31 @@ compute_SeasonLength_Procs <- function(GeneralParameters){
 
 		##################
 
-		stn.data <- list(id = stn.id, lon = stn.lon, lat = stn.lat, date = onset$data$date,
-						prec = onset$data$prec, etp = onset$data$etp, wb = cessation$data$wb)
-		output <- list(params = GeneralParameters, data = stn.data, seasonLength = seasonL,
-						start.date = onset$start.date, range.date = range.date)
-
-		EnvSeasLengthCalcPlot$output <- output
-
-		##################
-
 		outDIR <- file.path(GeneralParameters$output, "SEASON.LENGTH_data")
 		dir.create(outDIR, showWarnings = FALSE, recursive = TRUE)
 
 		datadir <- file.path(outDIR, 'CDTSTATIONS')
 		dir.create(datadir, showWarnings = FALSE, recursive = TRUE)
 
+		dataOUT <- file.path(outDIR, 'CDTDATASET')
+		dir.create(dataOUT, showWarnings = FALSE, recursive = TRUE)
+
 		file.seasonL <- file.path(datadir, "SeasonLength.txt")
 		file.index <- file.path(outDIR, "SeasonLength.rds")
+		file.cdt.length <- file.path(dataOUT, "SEASONLENGTH.rds")
+
+		##################
+
+		# stn.data <- list(id = stn.id, lon = stn.lon, lat = stn.lat, date = onset$data$date,
+		# 				prec = onset$data$prec, etp = onset$data$etp, wb = cessation$data$wb)
+		# output <- list(params = GeneralParameters, data = stn.data, seasonLength = seasonL,
+		# 				start.date = onset$start.date, range.date = range.date)
+
+		stn.data <- list(id = stn.id, lon = stn.lon, lat = stn.lat, date = onset$data$date)
+		output <- list(params = c(onset$params[!names(onset$params)%in%'output'], GeneralParameters), data = stn.data, start.date = onset$start.date, range.date = range.date)
+
+		EnvSeasLengthCalcPlot$output <- output
+		EnvSeasLengthCalcPlot$PathData <- outDIR
 
 		##################
 		con <- gzfile(file.index, compression = 7)
@@ -103,6 +125,13 @@ compute_SeasonLength_Procs <- function(GeneralParameters){
 		saveRDS(output, con)
 		close(con)
 
+		##################
+		con <- gzfile(file.cdt.length, compression = 7)
+		open(con, "wb")
+		saveRDS(seasonL, con)
+		close(con)
+
+		##################
 
 		seasonL[is.na(seasonL)] <- -99
 		daty <- format(onset$start.date, "%Y%m%d")
@@ -208,8 +237,9 @@ compute_SeasonLength_Procs <- function(GeneralParameters){
 		####################################
 
 		start.date <- onset$start.date[idx.ons]
-		output <- list(params = GeneralParameters, start.date = start.date, range.date = range.date)
+		output <- list(params = c(onset$params[!names(onset$params)%in%'output'], GeneralParameters), start.date = start.date, range.date = range.date)
 		EnvSeasLengthCalcPlot$output <- output
+		EnvSeasLengthCalcPlot$PathData <- outDIR
 
 		##################
 		con <- gzfile(file.index, compression = 6)

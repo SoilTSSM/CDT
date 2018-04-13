@@ -1419,7 +1419,7 @@ climatoAnalysisPanelCmd <- function(){
 		}
 
 		###################
-
+		# widgets.Station.Pixel
 		tkdestroy(frTS2)
 		frTS2 <<- tkframe(frameSTNCrds)
 

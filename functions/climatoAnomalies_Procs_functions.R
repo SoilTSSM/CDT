@@ -158,7 +158,7 @@ anomaliesCalcProcs <- function(GeneralParameters){
 						 return(list(moy = tmp, sds = tmp))
 					}
 					xx <- don0[index0$index[[jj]], , drop = FALSE]
-					ina <- (colSums(!is.na(xx))/div) <  minyear
+					ina <- (colSums(!is.na(xx))/div) < minyear
 					moy <- colMeans(xx, na.rm = TRUE)
 					sds <- matrixStats::colSds(xx, na.rm = TRUE)
 					moy[ina] <- NA
@@ -184,7 +184,6 @@ anomaliesCalcProcs <- function(GeneralParameters){
 			start.daty <- as.Date(paste(start.year, start.mon, start.dek, sep = "-"))
 			end.daty <- as.Date(paste(end.year, end.mon, end.dek, sep = "-"))
 		}
-
 		if(freqData == "pentad"){
 			start.daty <- as.Date(paste(start.year, start.mon, start.dek, sep = "-"))
 			end.daty <- as.Date(paste(end.year, end.mon, end.dek, sep = "-"))
@@ -292,6 +291,7 @@ anomaliesCalcProcs <- function(GeneralParameters){
 
 			#############
 			saveRDS(anom, out.cdt.anom)
+			close(out.cdt.anom)
 
 			#############
 			xhead <- rbind(don$id, don$lon, don$lat)
@@ -313,6 +313,7 @@ anomaliesCalcProcs <- function(GeneralParameters){
 				EnvAnomalyCalcPlot$PathAnom <- outDIR
 
 				saveRDS(output, out.dat.index)
+				close(out.dat.index)
 			}else{
 				out.cdt.clim.moy <- file.path(datadir, paste0(freqData, "_Climatology_mean.csv"))
 				out.cdt.clim.sds <- file.path(datadir, paste0(freqData, "_Climatology_std.csv"))
@@ -343,9 +344,13 @@ anomaliesCalcProcs <- function(GeneralParameters){
 							index = index0$id)
 
 				saveRDS(output.clim, out.climato.index)
+				close(out.climato.index)
 				saveRDS(output, out.dat.index)
+				close(out.dat.index)
 				saveRDS(dat.moy, out.cdt.moy)
+				close(out.cdt.moy)
 				saveRDS(dat.sds, out.cdt.sds)
+				close(out.cdt.sds)
 
 				##################
 				infohead[3, 1] <- "INDEX/LAT"
@@ -468,6 +473,7 @@ anomaliesCalcProcs <- function(GeneralParameters){
 				output.clim <- list(params = params.clim, index = index0$id)
 
 				saveRDS(output.clim, out.climato.index)
+				close(out.climato.index)
 
 				##################
 
@@ -477,8 +483,13 @@ anomaliesCalcProcs <- function(GeneralParameters){
 				index.out.clim$dateInfo$date <- index0$id
 				index.out.clim$dateInfo$index <- seq_along(index0$id)
 
-				saveRDS(index.out.clim, gzfile(index.file.moy, compression = 7))
-				saveRDS(index.out.clim, gzfile(index.file.sds, compression = 7))
+				index.file.moy.gz <- gzfile(index.file.moy, compression = 7)
+				saveRDS(index.out.clim, index.file.moy.gz)
+				close(index.file.moy.gz)
+
+				index.file.sds.gz <- gzfile(index.file.sds, compression = 7)
+				saveRDS(index.out.clim, index.file.sds.gz)
+				close(index.file.sds.gz)
 
 				#########################################
 
@@ -628,6 +639,7 @@ anomaliesCalcProcs <- function(GeneralParameters){
 
 			don.anom$dates <- newdaty
 			saveRDS(don.anom, out.anom.index)
+			close(out.anom.index)
 
 			EnvAnomalyCalcPlot$output <- don.anom
 			EnvAnomalyCalcPlot$PathAnom <- outDIR
@@ -648,6 +660,7 @@ anomaliesCalcProcs <- function(GeneralParameters){
 
 			output <- list(params = GeneralParameters, dates = daty, mean.file = index.file.moy, sds.file = index.file.sds)
 			saveRDS(output, out.anom.index)
+			close(out.anom.index)
 
 			EnvAnomalyCalcPlot$output <- output
 			EnvAnomalyCalcPlot$PathAnom <- outDIR
@@ -749,264 +762,6 @@ anomaliesCalcProcs <- function(GeneralParameters){
 
 		rm(don, index, index1, index.out)
 	}
-
-	#####################################################
-
-	# if(GeneralParameters$data.type == "cdtnetcdf"){
-	# 	sdon <- getRFESampleData(GeneralParameters$cdtnetcdf$sample)
-	# 	if(is.null(sdon)){
-	# 		InsertMessagesTxt(main.txt.out, "No sample data found", format = TRUE)
-	# 		return(NULL)
-	# 	}
-
-	# 	months <- 1:12
-	# 	start.date <- as.Date("1900-1-1")
-	# 	end.date <- as.Date("2050-12-31")
-
-	# 	don.DIR <- GeneralParameters$cdtnetcdf$dir
-	# 	don.Format <- GeneralParameters$cdtnetcdf$format
-	# 	don.errmsg <- "NetCDF data not found"
-	# 	donInfo <- ncFilesInfo(freqData, start.date, end.date, months, don.DIR, don.Format, don.errmsg)
-	# 	if(is.null(donInfo)) return(NULL)
-	# 	donInfo$ncinfo <- list(xo = sdon$rfeILon, yo = sdon$rfeILat, varid = sdon$rfeVarid)
-
-	# 	donInfo$dates <- donInfo$dates[donInfo$exist]
-	# 	donInfo$nc.files <- donInfo$nc.files[donInfo$exist]
-	# 	donInfo$exist <- donInfo$exist[donInfo$exist]
-
-	# 	daty <- donInfo$dates
-	# 	year <- as.numeric(substr(daty, 1, 4))
-
-	# 	if(length(unique(year)) < minyear){
-	# 		InsertMessagesTxt(main.txt.out, "No enough data to calculate climatologies", format = TRUE)
-	# 		return(NULL)
-	# 	}
-
-	# 	### Clim
-	# 	iyear <- year >= year1 & year <= year2
-	# 	daty <- daty[iyear]
-	# 	index <- getClimatologiesIndex(daty, freqData, xwin)
-
-	# 	## Check for each tstep
-	# 	div <- if(freqData == "daily") 2*xwin+1 else 1
-	# 	Tstep.miss <- (sapply(index$index, length)/div) < minyear
-
-	# 	#########################################
-
-	# 	outDIR <- file.path(GeneralParameters$out.dir, "CLIMATOLOGY_data")
-	# 	dir.create(outDIR, showWarnings = FALSE, recursive = TRUE)
-	# 	out.dat.index <- gzfile(file.path(outDIR, "Climatology.rds"), compression = 7)
-
-
-
-	# 	# ncdfOUT <- file.path(outDIR, 'DATA_NetCDF')
-	# 	# dir.create(ncdfOUT, showWarnings = FALSE, recursive = TRUE)
-
-	# 	# dataOUT <- file.path(outDIR, 'CDTMEAN')
-	# 	# datadir <- file.path(dataOUT, 'DATA')
-	# 	# dir.create(datadir, showWarnings = FALSE, recursive = TRUE)
-	# 	# file.index <- file.path(dataOUT, 'CDTMEAN.rds')
-
-
-	# 	ncdfOUT1 <- file.path(outDIR, 'DATA_NetCDF', 'CDTMEAN')
-	# 	dir.create(ncdfOUT1, showWarnings = FALSE, recursive = TRUE)
-	# 	ncdfOUT2 <- file.path(outDIR, 'DATA_NetCDF', 'CDTSTD')
-	# 	dir.create(ncdfOUT2, showWarnings = FALSE, recursive = TRUE)
-
-	# 	datadir1 <- file.path(outDIR, 'CDTMEAN', 'DATA')
-	# 	dir.create(datadir1, showWarnings = FALSE, recursive = TRUE)
-	# 	file.index1 <- file.path(outDIR, 'CDTMEAN', 'CDTMEAN.rds')
-
-	# 	datadir2 <- file.path(outDIR, 'CDTSTD', 'DATA')
-	# 	dir.create(datadir2, showWarnings = FALSE, recursive = TRUE)
-	# 	file.index2 <- file.path(outDIR, 'CDTSTD', 'CDTSTD.rds')
-
-	# 	##################
-
-	# 	output <- list(params = GeneralParameters, index = index$id)
-
-	# 	EnvClimatoCalcPlot$output <- output
-	# 	EnvClimatoCalcPlot$PathClim <- outDIR
-
-	# 	saveRDS(output, out.dat.index)
-
-	# 	#####################################
-	# 	nc <- nc_open(donInfo$nc.files[1])
-	# 	nc.lon <- nc$dim[[donInfo$ncinfo$xo]]$vals
-	# 	nc.lat <- nc$dim[[donInfo$ncinfo$yo]]$vals
-	# 	varInfo <- nc$var[[donInfo$ncinfo$varid]][c('name', 'prec', 'units', 'longname')]
-	# 	nc_close(nc)
-
-	# 	xo <- order(nc.lon)
-	# 	nc.lon <- nc.lon[xo]
-	# 	yo <- order(nc.lat)
-	# 	nc.lat <- nc.lat[yo]
-	# 	len.lon <- length(nc.lon)
-	# 	len.lat <- length(nc.lat)
-
-	# 	#########################################
-
-	# 	dx <- ncdim_def("Lon", "degreeE", nc.lon)
-	# 	dy <- ncdim_def("Lat", "degreeN", nc.lat)
-	# 	xy.dim <- list(dx, dy)
-	# 	nc.grd <- ncvar_def(varInfo$name, varInfo$units, xy.dim, -99, varInfo$longname, "float", compression = 9)
-
-	# 	#########################################
-
-	# 	# create chunck
-	# 	cdtTmpVar <- NULL
-	# 	cdtTmpVar$TimeStep <- freqData
-	# 	chunksize <- 100
-	# 	cdtTmpVar$chunkfac <- 5
-
-	# 	####
-	# 	nxy.chunksize <- round(sqrt(chunksize))
-	# 	seqlon <- seq_along(nc.lon)
-	# 	seqlat <- seq_along(nc.lat)
-	# 	seqcol <- cbind(id = seq(len.lon*len.lat), expand.grid(x = seqlon, y = seqlat))
-
-	# 	split.lon <- split(seqlon, ceiling(seqlon / nxy.chunksize))
-	# 	split.lat <- split(seqlat, ceiling(seqlat / nxy.chunksize))
-	# 	xgrid <- expand.grid(x = seq_along(split.lon), y = seq_along(split.lat))
-
-	# 	xarrg <- lapply(seq(nrow(xgrid)), function(j){
-	# 		crd <- expand.grid(x = nc.lon[split.lon[[xgrid$x[j]]]], y = nc.lat[split.lat[[xgrid$y[j]]]])
-	# 		id <- seqcol$id[(seqcol$x %in% split.lon[[xgrid$x[j]]]) & (seqcol$y %in% split.lat[[xgrid$y[j]]])]
-	# 		list(coords = crd, id = id, grp = rep(j, length(id)))
-	# 	})
-
-	# 	col.idx <- lapply(xarrg, function(x) x$id)
-	# 	col.id <- do.call(c, col.idx)
-	# 	col.grp <- do.call(c, lapply(xarrg, function(x) x$grp))
-	# 	xy.exp <- do.call(rbind, lapply(xarrg, function(x) x$coords))
-	# 	col.order <- order(col.id)
-
-	# 	cdtTmpVar$chunksize <- nxy.chunksize*nxy.chunksize
-	# 	cdtTmpVar$coords$mat <- list(x = nc.lon, y = nc.lat)
-	# 	cdtTmpVar$coords$df <- xy.exp
-	# 	attr(cdtTmpVar$coords$df, "out.attrs") <- NULL
-	# 	cdtTmpVar$colInfo <- list(id = col.id, index = col.grp, order = col.order)
-	# 	cdtTmpVar$varInfo <- varInfo
-
-	# 	# ## daty
-	# 	# ncDaty <- do.call(c, lapply(index$index, function(j) donInfo$dates[j]))
-	# 	# Adates <- ncDaty
-	# 	# Aindex <- seq(length(ncDaty))
-	# 	# odaty <- order(Adates)
-	# 	# cdtTmpVar$dateInfo <- list(date = Adates[odaty], index = Aindex[odaty])
-	# 	cdtTmpVar$dateInfo <- list(date = index$id, index = seq_along(index$id))
-
-	# 	#########################################
-
-	# 	ret <- lapply(seq_along(index$index), function(jj){
-	# 		if(Tstep.miss[jj]){
-	# 			dat.moy <- rep(NA, len.lon*len.lat)
-	# 			dat.sds <- rep(NA, len.lon*len.lat)
-	# 		}else{
-	# 			id2read <- index$index[[jj]]
-	# 			dat.clim <- lapply(seq_along(id2read), function(j){
-	# 				nc <- nc_open(donInfo$nc.files[id2read[j]])
-	# 				vars <- ncvar_get(nc, varid = donInfo$ncinfo$varid)
-	# 				nc_close(nc)
-	# 				vars <- vars[xo, yo]
-	# 				if(donInfo$ncinfo$yo < donInfo$ncinfo$xo){
-	# 					vars <- matrix(c(vars), nrow = len.lon, ncol = len.lat, byrow = TRUE)
-	# 				}
-	# 				return(c(vars))
-	# 			})
-	# 			dat.clim <- do.call(rbind, dat.clim)
-	# 			ina <- (colSums(!is.na(dat.clim))/div) <  minyear
-
-	# 			dat.moy <- colMeans(dat.clim, na.rm = TRUE)
-	# 			dat.moy[ina] <- NA
-	# 			dat.sds <- matrixStats::colSds(dat.clim, na.rm = TRUE)
-	# 			dat.sds[ina] <- NA
-	# 			rm(dat.clim)
-	# 		}
-
-	# 		clim <- matrix(dat.moy, len.lon, len.lat)
-	# 		clim[is.na(clim)] <- -99
-	# 		filenc <- file.path(ncdfOUT1, paste0("clim_", index$id[jj], ".nc"))
-	# 		nc <- nc_create(filenc, nc.grd)
-	# 		ncvar_put(nc, nc.grd, clim)
-	# 		nc_close(nc)
-	# 		rm(clim)
-
-	# 		clim <- matrix(dat.sds, len.lon, len.lat)
-	# 		clim[is.na(clim)] <- -99
-	# 		filenc <- file.path(ncdfOUT2, paste0("clim_", index$id[jj], ".nc"))
-	# 		nc <- nc_create(filenc, nc.grd)
-	# 		ncvar_put(nc, nc.grd, clim)
-	# 		nc_close(nc)
-	# 		rm(clim)
-
-	# 		ret0 <- lapply(seq_along(col.idx), function(j){
-	# 			file.tmp <- file.path(datadir1, paste0("clim_", j, ".", jj))
-	# 			con <- gzfile(file.tmp, open = "wb")
-	# 			saveRDS(dat.moy[col.idx[[j]]], con)
-	# 			close(con)
-
-	# 			file.tmp <- file.path(datadir2, paste0("clim_", j, ".", jj))
-	# 			con <- gzfile(file.tmp, open = "wb")
-	# 			saveRDS(dat.sds[col.idx[[j]]], con)
-	# 			close(con)
-
-	# 			return(0)
-	# 		})
-	# 		rm(dat.moy, dat.sds)
-	# 		return(0)
-	# 	})
-
-	# 	is.parallel <- doparallel(length(col.idx) >= 20)
-	# 	`%parLoop%` <- is.parallel$dofun
-	# 	ret <- foreach(j = seq_along(col.idx)) %parLoop% {
-	# 		tmp <- lapply(seq_along(index$index), function(jj){
-	# 			file.tmp <- file.path(datadir1, paste0("clim_", j, ".", jj))
-	# 			dd <- readRDS(file.tmp)
-	# 			unlink(file.tmp)
-	# 			return(dd)
-	# 		})
-	# 		tmp <- do.call(rbind, tmp)
-
-	# 		file.rds <- file.path(datadir1, paste0(j, ".rds"))
-	# 		con <- gzfile(file.rds, compression = 6)
-	# 		open(con, "wb")
-	# 		saveRDS(tmp, con)
-	# 		close(con)
-	# 		rm(tmp)
-
-	# 		######
-	# 		tmp <- lapply(seq_along(index$index), function(jj){
-	# 			file.tmp <- file.path(datadir2, paste0("clim_", j, ".", jj))
-	# 			dd <- readRDS(file.tmp)
-	# 			unlink(file.tmp)
-	# 			return(dd)
-	# 		})
-	# 		tmp <- do.call(rbind, tmp)
-
-	# 		file.rds <- file.path(datadir2, paste0(j, ".rds"))
-	# 		con <- gzfile(file.rds, compression = 6)
-	# 		open(con, "wb")
-	# 		saveRDS(tmp, con)
-	# 		close(con)
-	# 		rm(tmp); gc()
-
-	# 		return(0)
-	# 	}
-	# 	if(is.parallel$stop) stopCluster(is.parallel$cluster)
-
-	# 	con <- gzfile(file.index1, compression = 6)
-	# 	open(con, "wb")
-	# 	saveRDS(cdtTmpVar, con)
-	# 	close(con)
-
-	# 	con <- gzfile(file.index2, compression = 6)
-	# 	open(con, "wb")
-	# 	saveRDS(cdtTmpVar, con)
-	# 	close(con)
-
-	# 	rm(sdon, cdtTmpVar)
-	# }
 
 	return(0)
 }

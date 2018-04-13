@@ -442,47 +442,49 @@ climatoAnalysis.GraphOptions.Anomaly <- function(parent.win, climGraphOpt){
 
 	#####################
 
-	frameAnomaly <- ttklabelframe(frDialog, text = "Anomaly", relief = 'groove')
+	if(!is.null(climGraphOpt$anomaly$anom)){
+		frameAnomaly <- ttklabelframe(frDialog, text = "Anomaly", relief = 'groove')
 
-	perc.anom <- tclVar(climGraphOpt$anomaly$anom$perc.anom)
-	basePeriod <- tclVar(climGraphOpt$anomaly$anom$basePeriod)
-	startYr.anom <- tclVar(climGraphOpt$anomaly$anom$startYr.anom)
-	endYr.anom <- tclVar(climGraphOpt$anomaly$anom$endYr.anom)
+		perc.anom <- tclVar(climGraphOpt$anomaly$anom$perc.anom)
+		basePeriod <- tclVar(climGraphOpt$anomaly$anom$basePeriod)
+		startYr.anom <- tclVar(climGraphOpt$anomaly$anom$startYr.anom)
+		endYr.anom <- tclVar(climGraphOpt$anomaly$anom$endYr.anom)
 
-	statebasePeriod <- if(climGraphOpt$anomaly$anom$basePeriod) 'normal' else 'disabled'
+		statebasePeriod <- if(climGraphOpt$anomaly$anom$basePeriod) 'normal' else 'disabled'
 
-	chk.PercAnom <- tkcheckbutton(frameAnomaly, variable = perc.anom, text = "Percentage of mean", anchor = 'w', justify = 'left')
-	chk.BaseAnom <- tkcheckbutton(frameAnomaly, variable = basePeriod, text = "Define climatology base period", anchor = 'w', justify = 'left')
-	txt.strtYrAnom <- tklabel(frameAnomaly, text = "Start Year",  anchor = 'e', justify = 'right')
-	en.strtYrAnom <- tkentry(frameAnomaly, textvariable = startYr.anom, width = 5, state = statebasePeriod)
-	txt.sepYrAnom <- tklabel(frameAnomaly, width = 3)
-	txt.endYrAnom <- tklabel(frameAnomaly, text = "End Year",  anchor = 'e', justify = 'right')
-	en.endYrAnom <- tkentry(frameAnomaly, textvariable = endYr.anom, width = 5, state = statebasePeriod)
+		chk.PercAnom <- tkcheckbutton(frameAnomaly, variable = perc.anom, text = "Percentage of mean", anchor = 'w', justify = 'left')
+		chk.BaseAnom <- tkcheckbutton(frameAnomaly, variable = basePeriod, text = "Define climatology base period", anchor = 'w', justify = 'left')
+		txt.strtYrAnom <- tklabel(frameAnomaly, text = "Start Year",  anchor = 'e', justify = 'right')
+		en.strtYrAnom <- tkentry(frameAnomaly, textvariable = startYr.anom, width = 5, state = statebasePeriod)
+		txt.sepYrAnom <- tklabel(frameAnomaly, width = 3)
+		txt.endYrAnom <- tklabel(frameAnomaly, text = "End Year",  anchor = 'e', justify = 'right')
+		en.endYrAnom <- tkentry(frameAnomaly, textvariable = endYr.anom, width = 5, state = statebasePeriod)
 
-	tkgrid(chk.PercAnom, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(chk.BaseAnom, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.strtYrAnom, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.strtYrAnom, row = 2, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.sepYrAnom, row = 2, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.endYrAnom, row = 2, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.endYrAnom, row = 2, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(chk.PercAnom, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(chk.BaseAnom, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(txt.strtYrAnom, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(en.strtYrAnom, row = 2, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(txt.sepYrAnom, row = 2, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(txt.endYrAnom, row = 2, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(en.endYrAnom, row = 2, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-	infobulle(chk.PercAnom, "Check this box to calculate the anomaly as percentage of mean")
-	status.bar.display(chk.PercAnom, TextOutputVar, "Check this box to calculate the anomaly as percentage of mean")
-	infobulle(chk.BaseAnom, "Check this box to define a base period to calculate climatology")
-	status.bar.display(chk.BaseAnom, TextOutputVar, "Check this box to define a base period to calculate climatology")
-	infobulle(en.strtYrAnom, "Enter the start year to be used to calculate the climatology")
-	status.bar.display(en.strtYrAnom, TextOutputVar, "Enter the start year to be used to calculate the climatology")
-	infobulle(en.endYrAnom, "Enter the end year to be used to calculate the climatology")
-	status.bar.display(en.endYrAnom, TextOutputVar, "Enter the end year to be used to calculate the climatology")
+		infobulle(chk.PercAnom, "Check this box to calculate the anomaly as percentage of mean")
+		status.bar.display(chk.PercAnom, TextOutputVar, "Check this box to calculate the anomaly as percentage of mean")
+		infobulle(chk.BaseAnom, "Check this box to define a base period to calculate climatology")
+		status.bar.display(chk.BaseAnom, TextOutputVar, "Check this box to define a base period to calculate climatology")
+		infobulle(en.strtYrAnom, "Enter the start year to be used to calculate the climatology")
+		status.bar.display(en.strtYrAnom, TextOutputVar, "Enter the start year to be used to calculate the climatology")
+		infobulle(en.endYrAnom, "Enter the end year to be used to calculate the climatology")
+		status.bar.display(en.endYrAnom, TextOutputVar, "Enter the end year to be used to calculate the climatology")
 
-	#########
+		#########
 
-	tkbind(chk.BaseAnom, "<Button-1>", function(){
-		statebasePeriod <- if(tclvalue(basePeriod) == '0') 'normal' else 'disabled'
-		tkconfigure(en.strtYrAnom, state = statebasePeriod)
-		tkconfigure(en.endYrAnom, state = statebasePeriod)
-	})
+		tkbind(chk.BaseAnom, "<Button-1>", function(){
+			statebasePeriod <- if(tclvalue(basePeriod) == '0') 'normal' else 'disabled'
+			tkconfigure(en.strtYrAnom, state = statebasePeriod)
+			tkconfigure(en.endYrAnom, state = statebasePeriod)
+		})
+	}
 
 	#####################
 
@@ -497,14 +499,14 @@ climatoAnalysis.GraphOptions.Anomaly <- function(parent.win, climGraphOpt){
 	stateMaxXlim <- if(climGraphOpt$anomaly$xlim$is.max) 'normal' else 'disabled'
 
 	chk.min.Xlim <- tkcheckbutton(frameGraphXlim, variable = is.min.xlim, text = "Min",  anchor = 'w', justify = 'left')
-	en.min.Xlim <- tkentry(frameGraphXlim, textvariable = min.xlim, width = 4, state = stateMinXlim)
-	txt.sep.Xlim <- tklabel(frameGraphXlim, width = 6)
+	en.min.Xlim <- tkentry(frameGraphXlim, textvariable = min.xlim, width = 9, state = stateMinXlim)
+	# txt.sep.Xlim <- tklabel(frameGraphXlim, width = 6)
 	chk.max.Xlim <- tkcheckbutton(frameGraphXlim, variable = is.max.xlim, text = "Max",  anchor = 'w', justify = 'left')
-	en.max.Xlim <- tkentry(frameGraphXlim, textvariable = max.xlim, width = 4, state = stateMaxXlim)
+	en.max.Xlim <- tkentry(frameGraphXlim, textvariable = max.xlim, width = 9, state = stateMaxXlim)
 
 	tkgrid(chk.min.Xlim, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.min.Xlim, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.sep.Xlim, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	# tkgrid(txt.sep.Xlim, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(chk.max.Xlim, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.max.Xlim, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
@@ -653,7 +655,8 @@ climatoAnalysis.GraphOptions.Anomaly <- function(parent.win, climGraphOpt){
 	tkgrid(bt.colPlus, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#####################
-	tkgrid(frameAnomaly, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	if(!is.null(climGraphOpt$anomaly$anom)) tkgrid(frameAnomaly, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frameGraphXlim, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frameGraphYlim, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frameGraphAxLabs, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -665,15 +668,17 @@ climatoAnalysis.GraphOptions.Anomaly <- function(parent.win, climGraphOpt){
 	bt.opt.CA <- tkbutton(frButt, text = "Cancel") 
 
 	tkconfigure(bt.opt.OK, command = function(){
-		climGraphOpt$anomaly$anom$perc.anom <<- switch(tclvalue(perc.anom), '0' = FALSE, '1' = TRUE)
-		climGraphOpt$anomaly$anom$basePeriod <<- switch(tclvalue(basePeriod), '0' = FALSE, '1' = TRUE)
-		climGraphOpt$anomaly$anom$startYr.anom <<- as.numeric(str_trim(tclvalue(startYr.anom)))
-		climGraphOpt$anomaly$anom$endYr.anom <<- as.numeric(str_trim(tclvalue(endYr.anom)))
+		if(!is.null(climGraphOpt$anomaly$anom)){
+			climGraphOpt$anomaly$anom$perc.anom <<- switch(tclvalue(perc.anom), '0' = FALSE, '1' = TRUE)
+			climGraphOpt$anomaly$anom$basePeriod <<- switch(tclvalue(basePeriod), '0' = FALSE, '1' = TRUE)
+			climGraphOpt$anomaly$anom$startYr.anom <<- as.numeric(str_trim(tclvalue(startYr.anom)))
+			climGraphOpt$anomaly$anom$endYr.anom <<- as.numeric(str_trim(tclvalue(endYr.anom)))
+		}
 
 		climGraphOpt$anomaly$xlim$is.min <<- switch(tclvalue(is.min.xlim), '0' = FALSE, '1' = TRUE)
 		climGraphOpt$anomaly$xlim$is.max <<- switch(tclvalue(is.max.xlim), '0' = FALSE, '1' = TRUE)
-		climGraphOpt$anomaly$xlim$min <<- as.numeric(str_trim(tclvalue(min.xlim)))
-		climGraphOpt$anomaly$xlim$max <<- as.numeric(str_trim(tclvalue(max.xlim)))
+		climGraphOpt$anomaly$xlim$min <<- str_trim(tclvalue(min.xlim))
+		climGraphOpt$anomaly$xlim$max <<- str_trim(tclvalue(max.xlim))
 
 		climGraphOpt$anomaly$ylim$is.min <<- switch(tclvalue(is.min.ylim), '0' = FALSE, '1' = TRUE)
 		climGraphOpt$anomaly$ylim$is.max <<- switch(tclvalue(is.max.ylim), '0' = FALSE, '1' = TRUE)
@@ -738,9 +743,13 @@ climatoAnalysis.GraphOptions.Bar <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
 		largeur1 <- 30
 		largeur2 <- 34
+		width.col <- 7
+		ylim.sep <- 3
 	}else{
 		largeur1 <- 26
 		largeur2 <- 29
+		width.col <- 5
+		ylim.sep <- 4
 	}
 
 	#####################
@@ -765,16 +774,14 @@ climatoAnalysis.GraphOptions.Bar <- function(parent.win, climGraphOpt){
 	stateMaxXlim <- if(climGraphOpt$bar$xlim$is.max) 'normal' else 'disabled'
 
 	chk.min.Xlim <- tkcheckbutton(frameGraphXlim, variable = is.min.xlim, text = "Min",  anchor = 'w', justify = 'left')
-	en.min.Xlim <- tkentry(frameGraphXlim, textvariable = min.xlim, width = 4, state = stateMinXlim)
-	txt.sep.Xlim <- tklabel(frameGraphXlim, width = 6)
+	en.min.Xlim <- tkentry(frameGraphXlim, textvariable = min.xlim, width = 9, state = stateMinXlim)
 	chk.max.Xlim <- tkcheckbutton(frameGraphXlim, variable = is.max.xlim, text = "Max",  anchor = 'w', justify = 'left')
-	en.max.Xlim <- tkentry(frameGraphXlim, textvariable = max.xlim, width = 4, state = stateMaxXlim)
+	en.max.Xlim <- tkentry(frameGraphXlim, textvariable = max.xlim, width = 9, state = stateMaxXlim)
 
 	tkgrid(chk.min.Xlim, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.min.Xlim, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(txt.sep.Xlim, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(chk.max.Xlim, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(en.max.Xlim, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(chk.max.Xlim, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.max.Xlim, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#########
 
@@ -802,7 +809,7 @@ climatoAnalysis.GraphOptions.Bar <- function(parent.win, climGraphOpt){
 
 	chk.min.Ylim <- tkcheckbutton(frameGraphYlim, variable = is.min.ylim, text = "Min",  anchor = 'w', justify = 'left')
 	en.min.Ylim <- tkentry(frameGraphYlim, textvariable = min.ylim, width = 4, state = stateMinYlim)
-	txt.sep.Ylim <- tklabel(frameGraphYlim, width = 6)
+	txt.sep.Ylim <- tklabel(frameGraphYlim, width = ylim.sep)
 	chk.max.Ylim <- tkcheckbutton(frameGraphYlim, variable = is.max.ylim, text = "Max",  anchor = 'w', justify = 'left')
 	en.max.Ylim <- tkentry(frameGraphYlim, textvariable = max.ylim, width = 4, state = stateMaxYlim)
 
@@ -893,7 +900,7 @@ climatoAnalysis.GraphOptions.Bar <- function(parent.win, climGraphOpt){
 	color.bar <- tclVar(climGraphOpt$bar$colors$col)
 
 	txt.colBar <- tklabel(frameBarCol, text = "Color",  anchor = 'e', justify = 'right')
-	bt.colBar <- tkbutton(frameBarCol, bg = tclvalue(color.bar), width = 5)
+	bt.colBar <- tkbutton(frameBarCol, bg = tclvalue(color.bar), width = width.col)
 
 	#########
 	tkconfigure(bt.colBar, command = function(){
@@ -921,8 +928,8 @@ climatoAnalysis.GraphOptions.Bar <- function(parent.win, climGraphOpt){
 	tkconfigure(bt.opt.OK, command = function(){
 		climGraphOpt$bar$xlim$is.min <<- switch(tclvalue(is.min.xlim), '0' = FALSE, '1' = TRUE)
 		climGraphOpt$bar$xlim$is.max <<- switch(tclvalue(is.max.xlim), '0' = FALSE, '1' = TRUE)
-		climGraphOpt$bar$xlim$min <<- as.numeric(str_trim(tclvalue(min.xlim)))
-		climGraphOpt$bar$xlim$max <<- as.numeric(str_trim(tclvalue(max.xlim)))
+		climGraphOpt$bar$xlim$min <<- str_trim(tclvalue(min.xlim))
+		climGraphOpt$bar$xlim$max <<- str_trim(tclvalue(max.xlim))
 
 		climGraphOpt$bar$ylim$is.min <<- switch(tclvalue(is.min.ylim), '0' = FALSE, '1' = TRUE)
 		climGraphOpt$bar$ylim$is.max <<- switch(tclvalue(is.max.ylim), '0' = FALSE, '1' = TRUE)
@@ -984,13 +991,17 @@ climatoAnalysis.GraphOptions.Bar <- function(parent.win, climGraphOpt){
 
 climatoAnalysis.GraphOptions.Line <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 50
-		largeur2 <- 54
+		largeur1 <- 55
+		largeur2 <- 59
 		largeur3 <- 27
+		width.col <- 3
+		width.spin <- 4
 	}else{
-		largeur1 <- 44
-		largeur2 <- 47
+		largeur1 <- 47
+		largeur2 <- 50
 		largeur3 <- 23
+		width.col <- 1
+		width.spin <- 3
 	}
 
 	#####################
@@ -1014,9 +1025,9 @@ climatoAnalysis.GraphOptions.Line <- function(parent.win, climGraphOpt){
 	stateMaxXlim <- if(climGraphOpt$line$xlim$is.max) 'normal' else 'disabled'
 
 	chk.min.Xlim <- tkcheckbutton(frameGraphXlim, variable = is.min.xlim, text = "Min",  anchor = 'w', justify = 'left')
-	en.min.Xlim <- tkentry(frameGraphXlim, textvariable = min.xlim, width = 4, state = stateMinXlim)
+	en.min.Xlim <- tkentry(frameGraphXlim, textvariable = min.xlim, width = 7, state = stateMinXlim)
 	chk.max.Xlim <- tkcheckbutton(frameGraphXlim, variable = is.max.xlim, text = "Max",  anchor = 'w', justify = 'left')
-	en.max.Xlim <- tkentry(frameGraphXlim, textvariable = max.xlim, width = 4, state = stateMaxXlim)
+	en.max.Xlim <- tkentry(frameGraphXlim, textvariable = max.xlim, width = 7, state = stateMaxXlim)
 
 	tkgrid(chk.min.Xlim, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.min.Xlim, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -1146,18 +1157,18 @@ climatoAnalysis.GraphOptions.Line <- function(parent.win, climGraphOpt){
 
 	framepltLine <- ttklabelframe(frameGraphPlot, text = "Line", relief = 'groove')
 	txt.pltLineC <- tklabel(framepltLine, text = "Color",  anchor = 'e', justify = 'right')
-	bt.pltLineC <- tkbutton(framepltLine, bg = tclvalue(plot.col.line), width = 1)
+	bt.pltLineC <- tkbutton(framepltLine, bg = tclvalue(plot.col.line), width = width.col)
 	txt.pltLineW <- tklabel(framepltLine, text = "Width",  anchor = 'e', justify = 'right')
-	spin.pltLineW <- ttkspinbox(framepltLine, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = 3)
+	spin.pltLineW <- ttkspinbox(framepltLine, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = width.spin)
 	tkset(spin.pltLineW, climGraphOpt$line$plot$lwd)
 
 	tkgrid(txt.pltLineC, bt.pltLineC, txt.pltLineW, spin.pltLineW)
 
 	framepltPoints <- ttklabelframe(frameGraphPlot, text = "Points", relief = 'groove')
 	txt.pltPointC <- tklabel(framepltPoints, text = "Color",  anchor = 'e', justify = 'right')
-	bt.pltPointC <- tkbutton(framepltPoints, bg = tclvalue(plot.col.points), width = 1, state = statePlotPoints)
+	bt.pltPointC <- tkbutton(framepltPoints, bg = tclvalue(plot.col.points), width = width.col, state = statePlotPoints)
 	txt.pltPointS <- tklabel(framepltPoints, text = "Size",  anchor = 'e', justify = 'right')
-	spin.pltPointS <- ttkspinbox(framepltPoints, from = 0.5, to = 2.5, increment = 0.1, justify = 'center', width = 3, state = statePlotPoints)
+	spin.pltPointS <- ttkspinbox(framepltPoints, from = 0.5, to = 2.5, increment = 0.1, justify = 'center', width = width.spin, state = statePlotPoints)
 	tkset(spin.pltPointS, climGraphOpt$line$plot$cex)
 
 	tkgrid(txt.pltPointC, bt.pltPointC, txt.pltPointS, spin.pltPointS)
@@ -1193,142 +1204,144 @@ climatoAnalysis.GraphOptions.Line <- function(parent.win, climGraphOpt){
 
 	#####################
 
-	frameGraphLegend <- ttklabelframe(frDialog, text = "Add Mean/Trend/Terciles", relief = 'groove')
+	if(!is.null(climGraphOpt$line$legend)){
+		frameGraphLegend <- ttklabelframe(frDialog, text = "Add Mean/Trend/Terciles", relief = 'groove')
 
-	is.lezMean <- tclVar(climGraphOpt$line$legend$is$mean)
-	col.lezMean <- tclVar(climGraphOpt$line$legend$col$mean)
-	text.lezMean <- tclVar(climGraphOpt$line$legend$text$mean)
-	stateLezMean <- if(climGraphOpt$line$legend$is$mean & climGraphOpt$line$legend$add$mean) "normal" else "disabled"
+		is.lezMean <- tclVar(climGraphOpt$line$legend$is$mean)
+		col.lezMean <- tclVar(climGraphOpt$line$legend$col$mean)
+		text.lezMean <- tclVar(climGraphOpt$line$legend$text$mean)
+		stateLezMean <- if(climGraphOpt$line$legend$is$mean & climGraphOpt$line$legend$add$mean) "normal" else "disabled"
 
-	frameLezMean <- ttklabelframe(frameGraphLegend, text = "Mean", relief = 'groove')
+		frameLezMean <- ttklabelframe(frameGraphLegend, text = "Mean", relief = 'groove')
 
-	chk.lezMean <- tkcheckbutton(frameLezMean, variable = is.lezMean, anchor = 'e', justify = 'right')
-	txt.lezMeanC <- tklabel(frameLezMean, text = "Color",  anchor = 'e', justify = 'right')
-	bt.lezMeanC <- tkbutton(frameLezMean, bg = tclvalue(col.lezMean), width = 1, state = stateLezMean)
-	txt.lezMeanW <- tklabel(frameLezMean, text = "Width",  anchor = 'e', justify = 'right')
-	spin.lezMeanW <- ttkspinbox(frameLezMean, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = 3, state = stateLezMean)
-	tkset(spin.lezMeanW, climGraphOpt$line$legend$lwd$mean)
-	txt.lezMeanT <- tklabel(frameLezMean, text = "Text",  anchor = 'e', justify = 'right')
-	en.lezMeanT <- tkentry(frameLezMean, textvariable = text.lezMean, width = largeur3, state = stateLezMean)
+		chk.lezMean <- tkcheckbutton(frameLezMean, variable = is.lezMean, anchor = 'e', justify = 'right')
+		txt.lezMeanC <- tklabel(frameLezMean, text = "Color",  anchor = 'e', justify = 'right')
+		bt.lezMeanC <- tkbutton(frameLezMean, bg = tclvalue(col.lezMean), width = width.col, state = stateLezMean)
+		txt.lezMeanW <- tklabel(frameLezMean, text = "Width",  anchor = 'e', justify = 'right')
+		spin.lezMeanW <- ttkspinbox(frameLezMean, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = width.spin, state = stateLezMean)
+		tkset(spin.lezMeanW, climGraphOpt$line$legend$lwd$mean)
+		txt.lezMeanT <- tklabel(frameLezMean, text = "Text",  anchor = 'e', justify = 'right')
+		en.lezMeanT <- tkentry(frameLezMean, textvariable = text.lezMean, width = largeur3, state = stateLezMean)
 
-	tkconfigure(bt.lezMeanC, command = function(){
-		loko <- str_trim(tclvalue(tcl("tk_chooseColor", initialcolor = tclvalue(col.lezMean), title = "Colors")))
-		if(nchar(loko) > 0){
-			tkconfigure(bt.lezMeanC, bg = loko)
-			tclvalue(col.lezMean) <- loko
-		}
-	})
+		tkconfigure(bt.lezMeanC, command = function(){
+			loko <- str_trim(tclvalue(tcl("tk_chooseColor", initialcolor = tclvalue(col.lezMean), title = "Colors")))
+			if(nchar(loko) > 0){
+				tkconfigure(bt.lezMeanC, bg = loko)
+				tclvalue(col.lezMean) <- loko
+			}
+		})
 
-	tkgrid(chk.lezMean, txt.lezMeanC, bt.lezMeanC, txt.lezMeanW, spin.lezMeanW, txt.lezMeanT, en.lezMeanT)
+		tkgrid(chk.lezMean, txt.lezMeanC, bt.lezMeanC, txt.lezMeanW, spin.lezMeanW, txt.lezMeanT, en.lezMeanT)
 
-	#####
-	tkbind(chk.lezMean, "<Button-1>", function(){
-		stateLezMean <- if(climGraphOpt$line$legend$add$mean & tclvalue(is.lezMean) == '0') 'normal' else 'disabled'
-		tkconfigure(bt.lezMeanC, state = stateLezMean)
-		tkconfigure(spin.lezMeanW, state = stateLezMean)
-		tkconfigure(en.lezMeanT, state = stateLezMean)
-	})
+		#####
+		tkbind(chk.lezMean, "<Button-1>", function(){
+			stateLezMean <- if(climGraphOpt$line$legend$add$mean & tclvalue(is.lezMean) == '0') 'normal' else 'disabled'
+			tkconfigure(bt.lezMeanC, state = stateLezMean)
+			tkconfigure(spin.lezMeanW, state = stateLezMean)
+			tkconfigure(en.lezMeanT, state = stateLezMean)
+		})
 
-	#########
-	is.lezLin <- tclVar(climGraphOpt$line$legend$is$linear)
-	col.lezLin <- tclVar(climGraphOpt$line$legend$col$linear)
-	text.lezLin <- tclVar(climGraphOpt$line$legend$text$linear)
-	stateLezLin <- if(climGraphOpt$line$legend$is$linear & climGraphOpt$line$legend$add$linear) "normal" else "disabled"
+		#########
+		is.lezLin <- tclVar(climGraphOpt$line$legend$is$linear)
+		col.lezLin <- tclVar(climGraphOpt$line$legend$col$linear)
+		text.lezLin <- tclVar(climGraphOpt$line$legend$text$linear)
+		stateLezLin <- if(climGraphOpt$line$legend$is$linear & climGraphOpt$line$legend$add$linear) "normal" else "disabled"
 
-	frameLezLin <- ttklabelframe(frameGraphLegend, text = "Trend", relief = 'groove')
+		frameLezLin <- ttklabelframe(frameGraphLegend, text = "Trend", relief = 'groove')
 
-	chk.lezLin <- tkcheckbutton(frameLezLin, variable = is.lezLin, anchor = 'e', justify = 'right')
-	txt.lezLinC <- tklabel(frameLezLin, text = "Color",  anchor = 'e', justify = 'right')
-	bt.lezLinC <- tkbutton(frameLezLin, bg = tclvalue(col.lezLin), width = 1, state = stateLezLin)
-	txt.lezLinW <- tklabel(frameLezLin, text = "Width",  anchor = 'e', justify = 'right')
-	spin.lezLinW <- ttkspinbox(frameLezLin, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = 3, state = stateLezLin)
-	tkset(spin.lezLinW, climGraphOpt$line$legend$lwd$linear)
-	txt.lezLinT <- tklabel(frameLezLin, text = "Text",  anchor = 'e', justify = 'right')
-	en.lezLinT <- tkentry(frameLezLin, textvariable = text.lezLin, width = largeur3, state = stateLezLin)
+		chk.lezLin <- tkcheckbutton(frameLezLin, variable = is.lezLin, anchor = 'e', justify = 'right')
+		txt.lezLinC <- tklabel(frameLezLin, text = "Color",  anchor = 'e', justify = 'right')
+		bt.lezLinC <- tkbutton(frameLezLin, bg = tclvalue(col.lezLin), width = width.col, state = stateLezLin)
+		txt.lezLinW <- tklabel(frameLezLin, text = "Width",  anchor = 'e', justify = 'right')
+		spin.lezLinW <- ttkspinbox(frameLezLin, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = width.spin, state = stateLezLin)
+		tkset(spin.lezLinW, climGraphOpt$line$legend$lwd$linear)
+		txt.lezLinT <- tklabel(frameLezLin, text = "Text",  anchor = 'e', justify = 'right')
+		en.lezLinT <- tkentry(frameLezLin, textvariable = text.lezLin, width = largeur3, state = stateLezLin)
 
-	tkconfigure(bt.lezLinC, command = function(){
-		loko <- str_trim(tclvalue(tcl("tk_chooseColor", initialcolor = tclvalue(col.lezLin), title = "Colors")))
-		if(nchar(loko) > 0){
-			tkconfigure(bt.lezLinC, bg = loko)
-			tclvalue(col.lezLin) <- loko
-		}
-	})
+		tkconfigure(bt.lezLinC, command = function(){
+			loko <- str_trim(tclvalue(tcl("tk_chooseColor", initialcolor = tclvalue(col.lezLin), title = "Colors")))
+			if(nchar(loko) > 0){
+				tkconfigure(bt.lezLinC, bg = loko)
+				tclvalue(col.lezLin) <- loko
+			}
+		})
 
-	tkgrid(chk.lezLin, txt.lezLinC, bt.lezLinC, txt.lezLinW, spin.lezLinW, txt.lezLinT, en.lezLinT)
+		tkgrid(chk.lezLin, txt.lezLinC, bt.lezLinC, txt.lezLinW, spin.lezLinW, txt.lezLinT, en.lezLinT)
 
-	#####
-	tkbind(chk.lezLin, "<Button-1>", function(){
-		stateLezLin <- if(climGraphOpt$line$legend$add$linear & tclvalue(is.lezLin) == '0') 'normal' else 'disabled'
-		tkconfigure(bt.lezLinC, state = stateLezLin)
-		tkconfigure(spin.lezLinW, state = stateLezLin)
-		tkconfigure(en.lezLinT, state = stateLezLin)
-	})
+		#####
+		tkbind(chk.lezLin, "<Button-1>", function(){
+			stateLezLin <- if(climGraphOpt$line$legend$add$linear & tclvalue(is.lezLin) == '0') 'normal' else 'disabled'
+			tkconfigure(bt.lezLinC, state = stateLezLin)
+			tkconfigure(spin.lezLinW, state = stateLezLin)
+			tkconfigure(en.lezLinT, state = stateLezLin)
+		})
 
-	#########
-	is.lezTer <- tclVar(climGraphOpt$line$legend$is$tercile)
-	col.lezTer1 <- tclVar(climGraphOpt$line$legend$col$tercile1)
-	col.lezTer2 <- tclVar(climGraphOpt$line$legend$col$tercile2)
-	text.lezTer1 <- tclVar(climGraphOpt$line$legend$text$tercile1)
-	text.lezTer2 <- tclVar(climGraphOpt$line$legend$text$tercile2)
-	stateLezTer <- if(climGraphOpt$line$legend$is$tercile & climGraphOpt$line$legend$add$tercile) "normal" else "disabled"
+		#########
+		is.lezTer <- tclVar(climGraphOpt$line$legend$is$tercile)
+		col.lezTer1 <- tclVar(climGraphOpt$line$legend$col$tercile1)
+		col.lezTer2 <- tclVar(climGraphOpt$line$legend$col$tercile2)
+		text.lezTer1 <- tclVar(climGraphOpt$line$legend$text$tercile1)
+		text.lezTer2 <- tclVar(climGraphOpt$line$legend$text$tercile2)
+		stateLezTer <- if(climGraphOpt$line$legend$is$tercile & climGraphOpt$line$legend$add$tercile) "normal" else "disabled"
 
-	frameLezTer <- ttklabelframe(frameGraphLegend, text = "Terciles", relief = 'groove')
+		frameLezTer <- ttklabelframe(frameGraphLegend, text = "Terciles", relief = 'groove')
 
-	chk.lezTer <- tkcheckbutton(frameLezTer, variable = is.lezTer, anchor = 'e', justify = 'right')
-	txt.lezTerC1 <- tklabel(frameLezTer, text = "Color",  anchor = 'e', justify = 'right')
-	bt.lezTerC1 <- tkbutton(frameLezTer, bg = tclvalue(col.lezTer1), width = 1, state = stateLezTer)
-	txt.lezTerW <- tklabel(frameLezTer, text = "Width",  anchor = 'e', justify = 'right')
-	spin.lezTerW <- ttkspinbox(frameLezTer, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = 3, state = stateLezTer)
-	tkset(spin.lezTerW, climGraphOpt$line$legend$lwd$tercile)
-	txt.lezTerT1 <- tklabel(frameLezTer, text = "Text",  anchor = 'e', justify = 'right')
-	en.lezTerT1 <- tkentry(frameLezTer, textvariable = text.lezTer1, width = largeur3, state = stateLezTer)
-	txt.lezTerC2 <- tklabel(frameLezTer, text = "Color",  anchor = 'e', justify = 'right')
-	bt.lezTerC2 <- tkbutton(frameLezTer, bg = tclvalue(col.lezTer2), width = 1, state = stateLezTer)
-	txt.lezTerT2 <- tklabel(frameLezTer, text = "Text",  anchor = 'e', justify = 'right')
-	en.lezTerT2 <- tkentry(frameLezTer, textvariable = text.lezTer2, width = largeur3, state = stateLezTer)
+		chk.lezTer <- tkcheckbutton(frameLezTer, variable = is.lezTer, anchor = 'e', justify = 'right')
+		txt.lezTerC1 <- tklabel(frameLezTer, text = "Color",  anchor = 'e', justify = 'right')
+		bt.lezTerC1 <- tkbutton(frameLezTer, bg = tclvalue(col.lezTer1), width = width.col, state = stateLezTer)
+		txt.lezTerW <- tklabel(frameLezTer, text = "Width",  anchor = 'e', justify = 'right')
+		spin.lezTerW <- ttkspinbox(frameLezTer, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = width.spin, state = stateLezTer)
+		tkset(spin.lezTerW, climGraphOpt$line$legend$lwd$tercile)
+		txt.lezTerT1 <- tklabel(frameLezTer, text = "Text",  anchor = 'e', justify = 'right')
+		en.lezTerT1 <- tkentry(frameLezTer, textvariable = text.lezTer1, width = largeur3, state = stateLezTer)
+		txt.lezTerC2 <- tklabel(frameLezTer, text = "Color",  anchor = 'e', justify = 'right')
+		bt.lezTerC2 <- tkbutton(frameLezTer, bg = tclvalue(col.lezTer2), width = width.col, state = stateLezTer)
+		txt.lezTerT2 <- tklabel(frameLezTer, text = "Text",  anchor = 'e', justify = 'right')
+		en.lezTerT2 <- tkentry(frameLezTer, textvariable = text.lezTer2, width = largeur3, state = stateLezTer)
 
-	tkconfigure(bt.lezTerC1, command = function(){
-		loko <- str_trim(tclvalue(tcl("tk_chooseColor", initialcolor = tclvalue(col.lezTer1), title = "Colors")))
-		if(nchar(loko) > 0){
-			tkconfigure(bt.lezTerC1, bg = loko)
-			tclvalue(col.lezTer1) <- loko
-		}
-	})
+		tkconfigure(bt.lezTerC1, command = function(){
+			loko <- str_trim(tclvalue(tcl("tk_chooseColor", initialcolor = tclvalue(col.lezTer1), title = "Colors")))
+			if(nchar(loko) > 0){
+				tkconfigure(bt.lezTerC1, bg = loko)
+				tclvalue(col.lezTer1) <- loko
+			}
+		})
 
-	tkconfigure(bt.lezTerC2, command = function(){
-		loko <- str_trim(tclvalue(tcl("tk_chooseColor", initialcolor = tclvalue(col.lezTer2), title = "Colors")))
-		if(nchar(loko) > 0){
-			tkconfigure(bt.lezTerC2, bg = loko)
-			tclvalue(col.lezTer2) <- loko
-		}
-	})
+		tkconfigure(bt.lezTerC2, command = function(){
+			loko <- str_trim(tclvalue(tcl("tk_chooseColor", initialcolor = tclvalue(col.lezTer2), title = "Colors")))
+			if(nchar(loko) > 0){
+				tkconfigure(bt.lezTerC2, bg = loko)
+				tclvalue(col.lezTer2) <- loko
+			}
+		})
 
-	tkgrid(chk.lezTer, txt.lezTerC1, bt.lezTerC1, txt.lezTerW, spin.lezTerW, txt.lezTerT1, en.lezTerT1)
-	tkgrid(tklabel(frameLezTer), txt.lezTerC2, bt.lezTerC2, tklabel(frameLezTer), tklabel(frameLezTer), txt.lezTerT2, en.lezTerT2)
+		tkgrid(chk.lezTer, txt.lezTerC1, bt.lezTerC1, txt.lezTerW, spin.lezTerW, txt.lezTerT1, en.lezTerT1)
+		tkgrid(tklabel(frameLezTer), txt.lezTerC2, bt.lezTerC2, tklabel(frameLezTer), tklabel(frameLezTer), txt.lezTerT2, en.lezTerT2)
 
-	#####
-	tkbind(chk.lezTer, "<Button-1>", function(){
-		stateLezTer <- if(climGraphOpt$line$legend$add$tercile & tclvalue(is.lezTer) == '0') 'normal' else 'disabled'
-		tkconfigure(bt.lezTerC1, state = stateLezTer)
-		tkconfigure(spin.lezTerW, state = stateLezTer)
-		tkconfigure(en.lezTerT1, state = stateLezTer)
-		tkconfigure(bt.lezTerC2, state = stateLezTer)
-		tkconfigure(en.lezTerT2, state = stateLezTer)
-	})
+		#####
+		tkbind(chk.lezTer, "<Button-1>", function(){
+			stateLezTer <- if(climGraphOpt$line$legend$add$tercile & tclvalue(is.lezTer) == '0') 'normal' else 'disabled'
+			tkconfigure(bt.lezTerC1, state = stateLezTer)
+			tkconfigure(spin.lezTerW, state = stateLezTer)
+			tkconfigure(en.lezTerT1, state = stateLezTer)
+			tkconfigure(bt.lezTerC2, state = stateLezTer)
+			tkconfigure(en.lezTerT2, state = stateLezTer)
+		})
 
-	#########
+		#########
 
-	tkgrid(frameLezMean, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frameLezLin, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frameLezTer, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameLezMean, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameLezLin, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameLezTer, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	}
 
 	#####################
 	tkgrid(frameGraphXlim, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frameGraphYlim, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frameGraphAxLabs, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frameGraphTitle, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frameGraphPlot, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frameGraphLegend, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frameGraphPlot, row = 3, column = 0, sticky = '', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	if(!is.null(climGraphOpt$line$legend)) tkgrid(frameGraphLegend, row = 4, column = 0, sticky = '', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#####################
 	bt.opt.OK <- tkbutton(frButt, text = "OK")
@@ -1337,8 +1350,8 @@ climatoAnalysis.GraphOptions.Line <- function(parent.win, climGraphOpt){
 	tkconfigure(bt.opt.OK, command = function(){
 		climGraphOpt$line$xlim$is.min <<- switch(tclvalue(is.min.xlim), '0' = FALSE, '1' = TRUE)
 		climGraphOpt$line$xlim$is.max <<- switch(tclvalue(is.max.xlim), '0' = FALSE, '1' = TRUE)
-		climGraphOpt$line$xlim$min <<- as.numeric(str_trim(tclvalue(min.xlim)))
-		climGraphOpt$line$xlim$max <<- as.numeric(str_trim(tclvalue(max.xlim)))
+		climGraphOpt$line$xlim$min <<- str_trim(tclvalue(min.xlim))
+		climGraphOpt$line$xlim$max <<- str_trim(tclvalue(max.xlim))
 
 		climGraphOpt$line$ylim$is.min <<- switch(tclvalue(is.min.ylim), '0' = FALSE, '1' = TRUE)
 		climGraphOpt$line$ylim$is.max <<- switch(tclvalue(is.max.ylim), '0' = FALSE, '1' = TRUE)
@@ -1360,22 +1373,24 @@ climatoAnalysis.GraphOptions.Line <- function(parent.win, climGraphOpt){
 		climGraphOpt$line$plot$col$points <<- tclvalue(plot.col.points)
 		climGraphOpt$line$plot$cex <<- as.numeric(str_trim(tclvalue(tkget(spin.pltPointS))))
 
-		climGraphOpt$line$legend$is$mean <<- switch(tclvalue(is.lezMean), '0' = FALSE, '1' = TRUE)
-		climGraphOpt$line$legend$col$mean <<- tclvalue(col.lezMean)
-		climGraphOpt$line$legend$lwd$mean <<- as.numeric(str_trim(tclvalue(tkget(spin.lezMeanW))))
-		climGraphOpt$line$legend$text$mean <<- str_trim(tclvalue(text.lezMean))
+		if(!is.null(climGraphOpt$line$legend)){
+			climGraphOpt$line$legend$is$mean <<- switch(tclvalue(is.lezMean), '0' = FALSE, '1' = TRUE)
+			climGraphOpt$line$legend$col$mean <<- tclvalue(col.lezMean)
+			climGraphOpt$line$legend$lwd$mean <<- as.numeric(str_trim(tclvalue(tkget(spin.lezMeanW))))
+			climGraphOpt$line$legend$text$mean <<- str_trim(tclvalue(text.lezMean))
 
-		climGraphOpt$line$legend$is$linear <<- switch(tclvalue(is.lezLin), '0' = FALSE, '1' = TRUE)
-		climGraphOpt$line$legend$col$linear <<- tclvalue(col.lezLin)
-		climGraphOpt$line$legend$lwd$linear <<- as.numeric(str_trim(tclvalue(tkget(spin.lezLinW))))
-		climGraphOpt$line$legend$text$linear <<- str_trim(tclvalue(text.lezLin))
+			climGraphOpt$line$legend$is$linear <<- switch(tclvalue(is.lezLin), '0' = FALSE, '1' = TRUE)
+			climGraphOpt$line$legend$col$linear <<- tclvalue(col.lezLin)
+			climGraphOpt$line$legend$lwd$linear <<- as.numeric(str_trim(tclvalue(tkget(spin.lezLinW))))
+			climGraphOpt$line$legend$text$linear <<- str_trim(tclvalue(text.lezLin))
 
-		climGraphOpt$line$legend$is$tercile <<- switch(tclvalue(is.lezTer), '0' = FALSE, '1' = TRUE)
-		climGraphOpt$line$legend$col$tercile1 <<- tclvalue(col.lezTer1)
-		climGraphOpt$line$legend$col$tercile2 <<- tclvalue(col.lezTer2)
-		climGraphOpt$line$legend$lwd$tercile <<- as.numeric(str_trim(tclvalue(tkget(spin.lezTerW))))
-		climGraphOpt$line$legend$text$tercile1 <<- str_trim(tclvalue(text.lezTer1))
-		climGraphOpt$line$legend$text$tercile2 <<- str_trim(tclvalue(text.lezTer2))
+			climGraphOpt$line$legend$is$tercile <<- switch(tclvalue(is.lezTer), '0' = FALSE, '1' = TRUE)
+			climGraphOpt$line$legend$col$tercile1 <<- tclvalue(col.lezTer1)
+			climGraphOpt$line$legend$col$tercile2 <<- tclvalue(col.lezTer2)
+			climGraphOpt$line$legend$lwd$tercile <<- as.numeric(str_trim(tclvalue(tkget(spin.lezTerW))))
+			climGraphOpt$line$legend$text$tercile1 <<- str_trim(tclvalue(text.lezTer1))
+			climGraphOpt$line$legend$text$tercile2 <<- str_trim(tclvalue(text.lezTer2))
+		}
 
 		tkgrab.release(tt)
 		tkdestroy(tt)
@@ -1421,13 +1436,15 @@ climatoAnalysis.GraphOptions.Line <- function(parent.win, climGraphOpt){
 
 climatoAnalysis.GraphOptions.Proba <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 50
-		largeur2 <- 54
-		# largeur3 <- 27
+		largeur1 <- 55
+		largeur2 <- 59
+		width.col <- 3
+		width.spin <- 4
 	}else{
 		largeur1 <- 44
 		largeur2 <- 47
-		# largeur3 <- 23
+		width.col <- 1
+		width.spin <- 3
 	}
 
 	#####################
@@ -1584,18 +1601,18 @@ climatoAnalysis.GraphOptions.Proba <- function(parent.win, climGraphOpt){
 
 	framepltLine <- ttklabelframe(frameGraphPlot, text = "Line", relief = 'groove')
 	txt.pltLineC <- tklabel(framepltLine, text = "Color",  anchor = 'e', justify = 'right')
-	bt.pltLineC <- tkbutton(framepltLine, bg = tclvalue(plot.col.line), width = 1)
+	bt.pltLineC <- tkbutton(framepltLine, bg = tclvalue(plot.col.line), width = width.col)
 	txt.pltLineW <- tklabel(framepltLine, text = "Width",  anchor = 'e', justify = 'right')
-	spin.pltLineW <- ttkspinbox(framepltLine, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = 3)
+	spin.pltLineW <- ttkspinbox(framepltLine, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = width.spin)
 	tkset(spin.pltLineW, climGraphOpt$proba$plot$lwd)
 
 	tkgrid(txt.pltLineC, bt.pltLineC, txt.pltLineW, spin.pltLineW)
 
 	framepltPoints <- ttklabelframe(frameGraphPlot, text = "Points", relief = 'groove')
 	txt.pltPointC <- tklabel(framepltPoints, text = "Color",  anchor = 'e', justify = 'right')
-	bt.pltPointC <- tkbutton(framepltPoints, bg = tclvalue(plot.col.points), width = 1, state = statePlotPoints)
+	bt.pltPointC <- tkbutton(framepltPoints, bg = tclvalue(plot.col.points), width = width.col, state = statePlotPoints)
 	txt.pltPointS <- tklabel(framepltPoints, text = "Size",  anchor = 'e', justify = 'right')
-	spin.pltPointS <- ttkspinbox(framepltPoints, from = 0.5, to = 2.5, increment = 0.1, justify = 'center', width = 3, state = statePlotPoints)
+	spin.pltPointS <- ttkspinbox(framepltPoints, from = 0.5, to = 2.5, increment = 0.1, justify = 'center', width = width.spin, state = statePlotPoints)
 	tkset(spin.pltPointS, climGraphOpt$proba$plot$cex)
 
 	tkgrid(txt.pltPointC, bt.pltPointC, txt.pltPointS, spin.pltPointS)
@@ -1638,9 +1655,9 @@ climatoAnalysis.GraphOptions.Proba <- function(parent.win, climGraphOpt){
 
 	chk.probaTheo <- tkcheckbutton(frameGraphProba, variable = is.probaTheo, text = 'Plot theoretical cdf', anchor = 'w', justify = 'left')
 	txt.probaTheoC <- tklabel(frameGraphProba, text = "Color",  anchor = 'e', justify = 'right')
-	bt.probaTheoC <- tkbutton(frameGraphProba, bg = tclvalue(col.probaTheo), width = 1)
+	bt.probaTheoC <- tkbutton(frameGraphProba, bg = tclvalue(col.probaTheo), width = width.col)
 	txt.probaTheoW <- tklabel(frameGraphProba, text = "Width",  anchor = 'e', justify = 'right')
-	spin.probaTheoW <- ttkspinbox(frameGraphProba, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = 3)
+	spin.probaTheoW <- ttkspinbox(frameGraphProba, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = width.spin)
 	tkset(spin.probaTheoW, climGraphOpt$proba$proba$lwd)
 
 	tkconfigure(bt.probaTheoC, command = function(){
@@ -1668,8 +1685,8 @@ climatoAnalysis.GraphOptions.Proba <- function(parent.win, climGraphOpt){
 	tkconfigure(bt.opt.OK, command = function(){
 		climGraphOpt$proba$xlim$is.min <<- switch(tclvalue(is.min.xlim), '0' = FALSE, '1' = TRUE)
 		climGraphOpt$proba$xlim$is.max <<- switch(tclvalue(is.max.xlim), '0' = FALSE, '1' = TRUE)
-		climGraphOpt$proba$xlim$min <<- as.numeric(str_trim(tclvalue(min.xlim)))
-		climGraphOpt$proba$xlim$max <<- as.numeric(str_trim(tclvalue(max.xlim)))
+		climGraphOpt$proba$xlim$min <<- str_trim(tclvalue(min.xlim))
+		climGraphOpt$proba$xlim$max <<- str_trim(tclvalue(max.xlim))
 
 		climGraphOpt$proba$ylim$is.min <<- switch(tclvalue(is.min.ylim), '0' = FALSE, '1' = TRUE)
 		climGraphOpt$proba$ylim$is.max <<- switch(tclvalue(is.max.ylim), '0' = FALSE, '1' = TRUE)
@@ -1739,13 +1756,19 @@ climatoAnalysis.GraphOptions.Proba <- function(parent.win, climGraphOpt){
 
 climatoAnalysis.GraphOptions.LineENSO <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 50
-		largeur2 <- 54
+		largeur1 <- 53
+		largeur2 <- 57
 		largeur3 <- 27
+		width.col <- 3
+		width.col1 <- 4
+		width.spin <- 4
 	}else{
 		largeur1 <- 44
 		largeur2 <- 47
 		largeur3 <- 23
+		width.col <- 1
+		width.col1 <- 2
+		width.spin <- 3
 	}
 
 	#####################
@@ -1769,9 +1792,9 @@ climatoAnalysis.GraphOptions.LineENSO <- function(parent.win, climGraphOpt){
 	stateMaxXlim <- if(climGraphOpt$line.enso$xlim$is.max) 'normal' else 'disabled'
 
 	chk.min.Xlim <- tkcheckbutton(frameGraphXlim, variable = is.min.xlim, text = "Min",  anchor = 'w', justify = 'left')
-	en.min.Xlim <- tkentry(frameGraphXlim, textvariable = min.xlim, width = 4, state = stateMinXlim)
+	en.min.Xlim <- tkentry(frameGraphXlim, textvariable = min.xlim, width = 5, state = stateMinXlim)
 	chk.max.Xlim <- tkcheckbutton(frameGraphXlim, variable = is.max.xlim, text = "Max",  anchor = 'w', justify = 'left')
-	en.max.Xlim <- tkentry(frameGraphXlim, textvariable = max.xlim, width = 4, state = stateMaxXlim)
+	en.max.Xlim <- tkentry(frameGraphXlim, textvariable = max.xlim, width = 5, state = stateMaxXlim)
 
 	tkgrid(chk.min.Xlim, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.min.Xlim, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -1803,9 +1826,9 @@ climatoAnalysis.GraphOptions.LineENSO <- function(parent.win, climGraphOpt){
 	stateMaxYlim <- if(climGraphOpt$line.enso$ylim$is.max) 'normal' else 'disabled'
 
 	chk.min.Ylim <- tkcheckbutton(frameGraphYlim, variable = is.min.ylim, text = "Min",  anchor = 'w', justify = 'left')
-	en.min.Ylim <- tkentry(frameGraphYlim, textvariable = min.ylim, width = 4, state = stateMinYlim)
+	en.min.Ylim <- tkentry(frameGraphYlim, textvariable = min.ylim, width = 5, state = stateMinYlim)
 	chk.max.Ylim <- tkcheckbutton(frameGraphYlim, variable = is.max.ylim, text = "Max",  anchor = 'w', justify = 'left')
-	en.max.Ylim <- tkentry(frameGraphYlim, textvariable = max.ylim, width = 4, state = stateMaxYlim)
+	en.max.Ylim <- tkentry(frameGraphYlim, textvariable = max.ylim, width = 5, state = stateMaxYlim)
 
 	tkgrid(chk.min.Ylim, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.min.Ylim, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -1897,22 +1920,22 @@ climatoAnalysis.GraphOptions.LineENSO <- function(parent.win, climGraphOpt){
 
 	framepltLine <- ttklabelframe(frameGraphPlot, text = "Line", relief = 'groove')
 	txt.pltLineC <- tklabel(framepltLine, text = "Color",  anchor = 'e', justify = 'right')
-	bt.pltLineC <- tkbutton(framepltLine, bg = tclvalue(plot.col.line), width = 2)
+	bt.pltLineC <- tkbutton(framepltLine, bg = tclvalue(plot.col.line), width = width.col1)
 	txt.pltLineW <- tklabel(framepltLine, text = "Width",  anchor = 'e', justify = 'right')
-	spin.pltLineW <- ttkspinbox(framepltLine, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = 3)
+	spin.pltLineW <- ttkspinbox(framepltLine, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = width.spin)
 	tkset(spin.pltLineW, climGraphOpt$line.enso$plot$lwd)
 
 	tkgrid(txt.pltLineC, bt.pltLineC, txt.pltLineW, spin.pltLineW)
 
 	framepltPoints <- ttklabelframe(frameGraphPlot, text = "Points", relief = 'groove')
 	txt.pltPointNa <- tklabel(framepltPoints, text = "La Nina",  anchor = 'e', justify = 'right')
-	bt.pltPointNa <- tkbutton(framepltPoints, bg = tclvalue(plot.col.nina), width = 2)
+	bt.pltPointNa <- tkbutton(framepltPoints, bg = tclvalue(plot.col.nina), width = width.col1)
 	txt.pltPointNe <- tklabel(framepltPoints, text = "Neutral",  anchor = 'e', justify = 'right')
-	bt.pltPointNe <- tkbutton(framepltPoints, bg = tclvalue(plot.col.neutre), width = 2)
+	bt.pltPointNe <- tkbutton(framepltPoints, bg = tclvalue(plot.col.neutre), width = width.col1)
 	txt.pltPointNo <- tklabel(framepltPoints, text = "El Nino",  anchor = 'e', justify = 'right')
-	bt.pltPointNo <- tkbutton(framepltPoints, bg = tclvalue(plot.col.nino), width = 2)
+	bt.pltPointNo <- tkbutton(framepltPoints, bg = tclvalue(plot.col.nino), width = width.col1)
 	txt.pltPointS <- tklabel(framepltPoints, text = "Size",  anchor = 'e', justify = 'right')
-	spin.pltPointS <- ttkspinbox(framepltPoints, from = 0.5, to = 2.5, increment = 0.1, justify = 'center', width = 3)
+	spin.pltPointS <- ttkspinbox(framepltPoints, from = 0.5, to = 2.5, increment = 0.1, justify = 'center', width = width.spin)
 	tkset(spin.pltPointS, climGraphOpt$line.enso$plot$cex)
 
 	tkgrid(txt.pltPointNa, bt.pltPointNa, txt.pltPointNe, bt.pltPointNe, txt.pltPointNo, bt.pltPointNo, txt.pltPointS, spin.pltPointS)
@@ -1965,9 +1988,9 @@ climatoAnalysis.GraphOptions.LineENSO <- function(parent.win, climGraphOpt){
 
 	chk.lezMean <- tkcheckbutton(frameLezMean, variable = is.lezMean, anchor = 'e', justify = 'right')
 	txt.lezMeanC <- tklabel(frameLezMean, text = "Color",  anchor = 'e', justify = 'right')
-	bt.lezMeanC <- tkbutton(frameLezMean, bg = tclvalue(col.lezMean), width = 1, state = stateLezMean)
+	bt.lezMeanC <- tkbutton(frameLezMean, bg = tclvalue(col.lezMean), width = width.col, state = stateLezMean)
 	txt.lezMeanW <- tklabel(frameLezMean, text = "Width",  anchor = 'e', justify = 'right')
-	spin.lezMeanW <- ttkspinbox(frameLezMean, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = 3, state = stateLezMean)
+	spin.lezMeanW <- ttkspinbox(frameLezMean, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = width.spin, state = stateLezMean)
 	tkset(spin.lezMeanW, climGraphOpt$line.enso$legend$lwd$mean)
 	txt.lezMeanT <- tklabel(frameLezMean, text = "Text",  anchor = 'e', justify = 'right')
 	en.lezMeanT <- tkentry(frameLezMean, textvariable = text.lezMean, width = largeur3, state = stateLezMean)
@@ -2000,9 +2023,9 @@ climatoAnalysis.GraphOptions.LineENSO <- function(parent.win, climGraphOpt){
 
 	chk.lezLin <- tkcheckbutton(frameLezLin, variable = is.lezLin, anchor = 'e', justify = 'right')
 	txt.lezLinC <- tklabel(frameLezLin, text = "Color",  anchor = 'e', justify = 'right')
-	bt.lezLinC <- tkbutton(frameLezLin, bg = tclvalue(col.lezLin), width = 1, state = stateLezLin)
+	bt.lezLinC <- tkbutton(frameLezLin, bg = tclvalue(col.lezLin), width = width.col, state = stateLezLin)
 	txt.lezLinW <- tklabel(frameLezLin, text = "Width",  anchor = 'e', justify = 'right')
-	spin.lezLinW <- ttkspinbox(frameLezLin, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = 3, state = stateLezLin)
+	spin.lezLinW <- ttkspinbox(frameLezLin, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = width.spin, state = stateLezLin)
 	tkset(spin.lezLinW, climGraphOpt$line.enso$legend$lwd$linear)
 	txt.lezLinT <- tklabel(frameLezLin, text = "Text",  anchor = 'e', justify = 'right')
 	en.lezLinT <- tkentry(frameLezLin, textvariable = text.lezLin, width = largeur3, state = stateLezLin)
@@ -2037,14 +2060,14 @@ climatoAnalysis.GraphOptions.LineENSO <- function(parent.win, climGraphOpt){
 
 	chk.lezTer <- tkcheckbutton(frameLezTer, variable = is.lezTer, anchor = 'e', justify = 'right')
 	txt.lezTerC1 <- tklabel(frameLezTer, text = "Color",  anchor = 'e', justify = 'right')
-	bt.lezTerC1 <- tkbutton(frameLezTer, bg = tclvalue(col.lezTer1), width = 1, state = stateLezTer)
+	bt.lezTerC1 <- tkbutton(frameLezTer, bg = tclvalue(col.lezTer1), width = width.col, state = stateLezTer)
 	txt.lezTerW <- tklabel(frameLezTer, text = "Width",  anchor = 'e', justify = 'right')
-	spin.lezTerW <- ttkspinbox(frameLezTer, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = 3, state = stateLezTer)
+	spin.lezTerW <- ttkspinbox(frameLezTer, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = width.spin, state = stateLezTer)
 	tkset(spin.lezTerW, climGraphOpt$line.enso$legend$lwd$tercile)
 	txt.lezTerT1 <- tklabel(frameLezTer, text = "Text",  anchor = 'e', justify = 'right')
 	en.lezTerT1 <- tkentry(frameLezTer, textvariable = text.lezTer1, width = largeur3, state = stateLezTer)
 	txt.lezTerC2 <- tklabel(frameLezTer, text = "Color",  anchor = 'e', justify = 'right')
-	bt.lezTerC2 <- tkbutton(frameLezTer, bg = tclvalue(col.lezTer2), width = 1, state = stateLezTer)
+	bt.lezTerC2 <- tkbutton(frameLezTer, bg = tclvalue(col.lezTer2), width = width.col, state = stateLezTer)
 	txt.lezTerT2 <- tklabel(frameLezTer, text = "Text",  anchor = 'e', justify = 'right')
 	en.lezTerT2 <- tkentry(frameLezTer, textvariable = text.lezTer2, width = largeur3, state = stateLezTer)
 
@@ -2098,8 +2121,8 @@ climatoAnalysis.GraphOptions.LineENSO <- function(parent.win, climGraphOpt){
 	tkconfigure(bt.opt.OK, command = function(){
 		climGraphOpt$line.enso$xlim$is.min <<- switch(tclvalue(is.min.xlim), '0' = FALSE, '1' = TRUE)
 		climGraphOpt$line.enso$xlim$is.max <<- switch(tclvalue(is.max.xlim), '0' = FALSE, '1' = TRUE)
-		climGraphOpt$line.enso$xlim$min <<- as.numeric(str_trim(tclvalue(min.xlim)))
-		climGraphOpt$line.enso$xlim$max <<- as.numeric(str_trim(tclvalue(max.xlim)))
+		climGraphOpt$line.enso$xlim$min <<- str_trim(tclvalue(min.xlim))
+		climGraphOpt$line.enso$xlim$max <<- str_trim(tclvalue(max.xlim))
 
 		climGraphOpt$line.enso$ylim$is.min <<- switch(tclvalue(is.min.ylim), '0' = FALSE, '1' = TRUE)
 		climGraphOpt$line.enso$ylim$is.max <<- switch(tclvalue(is.max.ylim), '0' = FALSE, '1' = TRUE)
@@ -2183,9 +2206,11 @@ climatoAnalysis.GraphOptions.BarENSO <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
 		largeur1 <- 30
 		largeur2 <- 34
+		width.col <- 3
 	}else{
 		largeur1 <- 26
 		largeur2 <- 29
+		width.col <- 1
 	}
 
 	#####################
@@ -2340,11 +2365,11 @@ climatoAnalysis.GraphOptions.BarENSO <- function(parent.win, climGraphOpt){
 	color.nino <- tclVar(climGraphOpt$bar.enso$colors$col[3])
 
 	txt.colBarNa <- tklabel(frameBarCol, text = "La Nina",  anchor = 'e', justify = 'right')
-	bt.colBarNa <- tkbutton(frameBarCol, bg = tclvalue(color.nina), width = 1)
+	bt.colBarNa <- tkbutton(frameBarCol, bg = tclvalue(color.nina), width = width.col)
 	txt.colBarNe <- tklabel(frameBarCol, text = "Neutral",  anchor = 'e', justify = 'right')
-	bt.colBarNe <- tkbutton(frameBarCol, bg = tclvalue(color.neutre), width = 1)
+	bt.colBarNe <- tkbutton(frameBarCol, bg = tclvalue(color.neutre), width = width.col)
 	txt.colBarNo <- tklabel(frameBarCol, text = "El Nino",  anchor = 'e', justify = 'right')
-	bt.colBarNo <- tkbutton(frameBarCol, bg = tclvalue(color.nino), width = 1)
+	bt.colBarNo <- tkbutton(frameBarCol, bg = tclvalue(color.nino), width = width.col)
 
 	#########
 	tkconfigure(bt.colBarNa, command = function(){
@@ -2390,8 +2415,8 @@ climatoAnalysis.GraphOptions.BarENSO <- function(parent.win, climGraphOpt){
 	tkconfigure(bt.opt.OK, command = function(){
 		climGraphOpt$bar.enso$xlim$is.min <<- switch(tclvalue(is.min.xlim), '0' = FALSE, '1' = TRUE)
 		climGraphOpt$bar.enso$xlim$is.max <<- switch(tclvalue(is.max.xlim), '0' = FALSE, '1' = TRUE)
-		climGraphOpt$bar.enso$xlim$min <<- as.numeric(str_trim(tclvalue(min.xlim)))
-		climGraphOpt$bar.enso$xlim$max <<- as.numeric(str_trim(tclvalue(max.xlim)))
+		climGraphOpt$bar.enso$xlim$min <<- str_trim(tclvalue(min.xlim))
+		climGraphOpt$bar.enso$xlim$max <<- str_trim(tclvalue(max.xlim))
 
 		climGraphOpt$bar.enso$ylim$is.min <<- switch(tclvalue(is.min.ylim), '0' = FALSE, '1' = TRUE)
 		climGraphOpt$bar.enso$ylim$is.max <<- switch(tclvalue(is.max.ylim), '0' = FALSE, '1' = TRUE)
@@ -2455,9 +2480,13 @@ climatoAnalysis.GraphOptions.ProbaENSO <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
 		largeur1 <- 30
 		largeur2 <- 34
+		width.col <- 3
+		width.spin <- 4
 	}else{
 		largeur1 <- 26
 		largeur2 <- 29
+		width.col <- 1
+		width.spin <- 3
 	}
 
 	#####################
@@ -2630,17 +2659,17 @@ climatoAnalysis.GraphOptions.ProbaENSO <- function(parent.win, climGraphOpt){
 	#####
 	framepltLine <- ttklabelframe(frameGraphPlot, text = "Line", relief = 'groove')
 	txt.pltLineW <- tklabel(framepltLine, text = "Width",  anchor = 'e', justify = 'right')
-	spin.pltLineW <- ttkspinbox(framepltLine, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = 3)
+	spin.pltLineW <- ttkspinbox(framepltLine, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = width.spin)
 	tkset(spin.pltLineW, climGraphOpt$proba.enso$plot$lwd)
 
 	txt.pltAll <- tklabel(framepltLine, text = "All",  anchor = 'e', justify = 'right')
-	bt.pltLineAl <- tkbutton(framepltLine, bg = tclvalue(plot.col.lineAl), width = 1)
+	bt.pltLineAl <- tkbutton(framepltLine, bg = tclvalue(plot.col.lineAl), width = width.col)
 	txt.pltNina <- tklabel(framepltLine, text = "La Nina",  anchor = 'e', justify = 'right')
-	bt.pltLineNa <- tkbutton(framepltLine, bg = tclvalue(plot.col.lineNa), width = 1)
+	bt.pltLineNa <- tkbutton(framepltLine, bg = tclvalue(plot.col.lineNa), width = width.col)
 	txt.pltNeutre <- tklabel(framepltLine, text = "Neutral",  anchor = 'e', justify = 'right')
-	bt.pltLineNe <- tkbutton(framepltLine, bg = tclvalue(plot.col.lineNe), width = 1)
+	bt.pltLineNe <- tkbutton(framepltLine, bg = tclvalue(plot.col.lineNe), width = width.col)
 	txt.pltNino <- tklabel(framepltLine, text = "El Nino",  anchor = 'e', justify = 'right')
-	bt.pltLineNo <- tkbutton(framepltLine, bg = tclvalue(plot.col.lineNo), width = 1)
+	bt.pltLineNo <- tkbutton(framepltLine, bg = tclvalue(plot.col.lineNo), width = width.col)
 
 	tkconfigure(bt.pltLineAl, command = function(){
 		loko <- str_trim(tclvalue(tcl("tk_chooseColor", initialcolor = tclvalue(plot.col.lineAl), title = "Colors")))
@@ -2688,12 +2717,12 @@ climatoAnalysis.GraphOptions.ProbaENSO <- function(parent.win, climGraphOpt){
 	#####
 	framepltPoints <- ttklabelframe(frameGraphPlot, text = "Points", relief = 'groove')
 	txt.pltPointS <- tklabel(framepltPoints, text = "Size",  anchor = 'e', justify = 'right')
-	spin.pltPointS <- ttkspinbox(framepltPoints, from = 0.5, to = 2.5, increment = 0.1, justify = 'center', width = 3, state = statePlotPoints)
+	spin.pltPointS <- ttkspinbox(framepltPoints, from = 0.5, to = 2.5, increment = 0.1, justify = 'center', width = width.spin, state = statePlotPoints)
 	tkset(spin.pltPointS, climGraphOpt$proba.enso$plot$cex)
-	bt.pltPointAl <- tkbutton(framepltPoints, bg = tclvalue(plot.col.pointsAl), width = 1, state = statePlotPoints)
-	bt.pltPointNa <- tkbutton(framepltPoints, bg = tclvalue(plot.col.pointsNa), width = 1, state = statePlotPoints)
-	bt.pltPointNe <- tkbutton(framepltPoints, bg = tclvalue(plot.col.pointsNe), width = 1, state = statePlotPoints)
-	bt.pltPointNo <- tkbutton(framepltPoints, bg = tclvalue(plot.col.pointsNo), width = 1, state = statePlotPoints)
+	bt.pltPointAl <- tkbutton(framepltPoints, bg = tclvalue(plot.col.pointsAl), width = width.col, state = statePlotPoints)
+	bt.pltPointNa <- tkbutton(framepltPoints, bg = tclvalue(plot.col.pointsNa), width = width.col, state = statePlotPoints)
+	bt.pltPointNe <- tkbutton(framepltPoints, bg = tclvalue(plot.col.pointsNe), width = width.col, state = statePlotPoints)
+	bt.pltPointNo <- tkbutton(framepltPoints, bg = tclvalue(plot.col.pointsNo), width = width.col, state = statePlotPoints)
 
 	tkconfigure(bt.pltPointAl, command = function(){
 		loko <- str_trim(tclvalue(tcl("tk_chooseColor", initialcolor = tclvalue(plot.col.pointsAl), title = "Colors")))
@@ -2765,8 +2794,8 @@ climatoAnalysis.GraphOptions.ProbaENSO <- function(parent.win, climGraphOpt){
 	tkconfigure(bt.opt.OK, command = function(){
 		climGraphOpt$proba.enso$xlim$is.min <<- switch(tclvalue(is.min.xlim), '0' = FALSE, '1' = TRUE)
 		climGraphOpt$proba.enso$xlim$is.max <<- switch(tclvalue(is.max.xlim), '0' = FALSE, '1' = TRUE)
-		climGraphOpt$proba.enso$xlim$min <<- as.numeric(str_trim(tclvalue(min.xlim)))
-		climGraphOpt$proba.enso$xlim$max <<- as.numeric(str_trim(tclvalue(max.xlim)))
+		climGraphOpt$proba.enso$xlim$min <<- str_trim(tclvalue(min.xlim))
+		climGraphOpt$proba.enso$xlim$max <<- str_trim(tclvalue(max.xlim))
 
 		climGraphOpt$proba.enso$ylim$is.min <<- switch(tclvalue(is.min.ylim), '0' = FALSE, '1' = TRUE)
 		climGraphOpt$proba.enso$ylim$is.max <<- switch(tclvalue(is.max.ylim), '0' = FALSE, '1' = TRUE)
@@ -2838,6 +2867,15 @@ climatoAnalysis.GraphOptions.ProbaENSO <- function(parent.win, climGraphOpt){
 #######################################################################################################
 
 climatoAnalysis.GraphOptions.LineSHP <- function(parent.win, shpLineOpt){
+	if(Sys.info()["sysname"] == "Windows"){
+		width.col <- 3
+		width.spin <- 4
+	}else{
+		width.col <- 1
+		width.spin <- 3
+	}
+
+	#####################
 	tt <- tktoplevel()
 	tkgrab.set(tt)
 	tkfocus(tt)
@@ -2854,9 +2892,9 @@ climatoAnalysis.GraphOptions.LineSHP <- function(parent.win, shpLineOpt){
 
 	txt.pltLineSHP <- tklabel(frLinesProp, text = "Boundaries Properties",  anchor = 'w', justify = 'left')
 	txt.pltLineC <- tklabel(frLinesProp, text = "Color",  anchor = 'e', justify = 'right')
-	bt.pltLineC <- tkbutton(frLinesProp, bg = tclvalue(plot.col.line), width = 1)
+	bt.pltLineC <- tkbutton(frLinesProp, bg = tclvalue(plot.col.line), width = width.col)
 	txt.pltLineW <- tklabel(frLinesProp, text = "Width",  anchor = 'e', justify = 'right')
-	spin.pltLineW <- ttkspinbox(frLinesProp, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = 3)
+	spin.pltLineW <- ttkspinbox(frLinesProp, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = width.spin)
 	tkset(spin.pltLineW, shpLineOpt$lwd)
 
 	tkconfigure(bt.pltLineC, command = function(){

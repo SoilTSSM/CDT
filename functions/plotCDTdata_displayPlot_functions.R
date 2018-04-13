@@ -77,7 +77,7 @@ plotCDTdata <- function(donne, atLev, listCol, ocrds, units){
 						panel = function(x, y, z,...){
 							panel.lines(ocrds, col = "black", lwd = 0.5)
 							panel.abline(h = grid.y, v = grid.x, col = "lightgray", lty = 3)
-							panel.levelplot.points(x, y, z, type = "p", cex = 1, pch = 21, ...)
+							panel.levelplot.points(x, y, z, type = "p", cex = 1, pch = 23, ...)
 						},
 						colorkey = FALSE, par.settings = parSettings, xlab = '', ylab = '',
 						xlim = xlim, ylim = ylim, col.regions = loko,

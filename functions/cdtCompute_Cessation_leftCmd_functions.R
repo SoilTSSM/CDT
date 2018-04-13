@@ -1,5 +1,4 @@
 
-
 CessationCalcPanelCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
 	if(Sys.info()["sysname"] == "Windows"){
@@ -11,9 +10,7 @@ CessationCalcPanelCmd <- function(){
 		largeur2 <- as.integer(w.scale(29)/sfont0)
 
 		largeur3 <- 36
-		# largeur4 <- largeur1-5
-		# largeur5 <- 30
-		# largeur6 <- 22
+		largeur4 <- 21
 	}else{
 		wscrlwin <- w.scale(27)
 		hscrlwin <- h.scale(50)
@@ -23,9 +20,7 @@ CessationCalcPanelCmd <- function(){
 		largeur2 <- as.integer(w.scale(23)/sfont0)
 
 		largeur3 <- 33
-		# largeur4 <- largeur1
-		# largeur5 <- 22
-		# largeur6 <- 14
+		largeur4 <- 14
 	}
 
 	# GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'ClimatoAnalysis.json'))
@@ -53,12 +48,16 @@ CessationCalcPanelCmd <- function(){
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "Input")
 	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Rainy Season")
-	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Plot")
+	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Maps")
+	cmd.tab4 <- bwAddTab(tknote.cmd, text = "Graphs")
+	cmd.tab5 <- bwAddTab(tknote.cmd, text = "Boundaries")
 
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab4, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab5, 0, weight = 1)
 
 	#######################################################################################################
 
@@ -738,13 +737,12 @@ CessationCalcPanelCmd <- function(){
 					InsertMessagesTxt(main.txt.out, msg0)
 
 					###################
-
-					# load.ClimatoAnalysis.Data()
-
+					set.Data.Dates()
+					widgets.Station.Pixel()
+					res <- EnvCessationCalcPlot$read.Data.Map()
+					if(inherits(res, "try-error") | is.null(res)) return(NULL)
 				}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
-
-
 		})
 
 		####################
@@ -766,53 +764,461 @@ CessationCalcPanelCmd <- function(){
 
 		##############################################
 
-		frameOnsetDat <- ttklabelframe(subfr3, text = "Cessation data", relief = 'groove')
+		frameDataExist <- ttklabelframe(subfr3, text = "Cessation data", relief = 'groove')
 
 		EnvCessationCalcPlot$DirExist <- tclVar(0)
-		file.OnsetIndex <- tclVar()
+		file.dataIndex <- tclVar()
 
-		stateOnsetDat <- if(tclvalue(EnvCessationCalcPlot$DirExist) == "1") "normal" else "disabled"
+		stateExistData <- if(tclvalue(EnvCessationCalcPlot$DirExist) == "1") "normal" else "disabled"
 
-		chk.OnsetIdx <- tkcheckbutton(frameOnsetDat, variable = EnvCessationCalcPlot$DirExist, text = "Cessation data already computed", anchor = 'w', justify = 'left')
-		en.OnsetIdx <- tkentry(frameOnsetDat, textvariable = file.OnsetIndex, width = largeur2, state = stateOnsetDat)
-		bt.OnsetIdx <- tkbutton(frameOnsetDat, text = "...", state = stateOnsetDat)
+		chk.dataIdx <- tkcheckbutton(frameDataExist, variable = EnvCessationCalcPlot$DirExist, text = "Cessation data already computed", anchor = 'w', justify = 'left')
+		en.dataIdx <- tkentry(frameDataExist, textvariable = file.dataIndex, width = largeur2, state = stateExistData)
+		bt.dataIdx <- tkbutton(frameDataExist, text = "...", state = stateExistData)
 
-		tkconfigure(bt.OnsetIdx, command = function(){
+		tkconfigure(bt.dataIdx, command = function(){
+			filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
+			path.dataIdx <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
+			if(path.dataIdx%in%c("", "NA") | is.na(path.dataIdx)) return(NULL)
+			tclvalue(file.dataIndex) <- path.dataIdx
 
+			if(file.exists(str_trim(tclvalue(file.dataIndex)))){
+				OutIndexdata <- try(readRDS(str_trim(tclvalue(file.dataIndex))), silent = TRUE)
+				if(inherits(OutIndexdata, "try-error")){
+					InsertMessagesTxt(main.txt.out, 'Unable to load cessation data', format = TRUE)
+					InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', OutIndexdata[1]), format = TRUE)
+					tkconfigure(cb.data.Index, values = "")
+					tclvalue(EnvCessationCalcPlot$donDate) <- ""
+					return(NULL)
+				}
+
+				EnvCessationCalcPlot$output <- OutIndexdata
+				EnvCessationCalcPlot$PathData <- dirname(str_trim(tclvalue(file.dataIndex)))
+
+				###################
+				set.Data.Dates()
+				widgets.Station.Pixel()
+				ret <- EnvCessationCalcPlot$read.Data.Map()
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+			}
 		})
 
-
-		tkgrid(chk.OnsetIdx, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(en.OnsetIdx, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(bt.OnsetIdx, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(chk.dataIdx, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(en.dataIdx, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.dataIdx, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
 		###############
-		tkbind(chk.OnsetIdx, "<Button-1>", function(){
-			stateOnsetDat <- if(tclvalue(EnvCessationCalcPlot$DirExist) == '1') 'disabled' else 'normal'
-			tkconfigure(en.OnsetIdx, state = stateOnsetDat)
-			tkconfigure(bt.OnsetIdx, state = stateOnsetDat)
+		tkbind(chk.dataIdx, "<Button-1>", function(){
+			stateExistData <- if(tclvalue(EnvCessationCalcPlot$DirExist) == '1') 'disabled' else 'normal'
+			tkconfigure(en.dataIdx, state = stateExistData)
+			tkconfigure(bt.dataIdx, state = stateExistData)
 			stateCaclBut <- if(tclvalue(EnvCessationCalcPlot$DirExist) == '1') 'normal' else 'disabled'
 			tkconfigure(bt.CalcOnset, state = stateCaclBut)
 		})
 
 		##############################################
 
-		frameOnsetMap <- ttklabelframe(subfr3, text = "Cessation Map", relief = 'groove')
+		frameDataMap <- ttklabelframe(subfr3, text = "Cessation Map", relief = 'groove')
 
+		EnvCessationCalcPlot$donDate <- tclVar()
 
+		cb.data.Index <- ttkcombobox(frameDataMap, values = "", textvariable = EnvCessationCalcPlot$donDate, width = largeur4)
+		bt.data.Index.prev <- ttkbutton(frameDataMap, text = "<<", width = 3)
+		bt.data.Index.next <- ttkbutton(frameDataMap, text = ">>", width = 3)
+		bt.data.maps <- ttkbutton(frameDataMap, text = "PLOT", width = 7)
+		bt.data.MapOpt <- ttkbutton(frameDataMap, text = "Options", width = 7)
+
+		###############
+
+		EnvCessationCalcPlot$dataMapOp <- list(presetCol = list(color = 'tim.colors', reverse = FALSE),
+												userCol = list(custom = FALSE, color = NULL),
+												userLvl = list(custom = FALSE, levels = NULL, equidist = FALSE),
+												title = list(user = FALSE, title = ''),
+												colkeyLab = list(user = FALSE, label = ''),
+												scalebar = list(add = FALSE, pos = 'bottomleft'))
+
+		tkconfigure(bt.data.MapOpt, command = function(){
+			if(!is.null(EnvCessationCalcPlot$varData$map)){
+				atlevel <- pretty(EnvCessationCalcPlot$varData$map$z, n = 10, min.n = 7)
+				if(is.null(EnvCessationCalcPlot$dataMapOp$userLvl$levels)){
+					EnvCessationCalcPlot$dataMapOp$userLvl$levels <- atlevel
+				}else{
+					if(!EnvCessationCalcPlot$dataMapOp$userLvl$custom)
+						EnvCessationCalcPlot$dataMapOp$userLvl$levels <- atlevel
+				}
+			}
+			EnvCessationCalcPlot$dataMapOp <- climatoAnalysis.MapOptions(main.win, EnvCessationCalcPlot$dataMapOp)
+		})
+
+		#########
+		EnvCessationCalcPlot$notebookTab.dataMap <- NULL
+
+		tkconfigure(bt.data.maps, command = function(){
+			if(str_trim(tclvalue(EnvCessationCalcPlot$donDate)) != "" &
+				!is.null(EnvCessationCalcPlot$varData))
+			{
+				imgContainer <- CessationCalc.Display.Maps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCessationCalcPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
+				EnvCessationCalcPlot$notebookTab.dataMap <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		tkconfigure(bt.data.Index.prev, command = function(){
+			if(str_trim(tclvalue(EnvCessationCalcPlot$donDate)) != ""){
+				donDates <- format(EnvCessationCalcPlot$output$start.date, "%Y")
+				idaty <- which(donDates == str_trim(tclvalue(EnvCessationCalcPlot$donDate)))
+				idaty <- idaty-1
+				if(idaty < 1) idaty <- length(donDates)
+				tclvalue(EnvCessationCalcPlot$donDate) <- donDates[idaty]
+
+				ret <- try(EnvCessationCalcPlot$read.Data.Map(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+
+				imgContainer <- CessationCalc.Display.Maps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCessationCalcPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
+				EnvCessationCalcPlot$notebookTab.dataMap <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		tkconfigure(bt.data.Index.next, command = function(){
+			if(str_trim(tclvalue(EnvCessationCalcPlot$donDate)) != ""){
+				donDates <- format(EnvCessationCalcPlot$output$start.date, "%Y")
+				idaty <- which(donDates == str_trim(tclvalue(EnvCessationCalcPlot$donDate)))
+				idaty <- idaty+1
+				if(idaty > length(donDates)) idaty <- 1
+				tclvalue(EnvCessationCalcPlot$donDate) <- donDates[idaty]
+
+				ret <- try(EnvCessationCalcPlot$read.Data.Map(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+
+				imgContainer <- CessationCalc.Display.Maps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCessationCalcPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
+				EnvCessationCalcPlot$notebookTab.dataMap <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		###############
+
+		tkgrid(bt.data.Index.prev, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(cb.data.Index, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.data.Index.next, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.data.maps, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.data.MapOpt, row = 1, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+		###############
+
+		tkbind(cb.data.Index, "<<ComboboxSelected>>", function(){
+			if(!is.null(EnvCessationCalcPlot$varData)){
+				ret <- try(EnvCessationCalcPlot$read.Data.Map(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+			}
+		})
 
 		##############################################
 
-		frameOnsetTS <- ttklabelframe(subfr3, text = "Cessation Graph", relief = 'groove')
+		tkgrid(frameDataExist, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameDataMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
 
+	#######################################################################################################
 
+	#Tab4
+	frTab4 <- tkframe(cmd.tab4)
+	tkgrid(frTab4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab4, 0, weight = 1)
+
+	scrw4 <- bwScrolledWindow(frTab4)
+	tkgrid(scrw4)
+	tkgrid.columnconfigure(scrw4, 0, weight = 1)
+	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr4, 0, weight = 1)
 
 		##############################################
 
-		tkgrid(frameOnsetDat, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(frameOnsetMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-		tkgrid(frameOnsetTS, row = 2, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		frameDataTS <- ttklabelframe(subfr4, text = "Cessation Graph", relief = 'groove')
 
+		typeTSPLOT <- c("Line", "Barplot")
+		EnvCessationCalcPlot$graph$typeTSp <- tclVar("Line")
+
+		cb.typeTSp <- ttkcombobox(frameDataTS, values = typeTSPLOT, textvariable = EnvCessationCalcPlot$graph$typeTSp, width = largeur4)
+		bt.TsGraph.plot <- ttkbutton(frameDataTS, text = "PLOT", width = 7)
+		bt.TSGraphOpt <- ttkbutton(frameDataTS, text = "Options", width = 8)
+
+		#################
+
+		EnvCessationCalcPlot$TSGraphOp <- list(
+					bar = list(
+							xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+							ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+							axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+							title = list(is.title = FALSE, title = '', position = 'top'),
+							colors = list(col = "darkblue")
+						),
+					line = list(
+						xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+						title = list(is.title = FALSE, title = '', position = 'top'),
+						plot = list(type = 'both',
+							col = list(line = "red", points = "blue"),
+							lwd = 2, cex = 1.4),
+						legend = NULL)
+					)
+
+		tkconfigure(bt.TSGraphOpt, command = function(){
+			suffix.fun <- switch(str_trim(tclvalue(EnvCessationCalcPlot$graph$typeTSp)),
+									"Barplot" = "Bar",
+									"Line" = "Line")
+			plot.fun <- match.fun(paste0("climatoAnalysis.GraphOptions.", suffix.fun))
+			EnvCessationCalcPlot$TSGraphOp <- plot.fun(main.win, EnvCessationCalcPlot$TSGraphOp)
+		})
+
+		#########
+		EnvCessationCalcPlot$notebookTab.dataGraph <- NULL
+
+		tkconfigure(bt.TsGraph.plot, command = function(){
+			if(!is.null(EnvCessationCalcPlot$varData)){
+				imgContainer <- CessationCalc.Display.Graph(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCessationCalcPlot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
+				EnvCessationCalcPlot$notebookTab.dataGraph <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		#################
+
+		tkgrid(cb.typeTSp, row = 0, column = 0, sticky = 'we', pady = 1, columnspan = 1)
+		tkgrid(bt.TSGraphOpt, row = 0, column = 1, sticky = 'we', padx = 4, pady = 1, columnspan = 1)
+		tkgrid(bt.TsGraph.plot, row = 0, column = 2, sticky = 'we', pady = 1, columnspan = 1)
+
+		##############################################
+
+		frameSTNCrds <- ttklabelframe(subfr4, text = "Station/Coordinates", relief = 'groove')
+
+		frTS2 <- tkframe(frameSTNCrds)
+		EnvCessationCalcPlot$graph$lonLOC <- tclVar()
+		EnvCessationCalcPlot$graph$latLOC <- tclVar()
+		EnvCessationCalcPlot$graph$stnIDTSp <- tclVar()
+
+		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
+
+		##############################################
+
+		tkgrid(frameDataTS, row = 0, column = 0, sticky = 'we', pady = 1)
+		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = 'we', pady = 3)
+
+	#######################################################################################################
+
+	#Tab5
+	frTab5 <- tkframe(cmd.tab5)
+	tkgrid(frTab5, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab5, 0, weight = 1)
+
+	scrw5 <- bwScrolledWindow(frTab5)
+	tkgrid(scrw5)
+	tkgrid.columnconfigure(scrw5, 0, weight = 1)
+	subfr5 <- bwScrollableFrame(scrw5, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr5, 0, weight = 1)
+
+		##############################################
+
+		frameSHP <- ttklabelframe(subfr5, text = "Boundaries", relief = 'groove')
+
+		EnvCessationCalcPlot$shp$add.shp <- tclVar(FALSE)
+		file.plotShp <- tclVar()
+		stateSHP <- "disabled"
+
+		chk.addshp <- tkcheckbutton(frameSHP, variable = EnvCessationCalcPlot$shp$add.shp, text = "Add boundaries to Map", anchor = 'w', justify = 'left')
+		bt.addshpOpt <- ttkbutton(frameSHP, text = "Options", state = stateSHP)
+		cb.addshp <- ttkcombobox(frameSHP, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur1, state = stateSHP)
+		bt.addshp <- tkbutton(frameSHP, text = "...", state = stateSHP)
+
+		########
+		tkconfigure(bt.addshp, command = function(){
+			shp.opfiles <- getOpenShp(main.win, all.opfiles)
+			if(!is.null(shp.opfiles)){
+				nopf <- length(AllOpenFilesType)
+				AllOpenFilesType[[nopf+1]] <<- 'shp'
+				AllOpenFilesData[[nopf+1]] <<- shp.opfiles
+				tclvalue(file.plotShp) <- AllOpenFilesData[[nopf+1]][[1]]
+				listOpenFiles[[length(listOpenFiles)+1]] <<- AllOpenFilesData[[nopf+1]][[1]]
+
+				tkconfigure(cb.addshp, values = unlist(listOpenFiles), textvariable = file.plotShp)
+
+				shpofile <- getShpOpenData(file.plotShp)
+				if(is.null(shpofile)) EnvCessationCalcPlot$shp$ocrds <- NULL
+				EnvCessationCalcPlot$shp$ocrds <- getBoundaries(shpofile[[2]])
+			}else return(NULL)
+		})
+
+		########
+		EnvCessationCalcPlot$SHPOp <- list(col = "black", lwd = 1.5)
+
+		tkconfigure(bt.addshpOpt, command = function(){
+			EnvCessationCalcPlot$SHPOp <- climatoAnalysis.GraphOptions.LineSHP(main.win, EnvCessationCalcPlot$SHPOp)
+		})
+
+		########
+		tkgrid(chk.addshp, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1)
+		tkgrid(bt.addshpOpt, row = 0, column = 6, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1)
+		tkgrid(cb.addshp, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 7, padx = 1, pady = 1)
+		tkgrid(bt.addshp, row = 1, column = 7, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1)
+
+		#################
+		tkbind(cb.addshp, "<<ComboboxSelected>>", function(){
+			shpofile <- getShpOpenData(file.plotShp)
+			if(is.null(shpofile)) EnvCessationCalcPlot$shp$ocrds <- NULL
+			EnvCessationCalcPlot$shp$ocrds <- getBoundaries(shpofile[[2]])
+		})
+
+		tkbind(chk.addshp, "<Button-1>", function(){
+			stateSHP <- if(tclvalue(EnvCessationCalcPlot$shp$add.shp) == "1") "disabled" else "normal"
+			tkconfigure(cb.addshp, state = stateSHP)
+			tkconfigure(bt.addshp, state = stateSHP)
+			tkconfigure(bt.addshpOpt, state = stateSHP)
+		})
+
+		##############################################
+
+		tkgrid(frameSHP, row = 0, column = 0, sticky = 'we', pady = 1)
+
+	#######################################################################################################
+
+	widgets.Station.Pixel <- function(){
+		tkdestroy(frTS2)
+		frTS2 <<- tkframe(frameSTNCrds)
+
+		if(EnvCessationCalcPlot$output$params$data.type == "cdtstation"){
+			stnIDTSPLOT <- EnvCessationCalcPlot$output$data$id
+			txt.stnSel <- tklabel(frTS2, text = "Select a station to plot", anchor = 'w', justify = 'left')
+			txt.stnID <- tklabel(frTS2, text = "Station", anchor = 'e', justify = 'right')
+			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvCessationCalcPlot$graph$stnIDTSp, width = largeur4)
+			tclvalue(EnvCessationCalcPlot$graph$stnIDTSp) <- stnIDTSPLOT[1]
+
+			tkgrid(txt.stnSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.stnID, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(cb.stnID, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		}else{
+			txt.crdSel <- tklabel(frTS2, text = "Enter longitude and latitude to plot", anchor = 'w', justify = 'left')
+			txt.lonLoc <- tklabel(frTS2, text = "Longitude", anchor = 'e', justify = 'right')
+			en.lonLoc <- tkentry(frTS2, textvariable = EnvCessationCalcPlot$graph$lonLOC, width = 8)
+			txt.latLoc <- tklabel(frTS2, text = "Latitude", anchor = 'e', justify = 'right')
+			en.latLoc <- tkentry(frTS2, textvariable = EnvCessationCalcPlot$graph$latLOC, width = 8)
+			stnIDTSPLOT <- ""
+			tclvalue(EnvCessationCalcPlot$graph$stnIDTSp) <- ""
+
+			tkgrid(txt.crdSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.lonLoc, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(en.lonLoc, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.latLoc, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(en.latLoc, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		}
+
+		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
+		return(0)
+	}
+
+	set.Data.Dates <- function(){
+		donDates <- format(EnvCessationCalcPlot$output$start.date, "%Y")
+		tkconfigure(cb.data.Index, values = donDates)
+		tclvalue(EnvCessationCalcPlot$donDate) <- donDates[length(donDates)]
+		return(0)
+	}
+
+	#######################################################################################################
+
+	EnvCessationCalcPlot$read.Data.Map <- function(){
+		tkconfigure(main.win, cursor = 'watch')
+		tcl('update')
+		on.exit({
+			tkconfigure(main.win, cursor = '')
+			tcl('update')
+		})
+
+		this.daty <- str_trim(tclvalue(EnvCessationCalcPlot$donDate))
+		idt <- which(format(EnvCessationCalcPlot$output$start.date, "%Y") == this.daty)
+
+		if(EnvCessationCalcPlot$output$params$data.type == "cdtstation"){
+			filePathData <- file.path(EnvCessationCalcPlot$PathData, "CDTDATASET/CESSATION.rds")
+			if(!file.exists(filePathData)){
+				InsertMessagesTxt(main.txt.out, paste(filePathData, 'not found'), format = TRUE)
+				return(NULL)
+			}
+
+			readVarData <- TRUE
+			if(!is.null(EnvCessationCalcPlot$varData))
+				if(!is.null(EnvCessationCalcPlot$filePathData))
+					if(EnvCessationCalcPlot$filePathData == filePathData) readVarData <- FALSE
+
+			if(readVarData){
+				EnvCessationCalcPlot$varData$data <- readRDS(filePathData)
+				EnvCessationCalcPlot$filePathData <- filePathData
+			}
+
+			########
+			rasterVarData <- TRUE
+			if(!rasterVarData)
+				if(!is.null(EnvCessationCalcPlot$varData$rasterDate))
+					if(EnvCessationCalcPlot$filePathData == filePathData)
+						if(EnvCessationCalcPlot$varData$rasterDate == this.daty) rasterVarData <- FALSE
+
+			if(rasterVarData){
+				nx <- nx_ny_as.image(diff(range(EnvCessationCalcPlot$output$data$lon)))
+				ny <- nx_ny_as.image(diff(range(EnvCessationCalcPlot$output$data$lat)))
+				tmp <- as.numeric(EnvCessationCalcPlot$varData$data[idt, ] - EnvCessationCalcPlot$output$start.date[idt])
+
+				tmp <- as.image(tmp, nx = nx, ny = ny,
+								x = cbind(EnvCessationCalcPlot$output$data$lon, EnvCessationCalcPlot$output$data$lat))
+				EnvCessationCalcPlot$varData$map$x <- tmp$x
+				EnvCessationCalcPlot$varData$map$y <- tmp$y
+				EnvCessationCalcPlot$varData$map$z <- tmp$z
+				EnvCessationCalcPlot$varData$rasterDate <- this.daty
+				rm(tmp)
+			}
+		}else{
+			filePathData <- file.path(EnvCessationCalcPlot$PathData, "DATA_NetCDF",
+							paste0("cessation_", format(EnvCessationCalcPlot$output$start.date[idt], "%Y%m%d"), ".nc"))
+			if(!file.exists(filePathData)){
+				InsertMessagesTxt(main.txt.out, paste(filePathData, 'not found'), format = TRUE)
+				return(NULL)
+			}
+
+			readVarData <- TRUE
+			if(!is.null(EnvCessationCalcPlot$varData))
+				if(!is.null(EnvCessationCalcPlot$filePathData))
+					if(EnvCessationCalcPlot$filePathData == filePathData) readVarData <- FALSE
+
+			if(readVarData){
+				nc <- nc_open(filePathData)
+				EnvCessationCalcPlot$varData$map$x <- nc$dim[[1]]$vals
+				EnvCessationCalcPlot$varData$map$y <- nc$dim[[2]]$vals
+				EnvCessationCalcPlot$varData$map$z <- ncvar_get(nc, varid = nc$var[[1]]$name)
+				nc_close(nc)
+				EnvCessationCalcPlot$filePathData <- filePathData
+			}
+
+			###################
+
+			file.CDT.Idx <- file.path(EnvCessationCalcPlot$PathData, "CDTDATASET/CDTDATASET.rds")
+
+			read.cdt.dataIdx<- TRUE
+			if(!is.null(EnvCessationCalcPlot$cdtdataset))
+				if(!is.null(EnvCessationCalcPlot$file.CDT.Idx))
+					if(EnvCessationCalcPlot$file.CDT.Idx == file.CDT.Idx) read.cdt.dataIdx <- FALSE
+			if(read.cdt.dataIdx){
+				EnvCessationCalcPlot$cdtdataset <- readRDS(file.CDT.Idx)
+				EnvCessationCalcPlot$cdtdataset$fileInfo <- file.CDT.Idx
+				EnvCessationCalcPlot$file.CDT.Idx <- file.CDT.Idx
+			}
+		}
+
+		return(0)
+	}
 
 	#######################################################################################################
 	tcl('update')
