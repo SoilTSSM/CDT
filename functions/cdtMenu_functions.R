@@ -211,11 +211,11 @@ tkadd(top.menu, "cascade", label = "Data Preparation", menu = menu.dataprep, act
 		tkadd(menu.dataConv, "separator")
 
 		########
-		# Geotiff 
-		tkadd(menu.dataConv, "command", label = "Converting NetCDF to GeoTIFF", state = 'disabled', command = function(){
+		# Raster 
+		tkadd(menu.dataConv, "command", label = "Converting NetCDF/GeoTIFF/ESRI .hdr Labelled", command = function(){
 			refreshCDT.lcmd.env()
-			# initpars <- initialize.parameters('compute.PET', 'daily')
-			# GeneralParameters <<- computePET_getParams(main.win, initpars)
+			initpars <- initialize.parameters('convert.nc.tif.bil', 'daily')
+			GeneralParameters <<- rasterData.convert_getParams(main.win, initpars)
 		})
 
 		##########

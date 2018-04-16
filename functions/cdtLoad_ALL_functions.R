@@ -292,6 +292,10 @@ source(file.path(apps.dir, 'functions', 'cdtCompute_SPI_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtCompute_SPI_Procs_functions.R'))
 
 #####
+source(file.path(apps.dir, 'functions', 'cdtRasterConversion_dlgBox_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtRasterConversion_Procs_functions.R'))
+
+#####
 #
 #source(file.path(apps.dir, 'functions', ''))
 #source(file.path(apps.dir, 'functions', ''))

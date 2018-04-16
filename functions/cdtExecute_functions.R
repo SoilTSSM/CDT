@@ -567,6 +567,15 @@ Execute_All_Functions <- function(get.stn){
 		Execute_end_msg(ret, msg0, msg1)
 	}
 
+	#####
+	if(GeneralParameters$action == "convert.nc.tif.bil"){
+		ret <- try(rasterData.convert_Proc(GeneralParameters), silent = TRUE)
+
+		msg0 <- "Converting data format finished successfully"
+		msg1 <- "Converting  data format failed"
+		Execute_end_msg(ret, msg0, msg1)
+	}
+
 	###################
 
 }

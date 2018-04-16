@@ -287,6 +287,16 @@ init.params <- function(action, period){
 						output = "")
 	}
 
+	################
+	## conversion between ncdf, geotiff, esri .hrd labeled  
+	if(action == 'convert.nc.tif.bil'){
+		ret.params <- list(action = action,
+						dir.in = "", dir.out = "",
+						type.in = "nc", type.out = "tif",
+						nc.opts = list(varname = "precip", varunit = "mm", missval = -9999,
+						longname = "Merged station-satellite precipitation"))
+	}
+
 	#############
 	return(ret.params)
 }
