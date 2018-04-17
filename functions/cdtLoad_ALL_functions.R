@@ -296,6 +296,10 @@ source(file.path(apps.dir, 'functions', 'cdtRasterConversion_dlgBox_functions.R'
 source(file.path(apps.dir, 'functions', 'cdtRasterConversion_Procs_functions.R'))
 
 #####
+source(file.path(apps.dir, 'functions', 'cdtGradsCTL_dlgBox_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtGradsCTL_Procs_functions.R'))
+
+#####
 #
 #source(file.path(apps.dir, 'functions', ''))
 #source(file.path(apps.dir, 'functions', ''))

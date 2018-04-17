@@ -297,6 +297,16 @@ init.params <- function(action, period){
 						longname = "Merged station-satellite precipitation"))
 	}
 
+	################
+	## create a GrADS Data Descriptor File 
+	if(action == 'grads.ctl'){
+		ret.params <- list(action = action,tstep = period,
+							nc = list(dir = "", sample = "", format = "rr_mrg_%Y%M%D.nc"),
+							date = list(year1 = 1981, mon1 = 1, day1 = 1,
+										year2 = 2017, mon2 = 12, day2 = 31),
+							out.ctl = "")
+	}
+
 	#############
 	return(ret.params)
 }

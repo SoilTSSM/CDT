@@ -576,6 +576,15 @@ Execute_All_Functions <- function(get.stn){
 		Execute_end_msg(ret, msg0, msg1)
 	}
 
+	#####
+	if(GeneralParameters$action == "grads.ctl"){
+		ret <- try(grads_create.ctl_Procs(GeneralParameters), silent = TRUE)
+
+		msg0 <- "Creating GrADS data descriptor file finished successfully"
+		msg1 <- "Creating GrADS data descriptor file failed"
+		Execute_end_msg(ret, msg0, msg1)
+	}
+
 	###################
 
 }

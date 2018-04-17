@@ -223,10 +223,10 @@ tkadd(top.menu, "cascade", label = "Data Preparation", menu = menu.dataprep, act
 
 		########
 		# Grads
-		tkadd(menu.dataConv, "command", label = "Create GrADS Descriptor File", state = 'disabled', command = function(){
+		tkadd(menu.dataConv, "command", label = "Create GrADS Descriptor File from CDT NetCDF files", command = function(){
 			refreshCDT.lcmd.env()
-			# initpars <- initialize.parameters('compute.WB', 'daily')
-			# GeneralParameters <<- computeWB_getParams(main.win, initpars)
+			initpars <- initialize.parameters('grads.ctl', 'daily')
+			GeneralParameters <<- grads_create.ctl_getParams(main.win, initpars)
 		})
 
 ##########xxxxxxxxxxxxxxxxxx Data Aggregation xxxxxxxxxxxxxxxxxx##########
