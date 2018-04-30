@@ -1,4 +1,6 @@
 Execute_All_Functions <- function(get.stn){
+	if(is.null(GeneralParameters$action)) return(NULL)
+
 	#QC Rain
 	if(GeneralParameters$action == 'qc.rain'){
 		sortieqc <- ExecQcRain(get.stn)

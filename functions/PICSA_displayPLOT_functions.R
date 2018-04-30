@@ -173,9 +173,12 @@ PICSA.plotTSMaps <- function(ocrds){
 
 PICSA.plotClimMaps <- function(ocrds){
 	StatOp <- tclvalue(EnvPICSAplot$analysis.method)
-	if(StatOp == "Average") aggrFonction <- function(Y, X = NULL, O = NULL) base::colMeans(Y, na.rm = TRUE)
-	if(StatOp == "Median") aggrFonction <- function(Y, X = NULL, O = NULL) matrixStats::colMedians(Y, na.rm = TRUE)
-	if(StatOp == "Standard deviation") aggrFonction <- function(Y, X = NULL, O = NULL) matrixStats::colSds(Y, na.rm = TRUE)
+	if(StatOp == "Average") 
+		aggrFonction <- function(Y, X = NULL, O = NULL) base::colMeans(Y, na.rm = TRUE)
+	if(StatOp == "Median") 
+		aggrFonction <- function(Y, X = NULL, O = NULL) matrixStats::colMedians(Y, na.rm = TRUE)
+	if(StatOp == "Standard deviation") 
+		aggrFonction <- function(Y, X = NULL, O = NULL) matrixStats::colSds(Y, na.rm = TRUE)
 	if(StatOp == "Trend") 
 		aggrFonction <- function(Y, X = NULL, O = NULL)
 		{

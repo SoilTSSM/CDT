@@ -815,7 +815,24 @@ Validation.HOV.PanelCmd <- function(clim.var){
 			}
 			EnvHOValidation <<- hovd.data
 			EnvHOValidationplot$file.hovd <- tclvalue(file.hovd)
-		} 
+
+			tclvalue(file.period) <- switch(hovd.data$GeneralParameters$Tstep, 
+											'daily' = CbperiodVAL[1], 
+											'pentad' = cb.periodVAL[2],
+											'dekadal' = CbperiodVAL[3],
+											'monthly' = CbperiodVAL[4])
+
+			AGGREGFUN <- c("mean", "sum", "count")
+			if(tclvalue(aggr.data) == "1"){
+				if(tclvalue(file.period) != 'Daily data'){
+					AGGREGFUN <- AGGREGFUN[-3]
+					tclvalue(aggr.fun) <- if(tclvalue(aggr.fun) == "count") "sum" else tclvalue(aggr.fun)
+				}
+				stateo0a <- "readonly"
+			}else stateo0a <- "disabled"
+
+			tkconfigure(cb.aggfun, values = AGGREGFUN, state = stateo0a)
+		}
 	})
 
 	tkgrid(chk.hovd, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)

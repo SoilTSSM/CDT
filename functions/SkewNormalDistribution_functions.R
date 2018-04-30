@@ -29,8 +29,7 @@
 ################################################################################
 
 
-dsnorm <- 
-function(x, mean = 0, sd = 1, xi = 1.5, log = FALSE)
+dsnorm <- function(x, mean = 0, sd = 1, xi = 1.5, log = FALSE)
 {   
     # A function implemented by Diethelm Wuertz 
 
@@ -65,8 +64,7 @@ function(x, mean = 0, sd = 1, xi = 1.5, log = FALSE)
 # ------------------------------------------------------------------------------
 
 
-psnorm <- 
-function(q, mean = 0, sd = 1, xi = 1.5)
+psnorm <- function(q, mean = 0, sd = 1, xi = 1.5)
 {   
     # A function implemented by Diethelm Wuertz 
 
@@ -92,8 +90,7 @@ function(q, mean = 0, sd = 1, xi = 1.5)
 # ------------------------------------------------------------------------------    
 
    
-qsnorm <- 
-function(p, mean = 0, sd = 1, xi = 1.5)
+qsnorm <- function(p, mean = 0, sd = 1, xi = 1.5)
 {   
     # A function implemented by Diethelm Wuertz 
 
@@ -119,8 +116,7 @@ function(p, mean = 0, sd = 1, xi = 1.5)
 # ------------------------------------------------------------------------------
  
 
-rsnorm <- 
-function(n, mean = 0, sd = 1, xi = 1.5)
+rsnorm <- function(n, mean = 0, sd = 1, xi = 1.5)
 {   
     # A function implemented by Diethelm Wuertz 
 
@@ -146,8 +142,7 @@ function(n, mean = 0, sd = 1, xi = 1.5)
 ################################################################################
 
 
-.dsnorm <-  
-function(x, xi) 
+.dsnorm <- function(x, xi) 
 {   
     # A function implemented by Diethelm Wuertz 
 
@@ -174,8 +169,7 @@ function(x, xi)
 # ------------------------------------------------------------------------------
    
 
-.psnorm <- 
-function(q, xi) 
+.psnorm <- function(q, xi) 
 {   
     # A function implemented by Diethelm Wuertz 
 
@@ -201,8 +195,7 @@ function(q, xi)
 # ------------------------------------------------------------------------------
  
 
-.qsnorm <- 
-function(p, xi) 
+.qsnorm <- function(p, xi) 
 {   
     # A function implemented by Diethelm Wuertz 
 
@@ -229,8 +222,7 @@ function(p, xi)
 # ------------------------------------------------------------------------------
   
 
-.rsnorm <- 
-function(n, xi) 
+.rsnorm <- function(n, xi) 
 {   
     # A function implemented by Diethelm Wuertz 
 
@@ -257,8 +249,7 @@ function(n, xi)
 ################################################################################
 
 
-Heaviside <- 
-function(x, a = 0) 
+Heaviside <- function(x, a = 0) 
 {   
     # A function implemented by Diethelm Wuertz
 

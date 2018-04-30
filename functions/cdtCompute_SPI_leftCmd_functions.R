@@ -13,10 +13,10 @@ SPICalcPanelCmd <- function(){
 		# largeur6 <- 22
 	}else{
 		wscrlwin <- w.scale(27)
-		hscrlwin <- h.scale(47)
-		largeur0 <- as.integer(w.scale(18)/sfont0)
-		largeur1 <- as.integer(w.scale(22)/sfont0)
-		largeur2 <- as.integer(w.scale(23)/sfont0)
+		hscrlwin <- h.scale(48.5)
+		largeur0 <- as.integer(w.scale(16)/sfont0)
+		largeur1 <- as.integer(w.scale(21)/sfont0)
+		largeur2 <- as.integer(w.scale(22)/sfont0)
 		largeur3 <- 15
 		largeur4 <- 20
 		largeur5 <- 14
@@ -24,9 +24,14 @@ SPICalcPanelCmd <- function(){
 	}
 
 	# GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'ClimatoAnalysis.json'))
+
 	GeneralParameters <- list(intstep = "dekadal", data.type = "cdtstation", 
 							cdtstation = "", cdtdataset = "",
-							tscale = 3, distr = 'Gamma', outdir = "")
+							outfreq = "month", tscale = 3, distr = 'Gamma',
+							monitoring = FALSE,
+							dates = list(year1 = 2018, mon1 = 1, dek1 = 1, year2 = 2018, mon2 = 2, dek2 = 3),
+							outdir = "")
+
 	###################
 
 	cmd.frame <- tkframe(panel.left)
@@ -76,18 +81,16 @@ SPICalcPanelCmd <- function(){
 
 		############
 
-		# tkbind(cb.fperiod, "<<ComboboxSelected>>", function(){
-		# 	if(tclvalue(updateSPI) == '0'){
-		# 		statedayW <- if(str_trim(tclvalue(timeSteps)) == 'Daily data' &
-		# 						tclvalue(climDataExist) == '0') "normal" else "disabled"
-		# 	}else statedayW <- "disabled"
-
-		# 	tkconfigure(en.daywin, state = statedayW)
-		# 	tclvalue(day.txtVar) <- switch(tclvalue(timeSteps), 'Dekadal data' = 'Dek', 'Pentad data' = 'Pen', 'Day')
-		# 	stateday <- if(tclvalue(timeSteps) == 'Monthly data') 'disabled' else 'normal'
-		# 	tkconfigure(en.day1, state = stateday)
-		# 	tkconfigure(en.day2, state = stateday)
-		# })
+		tkbind(cb.fperiod, "<<ComboboxSelected>>", function(){
+			valSPIfreq <- if(str_trim(tclvalue(timeSteps)) == 'Monthly data') "month" else c("dekad", "month")
+			tkconfigure(cb.SPIfreq, values = valSPIfreq)
+			if(str_trim(tclvalue(timeSteps)) == 'Monthly data'){
+				tclvalue(out.spifreq) <- "month"
+				tclvalue(txt.suffix.var) <- '-month'
+			}
+			stateTscale <- if(str_trim(tclvalue(out.spifreq)) == 'month') "normal" else "disabled"
+			tkconfigure(spin.Tscale, state = stateTscale)
+		})
 
 		#######################
 
@@ -102,11 +105,9 @@ SPICalcPanelCmd <- function(){
 		if(GeneralParameters$data.type == 'cdtstation'){
 			input.file <- tclVar(GeneralParameters$cdtstation)
 			txt.INData <- 'File containing stations Precip data'
-			stateSetNC <- "disabled"
 		}else{
 			input.file <- tclVar(GeneralParameters$cdtdataset)
 			txt.INData <- 'Index file (*.rds) for Precip dataset'
-			stateSetNC <- "disabled"
 		}
 
 		txt.INData.var <- tclVar(txt.INData)
@@ -222,24 +223,147 @@ SPICalcPanelCmd <- function(){
 
 		#############################
 
+		frameMoni <- tkframe(subfr1, relief = 'groove', borderwidth = 2)
+
+		monitoring <- tclVar(GeneralParameters$monitoring)
+
+		istart.yrs <- tclVar(GeneralParameters$dates$year1)
+		istart.mon <- tclVar(GeneralParameters$dates$mon1)
+		istart.dek <- tclVar(GeneralParameters$dates$dek1)
+		iend.yrs <- tclVar(GeneralParameters$dates$year2)
+		iend.mon <- tclVar(GeneralParameters$dates$mon2)
+		iend.dek <- tclVar(GeneralParameters$dates$dek2)
+
+		if(GeneralParameters$monitoring){
+			statedates <- 'normal'
+			statedatedek <- if(GeneralParameters$outfreq == 'month') 'disabled' else 'normal'
+		}else{
+			statedates <- 'disabled'
+			statedatedek <- 'disabled'
+		}
+
+		chk.Moni <- tkcheckbutton(frameMoni, variable = monitoring, text = "Monitoring: update SPI dataset", anchor = 'w', justify = 'left')
+		fr.Moni <- tkframe(frameMoni)
+
+		txt.deb.Moni <- tklabel(fr.Moni, text = 'Start date', anchor = 'e', justify = 'right')
+		txt.fin.Moni <- tklabel(fr.Moni, text = 'End date', anchor = 'e', justify = 'right')
+		txt.yrs.Moni <- tklabel(fr.Moni, text = 'Year')
+		txt.mon.Moni <- tklabel(fr.Moni, text = 'Month')
+		txt.dek.Moni <- tklabel(fr.Moni, text = 'Dekad')
+		en.yrs1.Moni <- tkentry(fr.Moni, width = 4, textvariable = istart.yrs, justify = "right", state = statedates)
+		en.mon1.Moni <- tkentry(fr.Moni, width = 4, textvariable = istart.mon, justify = "right", state = statedates)
+		en.dek1.Moni <- tkentry(fr.Moni, width = 4, textvariable = istart.dek, justify = "right", state = statedatedek)
+		en.yrs2.Moni <- tkentry(fr.Moni, width = 4, textvariable = iend.yrs, justify = "right", state = statedates)
+		en.mon2.Moni <- tkentry(fr.Moni, width = 4, textvariable = iend.mon, justify = "right", state = statedates)
+		en.dek2.Moni <- tkentry(fr.Moni, width = 4, textvariable = iend.dek, justify = "right", state = statedatedek)
+
+		tkgrid(txt.deb.Moni, row = 1, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, ipadx = 1)
+		tkgrid(txt.fin.Moni, row = 2, column = 0, sticky = 'ew', rowspan = 1, columnspan = 1, padx = 1, ipadx = 1)
+		tkgrid(txt.yrs.Moni, row = 0, column = 1, rowspan = 1, columnspan = 1, padx = 1, ipadx = 1)
+		tkgrid(txt.mon.Moni, row = 0, column = 2, rowspan = 1, columnspan = 1, padx = 1, ipadx = 1)
+		tkgrid(txt.dek.Moni, row = 0, column = 3, rowspan = 1, columnspan = 1, padx = 1, ipadx = 1)
+		tkgrid(en.yrs1.Moni, row = 1, column = 1, rowspan = 1, columnspan = 1, padx = 1, ipadx = 1)
+		tkgrid(en.mon1.Moni, row = 1, column = 2, rowspan = 1, columnspan = 1, padx = 1, ipadx = 1)
+		tkgrid(en.dek1.Moni, row = 1, column = 3, rowspan = 1, columnspan = 1, padx = 1, ipadx = 1)
+		tkgrid(en.yrs2.Moni, row = 2, column = 1, rowspan = 1, columnspan = 1, padx = 1, ipadx = 1)
+		tkgrid(en.mon2.Moni, row = 2, column = 2, rowspan = 1, columnspan = 1, padx = 1, ipadx = 1)
+		tkgrid(en.dek2.Moni, row = 2, column = 3, rowspan = 1, columnspan = 1, padx = 1, ipadx = 1)
+
+		tkgrid(chk.Moni, row = 0, column = 0, rowspan = 1, columnspan = 1, padx = 1, ipadx = 1)
+		tkgrid(fr.Moni, row = 1, column = 0, rowspan = 1, columnspan = 1, padx = 1, ipadx = 1)
+
+		###############
+
+		tkbind(chk.Moni, "<Button-1>", function(){
+			if(tclvalue(monitoring) == "0"){
+				statedates <- 'normal'
+				statedatedek <- if(str_trim(tclvalue(out.spifreq)) == 'month') 'disabled' else 'normal'
+				stateDistr <- 'disabled'
+				tclvalue(txt.save.var) <- "Index file (SPI.rds) for SPI data"
+
+				tkconfigure(bt.outSPI, command = function(){
+					filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
+					path.rds <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
+					tclvalue(outSPIdir) <- if(path.rds%in%c("", "NA") | is.na(path.rds)) "" else path.rds
+				})
+			}else{
+				statedates <- 'disabled'
+				statedatedek <- 'disabled'
+				stateDistr <- 'normal'
+				tclvalue(txt.save.var) <- "Directory to save the outputs"
+				tkconfigure(bt.outSPI, command = function(){
+					dirSPI <- tk_choose.dir(getwd(), "")
+					tclvalue(outSPIdir) <- if(dirSPI%in%c("", "NA") | is.na(dirSPI)) "" else dirSPI
+				})
+			}
+
+			tkconfigure(en.yrs1.Moni, state = statedates)
+			tkconfigure(en.mon1.Moni, state = statedates)
+			tkconfigure(en.dek1.Moni, state = statedatedek)
+			tkconfigure(en.yrs2.Moni, state = statedates)
+			tkconfigure(en.mon2.Moni, state = statedates)
+			tkconfigure(en.dek2.Moni, state = statedatedek)
+
+			tkconfigure(cb.Distrb, state = stateDistr)
+		})
+
+		#############################
+
 		frameParams <- tkframe(subfr1, relief = 'groove', borderwidth = 2)
 
-		frameTscale <- tkframe(frameParams)
-		txt.Tscale1 <- tklabel(frameTscale, text = "SPI timescale", anchor = 'e', justify = 'right')
-		spin.Tscale <- ttkspinbox(frameTscale, from = 1, to = 60, increment = 1, justify = 'center', width = 2)
-		tkset(spin.Tscale, GeneralParameters$tscale)
-		txt.Tscale2 <- tklabel(frameTscale, text = "-month", anchor = 'w', justify = 'left')
+		out.spifreq <- tclVar(GeneralParameters$outfreq)
 
-		tkgrid(txt.Tscale1, spin.Tscale, txt.Tscale2)
+		if(GeneralParameters$outfreq == 'dekad'){
+			txt.suffix <- '-dekad'
+			stateTscale <- "disabled"
+			up.tscale <- 1
+			val.tscale <- 1
+		}else{
+			txt.suffix <- '-month'
+			stateTscale <- "normal"
+			up.tscale <- 60
+			val.tscale <- GeneralParameters$tscale
+		}
+		txt.suffix.var <- tclVar(txt.suffix)
+
+		frameTscale <- tkframe(frameParams)
+		txt.SPIfreq <- tklabel(frameTscale, text = "SPI", anchor = 'e', justify = 'right')
+		cb.SPIfreq <- ttkcombobox(frameTscale, values = c("dekad", "month"), textvariable = out.spifreq, width = 8)
+		txt.Tscale1 <- tklabel(frameTscale, text = "Timescale", anchor = 'e', justify = 'right')
+		spin.Tscale <- ttkspinbox(frameTscale, from = 1, to = up.tscale, increment = 1, justify = 'center', width = 2, state = stateTscale)
+		tkset(spin.Tscale, val.tscale)
+		txt.Tscale2 <- tklabel(frameTscale, text = tclvalue(txt.suffix.var), textvariable = txt.suffix.var, anchor = 'w', justify = 'left')
+
+		tkgrid(txt.SPIfreq, cb.SPIfreq, txt.Tscale1, spin.Tscale, txt.Tscale2)
+
+		########
+		tkbind(cb.SPIfreq, "<<ComboboxSelected>>", function(){
+			if(str_trim(tclvalue(out.spifreq)) == 'dekad'){
+				stateTscale <- "disabled"
+				tclvalue(txt.suffix.var) <- '-dekad'
+				tkset(spin.Tscale, 1)
+				statedatedek <- if(tclvalue(monitoring) == "1") "normal" else "disabled"
+			}
+			if(str_trim(tclvalue(out.spifreq)) == 'month'){
+				stateTscale <- "normal"
+				tclvalue(txt.suffix.var) <- '-month'
+				tkconfigure(spin.Tscale, to = 60)
+				statedatedek <- "disabled"
+			}
+			tkconfigure(spin.Tscale, state = stateTscale)
+			tkconfigure(en.dek1.Moni, state = statedatedek)
+			tkconfigure(en.dek2.Moni, state = statedatedek)
+		})
 
 		########
 		frameDistrb <- tkframe(frameParams)
 
 		DistrbVAL <- c("Gamma", "Pearson Type III", "log-Logistic", "Z-Score")
 		DistrbFun <- tclVar(GeneralParameters$distr)
+		stateDistr <- if(GeneralParameters$monitoring) 'disabled' else 'normal'
 
 		txt.Distrb <- tklabel(frameDistrb, text = "Distribution function", anchor = 'e', justify = 'right')
-		cb.Distrb <- ttkcombobox(frameDistrb, values = DistrbVAL, textvariable = DistrbFun, width = largeur3)
+		cb.Distrb <- ttkcombobox(frameDistrb, values = DistrbVAL, textvariable = DistrbFun, width = largeur3, state = stateDistr)
 
 		tkgrid(txt.Distrb, cb.Distrb)
 
@@ -253,15 +377,28 @@ SPICalcPanelCmd <- function(){
 
 		outSPIdir <- tclVar(GeneralParameters$outdir)
 
-		txt.outSPI <- tklabel(frameDirSav, text = "Directory to save the outputs", anchor = 'w', justify = 'left')
+		if(GeneralParameters$monitoring){
+			text.save <- "Index file (SPI.rds) for SPI data"
+		}else{
+			text.save <- "Directory to save the outputs"
+		}
+		txt.save.var <- tclVar(text.save)
+
+		txt.outSPI <- tklabel(frameDirSav, text = tclvalue(txt.save.var), textvariable = txt.save.var, anchor = 'w', justify = 'left')
 		en.outSPI <- tkentry(frameDirSav, textvariable = outSPIdir, width = largeur2)
 		bt.outSPI <- tkbutton(frameDirSav, text = "...")
 
 		######
 
 		tkconfigure(bt.outSPI, command = function(){
-			dirSPI <- tk_choose.dir(getwd(), "")
-			tclvalue(outSPIdir) <- if(dirSPI%in%c("", "NA") | is.na(dirSPI)) "" else dirSPI
+			if(GeneralParameters$monitoring){
+				filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
+				path.rds <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
+				tclvalue(outSPIdir) <- if(path.rds%in%c("", "NA") | is.na(path.rds)) "" else path.rds
+			}else{
+				dirSPI <- tk_choose.dir(getwd(), "")
+				tclvalue(outSPIdir) <- if(dirSPI%in%c("", "NA") | is.na(dirSPI)) "" else dirSPI
+			}
 		})
 
 		######
@@ -277,7 +414,7 @@ SPICalcPanelCmd <- function(){
 		#############################
 
 		if(!is.null(EnvSPICalcPlot$DirExist)){
-			stateCaclBut <- if(tclvalue(EnvSPICalcPlot$DirExist) == "1") "normal" else "disabled"
+			stateCaclBut <- if(tclvalue(EnvSPICalcPlot$DirExist) == "0") "normal" else "disabled"
 		}else stateCaclBut <- "normal"
 
 		calculateBut <- ttkbutton(subfr1, text = "Calculate", state = stateCaclBut)
@@ -300,11 +437,22 @@ SPICalcPanelCmd <- function(){
 			if(str_trim(tclvalue(DataType)) == 'CDT dataset format (gridded)')
 				GeneralParameters$cdtdataset <- str_trim(tclvalue(input.file))
 
-			GeneralParameters$outdir <- str_trim(tclvalue(outSPIdir))
+			GeneralParameters$monitoring <- switch(tclvalue(monitoring), '0' = FALSE, '1' = TRUE)
+
+			GeneralParameters$dates$year1 <- as.numeric(str_trim(tclvalue(istart.yrs)))
+			GeneralParameters$dates$mon1 <- as.numeric(str_trim(tclvalue(istart.mon)))
+			GeneralParameters$dates$dek1 <- as.numeric(str_trim(tclvalue(istart.dek)))
+			GeneralParameters$dates$year2 <- as.numeric(str_trim(tclvalue(iend.yrs)))
+			GeneralParameters$dates$mon2 <- as.numeric(str_trim(tclvalue(iend.mon)))
+			GeneralParameters$dates$dek2 <- as.numeric(str_trim(tclvalue(iend.dek)))
+
+			GeneralParameters$outfreq <- str_trim(tclvalue(out.spifreq))
 			GeneralParameters$tscale <- as.numeric(str_trim(tclvalue(tkget(spin.Tscale))))
 			GeneralParameters$distr <- str_trim(tclvalue(DistrbFun))
 
-			assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
+			GeneralParameters$outdir <- str_trim(tclvalue(outSPIdir))
+
+			# assign('GeneralParameters', GeneralParameters, envir = .GlobalEnv)
 
 			tkconfigure(main.win, cursor = 'watch')
 			InsertMessagesTxt(main.txt.out, "Calculate SPI ......")
@@ -325,10 +473,7 @@ SPICalcPanelCmd <- function(){
 
 					###################
 
-					# load.PICSA.Data()
-					###################
-
-					widgets.Station.Pixel()
+					# widgets.Station.Pixel()
 
 				}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
@@ -337,10 +482,11 @@ SPICalcPanelCmd <- function(){
 		############################################
 
 		tkgrid(frameTimeS, row = 0, column = 0, sticky = '', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(frameInData, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-		tkgrid(frameParams, row = 2, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-		tkgrid(frameDirSav, row = 3, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-		tkgrid(calculateBut, row = 4, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		tkgrid(frameInData, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameMoni, row = 2, column = 0, sticky = '', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameParams, row = 3, column = 0, sticky = '', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameDirSav, row = 4, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(calculateBut, row = 5, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
 
 	#######################################################################################################
 

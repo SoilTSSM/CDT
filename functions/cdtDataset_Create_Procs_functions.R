@@ -2,6 +2,8 @@
 
 cdtDataset_readData <- function(GeneralParameters)
 {
+	stt <- Sys.time()
+
 	datarepo <- file.path(GeneralParameters$output$dir, GeneralParameters$output$data.name)
 	datadir <- file.path(datarepo, 'DATA')
 	datafileIdx <- file.path(datarepo, paste0(GeneralParameters$output$data.name, '.rds'))
@@ -83,8 +85,8 @@ cdtDataset_readData <- function(GeneralParameters)
 
 	##################
 	nc <- nc_open(ncInfo$nc.files[1])
-	nc.lon <- nc$dim[[ncInfo$ncinfo$xo]]$vals
-	nc.lat <- nc$dim[[ncInfo$ncinfo$yo]]$vals
+	nc.lon <- nc$var[[ncInfo$ncinfo$varid]]$dim[[ncInfo$ncinfo$xo]]$vals
+	nc.lat <- nc$var[[ncInfo$ncinfo$varid]]$dim[[ncInfo$ncinfo$yo]]$vals
 	varInfo <- nc$var[[ncInfo$ncinfo$varid]][c('name', 'prec', 'units', 'longname')]
 	nc_close(nc)
 
@@ -150,70 +152,156 @@ cdtDataset_readData <- function(GeneralParameters)
 		cdtTmpVar$varInfo <- varInfo
 	}
 
-	###################
+	#########################################################
 
-	# aa <- Sys.time()
-	is.parallel <- doparallel(length(ncInfo$nc.files) >= 180)
+	# is.parallel <- doparallel(length(ncInfo$nc.files) >= 180)
+	# `%parLoop%` <- is.parallel$dofun
+	# ncDaty <- foreach(jj = seq_along(ncInfo$nc.files), .packages = "ncdf4") %parLoop% {
+	# 	nc <- try(nc_open(ncInfo$nc.files[jj]), silent = TRUE)
+	# 	if(inherits(nc, "try-error")) return(NULL)
+	# 	vars <- ncvar_get(nc, varid = ncInfo$ncinfo$varid)
+	# 	nc_close(nc)
+	# 	vars <- vars[xo, yo]
+	# 	if(ncInfo$ncinfo$yo < ncInfo$ncinfo$xo){
+	# 		vars <- matrix(c(vars), nrow = len.lon, ncol = len.lat, byrow = TRUE)
+	# 	}
+	# 	vars <- round(c(vars), 1)
+
+	# 	ret <- lapply(seq_along(col.idx), function(j){
+	# 		file.tmp <- file.path(datadir, paste0(j, "_", ncInfo$dates[jj]))
+	# 		con <- gzfile(file.tmp, open = "wb")
+	# 		saveRDS(vars[col.idx[[j]]], con)
+	# 		close(con)
+	# 		return(0)
+	# 	})
+
+	# 	rm(vars); gc()
+	# 	return(ncInfo$dates[jj])
+	# }
+	# if(is.parallel$stop) stopCluster(is.parallel$cluster)
+
+	# ###################
+
+	# ncDaty <- do.call(c, ncDaty)
+
+	# ###################
+
+	# is.parallel <- doparallel(length(col.idx) >= 20)
+	# `%parLoop%` <- is.parallel$dofun
+	# ret <- foreach(j = seq_along(col.idx)) %parLoop% {
+	# 	tmp <- lapply(ncDaty, function(jj){
+	# 		file.tmp <- file.path(datadir, paste0(j, "_", jj))
+	# 		dd <- readRDS(file.tmp)
+	# 		unlink(file.tmp)
+	# 		return(dd)
+	# 	})
+	# 	tmp <- do.call(rbind, tmp)
+
+	# 	file.rds <- file.path(datadir, paste0(j, ".rds"))
+	# 	if(GeneralParameters$Update){
+	# 		y <- readRDS(file.rds)
+	# 		tmp <- rbind(y, tmp)
+	# 	}
+
+	# 	con <- gzfile(file.rds, compression = 6)
+	# 	open(con, "wb")
+	# 	saveRDS(tmp, con)
+	# 	close(con)
+	# 	rm(tmp, y); gc()
+	# 	return(0)
+	# }
+	# if(is.parallel$stop) stopCluster(is.parallel$cluster)
+
+	#########################################################
+
+	# dir.size <- system(paste("du -sh", datadir), intern = TRUE)
+	# InsertMessagesTxt(main.txt.out, paste("Before:", strsplit(dir.size, "\t")[[1]][1], Sys.time()-stt))
+
+	chunkdate <- split(seq_along(ncInfo$dates), ceiling(seq_along(ncInfo$dates)/30))
+
+	is.parallel <- doparallel(length(chunkdate) >= 10)
 	`%parLoop%` <- is.parallel$dofun
-	ncDaty <- foreach(jj = seq_along(ncInfo$nc.files), .packages = "ncdf4") %parLoop% {
-		nc <- try(nc_open(ncInfo$nc.files[jj]), silent = TRUE)
-		if(inherits(nc, "try-error")) return(NULL)
-		vars <- ncvar_get(nc, varid = ncInfo$ncinfo$varid)
-		nc_close(nc)
-		vars <- vars[xo, yo]
-		if(ncInfo$ncinfo$yo < ncInfo$ncinfo$xo){
-			vars <- matrix(c(vars), nrow = len.lon, ncol = len.lat, byrow = TRUE)
-		}
-		vars <- round(c(vars), 1)
+	ret <- foreach(jj = seq_along(chunkdate), .packages = "ncdf4") %parLoop% {
+		retdaty <- lapply(chunkdate[[jj]], function(j){
+			nc <- try(nc_open(ncInfo$nc.files[j]), silent = TRUE)
+			if(inherits(nc, "try-error")) return(NULL)
+			vars <- ncvar_get(nc, varid = ncInfo$ncinfo$varid)
+			nc_close(nc)
+			vars <- vars[xo, yo]
+			if(ncInfo$ncinfo$yo < ncInfo$ncinfo$xo){
+				vars <- matrix(c(vars), nrow = len.lon, ncol = len.lat, byrow = TRUE)
+			}
+			vars <- round(c(vars), 4)
 
-		ret <- lapply(seq_along(col.idx), function(j){
-			file.tmp <- file.path(datadir, paste0(j, "_", ncInfo$dates[jj]))
-			con <- gzfile(file.tmp, open = "wb")
-			saveRDS(vars[col.idx[[j]]], con)
+			file.tmp <- file.path(datadir, paste0(jj, ".gz"))
+			con <- gzfile(file.tmp, open = "a", compression = 6)
+			cat(c(vars, "\n"), file = con)
 			close(con)
-			return(0)
+			return(ncInfo$dates[j])
 		})
 
-		rm(vars); gc()
-		return(ncInfo$dates[jj])
-	}
-	if(is.parallel$stop) stopCluster(is.parallel$cluster)
-	# cat(paste("read nc", Sys.time()-aa), "\n")
-
-	ncDaty <- do.call(c, ncDaty)
-	# ncDaty <- ncInfo$dates
-
-	###################
-
-	# aa <- Sys.time()
-	is.parallel <- doparallel(length(col.idx) >= 20)
-	`%parLoop%` <- is.parallel$dofun
-	ret <- foreach(j = seq_along(col.idx)) %parLoop% {
-		tmp <- lapply(ncDaty, function(jj){
-			file.tmp <- file.path(datadir, paste0(j, "_", jj))
-			dd <- readRDS(file.tmp)
-			unlink(file.tmp)
-			return(dd)
-		})
-		tmp <- do.call(rbind, tmp)
-
-		file.rds <- file.path(datadir, paste0(j, ".rds"))
-		if(GeneralParameters$Update){
-			y <- readRDS(file.rds)
-			tmp <- rbind(y, tmp)
-		}
-
-		con <- gzfile(file.rds, compression = 6)
-		open(con, "wb")
-		saveRDS(tmp, con)
-		close(con)
-		rm(tmp, y); gc()
+		retdaty <- do.call(c, retdaty)
+		saveRDS(retdaty, file = file.path(datadir, paste0(jj, "_d.rds")))
 		return(0)
 	}
 	if(is.parallel$stop) stopCluster(is.parallel$cluster)
-	# cat(paste("read chunk", Sys.time()-aa), "\n")
 
 	###################
+	# dir.size <- system(paste("du -sh", datadir), intern = TRUE)
+	# InsertMessagesTxt(main.txt.out, paste("Middle:", strsplit(dir.size, "\t")[[1]][1], Sys.time()-stt))
+
+	ncDaty <- lapply(seq_along(chunkdate), function(jj){
+		file.tmp <- file.path(datadir, paste0(jj, "_d.rds"))
+		dd <- readRDS(file.tmp)
+		unlink(file.tmp)
+		return(dd)
+	})
+	ncDaty <- do.call(c, ncDaty)
+
+	###################
+
+	toExports <- c("col.idx", "datadir")
+	is.parallel <- doparallel(length(col.idx) >= 50)
+	`%parLoop%` <- is.parallel$dofun
+
+	ret <- lapply(seq_along(chunkdate), function(jj){
+		file.gz <- file.path(datadir, paste0(jj, ".gz"))
+		R.utils::gunzip(file.gz)
+		file.tmp <- tools::file_path_sans_ext(file.gz)
+		tmp <- data.table::fread(file.tmp, header = FALSE, sep = " ", stringsAsFactors = FALSE, colClasses = "numeric")
+		unlink(file.tmp)
+		tmp <- as.matrix(tmp)
+		dimnames(tmp) <- NULL
+
+		ret <- foreach(j = seq_along(col.idx), .export = toExports) %parLoop% {
+			chk <- tmp[, col.idx[[j]], drop = FALSE]
+			file.rds <- file.path(datadir, paste0(j, ".rds"))
+			if(file.exists(file.rds)){
+				y <- readRDS(file.rds)
+				chk <- rbind(y, chk)
+			}
+
+			con <- gzfile(file.rds, compression = 7)
+			open(con, "wb")
+			saveRDS(chk, con)
+			close(con)
+
+			return(0)
+		}
+
+		stt0 <- Sys.time()-stt
+		InsertMessagesTxt(main.txt.out, paste("Date index:", jj, "| Elapsed time:", as.character(stt0), attr(stt0, "units")))
+
+		rm(tmp); gc()
+		return(0)
+	})
+
+	if(is.parallel$stop) stopCluster(is.parallel$cluster)
+
+	# dir.size <- system(paste("du -sh", datadir), intern = TRUE)
+	# InsertMessagesTxt(main.txt.out, paste("After:", strsplit(dir.size, "\t")[[1]][1], Sys.time()-stt))
+
+	#########################################################
 
 	idx <- seq(length(ncDaty))
 	if(GeneralParameters$Update){
@@ -231,11 +319,13 @@ cdtDataset_readData <- function(GeneralParameters)
 	saveRDS(cdtTmpVar, con)
 	close(con)
 
+	stt <- Sys.time()-stt
+	InsertMessagesTxt(main.txt.out, paste("Elapsed time:", as.character(stt), attr(stt, "units")))
+
 	rm(ncDaty, idx, odaty, Adates, Aindex, cdtTmpVar, ncDataInfo, ncInfo)
 	gc()
 	return(0)
 }
-
 
 ###########################################################
 

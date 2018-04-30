@@ -105,8 +105,8 @@ AggregateTS_Execute <- function(GeneralParameters){
 	}
 
 	if(period1 == "dekadal"){
+		yymm <- substr(dates, 1, 6)
 		if(period == "daily"){
-			yymm <- substr(dates, 1, 6)
 			jour <- as.numeric(substr(dates, 7, 8))
 			jour <- cut(jour, c(1, 10, 20, 31), labels = FALSE, include.lowest = TRUE)
 			index <- split(seq_along(dates), paste0(yymm, jour))
@@ -114,8 +114,7 @@ AggregateTS_Execute <- function(GeneralParameters){
 			nbd1 <- nbDayOfDekad(dates[length(dates)])
 		}
 		if(period == "pentad"){
-			yymm <- substr(dates, 1, 6)
-			pen <- as.numeric(substr(dates, 7, 8))
+			pen <- as.numeric(substr(dates, 7, 7))
 			pen <- cut(pen, c(1, 2, 4, 6), labels = FALSE, include.lowest = TRUE)
 			index <- split(seq_along(dates), paste0(yymm, pen))
 			nbd0 <- 2

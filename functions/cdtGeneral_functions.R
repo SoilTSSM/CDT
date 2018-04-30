@@ -1027,8 +1027,8 @@ read.NetCDF.Data <- function(read.ncdf.parms){
 	`%parLoop%` <- is.parallel$dofun
 
 	nc <- nc_open(ncInfo$nc.files[which(ncInfo$exist)[1]])
-	lon <- nc$dim[[read.ncdf.parms$ncinfo$xo]]$vals
-	lat <- nc$dim[[read.ncdf.parms$ncinfo$yo]]$vals
+	lon <- nc$var[[read.ncdf.parms$ncinfo$varid]]$dim[[read.ncdf.parms$ncinfo$xo]]$vals
+	lat <- nc$var[[read.ncdf.parms$ncinfo$varid]]$dim[[read.ncdf.parms$ncinfo$yo]]$vals
 	nc_close(nc)
 
 	xo <- order(lon)
@@ -1077,8 +1077,8 @@ read.NetCDF.Data2Points <- function(read.ncdf.parms, list.lonlat.pts){
 	`%parLoop%` <- is.parallel$dofun
 
 	nc <- nc_open(ncInfo$nc.files[which(ncInfo$exist)[1]])
-	lon <- nc$dim[[read.ncdf.parms$ncinfo$xo]]$vals
-	lat <- nc$dim[[read.ncdf.parms$ncinfo$yo]]$vals
+	lon <- nc$var[[read.ncdf.parms$ncinfo$varid]]$dim[[read.ncdf.parms$ncinfo$xo]]$vals
+	lat <- nc$var[[read.ncdf.parms$ncinfo$varid]]$dim[[read.ncdf.parms$ncinfo$yo]]$vals
 	nc_close(nc)
 
 	xo <- order(lon)
@@ -1112,8 +1112,8 @@ read.NetCDF.Data2Points <- function(read.ncdf.parms, list.lonlat.pts){
 readNetCDFData2Points <- function(ncInfo, list.lonlat.pts, msg){
 	InsertMessagesTxt(main.txt.out, msg$start)
 	nc <- nc_open(ncInfo$nc.files[which(ncInfo$exist)[1]])
-	lon <- nc$dim[[ncInfo$ncinfo$xo]]$vals
-	lat <- nc$dim[[ncInfo$ncinfo$yo]]$vals
+	lon <- nc$var[[ncInfo$ncinfo$varid]]$dim[[ncInfo$ncinfo$xo]]$vals
+	lat <- nc$var[[ncInfo$ncinfo$varid]]$dim[[ncInfo$ncinfo$yo]]$vals
 	nc_close(nc)
 
 	xo <- order(lon)
@@ -1168,26 +1168,39 @@ isEqual <- function(x, y) !any(!isEquals(x, y))
 
 #################################################################################
 
+# smooth.matrix <- function(mat, ns){
+# 	matrix.shift <- function(n, shift){
+# 		mshift <- matrix(NA, ncol = n, nrow = 2*shift+1)
+# 		mshift[shift+1, ] <- seq(n)
+# 		for(j in 1:shift){
+# 			is <- shift-(j-1)
+# 			mshift[j, ] <- c(tail(seq(n), -is), rep(NA, is))
+# 			mshift[2*(shift+1)-j, ] <- c(rep(NA, is), head(seq(n), -is))
+# 		}
+# 		mshift
+# 	}
+# 	icol <- matrix.shift(ncol(mat), ns)
+# 	matCol <- lapply(1:nrow(icol), function(j) mat[, icol[j, ]])
+# 	irow <- matrix.shift(nrow(mat), ns)
+# 	matRow <- lapply(1:nrow(irow), function(j) mat[irow[j, ], ])
+# 	matEns <- c(matCol, matRow)
+# 	matEns <- simplify2array(matEns)
+# 	res <- apply(matEns, 1:2, mean, na.rm = TRUE)
+# 	res[is.nan(res)] <- NA
+# 	return(res)
+# }
+
 smooth.matrix <- function(mat, ns){
-	matrix.shift <- function(n, shift){
-		mshift <- matrix(NA, ncol = n, nrow = 2*shift+1)
-		mshift[shift+1, ] <- seq(n)
-		for(j in 1:shift){
-			is <- shift-(j-1)
-			mshift[j, ] <- c(tail(seq(n), -is), rep(NA, is))
-			mshift[2*(shift+1)-j, ] <- c(rep(NA, is), head(seq(n), -is))
-		}
-		mshift
-	}
-	icol <- matrix.shift(ncol(mat), ns)
-	matCol <- lapply(1:nrow(icol), function(j) mat[, icol[j, ]])
-	irow <- matrix.shift(nrow(mat), ns)
-	matRow <- lapply(1:nrow(irow), function(j) mat[irow[j, ], ])
-	matEns <- c(matCol, matRow)
-	matEns <- simplify2array(matEns)
-	res <- apply(matEns, 1:2, mean, na.rm = TRUE)
-	res[is.nan(res)] <- NA
-	return(res)
+	M <- matrix(NA, nrow(mat)+2*ns, ncol(mat)+2*ns)
+	sqC <- (ns+1):(ncol(M)-ns)
+	sqR <- (ns+1):(nrow(M)-ns)
+	M[sqR, sqC] <- mat
+	sqN <- -ns:ns
+	for(j in sqC)
+		for(i in sqR)
+			mat[i-ns, j-ns] <- mean(M[i+sqN, j+sqN], na.rm = TRUE)
+	mat[is.nan(mat)] <- NA
+	return(mat)
 }
 
 #################################################################################

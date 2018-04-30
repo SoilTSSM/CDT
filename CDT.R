@@ -81,6 +81,12 @@ if(tclPath$UseOtherTclTk == 1){
 	}else{
 		stop("Operating system: Unknown")
 	}
+
+	if(Sys.info()["sysname"] != "Windows"){
+		if(!dir.exists(tclbin)) stop(paste("Unable to locate", tclbin))
+		if(!dir.exists(tcllib)) stop(paste("Unable to locate", tcllib))		
+	}
+
 	Sys.setenv(MY_TCLTK = tclbin)
 	Sys.setenv(TCL_LIBRARY = tcllib)
 	library.dynam("tcltk", "tcltk", .libPaths(), DLLpath = tclbin)

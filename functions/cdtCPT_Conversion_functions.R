@@ -210,7 +210,7 @@ CPT.getTAG.line <- function(cpt.tags){
 
 ########
 
-CPT.formatStationData <-function(date, z, width = 13, side = "both"){
+CPT.formatStationData <- function(date, z, width = 13, side = "both"){
 	xout <- formatC(c(z))
 	xout <- str_pad(xout, width = width, side = side)
 	xout <- paste0("\t", xout)
