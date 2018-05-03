@@ -131,6 +131,8 @@ Precip_MergingFunctions <- function(mrgParms){
 	yo <- order(xlat)
 	xlat <- xlat[yo]
 
+	ijGrd <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), list(lon = xlon, lat = xlat))
+
 	#############
 	packages <- c('ncdf4', 'gstat', 'automap', 'fields', 'rgeos', 'maptools')
 	toExports <- c('writeNC.merging', 'smooth.matrix')
@@ -171,7 +173,7 @@ Precip_MergingFunctions <- function(mrgParms){
 			return(NULL)
 		}
 		donne.stn <- data.frame(lon = lon.stn, lat = lat.stn, stn = c(donne.stn))
-		stng <- createGrid.StnData(donne.stn, xy.grid, min.stn)
+		stng <- createGrid.StnData(donne.stn, ijGrd, interp.grid$newgrid, min.stn)
 		if(is.null(stng)){
 			writeNC.merging(xrfe, ncInfo$dates[jj], freqData, grd.nc.out,
 					mrgParms$merge.DIR, GeneralParameters$output$format)

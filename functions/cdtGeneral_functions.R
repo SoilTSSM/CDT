@@ -676,21 +676,29 @@ createGrid.merging <- function(grdData, ObjVar = NULL, coarse.grid = TRUE, res.c
 
 ##################################################################################
 ### create grid for stations data 
-createGrid.StnData <- function(donne.stn, xy.grid, min.stn){
-	newgrd <- do.call(expand.grid, xy.grid)
-	nlon <- length(xy.grid$lon)
-	nlat <- length(xy.grid$lat)
-	ilon <- diff(range(xy.grid$lon))/(nlon-1)
-	ilat <- diff(range(xy.grid$lat))/(nlat-1)
-	maxdist <- max(ilon, ilat)/2
-	donne.stn0 <- donne.stn[!is.na(donne.stn$stn), , drop = FALSE]
-	if(nrow(donne.stn0) < min.stn) return(NULL)
-	grd <- krige(stn~1, locations = ~lon+lat, data = donne.stn0, newdata = newgrd, maxdist = maxdist, debug.level = 0)
-	stng <- matrix(grd$var1.pred, nlon, nlat)
-	grd <- as.image(donne.stn$stn, grid = list(x = xy.grid$lon, y = xy.grid$lat), x = donne.stn[, c('lon', 'lat')])
-	ix <- is.na(stng) & !is.na(grd$z)
-	stng[ix] <- grd$z[ix]
-	return(c(stng))
+
+createGrid.StnData <- function(donne.stn, ijGrd, newgrid, min.stn, weighted = TRUE){
+	ij <- !is.na(donne.stn$stn)
+	donne.stn <- donne.stn[ij, , drop = FALSE]
+	if(nrow(donne.stn) < min.stn) return(NULL)
+	ijGrd <- ijGrd[ij]
+	idx <- split(seq_along(ijGrd), ijGrd)
+
+	if(any(sapply(idx, length) > 1)){
+		w <- rep(1, length(ijGrd))
+		if(weighted){
+			stn.grd <- newgrid@coords[ijGrd, ]
+			dist <- 1/((stn.grd[, 1]-donne.stn$lon)^2+(stn.grd[, 2]-donne.stn$lat)^2)
+			idup <- duplicated(ijGrd) | duplicated(ijGrd, fromLast = TRUE)
+			w[idup] <- dist[idup]
+		}
+		val <- sapply(idx, function(j) sum(w[j]*donne.stn$stn[j])/sum(w[j]))
+	}else val <- donne.stn$stn[unlist(idx)]
+
+	ij <- as.numeric(names(idx))
+	stng <- rep(NA, length(newgrid))
+	stng[ij] <- val
+	return(stng)
 }
 
 ##################################################################################
