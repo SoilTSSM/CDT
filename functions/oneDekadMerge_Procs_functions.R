@@ -4,7 +4,7 @@ mergeOneDekadRain <- function(){
 	dyear <- GeneralParameters$Merging.Date$year
 	dmon <- GeneralParameters$Merging.Date$month
 	ddek <- as.numeric(GeneralParameters$Merging.Date$dekad)
-	if(ddek>3 | ddek < 1){
+	if(ddek > 3 | ddek < 1){
 		InsertMessagesTxt(main.txt.out, 'Dekad must be 1, 2 or 3', format = TRUE)
 		tcl("update")
 		return(NULL)
@@ -16,9 +16,15 @@ mergeOneDekadRain <- function(){
 	dir2save <- file.path(dir2save, paste('DEKAD', daty, sep = '_'))
 	dir.create(dir2save, showWarnings = FALSE, recursive = TRUE)
 
+	################
 	## get rfe data
 	if(GeneralParameters$RFE$downloaded){
-		rfeData <- getNcdfOpenData(GeneralParameters$RFE$file)[[2]][1:3]
+		rfeData <- getNcdfOpenData(GeneralParameters$RFE$file)[[2]]
+		ncInfo <- list(dates = daty, nc.files = rfeData$file, exist = TRUE)
+		ncInfo$ncinfo <- list(xo = rfeData$ilon, yo = rfeData$ilat, varid = rfeData$varid)
+		ncInfo$xy.rfe <- list(lon = rfeData$x, lat = rfeData$y)
+
+		rfeData <- rfeData[1:3]
 		names(rfeData) <- c('x', 'y', 'z')
 	}else{
 		InsertMessagesTxt(main.txt.out, "Download RFE data .....")
@@ -38,22 +44,25 @@ mergeOneDekadRain <- function(){
 		downrfeDir <- file.path(dir2save, 'downloaded_RFE')
 		dir.create(downrfeDir, showWarnings = FALSE, recursive = TRUE)
 
+		## change to IRI DL
 		if(dataRFE == 'TAMSATv2'){
 			url <- 'https://www.tamsat.org.uk/public_data'
-			file0 <- paste('rfe', dyear, '_', dmon,'-dk', ddek,'.nc', sep = '')
+			file0 <- paste0('rfe', dyear, '_', dmon, '-dk', ddek, '.nc')
 			url <- paste(url, dyear, dmon, file0, sep = '/')
 		}
 		if(dataRFE == 'TAMSATv3'){
 			url <- 'https://www.tamsat.org.uk/public_data/TAMSAT3'
-			file0 <- paste('rfe', dyear, '_', dmon,'-dk', ddek,'.v3.nc', sep = '')
+			file0 <- paste0('rfe', dyear, '_', dmon, '-dk', ddek, '.v3.nc')
 			url <- paste(url, dyear, dmon, file0, sep = '/')
 		}
 		if(dataRFE == 'CHIRP'){
 			url <- 'ftp://ftp.chg.ucsb.edu/pub/org/chg/products/CHIRP/dekads/africa'
-			file0 <- paste('chirp.', dyear, '.', dmon,'.', ddek,'.tif', sep = '')
+			file0 <- paste0('chirp.', dyear, '.', dmon, '.', ddek, '.tif')
 			url <- paste(url, file0, sep = '/')
+			## bil smaller,  dekad 1:36, chirp201735.tar.gz
+			# url <- "ftp://ftp.chg.ucsb.edu/pub/org/chg/products/CHIRP/bils/dekads/africa"
 		}
-		destfile0 <- file.path(downrfeDir, paste('Africa_', file0, sep = ''))
+		destfile0 <- file.path(downrfeDir, paste0('Africa_', file0))
 		testURL <- try(suppressWarnings(url(url, open = 'rb')), silent = TRUE)
 		if(inherits(testURL, "try-error")){
 			InsertMessagesTxt(main.txt.out, paste('Cannot open URL or file does not exist:', file0), format = TRUE)
@@ -63,11 +72,11 @@ mergeOneDekadRain <- function(){
 		}else close(testURL)
 		ret <- try(download.file(url, destfile0, mode = "wb", quiet = TRUE), silent = TRUE)
 		if(ret != 0){
-			InsertMessagesTxt(main.txt.out, paste('Download failed:',file0), format = TRUE)
+			InsertMessagesTxt(main.txt.out, paste('Download failed:', file0), format = TRUE)
 			tcl("update")
 			return(NULL)
 		}else{
-			InsertMessagesTxt(main.txt.out, paste('Download:',file0, 'done!'))
+			InsertMessagesTxt(main.txt.out, paste('Download:', file0, 'done!'))
 			tcl("update")
 		}
 
@@ -109,19 +118,27 @@ mergeOneDekadRain <- function(){
 			rfe.lat <- rfe$y
 			rfe <- rfe$z
 			longname <- "CHIRP 10-days rainfall estimate"
-			file0 <- paste(getf.no.ext(file0), '.nc', sep = '')
+			file0 <- paste0(getf.no.ext(file0), '.nc')
 		}
 		rfeData <- list(x = rfe.lon, y = rfe.lat, z = rfe)
+
 		rfe[rfe < 0 | is.na(rfe)] <- -99
 		dx <- ncdim_def("Lon", "degreeE", rfe.lon)
 		dy <- ncdim_def("Lat", "degreeN", rfe.lat)
-		rfeout <- ncvar_def('precip', "mm", list(dx, dy), -99, longname = longname, prec = "short")
+		rfeout <- ncvar_def('precip', "mm", list(dx, dy), -99, longname = longname,
+							prec = "short", shuffle = TRUE, compression = 9)
 		outfl <- file.path(downrfeDir, file0)
 		nc2 <- nc_create(outfl, rfeout)
 		ncvar_put(nc2, rfeout, rfe)
 		nc_close(nc2)
+
+		#########
+		ncInfo <- list(dates = daty, nc.files = outfl, exist = TRUE)
+		ncInfo$ncinfo <- list(xo = 1, yo = 2, varid = 'precip')
+		ncInfo$xy.rfe <- list(lon = rfe.lon, lat = rfe.lat)
 	}
 
+	################
 	## correct bias
 	if(GeneralParameters$BIAS$Adjust){
 		bias.method <- GeneralParameters$BIAS$method
@@ -185,289 +202,88 @@ mergeOneDekadRain <- function(){
 			xadj <- quantile.mapping.BGamma(rfeData$z, pars.stn, pars.rfe, TRUE)
 		}else xadj <- rfeData$z * data.bias
 		xadj[xadj < 0] <- 0
-		rfeData <- list(x = lon.bias, y = lat.bias, z = xadj)
+		# rfeData <- list(x = lon.bias, y = lat.bias, z = xadj)
 
 		xadj[is.na(xadj)] <- -99
 		dx <- ncdim_def("Lon", "degreeE", lon.bias)
 		dy <- ncdim_def("Lat", "degreeN", lat.bias)
 
-		grd.bsadj <- ncvar_def("precip", "mm", list(dx, dy), -99, longname = " Mean Bias Adjusted RFE", prec = "short")
-		bias.outfl <- file.path(dir2save, paste('rr_adj', '_', daty,'.nc', sep = ''))
+		grd.bsadj <- ncvar_def("precip", "mm", list(dx, dy), -99, longname = " Mean Bias Adjusted RFE",
+								prec = "short", shuffle = TRUE, compression = 9)
+		bias.outfl <- file.path(dir2save, paste0('rr_adj', '_', daty,'.nc'))
 		nc2 <- nc_create(bias.outfl, grd.bsadj)
 		ncvar_put(nc2, grd.bsadj, xadj)
 		nc_close(nc2)
+
+		#########
+		ncInfo <- list(dates = daty, nc.files = bias.outfl, exist = TRUE)
+		ncInfo$ncinfo <- list(xo = 1, yo = 2, varid = 'precip')
+		ncInfo$xy.rfe <- list(lon = lon.bias, lat = lat.bias)
 	}
 
 	################
 	## merging
-	no.stnData <- GeneralParameters$STN$No.Stn.Data
-	if(!no.stnData){
-		interp.method <- GeneralParameters$Merging$interp.method
-		nmin <- GeneralParameters$Merging$nmin
-		nmax <- GeneralParameters$Merging$nmax
-		maxdist <- GeneralParameters$Merging$maxdist
-		vgm.model <- GeneralParameters$Merging$vgm.model
-		use.block <- GeneralParameters$Merging$use.block
-		res.coarse <- maxdist/2
-		res.coarse <- if(res.coarse  >= 0.25) res.coarse else 0.25
-		maxdist <- if(maxdist < res.coarse) res.coarse else maxdist
-
-		Mrg.Method <- GeneralParameters$Merging$mrg.method
-		min.stn <- GeneralParameters$Merging$min.stn
-		min.non.zero <- GeneralParameters$Merging$min.non.zero
-
-	 	use.RnoR <- GeneralParameters$RnoR$mask
-	 	smooth.RnoR <- GeneralParameters$RnoR$smooth
-		wet.day <- GeneralParameters$RnoR$wet.day
-		maxdist.RnoR <- GeneralParameters$RnoR$maxdist
-
-		if(Mrg.Method == "Spatio-Temporal LM"){
-			coeffl <- paste0('LM_Coefficient_', as.numeric(dmon), '.nc')
-			coefFiles <- file.path(GeneralParameters$Merging$LMCoef.dir, coeffl)
-			if(!file.exists(coefFiles)){
-				InsertMessagesTxt(main.txt.out, paste(coeffl, "doesn't exist"), format = TRUE)
-				tcl("update")
-				return(NULL)
-			}
-
-			nc <- nc_open(coefFiles)
-			lon.coef <- nc$dim[[1]]$vals
-			lat.coef <- nc$dim[[2]]$vals
-			coef1 <- ncvar_get(nc, varid = 'slope')
-			coef2 <- ncvar_get(nc, varid = 'intercept')
-			nc_close(nc)
-			
-			coefSp <- defSpatialPixels(list(lon = lon.coef, lat = lat.coef))
-			rfeSp <- defSpatialPixels(list(lon = rfeData$x, lat = rfeData$y))
-			is.regridRFE <- is.diffSpatialPixelsObj(coefSp, rfeSp, tol = 1e-07)
-			if(is.regridRFE){
-				rfeData <- interp.surface.grid(rfeData, list(x = lon.coef, y = lon.coef))
-			}
-		}
-
-		#############
-		nlon0 <- length(rfeData$x)
-		nlat0 <- length(rfeData$y)
-		newGrid <- defSpatialPixels(list(lon = rfeData$x, lat = rfeData$y))
-
-		#####
+	if(!GeneralParameters$STN$No.Stn.Data){
 		stnData <- getStnOpenData(GeneralParameters$STN$file)
 		stnData <- getCDTdataAndDisplayMsg(stnData, 'dekadal')
 		if(is.null(stnData)) return(NULL)
-		lon.stn <- stnData$lon
-		lat.stn <- stnData$lat
-		date.stn <- stnData$dates
-		data.stn <- stnData$data
 
-		#####
-		blank.grid <- GeneralParameters$blank$blank
-		if(blank.grid == "1") outMask <- NULL
-		if(blank.grid == "2"){
+		################
+
+		xy.grid <- list(lon = ncInfo$xy.rfe$lon, lat = ncInfo$xy.rfe$lat)
+		nlon0 <- length(ncInfo$xy.rfe$lon)
+		nlat0 <- length(ncInfo$xy.rfe$lat)
+
+		##################
+		## DEM data
+		demData <- NULL
+		if(GeneralParameters$blank$blank == "2"){
 			demData <- getDemOpenDataSPDF(GeneralParameters$blank$DEM.file)
-			if(is.null(demData)) return(NULL)
-			demGrid <- defSpatialPixels(list(lon = demData$lon, lat = demData$lat))
-			is.regridDEM <- is.diffSpatialPixelsObj(newGrid, demGrid, tol = 1e-07)
-			if(is.regridDEM){
-				outMask <- interp.surface.grid(list(x = demData$lon, y = demData$lat, z = demData$demMat), rfeData[1:2])
-				outMask <- outMask$z
-			}else outMask <- demData$demMat
-			outMask[outMask <= 0] <- NA
+			if(is.null(demData)){
+				InsertMessagesTxt(main.txt.out, "No elevation data found", format = TRUE)
+				return(NULL)
+			}
 		}
-		if(blank.grid == "3"){
-			shpd <- getShpOpenData(GeneralParameters$blank$SHP.file)[[2]]
-			shpd[['vtmp']] <- 1
-			outMask <- over(newGrid, shpd)[, 'vtmp']
-			dim(outMask) <- c(nlon0, nlat0)
+
+		##################
+		## regrid DEM data
+		if(!is.null(demData)){
+			is.regridDEM <- is.diffSpatialPixelsObj(defSpatialPixels(xy.grid), defSpatialPixels(demData[c('lon', 'lat')]), tol = 1e-07)
+			demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
+			if(is.regridDEM) demData <- interp.surface.grid(demData, list(x = xy.grid$lon, y = xy.grid$lat))
+			demData$z[demData$z < 0] <- 0
 		}
-		
-		#######
-		dem.grd.val <- matrix(1, nrow = nlon0, ncol = nlat0)
-		dem.grd.slp <- matrix(0, nrow = nlon0, ncol = nlat0)
-		dem.grd.asp <- matrix(0, nrow = nlon0, ncol = nlat0)
-		dem.stn.val <- rep(1, length(lon.stn))
-		dem.stn.slp <- rep(0, length(lon.stn))
-		dem.stn.asp <- rep(0, length(lon.stn))
-		demGrid <- list(x = rfeData$x, y = rfeData$y, z = dem.grd.val, slp = dem.grd.slp, asp = dem.grd.asp)
-		ObjStn <- list(x = lon.stn, y = lat.stn,  z = dem.stn.val, slp = dem.stn.slp, asp = dem.stn.asp)
 
-		interp.grid <- createGrid(ObjStn, demGrid, as.dim.elv = FALSE, res.coarse = res.coarse)
-		cells <- SpatialPixels(points = interp.grid$newgrid, tolerance = sqrt(sqrt(.Machine$double.eps)))@grid
-		bGrd <- createBlock(cells@cellsize, 2, 5)
+		##################
+		## blanking
+		outMask <- switch(GeneralParameters$blank$blank,
+						"2" = {
+								mask <- demData$z
+								mask[mask <= 0] <- NA
+								mask[!is.na(mask)] <- 1
+								mask
+							},
+						"3" = {
+								shpd <- getShpOpenData(GeneralParameters$blank$SHP.file)[[2]]
+								shpd[['vtmp']] <- 1
+								mask <- over(defSpatialPixels(xy.grid), shpd)[, 'vtmp']
+								dim(mask) <- c(nlon0, nlat0)
+								mask
+							}, NULL)
 
-		#############
-		ijGrd <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), list(lon = rfeData$x, lat = rfeData$y))
+		################
 
-		############
-		locations.stn <- interp.grid$coords.stn
-		exist.daty <- which(date.stn == daty)
-		if(length(exist.daty) == 0){
-			InsertMessagesTxt(main.txt.out, paste("Date", daty, "doesn't exist from station data"), format = TRUE)
-			tcl("update")
-			return(NULL)
-		}
-		locations.stn$stn <- data.stn[exist.daty, ]
-		locations.stn$rfe <- rfeData$z[ijGrd]
+		mrgParms <- list(GeneralParameters = GeneralParameters, months = as.numeric(dmon), ncInfo = ncInfo,
+						stnData = stnData, demData = demData, merge.DIR = dir2save,
+						interp.grid = list(grid = xy.grid, nlon = nlon0, nlat = nlat0), outMask = outMask)
 
-		xadd <- as.data.frame(interp.grid$coords.grd)
-		xadd$rfe <- c(rfeData$z[interp.grid$idxy$ix, interp.grid$idxy$iy])
-		xadd$stn <- xadd$rfe
-		xadd$res <- 0
-		interp.grid$newgrid$rfe <- c(rfeData$z)
-		coords.grd <- data.frame(coordinates(interp.grid$newgrid))
+		ret <- Precip_MergingFunctions(mrgParms)
 
-		############
-		noNA <- !is.na(locations.stn$stn) & !is.na(locations.stn$rfe)
-		min.stn.nonNA <- length(which(noNA))
-		nb.stn.nonZero <- length(which(noNA & locations.stn$stn > 0))
-		locations.stn <- locations.stn[noNA, ]
-
-		if(min.stn.nonNA >= min.stn){
-			do.merging <- TRUE
-			if(nb.stn.nonZero >= min.non.zero){
-				if(Mrg.Method == "Spatio-Temporal LM"){
-					sp.trend <- rfeData$z * coef1 + coef2
-					locations.stn$res <- locations.stn$stn - sp.trend[ijGrd][noNA]
-				}else if(Mrg.Method == "Regression Kriging"){
-					if(all(is.na(locations.stn$rfe))) return(NULL)
-					simplediff <- if(var(locations.stn$stn) < 1e-07 | var(locations.stn$rfe, na.rm = TRUE) < 1e-07) TRUE else FALSE
-					glm.stn <- glm(stn~rfe, data = locations.stn, family = gaussian)
-					if(is.na(glm.stn$coefficients[2]) | glm.stn$coefficients[2] < 0) simplediff <- TRUE
-					if(!simplediff){
-						sp.trend <- predict(glm.stn, newdata = interp.grid$newgrid)
-						sp.trend <- matrix(sp.trend, ncol = nlat0, nrow = nlon0)
-						ina.trend <- is.na(sp.trend)
-						sp.trend[ina.trend] <- rfeData$z[ina.trend]
-						locations.stn$res <- NA
-						if(length(glm.stn$na.action) > 0) locations.stn$res[-glm.stn$na.action] <- glm.stn$residuals
-						else locations.stn$res <- glm.stn$residuals
-					}else{
-						sp.trend <- rfeData$z
-						locations.stn$res <- locations.stn$stn - locations.stn$rfe
-					}
-				}else{
-					sp.trend <- rfeData$z
-					locations.stn$res <- locations.stn$stn - locations.stn$rfe
-				}
-			}else{
-				sp.trend <- rfeData$z
-				locations.stn$res <- locations.stn$stn - locations.stn$rfe
-			}
-			
-			locations.stn <- locations.stn[!is.na(locations.stn$res), ]
-			if(length(locations.stn) < min.stn) do.merging <- FALSE
-		}else do.merging <- FALSE
-
-		############
-
-		if(do.merging){
-			if(use.RnoR){
-				rnr.rfe <- rfeData$z
-				rnr.rfe[] <- 0
-				rnr.rfe[rfeData$z >= wet.day] <- 1
-				locations.stn$rnr.stn <- ifelse(locations.stn$stn >= wet.day, 1, 0)
-				xadd$rnr.stn <- c(rnr.rfe[interp.grid$idxy$ix, interp.grid$idxy$iy])
-
-				###########
-				### binomial logistic regression
-				glm.binom <- glm(rnr.stn ~ rfe, data = locations.stn, family = binomial(link = "logit"))
-
-				############
-				xadd$rnr.res <- 0
-				locations.stn$rnr.res <- residuals(glm.binom)
-				rnr <- predict(glm.binom, newdata = interp.grid$newgrid, type = 'link')
-				rnr <- matrix(rnr, ncol = nlat0, nrow = nlon0)
-				irnr <- rep(TRUE, nrow(coords.grd))
-			}
-
-			############
-			if(interp.method == 'Kriging'){
-				vgm <- try(autofitVariogram(res~1, input_data = locations.stn, model = vgm.model, cressie = TRUE), silent = TRUE)
-				vgm <- if(!inherits(vgm, "try-error")) vgm$var_model else NULL
-			}else vgm <- NULL
-
-			###########
-			xstn <- as.data.frame(locations.stn)
-			iadd <- rep(TRUE, nrow(xadd))
-			for(k in 1:nrow(xstn)){
-				dst <- sqrt((xstn$lon[k]-xadd$lon)^2+(xstn$lat[k]-xadd$lat)^2)*sqrt(2)
-				iadd <- iadd & (dst >= maxdist)
-				if(use.RnoR){
-					dst.grd <- sqrt((xstn$lon[k]-coords.grd$lon)^2+(xstn$lat[k]-coords.grd$lat)^2)*sqrt(2)
-					irnr <- irnr & (dst.grd >= maxdist.RnoR)
-				}
-			}
-
-			xadd <- xadd[iadd, ]
-			locations.stn <- rbind(xstn, xadd)
-			coordinates(locations.stn) <- ~lon+lat
-
-			###########
-			res.grd <- krige(res~1, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
-								block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-			extrm <- c(min(locations.stn$res, na.rm = TRUE), max(locations.stn$res, na.rm = TRUE))
-			ixtrm <- is.na(res.grd$var1.pred) | (res.grd$var1.pred < extrm[1] | res.grd$var1.pred > extrm[2])
-			res.grd$var1.pred[ixtrm] <- NA
-
-			ina <- is.na(res.grd$var1.pred)
-			if(any(ina)){
-				res.grd.na <- krige(var1.pred~1, locations = res.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
-										block = bGrd, nmin = nmax, nmax = nmax, maxdist = maxdist, debug.level = 0)
-				res.grd$var1.pred[ina] <- res.grd.na$var1.pred
-			}
-			resid <- matrix(res.grd$var1.pred, ncol = nlat0, nrow = nlon0)
-			resid[is.na(resid)] <- 0
-
-			############
-			if(use.RnoR){
-				rnr.res.grd <- krige(rnr.res~1, locations = locations.stn, newdata = interp.grid$newgrid,
-										maxdist = maxdist.RnoR, block = bGrd,  debug.level = 0)
-				ina <- is.na(rnr.res.grd$var1.pred)
-				if(any(ina)){
-					rnr.res.grd.na <- krige(var1.pred~1, locations = rnr.res.grd[!ina, ], newdata = interp.grid$newgrid[ina, ],
-												block = bGrd, maxdist = maxdist.RnoR, debug.level = 0)
-					rnr.res.grd$var1.pred[ina] <- rnr.res.grd.na$var1.pred
-				}
-
-				rnr.res.grd <- matrix(rnr.res.grd$var1.pred, ncol = nlat0, nrow = nlon0)
-				rnr.res.grd[is.na(rnr.res.grd)] <- 0
-
-				rnr <- rnr + rnr.res.grd
-				rnr[rnr > 100] <- 100
-				rnr <- exp(rnr)/(1+exp(rnr))
-
-				### decision boundary 0.6
-				rnr[rnr >= 0.6] <- 1
-				rnr[rnr < 0.6] <- 0
-
-				imsk <- matrix(irnr, nrow = nlon0, ncol = nlat0)
-				rnr[imsk] <- rnr.rfe[imsk]
-				if(smooth.RnoR){
-					npix <- if(sum(rnr.rfe, na.rm = TRUE) == 0) 5 else 3
-					rnr <- smooth.matrix(rnr, npix)
-				}
-			}else rnr <- matrix(1, ncol = nlat0, nrow = nlon0)
-
-			############
-			out.mrg <- sp.trend + resid
-			out.mrg[out.mrg < 0] <- 0
-			out.mrg <- out.mrg * rnr
-		}else out.mrg <- rfeData$z
-
-		#Apply mask for area of interest
-		if(!is.null(outMask)) out.mrg[is.na(outMask)] <- NA
-		out.mrg[is.na(out.mrg)] <- -99
-
-		#############
-		## Def ncdf
-		dx <- ncdim_def("Lon", "degreeE", rfeData$x)
-		dy <- ncdim_def("Lat", "degreeN", rfeData$y)
-		grd.nc.out <- ncvar_def("precip", "mm", list(dx, dy), -99, longname = "Merged Station-Satellite Rainfall", prec = "short")
-
-		mrg.outfl <- file.path(dir2save, paste('rr_mrg', '_', daty, '_MON.nc', sep = ''))
-		nc2 <- nc_create(mrg.outfl, grd.nc.out)
-		ncvar_put(nc2, grd.nc.out, out.mrg)
-		nc_close(nc2)
+		if(!is.null(ret)){
+			if(ret != 0) return(ret) 
+		}else return(NULL)
 	}
+
 	return(0)
 }
 

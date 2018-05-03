@@ -142,8 +142,11 @@ SavePlot <- function(){
 			if(length(AllOpenTabType) > 0){
 				if(AllOpenTabType[[tabid]] == "img"){
 					image.fun(file = filename, width = width, height = height, units = units, res = res)
-					if(class(AllOpenTabData[[tabid]][[2]]) == "tkwin") AllOpenTabData[[tabid]][[2]]$fun()
-					else AllOpenTabData[[tabid]][[2]][[2]]$fun()
+					# if(class(AllOpenTabData[[tabid]][[2]]) == "tkwin") AllOpenTabData[[tabid]][[2]]$fun()
+					# else AllOpenTabData[[tabid]][[2]][[2]]$fun()
+					plotFun <- if(class(AllOpenTabData[[tabid]][[2]]) == "tkwin") AllOpenTabData[[tabid]][[2]] else AllOpenTabData[[tabid]][[2]][[2]]
+					ret <- try(plotFun$fun(), silent = TRUE)
+					if(inherits(ret, "try-error")) InsertMessagesTxt(main.txt.out, "Unable to save the image", format = TRUE)
 					dev.off()
 				}
 			}

@@ -74,19 +74,37 @@
         "min.non.zero": 7,
 
         // LMCoef directory
-        "LMCoef.dir": ""
+        // "LMCoef.dir": ""
+
+        // Use auxiliary variables with GLM to calculate the spatial trend
+        "sp.trend.aux": false
+    },
+
+    "LMCOEF": {
+        "dir.LMCoef": "",
+        // Filename format of the LM coef files
+        "format": "LM_Coefficient_%s.nc"
     },
 
     "RnoR": {
         // use Rain-no-Rain mask (true or false)
-        "mask": true,
+        "use.RnoR": true,
         // Maximum distance (in decimal degrees) for interpolating Rain-no-Rain mask
-        "maxdist": 0.25,
+        "maxdist.RnoR": 0.25,
         // Smooth Rain-no-Rain mask (true or false)
-        "smooth": true,
+        "smooth.RnoR": false,
         // wet day definition, rainfall >= wet.day
         "wet.day": 1.0
     },
+
+    // Add auxiliary variables
+    "auxvar": [{
+        "dem": false,
+        "slope": false,
+        "aspect": false,
+        "lon": false,
+        "lat": false
+    }],
 
     "blank": {
         // Blank grid outside the country boundaries or over ocean

@@ -75,10 +75,7 @@ source(file.path(apps.dir, 'functions', 'Precip_merging.Bias_functions.R'))
 source(file.path(apps.dir, 'functions', 'Precip_merging.LMCoef_functions.R'))
 source(file.path(apps.dir, 'functions', 'Precip_merging.Merge_functions.R'))
 
-###remove
-source(file.path(apps.dir, 'functions', 'mergingRR_Procs_functions.R'))
 ###
-
 source(file.path(apps.dir, 'functions', 'Temp_downscaling_dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'Temp_downscaling_execute_functions.R'))
 source(file.path(apps.dir, 'functions', 'Temp_downscaling_Procs_functions.R'))

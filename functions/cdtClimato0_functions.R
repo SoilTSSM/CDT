@@ -1,3 +1,9 @@
+# /Users/rijaf/Desktop/ECHANGE/github/CDT/functions/homogenization_RefSeriesCreation_functions.R
+# 207: 			fun <- paste('standard', scale, sep = '.')
+# 265: 		fun <- paste('standard', scale, sep = '.')
+# /Users/rijaf/Desktop/ECHANGE/github/CDT/functions/homogenization_ProcsGAL_functions.R:
+# moret <- standardize(datmon, use.climato = TRUE, scale = 'monthly', dates = modates)
+
 standard.daily <- function(xvar, dates){
 	dates <- as.Date(dates, format = '%Y%m%d')
 	leap.year <- format(dates, '%m%d') == '0229'
@@ -170,6 +176,9 @@ standard.dekadal_lstOmat <- function(xvar, dates){
 }
 
 #########################################################
+# /Users/rijaf/Desktop/ECHANGE/github/CDT/functions/homogenization_RefSeriesCreation_functions.R:
+#  166: 				fun <- paste('anomaly', scale, sep = '.')
+# 221: 			fun <- paste('anomaly', scale, sep = '.')
 
 anomaly.daily <- function(xvar, dates){
 	dates <- as.Date(dates, format = '%Y%m%d')
@@ -340,6 +349,12 @@ anomaly.dekadal_lstOmat <- function(xvar, dates){
 
 
 ####################################################
+# /Users/rijaf/Desktop/ECHANGE/github/CDT/functions/homogenization_RefSeriesCreation_functions.R:
+# 178: 				fun <- paste('ratio', scale, sep = '.')
+# 192: 				fun <- paste('ratio', scale, sep = '.')
+# 232: 			fun <- paste('ratio', scale, sep = '.')
+# 245: 			fun <- paste('ratio', scale, sep = '.')
+
 ratio.daily <- function(xvar, dates){
 	dates <- as.Date(dates, format = '%Y%m%d')
 	leap.year <- format(dates, '%m%d') == '0229'
@@ -408,6 +423,8 @@ ratio.dekadal <- function(xvar, dates){
 }
 
 ########################
+# /Users/rijaf/Desktop/ECHANGE/github/CDT/functions/homogenization_RefSeriesCreation_functions.R:
+
 climato.monthly <- function(xvar, dates, fun = 'mean'){
 	fun <- match.fun(fun)
 
@@ -536,6 +553,10 @@ climato.daily_lstOmat <- function(xvar, dates, fun = 'mean'){
 }
 
 ########################################################
+# /Users/rijaf/Desktop/ECHANGE/github/CDT/functions/homogenization_execute_functions.R:
+# /Users/rijaf/Desktop/ECHANGE/github/CDT/functions/RHtests_getData_functions.R:
+
+
 daily2dekadal <- function(var, dates, fun, frac = 1){
 	dates <- as.character(dates)
 	fun <- match.fun(fun)
@@ -641,7 +662,7 @@ monthly2yearly <- function(var, dates, fun, frac = 1){
 	return(rval)
 }
 
-###
+########################################################
 
 seasonal_fun <- function(freq, var, dates, smon, lmon, fun, frac = 1){
 	dates <- as.character(dates)

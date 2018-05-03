@@ -70,7 +70,7 @@
         // Maximum distance (in decimal degrees) for interpolating Rain-no-Rain mask
         "maxdist.RnoR": 0.15,
         // Smooth Rain-no-Rain mask (true or false)
-        "smooth.RnoR": true,
+        "smooth.RnoR": false,
         // wet day definition, rainfall >= wet.day
         "wet.day": 1.0
     },

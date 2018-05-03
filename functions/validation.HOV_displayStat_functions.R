@@ -148,7 +148,7 @@ HOValidation.plotGraph <- function(){
 		plot(1, xlim = xlim, ylim = ylim, type = 'n', xlab = xlab, ylab = ylab, main = title)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
 		abline(v = axTicks(1), col = "lightgray", lty = "dotted")
-		points(x, y, pch = 19, col = 'grey10', cex = 0.7)
+		points(x, y, pch = 20, col = 'grey10', cex = 0.7)
 		abline(a = 0, b = 1, lwd = 2, col = 'red')
 	}
 
@@ -172,7 +172,8 @@ HOValidation.plotGraph <- function(){
 		op <- par(mar = c(3, 4, 2, 2))
 		plot(EnvHOValidation$opDATA$temps, x, ylim = ylim, type = 'n', xlab = xlab, ylab = ylab, main = title)
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
-		abline(v = axTicks(1), col = "lightgray", lty = "dotted")
+		# abline(v = axTicks(1), col = "lightgray", lty = "dotted")
+		abline(v = axTicks.Date(EnvHOValidation$opDATA$temps, 1), col = "lightgray", lty = "dotted")
 
 		lines(EnvHOValidation$opDATA$temps, x, lwd = 2, col = 'blue', type = 'l')
 		lines(EnvHOValidation$opDATA$temps, y, lwd = 2, col = 'red', type = 'l')

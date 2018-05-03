@@ -458,8 +458,16 @@ indexCoarseGrid <- function(lon, lat, res = 0.25){
 	ilat <- diff(range(lat))/(nlat-1)
 	ix <- round(res[1]/ilon)-1
 	iy <- round(res[2]/ilat)-1
-	ix <- seq(1, nlon, ifelse(ix < 1, 1, ix))
-	iy <- seq(1, nlat, ifelse(iy < 1, 1, iy))
+	if(ix < 1) ix <- 1
+	if(iy < 1) iy <- 1
+	ix <- seq(1, nlon, ix)
+	iy <- seq(1, nlat, iy)
+	nx <- length(ix)
+	ny <- length(iy)
+	if(ix[nx] < nlon)
+		ix <- if((lon[nlon]-lon[ix[nx]]) < res[1]/2) c(ix[-nx], nlon) else c(ix, nlon)
+	if(iy[ny] < nlat)
+		iy <- if((lat[nlat]-lat[iy[ny]]) < res[2]/2) c(iy[-ny], nlat) else c(iy, nlat)
 	return(list(ix = ix, iy = iy))
 }
 
@@ -608,6 +616,84 @@ createGrid <- function(ObjStn, ObjGrd, ObjRfe = NULL, as.dim.elv = TRUE, latlong
 }
 
 ##################################################################################
+### create grid for interpolation 
+
+createGrid.merging <- function(grdData, ObjVar = NULL, coarse.grid = TRUE, res.coarse = 0.25){
+	gridS <- data.frame(expand.grid(lon = grdData$x,
+									lat = grdData$y),
+						dem = c(grdData$z),
+						slp = c(grdData$slp),
+						asp = c(grdData$asp))
+	coordinates(gridS) <- ~lon+lat
+
+	gridS1 <- NULL
+	gridS2 <- NULL
+	idcoarse <- NULL
+	idcoarse1 <- NULL
+
+	if(coarse.grid){
+		idcoarse <- indexCoarseGrid(grdData$x, grdData$y, res.coarse)
+		gridS1 <- data.frame(expand.grid(lon = grdData$x[idcoarse$ix],
+										lat = grdData$y[idcoarse$iy]),
+							dem = c(grdData$z[idcoarse$ix, idcoarse$iy]),
+							slp = c(grdData$slp[idcoarse$ix, idcoarse$iy]),
+							asp = c(grdData$asp[idcoarse$ix, idcoarse$iy]))
+		coordinates(gridS1) <- ~lon+lat
+		if(!is.null(ObjVar)){
+			idcoarse1 <- indexCoarseGrid(ObjVar$x, ObjVar$y, res.coarse)
+			gridS2 <- data.frame(expand.grid(lon = ObjVar$x[idcoarse1$ix],
+											lat = ObjVar$y[idcoarse1$iy]),
+								dem = c(ObjVar$z[idcoarse1$ix, idcoarse1$iy]),
+								slp = c(ObjVar$slp[idcoarse1$ix, idcoarse1$iy]),
+								asp = c(ObjVar$asp[idcoarse1$ix, idcoarse1$iy]))
+			coordinates(gridS2) <- ~lon+lat
+		}
+	}
+
+	max.slope <- max(gridS$slp, na.rm = TRUE)
+	max.aspect <- max(gridS$asp, na.rm = TRUE)
+	min.dem <- min(gridS$dem, na.rm = TRUE)
+	max.dem <- max(gridS$dem, na.rm = TRUE)
+
+	gridS$dem <- (gridS$dem-min.dem)/(max.dem-min.dem)
+	gridS$slp <- gridS$slp/max.slope
+	gridS$asp <- gridS$asp/max.aspect
+
+	if(!is.null(gridS1)){
+		gridS1$dem <- (gridS1$dem-min.dem)/(max.dem-min.dem)
+		gridS1$slp <- gridS1$slp/max.slope
+		gridS1$asp <- gridS1$asp/max.aspect
+	}
+	if(!is.null(gridS2)){
+		gridS2$dem <- (gridS2$dem-min.dem)/(max.dem-min.dem)
+		gridS2$slp <- gridS2$slp/max.slope
+		gridS2$asp <- gridS2$asp/max.aspect
+	}
+
+	return(list(newgrid = gridS, coords.coarse = gridS1, coords.var = gridS2,
+				id.coarse = idcoarse, id.var = idcoarse1))
+}
+
+##################################################################################
+### create grid for stations data 
+createGrid.StnData <- function(donne.stn, xy.grid, min.stn){
+	newgrd <- do.call(expand.grid, xy.grid)
+	nlon <- length(xy.grid$lon)
+	nlat <- length(xy.grid$lat)
+	ilon <- diff(range(xy.grid$lon))/(nlon-1)
+	ilat <- diff(range(xy.grid$lat))/(nlat-1)
+	maxdist <- max(ilon, ilat)/2
+	donne.stn0 <- donne.stn[!is.na(donne.stn$stn), , drop = FALSE]
+	if(nrow(donne.stn0) < min.stn) return(NULL)
+	grd <- krige(stn~1, locations = ~lon+lat, data = donne.stn0, newdata = newgrd, maxdist = maxdist, debug.level = 0)
+	stng <- matrix(grd$var1.pred, nlon, nlat)
+	grd <- as.image(donne.stn$stn, grid = list(x = xy.grid$lon, y = xy.grid$lat), x = donne.stn[, c('lon', 'lat')])
+	ix <- is.na(stng) & !is.na(grd$z)
+	stng[ix] <- grd$z[ix]
+	return(c(stng))
+}
+
+##################################################################################
 
 ### gstat block size
 createBlock <- function(cellsize, fac = 0.5, len = 4){
@@ -619,7 +705,25 @@ createBlock <- function(cellsize, fac = 0.5, len = 4){
 	return(bGrd)
 }
 
+##################################################################################
+## write ncdf,  merging
+writeNC.merging <- function(mat, daty, tstep, grid.nc, dir2save, file.format, missval = -99)
+{
+	year <- substr(daty, 1, 4)
+	month <- substr(daty, 5, 6)
+	if(tstep == 'daily'){
+		mrgfrmt <- sprintf(file.format, year, month, substr(daty, 7, 8))
+	}else if(tstep%in%c('pentad', 'dekadal')){
+		mrgfrmt <- sprintf(file.format, year, month, substr(daty, 7, 7))
+	}else  mrgfrmt <- sprintf(file.format, year, month)
 
+	mat[is.na(mat)] <- missval
+
+	outfl <- file.path(dir2save, mrgfrmt)
+	nc <- nc_create(outfl, grid.nc)
+	ncvar_put(nc, grid.nc, mat)
+	nc_close(nc)
+}
 
 #################################################################################
 ######################          STATIONS DATA          ##########################

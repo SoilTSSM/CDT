@@ -81,7 +81,7 @@ tkadd(top.menu, "cascade", label = "File", menu = menu.file, activebackground = 
 	 })
 
 	##########
-	tkadd(menu.file, "command", label = "Save table As...        ", command = function(){
+	tkadd(menu.file, "command", label = "Save table As...", command = function(){
 		tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
 		if(!is.na(tabid)){
 			if(AllOpenTabType[[tabid]]%in%c("arr", "arrAssess")){

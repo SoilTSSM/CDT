@@ -300,15 +300,16 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	frMrg <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
 	cb.MrgMthd <- c("Regression Kriging", "Spatio-Temporal LM", "Simple Bias Adjustment")
+
 	mrg.method <- tclVar(str_trim(GeneralParameters$Merging$mrg.method))
 	mrg.min.stn <- tclVar(GeneralParameters$Merging$min.stn)
 	mrg.min.non.zero <- tclVar(GeneralParameters$Merging$min.non.zero)
-	dir.LMCoef <- tclVar(GeneralParameters$Merging$LMCoef.dir)
 
-	if(str_trim(GeneralParameters$Merging$mrg.method) == "Regression Kriging") stateLMCoef <- 'disabled'
-	else{
-		stateLMCoef <- if(tclvalue(no.stnfl) == '0') 'normal' else 'disabled'
-	}
+	dir.LMCoef <- tclVar(GeneralParameters$LMCOEF$dir.LMCoef)
+
+	if(tclvalue(no.stnfl) == '0'){
+		stateLMCoef <- if(str_trim(tclvalue(mrg.method)) == "Spatio-Temporal LM") 'normal' else 'disabled'
+	}else stateLMCoef <- 'disabled'
 
 	txt.mrg <- tklabel(frMrg, text = 'Merging method', anchor = 'w', justify = 'left')
 	cb.mrg <- ttkcombobox(frMrg, values = cb.MrgMthd, textvariable = mrg.method, width = largeur2)
@@ -325,6 +326,11 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 
 	tkconfigure(bt.mrg.interp, command = function(){
 		GeneralParameters[["Merging"]] <<- getInterpolationPars(tt, GeneralParameters[["Merging"]], interpChoix = 0)
+	})
+
+	tkconfigure(bt.dir.LM, command = function(){
+		dirLM <- tk_choose.dir(getwd(), "")
+		tclvalue(dir.LMCoef) <- if(!is.na(dirLM)) dirLM else ""
 	})
 
 	tkgrid(txt.mrg, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -355,7 +361,9 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 
 	###############
 	tkbind(cb.mrg, "<<ComboboxSelected>>", function(){
-		stateLM <- if(tclvalue(mrg.method) == "Spatio-Temporal LM") 'normal' else 'disabled'
+		if(tclvalue(no.stnfl) == '0'){
+			stateLM <- if(tclvalue(mrg.method) == "Spatio-Temporal LM") 'normal' else 'disabled'
+		}else stateLM <- 'disabled'
 		tkconfigure(en.dir.LM, state = stateLM)
 		tkconfigure(bt.dir.LM, state = stateLM)
 	})
@@ -364,11 +372,11 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 
 	frRnoR <- tkframe(frRight, relief = 'sunken', borderwidth = 2)
 
-	use.RnoR <- tclVar(GeneralParameters$RnoR$mask)
-	maxdist.RnoR <- tclVar(GeneralParameters$RnoR$maxdist)
-	smooth.RnoR <- tclVar(GeneralParameters$RnoR$smooth)
+	use.RnoR <- tclVar(GeneralParameters$RnoR$use.RnoR)
+	maxdist.RnoR <- tclVar(GeneralParameters$RnoR$maxdist.RnoR)
+	smooth.RnoR <- tclVar(GeneralParameters$RnoR$smooth.RnoR)
 
-	stateRnoR <- if(GeneralParameters$RnoR$mask) 'normal' else 'disabled'
+	stateRnoR <- if(GeneralParameters$RnoR$use.RnoR) 'normal' else 'disabled'
 
 	########
 	txt.mrg.pars <- tklabel(frRnoR, text = 'Rain-no-Rain mask', anchor = 'w', justify = 'left')
@@ -544,20 +552,20 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 
 	############################################
 	
-	bt.prm.OK <- tkbutton(frMRG1, text=" OK ")
+	bt.prm.OK <- tkbutton(frMRG1, text = "OK")
 	bt.prm.CA <- tkbutton(frMRG1, text = "Cancel")
 
 	tkconfigure(bt.prm.OK, command = function(){
 		if(str_trim(tclvalue(file.stnfl)) == "" & str_trim(tclvalue(no.stnfl)) == "0"){
 			tkmessageBox(message = "Choose the file containing the gauge data", icon = "warning", type = "ok")
-		}else if(str_trim(tclvalue(file.grdrfe)) == ""  & str_trim(tclvalue(down.rfe)) == "1"){
+		}else if(str_trim(tclvalue(file.grdrfe)) == "" & str_trim(tclvalue(down.rfe)) == "1"){
 			tkmessageBox(message = "Choose RFE file", icon = "warning", type = "ok")
 			tkwait.window(tt)
-		}else if((str_trim(tclvalue(dir.bias)) == "" | str_trim(tclvalue(dir.bias)) == "NA") & (tclvalue(adj.bias) == "1")){
-			tkmessageBox(message = "Choose or enter the  directory containing the Mean Bias files", icon = "warning", type = "ok")
+		}else if(str_trim(tclvalue(dir.bias))%in%c("", "NA") & tclvalue(adj.bias) == "1"){
+			tkmessageBox(message = "Choose or enter the directory containing the Mean Bias files", icon = "warning", type = "ok")
 			tkwait.window(tt)
-		}else if((tclvalue(mrg.method)  ==  "Spatio-Temporal LM") & (tclvalue(no.stnfl) == "0") &
-			(str_trim(tclvalue(dir.LMCoef)) == "" | str_trim(tclvalue(dir.LMCoef)) == "NA")){
+		}else if((tclvalue(mrg.method) == "Spatio-Temporal LM") & (tclvalue(no.stnfl) == "0") &
+			str_trim(tclvalue(dir.LMCoef))%in%c("", "NA")){
 			tkmessageBox(message = "Enter the path to directory containing the LM Coefficients", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else if(str_trim(tclvalue(blankGrd)) == "Use DEM" & str_trim(tclvalue(file.grddem)) == ""){
@@ -566,7 +574,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 		}else if(str_trim(tclvalue(blankGrd)) == "Use ESRI shapefile" & str_trim(tclvalue(file.blkshp)) == ""){
 			tkmessageBox(message = "You have to provide the shapefile", icon = "warning", type = "ok")
 			tkwait.window(tt)
-		}else if(str_trim(tclvalue(file.save1)) == "" | str_trim(tclvalue(file.save1)) == "NA"){
+		}else if(str_trim(tclvalue(file.save1))%in%c("", "NA")){
 			tkmessageBox(message = "Choose or enter the path to directory to save results", icon = "warning", type = "ok")
 			tkwait.window(tt)
 		}else{
@@ -593,13 +601,13 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 			GeneralParameters$Merging$mrg.method <<- str_trim(tclvalue(mrg.method))
 			GeneralParameters$Merging$min.stn <<- as.numeric(str_trim(tclvalue(mrg.min.stn)))
 			GeneralParameters$Merging$min.non.zero <<- as.numeric(str_trim(tclvalue(mrg.min.non.zero)))
-			GeneralParameters$Merging$LMCoef.dir <<- str_trim(tclvalue(dir.LMCoef))
+			GeneralParameters$LMCOEF$dir.LMCoef <<- str_trim(tclvalue(dir.LMCoef))
 
-			GeneralParameters$RnoR$mask <<- switch(str_trim(tclvalue(use.RnoR)), '0' = FALSE, '1' = TRUE)
-			GeneralParameters$RnoR$maxdist <<- as.numeric(str_trim(tclvalue(maxdist.RnoR)))
-			GeneralParameters$RnoR$smooth <<- switch(str_trim(tclvalue(smooth.RnoR)), '0' = FALSE, '1' = TRUE)
+			GeneralParameters$RnoR$use.RnoR <<- switch(str_trim(tclvalue(use.RnoR)), '0' = FALSE, '1' = TRUE)
+			GeneralParameters$RnoR$maxdist.RnoR <<- as.numeric(str_trim(tclvalue(maxdist.RnoR)))
+			GeneralParameters$RnoR$smooth.RnoR <<- switch(str_trim(tclvalue(smooth.RnoR)), '0' = FALSE, '1' = TRUE)
 
-			GeneralParameters$blank$blank <<-switch(str_trim(tclvalue(blankGrd)), 
+			GeneralParameters$blank$blank <<- switch(str_trim(tclvalue(blankGrd)),
 														"None" = '1', "Use DEM" = '2',
 														"Use ESRI shapefile" = '3')
 			GeneralParameters$blank$DEM.file <<- str_trim(tclvalue(file.grddem))
@@ -631,9 +639,9 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	tcl('update')
 	tt.w <- as.integer(tkwinfo("reqwidth", tt))
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
-	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
-	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
+	tt.x <- as.integer(width.scr*0.5 - tt.w*0.5)
+	tt.y <- as.integer(height.scr*0.5 - tt.h*0.5)
+	tkwm.geometry(tt, paste0('+', tt.x, '+', tt.y))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'Merging data - Settings')
 	tkwm.deiconify(tt)

@@ -227,10 +227,7 @@ cdtDataset_readData <- function(GeneralParameters)
 			if(inherits(nc, "try-error")) return(NULL)
 			vars <- ncvar_get(nc, varid = ncInfo$ncinfo$varid)
 			nc_close(nc)
-			vars <- vars[xo, yo]
-			if(ncInfo$ncinfo$yo < ncInfo$ncinfo$xo){
-				vars <- matrix(c(vars), nrow = len.lon, ncol = len.lat, byrow = TRUE)
-			}
+			vars <- if(ncInfo$ncinfo$xo < ncInfo$ncinfo$yo) vars[xo, yo] else t(vars)[xo, yo]
 			vars <- round(c(vars), 4)
 
 			file.tmp <- file.path(datadir, paste0(jj, ".gz"))
