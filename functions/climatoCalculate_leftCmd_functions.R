@@ -847,8 +847,8 @@ climatologiesCalcPanelCmd <- function(){
 				idt <- which(EnvClimatoCalcPlot$output$index == as.numeric(str_trim(tclvalue(EnvClimatoCalcPlot$climDate))))
 				nx <- nx_ny_as.image(diff(range(EnvClimatoCalcPlot$output$data$lon)))
 				ny <- nx_ny_as.image(diff(range(EnvClimatoCalcPlot$output$data$lat)))
-				tmp <- as.image(as.numeric(EnvClimatoCalcPlot$climdata$data[idt, ]), nx = nx, ny = ny,
-								x = cbind(EnvClimatoCalcPlot$output$data$lon, EnvClimatoCalcPlot$output$data$lat))
+				tmp <- cdt.as.image(as.numeric(EnvClimatoCalcPlot$climdata$data[idt, ]), nx = nx, ny = ny,
+								pts.xy = cbind(EnvClimatoCalcPlot$output$data$lon, EnvClimatoCalcPlot$output$data$lat))
 				EnvClimatoCalcPlot$climdata$map$x <- tmp$x
 				EnvClimatoCalcPlot$climdata$map$y <- tmp$y
 				EnvClimatoCalcPlot$climdata$map$z <- tmp$z

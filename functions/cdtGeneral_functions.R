@@ -676,8 +676,7 @@ createGrid.merging <- function(grdData, ObjVar = NULL, coarse.grid = TRUE, res.c
 
 ##################################################################################
 ### create grid for stations data 
-
-createGrid.StnData <- function(donne.stn, ijGrd, newgrid, min.stn, weighted = TRUE){
+createGrid.StnData <- function(donne.stn, ijGrd, newgrid, min.stn, weighted = FALSE){
 	ij <- !is.na(donne.stn$stn)
 	donne.stn <- donne.stn[ij, , drop = FALSE]
 	if(nrow(donne.stn) < min.stn) return(NULL)
@@ -687,10 +686,11 @@ createGrid.StnData <- function(donne.stn, ijGrd, newgrid, min.stn, weighted = TR
 	if(any(sapply(idx, length) > 1)){
 		w <- rep(1, length(ijGrd))
 		if(weighted){
-			stn.grd <- newgrid@coords[ijGrd, ]
-			dist <- 1/((stn.grd[, 1]-donne.stn$lon)^2+(stn.grd[, 2]-donne.stn$lat)^2)
 			idup <- duplicated(ijGrd) | duplicated(ijGrd, fromLast = TRUE)
-			w[idup] <- dist[idup]
+			stn.grd <- newgrid@coords[ijGrd, ]
+			dist <- 1/((stn.grd[idup, 1]-donne.stn$lon[idup])^2 + (stn.grd[idup, 2]-donne.stn$lat[idup])^2)
+			dist[is.infinite(dist)] <- 2*max(dist[!is.infinite(dist)])
+			w[idup] <- dist
 		}
 		val <- sapply(idx, function(j) sum(w[j]*donne.stn$stn[j])/sum(w[j]))
 	}else val <- donne.stn$stn[unlist(idx)]
@@ -699,6 +699,50 @@ createGrid.StnData <- function(donne.stn, ijGrd, newgrid, min.stn, weighted = TR
 	stng <- rep(NA, length(newgrid))
 	stng[ij] <- val
 	return(stng)
+}
+
+#################################################################################
+## nx and ny for as.image
+# x: diff(range( lon or lat ))
+
+nx_ny_as.image <- function(x) round(x / (0.0167323 * x^0.9602))
+
+##################################################################################
+## same as fields::as.image
+cdt.as.image <- function(pts.val, pts.xy, grid = NULL, nx = 64, ny = 64, weighted = FALSE){
+	if(is.null(grid)){
+		xlim <- range(pts.xy[, 1], na.rm = TRUE)
+		ylim <- range(pts.xy[, 2], na.rm = TRUE)
+		xlim <- xlim + diff(xlim)*c(-1, 1)*0.01
+		ylim <- ylim + diff(ylim)*c(-1, 1)*0.01
+		grid <- list(lon = seq(xlim[1], xlim[2], length.out = nx),
+					 lat = seq(ylim[1], ylim[2], length.out = ny))
+	}
+	xy <- do.call(expand.grid, grid)
+	ijGrd <- grid2pointINDEX(list(lon = pts.xy[, 1], lat = pts.xy[, 2]), grid)
+	out <- list(x = grid$lon, y = grid$lat, z = matrix(NA, length(grid$lon), length(grid$lat)))
+
+	ij <- !is.na(pts.val)
+	pts.val <- pts.val[ij]
+	if(length(pts.val) == 0) return(out)
+	pts.xy <- pts.xy[ij, , drop = FALSE]
+	ijGrd <- ijGrd[ij]
+	idx <- split(seq_along(ijGrd), ijGrd)
+
+	if(any(sapply(idx, length) > 1)){
+		w <- rep(1, length(ijGrd))
+		if(weighted){
+			idup <- duplicated(ijGrd) | duplicated(ijGrd, fromLast = TRUE)
+			stn.grd <- xy[ijGrd, ]
+			dist <- 1/((stn.grd[idup, 1]-pts.xy[idup, 1])^2+(stn.grd[idup, 2]-pts.xy[idup, 2])^2)
+			dist[is.infinite(dist)] <- 2*max(dist[!is.infinite(dist)])
+			w[idup] <- dist
+		}
+		val <- sapply(idx, function(j) sum(w[j]*pts.val[j])/sum(w[j]))
+	}else val <- pts.val[unlist(idx)]
+	ij <- as.numeric(names(idx))
+	out$z[ij] <- val
+	return(out)
 }
 
 ##################################################################################
@@ -1680,12 +1724,6 @@ regression.Matrix <- function(X, Y, min.len){
 						beta, std.beta, tvalue.beta, pvalue.beta, R2)
 	return(RES)
 }
-
-#################################################################################
-## nx and ny for as.image
-# x: diff(range( lon or lat ))
-
-nx_ny_as.image <- function(x) round(x / (0.0167323 * x^0.9602))
 
 #################################################################################
 ## get index

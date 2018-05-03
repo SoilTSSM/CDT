@@ -1171,7 +1171,7 @@ PICSACalcPanelCmd <- function(){
 					EnvPICSAplot$oldDryspell <- dryspl
 				}else tmp <- as.numeric(EnvPICSAplot$tsdata$data[idt, ])
 
-				tmp <- as.image(tmp, nx = nx, ny = ny, x = cbind(EnvPICSAplot$output$data$lon, EnvPICSAplot$output$data$lat))
+				tmp <- cdt.as.image(tmp, nx = nx, ny = ny, pts.xy = cbind(EnvPICSAplot$output$data$lon, EnvPICSAplot$output$data$lat))
 				EnvPICSAplot$tsdata$x <- tmp$x
 				EnvPICSAplot$tsdata$y <- tmp$y
 				EnvPICSAplot$tsdata$z <- tmp$z
@@ -1318,7 +1318,7 @@ PICSACalcPanelCmd <- function(){
 				don <- statisticFunction(don)
 				nx <- nx_ny_as.image(diff(range(EnvPICSAplot$output$data$lon)))
 				ny <- nx_ny_as.image(diff(range(EnvPICSAplot$output$data$lat)))
-				don <- as.image(don, nx = nx, ny = ny, x = cbind(EnvPICSAplot$output$data$lon, EnvPICSAplot$output$data$lat))
+				don <- cdt.as.image(don, nx = nx, ny = ny, pts.xy = cbind(EnvPICSAplot$output$data$lon, EnvPICSAplot$output$data$lat))
 				EnvPICSAplot$climdata$x <- don$x
 				EnvPICSAplot$climdata$y <- don$y
 				EnvPICSAplot$climdata$z <- don$z

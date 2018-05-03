@@ -8,7 +8,7 @@ LOOCValidation.plotStatMaps <- function(){
 	yna <- EnvLOOCValidation$opDATA$lat[is.na(don)]
 	nx <- nx_ny_as.image(diff(range(EnvLOOCValidation$opDATA$lon)))
 	ny <- nx_ny_as.image(diff(range(EnvLOOCValidation$opDATA$lat)))
-	don <- as.image(don, x = cbind(EnvLOOCValidation$opDATA$lon, EnvLOOCValidation$opDATA$lat), nx = nx, ny = ny)
+	don <- cdt.as.image(don, pts.xy = cbind(EnvLOOCValidation$opDATA$lon, EnvLOOCValidation$opDATA$lat), nx = nx, ny = ny)
 
 	ocrds <- EnvLOOCValidationplot$shp
 

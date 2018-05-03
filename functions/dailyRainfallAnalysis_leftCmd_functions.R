@@ -1144,8 +1144,8 @@ dailyRainAnalysisPanelCmd <- function(){
 				EnvDailyRainAnalysisplot$statData$data <- readRDS(filePathData)
 				nx <- nx_ny_as.image(diff(range(EnvDailyRainAnalysisplot$output$data$lon)))
 				ny <- nx_ny_as.image(diff(range(EnvDailyRainAnalysisplot$output$data$lat)))
-				tmp <- as.image(EnvDailyRainAnalysisplot$statData$data, nx = nx, ny = ny,
-								x = cbind(EnvDailyRainAnalysisplot$output$data$lon, EnvDailyRainAnalysisplot$output$data$lat))
+				tmp <- cdt.as.image(EnvDailyRainAnalysisplot$statData$data, nx = nx, ny = ny,
+								pts.xy = cbind(EnvDailyRainAnalysisplot$output$data$lon, EnvDailyRainAnalysisplot$output$data$lat))
 				EnvDailyRainAnalysisplot$statData$map$x <- tmp$x
 				EnvDailyRainAnalysisplot$statData$map$y <- tmp$y
 				EnvDailyRainAnalysisplot$statData$map$z <- tmp$z
@@ -1225,8 +1225,8 @@ dailyRainAnalysisPanelCmd <- function(){
 				idt <- which(EnvDailyRainAnalysisplot$output$exist.vars.dates[[this.vars]]$date == this.daty)
 				nx <- nx_ny_as.image(diff(range(EnvDailyRainAnalysisplot$output$data$lon)))
 				ny <- nx_ny_as.image(diff(range(EnvDailyRainAnalysisplot$output$data$lat)))
-				tmp <- as.image(as.numeric(EnvDailyRainAnalysisplot$tsData$data[idt, ]), nx = nx, ny = ny,
-								x = cbind(EnvDailyRainAnalysisplot$output$data$lon, EnvDailyRainAnalysisplot$output$data$lat))
+				tmp <- cdt.as.image(as.numeric(EnvDailyRainAnalysisplot$tsData$data[idt, ]), nx = nx, ny = ny,
+								pts.xy = cbind(EnvDailyRainAnalysisplot$output$data$lon, EnvDailyRainAnalysisplot$output$data$lat))
 				EnvDailyRainAnalysisplot$tsData$map$x <- tmp$x
 				EnvDailyRainAnalysisplot$tsData$map$y <- tmp$y
 				EnvDailyRainAnalysisplot$tsData$map$z <- tmp$z

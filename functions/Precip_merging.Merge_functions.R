@@ -173,7 +173,7 @@ Precip_MergingFunctions <- function(mrgParms){
 			return(NULL)
 		}
 		donne.stn <- data.frame(lon = lon.stn, lat = lat.stn, stn = c(donne.stn))
-		stng <- createGrid.StnData(donne.stn, ijGrd, interp.grid$newgrid, min.stn)
+		stng <- createGrid.StnData(donne.stn, ijGrd, interp.grid$newgrid, min.stn, weighted = FALSE)
 		if(is.null(stng)){
 			writeNC.merging(xrfe, ncInfo$dates[jj], freqData, grd.nc.out,
 					mrgParms$merge.DIR, GeneralParameters$output$format)

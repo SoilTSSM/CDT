@@ -39,7 +39,9 @@ plotMergingOutData <- function(allDATA, atLev, listCol, units, shpf){
 	#########################################
 	donStn <- allDATA[[1]][[1]]
 
-	donStn <- as.image(donStn$value, x = cbind(donStn$x, donStn$y), nx = 40, ny = 40)
+	nx <- nx_ny_as.image(diff(range(donStn$x)))
+	ny <- nx_ny_as.image(diff(range(donStn$y)))
+	donStn <- cdt.as.image(donStn$value, pts.xy = cbind(donStn$x, donStn$y), nx = nx, ny = ny)
 	plotStn <- levelplot(donStn$z, row.values = donStn$x, column.values = donStn$y, at = ticks,
 		interpolate = TRUE, region = TRUE, 
 		panel = function(...){

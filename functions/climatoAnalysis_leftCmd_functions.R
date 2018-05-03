@@ -1494,22 +1494,22 @@ climatoAnalysisPanelCmd <- function(){
 														na = as.numeric(don[8, -1]))
 					nx <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$don$x0)))
 					ny <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$don$y0)))
-					tmp <- as.image(EnvClimatoAnalysisplot$don$var, nx = nx, ny = ny,
-									x = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
+					tmp <- cdt.as.image(EnvClimatoAnalysisplot$don$var, nx = nx, ny = ny,
+									pts.xy = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
 					EnvClimatoAnalysisplot$don$x <- tmp$x
 					EnvClimatoAnalysisplot$don$y <- tmp$y
 					EnvClimatoAnalysisplot$don$z <- tmp$z
-					# tmp <- as.image(EnvClimatoAnalysisplot$don$std.slope, nx = nx, ny = ny,
-					# 				x = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
+					# tmp <- cdt.as.image(EnvClimatoAnalysisplot$don$std.slope, nx = nx, ny = ny,
+					# 				pts.xy = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
 					# EnvClimatoAnalysisplot$don$std <- tmp$z
-					tmp <- as.image(EnvClimatoAnalysisplot$don$p.value, nx = nx, ny = ny,
-									x = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
+					tmp <- cdt.as.image(EnvClimatoAnalysisplot$don$p.value, nx = nx, ny = ny,
+									pts.xy = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
 					EnvClimatoAnalysisplot$don$pval <- tmp$z
-					# tmp <- as.image(EnvClimatoAnalysisplot$don$r2, nx = nx, ny = ny,
-					# 				x = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
+					# tmp <- cdt.as.image(EnvClimatoAnalysisplot$don$r2, nx = nx, ny = ny,
+					# 				pts.xy = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
 					# EnvClimatoAnalysisplot$don$r2 <- tmp$z
-					tmp <- as.image(EnvClimatoAnalysisplot$don$na, nx = nx, ny = ny,
-									x = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
+					tmp <- cdt.as.image(EnvClimatoAnalysisplot$don$na, nx = nx, ny = ny,
+									pts.xy = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
 					EnvClimatoAnalysisplot$don$na <- tmp$z
 				}else{
 					EnvClimatoAnalysisplot$don <- list(id = as.character(don[1, -1]), 
@@ -1519,13 +1519,13 @@ climatoAnalysisPanelCmd <- function(){
 														na = as.numeric(don[5, -1]))
 					nx <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$don$x0)))
 					ny <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$don$y0)))
-					tmp <- as.image(EnvClimatoAnalysisplot$don$var, nx = nx, ny = ny,
-									x = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
+					tmp <- cdt.as.image(EnvClimatoAnalysisplot$don$var, nx = nx, ny = ny,
+									pts.xy = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
 					EnvClimatoAnalysisplot$don$x <- tmp$x
 					EnvClimatoAnalysisplot$don$y <- tmp$y
 					EnvClimatoAnalysisplot$don$z <- tmp$z
-					tmp <- as.image(EnvClimatoAnalysisplot$don$na, nx = nx, ny = ny,
-									x = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
+					tmp <- cdt.as.image(EnvClimatoAnalysisplot$don$na, nx = nx, ny = ny,
+									pts.xy = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
 					EnvClimatoAnalysisplot$don$na <- tmp$z
 				}
 				EnvClimatoAnalysisplot$filestat <- filestat
@@ -1605,8 +1605,8 @@ climatoAnalysisPanelCmd <- function(){
 				idt <- which(EnvClimatoAnalysisplot$tsdata$date == tclvalue(EnvClimatoAnalysisplot$TSDate))
 				nx <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$tsdata$x0)))
 				ny <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$tsdata$y0)))
-				tmp <- as.image(as.numeric(EnvClimatoAnalysisplot$tsdata$data[idt, ]), nx = nx, ny = ny,
-								x = cbind(EnvClimatoAnalysisplot$tsdata$x0, EnvClimatoAnalysisplot$tsdata$y0))
+				tmp <- cdt.as.image(as.numeric(EnvClimatoAnalysisplot$tsdata$data[idt, ]), nx = nx, ny = ny,
+								pts.xy = cbind(EnvClimatoAnalysisplot$tsdata$x0, EnvClimatoAnalysisplot$tsdata$y0))
 				EnvClimatoAnalysisplot$tsdata$x <- tmp$x
 				EnvClimatoAnalysisplot$tsdata$y <- tmp$y
 				EnvClimatoAnalysisplot$tsdata$z <- tmp$z
@@ -1653,8 +1653,8 @@ climatoAnalysisPanelCmd <- function(){
 					idt <- which(EnvClimatoAnalysisplot$anomData$date == tclvalue(EnvClimatoAnalysisplot$TSDate))
 					nx <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$anomData$x0)))
 					ny <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$anomData$y0)))
-					tmp <- as.image(as.numeric(EnvClimatoAnalysisplot$anomData$data[idt, ]), nx = nx, ny = ny,
-									x = cbind(EnvClimatoAnalysisplot$anomData$x0, EnvClimatoAnalysisplot$anomData$y0))
+					tmp <- cdt.as.image(as.numeric(EnvClimatoAnalysisplot$anomData$data[idt, ]), nx = nx, ny = ny,
+									pts.xy = cbind(EnvClimatoAnalysisplot$anomData$x0, EnvClimatoAnalysisplot$anomData$y0))
 					EnvClimatoAnalysisplot$anomData$x <- tmp$x
 					EnvClimatoAnalysisplot$anomData$y <- tmp$y
 					EnvClimatoAnalysisplot$anomData$z <- tmp$z

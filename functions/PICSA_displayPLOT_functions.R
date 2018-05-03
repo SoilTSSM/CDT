@@ -109,7 +109,7 @@ PICSA.plotTSMaps <- function(ocrds){
 		yna <- EnvPICSA$PICSA.Coords$lat[is.na(don)]
 		nx <- as.integer(diff(range(EnvPICSA$PICSA.Coords$lon))/(0.0375*2.5))
 		ny <- as.integer(diff(range(EnvPICSA$PICSA.Coords$lat))/(0.0375*2.5))
-		don <- as.image(don, x = cbind(EnvPICSA$PICSA.Coords$lon, EnvPICSA$PICSA.Coords$lat), nx = nx, ny = ny)
+		don <- cdt.as.image(don, pts.xy = cbind(EnvPICSA$PICSA.Coords$lon, EnvPICSA$PICSA.Coords$lat), nx = nx, ny = ny)
 	}else{
 		xna <- NULL
 		lon <- sort(unique(EnvPICSA$PICSA.Coords$lon))
@@ -416,7 +416,7 @@ PICSA.plotClimMaps <- function(ocrds){
 		yna <- EnvPICSA$PICSA.Coords$lat[is.na(don)]
 		nx <- as.integer(diff(range(EnvPICSA$PICSA.Coords$lon))/(0.0375*2.5))
 		ny <- as.integer(diff(range(EnvPICSA$PICSA.Coords$lat))/(0.0375*2.5))
-		don <- as.image(don, x = cbind(EnvPICSA$PICSA.Coords$lon, EnvPICSA$PICSA.Coords$lat), nx = nx, ny = ny)
+		don <- cdt.as.image(don, pts.xy = cbind(EnvPICSA$PICSA.Coords$lon, EnvPICSA$PICSA.Coords$lat), nx = nx, ny = ny)
 	}else{
 		xna <- NULL
 		lon <- sort(unique(EnvPICSA$PICSA.Coords$lon))

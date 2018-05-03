@@ -1094,8 +1094,8 @@ anomaliesCalcPanelCmd <- function(){
 				idt <- which(EnvAnomalyCalcPlot$output$data$dates == as.numeric(str_trim(tclvalue(EnvAnomalyCalcPlot$anomDate))))
 				nx <- nx_ny_as.image(diff(range(EnvAnomalyCalcPlot$output$data$lon)))
 				ny <- nx_ny_as.image(diff(range(EnvAnomalyCalcPlot$output$data$lat)))
-				tmp <- as.image(as.numeric(EnvAnomalyCalcPlot$anomdata$data[idt, ]), nx = nx, ny = ny,
-								x = cbind(EnvAnomalyCalcPlot$output$data$lon, EnvAnomalyCalcPlot$output$data$lat))
+				tmp <- cdt.as.image(as.numeric(EnvAnomalyCalcPlot$anomdata$data[idt, ]), nx = nx, ny = ny,
+								pts.xy = cbind(EnvAnomalyCalcPlot$output$data$lon, EnvAnomalyCalcPlot$output$data$lat))
 				EnvAnomalyCalcPlot$anomdata$map$x <- tmp$x
 				EnvAnomalyCalcPlot$anomdata$map$y <- tmp$y
 				EnvAnomalyCalcPlot$anomdata$map$z <- tmp$z

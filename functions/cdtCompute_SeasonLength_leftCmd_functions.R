@@ -594,8 +594,8 @@ SeasonLengthCalcPanelCmd <- function(){
 				ny <- nx_ny_as.image(diff(range(EnvSeasLengthCalcPlot$output$data$lat)))
 				tmp <- as.numeric(EnvSeasLengthCalcPlot$varData$data[idt, ])
 
-				tmp <- as.image(tmp, nx = nx, ny = ny,
-								x = cbind(EnvSeasLengthCalcPlot$output$data$lon, EnvSeasLengthCalcPlot$output$data$lat))
+				tmp <- cdt.as.image(tmp, nx = nx, ny = ny,
+								pts.xy = cbind(EnvSeasLengthCalcPlot$output$data$lon, EnvSeasLengthCalcPlot$output$data$lat))
 				EnvSeasLengthCalcPlot$varData$map$x <- tmp$x
 				EnvSeasLengthCalcPlot$varData$map$y <- tmp$y
 				EnvSeasLengthCalcPlot$varData$map$z <- tmp$z

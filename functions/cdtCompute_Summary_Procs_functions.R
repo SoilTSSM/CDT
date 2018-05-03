@@ -29,7 +29,7 @@ summarizeDataProcs <- function(GeneralParameters){
 		moy[is.nan(moy) | is.infinite(moy)] <- NA
 		nx <- nx_ny_as.image(diff(range(don$lon)))
 		ny <- nx_ny_as.image(diff(range(don$lat)))
-		moy <- as.image(moy, nx = nx, ny = ny, x = cbind(don$lon, don$lat))
+		moy <- cdt.as.image(moy, nx = nx, ny = ny, pts.xy = cbind(don$lon, don$lat))
 
 		index <- split(seq_along(don$dates), substr(don$dates, 5, 6))
 

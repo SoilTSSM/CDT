@@ -1244,8 +1244,8 @@ OnsetCalcPanelCmd <- function(){
 				ny <- nx_ny_as.image(diff(range(EnvOnsetCalcPlot$output$data$lat)))
 				tmp <- as.numeric(EnvOnsetCalcPlot$varData$data[idt, ] - EnvOnsetCalcPlot$output$start.date[idt])
 
-				tmp <- as.image(tmp, nx = nx, ny = ny,
-								x = cbind(EnvOnsetCalcPlot$output$data$lon, EnvOnsetCalcPlot$output$data$lat))
+				tmp <- cdt.as.image(tmp, nx = nx, ny = ny,
+								pts.xy = cbind(EnvOnsetCalcPlot$output$data$lon, EnvOnsetCalcPlot$output$data$lat))
 				EnvOnsetCalcPlot$varData$map$x <- tmp$x
 				EnvOnsetCalcPlot$varData$map$y <- tmp$y
 				EnvOnsetCalcPlot$varData$map$z <- tmp$z

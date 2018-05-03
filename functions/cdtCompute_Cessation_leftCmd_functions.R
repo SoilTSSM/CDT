@@ -1172,8 +1172,8 @@ CessationCalcPanelCmd <- function(){
 				ny <- nx_ny_as.image(diff(range(EnvCessationCalcPlot$output$data$lat)))
 				tmp <- as.numeric(EnvCessationCalcPlot$varData$data[idt, ] - EnvCessationCalcPlot$output$start.date[idt])
 
-				tmp <- as.image(tmp, nx = nx, ny = ny,
-								x = cbind(EnvCessationCalcPlot$output$data$lon, EnvCessationCalcPlot$output$data$lat))
+				tmp <- cdt.as.image(tmp, nx = nx, ny = ny,
+								pts.xy = cbind(EnvCessationCalcPlot$output$data$lon, EnvCessationCalcPlot$output$data$lat))
 				EnvCessationCalcPlot$varData$map$x <- tmp$x
 				EnvCessationCalcPlot$varData$map$y <- tmp$y
 				EnvCessationCalcPlot$varData$map$z <- tmp$z
