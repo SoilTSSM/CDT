@@ -739,7 +739,7 @@ CessationCalcPanelCmd <- function(){
 					###################
 					set.Data.Dates()
 					widgets.Station.Pixel()
-					res <- EnvCessationCalcPlot$read.Data.Map()
+					res <- try(EnvCessationCalcPlot$read.Data.Map(), silent = TRUE)
 					if(inherits(res, "try-error") | is.null(res)) return(NULL)
 				}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
@@ -797,7 +797,7 @@ CessationCalcPanelCmd <- function(){
 				###################
 				set.Data.Dates()
 				widgets.Station.Pixel()
-				ret <- EnvCessationCalcPlot$read.Data.Map()
+				ret <- try(EnvCessationCalcPlot$read.Data.Map(), silent = TRUE)
 				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
 			}
 		})
@@ -846,7 +846,7 @@ CessationCalcPanelCmd <- function(){
 						EnvCessationCalcPlot$dataMapOp$userLvl$levels <- atlevel
 				}
 			}
-			EnvCessationCalcPlot$dataMapOp <- climatoAnalysis.MapOptions(main.win, EnvCessationCalcPlot$dataMapOp)
+			EnvCessationCalcPlot$dataMapOp <- MapGraph.MapOptions(main.win, EnvCessationCalcPlot$dataMapOp)
 		})
 
 		#########
@@ -973,7 +973,7 @@ CessationCalcPanelCmd <- function(){
 			suffix.fun <- switch(str_trim(tclvalue(EnvCessationCalcPlot$graph$typeTSp)),
 									"Barplot" = "Bar",
 									"Line" = "Line")
-			plot.fun <- match.fun(paste0("climatoAnalysis.GraphOptions.", suffix.fun))
+			plot.fun <- match.fun(paste0("MapGraph.GraphOptions.", suffix.fun))
 			EnvCessationCalcPlot$TSGraphOp <- plot.fun(main.win, EnvCessationCalcPlot$TSGraphOp)
 		})
 
@@ -1010,7 +1010,7 @@ CessationCalcPanelCmd <- function(){
 		##############################################
 
 		tkgrid(frameDataTS, row = 0, column = 0, sticky = 'we', pady = 1)
-		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = 'we', pady = 3)
+		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = '', pady = 3)
 
 	#######################################################################################################
 
@@ -1060,7 +1060,7 @@ CessationCalcPanelCmd <- function(){
 		EnvCessationCalcPlot$SHPOp <- list(col = "black", lwd = 1.5)
 
 		tkconfigure(bt.addshpOpt, command = function(){
-			EnvCessationCalcPlot$SHPOp <- climatoAnalysis.GraphOptions.LineSHP(main.win, EnvCessationCalcPlot$SHPOp)
+			EnvCessationCalcPlot$SHPOp <- MapGraph.GraphOptions.LineSHP(main.win, EnvCessationCalcPlot$SHPOp)
 		})
 
 		########
@@ -1095,14 +1095,46 @@ CessationCalcPanelCmd <- function(){
 
 		if(EnvCessationCalcPlot$output$params$data.type == "cdtstation"){
 			stnIDTSPLOT <- EnvCessationCalcPlot$output$data$id
-			txt.stnSel <- tklabel(frTS2, text = "Select a station to plot", anchor = 'w', justify = 'left')
-			txt.stnID <- tklabel(frTS2, text = "Station", anchor = 'e', justify = 'right')
+			txt.stnSel <- tklabel(frTS2, text = "Select station to plot")
+			bt.stnID.prev <- ttkbutton(frTS2, text = "<<", width = 6)
+			bt.stnID.next <- ttkbutton(frTS2, text = ">>", width = 6)
 			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvCessationCalcPlot$graph$stnIDTSp, width = largeur4)
 			tclvalue(EnvCessationCalcPlot$graph$stnIDTSp) <- stnIDTSPLOT[1]
 
-			tkgrid(txt.stnSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-			tkgrid(txt.stnID, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkconfigure(bt.stnID.prev, command = function(){
+				if(!is.null(EnvCessationCalcPlot$varData)){
+					istn <- which(stnIDTSPLOT == str_trim(tclvalue(EnvCessationCalcPlot$graph$stnIDTSp)))
+					istn <- istn-1
+					if(istn < 1) istn <- length(stnIDTSPLOT)
+					tclvalue(EnvCessationCalcPlot$graph$stnIDTSp) <- stnIDTSPLOT[istn]
+
+					imgContainer <- CessationCalc.Display.Graph(tknotes)
+					retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCessationCalcPlot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
+					EnvCessationCalcPlot$notebookTab.dataGraph <- retNBTab$notebookTab
+					AllOpenTabType <<- retNBTab$AllOpenTabType
+					AllOpenTabData <<- retNBTab$AllOpenTabData
+				}
+			})
+
+			tkconfigure(bt.stnID.next, command = function(){
+				if(!is.null(EnvCessationCalcPlot$varData)){
+					istn <- which(stnIDTSPLOT == str_trim(tclvalue(EnvCessationCalcPlot$graph$stnIDTSp)))
+					istn <- istn+1
+					if(istn > length(stnIDTSPLOT)) istn <- 1
+					tclvalue(EnvCessationCalcPlot$graph$stnIDTSp) <- stnIDTSPLOT[istn]
+
+					imgContainer <- CessationCalc.Display.Graph(tknotes)
+					retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCessationCalcPlot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
+					EnvCessationCalcPlot$notebookTab.dataGraph <- retNBTab$notebookTab
+					AllOpenTabType <<- retNBTab$AllOpenTabType
+					AllOpenTabData <<- retNBTab$AllOpenTabData
+				}
+			})
+
+			tkgrid(txt.stnSel, row = 0, column = 0, sticky = '', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(bt.stnID.prev, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 			tkgrid(cb.stnID, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(bt.stnID.next, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		}else{
 			txt.crdSel <- tklabel(frTS2, text = "Enter longitude and latitude to plot", anchor = 'w', justify = 'left')
 			txt.lonLoc <- tklabel(frTS2, text = "Longitude", anchor = 'e', justify = 'right')
@@ -1227,5 +1259,3 @@ CessationCalcPanelCmd <- function(){
 	######
 	return(cmd.frame)
 }
-
-

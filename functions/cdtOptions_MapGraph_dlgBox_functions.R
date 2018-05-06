@@ -1,134 +1,5 @@
 
-climatoAnalysisEditYrsMon <- function(parent.win, vedit, titre, help, year){
-	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 35
-		largeur2 <- 35
-	}else{
-		largeur1 <- 40
-		largeur2 <- 40
-	}
-
-	#########
-	tt <- tktoplevel()
-	tkgrab.set(tt)
-	tkfocus(tt)
-
-	frDialog <- tkframe(tt, relief = 'raised', borderwidth = 2)
-	frButt <- tkframe(tt)
-
-	####
-	frameEdit <- tkframe(frDialog)
-	frameInfo <- tkframe(frDialog)
-
-	#########
-	yscr.Edit <- tkscrollbar(frameEdit, repeatinterval = 4,
-							command = function(...) tkyview(text.Edit, ...))
-	text.Edit <- tktext(frameEdit, bg = "white", wrap = "word",
-						height = 4, width = largeur1,
-						yscrollcommand = function(...) tkset(yscr.Edit, ...))
-
-	tkgrid(text.Edit, yscr.Edit)
-	tkgrid.configure(yscr.Edit, sticky = "ns")
-	tkgrid.configure(text.Edit, sticky = 'nswe')
-
-	tkinsert(text.Edit, "end", vedit)
-
-	#########
-
-	yscr.Info <- tkscrollbar(frameInfo, repeatinterval = 4, command = function(...) tkyview(txta.Info, ...))
-	txta.Info <- tktext(frameInfo, cursor = "", wrap = "word", height = 4, width = largeur2,
-						yscrollcommand = function(...) tkset(yscr.Info, ...))
-
-	tkgrid(txta.Info, yscr.Info)
-	tkgrid.configure(yscr.Info, sticky = "ns")
-	tkgrid.configure(txta.Info, sticky = 'nswe')
-
-	tkinsert(txta.Info, "1.0", help)
-	tkconfigure(txta.Info, state = "disabled")
-
-	#########
-	tkgrid(frameEdit, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frameInfo, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	#########
-	vedit <- str_trim(strsplit(vedit, ",")[[1]])
-	vedit <- as.numeric(vedit)
-
-	if(year){
-		xtm <- "years"
-		xlo <- 1800
-		xup <- 2100
-		if(length(vedit) == 0) vedit <- NA
-	}else{
-		xtm <- "months"
-		xlo <- 1
-		xup <- 12
-	}
-
-	#########
-	bt.opt.OK <- tkbutton(frButt, text = "OK") 
-	bt.opt.CA <- tkbutton(frButt, text = "Cancel") 
-
-	tkconfigure(bt.opt.OK, command = function(){
-		tmp <- tclvalue(tkget(text.Edit, "0.0", "end"))
-		tmp <- gsub("[\r\n]", "", tmp)
-		tmp <- str_trim(strsplit(tmp, ",")[[1]])
-		tmp <- as.numeric(tmp)
-		if(length(tmp) == 0){
-			tkmessageBox(message = paste("No", xtm, "edited"), icon = "warning", type = "ok")
-		}else if(length(tmp) > 0 & any(is.na(tmp))){
-			tkmessageBox(message = paste("Check the", xtm, "that you edited\n", paste0(tmp, collapse = ', ')), icon = "warning", type = "ok")
-			tkwait.window(tt)
-		}else if(any(tmp > xup | tmp < xlo)){
-			msg <- if(year) "Ambiguous years. Year must be 4 digits" else "Month number must be between 1 and 12"
-			tkmessageBox(message = paste(msg, "\n", paste0(tmp, collapse = ', ')), icon = "warning", type = "ok")
-			tkwait.window(tt)
-		}else{
-			vedit <<- tmp
-			tkgrab.release(tt)
-			tkdestroy(tt)
-			tkfocus(parent.win)
-		}
-	})
-
-	tkconfigure(bt.opt.CA, command = function(){
-		tkgrab.release(tt)
-		tkdestroy(tt)
-		tkfocus(parent.win)
-	})
-
-	tkgrid(bt.opt.OK, row = 0, column = 0, padx = 5, pady = 1, ipadx = 10, sticky = 'w')
-	tkgrid(bt.opt.CA, row = 0, column = 1, padx = 5, pady = 1, ipadx = 1, sticky = 'e')
-
-	###############################################################	
-
-	tkgrid(frDialog, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frButt, row = 1, column = 1, sticky = 'se', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-
-	tkwm.withdraw(tt)
-	tcl('update')
-	tt.w <- as.integer(tkwinfo("reqwidth", tt))
-	tt.h <- as.integer(tkwinfo("reqheight", tt))
-	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
-	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste0('+', tt.x, '+', tt.y))
-	tkwm.transient(tt)
-	tkwm.title(tt, titre)
-	tkwm.deiconify(tt)
-
-	##################################################################	
-	tkfocus(tt)
-	tkbind(tt, "<Destroy>", function(){
-		tkgrab.release(tt)
-		tkfocus(parent.win)
-	})
-	tkwait.window(tt)
-	return(vedit)
-}
-
-#######################################################################################################
-
-climatoAnalysis.MapOptions <- function(parent.win, climMapOpt){
+MapGraph.MapOptions <- function(parent.win, climMapOpt){
 	if(Sys.info()["sysname"] == "Windows"){
 		largeur1 <- 28
 		largeur2 <- 31
@@ -170,6 +41,15 @@ climatoAnalysis.MapOptions <- function(parent.win, climMapOpt){
 	bt.userKol <- tkbutton(frameColkey, text = "Custom", state = stateKol2)
 	canvas.preview <- tkcanvas(frameColkey, width = largeur3, height = 20, bg = 'white')
 
+	if(!is.null(climMapOpt$pointSize)){
+		framePtSz <- tkframe(frameColkey)
+		txt.PointSz <- tklabel(framePtSz, text = "Points Size",  anchor = 'e', justify = 'right')
+		spin.PointSz <- ttkspinbox(framePtSz, from = 0.3, to = 2.5, increment = 0.1, justify = 'center', width = 4)
+		tkset(spin.PointSz, climMapOpt$pointSize)
+
+		tkgrid(txt.PointSz, spin.PointSz)
+	}
+
 	#########
 	##Preview Color
 	if(tclvalue(custom.color) == "0"){
@@ -201,6 +81,8 @@ climatoAnalysis.MapOptions <- function(parent.win, climMapOpt){
 	tkgrid(chk.userKol, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(bt.userKol, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(canvas.preview, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	if(!is.null(climMapOpt$pointSize))
+		tkgrid(framePtSz, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#########
 
@@ -380,6 +262,9 @@ climatoAnalysis.MapOptions <- function(parent.win, climMapOpt){
 		climMapOpt$scalebar$add <<- switch(tclvalue(add.scale), '0' = FALSE, '1' = TRUE)
 		climMapOpt$scalebar$pos <<- str_trim(tclvalue(pos.scale))
 
+		if(!is.null(climMapOpt$pointSize))
+			climMapOpt$pointSize <<- as.numeric(str_trim(tclvalue(tkget(spin.PointSz))))
+
 		tkgrab.release(tt)
 		tkdestroy(tt)
 		tkfocus(parent.win)
@@ -422,7 +307,7 @@ climatoAnalysis.MapOptions <- function(parent.win, climMapOpt){
 
 #######################################################################################################
 
-climatoAnalysis.GraphOptions.Anomaly <- function(parent.win, climGraphOpt){
+MapGraph.GraphOptions.Anomaly <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
 		largeur1 <- 30
 		largeur2 <- 34
@@ -739,7 +624,7 @@ climatoAnalysis.GraphOptions.Anomaly <- function(parent.win, climGraphOpt){
 
 #######################################################################################################
 
-climatoAnalysis.GraphOptions.Bar <- function(parent.win, climGraphOpt){
+MapGraph.GraphOptions.Bar <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
 		largeur1 <- 30
 		largeur2 <- 34
@@ -989,17 +874,17 @@ climatoAnalysis.GraphOptions.Bar <- function(parent.win, climGraphOpt){
 
 #######################################################################################################
 
-climatoAnalysis.GraphOptions.Line <- function(parent.win, climGraphOpt){
+MapGraph.GraphOptions.Line <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 55
-		largeur2 <- 59
+		largeur1 <- 57
+		largeur2 <- 61
 		largeur3 <- 27
 		width.col <- 3
 		width.spin <- 4
 	}else{
-		largeur1 <- 47
-		largeur2 <- 50
-		largeur3 <- 23
+		largeur1 <- 49
+		largeur2 <- 52
+		largeur3 <- 27
 		width.col <- 1
 		width.spin <- 3
 	}
@@ -1025,9 +910,9 @@ climatoAnalysis.GraphOptions.Line <- function(parent.win, climGraphOpt){
 	stateMaxXlim <- if(climGraphOpt$line$xlim$is.max) 'normal' else 'disabled'
 
 	chk.min.Xlim <- tkcheckbutton(frameGraphXlim, variable = is.min.xlim, text = "Min",  anchor = 'w', justify = 'left')
-	en.min.Xlim <- tkentry(frameGraphXlim, textvariable = min.xlim, width = 7, state = stateMinXlim)
+	en.min.Xlim <- tkentry(frameGraphXlim, textvariable = min.xlim, width = 8, state = stateMinXlim)
 	chk.max.Xlim <- tkcheckbutton(frameGraphXlim, variable = is.max.xlim, text = "Max",  anchor = 'w', justify = 'left')
-	en.max.Xlim <- tkentry(frameGraphXlim, textvariable = max.xlim, width = 7, state = stateMaxXlim)
+	en.max.Xlim <- tkentry(frameGraphXlim, textvariable = max.xlim, width = 8, state = stateMaxXlim)
 
 	tkgrid(chk.min.Xlim, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.min.Xlim, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -1434,7 +1319,7 @@ climatoAnalysis.GraphOptions.Line <- function(parent.win, climGraphOpt){
 
 #######################################################################################################
 
-climatoAnalysis.GraphOptions.Proba <- function(parent.win, climGraphOpt){
+MapGraph.GraphOptions.Proba <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
 		largeur1 <- 55
 		largeur2 <- 59
@@ -1754,7 +1639,7 @@ climatoAnalysis.GraphOptions.Proba <- function(parent.win, climGraphOpt){
 
 #######################################################################################################
 
-climatoAnalysis.GraphOptions.LineENSO <- function(parent.win, climGraphOpt){
+MapGraph.GraphOptions.LineENSO <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
 		largeur1 <- 53
 		largeur2 <- 57
@@ -2202,7 +2087,7 @@ climatoAnalysis.GraphOptions.LineENSO <- function(parent.win, climGraphOpt){
 
 #######################################################################################################
 
-climatoAnalysis.GraphOptions.BarENSO <- function(parent.win, climGraphOpt){
+MapGraph.GraphOptions.BarENSO <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
 		largeur1 <- 30
 		largeur2 <- 34
@@ -2476,7 +2361,7 @@ climatoAnalysis.GraphOptions.BarENSO <- function(parent.win, climGraphOpt){
 
 #######################################################################################################
 
-climatoAnalysis.GraphOptions.ProbaENSO <- function(parent.win, climGraphOpt){
+MapGraph.GraphOptions.ProbaENSO <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
 		largeur1 <- 30
 		largeur2 <- 34
@@ -2866,7 +2751,7 @@ climatoAnalysis.GraphOptions.ProbaENSO <- function(parent.win, climGraphOpt){
 
 #######################################################################################################
 
-climatoAnalysis.GraphOptions.LineSHP <- function(parent.win, shpLineOpt){
+MapGraph.GraphOptions.LineSHP <- function(parent.win, shpLineOpt){
 	if(Sys.info()["sysname"] == "Windows"){
 		width.col <- 3
 		width.spin <- 4
@@ -2963,5 +2848,3 @@ climatoAnalysis.GraphOptions.LineSHP <- function(parent.win, shpLineOpt){
 	tkwait.window(tt)
 	return(shpLineOpt)
 }
-
-

@@ -20,6 +20,7 @@ PICSA.plot.TSMaps <- function(){
 							})
 	}else titre <- TSMapOp$title$title
 
+	#################
 	## colorscale title
 	if(TSMapOp$colkeyLab$user){
 		legend.texta <- TSMapOp$colkeyLab$label
@@ -37,22 +38,26 @@ PICSA.plot.TSMaps <- function(){
 							"Dry Spells" = 'Number of Dry Spells')
 	}
 
+	#################
 	## breaks
-	if(!TSMapOp$userLvl$custom){
-		breaks <- pretty(don$z, n = 10, min.n = 5)
-		breaks <- if(length(breaks) > 0) breaks else c(0, 1) 
-	}else breaks <- TSMapOp$userLvl$levels
+	brks <- image.plot_Legend_pars(don$z, TSMapOp$userLvl, TSMapOp$userCol, TSMapOp$presetCol)
+	breaks <- brks$breaks
+	zlim <- brks$legend.breaks$zlim
+	breaks2 <- brks$legend.breaks$breaks
+	kolor <- brks$colors
+	breaks1 <- brks$legend.axis$at
+	lab.breaks <- brks$legend.axis$labels
 
-	## colors
-	if(TSMapOp$userCol$custom){
-		kolFonction <- colorRampPalette(TSMapOp$userCol$color)
-		kolor <- kolFonction(length(breaks)-1)
-	}else{
-		kolFonction <- match.fun(TSMapOp$presetCol$color)
-		kolor <- kolFonction(length(breaks)-1)
-		if(TSMapOp$presetCol$reverse) kolor <- rev(kolor)
-	}
+	## legend label
+	if(str_trim(tclvalue(EnvPICSAplot$varPICSA))%in%c("Onset", "Cessation")){
+		start.date <- format(EnvPICSAplot$output$start.date, '%Y%m%d')
+		start.dateYear <- format(EnvPICSAplot$output$start.date, '%Y')
+		odaty <- start.date[start.dateYear == str_trim(tclvalue(tkget(EnvPICSAplot$spin.TsMap.year)))]
+		odaty <- as.character(as.Date(odaty, '%Y%m%d'))
+		legendLabel <- format(as.Date(lab.breaks, origin = odaty), '%d-%b')
+	}else legendLabel <- lab.breaks
 
+	#################
 	### shape files
 	shpf <- EnvPICSAplot$shp
 	ocrds <- if(tclvalue(shpf$add.shp) == "1" & !is.null(shpf$ocrds)) shpf$ocrds else matrix(NA, 1, 2)
@@ -66,6 +71,8 @@ PICSA.plot.TSMaps <- function(){
 		xlim <- range(range(don$x, na.rm = TRUE), range(ocrds[, 1], na.rm = TRUE))
 		ylim <- range(range(don$y, na.rm = TRUE), range(ocrds[, 2], na.rm = TRUE))
 	}
+
+	#################
 
 	if(diff(xlim) > diff(ylim)){
 		horizontal <- TRUE
@@ -82,14 +89,6 @@ PICSA.plot.TSMaps <- function(){
 		legend.args <- if(!is.null(legend.texta)) list(text = legend.texta, cex = 0.8, side = 4, line = line) else NULL
 	}
 
-	if(str_trim(tclvalue(EnvPICSAplot$varPICSA))%in%c("Onset", "Cessation")){
-		start.date <- format(EnvPICSAplot$output$start.date, '%Y%m%d')
-		start.dateYear <- format(EnvPICSAplot$output$start.date, '%Y')
-		odaty <- start.date[start.dateYear == str_trim(tclvalue(tkget(EnvPICSAplot$spin.TsMap.year)))]
-		odaty <- as.character(as.Date(odaty, '%Y%m%d'))
-		legendLabel <- format(as.Date(breaks, origin = odaty), '%d-%b')
-	}else legendLabel <- breaks
-
 	#################
 
 	opar <- par(mar = mar)
@@ -98,27 +97,16 @@ PICSA.plot.TSMaps <- function(){
 	axlabs <- axlabsFun(axTicks(1), axTicks(2))
 	axis(side = 1, at = axTicks(1), labels = axlabs$xaxl, tcl = -0.2, cex.axis = 0.8)
 	axis(side = 2, at = axTicks(2), labels = axlabs$yaxl, tcl = -0.2, las = 1, cex.axis = 0.8)
-	title(main = titre, cex.main = 1, font.main= 2)
+	title(main = titre, cex.main = 1, font.main = 2)
 
 	# if(length(xna) > 0) points(xna, yna, pch = '*')
-
-	if(TSMapOp$userLvl$equidist){
-		image(don, breaks = breaks, col = kolor, xaxt = 'n', yaxt = 'n', add = TRUE)
-		breaks1 <- seq(0, 1, length.out = length(breaks))
-		image.plot(zlim = c(0, 1), breaks = breaks1, col = kolor, horizontal = horizontal,
-					legend.only = TRUE, legend.mar = legend.mar, legend.width = legend.width,
-					legend.args = legend.args, axis.args = list(at = breaks1, labels = legendLabel,
-					cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
-	}else{
-		image.plot(don, breaks = breaks, col = kolor, horizontal = horizontal,
-					xaxt = 'n', yaxt = 'n', add = TRUE, legend.mar = legend.mar,
-					legend.width = legend.width, legend.args = legend.args,
-					axis.args = list(at = breaks, labels = legendLabel, cex.axis = 0.7,
-					font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
-	}
+	image(don, breaks = breaks, col = kolor, xaxt = 'n', yaxt = 'n', add = TRUE)
+	image.plot(zlim = zlim, breaks = breaks2, col = kolor, horizontal = horizontal,
+				legend.only = TRUE, legend.mar = legend.mar, legend.width = legend.width,
+				legend.args = legend.args, axis.args = list(at = breaks1, labels = legendLabel,
+				cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)), legend.shrink = 0.8)
 
 	abline(h = axTicks(2), v = axTicks(1), col = "lightgray", lty = 3)
-
 	lines(ocrds[, 1], ocrds[, 2], lwd = EnvPICSAplot$SHPOp$lwd, col = EnvPICSAplot$SHPOp$col)
 
 	## scale bar
@@ -164,6 +152,7 @@ PICSA.plot.ClimMaps <- function(){
 							})
 	}else titre <- climMapOp$title$title
 
+	#################
 	## colorscale title
 	if(climMapOp$colkeyLab$user){
 		legend.texta <- climMapOp$colkeyLab$label
@@ -198,22 +187,25 @@ PICSA.plot.ClimMaps <- function(){
 		legend.texta <- paste(StatOp, units)
 	}
 
+	#################
 	## breaks
-	if(!climMapOp$userLvl$custom){
-		breaks <- pretty(don$z, n = 10, min.n = 5)
-		breaks <- if(length(breaks) > 0) breaks else c(0, 1) 
-	}else breaks <- climMapOp$userLvl$levels
+	brks <- image.plot_Legend_pars(don$z, climMapOp$userLvl, climMapOp$userCol, climMapOp$presetCol)
+	breaks <- brks$breaks
+	zlim <- brks$legend.breaks$zlim
+	breaks2 <- brks$legend.breaks$breaks
+	kolor <- brks$colors
+	breaks1 <- brks$legend.axis$at
+	lab.breaks <- brks$legend.axis$labels
 
-	## colors
-	if(climMapOp$userCol$custom){
-		kolFonction <- colorRampPalette(climMapOp$userCol$color)
-		kolor <- kolFonction(length(breaks)-1)
-	}else{
-		kolFonction <- match.fun(climMapOp$presetCol$color)
-		kolor <- kolFonction(length(breaks)-1)
-		if(climMapOp$presetCol$reverse) kolor <- rev(kolor)
-	}
+	## legend label
+	if(tclvalue(EnvPICSAplot$varPICSA)%in%c("Onset", "Cessation") &
+				StatOp%in%c("Average", "Median", "Percentiles"))
+	{
+		odaty <- format(EnvPICSAplot$output$start.date[1], '%Y-%m-%d')
+		legendLabel <- format(as.Date(lab.breaks, origin = odaty), '%d-%b')
+	}else legendLabel <- lab.breaks
 
+	#################
 	### shape files
 	shpf <- EnvPICSAplot$shp
 	ocrds <- if(tclvalue(shpf$add.shp) == "1" & !is.null(shpf$ocrds)) shpf$ocrds else matrix(NA, 1, 2)
@@ -227,6 +219,8 @@ PICSA.plot.ClimMaps <- function(){
 		xlim <- range(range(don$x, na.rm = TRUE), range(ocrds[, 1], na.rm = TRUE))
 		ylim <- range(range(don$y, na.rm = TRUE), range(ocrds[, 2], na.rm = TRUE))
 	}
+
+	#################
 
 	if(diff(xlim) > diff(ylim)){
 		horizontal <- TRUE
@@ -243,13 +237,6 @@ PICSA.plot.ClimMaps <- function(){
 		legend.args <- if(!is.null(legend.texta)) list(text = legend.texta, cex = 0.8, side = 4, line = line) else NULL
 	}
 
-	if(tclvalue(EnvPICSAplot$varPICSA)%in%c("Onset", "Cessation") &
-				StatOp%in%c("Average", "Median", "Percentiles"))
-	{
-		odaty <- format(EnvPICSAplot$output$start.date[1], '%Y-%m-%d')
-		legendLabel <- format(as.Date(breaks, origin = odaty), '%d-%b')
-	}else legendLabel <- breaks
-
 	#################
 
 	opar <- par(mar = mar)
@@ -258,27 +245,16 @@ PICSA.plot.ClimMaps <- function(){
 	axlabs <- axlabsFun(axTicks(1), axTicks(2))
 	axis(side = 1, at = axTicks(1), labels = axlabs$xaxl, tcl = -0.2, cex.axis = 0.8)
 	axis(side = 2, at = axTicks(2), labels = axlabs$yaxl, tcl = -0.2, las = 1, cex.axis = 0.8)
-	title(main = titre, cex.main = 1, font.main= 2)
+	title(main = titre, cex.main = 1, font.main = 2)
 
 	# if(length(xna) > 0) points(xna, yna, pch = '*')
-
-	if(climMapOp$userLvl$equidist){
-		image(don, breaks = breaks, col = kolor, xaxt = 'n', yaxt = 'n', add = TRUE)
-		breaks1 <- seq(0, 1, length.out = length(breaks))
-		image.plot(zlim = c(0, 1), breaks = breaks1, col = kolor, horizontal = horizontal,
-					legend.only = TRUE, legend.mar = legend.mar, legend.width = legend.width,
-					legend.args = legend.args, axis.args = list(at = breaks1, labels = legendLabel,
-					cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
-	}else{
-		image.plot(don, breaks = breaks, col = kolor, horizontal = horizontal,
-					xaxt = 'n', yaxt = 'n', add = TRUE, legend.mar = legend.mar,
-					legend.width = legend.width, legend.args = legend.args,
-					axis.args = list(at = breaks, labels = legendLabel, cex.axis = 0.7,
-					font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
-	}
+	image(don, breaks = breaks, col = kolor, xaxt = 'n', yaxt = 'n', add = TRUE)
+	image.plot(zlim = zlim, breaks = breaks2, col = kolor, horizontal = horizontal,
+				legend.only = TRUE, legend.mar = legend.mar, legend.width = legend.width,
+				legend.args = legend.args, axis.args = list(at = breaks1, labels = legendLabel,
+				cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)), legend.shrink = 0.8)
 
 	abline(h = axTicks(2), v = axTicks(1), col = "lightgray", lty = 3)
-
 	lines(ocrds[, 1], ocrds[, 2], lwd = EnvPICSAplot$SHPOp$lwd, col = EnvPICSAplot$SHPOp$col)
 	
 	## scale bar
@@ -389,13 +365,11 @@ PICSA.plot.TSGraph <- function(){
 	}
 
 	if(tclvalue(EnvPICSAplot$graph$varTSp) == "Daily Rainfall"){
-		picsa.plot.daily(dates, don, EnvPICSAplot$output$params$dryday)
+		picsa.plot.daily(dates, don, EnvPICSAplot$location, EnvPICSAplot$output$params$dryday)
 		return(NULL)
 	}
 
 	#########
-	GRAPHTYPE <- str_trim(tclvalue(EnvPICSAplot$graph$typeTSp))
-	origindate <- if(varPICSA%in%c("Onset", "Cessation")) as.character(EnvPICSAplot$output$start.date[1]) else NULL
 
 	if(varPICSA == "Onset"){
 		xlab0 <- ''
@@ -468,133 +442,11 @@ PICSA.plot.TSGraph <- function(){
 		title <- 'Seasonal count of days when RR > 95th percentile'
 	}
 
-	if(GRAPHTYPE == "Line"){
-		optsgph <- TSGraphOp$line
-		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
-		idt <- daty >= xlim[1] & daty <= xlim[2]
-		daty <- daty[idt]
-		don <- don[idt]
-		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
+	#########
+	GRAPHTYPE <- str_trim(tclvalue(EnvPICSAplot$graph$typeTSp))
+	origindate <- if(varPICSA%in%c("Onset", "Cessation")) as.character(EnvPICSAplot$output$start.date[1]) else NULL
 
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else xlab0
-		# ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ylab0
-		if(optsgph$axislabs$is.ylab){
-			ylab <- optsgph$axislabs$ylab
-			sub <- NULL
-		}else ylab <- ylab0
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- title
-			titre.pos <- "top"
-		}
-
-		legends <- NULL
-		if(optsgph$legend$is$mean){
-			legends$add$mean <- optsgph$legend$add$mean
-			legends$col$mean <- optsgph$legend$col$mean
-			legends$text$mean <- optsgph$legend$text$mean
-			legends$lwd$mean <- optsgph$legend$lwd$mean
-		}else{
-			if(tclvalue(EnvPICSAplot$graph$averageTSp) == "1") legends$add$mean <- TRUE
-		}
-		if(optsgph$legend$is$linear){
-			legends$add$linear <- optsgph$legend$add$linear
-			legends$col$linear <- optsgph$legend$col$linear
-			legends$text$linear <- optsgph$legend$text$linear
-			legends$lwd$linear <- optsgph$legend$lwd$linear
-		}else{
-			if(tclvalue(EnvPICSAplot$graph$trendTSp) == "1") legends$add$linear <- TRUE
-		}
-		if(optsgph$legend$is$tercile){
-			legends$add$tercile <- optsgph$legend$add$tercile
-			legends$col$tercile1 <- optsgph$legend$col$tercile1
-			legends$text$tercile1 <- optsgph$legend$text$tercile1
-			legends$col$tercile2 <- optsgph$legend$col$tercile2
-			legends$text$tercile2 <- optsgph$legend$text$tercile2
-			legends$lwd$tercile <- optsgph$legend$lwd$tercile
-		}else{
-			if(tclvalue(EnvPICSAplot$graph$tercileTSp) == "1") legends$add$tercile <- TRUE
-		}
-
-		climatoAnalysis.plot.line(daty, don, xlim = xlim, ylim = ylim, origindate = origindate,
-									xlab = xlab, ylab = ylab, ylab.sub = sub,
-									title = titre, title.position = titre.pos, axis.font = 1,
-									plotl = optsgph$plot, legends = legends,
-									location = EnvPICSAplot$location)
-	}
-
-	if(GRAPHTYPE == "Barplot"){
-		optsgph <- TSGraphOp$bar
-		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
-		idt <- daty >= xlim[1] & daty <= xlim[2]
-		daty <- daty[idt]
-		don <- don[idt]
-		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
-
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else xlab0
-		# ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ylab0
-		if(optsgph$axislabs$is.ylab){
-			ylab <- optsgph$axislabs$ylab
-			sub <- NULL
-		}else ylab <- ylab0
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- title
-			titre.pos <- "top"
-		}
-
-		climatoAnalysis.plot.bar(daty, don, xlim = xlim, ylim = ylim, origindate = origindate,
-								xlab = xlab, ylab = ylab, ylab.sub = sub,
-								title = titre, title.position = titre.pos, axis.font = 1,
-								barcol = optsgph$colors$col,
-								location = EnvPICSAplot$location)
-	}
-
-	if(GRAPHTYPE == "Probability"){
-		optsgph <- TSGraphOp$proba
-		xlim <- range(don, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
-		ylim <- c(0, 100)
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
-
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ""
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else "Probability of Exceeding"
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- title
-			titre.pos <- "top"
-		}
-
-		if(theoretical) theoretical <- optsgph$proba$theoretical
-
-		climatoAnalysis.plot.proba(don, xlim = xlim, ylim = ylim, origindate = origindate,
-									xlab = xlab, xlab.sub = NULL, ylab = ylab,
-									title = titre, title.position = titre.pos, axis.font = 1,
-									proba = list(theoretical = theoretical),
-									plotp = optsgph$proba, plotl = optsgph$plot,
-									location = EnvPICSAplot$location)
-	}
-
-	####
+	#### ENSO
 	if(GRAPHTYPE%in%c("ENSO-Line", "ENSO-Barplot", "ENSO-Proba")){
 		if(EnvPICSAplot$output$data.type == "cdtstation"){
 			onset <- readRDS(file.path(EnvPICSAplot$PathPicsa, "CDTDATASET", "Onset_days.rds"))
@@ -617,33 +469,103 @@ PICSA.plot.TSGraph <- function(){
 		oni <- ifelse(oni >= 0.5, 3, ifelse(oni <= -0.5, 1, 2))
 	}
 
-	if(GRAPHTYPE == "ENSO-Line"){
-		optsgph <- TSGraphOp$line.enso
+	#########
+
+	optsgph <- switch(GRAPHTYPE,
+				"Line" = TSGraphOp$line,
+				"Barplot" = TSGraphOp$bar,
+				"ENSO-Line" = TSGraphOp$line.enso,
+				"ENSO-Barplot" = TSGraphOp$bar.enso,
+				"Anomaly" = TSGraphOp$anomaly,
+				"Probability" = TSGraphOp$proba,
+				"ENSO-Proba" = TSGraphOp$proba.enso)
+
+	## xlim, ylim, xlab, ylab
+	if(GRAPHTYPE%in%c("Probability", "ENSO-Proba")){
+		xlim <- range(don, na.rm = TRUE)
+		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
+		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
+		ylim <- c(0, 100)
+		xlab0 <- ""
+		ylab0 <- "Probability of Exceeding"
+	}else{
 		xlim <- range(daty, na.rm = TRUE)
 		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
 		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
 		idt <- daty >= xlim[1] & daty <= xlim[2]
 		daty <- daty[idt]
 		don <- don[idt]
-		oni <- oni[idt]
 		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
+		if(GRAPHTYPE == "Anomaly")
+			if(optsgph$anom$perc.anom) ylab0 <- "Anomaly (% of Mean)"
+	}
 
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else xlab0
-		# ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ylab0
-		if(optsgph$axislabs$is.ylab){
-			ylab <- optsgph$axislabs$ylab
-			sub <- NULL
-		}else ylab <- ylab0
+	if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
+	if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
 
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
+	xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else xlab0
+	if(optsgph$axislabs$is.ylab){
+		ylab <- optsgph$axislabs$ylab
+		sub <- NULL
+	}else ylab <- ylab0
+
+	## title
+	if(optsgph$title$is.title){
+		titre <- optsgph$title$title
+		titre.pos <- optsgph$title$position
+	}else{
+		titre <- title
+		titre.pos <- "top"
+	}
+
+	#########
+
+	if(GRAPHTYPE == "Line"){
+		legends <- NULL
+		if(optsgph$legend$is$mean){
+			legends$add$mean <- optsgph$legend$add$mean
+			legends$col$mean <- optsgph$legend$col$mean
+			legends$text$mean <- optsgph$legend$text$mean
+			legends$lwd$mean <- optsgph$legend$lwd$mean
 		}else{
-			titre <- title
-			titre.pos <- "top"
+			if(tclvalue(EnvPICSAplot$graph$averageTSp) == "1") legends$add$mean <- TRUE
 		}
+		if(optsgph$legend$is$linear){
+			legends$add$linear <- optsgph$legend$add$linear
+			legends$col$linear <- optsgph$legend$col$linear
+			legends$text$linear <- optsgph$legend$text$linear
+			legends$lwd$linear <- optsgph$legend$lwd$linear
+		}else{
+			if(tclvalue(EnvPICSAplot$graph$trendTSp) == "1") legends$add$linear <- TRUE
+		}
+		if(optsgph$legend$is$tercile){
+			legends$add$tercile <- optsgph$legend$add$tercile
+			legends$col$tercile1 <- optsgph$legend$col$tercile1
+			legends$text$tercile1 <- optsgph$legend$text$tercile1
+			legends$col$tercile2 <- optsgph$legend$col$tercile2
+			legends$text$tercile2 <- optsgph$legend$text$tercile2
+			legends$lwd$tercile <- optsgph$legend$lwd$tercile
+		}else{
+			if(tclvalue(EnvPICSAplot$graph$tercileTSp) == "1") legends$add$tercile <- TRUE
+		}
+
+		graphs.plot.line(daty, don, xlim = xlim, ylim = ylim, origindate = origindate,
+						xlab = xlab, ylab = ylab, ylab.sub = sub,
+						title = titre, title.position = titre.pos, axis.font = 1,
+						plotl = optsgph$plot, legends = legends,
+						location = EnvPICSAplot$location)
+	}
+
+	if(GRAPHTYPE == "Barplot"){
+		graphs.plot.bar(daty, don, xlim = xlim, ylim = ylim, origindate = origindate,
+						xlab = xlab, ylab = ylab, ylab.sub = sub,
+						title = titre, title.position = titre.pos, axis.font = 1,
+						barcol = optsgph$colors$col,
+						location = EnvPICSAplot$location)
+	}
+
+	if(GRAPHTYPE == "ENSO-Line"){
+		oni <- oni[idt]
 
 		legends <- NULL
 		if(optsgph$legend$is$mean){
@@ -673,102 +595,24 @@ PICSA.plot.TSGraph <- function(){
 			if(tclvalue(EnvPICSAplot$graph$tercileTSp) == "1") legends$add$tercile <- TRUE
 		}
 
-		climatoAnalysis.plot.line.ENSO(daty, don, oni, xlim = xlim, ylim = ylim, origindate = origindate,
-										xlab = xlab, ylab = ylab, ylab.sub = sub,
-										title = titre, title.position = titre.pos, axis.font = 1,
-										plotl = optsgph$plot, legends = legends,
-										location = EnvPICSAplot$location)
+		graphs.plot.line.ENSO(daty, don, oni, xlim = xlim, ylim = ylim, origindate = origindate,
+							xlab = xlab, ylab = ylab, ylab.sub = sub,
+							title = titre, title.position = titre.pos, axis.font = 1,
+							plotl = optsgph$plot, legends = legends,
+							location = EnvPICSAplot$location)
 	}
 
 	if(GRAPHTYPE == "ENSO-Barplot"){
-		optsgph <- TSGraphOp$bar.enso
-		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
-		idt <- daty >= xlim[1] & daty <= xlim[2]
-		daty <- daty[idt]
-		don <- don[idt]
 		oni <- oni[idt]
-		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
 
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else xlab0
-		# ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ylab0
-		if(optsgph$axislabs$is.ylab){
-			ylab <- optsgph$axislabs$ylab
-			sub <- NULL
-		}else ylab <- ylab0
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- title
-			titre.pos <- "top"
-		}
-
-		climatoAnalysis.plot.bar.ENSO(daty, don, oni, xlim = xlim, ylim = ylim, origindate = origindate,
-									xlab = xlab, ylab = ylab, ylab.sub = sub,
-									title = titre, title.position = titre.pos, axis.font = 1,
-									barcol = optsgph$colors$col, location = EnvPICSAplot$location)
-	}
-
-	if(GRAPHTYPE == "ENSO-Proba"){
-		optsgph <- TSGraphOp$proba.enso
-		xlim <- range(don, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
-		ylim <- c(0, 100)
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
-
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ""
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else "Probability of Exceeding"
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- title
-			titre.pos <- "top"
-		}
-
-		climatoAnalysis.plot.proba.ENSO(don, oni, xlim = xlim, ylim = ylim, origindate = origindate,
-										xlab = xlab, xlab.sub = NULL, ylab = ylab,
- 										title = titre, title.position = titre.pos, axis.font = 1,
- 										plotl = optsgph$plot, location = EnvPICSAplot$location)
+		graphs.plot.bar.ENSO(daty, don, oni, xlim = xlim, ylim = ylim, origindate = origindate,
+							xlab = xlab, ylab = ylab, ylab.sub = sub,
+							title = titre, title.position = titre.pos, axis.font = 1,
+							barcol = optsgph$colors$col, location = EnvPICSAplot$location)
 	}
 
 	if(GRAPHTYPE == "Anomaly"){
-		optsgph <- TSGraphOp$anomaly
-		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
-		idt <- daty >= xlim[1] & daty <= xlim[2]
-		daty <- daty[idt]
-		don <- don[idt]
-		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
 		if(!optsgph$ylim$is.min & !optsgph$ylim$is.max) ylim <- NULL
-
-		percent <- optsgph$anom$perc.anom
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else xlab0
-		# ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else {if(percent) "Anomaly (% of Mean)" else ylab0}
-		if(optsgph$axislabs$is.ylab){
-			ylab <- optsgph$axislabs$ylab
-			sub <- NULL
-		}else ylab <- if(percent) "Anomaly (% of Mean)" else ylab0
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- title
-			titre.pos <- "top"
-		}
-
 		loko <- c(optsgph$colors$negative, optsgph$colors$positive)
 
 		period <- range(daty, na.rm = TRUE)
@@ -778,13 +622,30 @@ PICSA.plot.TSGraph <- function(){
 			period <- c(startYr, endYr)
 		}
 
-		climatoAnalysis.plot.bar.Anomaly(daty, don, period = period, percent = percent,
-										xlim = xlim, ylim = ylim, xlab = xlab, ylab = ylab, ylab.sub = sub,
-										title = titre, title.position = titre.pos, axis.font = 1,
-										barcol = loko, location = EnvPICSAplot$location)
+		graphs.plot.bar.Anomaly(daty, don, period = period, percent = optsgph$anom$perc.anom,
+								xlim = xlim, ylim = ylim, xlab = xlab, ylab = ylab, ylab.sub = sub,
+								title = titre, title.position = titre.pos, axis.font = 1,
+								barcol = loko, location = EnvPICSAplot$location)
+	}
+
+	if(GRAPHTYPE == "Probability"){
+		if(theoretical) theoretical <- optsgph$proba$theoretical
+
+		graphs.plot.proba(don, xlim = xlim, ylim = ylim, origindate = origindate,
+						xlab = xlab, xlab.sub = NULL, ylab = ylab,
+						title = titre, title.position = titre.pos, axis.font = 1,
+						proba = list(theoretical = theoretical),
+						plotp = optsgph$proba, plotl = optsgph$plot,
+						location = EnvPICSAplot$location)
+	}
+
+	if(GRAPHTYPE == "ENSO-Proba"){
+		graphs.plot.proba.ENSO(don, oni, xlim = xlim, ylim = ylim, origindate = origindate,
+								xlab = xlab, xlab.sub = NULL, ylab = ylab,
+								title = titre, title.position = titre.pos, axis.font = 1,
+								plotl = optsgph$plot, location = EnvPICSAplot$location)
 	}
 }
-
 
 ##############################################################################
 
@@ -1022,6 +883,3 @@ PICSA.Display.TSPlot <- function(parent){
 
 	return(list(onglet, img))
 }
-
-
-

@@ -18,6 +18,8 @@ splitCDTData0 <- function(donne){
 	return(dat)
 }
 
+##########################################
+
 splitCDTData <- function(donne, period){
 	ideb <- nrow(donne)
 	datylen <- nchar(as.character(donne[ideb, 1]))
@@ -168,9 +170,7 @@ splitCDTData <- function(donne, period){
 	return(stnlist)
 }
 
-
 ##########################################
-
 
 splitTsData <- function(donne, period, filefrmt, datefrmt){
 	#get dates
@@ -363,5 +363,3 @@ splitTsData <- function(donne, period, filefrmt, datefrmt){
 				wrong.dates = wrong.dates, duplicated.dates = duplicated.dates, missing.dates = missing.dates)
 	return(ret)
 }
-
-

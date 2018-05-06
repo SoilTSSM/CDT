@@ -1,10 +1,11 @@
+
 AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
-		largeur <- 46
-		largeur1 <- 42
+		largeur <- 47
+		largeur1 <- 44
 		largeur2 <- 34
-		wtkcombo <- 19
+		wtkcombo <- 20
 	}else{
 		largeur <- 33
 		largeur1 <- 32
@@ -393,7 +394,7 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 	############################################
 	tkgrid(frConvTS, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frDataType, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frameAggr, row = 3, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frameAggr, row = 3, column = 0, sticky = '', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frSave, row = 4, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	############################################
@@ -494,7 +495,6 @@ AggregateTS_GetInfo <- function(parent.win, GeneralParameters){
 }
 
 ###########################################################################################################
-
 
 AggregateTS_ncdfData <- function(tt, GeneralParameters, ncDIR, tstep = 'Daily data'){
 	listOpenFiles <- openFile_ttkcomboList()
@@ -672,4 +672,3 @@ AggregateTS_ncdfData <- function(tt, GeneralParameters, ncDIR, tstep = 'Daily da
 	tkwait.window(tt1)
 	return(GeneralParameters)
 }
-

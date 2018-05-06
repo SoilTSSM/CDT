@@ -8,27 +8,28 @@ OnsetCalc.plotOnsetMaps <- function(){
 		titre <- paste("Starting dates of the rainy season:", str_trim(tclvalue(EnvOnsetCalcPlot$donDate)))
 	}else titre <- dataMapOp$title$title
 
+	#################
 	## colorscale title
 	if(dataMapOp$colkeyLab$user){
 		legend.texta <- dataMapOp$colkeyLab$label
 	}else legend.texta <- NULL
 
+	#################
 	## breaks
-	if(!dataMapOp$userLvl$custom){
-		breaks <- pretty(don$z, n = 10, min.n = 5)
-		breaks <- if(length(breaks) > 0) breaks else c(0, 1) 
-	}else breaks <- dataMapOp$userLvl$levels
+	brks <- image.plot_Legend_pars(don$z, dataMapOp$userLvl, dataMapOp$userCol, dataMapOp$presetCol)
+	breaks <- brks$breaks
+	zlim <- brks$legend.breaks$zlim
+	breaks2 <- brks$legend.breaks$breaks
+	kolor <- brks$colors
+	breaks1 <- brks$legend.axis$at
+	lab.breaks <- brks$legend.axis$labels
 
-	## colors
-	if(dataMapOp$userCol$custom){
-		kolFonction <- colorRampPalette(dataMapOp$userCol$color)
-		kolor <- kolFonction(length(breaks)-1)
-	}else{
-		kolFonction <- match.fun(dataMapOp$presetCol$color)
-		kolor <- kolFonction(length(breaks)-1)
-		if(dataMapOp$presetCol$reverse) kolor <- rev(kolor)
-	}
+	## legend label
+	donDates <- format(EnvOnsetCalcPlot$output$start.date, "%Y")
+	idt <- which(donDates == str_trim(tclvalue(EnvOnsetCalcPlot$donDate)))
+	legendLabel <- format(lab.breaks + EnvOnsetCalcPlot$output$start.date[idt], '%d-%b')
 
+	#################
 	### shape files
 	shpf <- EnvOnsetCalcPlot$shp
 	ocrds <- if(tclvalue(shpf$add.shp) == "1" & !is.null(shpf$ocrds)) shpf$ocrds else matrix(NA, 1, 2)
@@ -42,6 +43,8 @@ OnsetCalc.plotOnsetMaps <- function(){
 		xlim <- range(range(don$x, na.rm = TRUE), range(ocrds[, 1], na.rm = TRUE))
 		ylim <- range(range(don$y, na.rm = TRUE), range(ocrds[, 2], na.rm = TRUE))
 	}
+
+	#################
 
 	if(diff(xlim) > diff(ylim)){
 		horizontal <- TRUE
@@ -57,12 +60,6 @@ OnsetCalc.plotOnsetMaps <- function(){
 		line <- if(max(nchar(as.character(breaks))) > 4) 3 else 2
 		legend.args <- if(!is.null(legend.texta)) list(text = legend.texta, cex = 0.8, side = 4, line = line) else NULL
 	}
-	#################
-
-	donDates <- format(EnvOnsetCalcPlot$output$start.date, "%Y")
-	idt <- which(donDates == str_trim(tclvalue(EnvOnsetCalcPlot$donDate)))
-	legendLabel <- format(breaks + EnvOnsetCalcPlot$output$start.date[idt], '%d-%b')
-	# legendLabel <- breaks
 
 	#################
 
@@ -72,25 +69,15 @@ OnsetCalc.plotOnsetMaps <- function(){
 	axlabs <- axlabsFun(axTicks(1), axTicks(2))
 	axis(side = 1, at = axTicks(1), labels = axlabs$xaxl, tcl = -0.2, cex.axis = 0.8)
 	axis(side = 2, at = axTicks(2), labels = axlabs$yaxl, tcl = -0.2, las = 1, cex.axis = 0.8)
-	title(main = titre, cex.main = 1, font.main= 2)
+	title(main = titre, cex.main = 1, font.main = 2)
 
-	if(dataMapOp$userLvl$equidist){
-		image(don, breaks = breaks, col = kolor, xaxt = 'n', yaxt = 'n', add = TRUE)
-		breaks1 <- seq(0, 1, length.out = length(breaks))
-		image.plot(zlim = c(0, 1), breaks = breaks1, col = kolor, horizontal = horizontal,
-					legend.only = TRUE, legend.mar = legend.mar, legend.width = legend.width,
-					legend.args = legend.args, axis.args = list(at = breaks1, labels = legendLabel,
-					cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
-	}else{
-		image.plot(don, breaks = breaks, col = kolor, horizontal = horizontal,
-					xaxt = 'n', yaxt = 'n', add = TRUE, legend.mar = legend.mar,
-					legend.width = legend.width, legend.args = legend.args,
-					axis.args = list(at = breaks, labels = legendLabel, cex.axis = 0.7,
-					font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
-	}
+	image(don, breaks = breaks, col = kolor, xaxt = 'n', yaxt = 'n', add = TRUE)
+	image.plot(zlim = zlim, breaks = breaks2, col = kolor, horizontal = horizontal,
+				legend.only = TRUE, legend.mar = legend.mar, legend.width = legend.width,
+				legend.args = legend.args, axis.args = list(at = breaks1, labels = legendLabel,
+				cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)), legend.shrink = 0.8)
 
 	abline(h = axTicks(2), v = axTicks(1), col = "lightgray", lty = 3)
-
 	lines(ocrds[, 1], ocrds[, 2], lwd = EnvOnsetCalcPlot$SHPOp$lwd, col = EnvOnsetCalcPlot$SHPOp$col)
 
 	## scale bar
@@ -159,65 +146,46 @@ OnsetCalc.plotOnsetGraph <- function(){
 	#########
 
 	GRAPHTYPE <- str_trim(tclvalue(EnvOnsetCalcPlot$graph$typeTSp))
+	if(GRAPHTYPE == "Line") optsgph <- TSGraphOp$line
+	if(GRAPHTYPE == "Barplot") optsgph <- TSGraphOp$bar
+
+	xlim <- range(daty, na.rm = TRUE)
+	if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
+	if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
+	idt <- daty >= xlim[1] & daty <= xlim[2]
+	daty <- daty[idt]
+	don <- don[idt]
+	ylim <- range(pretty(don))
+	if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
+	if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
+
+	xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
+	ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ''
+
+	if(optsgph$title$is.title){
+		titre <- optsgph$title$title
+		titre.pos <- optsgph$title$position
+	}else{
+		titre <- titre
+		titre.pos <- "top"
+	}
+
+	#########
 
 	if(GRAPHTYPE == "Line"){
-		optsgph <- TSGraphOp$line
-		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
-		idt <- daty >= xlim[1] & daty <= xlim[2]
-		daty <- daty[idt]
-		don <- don[idt]
-		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
-
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ''
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- titre
-			titre.pos <- "top"
-		}
-
-		climatoAnalysis.plot.line(daty, don, xlim = xlim, ylim = ylim, origindate = origindate,
-									xlab = xlab, ylab = ylab, ylab.sub = NULL,
-									title = titre, title.position = titre.pos, axis.font = 1,
-									plotl = optsgph$plot, legends = NULL,
-									location = EnvOnsetCalcPlot$location)
+		graphs.plot.line(daty, don, xlim = xlim, ylim = ylim, origindate = origindate,
+						xlab = xlab, ylab = ylab, ylab.sub = NULL,
+						title = titre, title.position = titre.pos, axis.font = 1,
+						plotl = optsgph$plot, legends = NULL,
+						location = EnvOnsetCalcPlot$location)
 	}
 
 	if(GRAPHTYPE == "Barplot"){
-		optsgph <- TSGraphOp$bar
-		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.Date(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.Date(optsgph$xlim$max)
-		idt <- daty >= xlim[1] & daty <= xlim[2]
-		daty <- daty[idt]
-		don <- don[idt]
-		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
-
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ''
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- titre
-			titre.pos <- "top"
-		}
-
-		climatoAnalysis.plot.bar(daty, don, xlim = xlim, ylim = ylim, origindate = origindate,
-								xlab = xlab, ylab = ylab, ylab.sub = NULL,
-								title = titre, title.position = titre.pos, axis.font = 1,
-								barcol = optsgph$colors$col,
-								location = EnvOnsetCalcPlot$location)
+		graphs.plot.bar(daty, don, xlim = xlim, ylim = ylim, origindate = origindate,
+						xlab = xlab, ylab = ylab, ylab.sub = NULL,
+						title = titre, title.position = titre.pos, axis.font = 1,
+						barcol = optsgph$colors$col,
+						location = EnvOnsetCalcPlot$location)
 	}
 }
 

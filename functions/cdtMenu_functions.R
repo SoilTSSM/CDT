@@ -799,9 +799,9 @@ tkadd(top.menu, "cascade", label = "Data Analysis", menu = menu.dataproc, active
 	tkadd(menu.dataproc, "command", label = "Spatial Analysis", command = function(){
 		refreshCDT.lcmd.env()
 		spinbox.state(state = 'normal')
-		if(is.null(lcmd.frame_climatoAnalysis)){
-			lcmd.frame <<- climatoAnalysisPanelCmd()
-			lcmd.frame_climatoAnalysis <<- 1
+		if(is.null(lcmd.frame_spatialAnalysis)){
+			lcmd.frame <<- spatialAnalysisPanelCmd()
+			lcmd.frame_spatialAnalysis <<- 1
 		}
 	})
 
@@ -873,22 +873,12 @@ tkadd(top.menu, "cascade", label = "Data Analysis", menu = menu.dataproc, active
 	tkadd(menu.dataproc, "separator")
 
 	##########
-	# tkadd(menu.dataproc, "command", label = "PICSA-Old", command = function(){
-	# 	refreshCDT.lcmd.env()
-	# 	spinbox.state(state = 'normal')
-	# 	if(is.null(lcmd.frame_PICSA)){
-	# 		lcmd.frame <<- PICSAPanelCmd()
-	# 		lcmd.frame_PICSA <<- 1
-	# 	}
-	# })
-
-	##########
 	tkadd(menu.dataproc, "command", label = "PICSA", command = function(){
 		refreshCDT.lcmd.env()
 		spinbox.state(state = 'normal')
-		if(is.null(lcmd.frame_PICSA1)){
+		if(is.null(lcmd.frame_PICSA)){
 			lcmd.frame <<- PICSACalcPanelCmd()
-			lcmd.frame_PICSA1 <<- 1
+			lcmd.frame_PICSA <<- 1
 		}
 	})
 

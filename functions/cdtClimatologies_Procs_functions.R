@@ -1,5 +1,4 @@
 
-
 climatologiesCalcProcs <- function(GeneralParameters){
 	if(!dir.exists(GeneralParameters$out.dir)){
 		InsertMessagesTxt(main.txt.out, paste(GeneralParameters$out.dir, "did not find"), format = TRUE)

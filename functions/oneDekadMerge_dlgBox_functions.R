@@ -1,8 +1,8 @@
 mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
-		largeur0 <- 39
-		largeur1 <- 36
+		largeur0 <- 42
+		largeur1 <- 39
 		largeur2 <- 25
 	}else{
 		largeur0 <- 30
@@ -344,7 +344,7 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 
 	tkgrid(txt.dir.LM, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 6, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(en.dir.LM, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 0, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(bt.dir.LM, row = 4, column = 5, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.dir.LM, row = 4, column = 5, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
 	infobulle(cb.mrg, 'Method to be used to perform merging')
 	status.bar.display(cb.mrg, TextOutputVar, 'Method to be used to perform merging')
@@ -405,9 +405,9 @@ mergeDekadInfoRain <- function(parent.win, GeneralParameters){
 	})
 
 	######
-	tkgrid(frBias, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frBias, row = 0, column = 0, sticky = '', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 	tkgrid(frMrg, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-	tkgrid(frRnoR, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frRnoR, row = 2, column = 0, sticky = '', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#######################  RIGHT1   #####################
 

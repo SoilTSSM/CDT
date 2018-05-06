@@ -1,5 +1,5 @@
 
-climatoAnalysisProcs <- function(GeneralParameters){
+spatialAnalysisProcs <- function(GeneralParameters){
 	if(GeneralParameters$in.file%in%c("", "NA")){
 		InsertMessagesTxt(main.txt.out, 'No input data found', format = TRUE)
 		return(NULL)
@@ -12,7 +12,7 @@ climatoAnalysisProcs <- function(GeneralParameters){
 	}
 
 	#############
-	outputDIR <- file.path(GeneralParameters$out.dir, paste0("ClimatoAnalysis_",
+	outputDIR <- file.path(GeneralParameters$out.dir, paste0("SpatialAnalysis_",
 							GeneralParameters$time.series$out.series, "_",
 							getf.no.ext(basename(GeneralParameters$in.file))))
 	dir.create(outputDIR, showWarnings = FALSE, recursive = TRUE)
@@ -160,10 +160,10 @@ climatoAnalysisProcs <- function(GeneralParameters){
 	################################################
 
 	toAggr <- list(indx, GeneralParameters$aggr.series)
-	if(is.null(EnvClimatoAnalysis$toAggr)){
+	if(is.null(EnvSpatialAnalysis$toAggr)){
 		aggregatData <- TRUE
 	}else{
-		aggregatData <- if(!isTRUE(all.equal(EnvClimatoAnalysis$toAggr, toAggr))) TRUE else FALSE
+		aggregatData <- if(!isTRUE(all.equal(EnvSpatialAnalysis$toAggr, toAggr))) TRUE else FALSE
 	}
 
 	if(aggregatData){
@@ -228,10 +228,10 @@ climatoAnalysisProcs <- function(GeneralParameters){
 			AggrData$file <- datafileIdx
 		}
 
-		EnvClimatoAnalysis$AggrData <- AggrData
-		EnvClimatoAnalysis$toAggr <- toAggr
+		EnvSpatialAnalysis$AggrData <- AggrData
+		EnvSpatialAnalysis$toAggr <- toAggr
 		InsertMessagesTxt(main.txt.out, "Aggregation done!")
-	}else AggrData <- EnvClimatoAnalysis$AggrData
+	}else AggrData <- EnvSpatialAnalysis$AggrData
 
 	#############
 
@@ -602,8 +602,8 @@ climatoAnalysisProcs <- function(GeneralParameters){
 				}
 				outTS.dates[[jj]] <- list(outAna.dates[jj], outTSdaty)
 			}
-			EnvClimatoAnalysis$outTS.dates <- outTS.dates
-		}else outTS.dates <- EnvClimatoAnalysis$outTS.dates
+			EnvSpatialAnalysis$outTS.dates <- outTS.dates
+		}else outTS.dates <- EnvSpatialAnalysis$outTS.dates
 	}else{
 		xhead <- rbind(cdtdata$id, cdtdata$lon, cdtdata$lat)
 		infohead <- cbind(c('ID.STN', 'LON', 'VARS/LAT'), xhead)
@@ -725,8 +725,8 @@ climatoAnalysisProcs <- function(GeneralParameters){
 				outdata <- rbind(headInfo, outdata)
 				writeFiles(outdata, outfile)
 			}
-			EnvClimatoAnalysis$outTS.dates <- outTS.dates
-		}else outTS.dates <- EnvClimatoAnalysis$outTS.dates
+			EnvSpatialAnalysis$outTS.dates <- outTS.dates
+		}else outTS.dates <- EnvSpatialAnalysis$outTS.dates
 	}
 	rm(cdtdata, AggrData, AggrNA, AnalysData); gc()
 	out <- NULL
@@ -739,10 +739,8 @@ climatoAnalysisProcs <- function(GeneralParameters){
 	dirAnalysis <- list.dirs(outputDIR, full.names = FALSE, recursive = FALSE)
 	dirAnalysis <- ANALYSIS[ANALYSIS%in%dirAnalysis]
 	outStat <- list(Stats = dirAnalysis, last = analysis.dir)
-	saveRDS(outStat, file = file.path(outputDIR, "ClimatoAnalysis.rds"))
-	EnvClimatoAnalysisplot$DirStat <- outStat
-	EnvClimatoAnalysisplot$PathStat <- outputDIR
+	saveRDS(outStat, file = file.path(outputDIR, "SpatialAnalysis.rds"))
+	EnvSpatialAnalysisplot$DirStat <- outStat
+	EnvSpatialAnalysisplot$PathStat <- outputDIR
 	return(0)
 }
-
-

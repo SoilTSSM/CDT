@@ -2,11 +2,11 @@
 grads_create.ctl_getParams <- function(parent.win, GeneralParameters){
 	listOpenFiles <- openFile_ttkcomboList()
 	if (Sys.info()["sysname"] == "Windows"){
-		largeur0 <- 36
-		largeur1 <- 43
+		largeur0 <- 34
+		largeur1 <- 48
 	}else{
-		largeur0 <- 35
-		largeur1 <- 24
+		largeur0 <- 24
+		largeur1 <- 35
 	}
 
 	tt <- tktoplevel()
@@ -30,7 +30,7 @@ grads_create.ctl_getParams <- function(parent.win, GeneralParameters){
 									'monthly' = cb.periodVAL[3],
 									'annual' = cb.periodVAL[4])
 
-	cb.period <- ttkcombobox(frtimestep, values = cb.periodVAL, textvariable = file.period, width = largeur1)
+	cb.period <- ttkcombobox(frtimestep, values = cb.periodVAL, textvariable = file.period, width = largeur0)
 
 	tkgrid(cb.period, row = 0, column = 0, sticky = '', rowspan = 1, columnspan = 1, padx = 1, pady = 5, ipadx = 1, ipady = 1)
 
@@ -59,7 +59,7 @@ grads_create.ctl_getParams <- function(parent.win, GeneralParameters){
 
 	txt.indata <- tklabel(frameInData, text = 'Directory containing the NetCDF data', anchor = 'w', justify = 'left')
 	set.indata <- tkbutton(frameInData, text = "Settings")
-	cb.en.indata <- tkentry(frameInData, textvariable = input.DataF, width = largeur0)
+	cb.en.indata <- tkentry(frameInData, textvariable = input.DataF, width = largeur1)
 	bt.indata <- tkbutton(frameInData, text = "...")
 
 	settingNCF <- GeneralParameters$settingNCF
@@ -135,7 +135,7 @@ grads_create.ctl_getParams <- function(parent.win, GeneralParameters){
 	file.save <- tclVar(GeneralParameters$out.ctl)
 
 	txt.file.save <- tklabel(frSave, text = 'File to save the descriptor file', anchor = 'w', justify = 'left')
-	en.file.save <- tkentry(frSave, textvariable = file.save, width = largeur0)
+	en.file.save <- tkentry(frSave, textvariable = file.save, width = largeur1)
 	bt.file.save <- tkbutton(frSave, text = "...")
 
 	#########

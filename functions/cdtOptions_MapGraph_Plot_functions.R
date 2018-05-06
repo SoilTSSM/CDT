@@ -1,6 +1,5 @@
 
-
-climatoAnalysis.plot.line <- function(x, y, xlim = NULL, ylim = NULL, origindate = NULL,
+graphs.plot.line <- function(x, y, xlim = NULL, ylim = NULL, origindate = NULL,
 									xlab = '', ylab = '', ylab.sub = NULL,
 									title = '', title.position = 'top', axis.font = 1,
 									plotl = NULL, legends = NULL, location = NULL)
@@ -40,9 +39,8 @@ climatoAnalysis.plot.line <- function(x, y, xlim = NULL, ylim = NULL, origindate
 	if(xlim[1] == xlim[2]) xlim <- xlim[1]+c(-0.5, 0.5)
 	if(xlim[2]-xlim[1] == 1) xlim <- xlim+c(-0.5, 0.5)
 
-	nylab <- if(is.null(origindate)) as.character(pretty(y)) else 6
-	nylab <- max(nchar(nylab), na.rm = TRUE)
-	line.ylab <- nylab-1
+	nylab <- max(nchar(as.character(pretty(y))), na.rm = TRUE)
+	line.ylab <- if(nylab < 2) 2 else nylab
 
 	draw.title <- if(missing(title) | str_trim(title) == "") FALSE else TRUE
 	plt.h <- if(legends$add$mean | legends$add$tercile | legends$add$linear) 0.13 else 0.05
@@ -150,7 +148,7 @@ climatoAnalysis.plot.line <- function(x, y, xlim = NULL, ylim = NULL, origindate
 	par(op)
 }
 
-climatoAnalysis.plot.bar <- function(x, y, xlim = NULL, ylim = NULL, origindate = NULL,
+graphs.plot.bar <- function(x, y, xlim = NULL, ylim = NULL, origindate = NULL,
 									xlab = '', ylab = '', ylab.sub = NULL,
 									title = '', title.position = 'top', axis.font = 1,
 									barcol = "darkblue", location = NULL)
@@ -169,9 +167,8 @@ climatoAnalysis.plot.bar <- function(x, y, xlim = NULL, ylim = NULL, origindate 
 	if(xlim[1] == xlim[2]) xlim <- xlim+c(-0.5, 0.5)
 	if(xlim[2]-xlim[1] == 1) xlim <- xlim+c(-0.5, 0.5)
 
-	nylab <- if(is.null(origindate)) as.character(pretty(y)) else 6
-	nylab <- max(nchar(nylab), na.rm = TRUE)
-	line.ylab <- nylab-1
+	nylab <- max(nchar(as.character(pretty(y))), na.rm = TRUE)
+	line.ylab <- if(nylab < 2) 2 else nylab
 
 	draw.title <- if(missing(title) | str_trim(title) == "") FALSE else TRUE
 	nr.ylab <- str_count(ylab, pattern = "\n")
@@ -253,7 +250,7 @@ climatoAnalysis.plot.bar <- function(x, y, xlim = NULL, ylim = NULL, origindate 
 	par(op)
 }
 
-climatoAnalysis.plot.proba <- function(dat, xlim = NULL, ylim = NULL, origindate = NULL,
+graphs.plot.proba <- function(dat, xlim = NULL, ylim = NULL, origindate = NULL,
 									xlab = '', xlab.sub = NULL, ylab = "Probability of Exceeding",
 									title = '', title.position = 'bottom', axis.font = 1,
 									proba = NULL, plotl = NULL, plotp = NULL, location = NULL)
@@ -391,7 +388,7 @@ climatoAnalysis.plot.proba <- function(dat, xlim = NULL, ylim = NULL, origindate
 	par(op)
 }
 
-climatoAnalysis.plot.line.ENSO <- function(x, y, oni, xlim = NULL, ylim = NULL, origindate = NULL,
+graphs.plot.line.ENSO <- function(x, y, oni, xlim = NULL, ylim = NULL, origindate = NULL,
 										xlab = '', ylab = '', ylab.sub = NULL,
 										title = '', title.position = 'top', axis.font = 1,
 										plotl = NULL, legends = NULL, location = NULL)
@@ -531,7 +528,7 @@ climatoAnalysis.plot.line.ENSO <- function(x, y, oni, xlim = NULL, ylim = NULL, 
 	par(op)
 }
 
-climatoAnalysis.plot.bar.ENSO <- function(x, y, oni, xlim = NULL, ylim = NULL, origindate = NULL,
+graphs.plot.bar.ENSO <- function(x, y, oni, xlim = NULL, ylim = NULL, origindate = NULL,
 										xlab = '', ylab = '', ylab.sub = NULL,
 										title = '', title.position = 'top', axis.font = 1,
 										barcol = c("blue", "gray", "red"), location = NULL)
@@ -631,7 +628,7 @@ climatoAnalysis.plot.bar.ENSO <- function(x, y, oni, xlim = NULL, ylim = NULL, o
 	par(op)
 }
 
-climatoAnalysis.plot.proba.ENSO <- function(dat, oni, xlim = NULL, ylim = NULL, origindate = NULL,
+graphs.plot.proba.ENSO <- function(dat, oni, xlim = NULL, ylim = NULL, origindate = NULL,
 											xlab = '', xlab.sub = NULL, ylab = "Probability of Exceeding",
 	 										title = '', title.position = 'bottom', axis.font = 1,
 	 										plotl = NULL, location = NULL)
@@ -781,7 +778,7 @@ climatoAnalysis.plot.proba.ENSO <- function(dat, oni, xlim = NULL, ylim = NULL, 
 	par(op)
 }
 
-climatoAnalysis.plot.bar.Anomaly <- function(x, y, period = c(1981, 2010), percent = TRUE,
+graphs.plot.bar.Anomaly <- function(x, y, period = c(1981, 2010), percent = TRUE,
 											xlim = NULL, ylim = NULL, xlab = '', ylab = '', ylab.sub = NULL,
 											title = '', title.position = 'top', axis.font = 1,
 											barcol = c("blue", "red"), location = NULL)
@@ -883,3 +880,65 @@ climatoAnalysis.plot.bar.Anomaly <- function(x, y, period = c(1981, 2010), perce
 	par(op)
 }
 
+####################################################################################################
+
+picsa.plot.daily <- function(dates, prec, location, thres.rain = 1, axis.font = 1){
+	vtimes <- table.annuel()
+	vmmdd <- paste0(str_pad(vtimes[, 2], 2, pad = '0'), str_pad(vtimes[, 1], 2, pad = '0'))
+	years <- as.numeric(substr(dates, 1, 4))
+	mmdd <- substr(dates, 5, 8)
+	mmdd[mmdd == '0229'] <- '0228'
+	yday <- match(mmdd, vmmdd)
+	dfplot <- data.frame(yy = years, day = yday)
+	rnor <- prec > thres.rain
+
+	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.9, 0.1), respect = FALSE)
+	op <- par(mar = c(3.1, 3.1, 2.1, 2.1))
+	plot(dfplot$yy, dfplot$day, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '', ylim = c(0, 370))
+	abline(h = axTicks(2), col = "lightgray", lty = "dotted")
+	abline(v = axTicks(1), col = "lightgray", lty = "dotted")
+	points(dfplot$yy[!rnor], dfplot$day[!rnor], pch = 15, col = 7, cex = 0.4)
+	points(dfplot$yy[rnor], dfplot$day[rnor], pch = 8, col = 4, cex = 0.3)
+	axis(1, at = axTicks(1), font = axis.font)
+	mtext('Year', side = 1, line = 2)
+	axis(2, at = axTicks(2), font = axis.font)
+	mtext('Day of Year', side = 2, line = 2)
+	mtext(location, side = 3, outer = FALSE, adj = 1, line = 0, cex = 0.6) 
+	legend(x = 'topright', legend = c("Rain", "Dry", 'NA'), bty = "n", fill = c(4, 7, NA), horiz = TRUE, cex = 0.8, inset = -0.01)
+	par(op)
+
+	op <- par(mar = c(1, 3.1, 0, 2.1))
+	plot(1, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '')
+	bbx <- par("usr")
+	rect(bbx[1], bbx[3], bbx[2], bbx[4], col = "ghostwhite")
+	text(1, 1, "Rain Present", cex = 0.9, font = 2)
+	par(op)
+}
+
+picsa.plot.TxTn <- function(x, tmax, tmin, location, axis.font = 1){
+	ylim <- range(c(pretty(tmin), pretty(tmax)))
+
+	layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.9, 0.1), respect = FALSE)
+	op <- par(mar = c(3, 4, 2, 2))
+	plot(x, tmin, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = 'Temperature (°C)', ylim = ylim)
+
+	abline(h = axTicks(2), col = "lightgray", lty = "dotted")
+	abline(v = axTicks(1), col = "lightgray", lty = "dotted")
+
+	mtext('Year', side = 1, line = 2)
+	axis(1, at = axTicks(1), font = axis.font)
+	axis(2, at = axTicks(2), las = 1, font = axis.font)
+
+	lines(x, tmin, col = 'blue', lwd = 2)
+	lines(x, tmax, col = 'red', lwd = 2)
+
+	abline(lm(tmax~x), lwd = 2)
+	abline(lm(tmin~x), lwd = 2)
+	mtext(location, side = 3, outer = FALSE, adj = 1, line = 0, cex = 0.6) 
+	par(op)
+
+	op <- par(mar = c(0, 4, 0, 2))
+	plot.new()
+	legend("top", "groups", legend = c('Tmax', 'Tmin', 'Trend line'), col = c('red', 'blue', 'black'), lwd = 3, lty = 1, horiz = TRUE)
+	par(op)
+}

@@ -1,5 +1,5 @@
 
-climatoAnalysisPanelCmd <- function(){
+spatialAnalysisPanelCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(26)
@@ -23,7 +23,7 @@ climatoAnalysisPanelCmd <- function(){
 		largeur6 <- 14
 	}
 
-	GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'ClimatoAnalysis.json'))
+	GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'SpatialAnalysis.json'))
 	MOIS <- format(ISOdate(2014, 1:12, 1), "%B")
 
 	###################
@@ -298,7 +298,7 @@ climatoAnalysisPanelCmd <- function(){
 			years <- GeneralParameters$time.series$custom.years[[1]]
 			if(length(years) == 1 & is.na(years)) years <- ''
 			years <- paste0(years, collapse = ', ')
-			GeneralParameters$time.series$custom.years[[1]] <<- climatoAnalysisEditYrsMon(main.win, years, titre, help, TRUE)
+			GeneralParameters$time.series$custom.years[[1]] <<- spatialAnalysisEditYrsMon(main.win, years, titre, help, TRUE)
 		})
 
 		tkgrid(chk.allYears, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 7, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -404,7 +404,7 @@ climatoAnalysisPanelCmd <- function(){
 			help <- "Edit the months to be included in the analysis. A month number must be between 1 and 12. The months need to be separated by commas. E.g., 1, 2, 3, 7, 8, 9"
 			months <- GeneralParameters$time.series$custom.months[[1]]
 			months <- paste0(months, collapse = ', ')
-			GeneralParameters$time.series$custom.months[[1]] <<- climatoAnalysisEditYrsMon(main.win, months, titre, help, FALSE)
+			GeneralParameters$time.series$custom.months[[1]] <<- spatialAnalysisEditYrsMon(main.win, months, titre, help, FALSE)
 		})
 
 		tkgrid(txt.startMonth, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -659,8 +659,8 @@ climatoAnalysisPanelCmd <- function(){
 
 		#############################
 
-		if(!is.null(EnvClimatoAnalysisplot$DirExist)){
-			stateAnaBut <- if(tclvalue(EnvClimatoAnalysisplot$DirExist) == "1") "normal" else "disabled"
+		if(!is.null(EnvSpatialAnalysisplot$DirExist)){
+			stateAnaBut <- if(tclvalue(EnvSpatialAnalysisplot$DirExist) == "1") "normal" else "disabled"
 		}else stateAnaBut <- "normal"
 
 		AnalyzeBut <- ttkbutton(subfr2, text = "Calculate", state = stateAnaBut)
@@ -774,7 +774,7 @@ climatoAnalysisPanelCmd <- function(){
 			tkconfigure(main.win, cursor = 'watch')
 			InsertMessagesTxt(main.txt.out, paste("Calculating", tclvalue(analysis.method), "......."))
 			ret <- tryCatch(
-				climatoAnalysisProcs(GeneralParameters),
+				spatialAnalysisProcs(GeneralParameters),
 				#warning = function(w) warningFun(w),
 				error = function(e) errorFun(e),
 				finally = tkconfigure(main.win, cursor = '')
@@ -789,7 +789,7 @@ climatoAnalysisPanelCmd <- function(){
 
 					###################
 
-					load.ClimatoAnalysis.Data()
+					load.SpatialAnalysis.Data()
 
 				}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
@@ -818,12 +818,12 @@ climatoAnalysisPanelCmd <- function(){
 
 		frameAnDat <- ttklabelframe(subfr3, text = "Analysis data", relief = 'groove')
 
-		EnvClimatoAnalysisplot$DirExist <- tclVar(0)
+		EnvSpatialAnalysisplot$DirExist <- tclVar(0)
 		file.Stat <- tclVar()
 
-		statedirStat <- if(tclvalue(EnvClimatoAnalysisplot$DirExist) == "1") "normal" else "disabled"
+		statedirStat <- if(tclvalue(EnvSpatialAnalysisplot$DirExist) == "1") "normal" else "disabled"
 
-		chk.dirStat <- tkcheckbutton(frameAnDat, variable = EnvClimatoAnalysisplot$DirExist, text = "Analysis already computed", anchor = 'w', justify = 'left')
+		chk.dirStat <- tkcheckbutton(frameAnDat, variable = EnvSpatialAnalysisplot$DirExist, text = "Analysis already computed", anchor = 'w', justify = 'left')
 		en.dirStat <- tkentry(frameAnDat, textvariable = file.Stat, width = largeur2, state = statedirStat)
 		bt.dirStat <- tkbutton(frameAnDat, text = "...", state = statedirStat)
 
@@ -839,16 +839,16 @@ climatoAnalysisPanelCmd <- function(){
 					InsertMessagesTxt(main.txt.out, 'Unable to load Climate Analysis data', format = TRUE)
 					InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', dirAnalysis[1]), format = TRUE)
 					tkconfigure(cb.climato.maps, values = "")
-					tclvalue(EnvClimatoAnalysisplot$climStat) <- ""
+					tclvalue(EnvSpatialAnalysisplot$climStat) <- ""
 					return(NULL)
 				}
 
-				EnvClimatoAnalysisplot$DirStat <- dirAnalysis
-				EnvClimatoAnalysisplot$PathStat <- dirname(str_trim(tclvalue(file.Stat)))
+				EnvSpatialAnalysisplot$DirStat <- dirAnalysis
+				EnvSpatialAnalysisplot$PathStat <- dirname(str_trim(tclvalue(file.Stat)))
 
 				###################
 
-				load.ClimatoAnalysis.Data()
+				load.SpatialAnalysis.Data()
 			}
 		})
 
@@ -858,10 +858,10 @@ climatoAnalysisPanelCmd <- function(){
 
 		###############
 		tkbind(chk.dirStat, "<Button-1>", function(){
-			statedirStat <- if(tclvalue(EnvClimatoAnalysisplot$DirExist) == '1') 'disabled' else 'normal'
+			statedirStat <- if(tclvalue(EnvSpatialAnalysisplot$DirExist) == '1') 'disabled' else 'normal'
 			tkconfigure(en.dirStat, state = statedirStat)
 			tkconfigure(bt.dirStat, state = statedirStat)
-			stateAnaBut <- if(tclvalue(EnvClimatoAnalysisplot$DirExist) == '1') 'normal' else 'disabled'
+			stateAnaBut <- if(tclvalue(EnvSpatialAnalysisplot$DirExist) == '1') 'normal' else 'disabled'
 			tkconfigure(AnalyzeBut, state = stateAnaBut)
 		})
 
@@ -869,17 +869,17 @@ climatoAnalysisPanelCmd <- function(){
 
 		frameClimatoMap <- ttklabelframe(subfr3, text = "Statistics Maps", relief = 'groove')
 
-		EnvClimatoAnalysisplot$climStat <- tclVar()
-		EnvClimatoAnalysisplot$climDate <- tclVar()
+		EnvSpatialAnalysisplot$climStat <- tclVar()
+		EnvSpatialAnalysisplot$climDate <- tclVar()
 
-		cb.climato.maps <- ttkcombobox(frameClimatoMap, values = "", textvariable = EnvClimatoAnalysisplot$climStat, width = largeur5)
+		cb.climato.maps <- ttkcombobox(frameClimatoMap, values = "", textvariable = EnvSpatialAnalysisplot$climStat, width = largeur5)
 		bt.climato.maps <- ttkbutton(frameClimatoMap, text = "PLOT")
-		cb.climDate <- ttkcombobox(frameClimatoMap, values = "", textvariable = EnvClimatoAnalysisplot$climDate, width = largeur6)
+		cb.climDate <- ttkcombobox(frameClimatoMap, values = "", textvariable = EnvSpatialAnalysisplot$climDate, width = largeur6)
 		bt.climMapOpt <- ttkbutton(frameClimatoMap, text = "Options")
 
 		###################
 
-		EnvClimatoAnalysisplot$climMapOp <- list(presetCol = list(color = 'tim.colors', reverse = FALSE),
+		EnvSpatialAnalysisplot$climMapOp <- list(presetCol = list(color = 'tim.colors', reverse = FALSE),
 												userCol = list(custom = FALSE, color = NULL),
 												userLvl = list(custom = FALSE, levels = NULL, equidist = FALSE),
 												title = list(user = FALSE, title = ''),
@@ -887,24 +887,24 @@ climatoAnalysisPanelCmd <- function(){
 												scalebar = list(add = FALSE, pos = 'bottomleft'))
 
 		tkconfigure(bt.climMapOpt, command = function(){
-			if(!is.null(EnvClimatoAnalysisplot$don)){
-				atlevel <- pretty(EnvClimatoAnalysisplot$don$z, n = 10, min.n = 7)
-				if(is.null(EnvClimatoAnalysisplot$climMapOp$userLvl$levels)){
-					EnvClimatoAnalysisplot$climMapOp$userLvl$levels <- atlevel
+			if(!is.null(EnvSpatialAnalysisplot$don)){
+				atlevel <- pretty(EnvSpatialAnalysisplot$don$z, n = 10, min.n = 7)
+				if(is.null(EnvSpatialAnalysisplot$climMapOp$userLvl$levels)){
+					EnvSpatialAnalysisplot$climMapOp$userLvl$levels <- atlevel
 				}else{
-					if(!EnvClimatoAnalysisplot$climMapOp$userLvl$custom)
-						EnvClimatoAnalysisplot$climMapOp$userLvl$levels <- atlevel
+					if(!EnvSpatialAnalysisplot$climMapOp$userLvl$custom)
+						EnvSpatialAnalysisplot$climMapOp$userLvl$levels <- atlevel
 				}
 			}
-			EnvClimatoAnalysisplot$climMapOp <- climatoAnalysis.MapOptions(main.win, EnvClimatoAnalysisplot$climMapOp)
+			EnvSpatialAnalysisplot$climMapOp <- MapGraph.MapOptions(main.win, EnvSpatialAnalysisplot$climMapOp)
 		})
 
-		EnvClimatoAnalysisplot$notebookTab.climMap <- NULL
+		EnvSpatialAnalysisplot$notebookTab.climMap <- NULL
 		tkconfigure(bt.climato.maps, command = function(){
-			if(!tclvalue(EnvClimatoAnalysisplot$climStat)%in%c("", "Anomaly")){
-				imgContainer <- climatoAnalysis.DisplayStatMaps(tknotes)
-				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvClimatoAnalysisplot$notebookTab.climMap, AllOpenTabType, AllOpenTabData)
-				EnvClimatoAnalysisplot$notebookTab.climMap <- retNBTab$notebookTab
+			if(!tclvalue(EnvSpatialAnalysisplot$climStat)%in%c("", "Anomaly")){
+				imgContainer <- spatialAnalysis.DisplayStatMaps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSpatialAnalysisplot$notebookTab.climMap, AllOpenTabType, AllOpenTabData)
+				EnvSpatialAnalysisplot$notebookTab.climMap <- retNBTab$notebookTab
 				AllOpenTabType <<- retNBTab$AllOpenTabType
 				AllOpenTabData <<- retNBTab$AllOpenTabData
 			}
@@ -920,54 +920,54 @@ climatoAnalysisPanelCmd <- function(){
 		###############
 
 		tkbind(cb.climato.maps, "<<ComboboxSelected>>", function(){
-			analysis.path <- file.path(EnvClimatoAnalysisplot$PathStat, tclvalue(EnvClimatoAnalysisplot$climStat))
+			analysis.path <- file.path(EnvSpatialAnalysisplot$PathStat, tclvalue(EnvSpatialAnalysisplot$climStat))
 			params <- try(readRDS(file.path(analysis.path, "params.rds")), silent = TRUE)
 			if(inherits(params, "try-error")){
 				InsertMessagesTxt(main.txt.out, 'Unable to load Climate Analysis data', format = TRUE)
 				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', params[1]), format = TRUE)
 				tkconfigure(cb.climDate, values = "")
-				tclvalue(EnvClimatoAnalysisplot$climDate) <- ""
+				tclvalue(EnvSpatialAnalysisplot$climDate) <- ""
 				return(NULL)
 			}
 			tkconfigure(cb.climDate, values = params$stats)
-			tclvalue(EnvClimatoAnalysisplot$climDate) <- params$stats[1]
+			tclvalue(EnvSpatialAnalysisplot$climDate) <- params$stats[1]
 			stateclimDate <- if(params$params$time.series$out.series == "monthly") "normal" else "disabled"
 			tkconfigure(cb.climDate, state = stateclimDate)
 
-			EnvClimatoAnalysisplot$statpars <- params
+			EnvSpatialAnalysisplot$statpars <- params
 
 			###################
-			ret <- EnvClimatoAnalysisplot$read.ClimStat()
+			ret <- EnvSpatialAnalysisplot$read.ClimStat()
 			if(is.null(ret)) return(NULL)
 
 			###################
 			tkconfigure(cb.TSDate, values = params$timeseries[[1]][[2]])
-			tclvalue(EnvClimatoAnalysisplot$TSDate) <- params$timeseries[[1]][[2]][1]
+			tclvalue(EnvSpatialAnalysisplot$TSDate) <- params$timeseries[[1]][[2]][1]
 
 			###################
-			if(!is.null(EnvClimatoAnalysisplot$don)){
-				atlevel <- pretty(EnvClimatoAnalysisplot$don$z, n = 10, min.n = 7)
-				EnvClimatoAnalysisplot$climMapOp$userLvl$levels <- atlevel
+			if(!is.null(EnvSpatialAnalysisplot$don)){
+				atlevel <- pretty(EnvSpatialAnalysisplot$don$z, n = 10, min.n = 7)
+				EnvSpatialAnalysisplot$climMapOp$userLvl$levels <- atlevel
 			}
 
 			###################
-			ret1 <- EnvClimatoAnalysisplot$read.ClimTSData()
+			ret1 <- EnvSpatialAnalysisplot$read.ClimTSData()
 			if(is.null(ret1)) return(NULL)
 		})
 
 		###############
 
 		tkbind(cb.climDate, "<<ComboboxSelected>>", function(){
-			ret <- EnvClimatoAnalysisplot$read.ClimStat()
+			ret <- EnvSpatialAnalysisplot$read.ClimStat()
 			if(is.null(ret)) return(NULL)
 
 			###################
-			ipos <- which(EnvClimatoAnalysisplot$statpars$stats == tclvalue(EnvClimatoAnalysisplot$climDate))
-			tkconfigure(cb.TSDate, values = EnvClimatoAnalysisplot$statpars$timeseries[[ipos]][[2]])
-			tclvalue(EnvClimatoAnalysisplot$TSDate) <- EnvClimatoAnalysisplot$statpars$timeseries[[ipos]][[2]][1]
+			ipos <- which(EnvSpatialAnalysisplot$statpars$stats == tclvalue(EnvSpatialAnalysisplot$climDate))
+			tkconfigure(cb.TSDate, values = EnvSpatialAnalysisplot$statpars$timeseries[[ipos]][[2]])
+			tclvalue(EnvSpatialAnalysisplot$TSDate) <- EnvSpatialAnalysisplot$statpars$timeseries[[ipos]][[2]][1]
 
 			###################
-			ret1 <- EnvClimatoAnalysisplot$read.ClimTSData()
+			ret1 <- EnvSpatialAnalysisplot$read.ClimTSData()
 			if(is.null(ret1)) return(NULL)
 		})
 
@@ -975,20 +975,20 @@ climatoAnalysisPanelCmd <- function(){
 
 		frameTSMaps <- ttklabelframe(subfr3, text = "Monthly/Seasonal/Annual Maps", relief = 'groove')
 
-		EnvClimatoAnalysisplot$TSDate <- tclVar()
-		EnvClimatoAnalysisplot$TSData <- tclVar("Data")
+		EnvSpatialAnalysisplot$TSDate <- tclVar()
+		EnvSpatialAnalysisplot$TSData <- tclVar("Data")
 
-		cb.TSDate <- ttkcombobox(frameTSMaps, values = "", textvariable = EnvClimatoAnalysisplot$TSDate, width = largeur6)
+		cb.TSDate <- ttkcombobox(frameTSMaps, values = "", textvariable = EnvSpatialAnalysisplot$TSDate, width = largeur6)
 		bt.TSDate.prev <- ttkbutton(frameTSMaps, text = "<<", width = 3)
 		bt.TSDate.next <- ttkbutton(frameTSMaps, text = ">>", width = 3)
 		bt.TSDate.plot <- ttkbutton(frameTSMaps, text = "PLOT", width = 7)
 
-		cb.TSData <- ttkcombobox(frameTSMaps, values = "Data", textvariable = EnvClimatoAnalysisplot$TSData, width = largeur6)
+		cb.TSData <- ttkcombobox(frameTSMaps, values = "Data", textvariable = EnvSpatialAnalysisplot$TSData, width = largeur6)
 		bt.TSMapOpt <- ttkbutton(frameTSMaps, text = "Options", width = 7)
 
 		###################
 
-		EnvClimatoAnalysisplot$TSMapOp <- list(presetCol = list(color = 'tim.colors', reverse = FALSE),
+		EnvSpatialAnalysisplot$TSMapOp <- list(presetCol = list(color = 'tim.colors', reverse = FALSE),
 												userCol = list(custom = FALSE, color = NULL),
 												userLvl = list(custom = FALSE, levels = NULL, equidist = FALSE),
 												title = list(user = FALSE, title = ''),
@@ -996,64 +996,64 @@ climatoAnalysisPanelCmd <- function(){
 												scalebar = list(add = FALSE, pos = 'bottomleft'))
 
 		tkconfigure(bt.TSMapOpt, command = function(){
-			if(!is.null(EnvClimatoAnalysisplot$tsdata)){
-				if(tclvalue(EnvClimatoAnalysisplot$TSData) == "Data")
-					atlevel <- pretty(EnvClimatoAnalysisplot$tsdata$z, n = 10, min.n = 7)
-				if(tclvalue(EnvClimatoAnalysisplot$TSData) == "Anomaly")
-					atlevel <- pretty(EnvClimatoAnalysisplot$anomData$z, n = 10, min.n = 7)
-				if(is.null(EnvClimatoAnalysisplot$TSMapOp$userLvl$levels)){
-					EnvClimatoAnalysisplot$TSMapOp$userLvl$levels <- atlevel
+			if(!is.null(EnvSpatialAnalysisplot$tsdata)){
+				if(tclvalue(EnvSpatialAnalysisplot$TSData) == "Data")
+					atlevel <- pretty(EnvSpatialAnalysisplot$tsdata$z, n = 10, min.n = 7)
+				if(tclvalue(EnvSpatialAnalysisplot$TSData) == "Anomaly")
+					atlevel <- pretty(EnvSpatialAnalysisplot$anomData$z, n = 10, min.n = 7)
+				if(is.null(EnvSpatialAnalysisplot$TSMapOp$userLvl$levels)){
+					EnvSpatialAnalysisplot$TSMapOp$userLvl$levels <- atlevel
 				}else{
-					if(!EnvClimatoAnalysisplot$TSMapOp$userLvl$custom)
-						EnvClimatoAnalysisplot$TSMapOp$userLvl$levels <- atlevel
+					if(!EnvSpatialAnalysisplot$TSMapOp$userLvl$custom)
+						EnvSpatialAnalysisplot$TSMapOp$userLvl$levels <- atlevel
 				}
 			}
-			EnvClimatoAnalysisplot$TSMapOp <- climatoAnalysis.MapOptions(main.win, EnvClimatoAnalysisplot$TSMapOp)
+			EnvSpatialAnalysisplot$TSMapOp <- MapGraph.MapOptions(main.win, EnvSpatialAnalysisplot$TSMapOp)
 		})
 
 
-		EnvClimatoAnalysisplot$notebookTab.TSMap <- NULL
+		EnvSpatialAnalysisplot$notebookTab.TSMap <- NULL
 		tkconfigure(bt.TSDate.plot, command = function(){
-			if(tclvalue(EnvClimatoAnalysisplot$TSDate) != ""){
-				imgContainer <- climatoAnalysis.DisplayTSMaps(tknotes)
-				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvClimatoAnalysisplot$notebookTab.TSMap, AllOpenTabType, AllOpenTabData)
-				EnvClimatoAnalysisplot$notebookTab.TSMap <- retNBTab$notebookTab
+			if(tclvalue(EnvSpatialAnalysisplot$TSDate) != ""){
+				imgContainer <- spatialAnalysis.DisplayTSMaps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSpatialAnalysisplot$notebookTab.TSMap, AllOpenTabType, AllOpenTabData)
+				EnvSpatialAnalysisplot$notebookTab.TSMap <- retNBTab$notebookTab
 				AllOpenTabType <<- retNBTab$AllOpenTabType
 				AllOpenTabData <<- retNBTab$AllOpenTabData
 			}
 		})
 
 		tkconfigure(bt.TSDate.prev, command = function(){
-			if(tclvalue(EnvClimatoAnalysisplot$TSDate) != ""){
-				ipos <- which(EnvClimatoAnalysisplot$statpars$stats == tclvalue(EnvClimatoAnalysisplot$climDate))
-				idaty <- which(EnvClimatoAnalysisplot$statpars$timeseries[[ipos]][[2]] == tclvalue(EnvClimatoAnalysisplot$TSDate))
+			if(tclvalue(EnvSpatialAnalysisplot$TSDate) != ""){
+				ipos <- which(EnvSpatialAnalysisplot$statpars$stats == tclvalue(EnvSpatialAnalysisplot$climDate))
+				idaty <- which(EnvSpatialAnalysisplot$statpars$timeseries[[ipos]][[2]] == tclvalue(EnvSpatialAnalysisplot$TSDate))
 				idaty <- idaty-1
-				if(idaty < 1) idaty <- length(EnvClimatoAnalysisplot$statpars$timeseries[[ipos]][[2]])
-				tclvalue(EnvClimatoAnalysisplot$TSDate) <- EnvClimatoAnalysisplot$statpars$timeseries[[ipos]][[2]][idaty]
-				ret1 <- EnvClimatoAnalysisplot$read.ClimTSData()
+				if(idaty < 1) idaty <- length(EnvSpatialAnalysisplot$statpars$timeseries[[ipos]][[2]])
+				tclvalue(EnvSpatialAnalysisplot$TSDate) <- EnvSpatialAnalysisplot$statpars$timeseries[[ipos]][[2]][idaty]
+				ret1 <- EnvSpatialAnalysisplot$read.ClimTSData()
 				if(is.null(ret1)) return(NULL)
 
-				imgContainer <- climatoAnalysis.DisplayTSMaps(tknotes)
-				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvClimatoAnalysisplot$notebookTab.TSMap, AllOpenTabType, AllOpenTabData)
-				EnvClimatoAnalysisplot$notebookTab.TSMap <- retNBTab$notebookTab
+				imgContainer <- spatialAnalysis.DisplayTSMaps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSpatialAnalysisplot$notebookTab.TSMap, AllOpenTabType, AllOpenTabData)
+				EnvSpatialAnalysisplot$notebookTab.TSMap <- retNBTab$notebookTab
 				AllOpenTabType <<- retNBTab$AllOpenTabType
 				AllOpenTabData <<- retNBTab$AllOpenTabData
 			}
 		})
 
 		tkconfigure(bt.TSDate.next, command = function(){
-			if(tclvalue(EnvClimatoAnalysisplot$TSDate) != ""){
-				ipos <- which(EnvClimatoAnalysisplot$statpars$stats == tclvalue(EnvClimatoAnalysisplot$climDate))
-				idaty <- which(EnvClimatoAnalysisplot$statpars$timeseries[[ipos]][[2]] == tclvalue(EnvClimatoAnalysisplot$TSDate))
+			if(tclvalue(EnvSpatialAnalysisplot$TSDate) != ""){
+				ipos <- which(EnvSpatialAnalysisplot$statpars$stats == tclvalue(EnvSpatialAnalysisplot$climDate))
+				idaty <- which(EnvSpatialAnalysisplot$statpars$timeseries[[ipos]][[2]] == tclvalue(EnvSpatialAnalysisplot$TSDate))
 				idaty <- idaty+1
-				if(idaty > length(EnvClimatoAnalysisplot$statpars$timeseries[[ipos]][[2]])) idaty <- 1
-				tclvalue(EnvClimatoAnalysisplot$TSDate) <- EnvClimatoAnalysisplot$statpars$timeseries[[ipos]][[2]][idaty]
-				ret1 <- EnvClimatoAnalysisplot$read.ClimTSData()
+				if(idaty > length(EnvSpatialAnalysisplot$statpars$timeseries[[ipos]][[2]])) idaty <- 1
+				tclvalue(EnvSpatialAnalysisplot$TSDate) <- EnvSpatialAnalysisplot$statpars$timeseries[[ipos]][[2]][idaty]
+				ret1 <- EnvSpatialAnalysisplot$read.ClimTSData()
 				if(is.null(ret1)) return(NULL)
 
-				imgContainer <- climatoAnalysis.DisplayTSMaps(tknotes)
-				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvClimatoAnalysisplot$notebookTab.TSMap, AllOpenTabType, AllOpenTabData)
-				EnvClimatoAnalysisplot$notebookTab.TSMap <- retNBTab$notebookTab
+				imgContainer <- spatialAnalysis.DisplayTSMaps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSpatialAnalysisplot$notebookTab.TSMap, AllOpenTabType, AllOpenTabData)
+				EnvSpatialAnalysisplot$notebookTab.TSMap <- retNBTab$notebookTab
 				AllOpenTabType <<- retNBTab$AllOpenTabType
 				AllOpenTabData <<- retNBTab$AllOpenTabData
 			}
@@ -1071,17 +1071,17 @@ climatoAnalysisPanelCmd <- function(){
 		###############
 
 		tkbind(cb.TSDate, "<<ComboboxSelected>>", function(){
-			ret1 <- EnvClimatoAnalysisplot$read.ClimTSData()
+			ret1 <- EnvSpatialAnalysisplot$read.ClimTSData()
 			if(is.null(ret1)) return(NULL)
 		})
 
 		tkbind(cb.TSData, "<<ComboboxSelected>>", function(){
-			if(!is.null(EnvClimatoAnalysisplot$tsdata)){
-				if(tclvalue(EnvClimatoAnalysisplot$TSData) == "Data")
-					atlevel <- pretty(EnvClimatoAnalysisplot$tsdata$z, n = 10, min.n = 7)
-				if(tclvalue(EnvClimatoAnalysisplot$TSData) == "Anomaly")
-					atlevel <- pretty(EnvClimatoAnalysisplot$anomData$z, n = 10, min.n = 7)
-				EnvClimatoAnalysisplot$TSMapOp$userLvl$levels <- atlevel
+			if(!is.null(EnvSpatialAnalysisplot$tsdata)){
+				if(tclvalue(EnvSpatialAnalysisplot$TSData) == "Data")
+					atlevel <- pretty(EnvSpatialAnalysisplot$tsdata$z, n = 10, min.n = 7)
+				if(tclvalue(EnvSpatialAnalysisplot$TSData) == "Anomaly")
+					atlevel <- pretty(EnvSpatialAnalysisplot$anomData$z, n = 10, min.n = 7)
+				EnvSpatialAnalysisplot$TSMapOp$userLvl$levels <- atlevel
 			}
 		})
 
@@ -1109,102 +1109,102 @@ climatoAnalysisPanelCmd <- function(){
 		frameTSPlot <- ttklabelframe(subfr4, text = "Time Series Graph", relief = 'groove')
 
 		typeTSPLOT <- c("Line", "Barplot", "Probability", "ENSO-Line", "ENSO-Barplot", "ENSO-Proba", "Anomaly")
-		EnvClimatoAnalysisplot$graph$typeTSp <- tclVar("Line")
-		EnvClimatoAnalysisplot$graph$averageTSp <- tclVar(FALSE)
-		EnvClimatoAnalysisplot$graph$tercileTSp <- tclVar(FALSE)
-		EnvClimatoAnalysisplot$graph$trendTSp <- tclVar(FALSE)
+		EnvSpatialAnalysisplot$graph$typeTSp <- tclVar("Line")
+		EnvSpatialAnalysisplot$graph$averageTSp <- tclVar(FALSE)
+		EnvSpatialAnalysisplot$graph$tercileTSp <- tclVar(FALSE)
+		EnvSpatialAnalysisplot$graph$trendTSp <- tclVar(FALSE)
 
-		stateType <- if(tclvalue(EnvClimatoAnalysisplot$graph$typeTSp)%in%c("Line", "ENSO-Line")) "normal" else "disabled"
+		stateType <- if(tclvalue(EnvSpatialAnalysisplot$graph$typeTSp)%in%c("Line", "ENSO-Line")) "normal" else "disabled"
 
-		cb.typeTSp <- ttkcombobox(frameTSPlot, values = typeTSPLOT, textvariable = EnvClimatoAnalysisplot$graph$typeTSp, width = largeur6)
+		cb.typeTSp <- ttkcombobox(frameTSPlot, values = typeTSPLOT, textvariable = EnvSpatialAnalysisplot$graph$typeTSp, width = largeur6)
 		bt.TsGraph.plot <- ttkbutton(frameTSPlot, text = "PLOT", width = 7)
 		bt.TSGraphOpt <- ttkbutton(frameTSPlot, text = "Options", width = 8)
 
 		frTS1 <- tkframe(frameTSPlot)
-		chk.meanTSp <- tkcheckbutton(frTS1, variable = EnvClimatoAnalysisplot$graph$averageTSp, text = "Add Mean", anchor = 'w', justify = 'left', state = stateType)
-		chk.tercTSp <- tkcheckbutton(frTS1, variable = EnvClimatoAnalysisplot$graph$tercileTSp, text = "Add Terciles", anchor = 'w', justify = 'left', state = stateType)
-		chk.trendTSp <- tkcheckbutton(frTS1, variable = EnvClimatoAnalysisplot$graph$trendTSp, text = "Add Trend", anchor = 'w', justify = 'left', state = stateType)
+		chk.meanTSp <- tkcheckbutton(frTS1, variable = EnvSpatialAnalysisplot$graph$averageTSp, text = "Add Mean", anchor = 'w', justify = 'left', state = stateType)
+		chk.tercTSp <- tkcheckbutton(frTS1, variable = EnvSpatialAnalysisplot$graph$tercileTSp, text = "Add Terciles", anchor = 'w', justify = 'left', state = stateType)
+		chk.trendTSp <- tkcheckbutton(frTS1, variable = EnvSpatialAnalysisplot$graph$trendTSp, text = "Add Trend", anchor = 'w', justify = 'left', state = stateType)
 		tkgrid(chk.meanTSp, chk.tercTSp, chk.trendTSp)
 
 		#################
 
-		EnvClimatoAnalysisplot$TSGraphOp <- list(
-					anomaly = list(
-							anom = list(perc.anom = FALSE, basePeriod = FALSE, startYr.anom = 1981, endYr.anom = 2010),
-							xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
-							ylim = list(is.min = FALSE, min = -100, is.max = FALSE, max = 100),
-							axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-							title = list(is.title = FALSE, title = '', position = 'top'),
-							colors = list(negative = "blue", positive = "red")
-							),
-					bar = list(
-						xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						colors = list(col = "darkblue")
-						),
-					line = list(
-						xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						plot = list(type = 'both',
-							col = list(line = "red", points = "blue"),
-							lwd = 2, cex = 1.4),
-						legend = list(
-							is = list(mean = FALSE, tercile = FALSE, linear = FALSE),
-							add = list(mean = FALSE, tercile = FALSE, linear = FALSE),
-							col = list(mean = "black", tercile1 = "green", tercile2 = "blue", linear = "purple3"),
-							text = list(mean = "Average", tercile1 = "Tercile 0.33333", tercile2 = "Tercile 0.66666", linear = "Trend line"),
-							lwd = list(mean = 2, tercile = 2, linear = 2))
-						),
-					proba = list(
-						xlim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						plot = list(type = 'both',
-							col = list(line = "red", points = "blue"),
-							lwd = 2, cex = 0.8),
-						proba = list(theoretical = TRUE, col = 'black', lwd = 2)
-						),
-					line.enso = list(
-						xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						plot = list(lwd = 2, cex = 2, col = list(line = "black",
-									points = c("blue", "gray", "red"))),
-						legend = list(
-							is = list(mean = FALSE, tercile = FALSE, linear = FALSE),
-							add = list(mean = FALSE, tercile = FALSE, linear = FALSE),
-							col = list(mean = "darkblue", tercile1 = "chartreuse4", tercile2 = "darkgoldenrod4", linear = "purple3"),
-							text = list(mean = "Average", tercile1 = "Tercile 0.33333", tercile2 = "Tercile 0.66666", linear = "Trend line"),
-							lwd = list(mean = 2, tercile = 2, linear = 2))
-						),
-					bar.enso = list(
-						xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						colors = list(col = c("blue", "gray", "red"))
-						),
-					proba.enso = list(
-						xlim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						plot = list(type = 'both', lwd = 2, cex = 1.4,
-							all = list(line = "black", points = "lightgray"),
-							nina = list(line = "blue", points = "lightblue"),
-							neutre = list(line = "gray", points = "lightgray"),
-							nino = list(line = "red", points = "lightpink"))
-						)
-					)
+		EnvSpatialAnalysisplot$TSGraphOp <- list(
+										anomaly = list(
+												anom = list(perc.anom = FALSE, basePeriod = FALSE, startYr.anom = 1981, endYr.anom = 2010),
+												xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+												ylim = list(is.min = FALSE, min = -100, is.max = FALSE, max = 100),
+												axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+												title = list(is.title = FALSE, title = '', position = 'top'),
+												colors = list(negative = "blue", positive = "red")
+												),
+										bar = list(
+											xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+											ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+											axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+											title = list(is.title = FALSE, title = '', position = 'top'),
+											colors = list(col = "darkblue")
+											),
+										line = list(
+											xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+											ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+											axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+											title = list(is.title = FALSE, title = '', position = 'top'),
+											plot = list(type = 'both',
+												col = list(line = "red", points = "blue"),
+												lwd = 2, cex = 1.4),
+											legend = list(
+												is = list(mean = FALSE, tercile = FALSE, linear = FALSE),
+												add = list(mean = FALSE, tercile = FALSE, linear = FALSE),
+												col = list(mean = "black", tercile1 = "green", tercile2 = "blue", linear = "purple3"),
+												text = list(mean = "Average", tercile1 = "Tercile 0.33333", tercile2 = "Tercile 0.66666", linear = "Trend line"),
+												lwd = list(mean = 2, tercile = 2, linear = 2))
+											),
+										proba = list(
+											xlim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+											ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+											axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+											title = list(is.title = FALSE, title = '', position = 'top'),
+											plot = list(type = 'both',
+												col = list(line = "red", points = "blue"),
+												lwd = 2, cex = 0.8),
+											proba = list(theoretical = TRUE, col = 'black', lwd = 2)
+											),
+										line.enso = list(
+											xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+											ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+											axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+											title = list(is.title = FALSE, title = '', position = 'top'),
+											plot = list(lwd = 2, cex = 2, col = list(line = "black",
+														points = c("blue", "gray", "red"))),
+											legend = list(
+												is = list(mean = FALSE, tercile = FALSE, linear = FALSE),
+												add = list(mean = FALSE, tercile = FALSE, linear = FALSE),
+												col = list(mean = "darkblue", tercile1 = "chartreuse4", tercile2 = "darkgoldenrod4", linear = "purple3"),
+												text = list(mean = "Average", tercile1 = "Tercile 0.33333", tercile2 = "Tercile 0.66666", linear = "Trend line"),
+												lwd = list(mean = 2, tercile = 2, linear = 2))
+											),
+										bar.enso = list(
+											xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+											ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+											axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+											title = list(is.title = FALSE, title = '', position = 'top'),
+											colors = list(col = c("blue", "gray", "red"))
+											),
+										proba.enso = list(
+											xlim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+											ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+											axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+											title = list(is.title = FALSE, title = '', position = 'top'),
+											plot = list(type = 'both', lwd = 2, cex = 1.4,
+												all = list(line = "black", points = "lightgray"),
+												nina = list(line = "blue", points = "lightblue"),
+												neutre = list(line = "gray", points = "lightgray"),
+												nino = list(line = "red", points = "lightpink"))
+											)
+										)
 
 		tkconfigure(bt.TSGraphOpt, command = function(){
-			suffix.fun <- switch(tclvalue(EnvClimatoAnalysisplot$graph$typeTSp),
+			suffix.fun <- switch(tclvalue(EnvSpatialAnalysisplot$graph$typeTSp),
 									"Anomaly" = "Anomaly",
 									"Barplot" = "Bar",
 									"Line" = "Line",
@@ -1212,16 +1212,16 @@ climatoAnalysisPanelCmd <- function(){
 									"ENSO-Line" = "LineENSO",
 									"ENSO-Barplot" = "BarENSO",
 									"ENSO-Proba" = "ProbaENSO")
-			plot.fun <- match.fun(paste0("climatoAnalysis.GraphOptions.", suffix.fun))
-			EnvClimatoAnalysisplot$TSGraphOp <- plot.fun(main.win, EnvClimatoAnalysisplot$TSGraphOp)
+			plot.fun <- match.fun(paste0("MapGraph.GraphOptions.", suffix.fun))
+			EnvSpatialAnalysisplot$TSGraphOp <- plot.fun(main.win, EnvSpatialAnalysisplot$TSGraphOp)
 		})
 
-		EnvClimatoAnalysisplot$notebookTab.tsplot <- NULL
+		EnvSpatialAnalysisplot$notebookTab.tsplot <- NULL
 		tkconfigure(bt.TsGraph.plot, command = function(){
-			if(!is.null(EnvClimatoAnalysisplot$tsdata)){
-				imgContainer <- climatoAnalysis.DisplayTSPlot(tknotes)
-				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvClimatoAnalysisplot$notebookTab.tsplot, AllOpenTabType, AllOpenTabData)
-				EnvClimatoAnalysisplot$notebookTab.tsplot <- retNBTab$notebookTab
+			if(!is.null(EnvSpatialAnalysisplot$tsdata)){
+				imgContainer <- spatialAnalysis.DisplayTSPlot(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSpatialAnalysisplot$notebookTab.tsplot, AllOpenTabType, AllOpenTabData)
+				EnvSpatialAnalysisplot$notebookTab.tsplot <- retNBTab$notebookTab
 				AllOpenTabType <<- retNBTab$AllOpenTabType
 				AllOpenTabData <<- retNBTab$AllOpenTabData
 			}
@@ -1237,31 +1237,31 @@ climatoAnalysisPanelCmd <- function(){
 		#################
 
 		tkbind(cb.typeTSp, "<<ComboboxSelected>>", function(){
-			stateType <- if(tclvalue(EnvClimatoAnalysisplot$graph$typeTSp)%in%c("Line", "ENSO-Line")) "normal" else "disabled"
+			stateType <- if(tclvalue(EnvSpatialAnalysisplot$graph$typeTSp)%in%c("Line", "ENSO-Line")) "normal" else "disabled"
 			tkconfigure(chk.meanTSp, state = stateType)
 			tkconfigure(chk.tercTSp, state = stateType)
 			tkconfigure(chk.trendTSp, state = stateType)
 		})
 
 		tkbind(chk.meanTSp, "<Button-1>", function(){
-			EnvClimatoAnalysisplot$TSGraphOp$line$legend$add$mean <- 
-						if(tclvalue(EnvClimatoAnalysisplot$graph$averageTSp) == '0') TRUE else FALSE
-			EnvClimatoAnalysisplot$TSGraphOp$line.enso$legend$add$mean <- 
-						if(tclvalue(EnvClimatoAnalysisplot$graph$averageTSp) == '0') TRUE else FALSE
+			EnvSpatialAnalysisplot$TSGraphOp$line$legend$add$mean <- 
+						if(tclvalue(EnvSpatialAnalysisplot$graph$averageTSp) == '0') TRUE else FALSE
+			EnvSpatialAnalysisplot$TSGraphOp$line.enso$legend$add$mean <- 
+						if(tclvalue(EnvSpatialAnalysisplot$graph$averageTSp) == '0') TRUE else FALSE
 		})
 
 		tkbind(chk.tercTSp, "<Button-1>", function(){
-			EnvClimatoAnalysisplot$TSGraphOp$line$legend$add$tercile <- 
-						if(tclvalue(EnvClimatoAnalysisplot$graph$tercileTSp) == '0') TRUE else FALSE
-			EnvClimatoAnalysisplot$TSGraphOp$line.enso$legend$add$tercile <- 
-						if(tclvalue(EnvClimatoAnalysisplot$graph$tercileTSp) == '0') TRUE else FALSE
+			EnvSpatialAnalysisplot$TSGraphOp$line$legend$add$tercile <- 
+						if(tclvalue(EnvSpatialAnalysisplot$graph$tercileTSp) == '0') TRUE else FALSE
+			EnvSpatialAnalysisplot$TSGraphOp$line.enso$legend$add$tercile <- 
+						if(tclvalue(EnvSpatialAnalysisplot$graph$tercileTSp) == '0') TRUE else FALSE
 		})
 
 		tkbind(chk.trendTSp, "<Button-1>", function(){
-			EnvClimatoAnalysisplot$TSGraphOp$line$legend$add$linear <- 
-						if(tclvalue(EnvClimatoAnalysisplot$graph$trendTSp) == '0') TRUE else FALSE
-			EnvClimatoAnalysisplot$TSGraphOp$line.enso$legend$add$linear <- 
-						if(tclvalue(EnvClimatoAnalysisplot$graph$trendTSp) == '0') TRUE else FALSE
+			EnvSpatialAnalysisplot$TSGraphOp$line$legend$add$linear <- 
+						if(tclvalue(EnvSpatialAnalysisplot$graph$trendTSp) == '0') TRUE else FALSE
+			EnvSpatialAnalysisplot$TSGraphOp$line.enso$legend$add$linear <- 
+						if(tclvalue(EnvSpatialAnalysisplot$graph$trendTSp) == '0') TRUE else FALSE
 		})
 
 		##############################################
@@ -1269,16 +1269,16 @@ climatoAnalysisPanelCmd <- function(){
 		frameSTNCrds <- ttklabelframe(subfr4, text = "Station/Coordinates", relief = 'groove')
 
 		frTS2 <- tkframe(frameSTNCrds)
-		EnvClimatoAnalysisplot$graph$lonLOC <- tclVar()
-		EnvClimatoAnalysisplot$graph$latLOC <- tclVar()
-		EnvClimatoAnalysisplot$graph$stnIDTSp <- tclVar()
+		EnvSpatialAnalysisplot$graph$lonLOC <- tclVar()
+		EnvSpatialAnalysisplot$graph$latLOC <- tclVar()
+		EnvSpatialAnalysisplot$graph$stnIDTSp <- tclVar()
 
 		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
 
 		##############################################
 
 		tkgrid(frameTSPlot, row = 0, column = 0, sticky = 'we', pady = 1)
-		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = 'we', pady = 3)
+		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = '', pady = 3)
 
 	#######################################################################################################
 
@@ -1297,11 +1297,11 @@ climatoAnalysisPanelCmd <- function(){
 
 		frameSHP <- ttklabelframe(subfr5, text = "Boundaries", relief = 'groove')
 
-		EnvClimatoAnalysisplot$shp$add.shp <- tclVar(FALSE)
+		EnvSpatialAnalysisplot$shp$add.shp <- tclVar(FALSE)
 		file.plotShp <- tclVar()
 		stateSHP <- "disabled"
 
-		chk.addshp <- tkcheckbutton(frameSHP, variable = EnvClimatoAnalysisplot$shp$add.shp, text = "Add boundaries to Map", anchor = 'w', justify = 'left')
+		chk.addshp <- tkcheckbutton(frameSHP, variable = EnvSpatialAnalysisplot$shp$add.shp, text = "Add boundaries to Map", anchor = 'w', justify = 'left')
 		bt.addshpOpt <- ttkbutton(frameSHP, text = "Options", state = stateSHP)
 		cb.addshp <- ttkcombobox(frameSHP, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur1, state = stateSHP)
 		bt.addshp <- tkbutton(frameSHP, text = "...", state = stateSHP)
@@ -1320,16 +1320,16 @@ climatoAnalysisPanelCmd <- function(){
 				tkconfigure(cb.addshp, values = unlist(listOpenFiles), textvariable = file.plotShp)
 
 				shpofile <- getShpOpenData(file.plotShp)
-				if(is.null(shpofile)) EnvClimatoAnalysisplot$shp$ocrds <- NULL
-				EnvClimatoAnalysisplot$shp$ocrds <- getBoundaries(shpofile[[2]])
+				if(is.null(shpofile)) EnvSpatialAnalysisplot$shp$ocrds <- NULL
+				EnvSpatialAnalysisplot$shp$ocrds <- getBoundaries(shpofile[[2]])
 			}else return(NULL)
 		})
 
 		########
-		EnvClimatoAnalysisplot$SHPOp <- list(col = "black", lwd = 1.5)
+		EnvSpatialAnalysisplot$SHPOp <- list(col = "black", lwd = 1.5)
 
 		tkconfigure(bt.addshpOpt, command = function(){
-			EnvClimatoAnalysisplot$SHPOp <- climatoAnalysis.GraphOptions.LineSHP(main.win, EnvClimatoAnalysisplot$SHPOp)
+			EnvSpatialAnalysisplot$SHPOp <- MapGraph.GraphOptions.LineSHP(main.win, EnvSpatialAnalysisplot$SHPOp)
 		})
 
 		########
@@ -1341,12 +1341,12 @@ climatoAnalysisPanelCmd <- function(){
 		#################
 		tkbind(cb.addshp, "<<ComboboxSelected>>", function(){
 			shpofile <- getShpOpenData(file.plotShp)
-			if(is.null(shpofile)) EnvClimatoAnalysisplot$shp$ocrds <- NULL
-			EnvClimatoAnalysisplot$shp$ocrds <- getBoundaries(shpofile[[2]])
+			if(is.null(shpofile)) EnvSpatialAnalysisplot$shp$ocrds <- NULL
+			EnvSpatialAnalysisplot$shp$ocrds <- getBoundaries(shpofile[[2]])
 		})
 
 		tkbind(chk.addshp, "<Button-1>", function(){
-			stateSHP <- if(tclvalue(EnvClimatoAnalysisplot$shp$add.shp) == "1") "disabled" else "normal"
+			stateSHP <- if(tclvalue(EnvSpatialAnalysisplot$shp$add.shp) == "1") "disabled" else "normal"
 			tkconfigure(cb.addshp, state = stateSHP)
 			tkconfigure(bt.addshp, state = stateSHP)
 			tkconfigure(bt.addshpOpt, state = stateSHP)
@@ -1358,64 +1358,64 @@ climatoAnalysisPanelCmd <- function(){
 
 	#######################################################################################################
 
-	load.ClimatoAnalysis.Data <- function(){
-		if("Anomaly"%in%EnvClimatoAnalysisplot$DirStat$Stats){
-			climato.maps.Values <- EnvClimatoAnalysisplot$DirStat$Stats[!EnvClimatoAnalysisplot$DirStat$Stats%in%"Anomaly"]
+	load.SpatialAnalysis.Data <- function(){
+		if("Anomaly"%in%EnvSpatialAnalysisplot$DirStat$Stats){
+			climato.maps.Values <- EnvSpatialAnalysisplot$DirStat$Stats[!EnvSpatialAnalysisplot$DirStat$Stats%in%"Anomaly"]
 			if(length(climato.maps.Values) == 0){
 				tkconfigure(cb.climato.maps, values = "", state = 'disabled')
-				tclvalue(EnvClimatoAnalysisplot$climStat) <- "Anomaly"
+				tclvalue(EnvSpatialAnalysisplot$climStat) <- "Anomaly"
 			}else{
 				tkconfigure(cb.climato.maps, values = climato.maps.Values, state = 'normal')
-				lastVal <- if(EnvClimatoAnalysisplot$DirStat$last == "Anomaly") climato.maps.Values[1] else EnvClimatoAnalysisplot$DirStat$last
-				tclvalue(EnvClimatoAnalysisplot$climStat) <- lastVal
+				lastVal <- if(EnvSpatialAnalysisplot$DirStat$last == "Anomaly") climato.maps.Values[1] else EnvSpatialAnalysisplot$DirStat$last
+				tclvalue(EnvSpatialAnalysisplot$climStat) <- lastVal
 			}
 		}else{
-			tkconfigure(cb.climato.maps, values = EnvClimatoAnalysisplot$DirStat$Stats, state = 'normal')
-			tclvalue(EnvClimatoAnalysisplot$climStat) <- EnvClimatoAnalysisplot$DirStat$last
+			tkconfigure(cb.climato.maps, values = EnvSpatialAnalysisplot$DirStat$Stats, state = 'normal')
+			tclvalue(EnvSpatialAnalysisplot$climStat) <- EnvSpatialAnalysisplot$DirStat$last
 		}
 
 		###################
-		TSDATA <- if("Anomaly"%in%EnvClimatoAnalysisplot$DirStat$Stats) c("Data", "Anomaly") else "Data"
+		TSDATA <- if("Anomaly"%in%EnvSpatialAnalysisplot$DirStat$Stats) c("Data", "Anomaly") else "Data"
 		tkconfigure(cb.TSData, values = TSDATA)
-		tclvalue(EnvClimatoAnalysisplot$TSData) <- "Data"
+		tclvalue(EnvSpatialAnalysisplot$TSData) <- "Data"
 
 		###################
-		analysis.path <- file.path(EnvClimatoAnalysisplot$PathStat, tclvalue(EnvClimatoAnalysisplot$climStat))
+		analysis.path <- file.path(EnvSpatialAnalysisplot$PathStat, tclvalue(EnvSpatialAnalysisplot$climStat))
 		params <- try(readRDS(file.path(analysis.path, "params.rds")), silent = TRUE)
 		if(inherits(params, "try-error")){
 			InsertMessagesTxt(main.txt.out, 'Unable to load Climate Analysis data', format = TRUE)
 			InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', params[1]), format = TRUE)
 			tkconfigure(cb.climDate, values = "")
-			tclvalue(EnvClimatoAnalysisplot$climDate) <- ""
+			tclvalue(EnvSpatialAnalysisplot$climDate) <- ""
 			return(NULL)
 		}
 		tkconfigure(cb.climDate, values = params$stats)
-		tclvalue(EnvClimatoAnalysisplot$climDate) <- params$stats[1]
+		tclvalue(EnvSpatialAnalysisplot$climDate) <- params$stats[1]
 		stateclimDate <- if(params$params$time.series$out.series == "monthly") "normal" else "disabled"
 		tkconfigure(cb.climDate, state = stateclimDate)
 
-		EnvClimatoAnalysisplot$statpars <- params
+		EnvSpatialAnalysisplot$statpars <- params
 
 		###################
-		ret <- EnvClimatoAnalysisplot$read.ClimStat()
+		ret <- EnvSpatialAnalysisplot$read.ClimStat()
 		if(is.null(ret)) return(NULL)
 
 		###################
 		tkconfigure(cb.TSDate, values = params$timeseries[[1]][[2]])
-		tclvalue(EnvClimatoAnalysisplot$TSDate) <- params$timeseries[[1]][[2]][1]
+		tclvalue(EnvSpatialAnalysisplot$TSDate) <- params$timeseries[[1]][[2]][1]
 
 		###################
-		ret1 <- EnvClimatoAnalysisplot$read.ClimTSData()
+		ret1 <- EnvSpatialAnalysisplot$read.ClimTSData()
 		if(is.null(ret1)) return(NULL)
 
 		###################
-		xlim.years <- substr(EnvClimatoAnalysisplot$statpars$stats[1], 1, 9)
+		xlim.years <- substr(EnvSpatialAnalysisplot$statpars$stats[1], 1, 9)
 		xlim.year1 <- as.numeric(substr(xlim.years, 1, 4))
 		xlim.year2 <- as.numeric(substr(xlim.years, 6, 9))
 		plotCHOIX <- c("anomaly", "bar", "line", "line.enso", "bar.enso")
 		for(pp in plotCHOIX){
-			EnvClimatoAnalysisplot$TSGraphOp[[pp]]$xlim$min <- xlim.year1
-			EnvClimatoAnalysisplot$TSGraphOp[[pp]]$xlim$max <- xlim.year2
+			EnvSpatialAnalysisplot$TSGraphOp[[pp]]$xlim$min <- xlim.year1
+			EnvSpatialAnalysisplot$TSGraphOp[[pp]]$xlim$max <- xlim.year2
 		}
 
 		###################
@@ -1423,24 +1423,56 @@ climatoAnalysisPanelCmd <- function(){
 		tkdestroy(frTS2)
 		frTS2 <<- tkframe(frameSTNCrds)
 
-		if(EnvClimatoAnalysisplot$statpars$params$data.type == "cdtstation"){
-			stnIDTSPLOT <- EnvClimatoAnalysisplot$tsdata$id
-			txt.stnSel <- tklabel(frTS2, text = "Select a station to plot", anchor = 'w', justify = 'left')
-			txt.stnID <- tklabel(frTS2, text = "Station", anchor = 'e', justify = 'right')
-			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvClimatoAnalysisplot$graph$stnIDTSp, width = largeur6)
-			tclvalue(EnvClimatoAnalysisplot$graph$stnIDTSp) <- stnIDTSPLOT[1]
+		if(EnvSpatialAnalysisplot$statpars$params$data.type == "cdtstation"){
+			stnIDTSPLOT <- EnvSpatialAnalysisplot$tsdata$id
+			txt.stnSel <- tklabel(frTS2, text = "Select a station to plot")
+			bt.stnID.prev <- ttkbutton(frTS2, text = "<<", width = 6)
+			bt.stnID.next <- ttkbutton(frTS2, text = ">>", width = 6)
+			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvSpatialAnalysisplot$graph$stnIDTSp, width = largeur6)
+			tclvalue(EnvSpatialAnalysisplot$graph$stnIDTSp) <- stnIDTSPLOT[1]
 
-			tkgrid(txt.stnSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-			tkgrid(txt.stnID, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkconfigure(bt.stnID.prev, command = function(){
+				if(!is.null(EnvSpatialAnalysisplot$tsdata)){
+					istn <- which(stnIDTSPLOT == str_trim(tclvalue(EnvSpatialAnalysisplot$graph$stnIDTSp)))
+					istn <- istn-1
+					if(istn < 1) istn <- length(stnIDTSPLOT)
+					tclvalue(EnvSpatialAnalysisplot$graph$stnIDTSp) <- stnIDTSPLOT[istn]
+
+					imgContainer <- spatialAnalysis.DisplayTSPlot(tknotes)
+					retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSpatialAnalysisplot$notebookTab.tsplot, AllOpenTabType, AllOpenTabData)
+					EnvSpatialAnalysisplot$notebookTab.tsplot <- retNBTab$notebookTab
+					AllOpenTabType <<- retNBTab$AllOpenTabType
+					AllOpenTabData <<- retNBTab$AllOpenTabData
+				}
+			})
+
+			tkconfigure(bt.stnID.next, command = function(){
+				if(!is.null(EnvSpatialAnalysisplot$tsdata)){
+					istn <- which(stnIDTSPLOT == str_trim(tclvalue(EnvSpatialAnalysisplot$graph$stnIDTSp)))
+					istn <- istn+1
+					if(istn > length(stnIDTSPLOT)) istn <- 1
+					tclvalue(EnvSpatialAnalysisplot$graph$stnIDTSp) <- stnIDTSPLOT[istn]
+
+					imgContainer <- spatialAnalysis.DisplayTSPlot(tknotes)
+					retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSpatialAnalysisplot$notebookTab.tsplot, AllOpenTabType, AllOpenTabData)
+					EnvSpatialAnalysisplot$notebookTab.tsplot <- retNBTab$notebookTab
+					AllOpenTabType <<- retNBTab$AllOpenTabType
+					AllOpenTabData <<- retNBTab$AllOpenTabData
+				}
+			})
+
+			tkgrid(txt.stnSel, row = 0, column = 0, sticky = '', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(bt.stnID.prev, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 			tkgrid(cb.stnID, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(bt.stnID.next, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		}else{
 			txt.crdSel <- tklabel(frTS2, text = "Enter longitude and latitude to plot", anchor = 'w', justify = 'left')
 			txt.lonLoc <- tklabel(frTS2, text = "Longitude", anchor = 'e', justify = 'right')
-			en.lonLoc <- tkentry(frTS2, textvariable = EnvClimatoAnalysisplot$graph$lonLOC, width = 8)
+			en.lonLoc <- tkentry(frTS2, textvariable = EnvSpatialAnalysisplot$graph$lonLOC, width = 8)
 			txt.latLoc <- tklabel(frTS2, text = "Latitude", anchor = 'e', justify = 'right')
-			en.latLoc <- tkentry(frTS2, textvariable = EnvClimatoAnalysisplot$graph$latLOC, width = 8)
+			en.latLoc <- tkentry(frTS2, textvariable = EnvSpatialAnalysisplot$graph$latLOC, width = 8)
 			stnIDTSPLOT <- ""
-			tclvalue(EnvClimatoAnalysisplot$graph$stnIDTSp) <- ""
+			tclvalue(EnvSpatialAnalysisplot$graph$stnIDTSp) <- ""
 
 			tkgrid(txt.crdSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 			tkgrid(txt.lonLoc, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -1453,7 +1485,7 @@ climatoAnalysisPanelCmd <- function(){
 
 	#######################################################################################################
 
-	EnvClimatoAnalysisplot$read.ClimStat <- function(){
+	EnvSpatialAnalysisplot$read.ClimStat <- function(){
 		tkconfigure(main.win, cursor = 'watch')
 		tcl('update')
 		on.exit({
@@ -1461,30 +1493,30 @@ climatoAnalysisPanelCmd <- function(){
 			tcl('update')
 		})
 
-		if(tclvalue(EnvClimatoAnalysisplot$climStat) == "Anomaly") return(0)
+		if(tclvalue(EnvSpatialAnalysisplot$climStat) == "Anomaly") return(0)
 
-		analysis.path <- file.path(EnvClimatoAnalysisplot$PathStat, tclvalue(EnvClimatoAnalysisplot$climStat))
-		extFile <- if(EnvClimatoAnalysisplot$statpars$params$data.type == "cdtstation") ".csv" else ".nc"
+		analysis.path <- file.path(EnvSpatialAnalysisplot$PathStat, tclvalue(EnvSpatialAnalysisplot$climStat))
+		extFile <- if(EnvSpatialAnalysisplot$statpars$params$data.type == "cdtstation") ".csv" else ".nc"
 
-		filestat <- file.path(analysis.path, paste0(EnvClimatoAnalysisplot$statpars$params$analysis.method$mth.fun,
-							"_", tclvalue(EnvClimatoAnalysisplot$climDate), extFile))
+		filestat <- file.path(analysis.path, paste0(EnvSpatialAnalysisplot$statpars$params$analysis.method$mth.fun,
+							"_", tclvalue(EnvSpatialAnalysisplot$climDate), extFile))
 		if(!file.exists(filestat)){
 			InsertMessagesTxt(main.txt.out, paste(filestat, 'not found'), format = TRUE)
 			return(NULL)
 		}
 
 		readClimData <- TRUE
-		if(!is.null(EnvClimatoAnalysisplot$don))
-			if(!is.null(EnvClimatoAnalysisplot$filestat))
-				if(EnvClimatoAnalysisplot$filestat == filestat) readClimData <- FALSE
+		if(!is.null(EnvSpatialAnalysisplot$don))
+			if(!is.null(EnvSpatialAnalysisplot$filestat))
+				if(EnvSpatialAnalysisplot$filestat == filestat) readClimData <- FALSE
 
-		if(EnvClimatoAnalysisplot$statpars$params$data.type == "cdtstation"){
+		if(EnvSpatialAnalysisplot$statpars$params$data.type == "cdtstation"){
 			if(readClimData){
 				don <- data.table::fread(filestat, header = FALSE, sep = ",", data.table = FALSE,
 											stringsAsFactors = FALSE, colClasses = "character")
 
-				if(tclvalue(EnvClimatoAnalysisplot$climStat) == "Trend"){
-					EnvClimatoAnalysisplot$don <- list(id = as.character(don[1, -1]), 
+				if(tclvalue(EnvSpatialAnalysisplot$climStat) == "Trend"){
+					EnvSpatialAnalysisplot$don <- list(id = as.character(don[1, -1]), 
 														x0 = as.numeric(don[2, -1]),
 														y0 = as.numeric(don[3, -1]), 
 														var = as.numeric(don[4, -1]),
@@ -1492,66 +1524,66 @@ climatoAnalysisPanelCmd <- function(){
 														p.value = as.numeric(don[6, -1]),
 														# r2 = as.numeric(don[7, -1]),
 														na = as.numeric(don[8, -1]))
-					nx <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$don$x0)))
-					ny <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$don$y0)))
-					tmp <- cdt.as.image(EnvClimatoAnalysisplot$don$var, nx = nx, ny = ny,
-									pts.xy = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
-					EnvClimatoAnalysisplot$don$x <- tmp$x
-					EnvClimatoAnalysisplot$don$y <- tmp$y
-					EnvClimatoAnalysisplot$don$z <- tmp$z
-					# tmp <- cdt.as.image(EnvClimatoAnalysisplot$don$std.slope, nx = nx, ny = ny,
-					# 				pts.xy = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
-					# EnvClimatoAnalysisplot$don$std <- tmp$z
-					tmp <- cdt.as.image(EnvClimatoAnalysisplot$don$p.value, nx = nx, ny = ny,
-									pts.xy = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
-					EnvClimatoAnalysisplot$don$pval <- tmp$z
-					# tmp <- cdt.as.image(EnvClimatoAnalysisplot$don$r2, nx = nx, ny = ny,
-					# 				pts.xy = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
-					# EnvClimatoAnalysisplot$don$r2 <- tmp$z
-					tmp <- cdt.as.image(EnvClimatoAnalysisplot$don$na, nx = nx, ny = ny,
-									pts.xy = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
-					EnvClimatoAnalysisplot$don$na <- tmp$z
+					nx <- nx_ny_as.image(diff(range(EnvSpatialAnalysisplot$don$x0)))
+					ny <- nx_ny_as.image(diff(range(EnvSpatialAnalysisplot$don$y0)))
+					tmp <- cdt.as.image(EnvSpatialAnalysisplot$don$var, nx = nx, ny = ny,
+									pts.xy = cbind(EnvSpatialAnalysisplot$don$x0, EnvSpatialAnalysisplot$don$y0))
+					EnvSpatialAnalysisplot$don$x <- tmp$x
+					EnvSpatialAnalysisplot$don$y <- tmp$y
+					EnvSpatialAnalysisplot$don$z <- tmp$z
+					# tmp <- cdt.as.image(EnvSpatialAnalysisplot$don$std.slope, nx = nx, ny = ny,
+					# 				pts.xy = cbind(EnvSpatialAnalysisplot$don$x0, EnvSpatialAnalysisplot$don$y0))
+					# EnvSpatialAnalysisplot$don$std <- tmp$z
+					tmp <- cdt.as.image(EnvSpatialAnalysisplot$don$p.value, nx = nx, ny = ny,
+									pts.xy = cbind(EnvSpatialAnalysisplot$don$x0, EnvSpatialAnalysisplot$don$y0))
+					EnvSpatialAnalysisplot$don$pval <- tmp$z
+					# tmp <- cdt.as.image(EnvSpatialAnalysisplot$don$r2, nx = nx, ny = ny,
+					# 				pts.xy = cbind(EnvSpatialAnalysisplot$don$x0, EnvSpatialAnalysisplot$don$y0))
+					# EnvSpatialAnalysisplot$don$r2 <- tmp$z
+					tmp <- cdt.as.image(EnvSpatialAnalysisplot$don$na, nx = nx, ny = ny,
+									pts.xy = cbind(EnvSpatialAnalysisplot$don$x0, EnvSpatialAnalysisplot$don$y0))
+					EnvSpatialAnalysisplot$don$na <- tmp$z
 				}else{
-					EnvClimatoAnalysisplot$don <- list(id = as.character(don[1, -1]), 
+					EnvSpatialAnalysisplot$don <- list(id = as.character(don[1, -1]), 
 														x0 = as.numeric(don[2, -1]),
 														y0 = as.numeric(don[3, -1]), 
 														var = as.numeric(don[4, -1]),
 														na = as.numeric(don[5, -1]))
-					nx <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$don$x0)))
-					ny <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$don$y0)))
-					tmp <- cdt.as.image(EnvClimatoAnalysisplot$don$var, nx = nx, ny = ny,
-									pts.xy = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
-					EnvClimatoAnalysisplot$don$x <- tmp$x
-					EnvClimatoAnalysisplot$don$y <- tmp$y
-					EnvClimatoAnalysisplot$don$z <- tmp$z
-					tmp <- cdt.as.image(EnvClimatoAnalysisplot$don$na, nx = nx, ny = ny,
-									pts.xy = cbind(EnvClimatoAnalysisplot$don$x0, EnvClimatoAnalysisplot$don$y0))
-					EnvClimatoAnalysisplot$don$na <- tmp$z
+					nx <- nx_ny_as.image(diff(range(EnvSpatialAnalysisplot$don$x0)))
+					ny <- nx_ny_as.image(diff(range(EnvSpatialAnalysisplot$don$y0)))
+					tmp <- cdt.as.image(EnvSpatialAnalysisplot$don$var, nx = nx, ny = ny,
+									pts.xy = cbind(EnvSpatialAnalysisplot$don$x0, EnvSpatialAnalysisplot$don$y0))
+					EnvSpatialAnalysisplot$don$x <- tmp$x
+					EnvSpatialAnalysisplot$don$y <- tmp$y
+					EnvSpatialAnalysisplot$don$z <- tmp$z
+					tmp <- cdt.as.image(EnvSpatialAnalysisplot$don$na, nx = nx, ny = ny,
+									pts.xy = cbind(EnvSpatialAnalysisplot$don$x0, EnvSpatialAnalysisplot$don$y0))
+					EnvSpatialAnalysisplot$don$na <- tmp$z
 				}
-				EnvClimatoAnalysisplot$filestat <- filestat
+				EnvSpatialAnalysisplot$filestat <- filestat
 				rm(don, tmp)
 			}
 		}else{
 			if(readClimData){
-				if(tclvalue(EnvClimatoAnalysisplot$climStat) == "Trend"){
+				if(tclvalue(EnvSpatialAnalysisplot$climStat) == "Trend"){
 					nc <- nc_open(filestat)
-					EnvClimatoAnalysisplot$don$x <- nc$dim[[1]]$vals
-					EnvClimatoAnalysisplot$don$y <- nc$dim[[2]]$vals
-					EnvClimatoAnalysisplot$don$z <- ncvar_get(nc, varid = "trend")
-					# EnvClimatoAnalysisplot$don$std <- ncvar_get(nc, varid = "std.slope")
-					EnvClimatoAnalysisplot$don$pval <- ncvar_get(nc, varid = "pvalue")
-					# EnvClimatoAnalysisplot$don$r2 <- ncvar_get(nc, varid = "r2")
-					EnvClimatoAnalysisplot$don$na <- ncvar_get(nc, varid = "nonNA")
+					EnvSpatialAnalysisplot$don$x <- nc$dim[[1]]$vals
+					EnvSpatialAnalysisplot$don$y <- nc$dim[[2]]$vals
+					EnvSpatialAnalysisplot$don$z <- ncvar_get(nc, varid = "trend")
+					# EnvSpatialAnalysisplot$don$std <- ncvar_get(nc, varid = "std.slope")
+					EnvSpatialAnalysisplot$don$pval <- ncvar_get(nc, varid = "pvalue")
+					# EnvSpatialAnalysisplot$don$r2 <- ncvar_get(nc, varid = "r2")
+					EnvSpatialAnalysisplot$don$na <- ncvar_get(nc, varid = "nonNA")
 					nc_close(nc)
 				}else{
 					nc <- nc_open(filestat)
-					EnvClimatoAnalysisplot$don$x <- nc$dim[[1]]$vals
-					EnvClimatoAnalysisplot$don$y <- nc$dim[[2]]$vals
-					EnvClimatoAnalysisplot$don$z <- ncvar_get(nc, varid = nc$var[[1]]$name)
-					EnvClimatoAnalysisplot$don$na <- ncvar_get(nc, varid = "nonNA")
+					EnvSpatialAnalysisplot$don$x <- nc$dim[[1]]$vals
+					EnvSpatialAnalysisplot$don$y <- nc$dim[[2]]$vals
+					EnvSpatialAnalysisplot$don$z <- ncvar_get(nc, varid = nc$var[[1]]$name)
+					EnvSpatialAnalysisplot$don$na <- ncvar_get(nc, varid = "nonNA")
 					nc_close(nc)
 				}
-				EnvClimatoAnalysisplot$filestat <- filestat
+				EnvSpatialAnalysisplot$filestat <- filestat
 			}
 		}
 		return(0)
@@ -1559,7 +1591,7 @@ climatoAnalysisPanelCmd <- function(){
 
 	##############################################
 
-	EnvClimatoAnalysisplot$read.ClimTSData <- function(){
+	EnvSpatialAnalysisplot$read.ClimTSData <- function(){
 		tkconfigure(main.win, cursor = 'watch')
 		tcl('update')
 		on.exit({
@@ -1567,159 +1599,159 @@ climatoAnalysisPanelCmd <- function(){
 			tcl('update')
 		})
 
-		tsdata.path <- file.path(EnvClimatoAnalysisplot$PathStat, "Aggregated_TimeSeries")
+		tsdata.path <- file.path(EnvSpatialAnalysisplot$PathStat, "Aggregated_TimeSeries")
 
-		if(EnvClimatoAnalysisplot$statpars$params$data.type == "cdtstation"){
-			filetsdata <- file.path(tsdata.path, paste0("outTS", "_", tclvalue(EnvClimatoAnalysisplot$climDate), ".csv"))
+		if(EnvSpatialAnalysisplot$statpars$params$data.type == "cdtstation"){
+			filetsdata <- file.path(tsdata.path, paste0("outTS", "_", tclvalue(EnvSpatialAnalysisplot$climDate), ".csv"))
 			if(!file.exists(filetsdata)){
 				InsertMessagesTxt(main.txt.out, paste(filetsdata, 'not found'), format = TRUE)
 				return(NULL)
 			}
 
 			readTsData <- TRUE
-			if(!is.null(EnvClimatoAnalysisplot$tsdata))
-				if(!is.null(EnvClimatoAnalysisplot$filetsdata))
-					if(EnvClimatoAnalysisplot$filetsdata == filetsdata) readTsData <- FALSE
+			if(!is.null(EnvSpatialAnalysisplot$tsdata))
+				if(!is.null(EnvSpatialAnalysisplot$filetsdata))
+					if(EnvSpatialAnalysisplot$filetsdata == filetsdata) readTsData <- FALSE
 
 			if(readTsData){
 				don <- data.table::fread(filetsdata, header = FALSE, sep = ",", data.table = FALSE,
 											stringsAsFactors = FALSE, colClasses = "character")
 
-				EnvClimatoAnalysisplot$tsdata <- list(id = as.character(don[1, -1]), 
+				EnvSpatialAnalysisplot$tsdata <- list(id = as.character(don[1, -1]), 
 													x0 = as.numeric(don[2, -1]),
 													y0 = as.numeric(don[3, -1]), 
 													date = as.character(don[-(1:3), 1]),
 													data = apply(don[-(1:3), -1], 2, as.numeric))
-				EnvClimatoAnalysisplot$filetsdata <- filetsdata
+				EnvSpatialAnalysisplot$filetsdata <- filetsdata
 				rm(don)
 			}
 
 			########
 			rasterTsData <- TRUE
 			if(!readTsData)
-				if(!is.null(EnvClimatoAnalysisplot$rasterTsData))
-					if(EnvClimatoAnalysisplot$filetsdata == filetsdata)
-						if(EnvClimatoAnalysisplot$rasterTsData == tclvalue(EnvClimatoAnalysisplot$TSDate)) rasterTsData <- FALSE
+				if(!is.null(EnvSpatialAnalysisplot$rasterTsData))
+					if(EnvSpatialAnalysisplot$filetsdata == filetsdata)
+						if(EnvSpatialAnalysisplot$rasterTsData == tclvalue(EnvSpatialAnalysisplot$TSDate)) rasterTsData <- FALSE
 
 			if(rasterTsData){
-				idt <- which(EnvClimatoAnalysisplot$tsdata$date == tclvalue(EnvClimatoAnalysisplot$TSDate))
-				nx <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$tsdata$x0)))
-				ny <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$tsdata$y0)))
-				tmp <- cdt.as.image(as.numeric(EnvClimatoAnalysisplot$tsdata$data[idt, ]), nx = nx, ny = ny,
-								pts.xy = cbind(EnvClimatoAnalysisplot$tsdata$x0, EnvClimatoAnalysisplot$tsdata$y0))
-				EnvClimatoAnalysisplot$tsdata$x <- tmp$x
-				EnvClimatoAnalysisplot$tsdata$y <- tmp$y
-				EnvClimatoAnalysisplot$tsdata$z <- tmp$z
-				EnvClimatoAnalysisplot$rasterTsData <- tclvalue(EnvClimatoAnalysisplot$TSDate)
+				idt <- which(EnvSpatialAnalysisplot$tsdata$date == tclvalue(EnvSpatialAnalysisplot$TSDate))
+				nx <- nx_ny_as.image(diff(range(EnvSpatialAnalysisplot$tsdata$x0)))
+				ny <- nx_ny_as.image(diff(range(EnvSpatialAnalysisplot$tsdata$y0)))
+				tmp <- cdt.as.image(as.numeric(EnvSpatialAnalysisplot$tsdata$data[idt, ]), nx = nx, ny = ny,
+								pts.xy = cbind(EnvSpatialAnalysisplot$tsdata$x0, EnvSpatialAnalysisplot$tsdata$y0))
+				EnvSpatialAnalysisplot$tsdata$x <- tmp$x
+				EnvSpatialAnalysisplot$tsdata$y <- tmp$y
+				EnvSpatialAnalysisplot$tsdata$z <- tmp$z
+				EnvSpatialAnalysisplot$rasterTsData <- tclvalue(EnvSpatialAnalysisplot$TSDate)
 				rm(tmp)
 			}
 
-			if("Anomaly"%in%EnvClimatoAnalysisplot$DirStat$Stats){
-				anom.path <- file.path(EnvClimatoAnalysisplot$PathStat, "Anomaly")
-				file.anom <- file.path(anom.path, paste0("anomaly", "_", tclvalue(EnvClimatoAnalysisplot$climDate), ".csv"))
+			if("Anomaly"%in%EnvSpatialAnalysisplot$DirStat$Stats){
+				anom.path <- file.path(EnvSpatialAnalysisplot$PathStat, "Anomaly")
+				file.anom <- file.path(anom.path, paste0("anomaly", "_", tclvalue(EnvSpatialAnalysisplot$climDate), ".csv"))
 				if(!file.exists(file.anom)){
 					InsertMessagesTxt(main.txt.out, paste(file.anom, 'not found'), format = TRUE)
 					return(NULL)
 				}
 
 				readAnomData <- TRUE
-				if(!is.null(EnvClimatoAnalysisplot$anomData))
-					if(!is.null(EnvClimatoAnalysisplot$file.anom))
-						if(EnvClimatoAnalysisplot$file.anom == file.anom) readAnomData <- FALSE
+				if(!is.null(EnvSpatialAnalysisplot$anomData))
+					if(!is.null(EnvSpatialAnalysisplot$file.anom))
+						if(EnvSpatialAnalysisplot$file.anom == file.anom) readAnomData <- FALSE
 
 				if(readAnomData){
 					don <- data.table::fread(file.anom, header = FALSE, sep = ",", data.table = FALSE,
 												stringsAsFactors = FALSE, colClasses = "character")
 
-					EnvClimatoAnalysisplot$anomData <- list(id = as.character(don[1, -1]), 
+					EnvSpatialAnalysisplot$anomData <- list(id = as.character(don[1, -1]), 
 														x0 = as.numeric(don[2, -1]),
 														y0 = as.numeric(don[3, -1]), 
 														date = as.character(don[-(1:3), 1]),
 														data = apply(don[-(1:3), -1], 2, as.numeric))
-					EnvClimatoAnalysisplot$file.anom <- file.anom
+					EnvSpatialAnalysisplot$file.anom <- file.anom
 					params <- readRDS(file.path(anom.path, "params.rds"))
-					EnvClimatoAnalysisplot$anomData$params <- params$params
+					EnvSpatialAnalysisplot$anomData$params <- params$params
 					rm(don)
 				}
 
 				########
 				rasterAnomData <- TRUE
 				if(!readAnomData)
-					if(!is.null(EnvClimatoAnalysisplot$rasterAnomData))
-						if(EnvClimatoAnalysisplot$file.anom == file.anom)
-							if(EnvClimatoAnalysisplot$rasterAnomData == tclvalue(EnvClimatoAnalysisplot$TSDate)) rasterAnomData <- FALSE
+					if(!is.null(EnvSpatialAnalysisplot$rasterAnomData))
+						if(EnvSpatialAnalysisplot$file.anom == file.anom)
+							if(EnvSpatialAnalysisplot$rasterAnomData == tclvalue(EnvSpatialAnalysisplot$TSDate)) rasterAnomData <- FALSE
 
 				if(rasterAnomData){
-					idt <- which(EnvClimatoAnalysisplot$anomData$date == tclvalue(EnvClimatoAnalysisplot$TSDate))
-					nx <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$anomData$x0)))
-					ny <- nx_ny_as.image(diff(range(EnvClimatoAnalysisplot$anomData$y0)))
-					tmp <- cdt.as.image(as.numeric(EnvClimatoAnalysisplot$anomData$data[idt, ]), nx = nx, ny = ny,
-									pts.xy = cbind(EnvClimatoAnalysisplot$anomData$x0, EnvClimatoAnalysisplot$anomData$y0))
-					EnvClimatoAnalysisplot$anomData$x <- tmp$x
-					EnvClimatoAnalysisplot$anomData$y <- tmp$y
-					EnvClimatoAnalysisplot$anomData$z <- tmp$z
-					EnvClimatoAnalysisplot$rasterAnomData <- tclvalue(EnvClimatoAnalysisplot$TSDate)
+					idt <- which(EnvSpatialAnalysisplot$anomData$date == tclvalue(EnvSpatialAnalysisplot$TSDate))
+					nx <- nx_ny_as.image(diff(range(EnvSpatialAnalysisplot$anomData$x0)))
+					ny <- nx_ny_as.image(diff(range(EnvSpatialAnalysisplot$anomData$y0)))
+					tmp <- cdt.as.image(as.numeric(EnvSpatialAnalysisplot$anomData$data[idt, ]), nx = nx, ny = ny,
+									pts.xy = cbind(EnvSpatialAnalysisplot$anomData$x0, EnvSpatialAnalysisplot$anomData$y0))
+					EnvSpatialAnalysisplot$anomData$x <- tmp$x
+					EnvSpatialAnalysisplot$anomData$y <- tmp$y
+					EnvSpatialAnalysisplot$anomData$z <- tmp$z
+					EnvSpatialAnalysisplot$rasterAnomData <- tclvalue(EnvSpatialAnalysisplot$TSDate)
 					rm(tmp)
 				}
 			}
 		}else{
-			filetsdata <- file.path(tsdata.path, paste0("outTS", "_", tclvalue(EnvClimatoAnalysisplot$TSDate), ".nc"))
+			filetsdata <- file.path(tsdata.path, paste0("outTS", "_", tclvalue(EnvSpatialAnalysisplot$TSDate), ".nc"))
 			if(!file.exists(filetsdata)){
 				InsertMessagesTxt(main.txt.out, paste(filetsdata, 'not found'), format = TRUE)
 				return(NULL)
 			}
 
 			readTsData <- TRUE
-			if(!is.null(EnvClimatoAnalysisplot$tsdata))
-				if(!is.null(EnvClimatoAnalysisplot$filetsdata))
-					if(EnvClimatoAnalysisplot$filetsdata == filetsdata) readTsData <- FALSE
+			if(!is.null(EnvSpatialAnalysisplot$tsdata))
+				if(!is.null(EnvSpatialAnalysisplot$filetsdata))
+					if(EnvSpatialAnalysisplot$filetsdata == filetsdata) readTsData <- FALSE
 
 			if(readTsData){
 				nc <- nc_open(filetsdata)
-				EnvClimatoAnalysisplot$tsdata$x <- nc$dim[[1]]$vals
-				EnvClimatoAnalysisplot$tsdata$y <- nc$dim[[2]]$vals
-				EnvClimatoAnalysisplot$tsdata$z <- ncvar_get(nc, varid = nc$var[[1]]$name)
+				EnvSpatialAnalysisplot$tsdata$x <- nc$dim[[1]]$vals
+				EnvSpatialAnalysisplot$tsdata$y <- nc$dim[[2]]$vals
+				EnvSpatialAnalysisplot$tsdata$z <- ncvar_get(nc, varid = nc$var[[1]]$name)
 				nc_close(nc)
-				EnvClimatoAnalysisplot$filetsdata <- filetsdata
+				EnvSpatialAnalysisplot$filetsdata <- filetsdata
 			}
 
-			if(is.null(EnvClimatoAnalysisplot$cdtdataset)){
-				fldataset <- basename(EnvClimatoAnalysisplot$statpars$params$in.file)
-				fldataset <- file.path(EnvClimatoAnalysisplot$PathStat, paste0("Aggregated_", getf.no.ext(fldataset)), fldataset)
-				EnvClimatoAnalysisplot$cdtdataset <- readRDS(fldataset)
-				EnvClimatoAnalysisplot$cdtdataset$fileInfo <- fldataset
+			if(is.null(EnvSpatialAnalysisplot$cdtdataset)){
+				fldataset <- basename(EnvSpatialAnalysisplot$statpars$params$in.file)
+				fldataset <- file.path(EnvSpatialAnalysisplot$PathStat, paste0("Aggregated_", getf.no.ext(fldataset)), fldataset)
+				EnvSpatialAnalysisplot$cdtdataset <- readRDS(fldataset)
+				EnvSpatialAnalysisplot$cdtdataset$fileInfo <- fldataset
 			}
 
-			if("Anomaly"%in%EnvClimatoAnalysisplot$DirStat$Stats){
-				anom.path <- file.path(EnvClimatoAnalysisplot$PathStat, "Anomaly")
-				file.anom <- file.path(anom.path, paste0("anomaly", "_", tclvalue(EnvClimatoAnalysisplot$TSDate), ".nc"))
+			if("Anomaly"%in%EnvSpatialAnalysisplot$DirStat$Stats){
+				anom.path <- file.path(EnvSpatialAnalysisplot$PathStat, "Anomaly")
+				file.anom <- file.path(anom.path, paste0("anomaly", "_", tclvalue(EnvSpatialAnalysisplot$TSDate), ".nc"))
 				if(!file.exists(file.anom)){
 					InsertMessagesTxt(main.txt.out, paste(file.anom, 'not found'), format = TRUE)
 					return(NULL)
 				}
 
 				readAnom <- TRUE
-				if(!is.null(EnvClimatoAnalysisplot$anomData))
-					if(!is.null(EnvClimatoAnalysisplot$file.anom))
-						if(EnvClimatoAnalysisplot$file.anom == file.anom) readAnom <- FALSE
+				if(!is.null(EnvSpatialAnalysisplot$anomData))
+					if(!is.null(EnvSpatialAnalysisplot$file.anom))
+						if(EnvSpatialAnalysisplot$file.anom == file.anom) readAnom <- FALSE
 
 				if(readAnom){
 					nc <- nc_open(file.anom)
-					EnvClimatoAnalysisplot$anomData$x <- nc$dim[[1]]$vals
-					EnvClimatoAnalysisplot$anomData$y <- nc$dim[[2]]$vals
-					EnvClimatoAnalysisplot$anomData$z <- ncvar_get(nc, varid = nc$var[[1]]$name)
+					EnvSpatialAnalysisplot$anomData$x <- nc$dim[[1]]$vals
+					EnvSpatialAnalysisplot$anomData$y <- nc$dim[[2]]$vals
+					EnvSpatialAnalysisplot$anomData$z <- ncvar_get(nc, varid = nc$var[[1]]$name)
 					nc_close(nc)
-					EnvClimatoAnalysisplot$file.anom <- file.anom
+					EnvSpatialAnalysisplot$file.anom <- file.anom
 					params <- readRDS(file.path(anom.path, "params.rds"))
-					EnvClimatoAnalysisplot$anomData$params <- params$params
+					EnvSpatialAnalysisplot$anomData$params <- params$params
 				}
 			}
 		}
 
-		if(is.null(EnvClimatoAnalysisplot$ONI)){
+		if(is.null(EnvSpatialAnalysisplot$ONI)){
 			load(file.path(apps.dir, 'data', 'ONI_50-2017.RData'))
-			EnvClimatoAnalysisplot$ONI$date <- format(seq(as.Date('1950-1-15'), as.Date('2017-12-15'), "month"), "%Y%m")
-			EnvClimatoAnalysisplot$ONI$data <- ONI$ts[, 3]
+			EnvSpatialAnalysisplot$ONI$date <- format(seq(as.Date('1950-1-15'), as.Date('2017-12-15'), "month"), "%Y%m")
+			EnvSpatialAnalysisplot$ONI$data <- ONI$ts[, 3]
 		}
 
 		return(0)
@@ -1733,3 +1765,131 @@ climatoAnalysisPanelCmd <- function(){
 	return(cmd.frame)
 }
 
+#######################################################################################################
+
+spatialAnalysisEditYrsMon <- function(parent.win, vedit, titre, help, year){
+	if(Sys.info()["sysname"] == "Windows"){
+		largeur1 <- 35
+		largeur2 <- 35
+	}else{
+		largeur1 <- 40
+		largeur2 <- 40
+	}
+
+	#########
+	tt <- tktoplevel()
+	tkgrab.set(tt)
+	tkfocus(tt)
+
+	frDialog <- tkframe(tt, relief = 'raised', borderwidth = 2)
+	frButt <- tkframe(tt)
+
+	####
+	frameEdit <- tkframe(frDialog)
+	frameInfo <- tkframe(frDialog)
+
+	#########
+	yscr.Edit <- tkscrollbar(frameEdit, repeatinterval = 4,
+							command = function(...) tkyview(text.Edit, ...))
+	text.Edit <- tktext(frameEdit, bg = "white", wrap = "word",
+						height = 4, width = largeur1,
+						yscrollcommand = function(...) tkset(yscr.Edit, ...))
+
+	tkgrid(text.Edit, yscr.Edit)
+	tkgrid.configure(yscr.Edit, sticky = "ns")
+	tkgrid.configure(text.Edit, sticky = 'nswe')
+
+	tkinsert(text.Edit, "end", vedit)
+
+	#########
+
+	yscr.Info <- tkscrollbar(frameInfo, repeatinterval = 4, command = function(...) tkyview(txta.Info, ...))
+	txta.Info <- tktext(frameInfo, cursor = "", wrap = "word", height = 4, width = largeur2,
+						yscrollcommand = function(...) tkset(yscr.Info, ...))
+
+	tkgrid(txta.Info, yscr.Info)
+	tkgrid.configure(yscr.Info, sticky = "ns")
+	tkgrid.configure(txta.Info, sticky = 'nswe')
+
+	tkinsert(txta.Info, "1.0", help)
+	tkconfigure(txta.Info, state = "disabled")
+
+	#########
+	tkgrid(frameEdit, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frameInfo, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#########
+	vedit <- str_trim(strsplit(vedit, ",")[[1]])
+	vedit <- as.numeric(vedit)
+
+	if(year){
+		xtm <- "years"
+		xlo <- 1800
+		xup <- 2100
+		if(length(vedit) == 0) vedit <- NA
+	}else{
+		xtm <- "months"
+		xlo <- 1
+		xup <- 12
+	}
+
+	#########
+	bt.opt.OK <- tkbutton(frButt, text = "OK") 
+	bt.opt.CA <- tkbutton(frButt, text = "Cancel") 
+
+	tkconfigure(bt.opt.OK, command = function(){
+		tmp <- tclvalue(tkget(text.Edit, "0.0", "end"))
+		tmp <- gsub("[\r\n]", "", tmp)
+		tmp <- str_trim(strsplit(tmp, ",")[[1]])
+		tmp <- as.numeric(tmp)
+		if(length(tmp) == 0){
+			tkmessageBox(message = paste("No", xtm, "edited"), icon = "warning", type = "ok")
+		}else if(length(tmp) > 0 & any(is.na(tmp))){
+			tkmessageBox(message = paste("Check the", xtm, "that you edited\n", paste0(tmp, collapse = ', ')), icon = "warning", type = "ok")
+			tkwait.window(tt)
+		}else if(any(tmp > xup | tmp < xlo)){
+			msg <- if(year) "Ambiguous years. Year must be 4 digits" else "Month number must be between 1 and 12"
+			tkmessageBox(message = paste(msg, "\n", paste0(tmp, collapse = ', ')), icon = "warning", type = "ok")
+			tkwait.window(tt)
+		}else{
+			vedit <<- tmp
+			tkgrab.release(tt)
+			tkdestroy(tt)
+			tkfocus(parent.win)
+		}
+	})
+
+	tkconfigure(bt.opt.CA, command = function(){
+		tkgrab.release(tt)
+		tkdestroy(tt)
+		tkfocus(parent.win)
+	})
+
+	tkgrid(bt.opt.OK, row = 0, column = 0, padx = 5, pady = 1, ipadx = 10, sticky = 'w')
+	tkgrid(bt.opt.CA, row = 0, column = 1, padx = 5, pady = 1, ipadx = 1, sticky = 'e')
+
+	###############################################################	
+
+	tkgrid(frDialog, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frButt, row = 1, column = 1, sticky = 'se', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	tkwm.withdraw(tt)
+	tcl('update')
+	tt.w <- as.integer(tkwinfo("reqwidth", tt))
+	tt.h <- as.integer(tkwinfo("reqheight", tt))
+	tt.x <- as.integer(width.scr*0.5 - tt.w*0.5)
+	tt.y <- as.integer(height.scr*0.5 - tt.h*0.5)
+	tkwm.geometry(tt, paste0('+', tt.x, '+', tt.y))
+	tkwm.transient(tt)
+	tkwm.title(tt, titre)
+	tkwm.deiconify(tt)
+
+	##################################################################	
+	tkfocus(tt)
+	tkbind(tt, "<Destroy>", function(){
+		tkgrab.release(tt)
+		tkfocus(parent.win)
+	})
+	tkwait.window(tt)
+	return(vedit)
+}

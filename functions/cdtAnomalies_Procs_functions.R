@@ -1,5 +1,4 @@
 
-
 anomaliesCalcProcs <- function(GeneralParameters){
 	freqData <- GeneralParameters$intstep
 	start.year <- GeneralParameters$Dates$start.year

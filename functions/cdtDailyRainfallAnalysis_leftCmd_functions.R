@@ -11,7 +11,7 @@ dailyRainAnalysisPanelCmd <- function(){
 		largeur3 <- 24
 		largeur4 <- 28
 		largeur5 <- 21
-		# largeur6 <- 22
+		largeur6 <- 22
 	}else{
 		wscrlwin <- w.scale(27)
 		hscrlwin <- h.scale(47)
@@ -22,7 +22,7 @@ dailyRainAnalysisPanelCmd <- function(){
 		largeur3 <- 24
 		largeur4 <- 22
 		largeur5 <- 14
-		# largeur6 <- 14
+		largeur6 <- 14
 	}
 
 	# GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'ClimatoAnalysis.json'))
@@ -532,9 +532,9 @@ dailyRainAnalysisPanelCmd <- function(){
 					###################
 					set.Data.VarStat.Dates_1st()
 					widgets.Station.Pixel()
-					res1 <- EnvDailyRainAnalysisplot$read.Data.MapVarStat()
+					res1 <- try(EnvDailyRainAnalysisplot$read.Data.MapVarStat(), silent = TRUE)
 					if(inherits(res1, "try-error") | is.null(res1)) return(NULL)
-					res2 <- EnvDailyRainAnalysisplot$read.Data.MapVarTS()
+					res2 <- try(EnvDailyRainAnalysisplot$read.Data.MapVarTS(), silent = TRUE)
 					if(inherits(res2, "try-error") | is.null(res2)) return(NULL)
 				}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
@@ -605,9 +605,9 @@ dailyRainAnalysisPanelCmd <- function(){
 				###################
 				set.Data.VarStat.Dates_1st()
 				widgets.Station.Pixel()
-				ret1 <- EnvDailyRainAnalysisplot$read.Data.MapVarStat()
+				ret1 <- try(EnvDailyRainAnalysisplot$read.Data.MapVarStat(), silent = TRUE)
 				if(inherits(ret1, "try-error") | is.null(ret1)) return(NULL)
-				ret2 <- EnvDailyRainAnalysisplot$read.Data.MapVarTS()
+				ret2 <- try(EnvDailyRainAnalysisplot$read.Data.MapVarTS(), silent = TRUE)
 				if(inherits(ret2, "try-error") | is.null(ret2)) return(NULL)
 			}
 		})
@@ -656,7 +656,7 @@ dailyRainAnalysisPanelCmd <- function(){
 						EnvDailyRainAnalysisplot$dataMapOp$userLvl$levels <- atlevel
 				}
 			}
-			EnvDailyRainAnalysisplot$varstatMapOp <- climatoAnalysis.MapOptions(main.win, EnvDailyRainAnalysisplot$varstatMapOp)
+			EnvDailyRainAnalysisplot$varstatMapOp <- MapGraph.MapOptions(main.win, EnvDailyRainAnalysisplot$varstatMapOp)
 		})
 
 		###################
@@ -734,7 +734,7 @@ dailyRainAnalysisPanelCmd <- function(){
 						EnvDailyRainAnalysisplot$dataMapOp$userLvl$levels <- atlevel
 				}
 			}
-			EnvDailyRainAnalysisplot$dataMapOp <- climatoAnalysis.MapOptions(main.win, EnvDailyRainAnalysisplot$dataMapOp)
+			EnvDailyRainAnalysisplot$dataMapOp <- MapGraph.MapOptions(main.win, EnvDailyRainAnalysisplot$dataMapOp)
 		})
 
 		###############
@@ -856,47 +856,47 @@ dailyRainAnalysisPanelCmd <- function(){
 		#################
 
 		EnvDailyRainAnalysisplot$TSGraphOp <- list(
-					anomaly = list(
-							anom = list(perc.anom = FALSE, basePeriod = FALSE, startYr.anom = 1981, endYr.anom = 2010),
-							xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
-							ylim = list(is.min = FALSE, min = -100, is.max = FALSE, max = 100),
-							axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-							title = list(is.title = FALSE, title = '', position = 'top'),
-							colors = list(negative = "blue", positive = "red")
-						),
-					bar = list(
-						xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						colors = list(col = "darkblue")
-					),
-					line = list(
-						xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						plot = list(type = 'both',
-							col = list(line = "red", points = "blue"),
-							lwd = 2, cex = 1.4),
-						legend = list(
-							is = list(mean = FALSE, tercile = FALSE, linear = FALSE),
-							add = list(mean = FALSE, tercile = FALSE, linear = FALSE),
-							col = list(mean = "black", tercile1 = "green", tercile2 = "blue", linear = "purple3"),
-							text = list(mean = "Average", tercile1 = "Tercile 0.33333", tercile2 = "Tercile 0.66666", linear = "Trend line"),
-							lwd = list(mean = 2, tercile = 2, linear = 2))
-					),
-					proba = list(
-						xlim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						plot = list(type = 'both',
-							col = list(line = "red", points = "blue"),
-							lwd = 2, cex = 0.8),
-						proba = list(theoretical = FALSE, col = 'black', lwd = 2)
-					)
-				)
+							anomaly = list(
+									anom = list(perc.anom = FALSE, basePeriod = FALSE, startYr.anom = 1981, endYr.anom = 2010),
+									xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+									ylim = list(is.min = FALSE, min = -100, is.max = FALSE, max = 100),
+									axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+									title = list(is.title = FALSE, title = '', position = 'top'),
+									colors = list(negative = "blue", positive = "red")
+								),
+							bar = list(
+								xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+								ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+								axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+								title = list(is.title = FALSE, title = '', position = 'top'),
+								colors = list(col = "darkblue")
+							),
+							line = list(
+								xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+								ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+								axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+								title = list(is.title = FALSE, title = '', position = 'top'),
+								plot = list(type = 'both',
+									col = list(line = "red", points = "blue"),
+									lwd = 2, cex = 1.4),
+								legend = list(
+									is = list(mean = FALSE, tercile = FALSE, linear = FALSE),
+									add = list(mean = FALSE, tercile = FALSE, linear = FALSE),
+									col = list(mean = "black", tercile1 = "green", tercile2 = "blue", linear = "purple3"),
+									text = list(mean = "Average", tercile1 = "Tercile 0.33333", tercile2 = "Tercile 0.66666", linear = "Trend line"),
+									lwd = list(mean = 2, tercile = 2, linear = 2))
+							),
+							proba = list(
+								xlim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+								ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+								axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+								title = list(is.title = FALSE, title = '', position = 'top'),
+								plot = list(type = 'both',
+									col = list(line = "red", points = "blue"),
+									lwd = 2, cex = 0.8),
+								proba = list(theoretical = FALSE, col = 'black', lwd = 2)
+							)
+						)
 
 		tkconfigure(bt.TSGraphOpt, command = function(){
 			suffix.fun <- switch(tclvalue(EnvDailyRainAnalysisplot$graph$typeTSp),
@@ -904,7 +904,7 @@ dailyRainAnalysisPanelCmd <- function(){
 									"Barplot" = "Bar",
 									"Line" = "Line",
 									"Probability" = "Proba")
-			plot.fun <- match.fun(paste0("climatoAnalysis.GraphOptions.", suffix.fun))
+			plot.fun <- match.fun(paste0("MapGraph.GraphOptions.", suffix.fun))
 			EnvDailyRainAnalysisplot$TSGraphOp <- plot.fun(main.win, EnvDailyRainAnalysisplot$TSGraphOp)
 		})
 
@@ -973,7 +973,7 @@ dailyRainAnalysisPanelCmd <- function(){
 		##############################################
 
 		tkgrid(frameDataTS, row = 0, column = 0, sticky = 'we', pady = 1)
-		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = 'we', pady = 3)
+		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = '', pady = 3)
 
 	#######################################################################################################
 
@@ -1023,7 +1023,7 @@ dailyRainAnalysisPanelCmd <- function(){
 		EnvDailyRainAnalysisplot$SHPOp <- list(col = "black", lwd = 1.5)
 
 		tkconfigure(bt.addshpOpt, command = function(){
-			EnvDailyRainAnalysisplot$SHPOp <- climatoAnalysis.GraphOptions.LineSHP(main.win, EnvDailyRainAnalysisplot$SHPOp)
+			EnvDailyRainAnalysisplot$SHPOp <- MapGraph.GraphOptions.LineSHP(main.win, EnvDailyRainAnalysisplot$SHPOp)
 		})
 
 		########
@@ -1058,14 +1058,46 @@ dailyRainAnalysisPanelCmd <- function(){
 
 		if(EnvDailyRainAnalysisplot$output$params$data.type == "cdtstation"){
 			stnIDTSPLOT <- EnvDailyRainAnalysisplot$output$data$id
-			txt.stnSel <- tklabel(frTS2, text = "Select a station to plot", anchor = 'w', justify = 'left')
-			txt.stnID <- tklabel(frTS2, text = "Station", anchor = 'e', justify = 'right')
-			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvDailyRainAnalysisplot$graph$stnIDTSp, width = largeur4)
+			txt.stnSel <- tklabel(frTS2, text = "Select a station to plot")
+			bt.stnID.prev <- ttkbutton(frTS2, text = "<<", width = 6)
+			bt.stnID.next <- ttkbutton(frTS2, text = ">>", width = 6)
+			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvDailyRainAnalysisplot$graph$stnIDTSp, width = largeur6)
 			tclvalue(EnvDailyRainAnalysisplot$graph$stnIDTSp) <- stnIDTSPLOT[1]
 
-			tkgrid(txt.stnSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-			tkgrid(txt.stnID, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkconfigure(bt.stnID.prev, command = function(){
+				if(!is.null(EnvDailyRainAnalysisplot$tsData)){
+					istn <- which(stnIDTSPLOT == str_trim(tclvalue(EnvDailyRainAnalysisplot$graph$stnIDTSp)))
+					istn <- istn-1
+					if(istn < 1) istn <- length(stnIDTSPLOT)
+					tclvalue(EnvDailyRainAnalysisplot$graph$stnIDTSp) <- stnIDTSPLOT[istn]
+
+					imgContainer <- dailyRainAnalysis.Display.VarGraph(tknotes)
+					retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvDailyRainAnalysisplot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
+					EnvDailyRainAnalysisplot$notebookTab.dataGraph <- retNBTab$notebookTab
+					AllOpenTabType <<- retNBTab$AllOpenTabType
+					AllOpenTabData <<- retNBTab$AllOpenTabData
+				}
+			})
+
+			tkconfigure(bt.stnID.next, command = function(){
+				if(!is.null(EnvDailyRainAnalysisplot$tsData)){
+					istn <- which(stnIDTSPLOT == str_trim(tclvalue(EnvDailyRainAnalysisplot$graph$stnIDTSp)))
+					istn <- istn+1
+					if(istn > length(stnIDTSPLOT)) istn <- 1
+					tclvalue(EnvDailyRainAnalysisplot$graph$stnIDTSp) <- stnIDTSPLOT[istn]
+
+					imgContainer <- dailyRainAnalysis.Display.VarGraph(tknotes)
+					retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvDailyRainAnalysisplot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
+					EnvDailyRainAnalysisplot$notebookTab.dataGraph <- retNBTab$notebookTab
+					AllOpenTabType <<- retNBTab$AllOpenTabType
+					AllOpenTabData <<- retNBTab$AllOpenTabData
+				}
+			})
+
+			tkgrid(txt.stnSel, row = 0, column = 0, sticky = '', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(bt.stnID.prev, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 			tkgrid(cb.stnID, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(bt.stnID.next, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		}else{
 			txt.crdSel <- tklabel(frTS2, text = "Enter longitude and latitude to plot", anchor = 'w', justify = 'left')
 			txt.lonLoc <- tklabel(frTS2, text = "Longitude", anchor = 'e', justify = 'right')
@@ -1280,4 +1312,3 @@ dailyRainAnalysisPanelCmd <- function(){
 	######
 	return(cmd.frame)
 }
-

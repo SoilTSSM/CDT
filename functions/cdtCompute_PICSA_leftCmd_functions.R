@@ -25,7 +25,6 @@ PICSACalcPanelCmd <- function(){
 		largeur6 <- 14
 	}
 
-
 	# GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'ClimatoAnalysis.json'))
 	GeneralParameters <- list(onset = "", cessation = "", output = "",
 							seastot = list(useTotal = FALSE, Tstep = "dekadal",
@@ -545,11 +544,11 @@ PICSACalcPanelCmd <- function(){
 		#################
 
 		EnvPICSAplot$TSMapOp <- list(presetCol = list(color = 'tim.colors', reverse = FALSE),
-												userCol = list(custom = FALSE, color = NULL),
-												userLvl = list(custom = FALSE, levels = NULL, equidist = FALSE),
-												title = list(user = FALSE, title = ''),
-												colkeyLab = list(user = FALSE, label = ''),
-												scalebar = list(add = FALSE, pos = 'bottomleft'))
+											userCol = list(custom = FALSE, color = NULL),
+											userLvl = list(custom = FALSE, levels = NULL, equidist = FALSE),
+											title = list(user = FALSE, title = ''),
+											colkeyLab = list(user = FALSE, label = ''),
+											scalebar = list(add = FALSE, pos = 'bottomleft'))
 
 		tkconfigure(bt.TsMap.Opt, command = function(){
 			if(!is.null(EnvPICSAplot$tsdata)){
@@ -561,7 +560,7 @@ PICSACalcPanelCmd <- function(){
 						EnvPICSAplot$TSMapOp$userLvl$levels <- atlevel
 				}
 			}
-			EnvPICSAplot$TSMapOp <- climatoAnalysis.MapOptions(main.win, EnvPICSAplot$TSMapOp)
+			EnvPICSAplot$TSMapOp <- MapGraph.MapOptions(main.win, EnvPICSAplot$TSMapOp)
 		})
 
 		EnvPICSAplot$notebookTab.TSMap <- NULL
@@ -681,11 +680,11 @@ PICSACalcPanelCmd <- function(){
 
 		#################
 		EnvPICSAplot$climMapOp <- list(presetCol = list(color = 'tim.colors', reverse = FALSE),
-												userCol = list(custom = FALSE, color = NULL),
-												userLvl = list(custom = FALSE, levels = NULL, equidist = FALSE),
-												title = list(user = FALSE, title = ''),
-												colkeyLab = list(user = FALSE, label = ''),
-												scalebar = list(add = FALSE, pos = 'bottomleft'))
+											userCol = list(custom = FALSE, color = NULL),
+											userLvl = list(custom = FALSE, levels = NULL, equidist = FALSE),
+											title = list(user = FALSE, title = ''),
+											colkeyLab = list(user = FALSE, label = ''),
+											scalebar = list(add = FALSE, pos = 'bottomleft'))
 
 		tkconfigure(bt.ClimMap.Opt, command = function(){
 			if(!is.null(EnvPICSAplot$climdata)){
@@ -697,7 +696,7 @@ PICSACalcPanelCmd <- function(){
 						EnvPICSAplot$climMapOp$userLvl$levels <- atlevel
 				}
 			}
-			EnvPICSAplot$climMapOp <- climatoAnalysis.MapOptions(main.win, EnvPICSAplot$climMapOp)
+			EnvPICSAplot$climMapOp <- MapGraph.MapOptions(main.win, EnvPICSAplot$climMapOp)
 		})
 
 		EnvPICSAplot$notebookTab.climMap <- NULL
@@ -799,79 +798,79 @@ PICSACalcPanelCmd <- function(){
 
 		#################
 		EnvPICSAplot$TSGraphOp <- list(
-					anomaly = list(
-							anom = list(perc.anom = FALSE, basePeriod = FALSE, startYr.anom = 1981, endYr.anom = 2010),
-							xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
-							ylim = list(is.min = FALSE, min = -100, is.max = FALSE, max = 100),
-							axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-							title = list(is.title = FALSE, title = '', position = 'top'),
-							colors = list(negative = "blue", positive = "red")
-							),
-					bar = list(
-						xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						colors = list(col = "darkblue")
-						),
-					line = list(
-						xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						plot = list(type = 'both',
-							col = list(line = "red", points = "blue"),
-							lwd = 2, cex = 1.4),
-						legend = list(
-							is = list(mean = FALSE, tercile = FALSE, linear = FALSE),
-							add = list(mean = FALSE, tercile = FALSE, linear = FALSE),
-							col = list(mean = "black", tercile1 = "green", tercile2 = "blue", linear = "purple3"),
-							text = list(mean = "Average", tercile1 = "Tercile 0.33333", tercile2 = "Tercile 0.66666", linear = "Trend line"),
-							lwd = list(mean = 2, tercile = 2, linear = 2))
-						),
-					proba = list(
-						xlim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						plot = list(type = 'both',
-							col = list(line = "red", points = "blue"),
-							lwd = 2, cex = 0.8),
-						proba = list(theoretical = TRUE, col = 'black', lwd = 2)
-						),
-					line.enso = list(
-						xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						plot = list(lwd = 2, cex = 2, col = list(line = "black",
-									points = c("blue", "gray", "red"))),
-						legend = list(
-							is = list(mean = FALSE, tercile = FALSE, linear = FALSE),
-							add = list(mean = FALSE, tercile = FALSE, linear = FALSE),
-							col = list(mean = "darkblue", tercile1 = "chartreuse4", tercile2 = "darkgoldenrod4", linear = "purple3"),
-							text = list(mean = "Average", tercile1 = "Tercile 0.33333", tercile2 = "Tercile 0.66666", linear = "Trend line"),
-							lwd = list(mean = 2, tercile = 2, linear = 2))
-						),
-					bar.enso = list(
-						xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						colors = list(col = c("blue", "gray", "red"))
-						),
-					proba.enso = list(
-						xlim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						plot = list(type = 'both', lwd = 2, cex = 1.4,
-							all = list(line = "black", points = "lightgray"),
-							nina = list(line = "blue", points = "lightblue"),
-							neutre = list(line = "gray", points = "lightgray"),
-							nino = list(line = "red", points = "lightpink"))
-						)
-					)
+								anomaly = list(
+										anom = list(perc.anom = FALSE, basePeriod = FALSE, startYr.anom = 1981, endYr.anom = 2010),
+										xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+										ylim = list(is.min = FALSE, min = -100, is.max = FALSE, max = 100),
+										axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+										title = list(is.title = FALSE, title = '', position = 'top'),
+										colors = list(negative = "blue", positive = "red")
+										),
+								bar = list(
+									xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+									ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+									axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+									title = list(is.title = FALSE, title = '', position = 'top'),
+									colors = list(col = "darkblue")
+									),
+								line = list(
+									xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+									ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+									axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+									title = list(is.title = FALSE, title = '', position = 'top'),
+									plot = list(type = 'both',
+										col = list(line = "red", points = "blue"),
+										lwd = 2, cex = 1.4),
+									legend = list(
+										is = list(mean = FALSE, tercile = FALSE, linear = FALSE),
+										add = list(mean = FALSE, tercile = FALSE, linear = FALSE),
+										col = list(mean = "black", tercile1 = "green", tercile2 = "blue", linear = "purple3"),
+										text = list(mean = "Average", tercile1 = "Tercile 0.33333", tercile2 = "Tercile 0.66666", linear = "Trend line"),
+										lwd = list(mean = 2, tercile = 2, linear = 2))
+									),
+								proba = list(
+									xlim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+									ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+									axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+									title = list(is.title = FALSE, title = '', position = 'top'),
+									plot = list(type = 'both',
+										col = list(line = "red", points = "blue"),
+										lwd = 2, cex = 0.8),
+									proba = list(theoretical = TRUE, col = 'black', lwd = 2)
+									),
+								line.enso = list(
+									xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+									ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+									axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+									title = list(is.title = FALSE, title = '', position = 'top'),
+									plot = list(lwd = 2, cex = 2, col = list(line = "black",
+												points = c("blue", "gray", "red"))),
+									legend = list(
+										is = list(mean = FALSE, tercile = FALSE, linear = FALSE),
+										add = list(mean = FALSE, tercile = FALSE, linear = FALSE),
+										col = list(mean = "darkblue", tercile1 = "chartreuse4", tercile2 = "darkgoldenrod4", linear = "purple3"),
+										text = list(mean = "Average", tercile1 = "Tercile 0.33333", tercile2 = "Tercile 0.66666", linear = "Trend line"),
+										lwd = list(mean = 2, tercile = 2, linear = 2))
+									),
+								bar.enso = list(
+									xlim = list(is.min = FALSE, min = 1981, is.max = FALSE, max = 2017),
+									ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+									axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+									title = list(is.title = FALSE, title = '', position = 'top'),
+									colors = list(col = c("blue", "gray", "red"))
+									),
+								proba.enso = list(
+									xlim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+									ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+									axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+									title = list(is.title = FALSE, title = '', position = 'top'),
+									plot = list(type = 'both', lwd = 2, cex = 1.4,
+										all = list(line = "black", points = "lightgray"),
+										nina = list(line = "blue", points = "lightblue"),
+										neutre = list(line = "gray", points = "lightgray"),
+										nino = list(line = "red", points = "lightpink"))
+									)
+								)
 
 		tkconfigure(bt.TsGraph.Opt, command = function(){
 			suffix.fun <- switch(tclvalue(EnvPICSAplot$graph$typeTSp),
@@ -882,7 +881,7 @@ PICSACalcPanelCmd <- function(){
 									"ENSO-Line" = "LineENSO",
 									"ENSO-Barplot" = "BarENSO",
 									"ENSO-Proba" = "ProbaENSO")
-			plot.fun <- match.fun(paste0("climatoAnalysis.GraphOptions.", suffix.fun))
+			plot.fun <- match.fun(paste0("MapGraph.GraphOptions.", suffix.fun))
 			EnvPICSAplot$TSGraphOp <- plot.fun(main.win, EnvPICSAplot$TSGraphOp)
 		})
 
@@ -956,7 +955,7 @@ PICSACalcPanelCmd <- function(){
 		##############################################
 
 		tkgrid(framePICSATSGRAPH, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
+		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = '', padx = 1, pady = 3, ipadx = 1, ipady = 1)
 
 	#######################################################################################################
 
@@ -1007,7 +1006,7 @@ PICSACalcPanelCmd <- function(){
 		EnvPICSAplot$SHPOp <- list(col = "black", lwd = 1.5)
 
 		tkconfigure(bt.addshpOpt, command = function(){
-			EnvPICSAplot$SHPOp <- climatoAnalysis.GraphOptions.LineSHP(main.win, EnvPICSAplot$SHPOp)
+			EnvPICSAplot$SHPOp <- MapGraph.GraphOptions.LineSHP(main.win, EnvPICSAplot$SHPOp)
 		})
 
 		########
@@ -1060,13 +1059,45 @@ PICSACalcPanelCmd <- function(){
 		if(EnvPICSAplot$output$data.type == "cdtstation"){
 			stnIDTSPLOT <- EnvPICSAplot$output$data$id
 			txt.stnSel <- tklabel(frTS2, text = "Select a station to plot", anchor = 'w', justify = 'left')
-			txt.stnID <- tklabel(frTS2, text = "Station", anchor = 'e', justify = 'right')
+			bt.stnID.prev <- ttkbutton(frTS2, text = "<<", width = 6)
+			bt.stnID.next <- ttkbutton(frTS2, text = ">>", width = 6)
 			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvPICSAplot$graph$stnIDTSp, width = largeur6)
 			tclvalue(EnvPICSAplot$graph$stnIDTSp) <- stnIDTSPLOT[1]
 
-			tkgrid(txt.stnSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-			tkgrid(txt.stnID, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkconfigure(bt.stnID.prev, command = function(){
+				if(!is.null(EnvPICSAplot$output)){
+					istn <- which(stnIDTSPLOT == str_trim(tclvalue(EnvPICSAplot$graph$stnIDTSp)))
+					istn <- istn-1
+					if(istn < 1) istn <- length(stnIDTSPLOT)
+					tclvalue(EnvPICSAplot$graph$stnIDTSp) <- stnIDTSPLOT[istn]
+
+					imgContainer <- PICSA.Display.TSPlot(tknotes)
+					retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvPICSAplot$notebookTab.tsplot, AllOpenTabType, AllOpenTabData)
+					EnvPICSAplot$notebookTab.tsplot <- retNBTab$notebookTab
+					AllOpenTabType <<- retNBTab$AllOpenTabType
+					AllOpenTabData <<- retNBTab$AllOpenTabData
+				}
+			})
+
+			tkconfigure(bt.stnID.next, command = function(){
+				if(!is.null(EnvPICSAplot$output)){
+					istn <- which(stnIDTSPLOT == str_trim(tclvalue(EnvPICSAplot$graph$stnIDTSp)))
+					istn <- istn+1
+					if(istn > length(stnIDTSPLOT)) istn <- 1
+					tclvalue(EnvPICSAplot$graph$stnIDTSp) <- stnIDTSPLOT[istn]
+
+					imgContainer <- PICSA.Display.TSPlot(tknotes)
+					retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvPICSAplot$notebookTab.tsplot, AllOpenTabType, AllOpenTabData)
+					EnvPICSAplot$notebookTab.tsplot <- retNBTab$notebookTab
+					AllOpenTabType <<- retNBTab$AllOpenTabType
+					AllOpenTabData <<- retNBTab$AllOpenTabData
+				}
+			})
+
+			tkgrid(txt.stnSel, row = 0, column = 0, sticky = '', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(bt.stnID.prev, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 			tkgrid(cb.stnID, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(bt.stnID.next, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		}else{
 			txt.crdSel <- tklabel(frTS2, text = "Enter longitude and latitude to plot", anchor = 'w', justify = 'left')
 			txt.lonLoc <- tklabel(frTS2, text = "Longitude", anchor = 'e', justify = 'right')
@@ -1471,16 +1502,21 @@ PICSACalcPanelCmd <- function(){
 		}
 
 		if(str_trim(tclvalue(EnvPICSAplot$analysis.method)) == 'Percentiles'){
-			Q <- as.numeric(tclvalue(EnvPICSAplot$mth.perc))/100
+			Q <- as.numeric(str_trim(tclvalue(EnvPICSAplot$mth.perc)))/100
 			don <- apply(don, 2, quantile8, probs = Q)
 		}
 
 		if(str_trim(tclvalue(EnvPICSAplot$analysis.method)) == 'Frequency'){
-			xlow <- tclvalue(EnvPICSAplot$low.thres)
-			xup <- tclvalue(EnvPICSAplot$up.thres)
+			xlow <- str_trim(tclvalue(EnvPICSAplot$low.thres))
+			xup <- str_trim(tclvalue(EnvPICSAplot$up.thres))
 			if(str_trim(tclvalue(EnvPICSAplot$varPICSA))%in%c("Onset", "Cessation")){
-				dlo <- as.POSIXlt(as.Date(paste(start.dateYear, xlow, sep = '-')))
-				dup <- as.POSIXlt(as.Date(paste(start.dateYear, xup, sep = '-')))
+				dlo <- try(as.POSIXlt(as.Date(paste(start.dateYear, xlow, sep = '-'))), silent = TRUE)
+				dup <- try(as.POSIXlt(as.Date(paste(start.dateYear, xup, sep = '-'))), silent = TRUE)
+				if(inherits(dlo, "try-error") | inherits(dup, "try-error")){
+					if(EnvPICSAplot$output$data.type == "cdtstation")
+						InsertMessagesTxt(main.txt.out, "Invalid frequency intervals", format = TRUE)
+					return(rep(NA, ncol(don)))
+				}
 				ix <- dlo > dup
 				dup$year[ix] <- dup$year[ix] + 1
 				xlow <- as.numeric(as.Date(dlo) - EnvPICSAplot$output$start.date)
@@ -1488,6 +1524,11 @@ PICSACalcPanelCmd <- function(){
 			}else{
 				xlow <- as.numeric(xlow)
 				xup <- as.numeric(xup)
+				if(is.na(xlow) | is.na(xup)){
+					if(EnvPICSAplot$output$data.type == "cdtstation")
+						InsertMessagesTxt(main.txt.out, "Invalid frequency intervals", format = TRUE)
+					return(rep(NA, ncol(don)))
+				}
 			}
 			don <- colSums(don >= xlow & don <= xup, na.rm = TRUE)
 		}
@@ -1502,4 +1543,3 @@ PICSACalcPanelCmd <- function(){
 	######
 	return(cmd.frame)
 }
-

@@ -1,5 +1,5 @@
+
 getCountryShapefile <- function(parent.win){
-	#tkentry width, file path
 	if(Sys.info()["sysname"] == "Windows"){
 		largeur <- 34
 		largeur1 <- 35
@@ -10,6 +10,8 @@ getCountryShapefile <- function(parent.win){
 
 	downshp <- fromJSON(file.path(apps.dir, 'init_params', 'Download_Shapefile.json'))
 	if(str_trim(downshp$dir2save) == "") downshp$dir2save <- getwd()
+
+	cntr <- readRDS(file.path(apps.dir, 'data', 'Africa_Country.rds'))
 
 	#####
 	tt <- tktoplevel()
@@ -22,8 +24,6 @@ getCountryShapefile <- function(parent.win){
 	#####
 	frA1 <- tkframe(frGrd0, relief = 'sunken', bd = 2)
 
-	flcntr <- file.path(apps.dir, 'data', 'Afica_Country.txt')
-	cntr <- read.table(flcntr, header = TRUE, colClasses = 'character', stringsAsFactors = FALSE)
 	cbvalues <- cntr$NAME_ENGLISH
 	country <- tclVar(downshp$shp$country)
 	level_sub <- tclVar(downshp$shp$level)
@@ -98,7 +98,7 @@ getCountryShapefile <- function(parent.win){
 			tkdestroy(tt)
 			tkfocus(parent.win)
 			if(testConnection()){
-				InsertMessagesTxt(main.txt.out, "Downloading.................")
+				InsertMessagesTxt(main.txt.out, "Downloading .................")
 				return(ExecDownload_GADM(cntr_iso3, level, outdir))
 			}else{
 				InsertMessagesTxt(main.txt.out, 'No Internet connection', format = TRUE)
@@ -117,15 +117,15 @@ getCountryShapefile <- function(parent.win){
 	tcl('update')
 	tt.w <- as.integer(tkwinfo("reqwidth", tt))
 	tt.h <- as.integer(tkwinfo("reqheight", tt))
-	tt.x <- as.integer(width.scr*0.5-tt.w*0.5)
-	tt.y <- as.integer(height.scr*0.5-tt.h*0.5)
-	tkwm.geometry(tt, paste('+', tt.x, '+', tt.y, sep = ''))
+	tt.x <- as.integer(width.scr*0.5 - tt.w*0.5)
+	tt.y <- as.integer(height.scr*0.5 - tt.h*0.5)
+	tkwm.geometry(tt, paste0('+', tt.x, '+', tt.y))
 	tkwm.transient(tt)
 	tkwm.title(tt, 'www.gadm.org')
 	tkwm.deiconify(tt)
 
 	tkfocus(tt)
-	tkbind(tt, "<Destroy>", function() {
+	tkbind(tt, "<Destroy>", function(){
 		tkgrab.release(tt)
 		tkfocus(parent.win)
 		return(NULL)
@@ -151,8 +151,8 @@ ExecDownload_GADM <- function(countryISO3, level, dirshp){
 
 getGADM <- function(countryISO3, level, dirshp){
 	baseURL <- 'http://biogeo.ucdavis.edu/data/gadm2.8/rds/'
-	urlfl <- paste(baseURL, countryISO3, '_adm', level,'.rds', sep = '')
-	destfl <- paste(tempfile(), '.rds', sep = '')
+	urlfl <- paste0(baseURL, countryISO3, '_adm', level, '.rds')
+	destfl <- paste0(tempfile(), '.rds')
 	ret <- try(download.file(urlfl, destfl, method = "auto", quiet = TRUE, mode = "wb", cacheOK = TRUE), silent = TRUE)
 	if(ret != 0) return(NULL)
 
@@ -165,11 +165,10 @@ getGADM <- function(countryISO3, level, dirshp){
 	if(level == '4') varname <- c("OBJECTID", "ID_0", "ID_1", "ID_2", "ID_3", "ID_4", "ISO", "NAME_0", "NAME_1", "NAME_2", "NAME_3", "NAME_4", "ENGTYPE_4")
 	shp <- shp[, varname]
 
-	writePolyShape(shp, file.path(dirshp, paste(countryISO3, '_adm', level, sep = ''))) ##maptools
-	#writeOGR(shp, dsn = dirshp, layer = paste(countryISO3, '_adm', level, sep = ''), driver = "ESRI Shapefile") ##rgdal
+	## maptools
+	writePolyShape(shp, file.path(dirshp, paste0(countryISO3, '_adm', level)))
+	### rgdal
+	# writeOGR(shp, dsn = dirshp, layer = paste0(countryISO3, '_adm', level), driver = "ESRI Shapefile")
 	unlink(destfl)
 	return(0)
 }
-
-
-

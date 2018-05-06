@@ -1,13 +1,13 @@
 
-climatoAnalysis.plotStatMaps <- function(){
-	don <- EnvClimatoAnalysisplot$don
-	climMapOp <- EnvClimatoAnalysisplot$climMapOp
+spatialAnalysis.plotStatMaps <- function(){
+	don <- EnvSpatialAnalysisplot$don
+	climMapOp <- EnvSpatialAnalysisplot$climMapOp
 
 	## titre
 	if(!climMapOp$title$user){
-		params <- EnvClimatoAnalysisplot$statpars$params
+		params <- EnvSpatialAnalysisplot$statpars$params
 		titre1 <- str_to_title(params$time.series$out.series)
-		titre2 <- tclvalue(EnvClimatoAnalysisplot$climStat)
+		titre2 <- tclvalue(EnvSpatialAnalysisplot$climStat)
 		titre3 <- switch(params$analysis.method$mth.fun,
 						"percentile" = paste0("(", params$analysis.method$mth.perc, "th", ")"),
 						"frequency" = paste0("(", params$analysis.method$low.thres, " < X < ",
@@ -18,33 +18,32 @@ climatoAnalysis.plotStatMaps <- function(){
 							if(params$analysis.method$trend.unit == 3) "/ average (in %)"
 						},
 						NULL)
-		titre4 <- tclvalue(EnvClimatoAnalysisplot$climDate)
+		titre4 <- tclvalue(EnvSpatialAnalysisplot$climDate)
 		titre <- paste(titre1, titre2, titre3, titre4)
 	}else titre <- climMapOp$title$title
 
+	#################
 	## colorscale title
 	if(climMapOp$colkeyLab$user){
 		legend.texta <- climMapOp$colkeyLab$label
 	}else legend.texta <- NULL
 
+	#################
 	## breaks
-	if(!climMapOp$userLvl$custom){
-		breaks <- pretty(don$z, n = 10, min.n = 5)
-		breaks <- if(length(breaks) > 0) breaks else c(0, 1) 
-	}else breaks <- climMapOp$userLvl$levels
+	brks <- image.plot_Legend_pars(don$z, climMapOp$userLvl, climMapOp$userCol, climMapOp$presetCol)
+	breaks <- brks$breaks
+	zlim <- brks$legend.breaks$zlim
+	breaks2 <- brks$legend.breaks$breaks
+	kolor <- brks$colors
+	breaks1 <- brks$legend.axis$at
+	lab.breaks <- brks$legend.axis$labels
 
-	## colors
-	if(climMapOp$userCol$custom){
-		kolFonction <- colorRampPalette(climMapOp$userCol$color)
-		kolor <- kolFonction(length(breaks)-1)
-	}else{
-		kolFonction <- match.fun(climMapOp$presetCol$color)
-		kolor <- kolFonction(length(breaks)-1)
-		if(climMapOp$presetCol$reverse) kolor <- rev(kolor)
-	}
+	## legend label
+	legendLabel <- lab.breaks
 
+	#################
 	### shape files
-	shpf <- EnvClimatoAnalysisplot$shp
+	shpf <- EnvSpatialAnalysisplot$shp
 	ocrds <- if(tclvalue(shpf$add.shp) == "1" & !is.null(shpf$ocrds)) shpf$ocrds else matrix(NA, 1, 2)
 
 	#################
@@ -56,6 +55,8 @@ climatoAnalysis.plotStatMaps <- function(){
 		xlim <- range(range(don$x, na.rm = TRUE), range(ocrds[, 1], na.rm = TRUE))
 		ylim <- range(range(don$y, na.rm = TRUE), range(ocrds[, 2], na.rm = TRUE))
 	}
+
+	#################
 
 	if(diff(xlim) > diff(ylim)){
 		horizontal <- TRUE
@@ -72,8 +73,6 @@ climatoAnalysis.plotStatMaps <- function(){
 		legend.args <- if(!is.null(legend.texta)) list(text = legend.texta, cex = 0.8, side = 4, line = line) else NULL
 	}
 
-	legendLabel <- breaks
-
 	#################
 
 	opar <- par(mar = mar)
@@ -82,27 +81,17 @@ climatoAnalysis.plotStatMaps <- function(){
 	axlabs <- axlabsFun(axTicks(1), axTicks(2))
 	axis(side = 1, at = axTicks(1), labels = axlabs$xaxl, tcl = -0.2, cex.axis = 0.8)
 	axis(side = 2, at = axTicks(2), labels = axlabs$yaxl, tcl = -0.2, las = 1, cex.axis = 0.8)
-	title(main = titre, cex.main = 1, font.main= 2)
+	title(main = titre, cex.main = 1, font.main = 2)
 
 	# if(length(xna) > 0) points(xna, yna, pch = '*')
+	image(don, breaks = breaks, col = kolor, xaxt = 'n', yaxt = 'n', add = TRUE)
+	image.plot(zlim = zlim, breaks = breaks2, col = kolor, horizontal = horizontal,
+				legend.only = TRUE, legend.mar = legend.mar, legend.width = legend.width,
+				legend.args = legend.args, axis.args = list(at = breaks1, labels = legendLabel,
+				cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)), legend.shrink = 0.8)
 
-	if(climMapOp$userLvl$equidist){
-		image(don, breaks = breaks, col = kolor, xaxt = 'n', yaxt = 'n', add = TRUE)
-		breaks1 <- seq(0, 1, length.out = length(breaks))
-		image.plot(zlim = c(0, 1), breaks = breaks1, col = kolor, horizontal = horizontal,
-					legend.only = TRUE, legend.mar = legend.mar, legend.width = legend.width,
-					legend.args = legend.args, axis.args = list(at = breaks1, labels = legendLabel,
-					cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
-	}else{
-		image.plot(don, breaks = breaks, col = kolor, horizontal = horizontal,
-					xaxt = 'n', yaxt = 'n', add = TRUE, legend.mar = legend.mar,
-					legend.width = legend.width, legend.args = legend.args,
-					axis.args = list(at = breaks, labels = legendLabel, cex.axis = 0.7,
-					font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
-	}
-
-	if(tclvalue(EnvClimatoAnalysisplot$climStat) == "Trend"){
-		if(EnvClimatoAnalysisplot$statpars$params$data.type == "cdtstation"){
+	if(tclvalue(EnvSpatialAnalysisplot$climStat) == "Trend"){
+		if(EnvSpatialAnalysisplot$statpars$params$data.type == "cdtstation"){
 			ipvl <- !is.na(don$p.value) & don$p.value < 0.05
 			if(any(ipvl)){
 				# points(don$x0[ipvl], don$y0[ipvl], col = adjustcolor('gray40', alpha.f = 0.8))
@@ -145,8 +134,7 @@ climatoAnalysis.plotStatMaps <- function(){
 	}
 
 	abline(h = axTicks(2), v = axTicks(1), col = "lightgray", lty = 3)
-
-	lines(ocrds[, 1], ocrds[, 2], lwd = EnvClimatoAnalysisplot$SHPOp$lwd, col = EnvClimatoAnalysisplot$SHPOp$col)
+	lines(ocrds[, 1], ocrds[, 2], lwd = EnvSpatialAnalysisplot$SHPOp$lwd, col = EnvSpatialAnalysisplot$SHPOp$col)
 	
 	## scale bar
 	if(climMapOp$scalebar$add){
@@ -169,58 +157,57 @@ climatoAnalysis.plotStatMaps <- function(){
 
 #######################################
 
-climatoAnalysis.plotTSMaps <- function(){
-	TSMapOp <- EnvClimatoAnalysisplot$TSMapOp
+spatialAnalysis.plotTSMaps <- function(){
+	TSMapOp <- EnvSpatialAnalysisplot$TSMapOp
 
-	if(tclvalue(EnvClimatoAnalysisplot$TSData) == "Data")
-		don <- EnvClimatoAnalysisplot$tsdata
-	if(tclvalue(EnvClimatoAnalysisplot$TSData) == "Anomaly")
-		don <- EnvClimatoAnalysisplot$anomData
+	if(tclvalue(EnvSpatialAnalysisplot$TSData) == "Data")
+		don <- EnvSpatialAnalysisplot$tsdata
+	if(tclvalue(EnvSpatialAnalysisplot$TSData) == "Anomaly")
+		don <- EnvSpatialAnalysisplot$anomData
 
 	if(!TSMapOp$title$user){
-		if(tclvalue(EnvClimatoAnalysisplot$TSData) == "Data"){
-			params <- EnvClimatoAnalysisplot$statpars$params
+		if(tclvalue(EnvSpatialAnalysisplot$TSData) == "Data"){
+			params <- EnvSpatialAnalysisplot$statpars$params
 			titre1 <- str_to_title(params$time.series$out.series)
 			titre2 <- switch(params$aggr.series$aggr.fun, "sum" = "total", "mean" = "average", "count" = "number")
 			titre3 <- if(params$aggr.series$aggr.fun == "count")
 							paste("(", params$aggr.series$opr.fun, params$aggr.series$opr.thres, ")") else NULL
-			titre4 <- tclvalue(EnvClimatoAnalysisplot$TSDate)
+			titre4 <- tclvalue(EnvSpatialAnalysisplot$TSDate)
 			titre <- paste(titre1, titre2, titre3, titre4)
 		}
 
-		if(tclvalue(EnvClimatoAnalysisplot$TSData) == "Anomaly"){
+		if(tclvalue(EnvSpatialAnalysisplot$TSData) == "Anomaly"){
 			params <- don$params
 			titre1 <- str_to_title(params$time.series$out.series)
 			titre2 <- "anomaly"
 			titre3 <- if(params$analysis.method$perc.anom) "% of mean" else NULL
-			titre4 <- tclvalue(EnvClimatoAnalysisplot$TSDate)
+			titre4 <- tclvalue(EnvSpatialAnalysisplot$TSDate)
 			titre <- paste(titre1, titre2, titre3, titre4)
 		}
 	}else titre <- TSMapOp$title$title
 
+	#################
 	## colorscale title
 	if(TSMapOp$colkeyLab$user){
 		legend.texta <- TSMapOp$colkeyLab$label
 	}else legend.texta <- NULL
 
+	#################
 	## breaks
-	if(!TSMapOp$userLvl$custom){
-		breaks <- pretty(don$z, n = 10, min.n = 5)
-		breaks <- if(length(breaks) > 0) breaks else c(0, 1) 
-	}else breaks <- TSMapOp$userLvl$levels
+	brks <- image.plot_Legend_pars(don$z, TSMapOp$userLvl, TSMapOp$userCol, TSMapOp$presetCol)
+	breaks <- brks$breaks
+	zlim <- brks$legend.breaks$zlim
+	breaks2 <- brks$legend.breaks$breaks
+	kolor <- brks$colors
+	breaks1 <- brks$legend.axis$at
+	lab.breaks <- brks$legend.axis$labels
 
-	## colors
-	if(TSMapOp$userCol$custom){
-		kolFonction <- colorRampPalette(TSMapOp$userCol$color)
-		kolor <- kolFonction(length(breaks)-1)
-	}else{
-		kolFonction <- match.fun(TSMapOp$presetCol$color)
-		kolor <- kolFonction(length(breaks)-1)
-		if(TSMapOp$presetCol$reverse) kolor <- rev(kolor)
-	}
+	## legend label
+	legendLabel <- lab.breaks
 
+	#################
 	### shape files
-	shpf <- EnvClimatoAnalysisplot$shp
+	shpf <- EnvSpatialAnalysisplot$shp
 	ocrds <- if(tclvalue(shpf$add.shp) == "1" & !is.null(shpf$ocrds)) shpf$ocrds else matrix(NA, 1, 2)
 
 	#################
@@ -232,6 +219,8 @@ climatoAnalysis.plotTSMaps <- function(){
 		xlim <- range(range(don$x, na.rm = TRUE), range(ocrds[, 1], na.rm = TRUE))
 		ylim <- range(range(don$y, na.rm = TRUE), range(ocrds[, 2], na.rm = TRUE))
 	}
+
+	#################
 
 	if(diff(xlim) > diff(ylim)){
 		horizontal <- TRUE
@@ -248,8 +237,6 @@ climatoAnalysis.plotTSMaps <- function(){
 		legend.args <- if(!is.null(legend.texta)) list(text = legend.texta, cex = 0.8, side = 4, line = line) else NULL
 	}
 
-	legendLabel <- breaks
-
 	#################
 
 	opar <- par(mar = mar)
@@ -258,28 +245,17 @@ climatoAnalysis.plotTSMaps <- function(){
 	axlabs <- axlabsFun(axTicks(1), axTicks(2))
 	axis(side = 1, at = axTicks(1), labels = axlabs$xaxl, tcl = -0.2, cex.axis = 0.8)
 	axis(side = 2, at = axTicks(2), labels = axlabs$yaxl, tcl = -0.2, las = 1, cex.axis = 0.8)
-	title(main = titre, cex.main = 1, font.main= 2)
+	title(main = titre, cex.main = 1, font.main = 2)
 
 	# if(length(xna) > 0) points(xna, yna, pch = '*')
-
-	if(TSMapOp$userLvl$equidist){
-		image(don, breaks = breaks, col = kolor, xaxt = 'n', yaxt = 'n', add = TRUE)
-		breaks1 <- seq(0, 1, length.out = length(breaks))
-		image.plot(zlim = c(0, 1), breaks = breaks1, col = kolor, horizontal = horizontal,
-					legend.only = TRUE, legend.mar = legend.mar, legend.width = legend.width,
-					legend.args = legend.args, axis.args = list(at = breaks1, labels = legendLabel,
-					cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
-	}else{
-		image.plot(don, breaks = breaks, col = kolor, horizontal = horizontal,
-					xaxt = 'n', yaxt = 'n', add = TRUE, legend.mar = legend.mar,
-					legend.width = legend.width, legend.args = legend.args,
-					axis.args = list(at = breaks, labels = legendLabel, cex.axis = 0.7,
-					font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
-	}
+	image(don, breaks = breaks, col = kolor, xaxt = 'n', yaxt = 'n', add = TRUE)
+	image.plot(zlim = zlim, breaks = breaks2, col = kolor, horizontal = horizontal,
+				legend.only = TRUE, legend.mar = legend.mar, legend.width = legend.width,
+				legend.args = legend.args, axis.args = list(at = breaks1, labels = legendLabel,
+				cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)), legend.shrink = 0.8)
 
 	abline(h = axTicks(2), v = axTicks(1), col = "lightgray", lty = 3)
-
-	lines(ocrds[, 1], ocrds[, 2], lwd = EnvClimatoAnalysisplot$SHPOp$lwd, col = EnvClimatoAnalysisplot$SHPOp$col)
+	lines(ocrds[, 1], ocrds[, 2], lwd = EnvSpatialAnalysisplot$SHPOp$lwd, col = EnvSpatialAnalysisplot$SHPOp$col)
 
 	## scale bar
 	if(TSMapOp$scalebar$add){
@@ -301,25 +277,25 @@ climatoAnalysis.plotTSMaps <- function(){
 
 #######################################
 
-climatoAnalysis.plotTSGraph <- function(){
-	TSGraphOp <- EnvClimatoAnalysisplot$TSGraphOp
+spatialAnalysis.plotTSGraph <- function(){
+	TSGraphOp <- EnvSpatialAnalysisplot$TSGraphOp
 
-	if(EnvClimatoAnalysisplot$statpars$params$data.type == "cdtstation"){
-		ixy <- which(EnvClimatoAnalysisplot$tsdata$id == str_trim(tclvalue(EnvClimatoAnalysisplot$graph$stnIDTSp)))
+	if(EnvSpatialAnalysisplot$statpars$params$data.type == "cdtstation"){
+		ixy <- which(EnvSpatialAnalysisplot$tsdata$id == str_trim(tclvalue(EnvSpatialAnalysisplot$graph$stnIDTSp)))
 		if(length(ixy) == 0){
 			InsertMessagesTxt(main.txt.out, "Station not found", format = TRUE)
 			return(NULL)
 		}
-		don <- EnvClimatoAnalysisplot$tsdata$data[, ixy]
-		dates <- EnvClimatoAnalysisplot$tsdata$date
+		don <- EnvSpatialAnalysisplot$tsdata$data[, ixy]
+		dates <- EnvSpatialAnalysisplot$tsdata$date
 		daty <- as.numeric(substr(dates, 1, 4))
-		EnvClimatoAnalysisplot$location <- paste0("Station: ", EnvClimatoAnalysisplot$tsdata$id[ixy])
+		EnvSpatialAnalysisplot$location <- paste0("Station: ", EnvSpatialAnalysisplot$tsdata$id[ixy])
 	}else{
-		cdtdataset <- EnvClimatoAnalysisplot$cdtdataset
+		cdtdataset <- EnvSpatialAnalysisplot$cdtdataset
 		xlon <- cdtdataset$coords$mat$x
 		xlat <- cdtdataset$coords$mat$y
-		ilon <- as.numeric(str_trim(tclvalue(EnvClimatoAnalysisplot$graph$lonLOC)))
-		ilat <- as.numeric(str_trim(tclvalue(EnvClimatoAnalysisplot$graph$latLOC)))
+		ilon <- as.numeric(str_trim(tclvalue(EnvSpatialAnalysisplot$graph$lonLOC)))
+		ilat <- as.numeric(str_trim(tclvalue(EnvSpatialAnalysisplot$graph$latLOC)))
 
 		iclo <- findInterval(ilon, xlon)
 		ilo <- iclo + (2 * ilon > xlon[iclo] + xlon[iclo+1])
@@ -347,135 +323,19 @@ climatoAnalysis.plotTSGraph <- function(){
 				dateTS <- if(mon1 == "01" & mon2 == "12") year1 else dates
 			}
 		}else dateTS <- dates
-		ipos <- which(EnvClimatoAnalysisplot$statpars$stats == tclvalue(EnvClimatoAnalysisplot$climDate))
-		idaty <- dateTS%in%EnvClimatoAnalysisplot$statpars$timeseries[[ipos]][[2]]
+		ipos <- which(EnvSpatialAnalysisplot$statpars$stats == tclvalue(EnvSpatialAnalysisplot$climDate))
+		idaty <- dateTS%in%EnvSpatialAnalysisplot$statpars$timeseries[[ipos]][[2]]
 		dates <- dateTS[idaty]
 		don <- don[idaty]
 
 		daty <- as.numeric(substr(dates, 1, 4))
-		EnvClimatoAnalysisplot$location <- paste0("Longitude: ", round(ilon, 5), ", Latitude: ", round(ilat, 5))
+		EnvSpatialAnalysisplot$location <- paste0("Longitude: ", round(ilon, 5), ", Latitude: ", round(ilat, 5))
 	}
 
 	#########
-	GRAPHTYPE <- str_trim(tclvalue(EnvClimatoAnalysisplot$graph$typeTSp))
+	GRAPHTYPE <- str_trim(tclvalue(EnvSpatialAnalysisplot$graph$typeTSp))
 
-	if(GRAPHTYPE == "Line"){
-		optsgph <- TSGraphOp$line
-		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
-		idt <- daty >= xlim[1] & daty <= xlim[2]
-		daty <- daty[idt]
-		don <- don[idt]
-		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
-
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ''
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- ""
-			titre.pos <- "top"
-		}
-
-		legends <- NULL
-		if(optsgph$legend$is$mean){
-			legends$add$mean <- optsgph$legend$add$mean
-			legends$col$mean <- optsgph$legend$col$mean
-			legends$text$mean <- optsgph$legend$text$mean
-			legends$lwd$mean <- optsgph$legend$lwd$mean
-		}else{
-			if(tclvalue(EnvClimatoAnalysisplot$graph$averageTSp) == "1") legends$add$mean <- TRUE
-		}
-		if(optsgph$legend$is$linear){
-			legends$add$linear <- optsgph$legend$add$linear
-			legends$col$linear <- optsgph$legend$col$linear
-			legends$text$linear <- optsgph$legend$text$linear
-			legends$lwd$linear <- optsgph$legend$lwd$linear
-		}else{
-			if(tclvalue(EnvClimatoAnalysisplot$graph$trendTSp) == "1") legends$add$linear <- TRUE
-		}
-		if(optsgph$legend$is$tercile){
-			legends$add$tercile <- optsgph$legend$add$tercile
-			legends$col$tercile1 <- optsgph$legend$col$tercile1
-			legends$text$tercile1 <- optsgph$legend$text$tercile1
-			legends$col$tercile2 <- optsgph$legend$col$tercile2
-			legends$text$tercile2 <- optsgph$legend$text$tercile2
-			legends$lwd$tercile <- optsgph$legend$lwd$tercile
-		}else{
-			if(tclvalue(EnvClimatoAnalysisplot$graph$tercileTSp) == "1") legends$add$tercile <- TRUE
-		}
-
-		climatoAnalysis.plot.line(daty, don, xlim = xlim, ylim = ylim,
-									xlab = xlab, ylab = ylab, ylab.sub = NULL,
-									title = titre, title.position = titre.pos, axis.font = 1,
-									plotl = optsgph$plot, legends = legends,
-									location = EnvClimatoAnalysisplot$location)
-	}
-
-	if(GRAPHTYPE == "Barplot"){
-		optsgph <- TSGraphOp$bar
-		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
-		idt <- daty >= xlim[1] & daty <= xlim[2]
-		daty <- daty[idt]
-		don <- don[idt]
-		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
-
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ''
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- ""
-			titre.pos <- "top"
-		}
-
-		climatoAnalysis.plot.bar(daty, don, xlim = xlim, ylim = ylim,
-								xlab = xlab, ylab = ylab, ylab.sub = NULL,
-								title = titre, title.position = titre.pos, axis.font = 1,
-								barcol = optsgph$colors$col,
-								location = EnvClimatoAnalysisplot$location)
-	}
-
-	if(GRAPHTYPE == "Probability"){
-		optsgph <- TSGraphOp$proba
-		xlim <- range(don, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
-		ylim <- c(0, 100)
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
-
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else "Probability of Exceeding"
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- ""
-			titre.pos <- "top"
-		}
-
-		climatoAnalysis.plot.proba(don, xlim = xlim, ylim = ylim,
-									xlab = xlab, xlab.sub = NULL, ylab = ylab,
-									title = titre, title.position = titre.pos, axis.font = 1,
-									proba = list(theoretical = optsgph$proba$theoretical),
-									plotp = optsgph$proba, plotl = optsgph$plot,
-									location = EnvClimatoAnalysisplot$location)
-	}
-
-	####
+	#### ENSO
 	if(GRAPHTYPE%in%c("ENSO-Line", "ENSO-Barplot", "ENSO-Proba")){
 		if(nchar(dates[1]) == 4){
 			start.mon <- paste0(dates, "0115")
@@ -491,35 +351,63 @@ climatoAnalysis.plotTSGraph <- function(){
 			end.mon <- sapply(dates, '[[', 2)
 		}
 
-		ijoni <- getIndexSeasonVars(start.mon, end.mon, EnvClimatoAnalysisplot$ONI$date, "monthly")
-		oni <- sapply(ijoni, function(x) mean(EnvClimatoAnalysisplot$ONI$data[x], na.rm = TRUE))
+		ijoni <- getIndexSeasonVars(start.mon, end.mon, EnvSpatialAnalysisplot$ONI$date, "monthly")
+		oni <- sapply(ijoni, function(x) mean(EnvSpatialAnalysisplot$ONI$data[x], na.rm = TRUE))
 		oni <- ifelse(oni >= 0.5, 3, ifelse(oni <= -0.5, 1, 2))
 	}
 
-	if(GRAPHTYPE == "ENSO-Line"){
-		optsgph <- TSGraphOp$line.enso
+	########
+
+	xlab0 <- ""
+	ylab0 <- ""
+
+	#########
+
+	optsgph <- switch(GRAPHTYPE,
+				"Line" = TSGraphOp$line,
+				"Barplot" = TSGraphOp$bar,
+				"ENSO-Line" = TSGraphOp$line.enso,
+				"ENSO-Barplot" = TSGraphOp$bar.enso,
+				"Anomaly" = TSGraphOp$anomaly,
+				"Probability" = TSGraphOp$proba,
+				"ENSO-Proba" = TSGraphOp$proba.enso)
+
+	## xlim, ylim, xlab, ylab
+	if(GRAPHTYPE%in%c("Probability", "ENSO-Proba")){
+		xlim <- range(don, na.rm = TRUE)
+		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
+		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
+		ylim <- c(0, 100)
+		ylab0 <- "Probability of Exceeding"
+	}else{
 		xlim <- range(daty, na.rm = TRUE)
 		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
 		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
 		idt <- daty >= xlim[1] & daty <= xlim[2]
 		daty <- daty[idt]
 		don <- don[idt]
-		oni <- oni[idt]
 		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
+		if(GRAPHTYPE == "Anomaly")
+			if(optsgph$anom$perc.anom) ylab0 <- "Anomaly (% of Mean)"
+	}
 
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ''
+	if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
+	if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
 
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- ""
-			titre.pos <- "top"
-		}
+	xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else xlab0
+	ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ylab0
 
+	if(optsgph$title$is.title){
+		titre <- optsgph$title$title
+		titre.pos <- optsgph$title$position
+	}else{
+		titre <- ""
+		titre.pos <- "top"
+	}
+
+	#########
+
+	if(GRAPHTYPE == "Line"){
 		legends <- NULL
 		if(optsgph$legend$is$mean){
 			legends$add$mean <- optsgph$legend$add$mean
@@ -527,7 +415,7 @@ climatoAnalysis.plotTSGraph <- function(){
 			legends$text$mean <- optsgph$legend$text$mean
 			legends$lwd$mean <- optsgph$legend$lwd$mean
 		}else{
-			if(tclvalue(EnvClimatoAnalysisplot$graph$averageTSp) == "1") legends$add$mean <- TRUE
+			if(tclvalue(EnvSpatialAnalysisplot$graph$averageTSp) == "1") legends$add$mean <- TRUE
 		}
 		if(optsgph$legend$is$linear){
 			legends$add$linear <- optsgph$legend$add$linear
@@ -535,7 +423,7 @@ climatoAnalysis.plotTSGraph <- function(){
 			legends$text$linear <- optsgph$legend$text$linear
 			legends$lwd$linear <- optsgph$legend$lwd$linear
 		}else{
-			if(tclvalue(EnvClimatoAnalysisplot$graph$trendTSp) == "1") legends$add$linear <- TRUE
+			if(tclvalue(EnvSpatialAnalysisplot$graph$trendTSp) == "1") legends$add$linear <- TRUE
 		}
 		if(optsgph$legend$is$tercile){
 			legends$add$tercile <- optsgph$legend$add$tercile
@@ -545,97 +433,72 @@ climatoAnalysis.plotTSGraph <- function(){
 			legends$text$tercile2 <- optsgph$legend$text$tercile2
 			legends$lwd$tercile <- optsgph$legend$lwd$tercile
 		}else{
-			if(tclvalue(EnvClimatoAnalysisplot$graph$tercileTSp) == "1") legends$add$tercile <- TRUE
+			if(tclvalue(EnvSpatialAnalysisplot$graph$tercileTSp) == "1") legends$add$tercile <- TRUE
 		}
 
-		climatoAnalysis.plot.line.ENSO(daty, don, oni, xlim = xlim, ylim = ylim,
-										xlab = xlab, ylab = ylab, ylab.sub = NULL,
-										title = titre, title.position = titre.pos, axis.font = 1,
-										plotl = optsgph$plot, legends = legends,
-										location = EnvClimatoAnalysisplot$location)
+		graphs.plot.line(daty, don, xlim = xlim, ylim = ylim,
+						xlab = xlab, ylab = ylab, ylab.sub = NULL,
+						title = titre, title.position = titre.pos, axis.font = 1,
+						plotl = optsgph$plot, legends = legends,
+						location = EnvSpatialAnalysisplot$location)
+	}
+
+	if(GRAPHTYPE == "Barplot"){
+		graphs.plot.bar(daty, don, xlim = xlim, ylim = ylim,
+						xlab = xlab, ylab = ylab, ylab.sub = NULL,
+						title = titre, title.position = titre.pos, axis.font = 1,
+						barcol = optsgph$colors$col,
+						location = EnvSpatialAnalysisplot$location)
+	}
+
+	if(GRAPHTYPE == "ENSO-Line"){
+		oni <- oni[idt]
+
+		legends <- NULL
+		if(optsgph$legend$is$mean){
+			legends$add$mean <- optsgph$legend$add$mean
+			legends$col$mean <- optsgph$legend$col$mean
+			legends$text$mean <- optsgph$legend$text$mean
+			legends$lwd$mean <- optsgph$legend$lwd$mean
+		}else{
+			if(tclvalue(EnvSpatialAnalysisplot$graph$averageTSp) == "1") legends$add$mean <- TRUE
+		}
+		if(optsgph$legend$is$linear){
+			legends$add$linear <- optsgph$legend$add$linear
+			legends$col$linear <- optsgph$legend$col$linear
+			legends$text$linear <- optsgph$legend$text$linear
+			legends$lwd$linear <- optsgph$legend$lwd$linear
+		}else{
+			if(tclvalue(EnvSpatialAnalysisplot$graph$trendTSp) == "1") legends$add$linear <- TRUE
+		}
+		if(optsgph$legend$is$tercile){
+			legends$add$tercile <- optsgph$legend$add$tercile
+			legends$col$tercile1 <- optsgph$legend$col$tercile1
+			legends$text$tercile1 <- optsgph$legend$text$tercile1
+			legends$col$tercile2 <- optsgph$legend$col$tercile2
+			legends$text$tercile2 <- optsgph$legend$text$tercile2
+			legends$lwd$tercile <- optsgph$legend$lwd$tercile
+		}else{
+			if(tclvalue(EnvSpatialAnalysisplot$graph$tercileTSp) == "1") legends$add$tercile <- TRUE
+		}
+
+		graphs.plot.line.ENSO(daty, don, oni, xlim = xlim, ylim = ylim,
+							xlab = xlab, ylab = ylab, ylab.sub = NULL,
+							title = titre, title.position = titre.pos, axis.font = 1,
+							plotl = optsgph$plot, legends = legends,
+							location = EnvSpatialAnalysisplot$location)
 	}
 
 	if(GRAPHTYPE == "ENSO-Barplot"){
-		optsgph <- TSGraphOp$bar.enso
-		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
-		idt <- daty >= xlim[1] & daty <= xlim[2]
-		daty <- daty[idt]
-		don <- don[idt]
 		oni <- oni[idt]
-		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
-
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ''
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- ""
-			titre.pos <- "top"
-		}
-
-		climatoAnalysis.plot.bar.ENSO(daty, don, oni, xlim = xlim, ylim = ylim,
-									xlab = xlab, ylab = ylab, ylab.sub = NULL,
-									title = titre, title.position = titre.pos, axis.font = 1,
-									barcol = optsgph$colors$col, location = EnvClimatoAnalysisplot$location)
-	}
-
-	if(GRAPHTYPE == "ENSO-Proba"){
-		optsgph <- TSGraphOp$proba.enso
-		xlim <- range(don, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
-		ylim <- c(0, 100)
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
-
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else "Probability of Exceeding"
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- ""
-			titre.pos <- "top"
-		}
-
-		climatoAnalysis.plot.proba.ENSO(don, oni, xlim = xlim, ylim = ylim,
-										xlab = xlab, xlab.sub = NULL, ylab = ylab,
- 										title = titre, title.position = titre.pos, axis.font = 1,
- 										plotl = optsgph$plot, location = EnvClimatoAnalysisplot$location)
+		graphs.plot.bar.ENSO(daty, don, oni, xlim = xlim, ylim = ylim,
+							xlab = xlab, ylab = ylab, ylab.sub = NULL,
+							title = titre, title.position = titre.pos, axis.font = 1,
+							barcol = optsgph$colors$col, location = EnvSpatialAnalysisplot$location)
 	}
 
 	if(GRAPHTYPE == "Anomaly"){
-		optsgph <- TSGraphOp$anomaly
-		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
-		idt <- daty >= xlim[1] & daty <= xlim[2]
-		daty <- daty[idt]
-		don <- don[idt]
-		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
 		if(!optsgph$ylim$is.min & !optsgph$ylim$is.max) ylim <- NULL
-
-		percent <- optsgph$anom$perc.anom
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else {if(percent) "Anomaly (% of Mean)" else ""}
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- ""
-			titre.pos <- "top"
-		}
-
 		loko <- c(optsgph$colors$negative, optsgph$colors$positive)
 
 		period <- range(daty, na.rm = TRUE)
@@ -645,16 +508,32 @@ climatoAnalysis.plotTSGraph <- function(){
 			period <- c(startYr, endYr)
 		}
 
-		climatoAnalysis.plot.bar.Anomaly(daty, don, period = period, percent = percent,
-										xlim = xlim, ylim = ylim, xlab = xlab, ylab = ylab, ylab.sub = NULL,
-										title = titre, title.position = titre.pos, axis.font = 1,
-										barcol = loko, location = EnvClimatoAnalysisplot$location)
+		graphs.plot.bar.Anomaly(daty, don, period = period, percent = optsgph$anom$perc.anom,
+								xlim = xlim, ylim = ylim, xlab = xlab, ylab = ylab, ylab.sub = NULL,
+								title = titre, title.position = titre.pos, axis.font = 1,
+								barcol = loko, location = EnvSpatialAnalysisplot$location)
+	}
+
+	if(GRAPHTYPE == "Probability"){
+		graphs.plot.proba(don, xlim = xlim, ylim = ylim,
+						xlab = xlab, xlab.sub = NULL, ylab = ylab,
+						title = titre, title.position = titre.pos, axis.font = 1,
+						proba = list(theoretical = optsgph$proba$theoretical),
+						plotp = optsgph$proba, plotl = optsgph$plot,
+						location = EnvSpatialAnalysisplot$location)
+	}
+
+	if(GRAPHTYPE == "ENSO-Proba"){
+		graphs.plot.proba.ENSO(don, oni, xlim = xlim, ylim = ylim,
+							xlab = xlab, xlab.sub = NULL, ylab = ylab,
+							title = titre, title.position = titre.pos, axis.font = 1,
+							plotl = optsgph$plot, location = EnvSpatialAnalysisplot$location)
 	}
 }
 
 ##############################################################################
 
-climatoAnalysis.DisplayStatMaps <- function(parent){
+spatialAnalysis.DisplayStatMaps <- function(parent){
 	varplot <- c("parPlotSize1", "parPlotSize2", "parPlotSize3", "parPlotSize4",
 				 "usrCoords1", "usrCoords2", "usrCoords3", "usrCoords4")
 	parPltCrd <- setNames(lapply(varplot, function(x) assign(x, tclVar(), env = parent.frame())), varplot)
@@ -668,13 +547,13 @@ climatoAnalysis.DisplayStatMaps <- function(parent){
 		})
 
 		op <- par(bg = "white")
-		pltusr <- climatoAnalysis.plotStatMaps()
+		pltusr <- spatialAnalysis.plotStatMaps()
 		par(op)
 		for(j in seq_along(varplot)) tclvalue(parPltCrd[[varplot[j]]]) <- pltusr$par[j]
 	}
 
 	#########
-	onglet <- imageNotebookTab_open(parent, EnvClimatoAnalysisplot$notebookTab.climMap, 'Clim-Analysis-Maps', AllOpenTabType, AllOpenTabData)
+	onglet <- imageNotebookTab_open(parent, EnvSpatialAnalysisplot$notebookTab.climMap, 'Clim-Analysis-Maps', AllOpenTabType, AllOpenTabData)
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
 
@@ -686,8 +565,8 @@ climatoAnalysis.DisplayStatMaps <- function(parent){
 
 	#########
 	tkbind(img, "<Motion>", function(W, x, y){
-		if(length(ls(EnvClimatoAnalysisplot)) == 0) return(NULL)
-		if(is.null(EnvClimatoAnalysisplot$statpars)) return(NULL)
+		if(length(ls(EnvSpatialAnalysisplot)) == 0) return(NULL)
+		if(is.null(EnvSpatialAnalysisplot$statpars)) return(NULL)
 
 		xyMouse <- mouseMouvment(W, x, y, parPltCrd)
 
@@ -695,16 +574,16 @@ climatoAnalysis.DisplayStatMaps <- function(parent){
 		frxcoord <- ifelse(xyMouse$inout, '', xydisp$xdisp)
 		frycoord <- ifelse(xyMouse$inout, '', xydisp$ydisp)
 
-		if(EnvClimatoAnalysisplot$statpars$params$data.type == "cdtstation"){
+		if(EnvSpatialAnalysisplot$statpars$params$data.type == "cdtstation"){
 			fdispIdStn <- function(x){
 				y <- if(x <= 2) 0.0006944444 * x else 0.002777778
 				return(y)
 			}
 
-			sdist <- (xyMouse$x-EnvClimatoAnalysisplot$don$x0)^2 + (xyMouse$y-EnvClimatoAnalysisplot$don$y0)^2
+			sdist <- (xyMouse$x-EnvSpatialAnalysisplot$don$x0)^2 + (xyMouse$y-EnvSpatialAnalysisplot$don$y0)^2
 			inear <- which.min(sdist)
 			rayondisp <- sdist[inear] > fdispIdStn(as.numeric(tclvalue(parPltCrd$usrCoords2)) - as.numeric(tclvalue(parPltCrd$usrCoords1)))
-			frzcoord <- ifelse(xyMouse$inout | rayondisp, '', EnvClimatoAnalysisplot$don$id[inear])
+			frzcoord <- ifelse(xyMouse$inout | rayondisp, '', EnvSpatialAnalysisplot$don$id[inear])
 		}else{
 			frzcoord <- ""
 		}
@@ -715,36 +594,36 @@ climatoAnalysis.DisplayStatMaps <- function(parent){
 	})
 
 	tkbind(img, "<Button-1>", function(W, x, y){
-		if(length(ls(EnvClimatoAnalysisplot)) == 0) return(NULL)
-		if(is.null(EnvClimatoAnalysisplot$statpars)) return(NULL)
+		if(length(ls(EnvSpatialAnalysisplot)) == 0) return(NULL)
+		if(is.null(EnvSpatialAnalysisplot$statpars)) return(NULL)
 
 		xyMouse <- mouseMouvment(W, x, y, parPltCrd)
 
-		if(EnvClimatoAnalysisplot$statpars$params$data.type == "cdtstation"){
+		if(EnvSpatialAnalysisplot$statpars$params$data.type == "cdtstation"){
 			fdispIdStn <- function(x){
 				 y <- if(x <= 2) 0.0006944444 * x else 0.002777778
 				return(y)
 			}
 
-			sdist <- (xyMouse$x-EnvClimatoAnalysisplot$don$x0)^2 + (xyMouse$y-EnvClimatoAnalysisplot$don$y0)^2
+			sdist <- (xyMouse$x-EnvSpatialAnalysisplot$don$x0)^2 + (xyMouse$y-EnvSpatialAnalysisplot$don$y0)^2
 			inear <- which.min(sdist)
 			rayondisp <- sdist[inear] > fdispIdStn(as.numeric(tclvalue(parPltCrd$usrCoords2)) - as.numeric(tclvalue(parPltCrd$usrCoords1)))
 			if(!(xyMouse$inout | rayondisp)){
-				tclvalue(EnvClimatoAnalysisplot$graph$stnIDTSp) <- EnvClimatoAnalysisplot$don$id[inear]
+				tclvalue(EnvSpatialAnalysisplot$graph$stnIDTSp) <- EnvSpatialAnalysisplot$don$id[inear]
 				plotTS <- TRUE
 			}else plotTS <- FALSE
 		}else{
 			if(!xyMouse$inout){
-				tclvalue(EnvClimatoAnalysisplot$graph$lonLOC) <- round(xyMouse$x, 6)
-				tclvalue(EnvClimatoAnalysisplot$graph$latLOC) <- round(xyMouse$y, 6)
+				tclvalue(EnvSpatialAnalysisplot$graph$lonLOC) <- round(xyMouse$x, 6)
+				tclvalue(EnvSpatialAnalysisplot$graph$latLOC) <- round(xyMouse$y, 6)
 				plotTS <- TRUE
 			}else plotTS <- FALSE
 		}
 
 		if(plotTS){
-			imgContainer <- climatoAnalysis.DisplayTSPlot(tknotes)
-			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvClimatoAnalysisplot$notebookTab.tsplot, AllOpenTabType, AllOpenTabData)
-			EnvClimatoAnalysisplot$notebookTab.tsplot <- retNBTab$notebookTab
+			imgContainer <- spatialAnalysis.DisplayTSPlot(tknotes)
+			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSpatialAnalysisplot$notebookTab.tsplot, AllOpenTabType, AllOpenTabData)
+			EnvSpatialAnalysisplot$notebookTab.tsplot <- retNBTab$notebookTab
 			AllOpenTabType <<- retNBTab$AllOpenTabType
 			AllOpenTabData <<- retNBTab$AllOpenTabData
 		}
@@ -758,7 +637,7 @@ climatoAnalysis.DisplayStatMaps <- function(parent){
 
 #######################################
 
-climatoAnalysis.DisplayTSMaps <- function(parent){
+spatialAnalysis.DisplayTSMaps <- function(parent){
 	varplot <- c("parPlotSize1", "parPlotSize2", "parPlotSize3", "parPlotSize4",
 				 "usrCoords1", "usrCoords2", "usrCoords3", "usrCoords4")
 	parPltCrd <- setNames(lapply(varplot, function(x) assign(x, tclVar(), env = parent.frame())), varplot)
@@ -772,13 +651,13 @@ climatoAnalysis.DisplayTSMaps <- function(parent){
 		})
 
 		op <- par(bg = "white")
-		pltusr <- climatoAnalysis.plotTSMaps()
+		pltusr <- spatialAnalysis.plotTSMaps()
 		par(op)
 		for(j in seq_along(varplot)) tclvalue(parPltCrd[[varplot[j]]]) <- pltusr$par[j]
 	}
 
 	#########
-	onglet <- imageNotebookTab_open(parent, EnvClimatoAnalysisplot$notebookTab.TSMap, 'Aggregated-Data', AllOpenTabType, AllOpenTabData)
+	onglet <- imageNotebookTab_open(parent, EnvSpatialAnalysisplot$notebookTab.TSMap, 'Aggregated-Data', AllOpenTabType, AllOpenTabData)
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
 
@@ -790,8 +669,8 @@ climatoAnalysis.DisplayTSMaps <- function(parent){
 
 	#########
 	tkbind(img, "<Motion>", function(W, x, y){
-		if(length(ls(EnvClimatoAnalysisplot)) == 0) return(NULL)
-		if(is.null(EnvClimatoAnalysisplot$statpars)) return(NULL)
+		if(length(ls(EnvSpatialAnalysisplot)) == 0) return(NULL)
+		if(is.null(EnvSpatialAnalysisplot$statpars)) return(NULL)
 
 		xyMouse <- mouseMouvment(W, x, y, parPltCrd)
 
@@ -799,16 +678,16 @@ climatoAnalysis.DisplayTSMaps <- function(parent){
 		frxcoord <- ifelse(xyMouse$inout, '', xydisp$xdisp)
 		frycoord <- ifelse(xyMouse$inout, '', xydisp$ydisp)
 
-		if(EnvClimatoAnalysisplot$statpars$params$data.type == "cdtstation"){
+		if(EnvSpatialAnalysisplot$statpars$params$data.type == "cdtstation"){
 			fdispIdStn <- function(x){
 				y <- if(x <= 2) 0.0006944444 * x else 0.002777778
 				return(y)
 			}
 
-			sdist <- (xyMouse$x-EnvClimatoAnalysisplot$tsdata$x0)^2 + (xyMouse$y-EnvClimatoAnalysisplot$tsdata$y0)^2
+			sdist <- (xyMouse$x-EnvSpatialAnalysisplot$tsdata$x0)^2 + (xyMouse$y-EnvSpatialAnalysisplot$tsdata$y0)^2
 			inear <- which.min(sdist)
 			rayondisp <- sdist[inear] > fdispIdStn(as.numeric(tclvalue(parPltCrd$usrCoords2)) - as.numeric(tclvalue(parPltCrd$usrCoords1)))
-			frzcoord <- ifelse(xyMouse$inout | rayondisp, '', EnvClimatoAnalysisplot$tsdata$id[inear])
+			frzcoord <- ifelse(xyMouse$inout | rayondisp, '', EnvSpatialAnalysisplot$tsdata$id[inear])
 		}else{
 			frzcoord <- ""
 		}
@@ -819,36 +698,36 @@ climatoAnalysis.DisplayTSMaps <- function(parent){
 	})
 
 	tkbind(img, "<Button-1>", function(W, x, y){
-		if(length(ls(EnvClimatoAnalysisplot)) == 0) return(NULL)
-		if(is.null(EnvClimatoAnalysisplot$statpars)) return(NULL)
+		if(length(ls(EnvSpatialAnalysisplot)) == 0) return(NULL)
+		if(is.null(EnvSpatialAnalysisplot$statpars)) return(NULL)
 
 		xyMouse <- mouseMouvment(W, x, y, parPltCrd)
 
-		if(EnvClimatoAnalysisplot$statpars$params$data.type == "cdtstation"){
+		if(EnvSpatialAnalysisplot$statpars$params$data.type == "cdtstation"){
 			fdispIdStn <- function(x){
 				 y <- if(x <= 2) 0.0006944444 * x else 0.002777778
 				return(y)
 			}
 
-			sdist <- (xyMouse$x-EnvClimatoAnalysisplot$tsdata$x0)^2 + (xyMouse$y-EnvClimatoAnalysisplot$tsdata$y0)^2
+			sdist <- (xyMouse$x-EnvSpatialAnalysisplot$tsdata$x0)^2 + (xyMouse$y-EnvSpatialAnalysisplot$tsdata$y0)^2
 			inear <- which.min(sdist)
 			rayondisp <- sdist[inear] > fdispIdStn(as.numeric(tclvalue(parPltCrd$usrCoords2)) - as.numeric(tclvalue(parPltCrd$usrCoords1)))
 			if(!(xyMouse$inout | rayondisp)){
-				tclvalue(EnvClimatoAnalysisplot$graph$stnIDTSp) <- EnvClimatoAnalysisplot$tsdata$id[inear]
+				tclvalue(EnvSpatialAnalysisplot$graph$stnIDTSp) <- EnvSpatialAnalysisplot$tsdata$id[inear]
 				plotTS <- TRUE
 			}else plotTS <- FALSE
 		}else{
 			if(!xyMouse$inout){
-				tclvalue(EnvClimatoAnalysisplot$graph$lonLOC) <- round(xyMouse$x, 6)
-				tclvalue(EnvClimatoAnalysisplot$graph$latLOC) <- round(xyMouse$y, 6)
+				tclvalue(EnvSpatialAnalysisplot$graph$lonLOC) <- round(xyMouse$x, 6)
+				tclvalue(EnvSpatialAnalysisplot$graph$latLOC) <- round(xyMouse$y, 6)
 				plotTS <- TRUE
 			}else plotTS <- FALSE
 		}
 
 		if(plotTS){
-			imgContainer <- climatoAnalysis.DisplayTSPlot(tknotes)
-			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvClimatoAnalysisplot$notebookTab.tsplot, AllOpenTabType, AllOpenTabData)
-			EnvClimatoAnalysisplot$notebookTab.tsplot <- retNBTab$notebookTab
+			imgContainer <- spatialAnalysis.DisplayTSPlot(tknotes)
+			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSpatialAnalysisplot$notebookTab.tsplot, AllOpenTabType, AllOpenTabData)
+			EnvSpatialAnalysisplot$notebookTab.tsplot <- retNBTab$notebookTab
 			AllOpenTabType <<- retNBTab$AllOpenTabType
 			AllOpenTabData <<- retNBTab$AllOpenTabData
 		}
@@ -862,13 +741,13 @@ climatoAnalysis.DisplayTSMaps <- function(parent){
 
 ################################
 
-climatoAnalysis.DisplayTSPlot <- function(parent){
+spatialAnalysis.DisplayTSPlot <- function(parent){
 	plotIt <- function(){
-		climatoAnalysis.plotTSGraph()
+		spatialAnalysis.plotTSGraph()
 	}
 
 	#########
-	onglet <- imageNotebookTab_open(parent, EnvClimatoAnalysisplot$notebookTab.tsplot, 'Time-Series-Plot', AllOpenTabType, AllOpenTabData)
+	onglet <- imageNotebookTab_open(parent, EnvSpatialAnalysisplot$notebookTab.tsplot, 'Time-Series-Plot', AllOpenTabType, AllOpenTabData)
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
 	hscrFrame <- as.integer(tclvalue(tkwinfo("height", panel.right)))
@@ -888,6 +767,3 @@ climatoAnalysis.DisplayTSPlot <- function(parent){
 
 	return(list(onglet, img))
 }
-
-
-

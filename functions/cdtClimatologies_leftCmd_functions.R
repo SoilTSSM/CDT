@@ -9,8 +9,6 @@ climatologiesCalcPanelCmd <- function(){
 		largeur2 <- as.integer(w.scale(29)/sfont0)
 		largeur3 <- 30
 		largeur4 <- 21
-		# largeur5 <- 30
-		# largeur6 <- 22
 	}else{
 		wscrlwin <- w.scale(27)
 		hscrlwin <- h.scale(47)
@@ -19,8 +17,6 @@ climatologiesCalcPanelCmd <- function(){
 		largeur2 <- as.integer(w.scale(23)/sfont0)
 		largeur3 <- 23
 		largeur4 <- 14
-		# largeur5 <- 22
-		# largeur6 <- 14
 	}
 
 	# GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'ClimatoAnalysis.json'))
@@ -405,7 +401,7 @@ climatologiesCalcPanelCmd <- function(){
 
 					set.climato.index()
 					widgets.Station.Pixel()
-					res <- EnvClimatoCalcPlot$read.Climatology.Map()
+					res <- try(EnvClimatoCalcPlot$read.Climatology.Map(), silent = TRUE)
 					if(inherits(res, "try-error") | is.null(res)) return(NULL)
 				}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
@@ -467,7 +463,7 @@ climatologiesCalcPanelCmd <- function(){
 				###################
 				set.climato.index()
 				widgets.Station.Pixel()
-				ret <- EnvClimatoCalcPlot$read.Climatology.Map()
+				ret <- try(EnvClimatoCalcPlot$read.Climatology.Map(), silent = TRUE)
 				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
 			}
 		})
@@ -517,7 +513,7 @@ climatologiesCalcPanelCmd <- function(){
 						EnvClimatoCalcPlot$climMapOp$userLvl$levels <- atlevel
 				}
 			}
-			EnvClimatoCalcPlot$climMapOp <- climatoAnalysis.MapOptions(main.win, EnvClimatoCalcPlot$climMapOp)
+			EnvClimatoCalcPlot$climMapOp <- MapGraph.MapOptions(main.win, EnvClimatoCalcPlot$climMapOp)
 		})
 
 		#########
@@ -629,29 +625,29 @@ climatologiesCalcPanelCmd <- function(){
 		#################
 
 		EnvClimatoCalcPlot$TSGraphOp <- list(
-					bar = list(
-							xlim = list(is.min = FALSE, min = "2015-1-1", is.max = FALSE, max = "2015-12-31"),
-							ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-							axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-							title = list(is.title = FALSE, title = '', position = 'top'),
-							colors = list(col = "darkblue")
-						),
-					line = list(
-						xlim = list(is.min = FALSE, min = "2015-1-1", is.max = FALSE, max = "2015-12-31"),
-						ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
-						axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
-						title = list(is.title = FALSE, title = '', position = 'top'),
-						plot = list(type = 'both',
-							col = list(line = "red", points = "blue"),
-							lwd = 2, cex = 1.4),
-						legend = NULL)
-					)
+							bar = list(
+									xlim = list(is.min = FALSE, min = "1-1", is.max = FALSE, max = "12-3"),
+									ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+									axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+									title = list(is.title = FALSE, title = '', position = 'top'),
+									colors = list(col = "darkblue")
+								),
+							line = list(
+								xlim = list(is.min = FALSE, min = "1-1", is.max = FALSE, max = "12-3"),
+								ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 100),
+								axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+								title = list(is.title = FALSE, title = '', position = 'top'),
+								plot = list(type = 'both',
+									col = list(line = "red", points = "blue"),
+									lwd = 2, cex = 1.4),
+								legend = NULL)
+							)
 
 		tkconfigure(bt.TSGraphOpt, command = function(){
 			suffix.fun <- switch(str_trim(tclvalue(EnvClimatoCalcPlot$graph$typeTSp)),
 									"Barplot" = "Bar",
 									"Line" = "Line")
-			plot.fun <- match.fun(paste0("climatoAnalysis.GraphOptions.", suffix.fun))
+			plot.fun <- match.fun(paste0("MapGraph.GraphOptions.", suffix.fun))
 			EnvClimatoCalcPlot$TSGraphOp <- plot.fun(main.win, EnvClimatoCalcPlot$TSGraphOp)
 		})
 
@@ -688,7 +684,7 @@ climatologiesCalcPanelCmd <- function(){
 		##############################################
 
 		tkgrid(frameClimatoTS, row = 0, column = 0, sticky = 'we', pady = 1)
-		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = 'we', pady = 3)
+		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = '', pady = 3)
 
 	#######################################################################################################
 
@@ -738,7 +734,7 @@ climatologiesCalcPanelCmd <- function(){
 		EnvClimatoCalcPlot$SHPOp <- list(col = "black", lwd = 1.5)
 
 		tkconfigure(bt.addshpOpt, command = function(){
-			EnvClimatoCalcPlot$SHPOp <- climatoAnalysis.GraphOptions.LineSHP(main.win, EnvClimatoCalcPlot$SHPOp)
+			EnvClimatoCalcPlot$SHPOp <- MapGraph.GraphOptions.LineSHP(main.win, EnvClimatoCalcPlot$SHPOp)
 		})
 
 		########
@@ -773,14 +769,46 @@ climatologiesCalcPanelCmd <- function(){
 
 		if(EnvClimatoCalcPlot$output$params$data.type == "cdtstation"){
 			stnIDTSPLOT <- EnvClimatoCalcPlot$output$data$id
-			txt.stnSel <- tklabel(frTS2, text = "Select a station to plot", anchor = 'w', justify = 'left')
-			txt.stnID <- tklabel(frTS2, text = "Station", anchor = 'e', justify = 'right')
+			txt.stnSel <- tklabel(frTS2, text = "Select station to plot")
+			bt.stnID.prev <- ttkbutton(frTS2, text = "<<", width = 6)
+			bt.stnID.next <- ttkbutton(frTS2, text = ">>", width = 6)
 			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvClimatoCalcPlot$graph$stnIDTSp, width = largeur4)
 			tclvalue(EnvClimatoCalcPlot$graph$stnIDTSp) <- stnIDTSPLOT[1]
 
-			tkgrid(txt.stnSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-			tkgrid(txt.stnID, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkconfigure(bt.stnID.prev, command = function(){
+				if(!is.null(EnvClimatoCalcPlot$climdata)){
+					istn <- which(stnIDTSPLOT == str_trim(tclvalue(EnvClimatoCalcPlot$graph$stnIDTSp)))
+					istn <- istn-1
+					if(istn < 1) istn <- length(stnIDTSPLOT)
+					tclvalue(EnvClimatoCalcPlot$graph$stnIDTSp) <- stnIDTSPLOT[istn]
+
+					imgContainer <- climatologiesCalc.Display.Graph(tknotes)
+					retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvClimatoCalcPlot$notebookTab.ClimGraph, AllOpenTabType, AllOpenTabData)
+					EnvClimatoCalcPlot$notebookTab.ClimGraph <- retNBTab$notebookTab
+					AllOpenTabType <<- retNBTab$AllOpenTabType
+					AllOpenTabData <<- retNBTab$AllOpenTabData
+				}
+			})
+
+			tkconfigure(bt.stnID.next, command = function(){
+				if(!is.null(EnvClimatoCalcPlot$climdata)){
+					istn <- which(stnIDTSPLOT == str_trim(tclvalue(EnvClimatoCalcPlot$graph$stnIDTSp)))
+					istn <- istn+1
+					if(istn > length(stnIDTSPLOT)) istn <- 1
+					tclvalue(EnvClimatoCalcPlot$graph$stnIDTSp) <- stnIDTSPLOT[istn]
+
+					imgContainer <- climatologiesCalc.Display.Graph(tknotes)
+					retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvClimatoCalcPlot$notebookTab.ClimGraph, AllOpenTabType, AllOpenTabData)
+					EnvClimatoCalcPlot$notebookTab.ClimGraph <- retNBTab$notebookTab
+					AllOpenTabType <<- retNBTab$AllOpenTabType
+					AllOpenTabData <<- retNBTab$AllOpenTabData
+				}
+			})
+
+			tkgrid(txt.stnSel, row = 0, column = 0, sticky = '', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(bt.stnID.prev, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 			tkgrid(cb.stnID, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(bt.stnID.next, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		}else{
 			txt.crdSel <- tklabel(frTS2, text = "Enter longitude and latitude to plot", anchor = 'w', justify = 'left')
 			txt.lonLoc <- tklabel(frTS2, text = "Longitude", anchor = 'e', justify = 'right')
@@ -904,5 +932,3 @@ climatologiesCalcPanelCmd <- function(){
 	######
 	return(cmd.frame)
 }
-
-

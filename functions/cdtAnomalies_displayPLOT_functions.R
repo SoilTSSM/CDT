@@ -17,27 +17,26 @@ anomaliesCalc.plotAnomMaps <- function(){
 		titre <- paste(titre1, str_trim(tclvalue(EnvAnomalyCalcPlot$anomDate)))
 	}else titre <- anomMapOp$title$title
 
+	#################
 	## colorscale title
 	if(anomMapOp$colkeyLab$user){
 		legend.texta <- anomMapOp$colkeyLab$label
 	}else legend.texta <- NULL
 
+	#################
 	## breaks
-	if(!anomMapOp$userLvl$custom){
-		breaks <- pretty(don$z, n = 10, min.n = 5)
-		breaks <- if(length(breaks) > 0) breaks else c(0, 1) 
-	}else breaks <- anomMapOp$userLvl$levels
+	brks <- image.plot_Legend_pars(don$z, anomMapOp$userLvl, anomMapOp$userCol, anomMapOp$presetCol)
+	breaks <- brks$breaks
+	zlim <- brks$legend.breaks$zlim
+	breaks2 <- brks$legend.breaks$breaks
+	kolor <- brks$colors
+	breaks1 <- brks$legend.axis$at
+	lab.breaks <- brks$legend.axis$labels
 
-	## colors
-	if(anomMapOp$userCol$custom){
-		kolFonction <- colorRampPalette(anomMapOp$userCol$color)
-		kolor <- kolFonction(length(breaks)-1)
-	}else{
-		kolFonction <- match.fun(anomMapOp$presetCol$color)
-		kolor <- kolFonction(length(breaks)-1)
-		if(anomMapOp$presetCol$reverse) kolor <- rev(kolor)
-	}
+	## legend label
+	legendLabel <- lab.breaks
 
+	#################
 	### shape files
 	shpf <- EnvAnomalyCalcPlot$shp
 	ocrds <- if(tclvalue(shpf$add.shp) == "1" & !is.null(shpf$ocrds)) shpf$ocrds else matrix(NA, 1, 2)
@@ -51,6 +50,8 @@ anomaliesCalc.plotAnomMaps <- function(){
 		xlim <- range(range(don$x, na.rm = TRUE), range(ocrds[, 1], na.rm = TRUE))
 		ylim <- range(range(don$y, na.rm = TRUE), range(ocrds[, 2], na.rm = TRUE))
 	}
+
+	#################
 
 	if(diff(xlim) > diff(ylim)){
 		horizontal <- TRUE
@@ -67,8 +68,6 @@ anomaliesCalc.plotAnomMaps <- function(){
 		legend.args <- if(!is.null(legend.texta)) list(text = legend.texta, cex = 0.8, side = 4, line = line) else NULL
 	}
 
-	legendLabel <- breaks
-
 	#################
 
 	opar <- par(mar = mar)
@@ -77,25 +76,15 @@ anomaliesCalc.plotAnomMaps <- function(){
 	axlabs <- axlabsFun(axTicks(1), axTicks(2))
 	axis(side = 1, at = axTicks(1), labels = axlabs$xaxl, tcl = -0.2, cex.axis = 0.8)
 	axis(side = 2, at = axTicks(2), labels = axlabs$yaxl, tcl = -0.2, las = 1, cex.axis = 0.8)
-	title(main = titre, cex.main = 1, font.main= 2)
+	title(main = titre, cex.main = 1, font.main = 2)
 
-	if(anomMapOp$userLvl$equidist){
-		image(don, breaks = breaks, col = kolor, xaxt = 'n', yaxt = 'n', add = TRUE)
-		breaks1 <- seq(0, 1, length.out = length(breaks))
-		image.plot(zlim = c(0, 1), breaks = breaks1, col = kolor, horizontal = horizontal,
-					legend.only = TRUE, legend.mar = legend.mar, legend.width = legend.width,
-					legend.args = legend.args, axis.args = list(at = breaks1, labels = legendLabel,
-					cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
-	}else{
-		image.plot(don, breaks = breaks, col = kolor, horizontal = horizontal,
-					xaxt = 'n', yaxt = 'n', add = TRUE, legend.mar = legend.mar,
-					legend.width = legend.width, legend.args = legend.args,
-					axis.args = list(at = breaks, labels = legendLabel, cex.axis = 0.7,
-					font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
-	}
+	image(don, breaks = breaks, col = kolor, xaxt = 'n', yaxt = 'n', add = TRUE)
+	image.plot(zlim = zlim, breaks = breaks2, col = kolor, horizontal = horizontal,
+				legend.only = TRUE, legend.mar = legend.mar, legend.width = legend.width,
+				legend.args = legend.args, axis.args = list(at = breaks1, labels = legendLabel,
+				cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)), legend.shrink = 0.8)
 
 	abline(h = axTicks(2), v = axTicks(1), col = "lightgray", lty = 3)
-
 	lines(ocrds[, 1], ocrds[, 2], lwd = EnvAnomalyCalcPlot$SHPOp$lwd, col = EnvAnomalyCalcPlot$SHPOp$col)
 
 	## scale bar
@@ -166,7 +155,7 @@ anomaliesCalc.plotAnomGraph <- function(){
 	if(EnvAnomalyCalcPlot$output$params$intstep == "pentad"){
 		titre1 <- "Pentad"
 		seqtime <- as.Date(daty, "%Y%m%d")
-		daty <- as.Date(paste0(format(seqtime, "%Y-%m-"), c(1, 6, 11, 16, 21, 25)[as.numeric(format(seqtime, "%d"))]))
+		daty <- as.Date(paste0(format(seqtime, "%Y-%m-"), c(1, 6, 11, 16, 21, 26)[as.numeric(format(seqtime, "%d"))]))
 	}
 	if(EnvAnomalyCalcPlot$output$params$intstep == "dekadal"){
 		titre1 <- "Dekadal"
@@ -188,66 +177,101 @@ anomaliesCalc.plotAnomGraph <- function(){
 	#########
 
 	GRAPHTYPE <- str_trim(tclvalue(EnvAnomalyCalcPlot$graph$typeTSp))
+	if(GRAPHTYPE == "Line") optsgph <- TSGraphOp$line
+	if(GRAPHTYPE == "Bar") optsgph <- TSGraphOp$anomaly
+
+	xlim <- range(daty, na.rm = TRUE)
+	if(optsgph$xlim$is.min){
+		xx <- strsplit(optsgph$xlim$min, "-")[[1]]
+		x3 <- as.numeric(xx[3])
+		if(EnvAnomalyCalcPlot$output$params$intstep == "pentad"){
+			if(is.na(x3) | x3 < 1 | x3 > 6){
+				InsertMessagesTxt(main.txt.out, "xlim: pentad must be  between 1 and 6", format = TRUE)
+				return(NULL)
+			}
+			x3 <- c(1, 6, 11, 16, 21, 26)[x3]
+		}
+		if(EnvAnomalyCalcPlot$output$params$intstep == "dekadal"){
+			if(is.na(x3) | x3 < 1 | x3 > 3){
+				InsertMessagesTxt(main.txt.out, "xlim: dekad must be 1, 2 or 3", format = TRUE)
+				return(NULL)
+			}
+			x3 <- c(1, 11, 21)[x3]
+		}
+		if(EnvAnomalyCalcPlot$output$params$intstep == "monthly") x3 <- 1
+		x1 <- as.numeric(xx[1])
+		x2 <- str_pad(as.numeric(xx[2]), 2, pad = "0")
+		x3 <- str_pad(x3, 2, pad = "0")
+		xx <- as.Date(paste0(x1, x2, x3), "%Y%m%d")
+		if(is.na(xx)){
+			InsertMessagesTxt(main.txt.out, "xlim: invalid date", format = TRUE)
+			return(NULL)
+		}
+		xlim[1] <- xx
+	}
+	if(optsgph$xlim$is.max){
+		xx <- strsplit(optsgph$xlim$max, "-")[[1]]
+		x3 <- as.numeric(xx[3])
+		if(EnvAnomalyCalcPlot$output$params$intstep == "pentad"){
+			if(is.na(x3) | x3 < 1 | x3 > 6){
+				InsertMessagesTxt(main.txt.out, "xlim: pentad must be  between 1 and 6", format = TRUE)
+				return(NULL)
+			}
+			x3 <- c(1, 6, 11, 16, 21, 26)[x3]
+		}
+		if(EnvAnomalyCalcPlot$output$params$intstep == "dekadal"){
+			if(is.na(x3) | x3 < 1 | x3 > 3){
+				InsertMessagesTxt(main.txt.out, "xlim: dekad must be 1, 2 or 3", format = TRUE)
+				return(NULL)
+			}
+			x3 <- c(1, 11, 21)[x3]
+		}
+		if(EnvAnomalyCalcPlot$output$params$intstep == "monthly") x3 <- 1
+		x1 <- as.numeric(xx[1])
+		x2 <- str_pad(as.numeric(xx[2]), 2, pad = "0")
+		x3 <- str_pad(x3, 2, pad = "0")
+		xx <- as.Date(paste0(x1, x2, x3), "%Y%m%d")
+		if(is.na(xx)){
+			InsertMessagesTxt(main.txt.out, "xlim: invalid date", format = TRUE)
+			return(NULL)
+		}
+		xlim[2] <- xx
+	}
+	idt <- daty >= xlim[1] & daty <= xlim[2]
+	daty <- daty[idt]
+	don <- don[idt]
+	ylim <- range(pretty(don))
+	if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
+	if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
+
+	xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
+	ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ''
+
+	if(optsgph$title$is.title){
+		titre <- optsgph$title$title
+		titre.pos <- optsgph$title$position
+	}else{
+		titre <- titre
+		titre.pos <- "top"
+	}
+
+	#########
 
 	if(GRAPHTYPE == "Line"){
-		optsgph <- TSGraphOp$line
-		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.Date(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.Date(optsgph$xlim$max)
-		idt <- daty >= xlim[1] & daty <= xlim[2]
-		daty <- daty[idt]
-		don <- don[idt]
-		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
-
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ''
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- titre
-			titre.pos <- "top"
-		}
-
-		climatoAnalysis.plot.line(daty, don, xlim = xlim, ylim = ylim,
-									xlab = xlab, ylab = ylab, ylab.sub = NULL,
-									title = titre, title.position = titre.pos, axis.font = 1,
-									plotl = optsgph$plot, legends = NULL,
-									location = EnvAnomalyCalcPlot$location)
+		graphs.plot.line(daty, don, xlim = xlim, ylim = ylim,
+						xlab = xlab, ylab = ylab, ylab.sub = NULL,
+						title = titre, title.position = titre.pos, axis.font = 1,
+						plotl = optsgph$plot, legends = NULL,
+						location = EnvAnomalyCalcPlot$location)
 	}
 
 	if(GRAPHTYPE == "Bar"){
-		optsgph <- TSGraphOp$anomaly
-		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.Date(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.Date(optsgph$xlim$max)
-		idt <- daty >= xlim[1] & daty <= xlim[2]
-		daty <- daty[idt]
-		don <- don[idt]
-		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
-
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ''
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- titre
-			titre.pos <- "top"
-		}
-
 		loko <- c(optsgph$colors$negative, optsgph$colors$positive)
 
-		climatoAnalysis.plot.bar.Anomaly(daty, don, period = NULL, percent = FALSE,
-										xlim = xlim, ylim = ylim, xlab = xlab, ylab = ylab, ylab.sub = NULL,
-										title = titre, title.position = titre.pos, axis.font = 1,
-										barcol = loko, location = EnvAnomalyCalcPlot$location)
+		graphs.plot.bar.Anomaly(daty, don, period = NULL, percent = FALSE,
+								xlim = xlim, ylim = ylim, xlab = xlab, ylab = ylab, ylab.sub = NULL,
+								title = titre, title.position = titre.pos, axis.font = 1,
+								barcol = loko, location = EnvAnomalyCalcPlot$location)
 	}
 }
 

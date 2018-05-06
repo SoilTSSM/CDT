@@ -23,9 +23,9 @@ EnvHOValidationplot <- new.env()
 EnvLOOCValidation <- new.env()
 EnvLOOCValidationplot <- new.env()
 
-#Climatological analysis data/ spatial analysis
-EnvClimatoAnalysis <- new.env()
-EnvClimatoAnalysisplot <- new.env()
+#Spatial analysis
+EnvSpatialAnalysis <- new.env()
+EnvSpatialAnalysisplot <- new.env()
 
 # Zoom parameters and bbox
 EnvZoomPars <- new.env()
@@ -53,5 +53,8 @@ EnvSummaryDataplot <- new.env()
 
 # SPI
 EnvSPICalcPlot <- new.env()
+
+# plot CDT data
+EnvCDTdataPlot <- new.env()
 
 

@@ -471,7 +471,7 @@ summariesDataPanelCmd <- function(){
 		EnvSummaryDataplot$SHPOp <- list(col = "black", lwd = 1.5)
 
 		tkconfigure(bt.addshpOpt, command = function(){
-			EnvSummaryDataplot$SHPOp <- climatoAnalysis.GraphOptions.LineSHP(main.win, EnvSummaryDataplot$SHPOp)
+			EnvSummaryDataplot$SHPOp <- MapGraph.GraphOptions.LineSHP(main.win, EnvSummaryDataplot$SHPOp)
 		})
 
 		########
@@ -534,4 +534,3 @@ summariesDataPanelCmd <- function(){
 	######
 	return(cmd.frame)
 }
-

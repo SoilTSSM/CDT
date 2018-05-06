@@ -44,27 +44,26 @@ climatologiesCalc.plotClimMaps <- function(){
 		titre <- paste(titre1, titre2, titre3, titre4, titre5)
 	}else titre <- climMapOp$title$title
 
+	#################
 	## colorscale title
 	if(climMapOp$colkeyLab$user){
 		legend.texta <- climMapOp$colkeyLab$label
 	}else legend.texta <- NULL
 
+	#################
 	## breaks
-	if(!climMapOp$userLvl$custom){
-		breaks <- pretty(don$z, n = 10, min.n = 5)
-		breaks <- if(length(breaks) > 0) breaks else c(0, 1) 
-	}else breaks <- climMapOp$userLvl$levels
+	brks <- image.plot_Legend_pars(don$z, climMapOp$userLvl, climMapOp$userCol, climMapOp$presetCol)
+	breaks <- brks$breaks
+	zlim <- brks$legend.breaks$zlim
+	breaks2 <- brks$legend.breaks$breaks
+	kolor <- brks$colors
+	breaks1 <- brks$legend.axis$at
+	lab.breaks <- brks$legend.axis$labels
 
-	## colors
-	if(climMapOp$userCol$custom){
-		kolFonction <- colorRampPalette(climMapOp$userCol$color)
-		kolor <- kolFonction(length(breaks)-1)
-	}else{
-		kolFonction <- match.fun(climMapOp$presetCol$color)
-		kolor <- kolFonction(length(breaks)-1)
-		if(climMapOp$presetCol$reverse) kolor <- rev(kolor)
-	}
+	## legend label
+	legendLabel <- lab.breaks
 
+	#################
 	### shape files
 	shpf <- EnvClimatoCalcPlot$shp
 	ocrds <- if(tclvalue(shpf$add.shp) == "1" & !is.null(shpf$ocrds)) shpf$ocrds else matrix(NA, 1, 2)
@@ -78,6 +77,8 @@ climatologiesCalc.plotClimMaps <- function(){
 		xlim <- range(range(don$x, na.rm = TRUE), range(ocrds[, 1], na.rm = TRUE))
 		ylim <- range(range(don$y, na.rm = TRUE), range(ocrds[, 2], na.rm = TRUE))
 	}
+
+	#################
 
 	if(diff(xlim) > diff(ylim)){
 		horizontal <- TRUE
@@ -94,8 +95,6 @@ climatologiesCalc.plotClimMaps <- function(){
 		legend.args <- if(!is.null(legend.texta)) list(text = legend.texta, cex = 0.8, side = 4, line = line) else NULL
 	}
 
-	legendLabel <- breaks
-
 	#################
 
 	opar <- par(mar = mar)
@@ -104,25 +103,15 @@ climatologiesCalc.plotClimMaps <- function(){
 	axlabs <- axlabsFun(axTicks(1), axTicks(2))
 	axis(side = 1, at = axTicks(1), labels = axlabs$xaxl, tcl = -0.2, cex.axis = 0.8)
 	axis(side = 2, at = axTicks(2), labels = axlabs$yaxl, tcl = -0.2, las = 1, cex.axis = 0.8)
-	title(main = titre, cex.main = 1, font.main= 2)
+	title(main = titre, cex.main = 1, font.main = 2)
 
-	if(climMapOp$userLvl$equidist){
-		image(don, breaks = breaks, col = kolor, xaxt = 'n', yaxt = 'n', add = TRUE)
-		breaks1 <- seq(0, 1, length.out = length(breaks))
-		image.plot(zlim = c(0, 1), breaks = breaks1, col = kolor, horizontal = horizontal,
-					legend.only = TRUE, legend.mar = legend.mar, legend.width = legend.width,
-					legend.args = legend.args, axis.args = list(at = breaks1, labels = legendLabel,
-					cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
-	}else{
-		image.plot(don, breaks = breaks, col = kolor, horizontal = horizontal,
-					xaxt = 'n', yaxt = 'n', add = TRUE, legend.mar = legend.mar,
-					legend.width = legend.width, legend.args = legend.args,
-					axis.args = list(at = breaks, labels = legendLabel, cex.axis = 0.7,
-					font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)))
-	}
+	image(don, breaks = breaks, col = kolor, xaxt = 'n', yaxt = 'n', add = TRUE)
+	image.plot(zlim = zlim, breaks = breaks2, col = kolor, horizontal = horizontal,
+				legend.only = TRUE, legend.mar = legend.mar, legend.width = legend.width,
+				legend.args = legend.args, axis.args = list(at = breaks1, labels = legendLabel,
+				cex.axis = 0.7, font = 2, tcl = -0.3, mgp = c(0, 0.5, 0)), legend.shrink = 0.8)
 
 	abline(h = axTicks(2), v = axTicks(1), col = "lightgray", lty = 3)
-
 	lines(ocrds[, 1], ocrds[, 2], lwd = EnvClimatoCalcPlot$SHPOp$lwd, col = EnvClimatoCalcPlot$SHPOp$col)
 
 	## scale bar
@@ -191,9 +180,9 @@ climatologiesCalc.plotClimGraph <- function(){
 	if(EnvClimatoCalcPlot$output$params$intstep == "pentad"){
 		titre1 <- "Pentad"
 		seqtime <- seq(as.Date('2015-1-1'), as.Date('2015-12-31'), 'day')
-		pen <- findInterval(as.numeric(format(seqtime, "%d")), c(1, 5, 10, 15, 20, 25, 31), rightmost.closed = TRUE, left.open = TRUE)
+		pen <- findInterval(as.numeric(format(seqtime, "%d")), c(1, 5, 10, 15, 20, 26, 31), rightmost.closed = TRUE, left.open = TRUE)
 		seqtime <- as.Date(names(split(seq_along(seqtime), paste0(format(seqtime, "%Y-%m-"), pen))))
-		seqtime <- as.Date(paste0(format(seqtime, "%Y-%m-"), c(1, 6, 11, 16, 21, 25)[as.numeric(format(seqtime, "%d"))]))
+		seqtime <- as.Date(paste0(format(seqtime, "%Y-%m-"), c(1, 6, 11, 16, 21, 26)[as.numeric(format(seqtime, "%d"))]))
 	}
 	if(EnvClimatoCalcPlot$output$params$intstep == "dekadal"){
 		titre1 <- "Dekadal"
@@ -214,65 +203,108 @@ climatologiesCalc.plotClimGraph <- function(){
 	#########
 
 	GRAPHTYPE <- str_trim(tclvalue(EnvClimatoCalcPlot$graph$typeTSp))
+	if(GRAPHTYPE == "Line") optsgph <- TSGraphOp$line
+	if(GRAPHTYPE == "Barplot") optsgph <- TSGraphOp$bar
+
+	xlim <- range(daty, na.rm = TRUE)
+	if(optsgph$xlim$is.min){
+		xx <- strsplit(optsgph$xlim$min, "-")[[1]]
+		x1 <- as.numeric(xx[1])
+		if(is.na(x1) | x1 < 1 | x1 > 12){
+			InsertMessagesTxt(main.txt.out, "xlim: month must be  between 1 and 12", format = TRUE)
+			return(NULL)
+		}
+		x2 <- as.numeric(xx[2])
+		if(EnvClimatoCalcPlot$output$params$intstep == "pentad"){
+			if(is.na(x2) | x2 < 1 | x2 > 6){
+				InsertMessagesTxt(main.txt.out, "xlim: pentad must be  between 1 and 6", format = TRUE)
+				return(NULL)
+			}
+			x2 <- c(1, 6, 11, 16, 21, 26)[x2]
+		}
+		if(EnvClimatoCalcPlot$output$params$intstep == "dekadal"){
+			if(is.na(x2) | x2 < 1 | x2 > 3){
+				InsertMessagesTxt(main.txt.out, "xlim: dekad must be 1, 2 or 3", format = TRUE)
+				return(NULL)
+			}
+			x2 <- c(1, 11, 21)[x2]
+		}
+		if(EnvClimatoCalcPlot$output$params$intstep == "monthly") x2 <- 1
+		x1 <- str_pad(x1, 2, pad = "0")
+		x2 <- str_pad(x2, 2, pad = "0")
+		xx <- as.Date(paste0(2015, x1, x2), "%Y%m%d")
+		if(is.na(xx)){
+			InsertMessagesTxt(main.txt.out, "xlim: invalid date", format = TRUE)
+			return(NULL)
+		}
+		xlim[1] <- xx
+	}
+	if(optsgph$xlim$is.max){
+		xx <- strsplit(optsgph$xlim$max, "-")[[1]]
+		x1 <- as.numeric(xx[1])
+		if(is.na(x1) | x1 < 1 | x1 > 12){
+			InsertMessagesTxt(main.txt.out, "xlim: month must be  between 1 and 12", format = TRUE)
+			return(NULL)
+		}
+		x2 <- as.numeric(xx[2])
+		if(EnvClimatoCalcPlot$output$params$intstep == "pentad"){
+			if(is.na(x2) | x2 < 1 | x2 > 6){
+				InsertMessagesTxt(main.txt.out, "xlim: pentad must be  between 1 and 6", format = TRUE)
+				return(NULL)
+			}
+			x2 <- c(1, 6, 11, 16, 21, 26)[x2]
+		}
+		if(EnvClimatoCalcPlot$output$params$intstep == "dekadal"){
+			if(is.na(x2) | x2 < 1 | x2 > 3){
+				InsertMessagesTxt(main.txt.out, "xlim: dekad must be 1, 2 or 3", format = TRUE)
+				return(NULL)
+			}
+			x2 <- c(1, 11, 21)[x2]
+		}
+		if(EnvClimatoCalcPlot$output$params$intstep == "monthly") x2 <- 1
+		x1 <- str_pad(x1, 2, pad = "0")
+		x2 <- str_pad(x2, 2, pad = "0")
+		xx <- as.Date(paste0(2015, x1, x2), "%Y%m%d")
+		if(is.na(xx)){
+			InsertMessagesTxt(main.txt.out, "xlim: invalid date", format = TRUE)
+			return(NULL)
+		}
+		xlim[2] <- xx
+	}
+	idt <- daty >= xlim[1] & daty <= xlim[2]
+	daty <- daty[idt]
+	don <- don[idt]
+	ylim <- range(pretty(don))
+	if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
+	if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
+
+	xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
+	ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ''
+
+	if(optsgph$title$is.title){
+		titre <- optsgph$title$title
+		titre.pos <- optsgph$title$position
+	}else{
+		titre <- titre
+		titre.pos <- "top"
+	}
+
+	#########
 
 	if(GRAPHTYPE == "Line"){
-		optsgph <- TSGraphOp$line
-		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.Date(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.Date(optsgph$xlim$max)
-		idt <- daty >= xlim[1] & daty <= xlim[2]
-		daty <- daty[idt]
-		don <- don[idt]
-		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
-
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ''
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- titre
-			titre.pos <- "top"
-		}
-
-		climatoAnalysis.plot.line(daty, don, xlim = xlim, ylim = ylim,
-									xlab = xlab, ylab = ylab, ylab.sub = NULL,
-									title = titre, title.position = titre.pos, axis.font = 1,
-									plotl = optsgph$plot, legends = NULL,
-									location = EnvClimatoCalcPlot$location)
+		graphs.plot.line(daty, don, xlim = xlim, ylim = ylim,
+						xlab = xlab, ylab = ylab, ylab.sub = NULL,
+						title = titre, title.position = titre.pos, axis.font = 1,
+						plotl = optsgph$plot, legends = NULL,
+						location = EnvClimatoCalcPlot$location)
 	}
 
 	if(GRAPHTYPE == "Barplot"){
-		optsgph <- TSGraphOp$bar
-		xlim <- range(daty, na.rm = TRUE)
-		if(optsgph$xlim$is.min) xlim[1] <- as.Date(optsgph$xlim$min)
-		if(optsgph$xlim$is.max) xlim[2] <- as.Date(optsgph$xlim$max)
-		idt <- daty >= xlim[1] & daty <= xlim[2]
-		daty <- daty[idt]
-		don <- don[idt]
-		ylim <- range(pretty(don))
-		if(optsgph$ylim$is.min) ylim[1] <- optsgph$ylim$min
-		if(optsgph$ylim$is.max) ylim[2] <- optsgph$ylim$max
-
-		xlab <- if(optsgph$axislabs$is.xlab) optsgph$axislabs$xlab else ''
-		ylab <- if(optsgph$axislabs$is.ylab) optsgph$axislabs$ylab else ''
-
-		if(optsgph$title$is.title){
-			titre <- optsgph$title$title
-			titre.pos <- optsgph$title$position
-		}else{
-			titre <- titre
-			titre.pos <- "top"
-		}
-
-		climatoAnalysis.plot.bar(daty, don, xlim = xlim, ylim = ylim,
-								xlab = xlab, ylab = ylab, ylab.sub = NULL,
-								title = titre, title.position = titre.pos, axis.font = 1,
-								barcol = optsgph$colors$col,
-								location = EnvClimatoCalcPlot$location)
+		graphs.plot.bar(daty, don, xlim = xlim, ylim = ylim,
+						xlab = xlab, ylab = ylab, ylab.sub = NULL,
+						title = titre, title.position = titre.pos, axis.font = 1,
+						barcol = optsgph$colors$col,
+						location = EnvClimatoCalcPlot$location)
 	}
 }
 
@@ -408,6 +440,3 @@ climatologiesCalc.Display.Graph <- function(parent){
 
 	return(list(onglet, img))
 }
-
-
-

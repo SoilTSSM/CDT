@@ -31,12 +31,13 @@ refreshCDT.lcmd.env <- function(lcmdf = lcmd.frame, choixStn = lchoixStnFr){
 	all.cdt.env <- list(EnvQcOutlierData, EnvQcZeroChkData, EnvInterpolation, EnvExtractData,
 						EnvHomogzData, EnvZoomPars,
 						EnvHOValidation, EnvHOValidationplot,
-						EnvClimatoAnalysis, EnvClimatoAnalysisplot,
+						EnvSpatialAnalysis, EnvSpatialAnalysisplot,
 						EnvPICSA, EnvPICSAplot,
 						EnvLOOCValidation, EnvLOOCValidationplot,
 						EnvClimatoCalcPlot, EnvAnomalyCalcPlot,
 						EnvOnsetCalcPlot, EnvCessationCalcPlot, EnvSeasLengthCalcPlot,
-						EnvDailyRainAnalysisplot, EnvSummaryDataplot)
+						EnvDailyRainAnalysisplot, EnvSummaryDataplot,
+						EnvCDTdataPlot)
 	ret <- lapply(cdt.lcmd.container, assign, NULL, envir = .GlobalEnv)
 	ret <- lapply(all.cdt.env, function(x) rm(list = ls(envir = x), envir = x))
 }
