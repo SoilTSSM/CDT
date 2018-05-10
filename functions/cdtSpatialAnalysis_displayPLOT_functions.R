@@ -31,6 +31,7 @@ spatialAnalysis.plotStatMaps <- function(){
 	#################
 	## breaks
 	brks <- image.plot_Legend_pars(don$z, climMapOp$userLvl, climMapOp$userCol, climMapOp$presetCol)
+	don$z <- don$z+1e-15
 	breaks <- brks$breaks
 	zlim <- brks$legend.breaks$zlim
 	breaks2 <- brks$legend.breaks$breaks
@@ -195,6 +196,7 @@ spatialAnalysis.plotTSMaps <- function(){
 	#################
 	## breaks
 	brks <- image.plot_Legend_pars(don$z, TSMapOp$userLvl, TSMapOp$userCol, TSMapOp$presetCol)
+	don$z <- don$z+1e-15
 	breaks <- brks$breaks
 	zlim <- brks$legend.breaks$zlim
 	breaks2 <- brks$legend.breaks$breaks

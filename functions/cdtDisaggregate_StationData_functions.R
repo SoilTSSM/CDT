@@ -20,6 +20,19 @@ splitCDTData0 <- function(donne){
 
 ##########################################
 
+splitCDTData1 <- function(donne){
+	dat <- list(id = as.character(donne[1, -1]),
+		lon = as.numeric(donne[2, -1]),
+		lat = as.numeric(donne[3, -1]),
+		dates = as.character(donne[-(1:3), 1]),
+		data = as.matrix(donne[-(1:3), -1]))
+	dimnames(dat$data)[[2]] <- NULL
+	dat$data <- apply(dat$data, 2, as.numeric)
+	return(dat)
+}
+
+##########################################
+
 splitCDTData <- function(donne, period){
 	ideb <- nrow(donne)
 	datylen <- nchar(as.character(donne[ideb, 1]))

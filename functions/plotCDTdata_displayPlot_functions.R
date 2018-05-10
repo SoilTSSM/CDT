@@ -17,6 +17,7 @@ plotCDTdata.Maps <- function(){
 	#################
 	## breaks
 	brks <- image.plot_Legend_pars(don$z, dataMapOp$userLvl, dataMapOp$userCol, dataMapOp$presetCol)
+	don$z <- don$z+1e-15
 	breaks <- brks$breaks
 	zlim <- brks$legend.breaks$zlim
 	breaks2 <- brks$legend.breaks$breaks
@@ -117,62 +118,68 @@ plotCDTdata.Graph <- function(){
 	if(GRAPHTYPE == "Barplot") optsgph <- TSGraphOp$bar
 
 	xlim <- range(daty, na.rm = TRUE)
-	if(optsgph$xlim$is.min){
-		xx <- strsplit(optsgph$xlim$min, "-")[[1]]
-		x3 <- as.numeric(xx[3])
-		if(EnvCDTdataPlot$tstep == "pentad"){
-			if(is.na(x3) | x3 < 1 | x3 > 6){
-				InsertMessagesTxt(main.txt.out, "xlim: pentad must be  between 1 and 6", format = TRUE)
+	if(EnvCDTdataPlot$tstep != "others"){
+		if(optsgph$xlim$is.min){
+			xx <- strsplit(optsgph$xlim$min, "-")[[1]]
+			x3 <- as.numeric(xx[3])
+			if(EnvCDTdataPlot$tstep == "pentad"){
+				if(is.na(x3) | x3 < 1 | x3 > 6){
+					InsertMessagesTxt(main.txt.out, "xlim: pentad must be  between 1 and 6", format = TRUE)
+					return(NULL)
+				}
+				x3 <- c(1, 6, 11, 16, 21, 26)[x3]
+			}
+			if(EnvCDTdataPlot$tstep == "dekadal"){
+				if(is.na(x3) | x3 < 1 | x3 > 3){
+					InsertMessagesTxt(main.txt.out, "xlim: dekad must be 1, 2 or 3", format = TRUE)
+					return(NULL)
+				}
+				x3 <- c(1, 11, 21)[x3]
+			}
+			if(EnvCDTdataPlot$tstep == "monthly") x3 <- 1
+			x1 <- as.numeric(xx[1])
+			x2 <- str_pad(as.numeric(xx[2]), 2, pad = "0")
+			x3 <- str_pad(x3, 2, pad = "0")
+			xx <- as.Date(paste0(x1, x2, x3), "%Y%m%d")
+			if(is.na(xx)){
+				InsertMessagesTxt(main.txt.out, "xlim: invalid date", format = TRUE)
 				return(NULL)
 			}
-			x3 <- c(1, 6, 11, 16, 21, 26)[x3]
+			xlim[1] <- xx
 		}
-		if(EnvCDTdataPlot$tstep == "dekadal"){
-			if(is.na(x3) | x3 < 1 | x3 > 3){
-				InsertMessagesTxt(main.txt.out, "xlim: dekad must be 1, 2 or 3", format = TRUE)
+		if(optsgph$xlim$is.max){
+			xx <- strsplit(optsgph$xlim$max, "-")[[1]]
+			x3 <- as.numeric(xx[3])
+			if(EnvCDTdataPlot$tstep == "pentad"){
+				if(is.na(x3) | x3 < 1 | x3 > 6){
+					InsertMessagesTxt(main.txt.out, "xlim: pentad must be  between 1 and 6", format = TRUE)
+					return(NULL)
+				}
+				x3 <- c(1, 6, 11, 16, 21, 26)[x3]
+			}
+			if(EnvCDTdataPlot$tstep == "dekadal"){
+				if(is.na(x3) | x3 < 1 | x3 > 3){
+					InsertMessagesTxt(main.txt.out, "xlim: dekad must be 1, 2 or 3", format = TRUE)
+					return(NULL)
+				}
+				x3 <- c(1, 11, 21)[x3]
+			}
+			if(EnvCDTdataPlot$tstep == "monthly") x3 <- 1
+			x1 <- as.numeric(xx[1])
+			x2 <- str_pad(as.numeric(xx[2]), 2, pad = "0")
+			x3 <- str_pad(x3, 2, pad = "0")
+			xx <- as.Date(paste0(x1, x2, x3), "%Y%m%d")
+			if(is.na(xx)){
+				InsertMessagesTxt(main.txt.out, "xlim: invalid date", format = TRUE)
 				return(NULL)
 			}
-			x3 <- c(1, 11, 21)[x3]
+			xlim[2] <- xx
 		}
-		if(EnvCDTdataPlot$tstep == "monthly") x3 <- 1
-		x1 <- as.numeric(xx[1])
-		x2 <- str_pad(as.numeric(xx[2]), 2, pad = "0")
-		x3 <- str_pad(x3, 2, pad = "0")
-		xx <- as.Date(paste0(x1, x2, x3), "%Y%m%d")
-		if(is.na(xx)){
-			InsertMessagesTxt(main.txt.out, "xlim: invalid date", format = TRUE)
-			return(NULL)
-		}
-		xlim[1] <- xx
+	}else{
+		if(optsgph$xlim$is.min) xlim[1] <- as.numeric(optsgph$xlim$min)
+		if(optsgph$xlim$is.max) xlim[2] <- as.numeric(optsgph$xlim$max)
 	}
-	if(optsgph$xlim$is.max){
-		xx <- strsplit(optsgph$xlim$max, "-")[[1]]
-		x3 <- as.numeric(xx[3])
-		if(EnvCDTdataPlot$tstep == "pentad"){
-			if(is.na(x3) | x3 < 1 | x3 > 6){
-				InsertMessagesTxt(main.txt.out, "xlim: pentad must be  between 1 and 6", format = TRUE)
-				return(NULL)
-			}
-			x3 <- c(1, 6, 11, 16, 21, 26)[x3]
-		}
-		if(EnvCDTdataPlot$tstep == "dekadal"){
-			if(is.na(x3) | x3 < 1 | x3 > 3){
-				InsertMessagesTxt(main.txt.out, "xlim: dekad must be 1, 2 or 3", format = TRUE)
-				return(NULL)
-			}
-			x3 <- c(1, 11, 21)[x3]
-		}
-		if(EnvCDTdataPlot$tstep == "monthly") x3 <- 1
-		x1 <- as.numeric(xx[1])
-		x2 <- str_pad(as.numeric(xx[2]), 2, pad = "0")
-		x3 <- str_pad(x3, 2, pad = "0")
-		xx <- as.Date(paste0(x1, x2, x3), "%Y%m%d")
-		if(is.na(xx)){
-			InsertMessagesTxt(main.txt.out, "xlim: invalid date", format = TRUE)
-			return(NULL)
-		}
-		xlim[2] <- xx
-	}
+
 	idt <- daty >= xlim[1] & daty <= xlim[2]
 	daty <- daty[idt]
 	don <- don[idt]

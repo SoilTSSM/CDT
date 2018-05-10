@@ -18,8 +18,8 @@ PlotCDTDataFormatCmd <- function(){
 	}
 
 	# PlotCDTdata <- fromJSON(file.path(apps.dir, 'init_params', 'Plot_CDT_Data.json'))
-	GeneralParameters <- list(intstep = "dekadal", cdtstation = "",
-							date = list(year = 2017, mon = 1, day = 1))
+	GeneralParameters <- list(intstep = "others", cdtstation = "",
+							date = list(year = 2017, mon = 1, day = 1, other = ""))
 
 	###################
 
@@ -54,12 +54,13 @@ PlotCDTDataFormatCmd <- function(){
 		frameCDTdata <- ttklabelframe(subfr1, text = "Station Data", relief = 'groove')
 
 		timeSteps <- tclVar()
-		CbperiodVAL <- c('Daily data', 'Pentad data', 'Dekadal data', 'Monthly data')
+		CbperiodVAL <- c('Daily data', 'Pentad data', 'Dekadal data', 'Monthly data', 'Others')
 		tclvalue(timeSteps) <- switch(GeneralParameters$intstep, 
 										'daily' = CbperiodVAL[1],
 										'pentad' = CbperiodVAL[2],
 										'dekadal' = CbperiodVAL[3],
-										'monthly' = CbperiodVAL[4])
+										'monthly' = CbperiodVAL[4],
+										'others' = CbperiodVAL[5])
 		input.file <- tclVar(GeneralParameters$cdtstation)
 
 		txt.cdtdata1 <- tklabel(frameCDTdata, text = "Time step", anchor = 'w', justify = 'left')
@@ -103,10 +104,161 @@ PlotCDTDataFormatCmd <- function(){
 		############
 
 		tkbind(cb.cdtdata1, "<<ComboboxSelected>>", function(){
-			tclvalue(day.txtVar) <- switch(str_trim(tclvalue(timeSteps)), 'Dekadal data' = 'Dek', 'Pentad data' = 'Pen', 'Day')
-			stateday <- if(str_trim(tclvalue(timeSteps)) == 'Monthly data') 'disabled' else 'normal'
-			tkconfigure(en.day, state = stateday)
-		})
+			tkdestroy(frTS1)
+			frTS1 <<- tkframe(frameMap)
+
+			if(str_trim(tclvalue(timeSteps)) == 'Others'){
+				txt.other <- tklabel(frTS1, text = 'Dates or Index')
+				# en.other <- tkentry(frTS1, width = 16, textvariable = date.other, justify = "center")
+				cb.other <- ttkcombobox(frTS1, values = "", textvariable = date.other, width = 16)
+				bt.date.prev <- ttkbutton(frTS1, text = "<<", width = 6)
+				bt.date.next <- ttkbutton(frTS1, text = ">>", width = 6)
+
+				tkgrid(txt.other, row = 0, column = 1, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(bt.date.prev, row = 1, column = 0, sticky = 'we', pady = 1, padx = 1)
+				# tkgrid(en.other, row = 1, column = 1, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(cb.other, row = 1, column = 1, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(bt.date.next, row = 1, column = 2, sticky = 'we', pady = 1, padx = 1)
+			}else{
+				stateday <- if(str_trim(tclvalue(timeSteps)) == 'Monthly data') 'disabled' else 'normal'
+
+				txtdek <- switch(str_trim(tclvalue(timeSteps)), 'Dekadal data' = 'Dek', 'Pentad data' = 'Pen', 'Day')
+				day.txtVar <- tclVar(txtdek)
+
+				txt.yrs <- tklabel(frTS1, text = 'Year')
+				txt.mon <- tklabel(frTS1, text = 'Month')
+				txt.day <- tklabel(frTS1, text = tclvalue(day.txtVar), textvariable = day.txtVar)
+				en.yrs <- tkentry(frTS1, width = 5, textvariable = date.year, justify = "center")
+				en.mon <- tkentry(frTS1, width = 5, textvariable = date.mon, justify = "center")
+				en.day <- tkentry(frTS1, width = 5, textvariable = date.day, justify = "center", state = stateday)
+				bt.date.prev <- ttkbutton(frTS1, text = "<<", width = 6)
+				bt.date.next <- ttkbutton(frTS1, text = ">>", width = 6)
+
+				##############
+				tkgrid(txt.yrs, row = 0, column = 1, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(txt.mon, row = 0, column = 2, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(txt.day, row = 0, column = 3, sticky = 'we', pady = 1, padx = 1)
+
+				tkgrid(bt.date.prev, row = 1, column = 0, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(en.yrs, row = 1, column = 1, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(en.mon, row = 1, column = 2, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(en.day, row = 1, column = 3, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(bt.date.next, row = 1, column = 4, sticky = 'we', pady = 1, padx = 1)
+			}
+
+			##############
+			tkconfigure(bt.date.prev, command = function(){
+				if(is.null(EnvCDTdataPlot$don)) return(NULL) 
+				temps <- str_trim(tclvalue(timeSteps))
+
+				if(temps == 'Others'){
+					##
+				}else{
+					yrs <- as.numeric(str_trim(tclvalue(date.year)))
+					mon <- as.numeric(str_trim(tclvalue(date.mon)))
+					dpk <- as.numeric(str_trim(tclvalue(date.day)))
+
+					if(temps == 'Daily data') todaty <- paste(yrs, mon, dpk, sep = '-')
+					if(temps == 'Pentad data'){
+						if(is.na(dpk) | dpk < 1 | dpk > 6){
+							InsertMessagesTxt(main.txt.out, "Pentad must be  between 1 and 6", format = TRUE)
+							return(NULL)
+						}
+						todaty <- paste(yrs, mon, dpk, sep = '-')
+					}
+					if(temps == 'Dekadal data'){
+						if(is.na(dpk) | dpk < 1 | dpk > 3){
+							InsertMessagesTxt(main.txt.out, "Dekad must be 1, 2 or 3", format = TRUE)
+							return(NULL)
+						}
+						todaty <- paste(yrs, mon, dpk, sep = '-')
+					}
+					if(temps == 'Monthly data') todaty <- paste(yrs, mon, 1, sep = '-')
+
+					daty <- try(as.Date(todaty), silent = TRUE)
+					if(inherits(daty, "try-error") | is.na(daty)){
+						InsertMessagesTxt(main.txt.out, paste("Date invalid", todaty), format = TRUE)
+						return(NULL)
+					}
+					if(temps == 'Daily data') daty <- daty-1
+					if(temps == 'Pentad data') daty <- addPentads(daty, -1)
+					if(temps == 'Dekadal data') daty <- addDekads(daty, -1)
+					if(temps == 'Monthly data') daty <- addMonths(daty, -1)
+
+					if(daty < EnvCDTdataPlot$first.date) daty <- EnvCDTdataPlot$last.date
+					daty <- format(daty, '%Y%m%d')
+					tclvalue(date.year) <- as.numeric(substr(daty, 1, 4))
+					tclvalue(date.mon) <- as.numeric(substr(daty, 5, 6))
+					tclvalue(date.day) <- as.numeric(substr(daty, 7, 8))
+				}
+
+				######
+				getStnMap()
+
+				####
+				imgContainer <- CDTdataStation.Display.Maps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTdataPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
+				EnvCDTdataPlot$notebookTab.dataMap <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			})
+
+			tkconfigure(bt.date.next, command = function(){
+				if(is.null(EnvCDTdataPlot$don)) return(NULL) 
+				temps <- str_trim(tclvalue(timeSteps))
+
+				if(temps == 'Others'){
+					##
+				}else{
+					yrs <- as.numeric(str_trim(tclvalue(date.year)))
+					mon <- as.numeric(str_trim(tclvalue(date.mon)))
+					dpk <- as.numeric(str_trim(tclvalue(date.day)))
+
+					if(temps == 'Pentad data'){
+						if(is.na(dpk) | dpk < 1 | dpk > 6){
+							InsertMessagesTxt(main.txt.out, "Pentad must be  between 1 and 6", format = TRUE)
+							return(NULL)
+						}
+					}
+					if(temps == 'Dekadal data'){
+						if(is.na(dpk) | dpk < 1 | dpk > 3){
+							InsertMessagesTxt(main.txt.out, "Dekad must be 1, 2 or 3", format = TRUE)
+							return(NULL)
+						}
+					}
+					if(temps == 'Monthly data') dpk <- 1
+
+					todaty <- paste(yrs, mon, dpk, sep = '-')
+					daty <- try(as.Date(todaty), silent = TRUE)
+					if(inherits(daty, "try-error") | is.na(daty)){
+						InsertMessagesTxt(main.txt.out, paste("Invalid date", todaty), format = TRUE)
+						return(NULL)
+					}
+					if(temps == 'Daily data') daty <- daty+1
+					if(temps == 'Pentad data') daty <- addPentads(daty, 1)
+					if(temps == 'Dekadal data') daty <- addDekads(daty, 1)
+					if(temps == 'Monthly data') daty <- addMonths(daty, 1)
+
+					if(daty > EnvCDTdataPlot$last.date) daty <- EnvCDTdataPlot$first.date
+					daty <- format(daty, '%Y%m%d')
+					tclvalue(date.year) <- as.numeric(substr(daty, 1, 4))
+					tclvalue(date.mon) <- as.numeric(substr(daty, 5, 6))
+					tclvalue(date.day) <- as.numeric(substr(daty, 7, 8))
+				}
+
+				######
+				getStnMap()
+
+				####
+				imgContainer <- CDTdataStation.Display.Maps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTdataPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
+				EnvCDTdataPlot$notebookTab.dataMap <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			})
+
+				tkgrid(frTS1, row = 1, column = 0, sticky = '', pady = 1, columnspan = 3)
+			})
 
 		tkbind(cb.cdtdata2, "<<ComboboxSelected>>", function(){
 			ret <- try(splitStnData(), silent = TRUE)
@@ -183,60 +335,92 @@ PlotCDTDataFormatCmd <- function(){
 		date.year <- tclVar(GeneralParameters$date$year)
 		date.mon <- tclVar(GeneralParameters$date$mon)
 		date.day <- tclVar(GeneralParameters$date$day)
+		date.other <- tclVar(GeneralParameters$date$other)
 
-		txtdek <- switch(GeneralParameters$intstep, 'dekadal' = 'Dek', 'pentad' = 'Pen', 'Day')
-		day.txtVar <- tclVar(txtdek)
-		stateday <- if(GeneralParameters$intstep == 'monthly') 'disabled' else 'normal'
+		if(GeneralParameters$intstep == 'others'){
+			txt.other <- tklabel(frTS1, text = 'Dates or Index')
+			cb.other <- ttkcombobox(frTS1, values = "", textvariable = date.other, width = 16)
+			bt.date.prev <- ttkbutton(frTS1, text = "<<", width = 6)
+			bt.date.next <- ttkbutton(frTS1, text = ">>", width = 6)
 
-		txt.yrs <- tklabel(frTS1, text = 'Year')
-		txt.mon <- tklabel(frTS1, text = 'Month')
-		txt.day <- tklabel(frTS1, text = tclvalue(day.txtVar), textvariable = day.txtVar)
-		en.yrs <- tkentry(frTS1, width = 5, textvariable = date.year, justify = "center")
-		en.mon <- tkentry(frTS1, width = 5, textvariable = date.mon, justify = "center")
-		en.day <- tkentry(frTS1, width = 5, textvariable = date.day, justify = "center", state = stateday)
-		bt.date.prev <- ttkbutton(frTS1, text = "<<", width = 6)
-		bt.date.next <- ttkbutton(frTS1, text = ">>", width = 6)
+			tkgrid(txt.other, row = 0, column = 1, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(bt.date.prev, row = 1, column = 0, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(cb.other, row = 1, column = 1, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(bt.date.next, row = 1, column = 2, sticky = 'we', pady = 1, padx = 1)
+		}else{
+			txtdek <- switch(GeneralParameters$intstep, 'dekadal' = 'Dek', 'pentad' = 'Pen', 'Day')
+			day.txtVar <- tclVar(txtdek)
+			stateday <- if(GeneralParameters$intstep == 'monthly') 'disabled' else 'normal'
+
+			txt.yrs <- tklabel(frTS1, text = 'Year')
+			txt.mon <- tklabel(frTS1, text = 'Month')
+			txt.day <- tklabel(frTS1, text = tclvalue(day.txtVar), textvariable = day.txtVar)
+			en.yrs <- tkentry(frTS1, width = 5, textvariable = date.year, justify = "center")
+			en.mon <- tkentry(frTS1, width = 5, textvariable = date.mon, justify = "center")
+			en.day <- tkentry(frTS1, width = 5, textvariable = date.day, justify = "center", state = stateday)
+			bt.date.prev <- ttkbutton(frTS1, text = "<<", width = 6)
+			bt.date.next <- ttkbutton(frTS1, text = ">>", width = 6)
+
+			##############
+			tkgrid(txt.yrs, row = 0, column = 1, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(txt.mon, row = 0, column = 2, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(txt.day, row = 0, column = 3, sticky = 'we', pady = 1, padx = 1)
+
+			tkgrid(bt.date.prev, row = 1, column = 0, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(en.yrs, row = 1, column = 1, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(en.mon, row = 1, column = 2, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(en.day, row = 1, column = 3, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(bt.date.next, row = 1, column = 4, sticky = 'we', pady = 1, padx = 1)
+		}
 
 		##############
 		tkconfigure(bt.date.prev, command = function(){
 			if(is.null(EnvCDTdataPlot$don)) return(NULL) 
-			yrs <- as.numeric(str_trim(tclvalue(date.year)))
-			mon <- as.numeric(str_trim(tclvalue(date.mon)))
-			dpk <- as.numeric(str_trim(tclvalue(date.day)))
 			temps <- str_trim(tclvalue(timeSteps))
 
-			if(temps == 'Daily data') todaty <- paste(yrs, mon, dpk, sep = '-')
-			if(temps == 'Pentad data'){
-				if(is.na(dpk) | dpk < 1 | dpk > 6){
-					InsertMessagesTxt(main.txt.out, "Pentad must be  between 1 and 6", format = TRUE)
+			if(temps == 'Others'){
+				idaty <- which(EnvCDTdataPlot$don$dates == str_trim(tclvalue(date.other)))
+				idaty <- idaty-1
+				if(idaty < 1) idaty <- length(EnvCDTdataPlot$don$dates)
+				tclvalue(date.other) <- EnvCDTdataPlot$don$dates[idaty]
+			}else{
+				yrs <- as.numeric(str_trim(tclvalue(date.year)))
+				mon <- as.numeric(str_trim(tclvalue(date.mon)))
+				dpk <- as.numeric(str_trim(tclvalue(date.day)))
+
+				if(temps == 'Daily data') todaty <- paste(yrs, mon, dpk, sep = '-')
+				if(temps == 'Pentad data'){
+					if(is.na(dpk) | dpk < 1 | dpk > 6){
+						InsertMessagesTxt(main.txt.out, "Pentad must be  between 1 and 6", format = TRUE)
+						return(NULL)
+					}
+					todaty <- paste(yrs, mon, dpk, sep = '-')
+				}
+				if(temps == 'Dekadal data'){
+					if(is.na(dpk) | dpk < 1 | dpk > 3){
+						InsertMessagesTxt(main.txt.out, "Dekad must be 1, 2 or 3", format = TRUE)
+						return(NULL)
+					}
+					todaty <- paste(yrs, mon, dpk, sep = '-')
+				}
+				if(temps == 'Monthly data') todaty <- paste(yrs, mon, 1, sep = '-')
+
+				daty <- try(as.Date(todaty), silent = TRUE)
+				if(inherits(daty, "try-error") | is.na(daty)){
+					InsertMessagesTxt(main.txt.out, paste("Date invalid", todaty), format = TRUE)
 					return(NULL)
 				}
-				todaty <- paste(yrs, mon, dpk, sep = '-')
-			}
-			if(temps == 'Dekadal data'){
-				if(is.na(dpk) | dpk < 1 | dpk > 3){
-					InsertMessagesTxt(main.txt.out, "Dekad must be 1, 2 or 3", format = TRUE)
-					return(NULL)
-				}
-				todaty <- paste(yrs, mon, dpk, sep = '-')
-			}
-			if(temps == 'Monthly data') todaty <- paste(yrs, mon, 1, sep = '-')
+				if(temps == 'Daily data') daty <- daty-1
+				if(temps == 'Pentad data') daty <- addPentads(daty, -1)
+				if(temps == 'Dekadal data') daty <- addDekads(daty, -1)
+				if(temps == 'Monthly data') daty <- addMonths(daty, -1)
 
-			daty <- try(as.Date(todaty), silent = TRUE)
-			if(inherits(daty, "try-error") | is.na(daty)){
-				InsertMessagesTxt(main.txt.out, paste("Date invalid", todaty), format = TRUE)
-				return(NULL)
+				if(daty < EnvCDTdataPlot$first.date) daty <- EnvCDTdataPlot$last.date
+				daty <- format(daty, '%Y%m%d')
+				tclvalue(date.year) <- as.numeric(substr(daty, 1, 4))
+				tclvalue(date.mon) <- as.numeric(substr(daty, 5, 6))
+				tclvalue(date.day) <- as.numeric(substr(daty, 7, 8))
 			}
-			if(temps == 'Daily data') daty <- daty-1
-			if(temps == 'Pentad data') daty <- addPentads(daty, -1)
-			if(temps == 'Dekadal data') daty <- addDekads(daty, -1)
-			if(temps == 'Monthly data') daty <- addMonths(daty, -1)
-
-			if(daty < EnvCDTdataPlot$first.date) daty <- EnvCDTdataPlot$last.date
-			daty <- format(daty, '%Y%m%d')
-			tclvalue(date.year) <- as.numeric(substr(daty, 1, 4))
-			tclvalue(date.mon) <- as.numeric(substr(daty, 5, 6))
-			tclvalue(date.day) <- as.numeric(substr(daty, 7, 8))
 
 			######
 			getStnMap()
@@ -251,41 +435,49 @@ PlotCDTDataFormatCmd <- function(){
 
 		tkconfigure(bt.date.next, command = function(){
 			if(is.null(EnvCDTdataPlot$don)) return(NULL) 
-			yrs <- as.numeric(str_trim(tclvalue(date.year)))
-			mon <- as.numeric(str_trim(tclvalue(date.mon)))
-			dpk <- as.numeric(str_trim(tclvalue(date.day)))
 			temps <- str_trim(tclvalue(timeSteps))
 
-			if(temps == 'Pentad data'){
-				if(is.na(dpk) | dpk < 1 | dpk > 6){
-					InsertMessagesTxt(main.txt.out, "Pentad must be  between 1 and 6", format = TRUE)
+			if(temps == 'Others'){
+				idaty <- which(EnvCDTdataPlot$don$dates == str_trim(tclvalue(date.other)))
+				idaty <- idaty+1
+				if(idaty > length(EnvCDTdataPlot$don$dates)) idaty <- 1
+				tclvalue(date.other) <- EnvCDTdataPlot$don$dates[idaty]
+			}else{
+				yrs <- as.numeric(str_trim(tclvalue(date.year)))
+				mon <- as.numeric(str_trim(tclvalue(date.mon)))
+				dpk <- as.numeric(str_trim(tclvalue(date.day)))
+
+				if(temps == 'Pentad data'){
+					if(is.na(dpk) | dpk < 1 | dpk > 6){
+						InsertMessagesTxt(main.txt.out, "Pentad must be  between 1 and 6", format = TRUE)
+						return(NULL)
+					}
+				}
+				if(temps == 'Dekadal data'){
+					if(is.na(dpk) | dpk < 1 | dpk > 3){
+						InsertMessagesTxt(main.txt.out, "Dekad must be 1, 2 or 3", format = TRUE)
+						return(NULL)
+					}
+				}
+				if(temps == 'Monthly data') dpk <- 1
+
+				todaty <- paste(yrs, mon, dpk, sep = '-')
+				daty <- try(as.Date(todaty), silent = TRUE)
+				if(inherits(daty, "try-error") | is.na(daty)){
+					InsertMessagesTxt(main.txt.out, paste("Invalid date", todaty), format = TRUE)
 					return(NULL)
 				}
-			}
-			if(temps == 'Dekadal data'){
-				if(is.na(dpk) | dpk < 1 | dpk > 3){
-					InsertMessagesTxt(main.txt.out, "Dekad must be 1, 2 or 3", format = TRUE)
-					return(NULL)
-				}
-			}
-			if(temps == 'Monthly data') dpk <- 1
+				if(temps == 'Daily data') daty <- daty+1
+				if(temps == 'Pentad data') daty <- addPentads(daty, 1)
+				if(temps == 'Dekadal data') daty <- addDekads(daty, 1)
+				if(temps == 'Monthly data') daty <- addMonths(daty, 1)
 
-			todaty <- paste(yrs, mon, dpk, sep = '-')
-			daty <- try(as.Date(todaty), silent = TRUE)
-			if(inherits(daty, "try-error") | is.na(daty)){
-				InsertMessagesTxt(main.txt.out, paste("Invalid date", todaty), format = TRUE)
-				return(NULL)
+				if(daty > EnvCDTdataPlot$last.date) daty <- EnvCDTdataPlot$first.date
+				daty <- format(daty, '%Y%m%d')
+				tclvalue(date.year) <- as.numeric(substr(daty, 1, 4))
+				tclvalue(date.mon) <- as.numeric(substr(daty, 5, 6))
+				tclvalue(date.day) <- as.numeric(substr(daty, 7, 8))
 			}
-			if(temps == 'Daily data') daty <- daty+1
-			if(temps == 'Pentad data') daty <- addPentads(daty, 1)
-			if(temps == 'Dekadal data') daty <- addDekads(daty, 1)
-			if(temps == 'Monthly data') daty <- addMonths(daty, 1)
-
-			if(daty > EnvCDTdataPlot$last.date) daty <- EnvCDTdataPlot$first.date
-			daty <- format(daty, '%Y%m%d')
-			tclvalue(date.year) <- as.numeric(substr(daty, 1, 4))
-			tclvalue(date.mon) <- as.numeric(substr(daty, 5, 6))
-			tclvalue(date.day) <- as.numeric(substr(daty, 7, 8))
 
 			######
 			getStnMap()
@@ -297,18 +489,6 @@ PlotCDTDataFormatCmd <- function(){
 			AllOpenTabType <<- retNBTab$AllOpenTabType
 			AllOpenTabData <<- retNBTab$AllOpenTabData
 		})
-
-
-		##############
-		tkgrid(txt.yrs, row = 0, column = 1, sticky = 'we', pady = 1, padx = 1)
-		tkgrid(txt.mon, row = 0, column = 2, sticky = 'we', pady = 1, padx = 1)
-		tkgrid(txt.day, row = 0, column = 3, sticky = 'we', pady = 1, padx = 1)
-
-		tkgrid(bt.date.prev, row = 1, column = 0, sticky = 'we', pady = 1, padx = 1)
-		tkgrid(en.yrs, row = 1, column = 1, sticky = 'we', pady = 1, padx = 1)
-		tkgrid(en.mon, row = 1, column = 2, sticky = 'we', pady = 1, padx = 1)
-		tkgrid(en.day, row = 1, column = 3, sticky = 'we', pady = 1, padx = 1)
-		tkgrid(bt.date.next, row = 1, column = 4, sticky = 'we', pady = 1, padx = 1)
 
 		##############
 		tkgrid(cb.Map.type, row = 0, column = 0, sticky = 'we', pady = 1, columnspan = 1)
@@ -493,50 +673,62 @@ PlotCDTDataFormatCmd <- function(){
 							'Daily data' = 'daily',
 							'Pentad data' = 'pentad',
 							'Dekadal data' =  'dekadal',
-							'Monthly data' = 'monthly')
+							'Monthly data' = 'monthly',
+							'Others' = 'others')
 
 		don <- getStnOpenData(str_trim(tclvalue(input.file)))
 		if(is.null(don)) return(NULL)
-		don <- getCDTdataAndDisplayMsg(don, intstep)
-		if(is.null(don)) return(NULL)
 
-		EnvCDTdataPlot$tstep <- intstep
-		EnvCDTdataPlot$don <- don
-		en.daty <- don$dates[length(don$dates)]
+		if(intstep == "others"){
+			don <- splitCDTData1(don)
+			EnvCDTdataPlot$tsdates <- seq_along(don$dates)
 
-		##########
-		if(intstep == "daily"){
-			EnvCDTdataPlot$tsdates <- as.Date(don$dates, "%Y%m%d")
-			dpk <- as.numeric(substr(en.daty, 7, 8))
-		}
-		if(intstep == "pentad"){
-			pen <- c(1, 6, 11, 16, 21, 26)[as.numeric(substr(don$dates, 7, 7))]
-			EnvCDTdataPlot$tsdates <- as.Date(paste0(substr(don$dates, 1, 6), pen), "%Y%m%d")
-			dpk <- as.numeric(substr(en.daty, 7, 7))
-		}
-		if(intstep == "dekadal"){
-			dek <- c(1, 11, 21)[as.numeric(substr(don$dates, 7, 7))]
-			EnvCDTdataPlot$tsdates <- as.Date(paste0(substr(don$dates, 1, 6), dek), "%Y%m%d")
-			dpk <- as.numeric(substr(en.daty, 7, 7))
-		}
-		if(intstep == "monthly"){
-			EnvCDTdataPlot$tsdates <- as.Date(paste0(don$dates, 1), "%Y%m%d")
-			dpk <- 1
-		}
+			##########
+			tkconfigure(cb.other, values = don$dates)
+			tclvalue(date.other) <- don$dates[1]
+		}else{
+			don <- getCDTdataAndDisplayMsg(don, intstep)
+			if(is.null(don)) return(NULL)
 
-		first.date <- if(intstep == "monthly") paste0(don$dates[1], 1) else don$dates[1]
-		last.date <- if(intstep == "monthly") paste0(don$dates[length(don$dates)], 1) else don$dates[length(don$dates)]
-		EnvCDTdataPlot$first.date <- as.Date(first.date, "%Y%m%d")
-		EnvCDTdataPlot$last.date <- as.Date(last.date, "%Y%m%d")
+			##########
+			en.daty <- don$dates[length(don$dates)]
 
-		##########
-		tclvalue(date.year) <- as.numeric(substr(en.daty, 1, 4))
-		tclvalue(date.mon) <- as.numeric(substr(en.daty, 5, 6))
-		tclvalue(date.day) <- dpk
+			if(intstep == "daily"){
+				EnvCDTdataPlot$tsdates <- as.Date(don$dates, "%Y%m%d")
+				dpk <- as.numeric(substr(en.daty, 7, 8))
+			}
+			if(intstep == "pentad"){
+				pen <- c(1, 6, 11, 16, 21, 26)[as.numeric(substr(don$dates, 7, 7))]
+				EnvCDTdataPlot$tsdates <- as.Date(paste0(substr(don$dates, 1, 6), pen), "%Y%m%d")
+				dpk <- as.numeric(substr(en.daty, 7, 7))
+			}
+			if(intstep == "dekadal"){
+				dek <- c(1, 11, 21)[as.numeric(substr(don$dates, 7, 7))]
+				EnvCDTdataPlot$tsdates <- as.Date(paste0(substr(don$dates, 1, 6), dek), "%Y%m%d")
+				dpk <- as.numeric(substr(en.daty, 7, 7))
+			}
+			if(intstep == "monthly"){
+				EnvCDTdataPlot$tsdates <- as.Date(paste0(don$dates, 1), "%Y%m%d")
+				dpk <- 1
+			}
+
+			first.date <- if(intstep == "monthly") paste0(don$dates[1], 1) else don$dates[1]
+			last.date <- if(intstep == "monthly") paste0(don$dates[length(don$dates)], 1) else don$dates[length(don$dates)]
+			EnvCDTdataPlot$first.date <- as.Date(first.date, "%Y%m%d")
+			EnvCDTdataPlot$last.date <- as.Date(last.date, "%Y%m%d")
+
+			##########
+			tclvalue(date.year) <- as.numeric(substr(en.daty, 1, 4))
+			tclvalue(date.mon) <- as.numeric(substr(en.daty, 5, 6))
+			tclvalue(date.day) <- dpk
+		}
 
 		##########
 		tkconfigure(cb.stnID, values = don$id)
 		tclvalue(EnvCDTdataPlot$graph$stnIDTSp) <- don$id[1]
+
+		EnvCDTdataPlot$tstep <- intstep
+		EnvCDTdataPlot$don <- don
 
 		##########
 		getStnTS()
@@ -563,35 +755,40 @@ PlotCDTDataFormatCmd <- function(){
 			tcl('update')
 		})
 
-		yrs <- as.numeric(str_trim(tclvalue(date.year)))
-		mon <- as.numeric(str_trim(tclvalue(date.mon)))
-		dpk <- as.numeric(str_trim(tclvalue(date.day)))
 		typemap <- str_trim(tclvalue(EnvCDTdataPlot$map$typeMap))
 
-		getSpat <- list(yrs, mon, dpk, typemap)
+		if(EnvCDTdataPlot$tstep != "others"){
+			yrs <- as.numeric(str_trim(tclvalue(date.year)))
+			mon <- as.numeric(str_trim(tclvalue(date.mon)))
+			dpk <- as.numeric(str_trim(tclvalue(date.day)))
+			getSpat <- list(yrs, mon, dpk, typemap)
+		}else getSpat <- list(str_trim(tclvalue(date.other)), typemap)
+
 		if(!is.null(EnvCDTdataPlot$stndata$spatial)){
 			formatSpData <- if(!isTRUE(all.equal(EnvCDTdataPlot$stndata$spatial, getSpat))) TRUE else FALSE
 		}else formatSpData <- TRUE
 
 		if(formatSpData){
-			if(EnvCDTdataPlot$tstep == "daily")
-				daty <- format(as.Date(paste(yrs, mon, dpk, sep = "-")), "%Y%m%d")
-			if(EnvCDTdataPlot$tstep == "pentad"){
-				pen <- as.Date(paste(yrs, mon, dpk, sep = "-"))
-				daty <- paste0(format(pen, "%Y%m"), dpk)
-			}
-			if(EnvCDTdataPlot$tstep == "dekadal"){
-				dek <- as.Date(paste(yrs, mon, dpk, sep = "-"))
-				daty <- paste0(format(dek, "%Y%m"), dpk)
-			}
-			if(EnvCDTdataPlot$tstep == "monthly")
-				daty <- format(as.Date(paste(yrs, mon, dpk, sep = "-")), "%Y%m")
+			if(EnvCDTdataPlot$tstep != "others"){
+				if(EnvCDTdataPlot$tstep == "daily")
+					daty <- format(as.Date(paste(yrs, mon, dpk, sep = "-")), "%Y%m%d")
+				if(EnvCDTdataPlot$tstep == "pentad"){
+					pen <- as.Date(paste(yrs, mon, dpk, sep = "-"))
+					daty <- paste0(format(pen, "%Y%m"), dpk)
+				}
+				if(EnvCDTdataPlot$tstep == "dekadal"){
+					dek <- as.Date(paste(yrs, mon, dpk, sep = "-"))
+					daty <- paste0(format(dek, "%Y%m"), dpk)
+				}
+				if(EnvCDTdataPlot$tstep == "monthly")
+					daty <- format(as.Date(paste(yrs, mon, dpk, sep = "-")), "%Y%m")
+			}else daty <- str_trim(tclvalue(date.other))
 
 			idaty <- which(EnvCDTdataPlot$don$dates == daty)
 
 			if(length(idaty) == 0){
 				EnvCDTdataPlot$stndata$map <- NULL
-				InsertMessagesTxt(main.txt.out, "Invalid date", format = TRUE)
+				InsertMessagesTxt(main.txt.out, "Invalid date or index", format = TRUE)
 			}else{
 				if(typemap == "Points"){
 					EnvCDTdataPlot$stndata$map$x <- EnvCDTdataPlot$don$lon
