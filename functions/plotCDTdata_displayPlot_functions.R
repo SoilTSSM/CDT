@@ -73,7 +73,7 @@ plotCDTdata.Maps <- function(){
 	lines(ocrds[, 1], ocrds[, 2], lwd = EnvCDTdataPlot$SHPOp$lwd, col = EnvCDTdataPlot$SHPOp$col)
 
 	if(don$p == "Points"){
-		kolor.p <- kolor[findInterval(don$z, breaks, rightmost.closed = TRUE)]
+		kolor.p <- kolor[findInterval(don$z, breaks, rightmost.closed = TRUE, left.open = TRUE)]
 		points(don$x, don$y, col = kolor.p, cex = dataMapOp$pointSize, pch = 20)
 	}
 	if(don$p == "Pixels"){

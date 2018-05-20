@@ -68,8 +68,9 @@ Precip_Merging_ALL <- function(origdir){
 	## regrid DEM data
 	if(!is.null(demData)){
 		is.regridDEM <- is.diffSpatialPixelsObj(defSpatialPixels(xy.grid), defSpatialPixels(demData[c('lon', 'lat')]), tol = 1e-07)
-		demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
-		if(is.regridDEM) demData <- interp.surface.grid(demData, list(x = xy.grid$lon, y = xy.grid$lat))
+		if(is.regridDEM)
+			demData <- cdt.interp.surface.grid(c(demData[c('lon', 'lat')], list(z = demData$demMat)), xy.grid)
+		else demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
 		demData$z[demData$z < 0] <- 0
 	}
 
@@ -83,7 +84,7 @@ Precip_Merging_ALL <- function(origdir){
 		ncInfoBias <- ncFilesInfo(freqData, start.date1, end.date1, months, RFE.DIR, RFE.Format, errmsg)
 		if(is.null(ncInfoBias)) return(NULL)
 		ncInfoBias$ncinfo <- list(xo = rfeDataInfo$rfeILon, yo = rfeDataInfo$rfeILat, varid = rfeDataInfo$rfeVarid)
-		ncInfoBias$xy.rfe <- list(lon = rfeDataInfo$lon, lat = rfeDataInfo$lat)
+		ncInfoBias$xy.rfe <- rfeDataInfo[c('lon', 'lat')]
 
 		# calculate bias factors
 		bias.DIR <- file.path(origdir, "BIAS_Data")
@@ -121,7 +122,7 @@ Precip_Merging_ALL <- function(origdir){
 		ncInfoAdj <- ncFilesInfo(freqData, start.date1, end.date1, months, RFE.DIR, RFE.Format, errmsg)
 		if(is.null(ncInfoAdj)) return(NULL)
 		ncInfoAdj$ncinfo <- list(xo = rfeDataInfo$rfeILon, yo = rfeDataInfo$rfeILat, varid = rfeDataInfo$rfeVarid)
-		ncInfoAdj$xy.rfe <- list(lon = rfeDataInfo$lon, lat = rfeDataInfo$lat)
+		ncInfoAdj$xy.rfe <- rfeDataInfo[c('lon', 'lat')]
 		AdjDate <- ncInfoAdj$dates
 		extractADJ <- TRUE
 	}else{
@@ -199,7 +200,7 @@ Precip_Merging_ALL <- function(origdir){
 	ncInfo <- ncFilesInfo(freqData, start.date, end.date, months, adj.DIR, adj.Format, errmsg)
 	if(is.null(ncInfo)) return(NULL)
 	ncInfo$ncinfo <- list(xo = 1, yo = 2, varid = "precip")
-	ncInfo$xy.rfe <- list(lon = rfeDataInfo$lon, lat = rfeDataInfo$lat)
+	ncInfo$xy.rfe <- rfeDataInfo[c('lon', 'lat')]
 
 	##################
 	## blanking

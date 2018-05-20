@@ -25,7 +25,7 @@ mergeOneDekadRain <- function(){
 		ncInfo$xy.rfe <- list(lon = rfeData$x, lat = rfeData$y)
 
 		rfeData <- rfeData[1:3]
-		names(rfeData) <- c('x', 'y', 'z')
+		names(rfeData) <- c('lon', 'lat', 'z')
 	}else{
 		InsertMessagesTxt(main.txt.out, "Download RFE data .....")
 
@@ -120,7 +120,7 @@ mergeOneDekadRain <- function(){
 			longname <- "CHIRP 10-days rainfall estimate"
 			file0 <- paste0(getf.no.ext(file0), '.nc')
 		}
-		rfeData <- list(x = rfe.lon, y = rfe.lat, z = rfe)
+		rfeData <- list(lon = rfe.lon, lat = rfe.lat, z = rfe)
 
 		rfe[rfe < 0 | is.na(rfe)] <- -99
 		dx <- ncdim_def("Lon", "degreeE", rfe.lon)
@@ -191,18 +191,18 @@ mergeOneDekadRain <- function(){
 			nc_close(nc)
 		}
 
-		biasSp <- defSpatialPixels(list(lon = lon.bias, lat = lat.bias))
-		rfeSp <- defSpatialPixels(list(lon = rfeData$x, lat = rfeData$y))
+		biasCoords <- list(lon = lon.bias, lat = lat.bias)
+		biasSp <- defSpatialPixels(biasCoords)
+		rfeSp <- defSpatialPixels(rfeData)
 		is.regridRFE <- is.diffSpatialPixelsObj(biasSp, rfeSp, tol = 1e-07)
 		if(is.regridRFE){
-			rfeData <- interp.surface.grid(rfeData, list(x = lon.bias, y = lat.bias))
+			rfeData <- cdt.interp.surface.grid(rfeData, biasCoords)
 		}
 
 		if(bias.method == "Quantile.Mapping"){
 			xadj <- quantile.mapping.BGamma(rfeData$z, pars.stn, pars.rfe, TRUE)
 		}else xadj <- rfeData$z * data.bias
 		xadj[xadj < 0] <- 0
-		# rfeData <- list(x = lon.bias, y = lat.bias, z = xadj)
 
 		xadj[is.na(xadj)] <- -99
 		dx <- ncdim_def("Lon", "degreeE", lon.bias)
@@ -249,8 +249,9 @@ mergeOneDekadRain <- function(){
 		## regrid DEM data
 		if(!is.null(demData)){
 			is.regridDEM <- is.diffSpatialPixelsObj(defSpatialPixels(xy.grid), defSpatialPixels(demData[c('lon', 'lat')]), tol = 1e-07)
-			demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
-			if(is.regridDEM) demData <- interp.surface.grid(demData, list(x = xy.grid$lon, y = xy.grid$lat))
+			if(is.regridDEM)
+				demData <- cdt.interp.surface.grid(c(demData[c('lon', 'lat')], list(z = demData$demMat)), xy.grid)
+			else demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
 			demData$z[demData$z < 0] <- 0
 		}
 

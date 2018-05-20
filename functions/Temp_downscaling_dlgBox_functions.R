@@ -257,13 +257,13 @@ Temp_reanalDownGetInfo <- function(parent.win, GeneralParameters){
 
 	file.coef <- tclVar(str_trim(GeneralParameters$DownCoef.file))
 
-	txt.coeffl <- tklabel(frCoef, text = 'Downscaling Coefficients file', anchor = 'w', justify = 'left')
+	txt.coeffl <- tklabel(frCoef, text = 'Downscaling Coefficients file (*.rds)', anchor = 'w', justify = 'left')
 	en.coeffl <- tkentry(frCoef, textvariable = file.coef, width = largeur)
 	bt.coeffl <- tkbutton(frCoef, text = "...")
 
 	tkconfigure(bt.coeffl, command = function(){
-		file2coef <- tkgetOpenFile(initialdir = getwd(), initialfile = "",
-						filetypes = "{{Text Files} {.txt .TXT}} {{CSV Files} {.csv .CSV}} {{All files} *}")
+		filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
+		file2coef <- tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes)
 		tclvalue(file.coef) <- if(!is.na(file2coef)) file2coef else ""
 	})
 
@@ -271,8 +271,8 @@ Temp_reanalDownGetInfo <- function(parent.win, GeneralParameters){
 	tkgrid(en.coeffl, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 	tkgrid(bt.coeffl, row = 1, column = 1, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 1, ipady = 1)
 
-	infobulle(en.coeffl, 'Enter the full path of the file containing the regression coef for downscaling')
-	status.bar.display(en.coeffl, TextOutputVar, 'Enter the full path of the file containing the regression coef for downscaling')
+	infobulle(en.coeffl, 'Enter the full path of the file containing the downscaling coefficients STN_DEM_GLM_COEF.rds')
+	status.bar.display(en.coeffl, TextOutputVar, 'Enter the full path of the file containing\nthe downscaling coefficients STN_DEM_GLM_COEF.rds')
 	infobulle(bt.coeffl, 'or browse here')
 	status.bar.display(bt.coeffl, TextOutputVar, 'or browse here')
 

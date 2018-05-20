@@ -243,11 +243,11 @@ CPT.convertStationData.Files <- function(cdtdata, output.file, cptInfo){
 	if(is.null(data)) return(NULL)
 
 	ncmax <- max(nchar(formatC(c(data$data))))
-	daty <- str_pad(data$date, max(nchar(data$date)), pad = "0")
+	daty <- str_pad(data$dates, max(nchar(data$dates)), pad = "0")
 	daty <- CPT.convertCDTdates(daty)
 
 	xmlns <- "xmlns:cpt=http://iri.columbia.edu/CPT/v10/\n"
-	cpt.tags <- list(field = cptInfo$name, nrow = length(data$date), ncol = length(data$lon),
+	cpt.tags <- list(field = cptInfo$name, nrow = length(data$dates), ncol = length(data$lon),
 					 row = 'T', col = 'station', units = cptInfo$units, missing = cptInfo$missval)
 	cpt.tags <- CPT.getTAG.line(cpt.tags)
 	cpt.stn <- paste0('\t', paste(data$id, collapse = '\t'), '\n')

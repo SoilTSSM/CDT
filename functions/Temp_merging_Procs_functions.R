@@ -238,12 +238,9 @@ InterpolateMeanBiasTemp <- function(interpBiasparams){
 	grd.dem[grd.dem < 0] <- 0
 	demSp <- defSpatialPixels(list(lon = lon.dem, lat = lat.dem))
 	is.regridDEM <- is.diffSpatialPixelsObj(grdSp, demSp, tol = 1e-07)
-
-	demGrid <- list(x = lon.dem, y = lat.dem, z = grd.dem)
-	if(is.regridDEM){
-		demGrid <- interp.surface.grid(demGrid, list(x = xy.grid$lon, y = xy.grid$lat))
-		demGrid <- demGrid[c('x', 'y', 'z')]
-	}
+	if(is.regridDEM)
+		demGrid <- cdt.interp.surface.grid(list(lon = lon.dem, lat = lat.dem, z = grd.dem), xy.grid)
+	else demGrid <- list(x = lon.dem, y = lat.dem, z = grd.dem)
 
 	# demres <- grdSp@grid@cellsize
 	# slpasp <- slope.aspect(demGrid$z, demres[1], demres[2], filter = "sobel")
@@ -587,17 +584,21 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 
 
 	###############
-	ncfiles <- adjMeanBiasparms$downData$ncfiles
+	ncinfo <- adjMeanBiasparms$downData
+	ncfiles <- ncinfo$ncfiles
 	ncInfo <- ncFilesInfo(ncfiles$freqData, ncfiles$start.date, ncfiles$end.date, ncfiles$months,
-						ncfiles$ncDir, ncfiles$ncFileFormat, adjMeanBiasparms$downData$errmsg)
+						ncfiles$ncDir, ncfiles$ncFileFormat, ncinfo$errmsg)
 	if(is.null(ncInfo)) return(NULL)
 
 	ncInfo$nc.files <- ncInfo$nc.files[ncInfo$exist]
 	ncInfo$dates <- ncInfo$dates[ncInfo$exist]
 
 	nc <- nc_open(ncInfo$nc.files[1])
-	rlon <- nc$dim[[adjMeanBiasparms$downData$ncinfo$xo]]$vals
-	rlat <- nc$dim[[adjMeanBiasparms$downData$ncinfo$yo]]$vals
+	# rlon <- nc$dim[[adjMeanBiasparms$downData$ncinfo$xo]]$vals
+	# rlat <- nc$dim[[adjMeanBiasparms$downData$ncinfo$yo]]$vals
+
+	rlon <- nc$var[[ncinfo$varid]]$dim[[ncinfo$xo]]$vals
+	rlat <- nc$var[[ncinfo$varid]]$dim[[ncinfo$yo]]$vals
 	nc_close(nc)
 	xo <- order(rlon)
 	rlon <- rlon[xo]
@@ -605,8 +606,7 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 	rlat <- rlat[yo]
 
 	downData <- list(lon = rlon, lat = rlat, dates = ncInfo$dates, files = ncInfo$nc.files,
-					xo = xo, yo = yo, varid = adjMeanBiasparms$downData$ncinfo$varid,
-					yorder = adjMeanBiasparms$downData$ncinfo$yo)
+					xo = xo, yo = yo, varid = ncinfo$varid, yorder = ncinfo$yo)
 
 	###############
 	InsertMessagesTxt(main.txt.out, 'Read bias data ...')
@@ -762,10 +762,7 @@ AjdMeanBiasTemp <- function(adjMeanBiasparms){
 		nc <- nc_open(downData$files[jfl])
 		xtmp <- ncvar_get(nc, varid = downData$varid)
 		nc_close(nc)
-		if(downData$yorder == 1){
-			xtmp <- matrix(c(xtmp), nrow = length(downData$lon), ncol = length(downData$lat), byrow = TRUE)
-		}
-		xtmp <- xtmp[downData$xo, downData$yo]
+		xtmp <- if(downData$yorder == 1) t(xtmp)[downData$xo, downData$yo] else xtmp[downData$xo, downData$yo]
 		dtmp <- downData$dates[jfl]
 
 		if(bias.method == "Multiplicative.Bias.Var"){

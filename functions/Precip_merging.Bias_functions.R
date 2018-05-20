@@ -20,7 +20,7 @@ Precip_ComputeBias <- function(biasParms){
 	}else res.coarse <- GeneralParameters$BIAS$maxdist/2
 	res.coarse <- if(res.coarse >= 0.25) res.coarse else 0.25
 
-	ptsData <- list(lon = biasParms$stnData$lon, lat = biasParms$stnData$lat)
+	ptsData <- biasParms$stnData[c('lon', 'lat')]
 	if(GeneralParameters$BIAS$bias.method == 'Quantile.Mapping'){
 		idcoarse <- indexCoarseGrid(biasParms$ncInfo$xy.rfe$lon, biasParms$ncInfo$xy.rfe$lat, res.coarse)
 		ptsData1 <- expand.grid(lon = biasParms$ncInfo$xy.rfe$lon[idcoarse$ix], lat = biasParms$ncInfo$xy.rfe$lat[idcoarse$iy])
@@ -265,7 +265,7 @@ Precip_InterpolateBias <- function(biasParms){
 		demGrid$asp <- matrix(0, nlon0, nlat0)
 	}
 
-	ijGrd <- grid2pointINDEX(list(lon = biasParms$stnData$lon, lat = biasParms$stnData$lat), xy.grid)
+	ijGrd <- grid2pointINDEX(biasParms$stnData[c('lon', 'lat')], xy.grid)
 	ObjStn <- list(x = biasParms$stnData$lon, y = biasParms$stnData$lat,
 					z = demGrid$z[ijGrd], slp = demGrid$slp[ijGrd], asp = demGrid$asp[ijGrd])
 
@@ -277,7 +277,9 @@ Precip_InterpolateBias <- function(biasParms){
 	is.regridRFE <- is.diffSpatialPixelsObj(grdSp, rfeSp, tol = 1e-07)
 	if(create.grd != '1' & is.regridRFE){
 		xy.rfe <- biasParms$ncInfo$xy.rfe
-		rfeGrid <- interp.surface.grid(demGrid, list(x = xy.rfe$lon, y = xy.rfe$lat))
+		demGrid0 <- demGrid[c('x', 'y', 'z')]
+		names(demGrid0) <- c('lon', 'lat', 'z')
+		rfeGrid <- cdt.interp.surface.grid(demGrid0, xy.rfe)
 		irfe <- over(rfeSp, grdSp)
 		rfeGrid$slp <- matrix(demGrid$slp[irfe], length(xy.rfe$lon), length(xy.rfe$lat))
 		rfeGrid$asp <- matrix(demGrid$asp[irfe], length(xy.rfe$lon), length(xy.rfe$lat))
@@ -411,9 +413,9 @@ Precip_InterpolateBias <- function(biasParms){
 					pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
 										block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 
-					extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
-					ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred < extrm[1] | pars.grd$var1.pred > extrm[2])
-					pars.grd$var1.pred[ixtrm] <- NA
+					xtrm <- range(locations.stn$pars, na.rm = TRUE)
+					pars.grd$var1.pred[!is.na(pars.grd$var1.pred) & pars.grd$var1.pred < xtrm[1]] <- xtrm[1]
+					pars.grd$var1.pred[!is.na(pars.grd$var1.pred) & pars.grd$var1.pred > xtrm[2]] <- xtrm[2]
 
 					ina <- is.na(pars.grd$var1.pred)
 					if(all(ina)){
@@ -823,17 +825,14 @@ Precip_ApplyBiasCorrection <- function(biasParms, extractADJ = FALSE){
 	xy.dim <- list(dx, dy)
 	grd.bsadj <- ncvar_def("precip", "mm", xy.dim, -99, longname= "Bias Corrected RFE", prec = "short", shuffle = TRUE, compression = 9)
 
-	################
+	################ 
 	## RFE regrid?
-	biasGrd <- list(lon = biasParms$BIAS$lon, lat = biasParms$BIAS$lat)
+	biasGrd <- biasParms$BIAS[c('lon', 'lat')]
 	biasSp <- defSpatialPixels(biasGrd)
-	rfeSp <- defSpatialPixels(list(lon = biasParms$ncInfo$xy.rfe$lon, lat = biasParms$ncInfo$xy.rfe$lat))
+	rfeSp <- defSpatialPixels(biasParms$ncInfo$xy.rfe[c('lon', 'lat')])
 	is.regridRFE <- is.diffSpatialPixelsObj(biasSp, rfeSp, tol = 1e-07)
 
-	if(extractADJ){
-		stnPts <- list(lon = biasParms$stnData$lon, lat = biasParms$stnData$lat)
-		ijSTN <- grid2pointINDEX(stnPts, biasGrd)
-	}
+	if(extractADJ) ijSTN <- grid2pointINDEX( biasParms$stnData[c('lon', 'lat')], biasGrd)
 
 	################
 	nc.dates <- biasParms$ncInfo$dates[biasParms$ncInfo$exist]
@@ -842,8 +841,8 @@ Precip_ApplyBiasCorrection <- function(biasParms, extractADJ = FALSE){
 
 	##################
 	nc <- nc_open(nc.files[1])
-	xlon <- nc$dim[[ncinfo$xo]]$vals
-	xlat <- nc$dim[[ncinfo$yo]]$vals
+	xlon <- nc$var[[ncinfo$varid]]$dim[[ncinfo$xo]]$vals
+	xlat <- nc$var[[ncinfo$varid]]$dim[[ncinfo$yo]]$vals
 	nc_close(nc)
 
 	xo <- order(xlon)
@@ -853,10 +852,10 @@ Precip_ApplyBiasCorrection <- function(biasParms, extractADJ = FALSE){
 	nlon <- length(xlon)
 	nlat <- length(xlat)
 
-	toExports <- NULL
-	if(bias.method == "Quantile.Mapping") toExports <- 'quantile.mapping.BGamma'
-	if(bias.method == "Multiplicative.Bias.Var" & freqData == 'daily') toExports <- 'is.leapyear'
-	packages <- c('ncdf4', 'fields')
+	toExports <- "cdt.interp.surface.grid"
+	if(bias.method == "Quantile.Mapping") toExports <- c(toExports, 'quantile.mapping.BGamma')
+	if(bias.method == "Multiplicative.Bias.Var" & freqData == 'daily') toExports <- c(toExports, 'is.leapyear')
+	packages <- 'ncdf4'
 
 	is.parallel <- doparallel(length(nc.files) >= 30)
 	`%parLoop%` <- is.parallel$dofun
@@ -864,16 +863,12 @@ Precip_ApplyBiasCorrection <- function(biasParms, extractADJ = FALSE){
 		nc <- nc_open(nc.files[jfl])
 		xrfe <- ncvar_get(nc, varid = ncinfo$varid)
 		nc_close(nc)
-		if(ncinfo$yo == 1){
-			xrfe <- matrix(c(xrfe), nrow = nlon, ncol = nlat, byrow = TRUE)
-		}
-		xrfe <- xrfe[xo, yo]
+		xrfe <- if(ncinfo$xo < ncinfo$yo) xrfe[xo, yo] else t(xrfe)[xo, yo]
 		rfe.date <- nc.dates[jfl]
 
 		############
 		if(is.regridRFE){
-			rfeGrid <- interp.surface.grid(list(x = xlon, y = xlat, z = xrfe),
-										list(x = biasGrd$lon, y = biasGrd$lat))
+			rfeGrid <- cdt.interp.surface.grid(list(lon = xlon, lat = xlat, z = xrfe), biasGrd)
 			xrfe <- rfeGrid$z
 		}
 

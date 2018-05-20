@@ -747,6 +747,57 @@ cdt.as.image <- function(pts.val, pts.xy, grid = NULL, nx = 64, ny = 64, weighte
 }
 
 ##################################################################################
+## same as fields::interp.surface.grid
+cdt.interp.surface.grid <- function(obj, grid.list, edge = TRUE)
+{
+	nx0 <- length(grid.list$lon)
+	ny0 <- length(grid.list$lat)
+	loc <- do.call(expand.grid, grid.list)
+
+	nx <- length(obj$lon)
+	ny <- length(obj$lat)
+	rule <- if(edge) 2 else 1
+	lx <- approx(obj$lon, 1:nx, loc$lon, rule = rule)$y
+	ly <- approx(obj$lat, 1:ny, loc$lat, rule = rule)$y
+	lx1 <- floor(lx)
+	ly1 <- floor(ly)
+	ex <- lx - lx1
+	ey <- ly - ly1
+	ex[lx1 == nx] <- 1
+	ey[ly1 == ny] <- 1
+	lx1[lx1 == nx] <- nx - 1
+	ly1[ly1 == ny] <- ny - 1
+
+	z <- obj$z[cbind(lx1, ly1)] * (1 - ex) * (1 - ey) +
+		 obj$z[cbind(lx1 + 1, ly1)] * ex * (1 - ey) +
+		 obj$z[cbind(lx1, ly1 + 1)] * (1 - ex) * ey +
+		 obj$z[cbind(lx1 + 1, ly1 + 1)] * ex * ey
+
+	names(grid.list) <- c('x', 'y')
+	out <- c(grid.list, list(z = matrix(z, nx0, ny0)))
+	return(out)
+}
+
+##################################################################################
+## Aggregate spatial data
+cdt.aggregate.grid <- function(obj, grid.list, FUN = mean, ...)
+{
+	old.grid <- defSpatialPixels(obj[c('lon', 'lat')])
+	new.grid <- defSpatialPixels(grid.list)
+
+	dim.grid <- new.grid@grid@cells.dim
+	names(grid.list) <- c('x', 'y')
+	out <- c(grid.list, list(z = matrix(NA, dim.grid[1], dim.grid[2])))
+
+	ixy <- over(old.grid, new.grid)
+	z.out <- tapply(c(obj$z), ixy, FUN, ...)
+	z.out[is.nan(z.out) | is.infinite(z.out)] <- NA
+
+	out$z[as.numeric(names(z.out))] <- z.out
+	return(out)
+}
+
+##################################################################################
 
 ### gstat block size
 createBlock <- function(cellsize, fac = 0.5, len = 4){
@@ -1202,10 +1253,7 @@ read.NetCDF.Data <- function(read.ncdf.parms){
 			xvar <- ncvar_get(nc, varid = read.ncdf.parms$ncinfo$varid)
 			nc_close(nc)
 			if(nlon != nrow(xvar) | nlat != ncol(xvar)) return(NULL)
-			xvar <- xvar[xo, yo]
-			if(read.ncdf.parms$ncinfo$yo == 1){
-				xvar <- matrix(c(xvar), nrow = length(lon), ncol = length(lat), byrow = TRUE)
-			}
+			xvar <- if(read.ncdf.parms$ncinfo$xo < read.ncdf.parms$ncinfo$yo) xvar[xo, yo] else t(xvar)[xo, yo]
 		}else xvar <- NULL
 		xvar
 	}
@@ -1291,10 +1339,7 @@ readNetCDFData2Points <- function(ncInfo, list.lonlat.pts, msg){
 			xvar <- ncvar_get(nc, varid = ncInfo$ncinfo$varid)
 			nc_close(nc)
 			if(nlon != nrow(xvar) | nlat != ncol(xvar)) return(NULL)
-			xvar <- xvar[xo, yo]
-			if(ncInfo$ncinfo$yo == 1){
-				xvar <- matrix(c(xvar), nrow = nlon, ncol = nlat, byrow = TRUE)
-			}
+			xvar <- if(ncInfo$ncinfo$xo < ncInfo$ncinfo$yo) xvar[xo, yo] else t(xvar)[xo, yo]
 			xvar <- xvar[ijx]
 		}else xvar <- NULL
 		xvar

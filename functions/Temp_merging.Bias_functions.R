@@ -20,7 +20,7 @@ Temp_ComputeBias <- function(biasParms){
 	}else res.coarse <- GeneralParameters$BIAS$maxdist/2
 	res.coarse <- if(res.coarse >= 0.25) res.coarse else 0.25
 
-	ptsData <- list(lon = biasParms$stnData$lon, lat = biasParms$stnData$lat)
+	ptsData <- biasParms$stnData[c('lon', 'lat')]
 	if(GeneralParameters$BIAS$bias.method == 'Quantile.Mapping'){
 		idcoarse <- indexCoarseGrid(biasParms$interp.grid$grid$lon, biasParms$interp.grid$grid$lat, res.coarse)
 		ptsData1 <- expand.grid(lon = biasParms$interp.grid$grid$lon[idcoarse$ix], lat = biasParms$interp.grid$grid$lat[idcoarse$iy])
@@ -107,7 +107,8 @@ Temp_ComputeBias <- function(biasParms){
 			bs[is.infinite(bs)] <- 1.5
 			bs[is.nan(bs)] <- 1
 			bs[bs < 0] <- 1
-			bs[bs == 0] <- 0.6
+			# bs[bs == 0] <- 0.6
+			bs[bs < 0.6] <- 0.6
 			bs[bs > 1.5] <- 1.5
 			bs
 		})
@@ -266,7 +267,7 @@ Temp_InterpolateBias <- function(biasParms){
 		demGrid$asp <- matrix(0, nlon0, nlat0)
 	}
 
-	ijGrd <- grid2pointINDEX(list(lon = biasParms$stnData$lon, lat = biasParms$stnData$lat), xy.grid)
+	ijGrd <- grid2pointINDEX(biasParms$stnData[c('lon', 'lat')], xy.grid)
 	ObjStn <- list(x = biasParms$stnData$lon, y = biasParms$stnData$lat,
 					z = demGrid$z[ijGrd], slp = demGrid$slp[ijGrd], asp = demGrid$asp[ijGrd])
 
@@ -398,15 +399,19 @@ Temp_InterpolateBias <- function(biasParms){
 					pars.grd <- krige(formule, locations = locations.stn, newdata = interp.grid$newgrid, model = vgm,
 										block = block, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
 
-					extrm <- c(min(locations.stn$pars, na.rm = TRUE), max(locations.stn$pars, na.rm = TRUE))
-					ixtrm <- is.na(pars.grd$var1.pred) | (pars.grd$var1.pred < extrm[1] | pars.grd$var1.pred > extrm[2])
-					pars.grd$var1.pred[ixtrm] <- NA
+					xtrm <- range(locations.stn$pars, na.rm = TRUE)
+					pars.grd$var1.pred[!is.na(pars.grd$var1.pred) & pars.grd$var1.pred < xtrm[1]] <- xtrm[1]
+					pars.grd$var1.pred[!is.na(pars.grd$var1.pred) & pars.grd$var1.pred > xtrm[2]] <- xtrm[2]
 
 					ina <- is.na(pars.grd$var1.pred)
-					if(any(ina)){
-						pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
-											block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
-						pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
+					if(all(ina)){
+						pars.grd$var1.pred <- 1
+					}else{
+						if(any(ina)){
+							pars.grd.na <- krige(var1.pred~1, locations = pars.grd[!ina, ], newdata = interp.grid$newgrid[ina, ], model = vgm,
+												block = bGrd, nmin = nmin, nmax = nmax, maxdist = maxdist, debug.level = 0)
+							pars.grd$var1.pred[ina] <- pars.grd.na$var1.pred
+						}
 					}
 				}
 
@@ -786,12 +791,9 @@ Temp_ApplyBiasCorrection <- function(biasParms, extractADJ = FALSE){
 	grd.bsadj <- ncvar_def("temp", "DegC", list(dx, dy), -99, longname= "Bias Corrected Reanalysis", prec = "float", compression = 9)
 
 	################
-	biasGrd <- list(lon = biasParms$BIAS$lon, lat = biasParms$BIAS$lat)
 
-	if(extractADJ){
-		stnPts <- list(lon = biasParms$stnData$lon, lat = biasParms$stnData$lat)
-		ijSTN <- grid2pointINDEX(stnPts, biasGrd)
-	}
+	biasGrd <- biasParms$BIAS[c('lon', 'lat')]
+	if(extractADJ) ijSTN <- grid2pointINDEX(biasParms$stnData[c('lon', 'lat')], biasGrd)
 
 	################
 	nc.dates <- biasParms$ncInfo$dates[biasParms$ncInfo$exist]
@@ -800,8 +802,8 @@ Temp_ApplyBiasCorrection <- function(biasParms, extractADJ = FALSE){
 
 	##################
 	nc <- nc_open(nc.files[1])
-	xlon <- nc$dim[[ncinfo$xo]]$vals
-	xlat <- nc$dim[[ncinfo$yo]]$vals
+	xlon <- nc$var[[ncinfo$varid]]$dim[[ncinfo$xo]]$vals
+	xlat <- nc$var[[ncinfo$varid]]$dim[[ncinfo$yo]]$vals
 	nc_close(nc)
 
 	xo <- order(xlon)
@@ -814,7 +816,7 @@ Temp_ApplyBiasCorrection <- function(biasParms, extractADJ = FALSE){
 	toExports <- NULL
 	if(bias.method == "Quantile.Mapping") toExports <- 'quantile.mapping.Gau'
 	if(bias.method == "Multiplicative.Bias.Var" & freqData == 'daily') toExports <- 'is.leapyear'
-	packages <- c('ncdf4', 'fields')
+	packages <- 'ncdf4'
 
 	is.parallel <- doparallel(length(nc.files) >= 30)
 	`%parLoop%` <- is.parallel$dofun
@@ -822,10 +824,7 @@ Temp_ApplyBiasCorrection <- function(biasParms, extractADJ = FALSE){
 		nc <- nc_open(nc.files[jfl])
 		xtmp <- ncvar_get(nc, varid = ncinfo$varid)
 		nc_close(nc)
-		if(ncinfo$yo == 1){
-			xtmp <- matrix(c(xtmp), nrow = nlon, ncol = nlat, byrow = TRUE)
-		}
-		xtmp <- xtmp[xo, yo]
+		xtmp <- if(ncinfo$xo < ncinfo$yo) xtmp[xo, yo] else t(xtmp)[xo, yo]
 		tmp.date <- nc.dates[jfl]
 
 		############
@@ -892,14 +891,3 @@ Temp_ApplyBiasCorrection <- function(biasParms, extractADJ = FALSE){
 	InsertMessagesTxt(main.txt.out, 'Bias Correction done')
 	return(adjSTN)
 }
-
-
-
-
-
-
-
-
-
-
-

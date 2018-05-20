@@ -73,7 +73,7 @@ AggregateSpNc_Execute <- function(GeneralParameters){
 	}
 
 	if(GeneralParameters$method == "bilinear"){
-		gridInterp <- list(x = grd.lon, y = grd.lat)
+		gridInterp <- list(lon = grd.lon, lat = grd.lat)
 		grid.dim <- c(length(grd.lon), length(grd.lat))
 	}else{
 		## maybe use raster::extract
@@ -86,8 +86,8 @@ AggregateSpNc_Execute <- function(GeneralParameters){
 		ncfile <- AllOpenFilesData[[jfile]][[3]]
 
 		nc <- nc_open(ncfile)
-		xlon <- nc$dim[[ncinfo$xo]]$vals
-		xlat <- nc$dim[[ncinfo$yo]]$vals
+		xlon <- nc$var[[ncinfo$varid]]$dim[[ncinfo$xo]]$vals
+		xlat <- nc$var[[ncinfo$varid]]$dim[[ncinfo$yo]]$vals
 		zval <- ncvar_get(nc, varid = ncinfo$varid)
 
 		nc.name <- ncinfo$varid
@@ -101,21 +101,20 @@ AggregateSpNc_Execute <- function(GeneralParameters){
 		xlon <- xlon[xo]
 		yo <- order(xlat)
 		xlat <- xlat[yo]
-		if(ncinfo$yo == 1){
-			zval <- matrix(c(zval), nrow = length(xlon), ncol = length(xlat), byrow = TRUE)
-		}
-		zval <- zval[xo, yo]
+		zval <- if(ncinfo$xo < ncinfo$yo) zval[xo, yo] else t(zval)[xo, yo]
 
 		dx <- ncdim_def("Lon", "degreeE", grd.lon)
 		dy <- ncdim_def("Lat", "degreeN", grd.lat)
 		grd.nc.out <- ncvar_def(nc.name, nc.units, list(dx, dy), nc.missval, longname = nc.longname, prec = nc.prec)
 
 		if(GeneralParameters$method == "bilinear"){
-			z.out <- interp.surface.grid(list(x = xlon, y = xlat, z = zval), gridInterp)
+			z.out <- cdt.interp.surface.grid(list(lon = xlon, lat = xlat, z = zval), gridInterp)
 			z.out <- z.out$z
 			z.out[is.na(z.out)] <- nc.missval
 		}else{
-			z.out <- matrix(tapply(c(zval), ixy, mean, na.rm = TRUE), grid.dim[1], grid.dim[2])
+			z.out <- matrix(NA, grid.dim[1], grid.dim[2])
+			out <- tapply(c(zval), ixy, mean, na.rm = TRUE)
+			z.out[as.numeric(names(out))] <- out
 			z.out[is.na(z.out) | is.nan(z.out) | is.infinite(z.out)] <- nc.missval
 		}
 
@@ -140,8 +139,8 @@ AggregateSpNc_Execute <- function(GeneralParameters){
 		}
 
 		nc <- nc_open(allncfiles[1])
-		xlon <- nc$dim[[ncinfo$xo]]$vals
-		xlat <- nc$dim[[ncinfo$yo]]$vals
+		xlon <- nc$var[[ncinfo$varid]]$dim[[ncinfo$xo]]$vals
+		xlat <- nc$var[[ncinfo$varid]]$dim[[ncinfo$yo]]$vals
 
 		nc.name <- ncinfo$varid
 		nc.longname <- nc$var[[nc.name]]$longname
@@ -159,23 +158,22 @@ AggregateSpNc_Execute <- function(GeneralParameters){
 
 		dx <- ncdim_def("Lon", "degreeE", grd.lon)
 		dy <- ncdim_def("Lat", "degreeN", grd.lat)
-		grd.nc.out <- ncvar_def(nc.name, nc.units, list(dx, dy), nc.missval, longname = nc.longname, prec = nc.prec)
+		grd.nc.out <- ncvar_def(nc.name, nc.units, list(dx, dy), nc.missval, longname = nc.longname, prec = nc.prec, compression = 9)
 
 		for(jj in seq_along(allncfiles)){
 			nc <- nc_open(allncfiles[jj])
 			zval <- ncvar_get(nc, varid = ncinfo$varid)
 			nc_close(nc)
-			if(ncinfo$yo == 1){
-				zval <- matrix(c(zval), nrow = xnlon, ncol = xnlat, byrow = TRUE)
-			}
-			zval <- zval[xo, yo]
+			zval <- if(ncinfo$xo < ncinfo$yo) zval[xo, yo] else t(zval)[xo, yo]
 
 			if(GeneralParameters$method == "bilinear"){
-				z.out <- interp.surface.grid(list(x = xlon, y = xlat, z = zval), gridInterp)
+				z.out <- cdt.interp.surface.grid(list(lon = xlon, lat = xlat, z = zval), gridInterp)
 				z.out <- z.out$z
 				z.out[is.na(z.out)] <- nc.missval
 			}else{
-				z.out <- matrix(tapply(c(zval), ixy, mean, na.rm = TRUE), grid.dim[1], grid.dim[2])
+				z.out <- matrix(NA, grid.dim[1], grid.dim[2])
+				out <- tapply(c(zval), ixy, mean, na.rm = TRUE)
+				z.out[as.numeric(names(out))] <- out
 				z.out[is.na(z.out) | is.nan(z.out) | is.infinite(z.out)] <- nc.missval
 			}
 

@@ -1,4 +1,11 @@
 
+## use with CDT stations format with elevation or not
+## CDT stations format without text or special character like (-, _, /) in dates
+## daily, pentad, dekad, month, year, climatologies index,
+## CDT stations format output like (onset, cessation, picsa, ....)
+## output are not ordered and missing dates are not filled
+## no filter for duplicated dates
+
 splitCDTData0 <- function(donne){
 	seph <- rle(grepl('[[:digit:]]', as.character(donne[, 1])))
 	ipos <- which(!seph$values & seph$lengths >= 3 & seph$lengths <= 4)
@@ -11,7 +18,7 @@ splitCDTData0 <- function(donne){
 	dat <- list(id = as.character(donne[1, -1]),
 		lon = as.numeric(donne[2, -1]),
 		lat = as.numeric(donne[3, -1]),
-		date = as.character(donne[-(1:pos), 1]),
+		dates = as.character(donne[-(1:pos), 1]),
 		data = as.matrix(donne[-(1:pos), -1]))
 	dimnames(dat$data)[[2]] <- NULL
 	dat$data <- apply(dat$data, 2, as.numeric)
@@ -19,6 +26,10 @@ splitCDTData0 <- function(donne){
 }
 
 ##########################################
+## use with any CDT stations format without elevation included
+## all CDT stations format output
+## output are not ordered and missing dates are not filled
+## no filter for duplicated dates
 
 splitCDTData1 <- function(donne){
 	dat <- list(id = as.character(donne[1, -1]),
@@ -32,20 +43,25 @@ splitCDTData1 <- function(donne){
 }
 
 ##########################################
+## use with CDT stations format with elevation or not
+## daily, pentad, dekad, month
+## output are ordered and the missing dates are filled
+## duplicated dates are removed
+## check invalid and duplicated coordinates
 
-splitCDTData <- function(donne, period){
+splitCDTData <- function(donne, tstep){
 	ideb <- nrow(donne)
 	datylen <- nchar(as.character(donne[ideb, 1]))
-	if(period == 'daily' & datylen != 8){
+	if(tstep == 'daily' & datylen != 8){
 		InsertMessagesTxt(main.txt.out, 'Station data: not a daily data', format = TRUE)
 		return(NULL)
-	}else if(period == 'pentad' & datylen != 7){
+	}else if(tstep == 'pentad' & datylen != 7){
 		InsertMessagesTxt(main.txt.out, 'Station data: not a pentad data', format = TRUE)
 		return(NULL)
-	}else if(period == 'dekadal' & datylen != 7){
+	}else if(tstep == 'dekadal' & datylen != 7){
 		InsertMessagesTxt(main.txt.out, 'Station data: not a dekadal data', format = TRUE)
 		return(NULL)
-	}else if(period == 'monthly' & datylen != 6){
+	}else if(tstep == 'monthly' & datylen != 6){
 		InsertMessagesTxt(main.txt.out, 'Station data: not a monthly data', format = TRUE)
 		return(NULL)
 	}
@@ -62,21 +78,21 @@ splitCDTData <- function(donne, period){
 	names(Info) <- if(length(ihead) == 4) c('Stations', 'Lon', 'Lat', 'ELV') else c('Stations', 'Lon', 'Lat')
 	daty.orig <- as.character(donne[-ihead, 1])
 
-	if(period%in%c('pentad', 'dekadal')){
+	if(tstep%in%c('pentad', 'dekadal')){
 		dek <- as.numeric(substr(daty.orig, 7, 7))
 		dek <- dek[!is.na(dek)]
-		if(period == 'pentad') wrongdaty <- any(dek == 0 | dek > 6)
-		if(period == 'dekadal') wrongdaty <- any(dek == 0 | dek > 3)
+		if(tstep == 'pentad') wrongdaty <- any(dek == 0 | dek > 6)
+		if(tstep == 'dekadal') wrongdaty <- any(dek == 0 | dek > 3)
 		if(wrongdaty){
 			InsertMessagesTxt(main.txt.out, 'Station date is in wrong format', format = TRUE)
 			return(NULL)
 		}
 	}
 
-	if(period == 'daily'){
+	if(tstep == 'daily'){
 		dates.bak <- daty.orig
 		dates <- as.Date(dates.bak, format = '%Y%m%d')
-	}else if(period == 'pentad'){
+	}else if(tstep == 'pentad'){
 		xan <- substr(daty.orig, 1, 4)
 		xmo <- substr(daty.orig, 5, 6)
 		xpt <- substr(daty.orig, 7, 7)
@@ -84,7 +100,7 @@ splitCDTData <- function(donne, period){
 		dates.bak <- paste(xan, xmo, xpt, sep = '-')
 		dates <- as.Date(dates.bak)
 		dates[notpen] <- NA
-	}else if(period == 'dekadal'){
+	}else if(tstep == 'dekadal'){
 		xan <- substr(daty.orig, 1, 4)
 		xmo <- substr(daty.orig, 5, 6)
 		xdk <- substr(daty.orig, 7, 7)
@@ -92,7 +108,7 @@ splitCDTData <- function(donne, period){
 		dates.bak <- paste(xan, xmo, xdk, sep = '-')
 		dates <- as.Date(dates.bak)
 		dates[notdek] <- NA
-	}else if(period == 'monthly'){
+	}else if(tstep == 'monthly'){
 		xan <- substr(daty.orig, 1, 4)
 		xmo <- substr(daty.orig, 5, 6)
 		dates.bak <- paste(xan, xmo, '1', sep = '-')
@@ -101,7 +117,7 @@ splitCDTData <- function(donne, period){
 	donne <- as.matrix(donne[-ihead, -1, drop = FALSE])
 	dimnames(donne) <- NULL
 	dimdonne <- dim(donne)
-	donne <- apply(donne, 2, as.numeric)
+	donne <- as.numeric(donne)
 	dim(donne) <- dimdonne
 
 	iNAdate <- is.na(dates)
@@ -110,38 +126,38 @@ splitCDTData <- function(donne, period){
 	donne <- donne[!iNAdate, , drop = FALSE]
 	dates <- dates[!iNAdate]
 
-	###duplicated dates
+	### duplicated dates
 	idates0 <- duplicated(dates) | duplicated(dates, fromLast = TRUE)
 	dup.dates <- dates[idates0]
 	ddup.dates <- donne[idates0, , drop = FALSE]
 	donne <- donne[!duplicated(dates), , drop = FALSE]
 	dates <- dates[!duplicated(dates)]
 
-	##fill missing dates
-	if(period == 'daily'){
+	## fill missing dates
+	if(tstep == 'daily'){
 		alldates <- seq(min(dates), max(dates), 'day')
 		ix <- match(alldates, dates)
 		dates <- format(alldates, '%Y%m%d')
 		miss.dates <- alldates[is.na(ix)]
 		miss.dates <- format(miss.dates, '%Y%m%d')
 		dup.dates <- format(dup.dates, '%Y%m%d')
-	}else if(period == 'pentad'){
+	}else if(tstep == 'pentad'){
 		alldates <- seq(min(dates), max(dates), 'day')
 		alldates <- alldates[as.numeric(format(alldates, '%d')) <= 6]
 		ix <- match(alldates, dates)
-		dates <- paste(format(alldates, '%Y%m'), as.numeric(format(alldates, '%d')), sep = '')
+		dates <- paste0(format(alldates, '%Y%m'), as.numeric(format(alldates, '%d')))
 		miss.dates <- alldates[is.na(ix)]
-		miss.dates <- paste(format(miss.dates, '%Y%m'), as.numeric(format(miss.dates, '%d')), sep = '')
-		dup.dates <- paste(format(dup.dates, '%Y%m'), as.numeric(format(dup.dates, '%d')), sep = '')
-	}else if(period == 'dekadal'){
+		miss.dates <- paste0(format(miss.dates, '%Y%m'), as.numeric(format(miss.dates, '%d')))
+		dup.dates <- paste0(format(dup.dates, '%Y%m'), as.numeric(format(dup.dates, '%d')))
+	}else if(tstep == 'dekadal'){
 		alldates <- seq(min(dates), max(dates), 'day')
 		alldates <- alldates[as.numeric(format(alldates, '%d')) <= 3]
 		ix <- match(alldates, dates)
-		dates <- paste(format(alldates, '%Y%m'), as.numeric(format(alldates, '%d')), sep = '')
+		dates <- paste0(format(alldates, '%Y%m'), as.numeric(format(alldates, '%d')))
 		miss.dates <- alldates[is.na(ix)]
-		miss.dates <- paste(format(miss.dates, '%Y%m'), as.numeric(format(miss.dates, '%d')), sep = '')
-		dup.dates <- paste(format(dup.dates, '%Y%m'), as.numeric(format(dup.dates, '%d')), sep = '')
-	}else if(period == 'monthly'){
+		miss.dates <- paste0(format(miss.dates, '%Y%m'), as.numeric(format(miss.dates, '%d')))
+		dup.dates <- paste0(format(dup.dates, '%Y%m'), as.numeric(format(dup.dates, '%d')))
+	}else if(tstep == 'monthly'){
 		alldates <- seq(min(dates), max(dates), 'month')
 		ix <- match(alldates, dates)
 		dates <- format(alldates, '%Y%m')
@@ -155,13 +171,11 @@ splitCDTData <- function(donne, period){
 	duplicated.dates <-  if(any(idates0)) list(date = dup.dates, data = ddup.dates) else NULL
 	missing.dates <-  if(any(is.na(ix))) list(date = miss.dates) else NULL
 
-	##missing & duplicated coordinates
-	Info <- apply(Info, 2, as.character)
-	if(ncol(donne) == 1) Info <- matrix(Info, nrow = 1)
+	## missing & duplicated coordinates
 	stn.id <- as.character(Info[, 1])
-	stn.lon <- as.numeric(Info[, 2])
-	stn.lat <- as.numeric(Info[, 3])
-	stn.elv <- if(dim(Info)[2] == 4) as.numeric(Info[, 4]) else NULL
+	stn.lon <- as.numeric(as.character(Info[, 2]))
+	stn.lat <- as.numeric(as.character(Info[, 3]))
+	stn.elv <- if(ncol(Info) == 4) as.numeric(as.character(Info[, 4])) else NULL
 
 	imiss <- (is.na(stn.lon) | stn.lon < -180 | stn.lon > 360 | is.na(stn.lat) | stn.lat < -90 | stn.lat > 90)
 	idup <- duplicated(Info[, 2:3, drop = FALSE]) | duplicated(Info[, 2:3, drop = FALSE], fromLast = TRUE)
@@ -185,9 +199,9 @@ splitCDTData <- function(donne, period){
 
 ##########################################
 
-splitTsData <- function(donne, period, filefrmt, datefrmt){
+splitTsData <- function(donne, tstep, filefrmt, datefrmt){
 	#get dates
-	if(period == 'daily'){
+	if(tstep == 'daily'){
 		if(datefrmt == "1"){
 			if(nchar(as.character(donne[5, 1])) != 8){
 				InsertMessagesTxt(main.txt.out, 'Station data: not a daily data', format = TRUE)
@@ -199,7 +213,7 @@ splitTsData <- function(donne, period, filefrmt, datefrmt){
 			dates.bak <- paste(as.character(donne[, 1]), as.character(donne[, 2]), as.character(donne[, 3]), sep = '-')
 			dates <- as.Date(dates.bak)
 		}
-	}else if(period == 'pentad'){
+	}else if(tstep == 'pentad'){
 		if(datefrmt == "1"){ #1date
 			if(nchar(as.character(donne[5, 1])) != 7){
 				InsertMessagesTxt(main.txt.out, 'Station data: not a pentad data', format = TRUE)
@@ -217,7 +231,7 @@ splitTsData <- function(donne, period, filefrmt, datefrmt){
 			notpen <- which(as.numeric(as.character(donne[, 3])) > 6)
 		}
 		dates[notpen] <- NA
-	}else if(period == 'dekadal'){
+	}else if(tstep == 'dekadal'){
 		if(datefrmt == "1"){ #1date
 			if(nchar(as.character(donne[5, 1])) != 7){
 				InsertMessagesTxt(main.txt.out, 'Station data: not a dekadal data', format = TRUE)
@@ -235,7 +249,7 @@ splitTsData <- function(donne, period, filefrmt, datefrmt){
 			notdek <- which(as.numeric(as.character(donne[, 3])) > 3)
 		}
 		dates[notdek] <- NA
-	}else if(period == 'monthly'){
+	}else if(tstep == 'monthly'){
 		if(datefrmt == "1"){ #1date
 			if(nchar(as.character(donne[5, 1])) != 6){
 				InsertMessagesTxt(main.txt.out, 'Station data: not a monthly data', format = TRUE)
@@ -256,7 +270,7 @@ splitTsData <- function(donne, period, filefrmt, datefrmt){
 		if(datefrmt == "1"){
 			var <- as.numeric(donne[, 2])
 		}else{
-			if(period == 'monthly'){
+			if(tstep == 'monthly'){
 				if(ncol(donne) == 3) var <- as.numeric(donne[, 3])
 				if(ncol(donne) == 4) var <- as.numeric(donne[, 4])
 			}else{
@@ -269,7 +283,7 @@ splitTsData <- function(donne, period, filefrmt, datefrmt){
 			tx <- as.numeric(donne[, 3])
 			tn <- as.numeric(donne[, 4])
 		}else{
-			if(period == 'monthly'){
+			if(tstep == 'monthly'){
 				if(ncol(donne) == 5){
 					rr <- as.numeric(donne[, 3]) #rr = 3, tx = 4, tn = 5
 					tx <- as.numeric(donne[, 4])
@@ -303,12 +317,12 @@ splitTsData <- function(donne, period, filefrmt, datefrmt){
 		tn <- tn[!iNAdate]
 		dates <- dates[!iNAdate]
 	}
-	
- 	##duplicated dates
- 	idates0 <- duplicated(dates) | duplicated(dates, fromLast = TRUE)
+
+	##duplicated dates
+	idates0 <- duplicated(dates) | duplicated(dates, fromLast = TRUE)
 	dup.dates <- dates[idates0]
 
- 	idates <- duplicated(dates)
+	idates <- duplicated(dates)
 	dates <- dates[!idates]
 	if(filefrmt == "1"){
 		ddup.dates <- var[idates0]
@@ -325,7 +339,7 @@ splitTsData <- function(donne, period, filefrmt, datefrmt){
 		return(NULL)
 	}
 
-	if(period == 'daily'){
+	if(tstep == 'daily'){
 		alldates <- seq(min(dates), max(dates), 'day')
 		ix <- match(alldates, dates)
 		dates <- format(alldates, '%Y%m%d')
@@ -333,25 +347,25 @@ splitTsData <- function(donne, period, filefrmt, datefrmt){
 		miss.dates <- format(miss.dates, '%Y%m%d')
 		dup.dates <- format(dup.dates, '%Y%m%d')
 	}
-	if(period == 'pentad'){
+	if(tstep == 'pentad'){
 		alldates <- seq(min(dates), max(dates), 'day')
 		alldates <- alldates[as.numeric(format(alldates, '%d')) <= 6]
 		ix <- match(alldates, dates)
-		dates <- paste(format(alldates, '%Y%m'), as.numeric(format(alldates, '%d')), sep = '')
+		dates <- paste0(format(alldates, '%Y%m'), as.numeric(format(alldates, '%d')))
 		miss.dates <- alldates[is.na(ix)]
-		miss.dates <- paste(format(miss.dates, '%Y%m'), as.numeric(format(miss.dates, '%d')), sep = '')
-		dup.dates <- paste(format(dup.dates, '%Y%m'), as.numeric(format(dup.dates, '%d')), sep = '')
+		miss.dates <- paste0(format(miss.dates, '%Y%m'), as.numeric(format(miss.dates, '%d')))
+		dup.dates <- paste0(format(dup.dates, '%Y%m'), as.numeric(format(dup.dates, '%d')))
 	}
-	if(period == 'dekadal'){
+	if(tstep == 'dekadal'){
 		alldates <- seq(min(dates), max(dates), 'day')
 		alldates <- alldates[as.numeric(format(alldates, '%d')) <= 3]
 		ix <- match(alldates, dates)
-		dates <- paste(format(alldates, '%Y%m'), as.numeric(format(alldates, '%d')), sep = '')
+		dates <- paste0(format(alldates, '%Y%m'), as.numeric(format(alldates, '%d')))
 		miss.dates <- alldates[is.na(ix)]
-		miss.dates <- paste(format(miss.dates, '%Y%m'), as.numeric(format(miss.dates, '%d')), sep = '')
-		dup.dates <- paste(format(dup.dates, '%Y%m'), as.numeric(format(dup.dates, '%d')), sep = '')
+		miss.dates <- paste0(format(miss.dates, '%Y%m'), as.numeric(format(miss.dates, '%d')))
+		dup.dates <- paste0(format(dup.dates, '%Y%m'), as.numeric(format(dup.dates, '%d')))
 	}
-	if(period == 'monthly'){
+	if(tstep == 'monthly'){
 		alldates <- seq(min(dates), max(dates), 'month')
 		ix <- match(alldates, dates)
 		dates <- format(alldates, '%Y%m')
@@ -372,7 +386,7 @@ splitTsData <- function(donne, period, filefrmt, datefrmt){
 	duplicated.dates <-  if(any(idates0)) list(date = dup.dates, data = ddup.dates) else NULL
 	missing.dates <-  if(any(is.na(ix))) list(date = miss.dates) else NULL
 
-	ret <- list(period = period, nbvar = nbvar, var = var, dates = dates,
+	ret <- list(tstep = tstep, nbvar = nbvar, var = var, dates = dates,
 				wrong.dates = wrong.dates, duplicated.dates = duplicated.dates, missing.dates = missing.dates)
 	return(ret)
 }

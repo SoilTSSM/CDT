@@ -4,6 +4,7 @@ Temp_execCoefDown <- function(origdir){
 
 	#######get data
 	stnData <- getStnOpenData(GeneralParameters$IO.files$STN.file)
+	if(is.null(stnData)) return(NULL)
 	stnData <- getCDTdataAndDisplayMsg(stnData, GeneralParameters$period)
 	if(is.null(stnData)) return(NULL)
 
@@ -35,7 +36,8 @@ Temp_execDownscaling <- function(origdir){
 		InsertMessagesTxt(main.txt.out, paste(CoefFile, "not found"), format = TRUE)
 		return(NULL)
 	}
-	downCoef <- try(read.table(CoefFile), silent = TRUE)
+	# downCoef <- try(read.table(CoefFile), silent = TRUE)
+	downCoef <- try(readRDS(CoefFile), silent = TRUE)
 	if(inherits(downCoef, "try-error")){
 		InsertMessagesTxt(main.txt.out, 'Error reading downscaling coefficients', format = TRUE)
 		return(NULL)
@@ -73,11 +75,9 @@ Temp_execDownscaling <- function(origdir){
 	## DEM data  at new grid
 	demGrid <- demData$demMat
 	if(create.grd == '2'){
-		is.regridDEM <- is.diffSpatialPixelsObj(defSpatialPixels(xy.grid),
-						defSpatialPixels(list(lon = demData$lon, lat = demData$lat)), tol = 1e-07)
+		is.regridDEM <- is.diffSpatialPixelsObj(defSpatialPixels(xy.grid), defSpatialPixels(demData[c('lon', 'lat')]), tol = 1e-07)
 		if(is.regridDEM){
-			demGrid <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
-			demGrid <- interp.surface.grid(demGrid, list(x = xy.grid$lon, y = xy.grid$lat))
+			demGrid <- cdt.interp.surface.grid(c(demData[c('lon', 'lat')], list(z = demData$demMat)), xy.grid)
 			demGrid <- demGrid$z
 		}
 	}

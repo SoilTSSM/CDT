@@ -154,15 +154,15 @@ aggregateDEM <- function(destfile, xm, ym, outdir, varid, longname, res1 = FALSE
 	yd <- nc$dim[[2]]$vals
 	xz <- ncvar_get(nc, varid = varid)
 	nc_close(nc)
-	demobj <- list(x = xd, y = yd, z = xz)
+	demobj <- list(lon = xd, lat = yd, z = xz)
 	xnew <- xm[xm >= min(xd) & xm <= max(xd)]
 	ynew <- ym[ym >= min(yd) & ym <= max(yd)]
 	if(res1){
 		xnew <- xnew[-1]
 		ynew <- ynew[-length(ynew)]
 	}
-	grdnew <- list(x = xnew, y = ynew)
-	newobj <- interp.surface.grid(demobj, grdnew)
+	grdnew <- list(lon = xnew, lat = ynew)
+	newobj <- cdt.interp.surface.grid(demobj, grdnew)
 	newobj$z[is.na(newobj$z)] <- NaN
 	dx <- ncdim_def("Lon", "degreeE", newobj$x)
 	dy <- ncdim_def("Lat", "degreeN", newobj$y)

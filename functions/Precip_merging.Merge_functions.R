@@ -134,8 +134,8 @@ Precip_MergingFunctions <- function(mrgParms){
 	ijGrd <- grid2pointINDEX(list(lon = lon.stn, lat = lat.stn), list(lon = xlon, lat = xlat))
 
 	#############
-	packages <- c('ncdf4', 'gstat', 'automap', 'fields', 'rgeos', 'maptools')
-	toExports <- c('writeNC.merging', 'smooth.matrix')
+	packages <- c('ncdf4', 'gstat', 'automap', 'rgeos', 'maptools')
+	toExports <- c('writeNC.merging', 'createGrid.StnData', 'smooth.matrix', 'cdt.interp.surface.grid')
 
 	is.parallel <- doparallel(length(which(ncInfo$exist)) >= 20)
 	`%parLoop%` <- is.parallel$dofun
@@ -145,7 +145,7 @@ Precip_MergingFunctions <- function(mrgParms){
 			xrfe <- ncvar_get(nc, varid = ncInfo$ncinfo$varid)
 			nc_close(nc)
 			xrfe <- if(ncInfo$ncinfo$xo < ncInfo$ncinfo$yo) xrfe[xo, yo] else t(xrfe)[xo, yo]
-		}else {
+		}else{
 			cat(paste(ncInfo$dates[jj], ":", "no RFE data", "|", "no file generated", "\n"),
 				file = log.file, append = TRUE)
 			return(NULL)
@@ -159,7 +159,7 @@ Precip_MergingFunctions <- function(mrgParms){
 
 		############
 		if(is.regridRFE){
-			rfeGrid <- interp.surface.grid(list(x = xlon, y = xlat, z = xrfe), list(x = xy.grid$lon, y = xy.grid$lat))
+			rfeGrid <- cdt.interp.surface.grid(list(lon = xlon, lat = xlat, z = xrfe), xy.grid)
 			xrfe <- rfeGrid$z
 		}
 
@@ -198,7 +198,6 @@ Precip_MergingFunctions <- function(mrgParms){
 
 		############
 		noNA <- !is.na(locations.stn$stn)
-		min.stn.nonNA <- length(which(noNA))
 		nb.stn.nonZero <- length(which(noNA & locations.stn$stn > 0))
 		locations.stn <- locations.stn[noNA, ]
 
@@ -270,8 +269,8 @@ Precip_MergingFunctions <- function(mrgParms){
 			if(length(locations.stn) < min.stn){
 				writeNC.merging(xrfe, ncInfo$dates[jj], freqData, grd.nc.out,
 						mrgParms$merge.DIR, GeneralParameters$output$format)
-				cat(paste(ncInfo$dates[jj], ":", "not enough station data combined with auxiliary var", "|", "RFE data", "\n"),
-					file = log.file, append = TRUE)
+				cat(paste(ncInfo$dates[jj], ":", "not enough station data combined with auxiliary var", "|",
+						"RFE data", "\n"), file = log.file, append = TRUE)
 				return(NULL)
 			}
 		}
@@ -504,7 +503,7 @@ Precip_MergingFunctions <- function(mrgParms){
 		writeNC.merging(out.mrg, ncInfo$dates[jj], freqData, grd.nc.out,
 				mrgParms$merge.DIR, GeneralParameters$output$format)
 
-		rm(out.mrg, rnr, newdata)
+		rm(out.mrg, rnr, newdata, xrfe)
 		gc()
 		return(0)
 	}

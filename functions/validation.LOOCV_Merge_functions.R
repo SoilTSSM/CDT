@@ -47,8 +47,9 @@ LOOCV_MergingDataExec <- function(GeneralParameters){
 	## regrid DEM data
 	if(!is.null(demData)){
 		is.regridDEM <- is.diffSpatialPixelsObj(defSpatialPixels(xy.grid), defSpatialPixels(demData[c('lon', 'lat')]), tol = 1e-07)
-		demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
-		if(is.regridDEM) demData <- interp.surface.grid(demData, list(x = xy.grid$lon, y = xy.grid$lat))
+		if(is.regridDEM)
+			demData <- cdt.interp.surface.grid(c(demData[c('lon', 'lat')], list(z = demData$demMat)), xy.grid)
+		else demData <- list(x = demData$lon, y = demData$lat, z = demData$demMat)
 		demData$z[demData$z < 0] <- 0
 	}
 
