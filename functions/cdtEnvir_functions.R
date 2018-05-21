@@ -57,4 +57,7 @@ EnvSPICalcPlot <- new.env()
 # plot CDT data
 EnvCDTdataPlot <- new.env()
 
+# plot sequential netcdf
+EnvSeqNCDFPlot <- new.env()
+
 

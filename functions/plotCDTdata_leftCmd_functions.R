@@ -18,7 +18,7 @@ PlotCDTDataFormatCmd <- function(){
 	}
 
 	# PlotCDTdata <- fromJSON(file.path(apps.dir, 'init_params', 'Plot_CDT_Data.json'))
-	GeneralParameters <- list(intstep = "others", cdtstation = "",
+	GeneralParameters <- list(intstep = "dekadal", cdtstation = "",
 							date = list(year = 2017, mon = 1, day = 1, other = ""))
 
 	###################

@@ -166,6 +166,9 @@ source(file.path(apps.dir, 'functions', 'plotCDTdata_displayPLOT_functions.R'))
 source(file.path(apps.dir, 'functions', 'plotGrdNcdf_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'plotGrdNcdf_displayPlot_functions.R'))
 
+source(file.path(apps.dir, 'functions', 'plotSeqNcdf_leftCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'plotSeqNcdf_displayPLOT_functions.R'))
+
 #####
 source(file.path(apps.dir, 'functions', 'RHtests_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'RHtestsV4_User_Agreement.R'))

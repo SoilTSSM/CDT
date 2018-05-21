@@ -649,11 +649,11 @@ dailyRainAnalysisPanelCmd <- function(){
 		tkconfigure(bt.varstat.MapOpt, command = function(){
 			if(!is.null(EnvDailyRainAnalysisplot$varData$map)){
 				atlevel <- pretty(EnvDailyRainAnalysisplot$varData$map$z, n = 10, min.n = 7)
-				if(is.null(EnvDailyRainAnalysisplot$dataMapOp$userLvl$levels)){
-					EnvDailyRainAnalysisplot$dataMapOp$userLvl$levels <- atlevel
+				if(is.null(EnvDailyRainAnalysisplot$varstatMapOp$userLvl$levels)){
+					EnvDailyRainAnalysisplot$varstatMapOp$userLvl$levels <- atlevel
 				}else{
-					if(!EnvDailyRainAnalysisplot$dataMapOp$userLvl$custom)
-						EnvDailyRainAnalysisplot$dataMapOp$userLvl$levels <- atlevel
+					if(!EnvDailyRainAnalysisplot$varstatMapOp$userLvl$custom)
+						EnvDailyRainAnalysisplot$varstatMapOp$userLvl$levels <- atlevel
 				}
 			}
 			EnvDailyRainAnalysisplot$varstatMapOp <- MapGraph.MapOptions(main.win, EnvDailyRainAnalysisplot$varstatMapOp)

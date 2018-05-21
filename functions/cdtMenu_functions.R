@@ -997,13 +997,13 @@ tkadd(top.menu, "cascade", label = "Plot Data", menu = menu.plot, activebackgrou
 	tkadd(menu.plot, "separator")
 
 	##########
-	tkadd(menu.plot, "command", label = "Plot NetCDF Data (Sequential Files)", state = 'disabled', command = function(){
+	tkadd(menu.plot, "command", label = "Plot NetCDF Data (Sequential Files)", command = function(){
 		refreshCDT.lcmd.env()
 		spinbox.state(state = 'normal')
-		# if(is.null(lcmd.frame_grdNcdfPlot)){
-		# 	lcmd.frame <<- PlotGriddedNcdfCmd()
-		# 	lcmd.frame_grdNcdfPlot <<- 1
-		# }
+		if(is.null(lcmd.frame_seqNcdfPlot)){
+			lcmd.frame <<- PlotSeqNcdfCmd()
+			lcmd.frame_seqNcdfPlot <<- 1
+		}
 	})
 
 	######################################## NCDF
