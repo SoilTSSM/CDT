@@ -60,4 +60,7 @@ EnvCDTdataPlot <- new.env()
 # plot sequential netcdf
 EnvSeqNCDFPlot <- new.env()
 
+# plot one netcdf
+EnvOneNCDFPlot <- new.env()
+
 

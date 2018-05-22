@@ -6,44 +6,53 @@ tkadd(top.menu, "cascade", label = "File", menu = menu.file, activebackground = 
 
 	##########
 	tkadd(menu.file, "command", label = "Open data.frame", command = function(){
-		tkconfigure(main.win, cursor = 'watch');tcl('update')
+		tkconfigure(main.win, cursor = 'watch')
+		tcl('update')
+		on.exit({
+			tkconfigure(main.win, cursor = '')
+			tcl('update')
+		})
+
 		dat.opfiles <- getOpenFiles(main.win, all.opfiles)
-		tkconfigure(main.win, cursor = '')
 		if(!is.null(dat.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'ascii'
 			AllOpenFilesData[[nopf+1]] <<- dat.opfiles
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	##########
 	tkadd(menu.file, "command", label = "Open Netcdf file", command = function(){
-		tkconfigure(main.win, cursor = 'watch'); tcl('update')
+		tkconfigure(main.win, cursor = 'watch')
+		tcl('update')
+		on.exit({
+			tkconfigure(main.win, cursor = '')
+			tcl('update')
+		})
+
 		nc.opfiles <- getOpenNetcdf(main.win, all.opfiles)
-		tkconfigure(main.win, cursor = '')
 		if(!is.null(nc.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'netcdf'
 			AllOpenFilesData[[nopf+1]] <<- nc.opfiles
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	##########
 	tkadd(menu.file, "command", label = "Open ESRI Shapefile", command = function(){
-		tkconfigure(main.win, cursor = 'watch'); tcl('update')
+		tkconfigure(main.win, cursor = 'watch')
+		tcl('update')
+		on.exit({
+			tkconfigure(main.win, cursor = '')
+			tcl('update')
+		})
+
 		shp.opfiles <- getOpenShp(main.win, all.opfiles)
-		tkconfigure(main.win, cursor = '')
 		if(!is.null(shp.opfiles)){
 			nopf <- length(AllOpenFilesType)
 			AllOpenFilesType[[nopf+1]] <<- 'shp'
 			AllOpenFilesData[[nopf+1]] <<- shp.opfiles
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	})
 
 	##########
@@ -64,8 +73,14 @@ tkadd(top.menu, "cascade", label = "File", menu = menu.file, activebackground = 
 
 	##########
 	tkadd(menu.file, "command", label = "Save table", command = function(){
+		tkconfigure(main.win, cursor = 'watch')
+		tcl('update')
+		on.exit({
+			tkconfigure(main.win, cursor = '')
+			tcl('update')
+		})
+
 		if(!is.null(ReturnExecResults)){
-			tkconfigure(main.win, cursor = 'watch'); tcl('update')
 			tab2sav <- try(SaveNotebookTabArray(tknotes), silent = TRUE)
 			if(!inherits(tab2sav, "try-error")){
 				InsertMessagesTxt(main.txt.out, "Table saved successfully")
@@ -74,14 +89,18 @@ tkadd(top.menu, "cascade", label = "File", menu = menu.file, activebackground = 
 				InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', tab2sav[1]), format = TRUE)
 				return(NULL)
 			}
-			tkconfigure(main.win, cursor = '')
-		}else{
-			return(NULL)
-		}
+		}else return(NULL)
 	 })
 
 	##########
 	tkadd(menu.file, "command", label = "Save table As...", command = function(){
+		tkconfigure(main.win, cursor = 'watch')
+		tcl('update')
+		on.exit({
+			tkconfigure(main.win, cursor = '')
+			tcl('update')
+		})
+
 		tabid <- as.numeric(tclvalue(tkindex(tknotes, 'current')))+1
 		if(!is.na(tabid)){
 			if(AllOpenTabType[[tabid]]%in%c("arr", "arrAssess")){
@@ -89,12 +108,10 @@ tkadd(top.menu, "cascade", label = "File", menu = menu.file, activebackground = 
 				if(Sys.info()["sysname"] == "Windows") file.to.save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes, defaultextension = TRUE))
 				else file.to.save <- tclvalue(tkgetSaveFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
 				Objarray <- AllOpenTabData[[tabid]][[2]]
-				tkconfigure(main.win, cursor = 'watch')
-				tcl('update')
+
 				dat2sav <- tclArray2dataframe(Objarray)
 				colnoms <- if(AllOpenTabType[[tabid]] == "arr") TRUE else FALSE
 				writeFiles(dat2sav, file.to.save, col.names = colnoms)
-				tkconfigure(main.win, cursor = '')
 			}else return(NULL)
 		}else return(NULL)
 	})

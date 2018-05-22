@@ -37,7 +37,7 @@ refreshCDT.lcmd.env <- function(lcmdf = lcmd.frame, choixStn = lchoixStnFr){
 						EnvClimatoCalcPlot, EnvAnomalyCalcPlot,
 						EnvOnsetCalcPlot, EnvCessationCalcPlot, EnvSeasLengthCalcPlot,
 						EnvDailyRainAnalysisplot, EnvSummaryDataplot,
-						EnvCDTdataPlot, EnvSeqNCDFPlot)
+						EnvCDTdataPlot, EnvOneNCDFPlot, EnvSeqNCDFPlot)
 	ret <- lapply(cdt.lcmd.container, assign, NULL, envir = .GlobalEnv)
 	ret <- lapply(all.cdt.env, function(x) rm(list = ls(envir = x), envir = x))
 }
