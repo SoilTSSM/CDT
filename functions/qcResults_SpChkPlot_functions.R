@@ -294,7 +294,7 @@ DisplaySpatialCheck <- function(parent, ijsp, ZoomXYval, dem, rfedat, shpf, show
 	##########
 	tkbind(canvas, "<Motion>", function(W, x, y){
 		ret <- getXYCoords(W, x, y, parPltCrd)
-		displayCursorPosition3Var(W, x, y, parPltCrd, xpcoord, ypcoord, zpcoord, getStnIDLabel, pltusr = pltusr, inout = ret$oin)
+		displayCursorPosition3Var(W, x, y, parPltCrd, getStnIDLabel, pltusr = pltusr, inout = ret$oin)
 	})
 
 	##########

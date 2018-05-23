@@ -50,8 +50,8 @@ cdt.lcmd.container <- list(
 					'lcmd.frame_spatialAnalysis', 'lcmd.frame_dailyRainAnalysis', 'lcmd.frame_PICSA',
 					'lcmd.frame_onsetCalc', 'lcmd.frame_cessationCalc', 'lcmd.frame_seaslengthCalc',
 					'lcmd.frame_climdexRR', 'lcmd.frame_climdexTT', 'lcmd.frame_SPIData',
-					'lcmd.frame_mergePlot', 'lcmd.frame_CDTffrtPlot', 'lcmd.frame_grdNcdfPlot',
-					'lcmd.frame_seqNcdfPlot'
+					'lcmd.frame_mergePlot', 'lcmd.frame_CDTstnPlot', 'lcmd.frame_grdNcdfPlot',
+					'lcmd.frame_seqNcdfPlot', 'lcmd.frame_CDTdatasetPlot'
 				)
 
 lcmd.ret <- lapply(cdt.lcmd.container, assign, NULL, envir = .GlobalEnv)

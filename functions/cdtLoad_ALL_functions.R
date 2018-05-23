@@ -160,8 +160,11 @@ source(file.path(apps.dir, 'functions', 'mapLevel_functions.R'))
 source(file.path(apps.dir, 'functions', 'plotMerging_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'plotMerging_displayPlot_functions.R'))
 
-source(file.path(apps.dir, 'functions', 'plotCDTdata_leftCmd_functions.R'))
-source(file.path(apps.dir, 'functions', 'plotCDTdata_displayPLOT_functions.R'))
+source(file.path(apps.dir, 'functions', 'plotCDTStation_leftCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'plotCDTStation_displayPLOT_functions.R'))
+
+source(file.path(apps.dir, 'functions', 'plotCDTDataset_leftCmd_functions.R'))
+source(file.path(apps.dir, 'functions', 'plotCDTDataset_displayPLOT_functions.R'))
 
 source(file.path(apps.dir, 'functions', 'plotGrdNcdf_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'plotGrdNcdf_displayPLOT_functions.R'))

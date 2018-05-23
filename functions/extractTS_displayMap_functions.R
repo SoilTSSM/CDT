@@ -268,8 +268,8 @@ displayMap4Extraction <- function(parent, shpf, ZoomXYval, notebookTab){
 	##########
 	## cursor movement
 	tkbind(canvas, "<Motion>", function(W, x, y){
-		displayCursorPosition3Var(W, x, y, parPltCrd, xpcoord, ypcoord, zpcoord,
-								getAdminLabel, shp = shpf, idField = EnvExtractData$cb.shpAttr)
+		displayCursorPosition3Var(W, x, y, parPltCrd, getAdminLabel,
+								shp = shpf, idField = EnvExtractData$cb.shpAttr)
 	})
 
 	#########

@@ -169,7 +169,7 @@ getXYCoords <- function(W, x, y, parPltCrd) {
 ##Display coordinates on status bar
 ##display.cursor.type <= old
 
-displayCursorPosition3Var <- function(W, x, y, parPltCrd, xpcrd, ypcrd, zpcrd, FUN, ...){
+displayCursorPosition3Var <- function(W, x, y, parPltCrd, FUN, ...){
 	xyMouse <- mouseMouvment(W, x, y, parPltCrd)
 	xcoord <- xyMouse$x
 	ycoord <- xyMouse$y
@@ -181,9 +181,9 @@ displayCursorPosition3Var <- function(W, x, y, parPltCrd, xpcrd, ypcrd, zpcrd, F
 	FUN <- match.fun(FUN)
 	frzcoord <- FUN(xcoord, ycoord, ...)
 
-	tclvalue(xpcrd) <- frxcoord
-	tclvalue(ypcrd) <- frycoord
-	tclvalue(zpcrd) <- frzcoord
+	tclvalue(xpcoord) <- frxcoord
+	tclvalue(ypcoord) <- frycoord
+	tclvalue(zpcoord) <- frzcoord
 }
 
 ####

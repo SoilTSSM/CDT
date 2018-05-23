@@ -1,5 +1,5 @@
 
-PlotCDTDataFormatCmd <- function(){
+PlotCDTStationCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(26)
@@ -17,7 +17,6 @@ PlotCDTDataFormatCmd <- function(){
 		largeur4 <- 20
 	}
 
-	# PlotCDTdata <- fromJSON(file.path(apps.dir, 'init_params', 'Plot_CDT_Data.json'))
 	GeneralParameters <- list(intstep = "dekadal", cdtstation = "",
 							date = list(year = 2017, mon = 1, day = 1, other = ""))
 
@@ -30,11 +29,9 @@ PlotCDTDataFormatCmd <- function(){
 	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "Plot CDT Station Data")
-	# cmd.tab2 <- bwAddTab(tknote.cmd, text = "Plot")
 
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
-	# tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
 
 	#######################################################################################################
 
@@ -83,12 +80,12 @@ PlotCDTDataFormatCmd <- function(){
 				ret <- try(splitStnData(), silent = TRUE)
 				if(inherits(ret, "try-error") | is.null(ret)){
 					tclvalue(input.file) <- ""
-					EnvCDTdataPlot$don <- NULL
+					EnvCDTStationPlot$don <- NULL
 					return(NULL)
 				}
 			}else{
 				tclvalue(input.file) <- ""
-				EnvCDTdataPlot$don <- NULL
+				EnvCDTStationPlot$don <- NULL
 				return(NULL)
 			}
 		})
@@ -148,7 +145,7 @@ PlotCDTDataFormatCmd <- function(){
 
 			##############
 			tkconfigure(bt.date.prev, command = function(){
-				if(is.null(EnvCDTdataPlot$don)) return(NULL) 
+				if(is.null(EnvCDTStationPlot$don)) return(NULL) 
 				temps <- str_trim(tclvalue(timeSteps))
 
 				if(temps == 'Others'){
@@ -185,7 +182,7 @@ PlotCDTDataFormatCmd <- function(){
 					if(temps == 'Dekadal data') daty <- addDekads(daty, -1)
 					if(temps == 'Monthly data') daty <- addMonths(daty, -1)
 
-					if(daty < EnvCDTdataPlot$first.date) daty <- EnvCDTdataPlot$last.date
+					if(daty < EnvCDTStationPlot$first.date) daty <- EnvCDTStationPlot$last.date
 					daty <- format(daty, '%Y%m%d')
 					tclvalue(date.year) <- as.numeric(substr(daty, 1, 4))
 					tclvalue(date.mon) <- as.numeric(substr(daty, 5, 6))
@@ -197,14 +194,14 @@ PlotCDTDataFormatCmd <- function(){
 
 				####
 				imgContainer <- CDTdataStation.Display.Maps(tknotes)
-				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTdataPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
-				EnvCDTdataPlot$notebookTab.dataMap <- retNBTab$notebookTab
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTStationPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
+				EnvCDTStationPlot$notebookTab.dataMap <- retNBTab$notebookTab
 				AllOpenTabType <<- retNBTab$AllOpenTabType
 				AllOpenTabData <<- retNBTab$AllOpenTabData
 			})
 
 			tkconfigure(bt.date.next, command = function(){
-				if(is.null(EnvCDTdataPlot$don)) return(NULL) 
+				if(is.null(EnvCDTStationPlot$don)) return(NULL) 
 				temps <- str_trim(tclvalue(timeSteps))
 
 				if(temps == 'Others'){
@@ -239,7 +236,7 @@ PlotCDTDataFormatCmd <- function(){
 					if(temps == 'Dekadal data') daty <- addDekads(daty, 1)
 					if(temps == 'Monthly data') daty <- addMonths(daty, 1)
 
-					if(daty > EnvCDTdataPlot$last.date) daty <- EnvCDTdataPlot$first.date
+					if(daty > EnvCDTStationPlot$last.date) daty <- EnvCDTStationPlot$first.date
 					daty <- format(daty, '%Y%m%d')
 					tclvalue(date.year) <- as.numeric(substr(daty, 1, 4))
 					tclvalue(date.mon) <- as.numeric(substr(daty, 5, 6))
@@ -251,8 +248,8 @@ PlotCDTDataFormatCmd <- function(){
 
 				####
 				imgContainer <- CDTdataStation.Display.Maps(tknotes)
-				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTdataPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
-				EnvCDTdataPlot$notebookTab.dataMap <- retNBTab$notebookTab
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTStationPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
+				EnvCDTStationPlot$notebookTab.dataMap <- retNBTab$notebookTab
 				AllOpenTabType <<- retNBTab$AllOpenTabType
 				AllOpenTabData <<- retNBTab$AllOpenTabData
 			})
@@ -264,7 +261,7 @@ PlotCDTDataFormatCmd <- function(){
 			ret <- try(splitStnData(), silent = TRUE)
 			if(inherits(ret, "try-error") | is.null(ret)){
 				tclvalue(input.file) <- ""
-				EnvCDTdataPlot$don <- NULL
+				EnvCDTStationPlot$don <- NULL
 				return(NULL)
 			}
 		})
@@ -274,15 +271,15 @@ PlotCDTDataFormatCmd <- function(){
 		frameMap <- ttklabelframe(subfr1, text = "Map", relief = 'groove')
 
 		typeMapPLOT <- c("Points", "Pixels")
-		EnvCDTdataPlot$map$typeMap <- tclVar("Points")
+		EnvCDTStationPlot$map$typeMap <- tclVar("Points")
 		pointSizeI <- 0.7
 
-		cb.Map.type <- ttkcombobox(frameMap, values = typeMapPLOT, textvariable = EnvCDTdataPlot$map$typeMap, width = largeur3)
+		cb.Map.type <- ttkcombobox(frameMap, values = typeMapPLOT, textvariable = EnvCDTStationPlot$map$typeMap, width = largeur3)
 		bt.Map.plot <- ttkbutton(frameMap, text = "PLOT", width = 7)
 		bt.Map.Opt <- ttkbutton(frameMap, text = "Options", width = 8)
 
 		##############
-		EnvCDTdataPlot$dataMapOp <- list(presetCol = list(color = 'tim.colors', reverse = FALSE),
+		EnvCDTStationPlot$dataMapOp <- list(presetCol = list(color = 'tim.colors', reverse = FALSE),
 												userCol = list(custom = FALSE, color = NULL),
 												userLvl = list(custom = FALSE, levels = NULL, equidist = FALSE),
 												title = list(user = FALSE, title = ''),
@@ -291,39 +288,39 @@ PlotCDTDataFormatCmd <- function(){
 												pointSize = pointSizeI)
 
 		tkconfigure(bt.Map.Opt, command = function(){
-			if(!is.null(EnvCDTdataPlot$stndata$map)){
-				atlevel <- pretty(EnvCDTdataPlot$stndata$map$z, n = 10, min.n = 7)
-				if(is.null(EnvCDTdataPlot$dataMapOp$userLvl$levels)){
-					EnvCDTdataPlot$dataMapOp$userLvl$levels <- atlevel
+			if(!is.null(EnvCDTStationPlot$stndata$map)){
+				atlevel <- pretty(EnvCDTStationPlot$stndata$map$z, n = 10, min.n = 7)
+				if(is.null(EnvCDTStationPlot$dataMapOp$userLvl$levels)){
+					EnvCDTStationPlot$dataMapOp$userLvl$levels <- atlevel
 				}else{
-					if(!EnvCDTdataPlot$dataMapOp$userLvl$custom)
-						EnvCDTdataPlot$dataMapOp$userLvl$levels <- atlevel
+					if(!EnvCDTStationPlot$dataMapOp$userLvl$custom)
+						EnvCDTStationPlot$dataMapOp$userLvl$levels <- atlevel
 				}
 			}
-			EnvCDTdataPlot$dataMapOp <- MapGraph.MapOptions(main.win, EnvCDTdataPlot$dataMapOp)
-			if(str_trim(tclvalue(EnvCDTdataPlot$map$typeMap)) == "Points")
-				pointSizeI <<- EnvCDTdataPlot$dataMapOp$pointSize
+			EnvCDTStationPlot$dataMapOp <- MapGraph.MapOptions(main.win, EnvCDTStationPlot$dataMapOp)
+			if(str_trim(tclvalue(EnvCDTStationPlot$map$typeMap)) == "Points")
+				pointSizeI <<- EnvCDTStationPlot$dataMapOp$pointSize
 		})
 
-		EnvCDTdataPlot$notebookTab.dataMap <- NULL
+		EnvCDTStationPlot$notebookTab.dataMap <- NULL
 
 		tkconfigure(bt.Map.plot, command = function(){
-			if(is.null(EnvCDTdataPlot$don)) return(NULL)
+			if(is.null(EnvCDTStationPlot$don)) return(NULL)
 			getStnMap()
 
 			####
 			imgContainer <- CDTdataStation.Display.Maps(tknotes)
-			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTdataPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
-			EnvCDTdataPlot$notebookTab.dataMap <- retNBTab$notebookTab
+			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTStationPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
+			EnvCDTStationPlot$notebookTab.dataMap <- retNBTab$notebookTab
 			AllOpenTabType <<- retNBTab$AllOpenTabType
 			AllOpenTabData <<- retNBTab$AllOpenTabData
 		})
 
 		##############
 		tkbind(cb.Map.type, "<<ComboboxSelected>>", function(){
-			if(str_trim(tclvalue(EnvCDTdataPlot$map$typeMap)) == "Points"){
-				EnvCDTdataPlot$dataMapOp$pointSize <- pointSizeI
-			}else EnvCDTdataPlot$dataMapOp$pointSize <- NULL
+			if(str_trim(tclvalue(EnvCDTStationPlot$map$typeMap)) == "Points"){
+				EnvCDTStationPlot$dataMapOp$pointSize <- pointSizeI
+			}else EnvCDTStationPlot$dataMapOp$pointSize <- NULL
 
 			getStnMap()
 		})
@@ -375,14 +372,14 @@ PlotCDTDataFormatCmd <- function(){
 
 		##############
 		tkconfigure(bt.date.prev, command = function(){
-			if(is.null(EnvCDTdataPlot$don)) return(NULL) 
+			if(is.null(EnvCDTStationPlot$don)) return(NULL) 
 			temps <- str_trim(tclvalue(timeSteps))
 
 			if(temps == 'Others'){
-				idaty <- which(EnvCDTdataPlot$don$dates == str_trim(tclvalue(date.other)))
+				idaty <- which(EnvCDTStationPlot$don$dates == str_trim(tclvalue(date.other)))
 				idaty <- idaty-1
-				if(idaty < 1) idaty <- length(EnvCDTdataPlot$don$dates)
-				tclvalue(date.other) <- EnvCDTdataPlot$don$dates[idaty]
+				if(idaty < 1) idaty <- length(EnvCDTStationPlot$don$dates)
+				tclvalue(date.other) <- EnvCDTStationPlot$don$dates[idaty]
 			}else{
 				yrs <- as.numeric(str_trim(tclvalue(date.year)))
 				mon <- as.numeric(str_trim(tclvalue(date.mon)))
@@ -415,7 +412,7 @@ PlotCDTDataFormatCmd <- function(){
 				if(temps == 'Dekadal data') daty <- addDekads(daty, -1)
 				if(temps == 'Monthly data') daty <- addMonths(daty, -1)
 
-				if(daty < EnvCDTdataPlot$first.date) daty <- EnvCDTdataPlot$last.date
+				if(daty < EnvCDTStationPlot$first.date) daty <- EnvCDTStationPlot$last.date
 				daty <- format(daty, '%Y%m%d')
 				tclvalue(date.year) <- as.numeric(substr(daty, 1, 4))
 				tclvalue(date.mon) <- as.numeric(substr(daty, 5, 6))
@@ -427,21 +424,21 @@ PlotCDTDataFormatCmd <- function(){
 
 			####
 			imgContainer <- CDTdataStation.Display.Maps(tknotes)
-			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTdataPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
-			EnvCDTdataPlot$notebookTab.dataMap <- retNBTab$notebookTab
+			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTStationPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
+			EnvCDTStationPlot$notebookTab.dataMap <- retNBTab$notebookTab
 			AllOpenTabType <<- retNBTab$AllOpenTabType
 			AllOpenTabData <<- retNBTab$AllOpenTabData
 		})
 
 		tkconfigure(bt.date.next, command = function(){
-			if(is.null(EnvCDTdataPlot$don)) return(NULL) 
+			if(is.null(EnvCDTStationPlot$don)) return(NULL) 
 			temps <- str_trim(tclvalue(timeSteps))
 
 			if(temps == 'Others'){
-				idaty <- which(EnvCDTdataPlot$don$dates == str_trim(tclvalue(date.other)))
+				idaty <- which(EnvCDTStationPlot$don$dates == str_trim(tclvalue(date.other)))
 				idaty <- idaty+1
-				if(idaty > length(EnvCDTdataPlot$don$dates)) idaty <- 1
-				tclvalue(date.other) <- EnvCDTdataPlot$don$dates[idaty]
+				if(idaty > length(EnvCDTStationPlot$don$dates)) idaty <- 1
+				tclvalue(date.other) <- EnvCDTStationPlot$don$dates[idaty]
 			}else{
 				yrs <- as.numeric(str_trim(tclvalue(date.year)))
 				mon <- as.numeric(str_trim(tclvalue(date.mon)))
@@ -472,7 +469,7 @@ PlotCDTDataFormatCmd <- function(){
 				if(temps == 'Dekadal data') daty <- addDekads(daty, 1)
 				if(temps == 'Monthly data') daty <- addMonths(daty, 1)
 
-				if(daty > EnvCDTdataPlot$last.date) daty <- EnvCDTdataPlot$first.date
+				if(daty > EnvCDTStationPlot$last.date) daty <- EnvCDTStationPlot$first.date
 				daty <- format(daty, '%Y%m%d')
 				tclvalue(date.year) <- as.numeric(substr(daty, 1, 4))
 				tclvalue(date.mon) <- as.numeric(substr(daty, 5, 6))
@@ -484,8 +481,8 @@ PlotCDTDataFormatCmd <- function(){
 
 			####
 			imgContainer <- CDTdataStation.Display.Maps(tknotes)
-			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTdataPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
-			EnvCDTdataPlot$notebookTab.dataMap <- retNBTab$notebookTab
+			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTStationPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
+			EnvCDTStationPlot$notebookTab.dataMap <- retNBTab$notebookTab
 			AllOpenTabType <<- retNBTab$AllOpenTabType
 			AllOpenTabData <<- retNBTab$AllOpenTabData
 		})
@@ -501,13 +498,13 @@ PlotCDTDataFormatCmd <- function(){
 		frameGraph <- ttklabelframe(subfr1, text = "Graph", relief = 'groove')
 
 		typeTSPLOT <- c("Line", "Barplot")
-		EnvCDTdataPlot$graph$typeTSp <- tclVar("Line")
+		EnvCDTStationPlot$graph$typeTSp <- tclVar("Line")
 
-		cb.typeTSp <- ttkcombobox(frameGraph, values = typeTSPLOT, textvariable = EnvCDTdataPlot$graph$typeTSp, width = largeur3)
+		cb.typeTSp <- ttkcombobox(frameGraph, values = typeTSPLOT, textvariable = EnvCDTStationPlot$graph$typeTSp, width = largeur3)
 		bt.TsGraph.plot <- ttkbutton(frameGraph, text = "PLOT", width = 7)
 		bt.TSGraphOpt <- ttkbutton(frameGraph, text = "Options", width = 8)
 
-		EnvCDTdataPlot$TSGraphOp <- list(
+		EnvCDTStationPlot$TSGraphOp <- list(
 					bar = list(
 							xlim = list(is.min = FALSE, min = "1981-1-1", is.max = FALSE, max = "2017-12-3"),
 							ylim = list(is.min = FALSE, min = 0, is.max = FALSE, max = 200),
@@ -527,23 +524,23 @@ PlotCDTDataFormatCmd <- function(){
 					)
 
 		tkconfigure(bt.TSGraphOpt, command = function(){
-			suffix.fun <- switch(str_trim(tclvalue(EnvCDTdataPlot$graph$typeTSp)),
+			suffix.fun <- switch(str_trim(tclvalue(EnvCDTStationPlot$graph$typeTSp)),
 									"Barplot" = "Bar",
 									"Line" = "Line")
 			plot.fun <- match.fun(paste0("MapGraph.GraphOptions.", suffix.fun))
-			EnvCDTdataPlot$TSGraphOp <- plot.fun(main.win, EnvCDTdataPlot$TSGraphOp)
+			EnvCDTStationPlot$TSGraphOp <- plot.fun(main.win, EnvCDTStationPlot$TSGraphOp)
 		})
 
-		EnvCDTdataPlot$notebookTab.dataGraph <- NULL
+		EnvCDTStationPlot$notebookTab.dataGraph <- NULL
 
 		tkconfigure(bt.TsGraph.plot, command = function(){
-			if(is.null(EnvCDTdataPlot$don)) return(NULL)
+			if(is.null(EnvCDTStationPlot$don)) return(NULL)
 			getStnTS()
 
 			####
 			imgContainer <- CDTdataStation.Display.Graph(tknotes)
-			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTdataPlot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
-			EnvCDTdataPlot$notebookTab.dataGraph <- retNBTab$notebookTab
+			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTStationPlot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
+			EnvCDTStationPlot$notebookTab.dataGraph <- retNBTab$notebookTab
 			AllOpenTabType <<- retNBTab$AllOpenTabType
 			AllOpenTabData <<- retNBTab$AllOpenTabData
 		})
@@ -552,44 +549,44 @@ PlotCDTDataFormatCmd <- function(){
 
 		frTS2 <- tkframe(frameGraph)
 
-		EnvCDTdataPlot$graph$stnIDTSp <- tclVar()
+		EnvCDTStationPlot$graph$stnIDTSp <- tclVar()
 
 		bt.stnID.prev <- ttkbutton(frTS2, text = "<<", width = 5)
-		cb.stnID <- ttkcombobox(frTS2, values = "", textvariable = EnvCDTdataPlot$graph$stnIDTSp, width = largeur4)
+		cb.stnID <- ttkcombobox(frTS2, values = "", textvariable = EnvCDTStationPlot$graph$stnIDTSp, width = largeur4)
 		bt.stnID.next <- ttkbutton(frTS2, text = ">>", width = 5)
 		tkgrid(bt.stnID.prev, cb.stnID, bt.stnID.next)
 
 		##############
 		tkconfigure(bt.stnID.prev, command = function(){
-			if(is.null(EnvCDTdataPlot$don)) return(NULL)
-			istn <- which(EnvCDTdataPlot$don$id == str_trim(tclvalue(EnvCDTdataPlot$graph$stnIDTSp)))
+			if(is.null(EnvCDTStationPlot$don)) return(NULL)
+			istn <- which(EnvCDTStationPlot$don$id == str_trim(tclvalue(EnvCDTStationPlot$graph$stnIDTSp)))
 			istn <- istn-1
-			if(istn < 1) istn <- length(EnvCDTdataPlot$don$id)
-			tclvalue(EnvCDTdataPlot$graph$stnIDTSp) <- EnvCDTdataPlot$don$id[istn]
+			if(istn < 1) istn <- length(EnvCDTStationPlot$don$id)
+			tclvalue(EnvCDTStationPlot$graph$stnIDTSp) <- EnvCDTStationPlot$don$id[istn]
 
 			getStnTS()
 
 			####
 			imgContainer <- CDTdataStation.Display.Graph(tknotes)
-			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTdataPlot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
-			EnvCDTdataPlot$notebookTab.dataGraph <- retNBTab$notebookTab
+			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTStationPlot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
+			EnvCDTStationPlot$notebookTab.dataGraph <- retNBTab$notebookTab
 			AllOpenTabType <<- retNBTab$AllOpenTabType
 			AllOpenTabData <<- retNBTab$AllOpenTabData
 		})
 
 		tkconfigure(bt.stnID.next, command = function(){
-			if(is.null(EnvCDTdataPlot$don)) return(NULL)
-			istn <- which(EnvCDTdataPlot$don$id == str_trim(tclvalue(EnvCDTdataPlot$graph$stnIDTSp)))
+			if(is.null(EnvCDTStationPlot$don)) return(NULL)
+			istn <- which(EnvCDTStationPlot$don$id == str_trim(tclvalue(EnvCDTStationPlot$graph$stnIDTSp)))
 			istn <- istn+1
-			if(istn > length(EnvCDTdataPlot$don$id)) istn <- 1
-			tclvalue(EnvCDTdataPlot$graph$stnIDTSp) <- EnvCDTdataPlot$don$id[istn]
+			if(istn > length(EnvCDTStationPlot$don$id)) istn <- 1
+			tclvalue(EnvCDTStationPlot$graph$stnIDTSp) <- EnvCDTStationPlot$don$id[istn]
 
 			getStnTS()
 
 			####
 			imgContainer <- CDTdataStation.Display.Graph(tknotes)
-			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTdataPlot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
-			EnvCDTdataPlot$notebookTab.dataGraph <- retNBTab$notebookTab
+			retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTStationPlot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
+			EnvCDTStationPlot$notebookTab.dataGraph <- retNBTab$notebookTab
 			AllOpenTabType <<- retNBTab$AllOpenTabType
 			AllOpenTabData <<- retNBTab$AllOpenTabData
 		})
@@ -604,11 +601,11 @@ PlotCDTDataFormatCmd <- function(){
 
 		frameSHP <- ttklabelframe(subfr1, text = "Boundaries", relief = 'groove')
 
-		EnvCDTdataPlot$shp$add.shp <- tclVar(0)
+		EnvCDTStationPlot$shp$add.shp <- tclVar(0)
 		file.plotShp <- tclVar()
 		stateSHP <- "disabled"
 
-		chk.addshp <- tkcheckbutton(frameSHP, variable = EnvCDTdataPlot$shp$add.shp, text = "Add boundaries to Map", anchor = 'w', justify = 'left')
+		chk.addshp <- tkcheckbutton(frameSHP, variable = EnvCDTStationPlot$shp$add.shp, text = "Add boundaries to Map", anchor = 'w', justify = 'left')
 		bt.addshpOpt <- ttkbutton(frameSHP, text = "Options", state = stateSHP)
 		cb.addshp <- ttkcombobox(frameSHP, values = unlist(listOpenFiles), textvariable = file.plotShp, width = largeur1, state = stateSHP)
 		bt.addshp <- tkbutton(frameSHP, text = "...", state = stateSHP)
@@ -626,16 +623,16 @@ PlotCDTDataFormatCmd <- function(){
 				tkconfigure(cb.addshp, values = unlist(listOpenFiles), textvariable = file.plotShp)
 
 				shpofile <- getShpOpenData(file.plotShp)
-				if(is.null(shpofile)) EnvCDTdataPlot$shp$ocrds <- NULL
-				EnvCDTdataPlot$shp$ocrds <- getBoundaries(shpofile[[2]])
+				if(is.null(shpofile)) EnvCDTStationPlot$shp$ocrds <- NULL
+				EnvCDTStationPlot$shp$ocrds <- getBoundaries(shpofile[[2]])
 			}else return(NULL)
 		})
 
 		########
-		EnvCDTdataPlot$SHPOp <- list(col = "black", lwd = 1.5)
+		EnvCDTStationPlot$SHPOp <- list(col = "black", lwd = 1.5)
 
 		tkconfigure(bt.addshpOpt, command = function(){
-			EnvCDTdataPlot$SHPOp <- MapGraph.GraphOptions.LineSHP(main.win, EnvCDTdataPlot$SHPOp)
+			EnvCDTStationPlot$SHPOp <- MapGraph.GraphOptions.LineSHP(main.win, EnvCDTStationPlot$SHPOp)
 		})
 
 		########
@@ -647,12 +644,12 @@ PlotCDTDataFormatCmd <- function(){
 		#################
 		tkbind(cb.addshp, "<<ComboboxSelected>>", function(){
 			shpofile <- getShpOpenData(file.plotShp)
-			if(is.null(shpofile)) EnvCDTdataPlot$shp$ocrds <- NULL
-			EnvCDTdataPlot$shp$ocrds <- getBoundaries(shpofile[[2]])
+			if(is.null(shpofile)) EnvCDTStationPlot$shp$ocrds <- NULL
+			EnvCDTStationPlot$shp$ocrds <- getBoundaries(shpofile[[2]])
 		})
 
 		tkbind(chk.addshp, "<Button-1>", function(){
-			stateSHP <- if(tclvalue(EnvCDTdataPlot$shp$add.shp) == "1") "disabled" else "normal"
+			stateSHP <- if(tclvalue(EnvCDTStationPlot$shp$add.shp) == "1") "disabled" else "normal"
 			tkconfigure(cb.addshp, state = stateSHP)
 			tkconfigure(bt.addshp, state = stateSHP)
 			tkconfigure(bt.addshpOpt, state = stateSHP)
@@ -668,7 +665,7 @@ PlotCDTDataFormatCmd <- function(){
 	#######################################################################################################
 
 	splitStnData <- function(){
-		EnvCDTdataPlot$stndata <- NULL
+		EnvCDTStationPlot$stndata <- NULL
 		intstep <- switch(str_trim(tclvalue(timeSteps)), 
 							'Daily data' = 'daily',
 							'Pentad data' = 'pentad',
@@ -681,7 +678,7 @@ PlotCDTDataFormatCmd <- function(){
 
 		if(intstep == "others"){
 			don <- splitCDTData1(don)
-			EnvCDTdataPlot$tsdates <- seq_along(don$dates)
+			EnvCDTStationPlot$tsdates <- seq_along(don$dates)
 
 			##########
 			tkconfigure(cb.other, values = don$dates)
@@ -694,28 +691,28 @@ PlotCDTDataFormatCmd <- function(){
 			en.daty <- don$dates[length(don$dates)]
 
 			if(intstep == "daily"){
-				EnvCDTdataPlot$tsdates <- as.Date(don$dates, "%Y%m%d")
+				EnvCDTStationPlot$tsdates <- as.Date(don$dates, "%Y%m%d")
 				dpk <- as.numeric(substr(en.daty, 7, 8))
 			}
 			if(intstep == "pentad"){
 				pen <- c(1, 6, 11, 16, 21, 26)[as.numeric(substr(don$dates, 7, 7))]
-				EnvCDTdataPlot$tsdates <- as.Date(paste0(substr(don$dates, 1, 6), pen), "%Y%m%d")
+				EnvCDTStationPlot$tsdates <- as.Date(paste0(substr(don$dates, 1, 6), pen), "%Y%m%d")
 				dpk <- as.numeric(substr(en.daty, 7, 7))
 			}
 			if(intstep == "dekadal"){
 				dek <- c(1, 11, 21)[as.numeric(substr(don$dates, 7, 7))]
-				EnvCDTdataPlot$tsdates <- as.Date(paste0(substr(don$dates, 1, 6), dek), "%Y%m%d")
+				EnvCDTStationPlot$tsdates <- as.Date(paste0(substr(don$dates, 1, 6), dek), "%Y%m%d")
 				dpk <- as.numeric(substr(en.daty, 7, 7))
 			}
 			if(intstep == "monthly"){
-				EnvCDTdataPlot$tsdates <- as.Date(paste0(don$dates, 1), "%Y%m%d")
+				EnvCDTStationPlot$tsdates <- as.Date(paste0(don$dates, 1), "%Y%m%d")
 				dpk <- 1
 			}
 
 			first.date <- if(intstep == "monthly") paste0(don$dates[1], 1) else don$dates[1]
 			last.date <- if(intstep == "monthly") paste0(don$dates[length(don$dates)], 1) else don$dates[length(don$dates)]
-			EnvCDTdataPlot$first.date <- as.Date(first.date, "%Y%m%d")
-			EnvCDTdataPlot$last.date <- as.Date(last.date, "%Y%m%d")
+			EnvCDTStationPlot$first.date <- as.Date(first.date, "%Y%m%d")
+			EnvCDTStationPlot$last.date <- as.Date(last.date, "%Y%m%d")
 
 			##########
 			tclvalue(date.year) <- as.numeric(substr(en.daty, 1, 4))
@@ -725,10 +722,10 @@ PlotCDTDataFormatCmd <- function(){
 
 		##########
 		tkconfigure(cb.stnID, values = don$id)
-		tclvalue(EnvCDTdataPlot$graph$stnIDTSp) <- don$id[1]
+		tclvalue(EnvCDTStationPlot$graph$stnIDTSp) <- don$id[1]
 
-		EnvCDTdataPlot$tstep <- intstep
-		EnvCDTdataPlot$don <- don
+		EnvCDTStationPlot$tstep <- intstep
+		EnvCDTStationPlot$don <- don
 
 		##########
 		getStnTS()
@@ -737,13 +734,13 @@ PlotCDTDataFormatCmd <- function(){
 	}
 
 	getStnTS <- function(){
-		istn <- which(EnvCDTdataPlot$don$id == str_trim(tclvalue(EnvCDTdataPlot$graph$stnIDTSp)))
+		istn <- which(EnvCDTStationPlot$don$id == str_trim(tclvalue(EnvCDTStationPlot$graph$stnIDTSp)))
 		if(length(istn) == 0){
-			EnvCDTdataPlot$stndata$series <- NULL
-			InsertMessagesTxt(main.txt.out, paste(str_trim(tclvalue(EnvCDTdataPlot$graph$stnIDTSp)), "doesn't exist"), format = TRUE)
+			EnvCDTStationPlot$stndata$series <- NULL
+			InsertMessagesTxt(main.txt.out, paste(str_trim(tclvalue(EnvCDTStationPlot$graph$stnIDTSp)), "doesn't exist"), format = TRUE)
 		}else{
-			EnvCDTdataPlot$stndata$series$ts <- EnvCDTdataPlot$don$data[, istn]
-			EnvCDTdataPlot$stndata$series$id <- str_trim(tclvalue(EnvCDTdataPlot$graph$stnIDTSp))
+			EnvCDTStationPlot$stndata$series$ts <- EnvCDTStationPlot$don$data[, istn]
+			EnvCDTStationPlot$stndata$series$id <- str_trim(tclvalue(EnvCDTStationPlot$graph$stnIDTSp))
 		}
 	}
 
@@ -755,62 +752,62 @@ PlotCDTDataFormatCmd <- function(){
 			tcl('update')
 		})
 
-		typemap <- str_trim(tclvalue(EnvCDTdataPlot$map$typeMap))
+		typemap <- str_trim(tclvalue(EnvCDTStationPlot$map$typeMap))
 
-		if(EnvCDTdataPlot$tstep != "others"){
+		if(EnvCDTStationPlot$tstep != "others"){
 			yrs <- as.numeric(str_trim(tclvalue(date.year)))
 			mon <- as.numeric(str_trim(tclvalue(date.mon)))
 			dpk <- as.numeric(str_trim(tclvalue(date.day)))
 			getSpat <- list(yrs, mon, dpk, typemap)
 		}else getSpat <- list(str_trim(tclvalue(date.other)), typemap)
 
-		if(!is.null(EnvCDTdataPlot$stndata$spatial)){
-			formatSpData <- if(!isTRUE(all.equal(EnvCDTdataPlot$stndata$spatial, getSpat))) TRUE else FALSE
+		if(!is.null(EnvCDTStationPlot$stndata$spatial)){
+			formatSpData <- if(!isTRUE(all.equal(EnvCDTStationPlot$stndata$spatial, getSpat))) TRUE else FALSE
 		}else formatSpData <- TRUE
 
 		if(formatSpData){
-			if(EnvCDTdataPlot$tstep != "others"){
-				if(EnvCDTdataPlot$tstep == "daily")
+			if(EnvCDTStationPlot$tstep != "others"){
+				if(EnvCDTStationPlot$tstep == "daily")
 					daty <- format(as.Date(paste(yrs, mon, dpk, sep = "-")), "%Y%m%d")
-				if(EnvCDTdataPlot$tstep == "pentad"){
+				if(EnvCDTStationPlot$tstep == "pentad"){
 					pen <- as.Date(paste(yrs, mon, dpk, sep = "-"))
 					daty <- paste0(format(pen, "%Y%m"), dpk)
 				}
-				if(EnvCDTdataPlot$tstep == "dekadal"){
+				if(EnvCDTStationPlot$tstep == "dekadal"){
 					dek <- as.Date(paste(yrs, mon, dpk, sep = "-"))
 					daty <- paste0(format(dek, "%Y%m"), dpk)
 				}
-				if(EnvCDTdataPlot$tstep == "monthly")
+				if(EnvCDTStationPlot$tstep == "monthly")
 					daty <- format(as.Date(paste(yrs, mon, dpk, sep = "-")), "%Y%m")
 			}else daty <- str_trim(tclvalue(date.other))
 
-			idaty <- which(EnvCDTdataPlot$don$dates == daty)
+			idaty <- which(EnvCDTStationPlot$don$dates == daty)
 
 			if(length(idaty) == 0){
-				EnvCDTdataPlot$stndata$map <- NULL
+				EnvCDTStationPlot$stndata$map <- NULL
 				InsertMessagesTxt(main.txt.out, "Invalid date or index", format = TRUE)
 			}else{
 				if(typemap == "Points"){
-					EnvCDTdataPlot$stndata$map$x <- EnvCDTdataPlot$don$lon
-					EnvCDTdataPlot$stndata$map$y <- EnvCDTdataPlot$don$lat
-					EnvCDTdataPlot$stndata$map$z <- as.numeric(EnvCDTdataPlot$don$data[idaty, ])
+					EnvCDTStationPlot$stndata$map$x <- EnvCDTStationPlot$don$lon
+					EnvCDTStationPlot$stndata$map$y <- EnvCDTStationPlot$don$lat
+					EnvCDTStationPlot$stndata$map$z <- as.numeric(EnvCDTStationPlot$don$data[idaty, ])
 				}
 
 				if(typemap == "Pixels"){
-					nx <- nx_ny_as.image(diff(range(EnvCDTdataPlot$don$lon)))
-					ny <- nx_ny_as.image(diff(range(EnvCDTdataPlot$don$lat)))
-					tmp <- cdt.as.image(as.numeric(EnvCDTdataPlot$don$data[idaty, ]), nx = nx, ny = ny,
-										pts.xy = cbind(EnvCDTdataPlot$don$lon, EnvCDTdataPlot$don$lat))
-					EnvCDTdataPlot$stndata$map$x <- tmp$x
-					EnvCDTdataPlot$stndata$map$y <- tmp$y
-					EnvCDTdataPlot$stndata$map$z <- tmp$z
+					nx <- nx_ny_as.image(diff(range(EnvCDTStationPlot$don$lon)))
+					ny <- nx_ny_as.image(diff(range(EnvCDTStationPlot$don$lat)))
+					tmp <- cdt.as.image(as.numeric(EnvCDTStationPlot$don$data[idaty, ]), nx = nx, ny = ny,
+										pts.xy = cbind(EnvCDTStationPlot$don$lon, EnvCDTStationPlot$don$lat))
+					EnvCDTStationPlot$stndata$map$x <- tmp$x
+					EnvCDTStationPlot$stndata$map$y <- tmp$y
+					EnvCDTStationPlot$stndata$map$z <- tmp$z
 				}
 
-				EnvCDTdataPlot$stndata$map$t <- daty
-				EnvCDTdataPlot$stndata$map$p <- typemap
+				EnvCDTStationPlot$stndata$map$t <- daty
+				EnvCDTStationPlot$stndata$map$p <- typemap
 			}
 
-			EnvCDTdataPlot$stndata$spatial <- getSpat
+			EnvCDTStationPlot$stndata$spatial <- getSpat
 		}
 	}
 

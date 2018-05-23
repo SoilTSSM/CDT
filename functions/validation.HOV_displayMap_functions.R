@@ -217,8 +217,8 @@ displayMap4Validation <- function(parent, shpf, ZoomXYval, notebookTab){
 	##########
 	tkbind(canvas, "<Motion>", function(W, x, y){
 		if(tclvalue(EnvHOValidationplot$type.select) == "Polygons" & !is.null(shpf)){
-			displayCursorPosition3Var(W, x, y, parPltCrd, xpcoord, ypcoord, zpcoord,
-									getAdminLabel, shp = shpf, idField = EnvHOValidationplot$cb.shpAttr)
+			displayCursorPosition3Var(W, x, y, parPltCrd, getAdminLabel,
+									shp = shpf, idField = EnvHOValidationplot$cb.shpAttr)
 		}else{
 			xyMouse <- mouseMouvment(W, x, y, parPltCrd)
 
@@ -245,8 +245,8 @@ displayMap4Validation <- function(parent, shpf, ZoomXYval, notebookTab){
 			tclvalue(zpcoord) <- frzcoord
 
 			# ret <- getXYCoords(W, x, y, parPltCrd)
-			# displayCursorPosition3Var(W, x, y, parPltCrd, xpcoord, ypcoord, zpcoord,
-			# 						getStnIDLabel, pltusr = pltusr, inout = ret$oin)
+			# displayCursorPosition3Var(W, x, y, parPltCrd, getStnIDLabel,
+			# 						pltusr = pltusr, inout = ret$oin)
 		}
 	})
 

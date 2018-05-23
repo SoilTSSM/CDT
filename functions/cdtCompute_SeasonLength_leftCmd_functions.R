@@ -659,7 +659,7 @@ SeasonLengthCalcPanelCmd <- function(){
 
 			file.CDT.Idx <- file.path(EnvSeasLengthCalcPlot$PathData, "CDTDATASET/CDTDATASET.rds")
 
-			read.cdt.dataIdx<- TRUE
+			read.cdt.dataIdx <- TRUE
 			if(!is.null(EnvSeasLengthCalcPlot$cdtdataset))
 				if(!is.null(EnvSeasLengthCalcPlot$file.CDT.Idx))
 					if(EnvSeasLengthCalcPlot$file.CDT.Idx == file.CDT.Idx) read.cdt.dataIdx <- FALSE

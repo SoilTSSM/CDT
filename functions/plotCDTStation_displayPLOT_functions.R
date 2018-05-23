@@ -1,7 +1,7 @@
 
-plotCDTdata.Maps <- function(){
-	don <- EnvCDTdataPlot$stndata$map
-	dataMapOp <- EnvCDTdataPlot$dataMapOp
+plotCDTStation.Maps <- function(){
+	don <- EnvCDTStationPlot$stndata$map
+	dataMapOp <- EnvCDTStationPlot$dataMapOp
 
 	## titre
 	if(!dataMapOp$title$user){
@@ -30,7 +30,7 @@ plotCDTdata.Maps <- function(){
 
 	#################
 	### shape files
-	shpf <- EnvCDTdataPlot$shp
+	shpf <- EnvCDTStationPlot$shp
 	ocrds <- if(tclvalue(shpf$add.shp) == "1" & !is.null(shpf$ocrds)) shpf$ocrds else matrix(NA, 1, 2)
 
 	#################
@@ -70,7 +70,7 @@ plotCDTdata.Maps <- function(){
 	title(main = titre, cex.main = 1, font.main = 2)
 
 	abline(h = axTicks(2), v = axTicks(1), col = "lightgray", lty = 3)
-	lines(ocrds[, 1], ocrds[, 2], lwd = EnvCDTdataPlot$SHPOp$lwd, col = EnvCDTdataPlot$SHPOp$col)
+	lines(ocrds[, 1], ocrds[, 2], lwd = EnvCDTStationPlot$SHPOp$lwd, col = EnvCDTStationPlot$SHPOp$col)
 
 	if(don$p == "Points"){
 		kolor.p <- kolor[findInterval(don$z, breaks, rightmost.closed = TRUE, left.open = TRUE)]
@@ -103,40 +103,41 @@ plotCDTdata.Maps <- function(){
 
 #######################################
 
-plotCDTdata.Graph <- function(){
-	TSGraphOp <- EnvCDTdataPlot$TSGraphOp
-	daty <- EnvCDTdataPlot$tsdates
-	don <- EnvCDTdataPlot$stndata$series$ts
+plotCDTStation.Graph <- function(){
+	TSGraphOp <- EnvCDTStationPlot$TSGraphOp
+	daty <- EnvCDTStationPlot$tsdates
+	don <- EnvCDTStationPlot$stndata$series$ts
+	timestep <- EnvCDTStationPlot$tstep
 
-	titre <- paste("Station:", EnvCDTdataPlot$stndata$series$id)
-	location <- paste0("Station: ", EnvCDTdataPlot$stndata$series$id)
+	titre <- paste("Station:", EnvCDTStationPlot$stndata$series$id)
+	location <- paste0("Station: ", EnvCDTStationPlot$stndata$series$id)
 
 	#######
 
-	GRAPHTYPE <- str_trim(tclvalue(EnvCDTdataPlot$graph$typeTSp))
+	GRAPHTYPE <- str_trim(tclvalue(EnvCDTStationPlot$graph$typeTSp))
 	if(GRAPHTYPE == "Line") optsgph <- TSGraphOp$line
 	if(GRAPHTYPE == "Barplot") optsgph <- TSGraphOp$bar
 
 	xlim <- range(daty, na.rm = TRUE)
-	if(EnvCDTdataPlot$tstep != "others"){
+	if(timestep != "others"){
 		if(optsgph$xlim$is.min){
 			xx <- strsplit(optsgph$xlim$min, "-")[[1]]
 			x3 <- as.numeric(xx[3])
-			if(EnvCDTdataPlot$tstep == "pentad"){
+			if(timestep == "pentad"){
 				if(is.na(x3) | x3 < 1 | x3 > 6){
 					InsertMessagesTxt(main.txt.out, "xlim: pentad must be  between 1 and 6", format = TRUE)
 					return(NULL)
 				}
 				x3 <- c(1, 6, 11, 16, 21, 26)[x3]
 			}
-			if(EnvCDTdataPlot$tstep == "dekadal"){
+			if(timestep == "dekadal"){
 				if(is.na(x3) | x3 < 1 | x3 > 3){
 					InsertMessagesTxt(main.txt.out, "xlim: dekad must be 1, 2 or 3", format = TRUE)
 					return(NULL)
 				}
 				x3 <- c(1, 11, 21)[x3]
 			}
-			if(EnvCDTdataPlot$tstep == "monthly") x3 <- 1
+			if(timestep == "monthly") x3 <- 1
 			x1 <- as.numeric(xx[1])
 			x2 <- str_pad(as.numeric(xx[2]), 2, pad = "0")
 			x3 <- str_pad(x3, 2, pad = "0")
@@ -150,21 +151,21 @@ plotCDTdata.Graph <- function(){
 		if(optsgph$xlim$is.max){
 			xx <- strsplit(optsgph$xlim$max, "-")[[1]]
 			x3 <- as.numeric(xx[3])
-			if(EnvCDTdataPlot$tstep == "pentad"){
+			if(timestep == "pentad"){
 				if(is.na(x3) | x3 < 1 | x3 > 6){
 					InsertMessagesTxt(main.txt.out, "xlim: pentad must be  between 1 and 6", format = TRUE)
 					return(NULL)
 				}
 				x3 <- c(1, 6, 11, 16, 21, 26)[x3]
 			}
-			if(EnvCDTdataPlot$tstep == "dekadal"){
+			if(timestep == "dekadal"){
 				if(is.na(x3) | x3 < 1 | x3 > 3){
 					InsertMessagesTxt(main.txt.out, "xlim: dekad must be 1, 2 or 3", format = TRUE)
 					return(NULL)
 				}
 				x3 <- c(1, 11, 21)[x3]
 			}
-			if(EnvCDTdataPlot$tstep == "monthly") x3 <- 1
+			if(timestep == "monthly") x3 <- 1
 			x1 <- as.numeric(xx[1])
 			x2 <- str_pad(as.numeric(xx[2]), 2, pad = "0")
 			x3 <- str_pad(x3, 2, pad = "0")
@@ -221,12 +222,12 @@ plotCDTdata.Graph <- function(){
 
 CDTdataStation.Display.Maps <- function(parent){
 	plotIt <- function(){
-		plotCDTdata.Maps()
+		plotCDTStation.Maps()
 	}
 
 	#########
-	onglet <- imageNotebookTab_open(parent, EnvCDTdataPlot$notebookTab.dataMap,
-				paste('Map -', EnvCDTdataPlot$stndata$map$t), AllOpenTabType, AllOpenTabData)
+	onglet <- imageNotebookTab_open(parent, EnvCDTStationPlot$notebookTab.dataMap,
+				paste('Map -', EnvCDTStationPlot$stndata$map$t), AllOpenTabType, AllOpenTabData)
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
 	hscrFrame <- as.integer(tclvalue(tkwinfo("height", panel.right)))
@@ -251,12 +252,12 @@ CDTdataStation.Display.Maps <- function(parent){
 
 CDTdataStation.Display.Graph <- function(parent){
 	plotIt <- function(){
-		plotCDTdata.Graph()
+		plotCDTStation.Graph()
 	}
 
 	#########
-	onglet <- imageNotebookTab_open(parent, EnvCDTdataPlot$notebookTab.dataGraph,
-				paste('Station -', EnvCDTdataPlot$stndata$series$id), AllOpenTabType, AllOpenTabData)
+	onglet <- imageNotebookTab_open(parent, EnvCDTStationPlot$notebookTab.dataGraph,
+				paste('Station -', EnvCDTStationPlot$stndata$series$id), AllOpenTabType, AllOpenTabData)
 	hscale <- as.numeric(tclvalue(tkget(spinH)))
 	vscale <- as.numeric(tclvalue(tkget(spinV)))
 	hscrFrame <- as.integer(tclvalue(tkwinfo("height", panel.right)))

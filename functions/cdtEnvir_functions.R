@@ -54,8 +54,11 @@ EnvSummaryDataplot <- new.env()
 # SPI
 EnvSPICalcPlot <- new.env()
 
-# plot CDT data
-EnvCDTdataPlot <- new.env()
+# plot CDT station data
+EnvCDTStationPlot <- new.env()
+
+# plot CDT gridded dataset
+EnvCDTdatasetPlot <- new.env()
 
 # plot sequential netcdf
 EnvSeqNCDFPlot <- new.env()

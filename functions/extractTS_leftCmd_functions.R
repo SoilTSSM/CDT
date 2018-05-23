@@ -346,7 +346,7 @@ ExtractDataPanelCmd <- function(){
 				notebookTab <<- retNBTab$notebookTab
 				AllOpenTabType <<- retNBTab$AllOpenTabType
 				AllOpenTabData <<- retNBTab$AllOpenTabData
-			}else InsertMessagesTxt(main.txt.out, 'Provide the ESRI shapfile of the administrative boundaries', format = TRUE)
+			}else InsertMessagesTxt(main.txt.out, 'Provide the ESRI shapefile of the administrative boundaries', format = TRUE)
 		})
 
 		#############################

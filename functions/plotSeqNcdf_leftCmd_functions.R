@@ -273,7 +273,6 @@ PlotSeqNcdfCmd <- function(){
 		tkgrid(frameMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(frameSHP, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
-
 	#######################################################################################################
 
 	get.All.NCDF.Files <- function(){

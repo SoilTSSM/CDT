@@ -987,13 +987,26 @@ tkadd(top.menu, "cascade", label = "Data Analysis", menu = menu.dataproc, active
 menu.plot <- tkmenu(top.menu, tearoff = FALSE, relief = "flat")
 tkadd(top.menu, "cascade", label = "Plot Data", menu = menu.plot, activebackground = 'lightblue')
 
-	######################################## CDT
-	tkadd(menu.plot, "command", label = "Plot CDT Data", command = function(){
+	######################################## CDT station
+	tkadd(menu.plot, "command", label = "Plot CDT Station Data", command = function(){
 		refreshCDT.lcmd.env()
 		spinbox.state(state = 'normal')
-		if(is.null(lcmd.frame_CDTffrtPlot)){
-			lcmd.frame <<- PlotCDTDataFormatCmd()
-			lcmd.frame_CDTffrtPlot <<- 1
+		if(is.null(lcmd.frame_CDTstnPlot)){
+			lcmd.frame <<- PlotCDTStationCmd()
+			lcmd.frame_CDTstnPlot <<- 1
+		}
+	})
+
+	######################################## CDT dataset
+	tkadd(menu.plot, "separator")
+
+	##########
+	tkadd(menu.plot, "command", label = "Plot CDT Gridded Dataset", command = function(){
+		refreshCDT.lcmd.env()
+		spinbox.state(state = 'normal')
+		if(is.null(lcmd.frame_CDTdatasetPlot)){
+			lcmd.frame <<- PlotCDTDatasetCmd()
+			lcmd.frame_CDTdatasetPlot <<- 1
 		}
 	})
 
