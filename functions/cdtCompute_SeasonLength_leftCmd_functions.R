@@ -236,6 +236,7 @@ SeasonLengthCalcPanelCmd <- function(){
 			stateCaclBut <- if(tclvalue(EnvSeasLengthCalcPlot$DirExist) == '1') 'normal' else 'disabled'
 			tkconfigure(bt.CalcOnset, state = stateCaclBut)
 		})
+
 		##############################################
 
 		frameDataMap <- ttklabelframe(subfr2, text = "Season Length Map", relief = 'groove')

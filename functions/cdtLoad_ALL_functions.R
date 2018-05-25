@@ -227,6 +227,7 @@ source(file.path(apps.dir, 'functions', 'cdtSpatialAnalysis_displayPLOT_function
 #####
 source(file.path(apps.dir, 'functions', 'cdtOptions_MapGraph_dlgBox_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtOptions_MapGraph_Plot_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtOptions_PolygonGraph_Plot_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'SkewNormalDistribution_functions.R'))
@@ -292,8 +293,11 @@ source(file.path(apps.dir, 'functions', 'cdtCompute_Summary_displayPLOT_function
 
 #####
 source(file.path(apps.dir, 'functions', 'cdtCompute_drought_Indices_functions.R'))
+
+#####
 source(file.path(apps.dir, 'functions', 'cdtCompute_SPI_leftCmd_functions.R'))
 source(file.path(apps.dir, 'functions', 'cdtCompute_SPI_Procs_functions.R'))
+source(file.path(apps.dir, 'functions', 'cdtCompute_SPI_displayPLOT_functions.R'))
 
 #####
 source(file.path(apps.dir, 'functions', 'cdtRasterConversion_dlgBox_functions.R'))

@@ -27,7 +27,7 @@ MapGraph.MapOptions <- function(parent.win, climMapOpt){
 
 	frameColkey <- ttklabelframe(frDialog, text = "Colorkey", relief = 'groove')
 
-	preset.colkey <- c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors')
+	preset.colkey <- c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors', 'spi.colors')
 	preset.color <- tclVar(climMapOpt$presetCol$color)
 	reverse.color <- tclVar(climMapOpt$presetCol$reverse)
 	custom.color <- tclVar(climMapOpt$userCol$custom)
@@ -2848,3 +2848,669 @@ MapGraph.GraphOptions.LineSHP <- function(parent.win, shpLineOpt){
 	tkwait.window(tt)
 	return(shpLineOpt)
 }
+
+#######################################################################################################
+
+MapGraph.GraphOptions.Bar.Line <- function(parent.win, climGraphOpt){
+	if(Sys.info()["sysname"] == "Windows"){
+		largeur1 <- 30
+		largeur2 <- 34
+		largeur3 <- 31
+		width.col <- 3
+		width.spin <- 4
+
+	}else{
+		largeur1 <- 26
+		largeur2 <- 29
+		largeur3 <- 34
+		width.col <- 2
+		width.spin <- 3
+	}
+
+	#####################
+	tt <- tktoplevel()
+	tkgrab.set(tt)
+	tkfocus(tt)
+
+	#####################
+	frDialog <- tkframe(tt, relief = 'raised', borderwidth = 2)
+	frButt <- tkframe(tt)
+
+	#####################
+
+	frameGraphXlim <- ttklabelframe(frDialog, text = "X axis ranges", relief = 'groove')
+
+	is.min.xlim <- tclVar(climGraphOpt$bar.line$xlim$is.min)
+	is.max.xlim <- tclVar(climGraphOpt$bar.line$xlim$is.max)
+	min.xlim <- tclVar(climGraphOpt$bar.line$xlim$min)
+	max.xlim <- tclVar(climGraphOpt$bar.line$xlim$max)
+
+	stateMinXlim <- if(climGraphOpt$bar.line$xlim$is.min) 'normal' else 'disabled'
+	stateMaxXlim <- if(climGraphOpt$bar.line$xlim$is.max) 'normal' else 'disabled'
+
+	chk.min.Xlim <- tkcheckbutton(frameGraphXlim, variable = is.min.xlim, text = "Min",  anchor = 'w', justify = 'left')
+	en.min.Xlim <- tkentry(frameGraphXlim, textvariable = min.xlim, width = 9, state = stateMinXlim)
+	chk.max.Xlim <- tkcheckbutton(frameGraphXlim, variable = is.max.xlim, text = "Max",  anchor = 'w', justify = 'left')
+	en.max.Xlim <- tkentry(frameGraphXlim, textvariable = max.xlim, width = 9, state = stateMaxXlim)
+
+	tkgrid(chk.min.Xlim, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.min.Xlim, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(chk.max.Xlim, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.max.Xlim, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#########
+
+	tkbind(chk.min.Xlim, "<Button-1>", function(){
+		stateMinXlim <- if(tclvalue(is.min.xlim) == '0') 'normal' else 'disabled'
+		tkconfigure(en.min.Xlim, state = stateMinXlim)
+	})
+
+	tkbind(chk.max.Xlim, "<Button-1>", function(){
+		stateMaxXlim <- if(tclvalue(is.max.xlim) == '0') 'normal' else 'disabled'
+		tkconfigure(en.max.Xlim, state = stateMaxXlim)
+	})
+
+	#####################
+
+	frameGraphYlim <- ttklabelframe(frDialog, text = "Y axis ranges", relief = 'groove')
+
+	is.min.ylim <- tclVar(climGraphOpt$bar.line$ylim$is.min)
+	is.max.ylim <- tclVar(climGraphOpt$bar.line$ylim$is.max)
+	min.ylim <- tclVar(climGraphOpt$bar.line$ylim$min)
+	max.ylim <- tclVar(climGraphOpt$bar.line$ylim$max)
+
+	stateMinYlim <- if(climGraphOpt$bar.line$ylim$is.min) 'normal' else 'disabled'
+	stateMaxYlim <- if(climGraphOpt$bar.line$ylim$is.max) 'normal' else 'disabled'
+
+	chk.min.Ylim <- tkcheckbutton(frameGraphYlim, variable = is.min.ylim, text = "Min",  anchor = 'w', justify = 'left')
+	en.min.Ylim <- tkentry(frameGraphYlim, textvariable = min.ylim, width = 6, state = stateMinYlim)
+	txt.sep.Ylim <- tklabel(frameGraphYlim, width = 4)
+	chk.max.Ylim <- tkcheckbutton(frameGraphYlim, variable = is.max.ylim, text = "Max",  anchor = 'w', justify = 'left')
+	en.max.Ylim <- tkentry(frameGraphYlim, textvariable = max.ylim, width = 6, state = stateMaxYlim)
+
+	tkgrid(chk.min.Ylim, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.min.Ylim, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.sep.Ylim, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(chk.max.Ylim, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.max.Ylim, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#########
+
+	tkbind(chk.min.Ylim, "<Button-1>", function(){
+		stateMinYlim <- if(tclvalue(is.min.ylim) == '0') 'normal' else 'disabled'
+		tkconfigure(en.min.Ylim, state = stateMinYlim)
+	})
+
+	tkbind(chk.max.Ylim, "<Button-1>", function(){
+		stateMaxYlim <- if(tclvalue(is.max.ylim) == '0') 'normal' else 'disabled'
+		tkconfigure(en.max.Ylim, state = stateMaxYlim)
+	})
+
+	#####################
+
+	frameLevel <- ttklabelframe(frDialog, text = "Y grid lines", relief = 'groove')
+
+	custom.ticks <- tclVar(climGraphOpt$bar.line$userYTcks$custom)
+	stateEditLvl <- if(climGraphOpt$bar.line$userYTcks$custom) 'normal' else 'disabled'
+
+	chk.Level <- tkcheckbutton(frameLevel, variable = custom.ticks, text = 'User customized grid lines', anchor = 'w', justify = 'left')
+	yscrLevel <- tkscrollbar(frameLevel, repeatinterval = 4, command = function(...) tkyview(textLevel, ...))
+	textLevel <- tktext(frameLevel, bg = "white", wrap = "word", height = 2, width = largeur3,
+							yscrollcommand = function(...) tkset(yscrLevel, ...))
+
+	tkgrid(chk.Level, sticky = "we")
+	tkgrid(textLevel, yscrLevel)
+	tkgrid.configure(yscrLevel, sticky = "ns")
+	tkgrid.configure(textLevel, sticky = 'nswe') 
+
+	if(length(climGraphOpt$bar.line$userYTcks$ticks) > 0)
+		for(j in seq_along(climGraphOpt$bar.line$userYTcks$ticks))
+			tkinsert(textLevel, "end", paste0(climGraphOpt$bar.line$userYTcks$ticks[j], ', '))
+	tkconfigure(textLevel, state = stateEditLvl)
+
+	#########
+
+	tkbind(chk.Level, "<Button-1>", function(){
+		stateEditLvl <- if(tclvalue(custom.ticks) == '0') 'normal' else 'disabled'
+		tkconfigure(textLevel, state = stateEditLvl)
+	})
+
+	#####################
+
+	frameGraphAxLabs <- ttklabelframe(frDialog, text = "Axis Labels", relief = 'groove')
+
+	is.xaxis.lab <- tclVar(climGraphOpt$bar.line$axislabs$is.xlab)
+	is.yaxis.lab <- tclVar(climGraphOpt$bar.line$axislabs$is.ylab)
+	xaxis.lab <- tclVar(climGraphOpt$bar.line$axislabs$xlab)
+	yaxis.lab <- tclVar(climGraphOpt$bar.line$axislabs$ylab)
+
+	stateXLab <- if(climGraphOpt$bar.line$axislabs$is.xlab) 'normal' else 'disabled'
+	stateYLab <- if(climGraphOpt$bar.line$axislabs$is.ylab) 'normal' else 'disabled'
+
+	chk.Xlab <- tkcheckbutton(frameGraphAxLabs, variable = is.xaxis.lab, text = 'Xlab', anchor = 'w', justify = 'left')
+	en.Xlab <- tkentry(frameGraphAxLabs, textvariable = xaxis.lab, width = largeur1, state = stateXLab)
+	chk.Ylab <- tkcheckbutton(frameGraphAxLabs, variable = is.yaxis.lab, text = 'Ylab', anchor = 'w', justify = 'left')
+	en.Ylab <- tkentry(frameGraphAxLabs, textvariable = yaxis.lab, width = largeur1, state = stateYLab)
+
+	tkgrid(chk.Xlab, row = 0, column = 0, sticky = 'e')
+	tkgrid(en.Xlab, row = 0, column = 1, sticky = 'we')
+	tkgrid(chk.Ylab, row = 1, column = 0, sticky = 'e')
+	tkgrid(en.Ylab, row = 1, column = 1, sticky = 'we')
+
+	#########
+
+	tkbind(chk.Xlab, "<Button-1>", function(){
+		stateXLab <- if(tclvalue(is.xaxis.lab) == '0') 'normal' else 'disabled'
+		tkconfigure(en.Xlab, state = stateXLab)
+	})
+
+	tkbind(chk.Ylab, "<Button-1>", function(){
+		stateYLab <- if(tclvalue(is.yaxis.lab) == '0') 'normal' else 'disabled'
+		tkconfigure(en.Ylab, state = stateYLab)
+	})
+
+	#####################
+
+	frameGraphTitle <- ttklabelframe(frDialog, text = "Graph Title", relief = 'groove')
+
+	is.title <- tclVar(climGraphOpt$bar.line$title$is.title)
+	text.title <- tclVar(climGraphOpt$bar.line$title$title)
+	pos.title <- tclVar(climGraphOpt$bar.line$title$position)
+
+	stateGpTlt <- if(climGraphOpt$bar.line$title$is.title) 'normal' else 'disabled'
+
+	chk.GpTlt <- tkcheckbutton(frameGraphTitle, variable = is.title, anchor = 'e', justify = 'right')
+	en.GpTlt <- tkentry(frameGraphTitle, textvariable = text.title, width = largeur2, state = stateGpTlt)
+	txt.GpTlt <- tklabel(frameGraphTitle, text = "Title Position",  anchor = 'e', justify = 'right')
+	cb.GpTlt <- ttkcombobox(frameGraphTitle, values = c("top", "bottom"), textvariable = pos.title, width = 7, state = stateGpTlt)
+
+	tkgrid(chk.GpTlt, row = 0, column = 0, sticky = 'e', rowspan = 1, columnspan = 1)
+	tkgrid(en.GpTlt, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 7)
+	tkgrid(txt.GpTlt, row = 1, column = 1, sticky = 'e', rowspan = 1, columnspan = 6)
+	tkgrid(cb.GpTlt, row = 1, column = 7, sticky = 'we', rowspan = 1, columnspan = 1)
+
+	#########
+
+	tkbind(chk.GpTlt, "<Button-1>", function(){
+		stateGpTlt <- if(tclvalue(is.title) == '0') 'normal' else 'disabled'
+		tkconfigure(en.GpTlt, state = stateGpTlt)
+		tkconfigure(cb.GpTlt, state = stateGpTlt)
+	})
+
+	#####################
+
+	frameBarCol <- ttklabelframe(frDialog, text = "Colors", relief = 'groove')
+
+	color.Y0 <- tclVar(climGraphOpt$bar.line$colors$y0)
+	color.moins <- tclVar(climGraphOpt$bar.line$colors$negative)
+	color.plus <- tclVar(climGraphOpt$bar.line$colors$positive)
+
+	txt.colY0 <- tklabel(frameBarCol, text = "Y0",  anchor = 'e', justify = 'right')
+	en.colY0 <- tkentry(frameBarCol, textvariable = color.Y0, width = 3)
+	txt.colMoins <- tklabel(frameBarCol, text = "Negative",  anchor = 'e', justify = 'right')
+	bt.colMoins <- tkbutton(frameBarCol, bg = tclvalue(color.moins), width = width.col)
+	txt.colPlus <- tklabel(frameBarCol, text = "Positive",  anchor = 'e', justify = 'right')
+	bt.colPlus <- tkbutton(frameBarCol, bg = tclvalue(color.plus), width = width.col)
+
+	#########
+	tkconfigure(bt.colMoins, command = function(){
+		loko <- str_trim(tclvalue(tcl("tk_chooseColor", initialcolor = tclvalue(color.moins), title = "Colors")))
+		if(nchar(loko) > 0){
+			tkconfigure(bt.colMoins, bg = loko)
+			tclvalue(color.moins) <- loko
+		}
+	})
+
+	tkconfigure(bt.colPlus, command = function(){
+		loko <- str_trim(tclvalue(tcl("tk_chooseColor", initialcolor = tclvalue(color.plus), title = "Colors")))
+		if(nchar(loko) > 0){
+			tkconfigure(bt.colPlus, bg = loko)
+			tclvalue(color.plus) <- loko
+		}
+	})
+
+	tkgrid(txt.colY0, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(en.colY0, row = 0, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.colMoins, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.colMoins, row = 0, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(txt.colPlus, row = 0, column = 4, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.colPlus, row = 0, column = 5, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#####################
+
+	framePlotLine <- ttklabelframe(frDialog, text = "Add Line", relief = 'groove')
+
+	is.plotline <- tclVar(climGraphOpt$bar.line$line$plot)
+	col.plotline <- tclVar(climGraphOpt$bar.line$line$col)
+	statePlotLine <- if(climGraphOpt$bar.line$line$plot) "normal" else "disabled"
+
+	chk.plotLine <- tkcheckbutton(framePlotLine, variable = is.plotline, anchor = 'e', justify = 'right')
+	txt.plotLineC <- tklabel(framePlotLine, text = "Color",  anchor = 'e', justify = 'right')
+	bt.plotLineC <- tkbutton(framePlotLine, bg = tclvalue(col.plotline), width = width.col, state = statePlotLine)
+	txt.plotLineW <- tklabel(framePlotLine, text = "Width",  anchor = 'e', justify = 'right')
+	spin.plotLineW <- ttkspinbox(framePlotLine, from = 0.5, to = 4, increment = 0.1, justify = 'center', width = width.spin, state = statePlotLine)
+	tkset(spin.plotLineW, climGraphOpt$bar.line$line$lwd)
+
+	tkconfigure(bt.plotLineC, command = function(){
+		loko <- str_trim(tclvalue(tcl("tk_chooseColor", initialcolor = tclvalue(col.plotline), title = "Colors")))
+		if(nchar(loko) > 0){
+			tkconfigure(bt.plotLineC, bg = loko)
+			tclvalue(col.plotline) <- loko
+		}
+	})
+
+	tkgrid(chk.plotLine, txt.plotLineC, bt.plotLineC, txt.plotLineW, spin.plotLineW)
+
+	#####
+	tkbind(chk.plotLine, "<Button-1>", function(){
+		statePlotLine <- if(tclvalue(is.plotline) == '0') 'normal' else 'disabled'
+		tkconfigure(bt.plotLineC, state = statePlotLine)
+		tkconfigure(spin.plotLineW, state = statePlotLine)
+	})
+
+	#####################
+
+	tkgrid(frameGraphXlim, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frameGraphYlim, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frameLevel, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frameGraphAxLabs, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frameGraphTitle, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frameBarCol, row = 5, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(framePlotLine, row = 6, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#####################
+	bt.opt.OK <- tkbutton(frButt, text = "OK") 
+	bt.opt.CA <- tkbutton(frButt, text = "Cancel") 
+
+	tkconfigure(bt.opt.OK, command = function(){
+		climGraphOpt$bar.line$xlim$is.min <<- switch(tclvalue(is.min.xlim), '0' = FALSE, '1' = TRUE)
+		climGraphOpt$bar.line$xlim$is.max <<- switch(tclvalue(is.max.xlim), '0' = FALSE, '1' = TRUE)
+		climGraphOpt$bar.line$xlim$min <<- str_trim(tclvalue(min.xlim))
+		climGraphOpt$bar.line$xlim$max <<- str_trim(tclvalue(max.xlim))
+
+		climGraphOpt$bar.line$ylim$is.min <<- switch(tclvalue(is.min.ylim), '0' = FALSE, '1' = TRUE)
+		climGraphOpt$bar.line$ylim$is.max <<- switch(tclvalue(is.max.ylim), '0' = FALSE, '1' = TRUE)
+		climGraphOpt$bar.line$ylim$min <<- as.numeric(str_trim(tclvalue(min.ylim)))
+		climGraphOpt$bar.line$ylim$max <<- as.numeric(str_trim(tclvalue(max.ylim)))
+
+		climGraphOpt$bar.line$userYTcks$custom <<- switch(tclvalue(custom.ticks), '0' = FALSE, '1' = TRUE)
+		if(climGraphOpt$bar.line$userYTcks$custom){
+			vlevel <- tclvalue(tkget(textLevel, "0.0", "end"))
+			vlevel <- gsub("[\t\r\n]", "", vlevel)
+			vlevel <- gsub('\\s+', '', vlevel)
+			vlevel <- strsplit(vlevel, ",")[[1]]
+			vlevel <- vlevel[!is.na(vlevel) | vlevel != '']
+			if(length(vlevel) < 2){
+				tkmessageBox(message = "Invalid grid lines", icon = "warning", type = "ok")
+				tkwait.window(tt)
+			}
+			climGraphOpt$bar.line$userYTcks$ticks <<- as.numeric(vlevel)
+		}
+
+		climGraphOpt$bar.line$axislabs$is.xlab <<- switch(tclvalue(is.xaxis.lab), '0' = FALSE, '1' = TRUE)
+		climGraphOpt$bar.line$axislabs$is.ylab <<- switch(tclvalue(is.yaxis.lab), '0' = FALSE, '1' = TRUE)
+		climGraphOpt$bar.line$axislabs$xlab <<- gsub('\\\\n', '\n', str_trim(tclvalue(xaxis.lab)))
+		climGraphOpt$bar.line$axislabs$ylab <<- gsub('\\\\n', '\n', str_trim(tclvalue(yaxis.lab)))
+
+		climGraphOpt$bar.line$title$is.title <<- switch(tclvalue(is.title), '0' = FALSE, '1' = TRUE)
+		climGraphOpt$bar.line$title$title <<- gsub('\\\\n', '\n', str_trim(tclvalue(text.title)))
+		climGraphOpt$bar.line$title$position <<- str_trim(tclvalue(pos.title))
+
+		climGraphOpt$bar.line$colors$y0 <<- as.numeric(str_trim(tclvalue(color.Y0)))
+		climGraphOpt$bar.line$colors$negative <<- tclvalue(color.moins)
+		climGraphOpt$bar.line$colors$positive <<- tclvalue(color.plus)
+
+		climGraphOpt$bar.line$line$plot <<- switch(tclvalue(is.plotline), '0' = FALSE, '1' = TRUE)
+		climGraphOpt$bar.line$line$col <<- tclvalue(col.plotline)
+		climGraphOpt$bar.line$line$lwd <<- as.numeric(str_trim(tclvalue(tkget(spin.plotLineW))))
+
+		tkgrab.release(tt)
+		tkdestroy(tt)
+		tkfocus(parent.win)
+	})
+
+	tkconfigure(bt.opt.CA, command = function(){
+		tkgrab.release(tt)
+		tkdestroy(tt)
+		tkfocus(parent.win)
+	})
+
+	tkgrid(bt.opt.OK, row = 0, column = 0, padx = 5, pady = 1, ipadx = 5, sticky = 'w')
+	tkgrid(bt.opt.CA, row = 0, column = 1, padx = 5, pady = 1, ipadx = 1, sticky = 'e')
+
+	###############################################################	
+
+	tkgrid(frDialog, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frButt, row = 1, column = 1, sticky = 'se', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	tkwm.withdraw(tt)
+	tcl('update')
+	tt.w <- as.integer(tkwinfo("reqwidth", tt))
+	tt.h <- as.integer(tkwinfo("reqheight", tt))
+	tt.x <- as.integer(width.scr*0.5 - tt.w*0.5)
+	tt.y <- as.integer(height.scr*0.5 - tt.h*0.5)
+	tkwm.geometry(tt, paste0('+', tt.x, '+', tt.y))
+	tkwm.transient(tt)
+	tkwm.title(tt, "Options")
+	tkwm.deiconify(tt)
+
+	##################################################################	
+	tkfocus(tt)
+	tkbind(tt, "<Destroy>", function(){
+		tkgrab.release(tt)
+		tkfocus(parent.win)
+	})
+	tkwait.window(tt)
+	return(climGraphOpt)
+}
+
+#######################################################################################################
+
+MapGraph.SpiVizOptions <- function(parent.win, spiVizOpt){
+	if(Sys.info()["sysname"] == "Windows"){
+		largeur1 <- 28
+		largeur2 <- 31
+		largeur3 <- w.scale(21)
+		largeur4 <- 40
+		largeur5 <- 36
+	}else{
+		largeur1 <- 13
+		largeur2 <- 34
+		largeur3 <- w.scale(20)
+		largeur4 <- 29
+		largeur5 <- 26
+	}
+
+	#####################
+	tt <- tktoplevel()
+	tkgrab.set(tt)
+	tkfocus(tt)
+
+	#####################
+	frDialog <- tkframe(tt, relief = 'raised', borderwidth = 2)
+	frButt <- tkframe(tt)
+
+	#####################
+
+	frameColkey <- ttklabelframe(frDialog, text = "Colorkey", relief = 'groove')
+
+	preset.colkey <- c('tim.colors', 'rainbow', 'heat.colors', 'cm.colors', 'topo.colors', 'terrain.colors', 'spi.colors')
+	preset.color <- tclVar(spiVizOpt$presetCol$color)
+	reverse.color <- tclVar(spiVizOpt$presetCol$reverse)
+	custom.color <- tclVar(spiVizOpt$userCol$custom)
+
+	stateKol1 <- if(spiVizOpt$userCol$custom) "disabled" else "normal"
+	stateKol2 <- if(spiVizOpt$userCol$custom) "normal" else "disabled"
+
+	cb.colkey <- ttkcombobox(frameColkey, values = preset.colkey, textvariable = preset.color, width = largeur1, state = stateKol1)
+	chk.colkey <- tkcheckbutton(frameColkey, variable = reverse.color, text = 'Reverse', anchor = 'e', justify = 'right', state = stateKol1)
+	chk.userKol <- tkcheckbutton(frameColkey, variable = custom.color, text = 'User customized colorkey', anchor = 'w', justify = 'left')
+	bt.userKol <- tkbutton(frameColkey, text = "Custom", state = stateKol2)
+	canvas.preview <- tkcanvas(frameColkey, width = largeur3, height = 20, bg = 'white')
+
+	#########
+	##Preview Color
+	if(tclvalue(custom.color) == "0"){
+		funkol <- match.fun(tclvalue(preset.color))
+		listCol <- funkol(10)
+		if(tclvalue(reverse.color) == '1') listCol <- rev(listCol)
+		kolor <- getGradientColor(listCol, 0:largeur3)
+		tkdelete(canvas.preview, 'gradlines0')
+		for(i in 0:largeur3) tkcreate(canvas.preview, "line", i, 0, i, 20, fill = kolor[i], tags = 'gradlines0')
+	}else{
+		if(!is.null(spiVizOpt$userCol$color) & length(spiVizOpt$userCol$color) > 0){
+			kolor <- getGradientColor(spiVizOpt$userCol$color, 0:largeur3)
+			tkdelete(canvas.preview, 'gradlines0')
+			for(i in 0:largeur3) tkcreate(canvas.preview, "line", i, 0, i, 20, fill = kolor[i], tags = 'gradlines0')
+		}else tkdelete(canvas.preview, 'gradlines0')
+	}
+
+	tkconfigure(bt.userKol, command = function(){
+		spiVizOpt$userCol$color <<- createColorkey(main.win, spiVizOpt$userCol$color)
+		if(!is.null(spiVizOpt$userCol$color)){
+			kolor <- getGradientColor(spiVizOpt$userCol$color, 0:largeur3)
+			tkdelete(canvas.preview, 'gradlines0')
+			for(i in 0:largeur3) tkcreate(canvas.preview, "line", i, 0, i, 20, fill = kolor[i], tags = 'gradlines0')
+		}else tkdelete(canvas.preview, 'gradlines0')
+	})
+
+	tkgrid(cb.colkey, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(chk.colkey, row = 0, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(chk.userKol, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(bt.userKol, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(canvas.preview, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#########
+
+	tkbind(chk.userKol, "<Button-1>", function(){
+		stateKol1 <- if(tclvalue(custom.color) == '1') 'normal' else 'disabled'
+		tkconfigure(cb.colkey, state = stateKol1)
+		tkconfigure(chk.colkey, state = stateKol1)
+		stateKol2 <- if(tclvalue(custom.color) == '0') 'normal' else 'disabled'
+		tkconfigure(bt.userKol, state = stateKol2)
+
+		if(tclvalue(custom.color) == '0'){
+			if(!is.null(spiVizOpt$userCol$color)){
+				kolor <- getGradientColor(spiVizOpt$userCol$color, 0:largeur3)
+				tkdelete(canvas.preview, 'gradlines0')
+				for(i in 0:largeur3) tkcreate(canvas.preview, "line", i, 0, i, 20, fill = kolor[i], tags = 'gradlines0')
+			}else tkdelete(canvas.preview, 'gradlines0')
+		}else{
+			funkol <- match.fun(tclvalue(preset.color))
+			listCol <- funkol(10)
+			if(tclvalue(reverse.color) == '1') listCol <- rev(listCol)
+			kolor <- getGradientColor(listCol, 0:largeur3)
+			tkdelete(canvas.preview, 'gradlines0')
+			for(i in 0:largeur3) tkcreate(canvas.preview, "line", i, 0, i, 20, fill = kolor[i], tags = 'gradlines0')
+		}
+	})
+
+	tkbind(cb.colkey, "<<ComboboxSelected>>", function(){
+		funkol <- match.fun(tclvalue(preset.color))
+		listCol <- funkol(10)
+		if(tclvalue(reverse.color) == '1') listCol <- rev(listCol)
+		kolor <- getGradientColor(listCol, 0:largeur3)
+		tkdelete(canvas.preview, 'gradlines0')
+		for(i in 0:largeur3) tkcreate(canvas.preview, "line", i, 0, i, 20, fill = kolor[i], tags = 'gradlines0')
+	})
+
+	tkbind(chk.colkey, "<Button-1>", function(){
+		funkol <- match.fun(tclvalue(preset.color))
+		listCol <- funkol(10)
+		if(tclvalue(reverse.color) == '0') listCol <- rev(listCol)
+		kolor <- getGradientColor(listCol, 0:largeur3)
+		tkdelete(canvas.preview, 'gradlines0')
+		for(i in 0:largeur3) tkcreate(canvas.preview, "line", i, 0, i, 20, fill = kolor[i], tags = 'gradlines0')
+	})
+
+	#####################
+
+	frameLevel <- ttklabelframe(frDialog, text = "Levels", relief = 'groove')
+
+	equidist.level <- tclVar(spiVizOpt$userLvl$equidist)
+	custom.level <- tclVar(spiVizOpt$userLvl$custom)
+	stateEditLvl <- if(spiVizOpt$userLvl$custom) 'normal' else 'disabled'
+
+	chk.Level <- tkcheckbutton(frameLevel, variable = custom.level, text = 'User customized levels', anchor = 'w', justify = 'left')
+	yscrLevel <- tkscrollbar(frameLevel, repeatinterval = 4, command = function(...) tkyview(textLevel, ...))
+	textLevel <- tktext(frameLevel, bg = "white", wrap = "word", height = 2, width = largeur2,
+							yscrollcommand = function(...) tkset(yscrLevel, ...))
+	chk.Equidist <- tkcheckbutton(frameLevel, variable = equidist.level, text = 'Equidistant colorkey breaks', anchor = 'w', justify = 'left')
+
+	tkgrid(chk.Level, sticky = "we")
+	tkgrid(textLevel, yscrLevel)
+	tkgrid.configure(yscrLevel, sticky = "ns")
+	tkgrid.configure(textLevel, sticky = 'nswe') 
+	tkgrid(chk.Equidist, sticky = "we")
+
+	if(length(spiVizOpt$userLvl$levels) > 0)
+		for(j in seq_along(spiVizOpt$userLvl$levels))
+			tkinsert(textLevel, "end", paste0(spiVizOpt$userLvl$levels[j], ', '))
+	tkconfigure(textLevel, state = stateEditLvl)
+
+	#########
+
+	tkbind(chk.Level, "<Button-1>", function(){
+		stateEditLvl <- if(tclvalue(custom.level) == '0') 'normal' else 'disabled'
+		tkconfigure(textLevel, state = stateEditLvl)
+	})
+
+	#####################
+
+	frameMapTitle <- ttklabelframe(frDialog, text = "Map title", relief = 'groove')
+
+	user.title <- tclVar(spiVizOpt$title$user)
+	text.title <- tclVar(spiVizOpt$title$title)
+
+	stateMpTlt <- if(spiVizOpt$title$user) 'normal' else 'disabled'
+
+	chk.MpTlt <- tkcheckbutton(frameMapTitle, variable = user.title, anchor = 'e', justify = 'right')
+	en.MpTlt <- tkentry(frameMapTitle, textvariable = text.title, width = largeur4, state = stateMpTlt)
+
+	tkgrid(chk.MpTlt, row = 0, column = 0, sticky = 'e')
+	tkgrid(en.MpTlt, row = 0, column = 1, sticky = 'we')
+
+	#########
+
+	tkbind(chk.MpTlt, "<Button-1>", function(){
+		stateMpTlt <- if(tclvalue(user.title) == '0') 'normal' else 'disabled'
+		tkconfigure(en.MpTlt, state = stateMpTlt)
+	})
+
+	#####################
+
+	frameColKeyLab <- ttklabelframe(frDialog, text = "Colorkey label", relief = 'groove')
+
+	user.clLab <- tclVar(spiVizOpt$colkeyLab$user)
+	text.clLab <- tclVar(spiVizOpt$colkeyLab$label)
+
+	stateColLab <- if(spiVizOpt$colkeyLab$user) 'normal' else 'disabled'
+
+	chk.clLab <- tkcheckbutton(frameColKeyLab, variable = user.clLab, anchor = 'e', justify = 'right')
+	en.clLab <- tkentry(frameColKeyLab, textvariable = text.clLab, width = largeur4, state = stateColLab)
+
+	tkgrid(chk.clLab, row = 0, column = 0, sticky = 'e')
+	tkgrid(en.clLab, row = 0, column = 1, sticky = 'we')
+
+	#########
+
+	tkbind(chk.clLab, "<Button-1>", function(){
+		stateColLab <- if(tclvalue(user.clLab) == '0') 'normal' else 'disabled'
+		tkconfigure(en.clLab, state = stateColLab)
+	})
+
+	#####################
+
+	frameGraphAxLabs <- ttklabelframe(frDialog, text = "Axis Labels", relief = 'groove')
+
+	is.xaxis.lab <- tclVar(spiVizOpt$axislabs$is.xlab)
+	is.yaxis.lab <- tclVar(spiVizOpt$axislabs$is.ylab)
+	xaxis.lab <- tclVar(spiVizOpt$axislabs$xlab)
+	yaxis.lab <- tclVar(spiVizOpt$axislabs$ylab)
+
+	stateXLab <- if(spiVizOpt$axislabs$is.xlab) 'normal' else 'disabled'
+	stateYLab <- if(spiVizOpt$axislabs$is.ylab) 'normal' else 'disabled'
+
+	chk.Xlab <- tkcheckbutton(frameGraphAxLabs, variable = is.xaxis.lab, text = 'Xlab', anchor = 'w', justify = 'left')
+	en.Xlab <- tkentry(frameGraphAxLabs, textvariable = xaxis.lab, width = largeur5, state = stateXLab)
+	chk.Ylab <- tkcheckbutton(frameGraphAxLabs, variable = is.yaxis.lab, text = 'Ylab', anchor = 'w', justify = 'left')
+	en.Ylab <- tkentry(frameGraphAxLabs, textvariable = yaxis.lab, width = largeur5, state = stateYLab)
+
+	tkgrid(chk.Xlab, row = 0, column = 0, sticky = 'e')
+	tkgrid(en.Xlab, row = 0, column = 1, sticky = 'we')
+	tkgrid(chk.Ylab, row = 1, column = 0, sticky = 'e')
+	tkgrid(en.Ylab, row = 1, column = 1, sticky = 'we')
+
+	#########
+
+	tkbind(chk.Xlab, "<Button-1>", function(){
+		stateXLab <- if(tclvalue(is.xaxis.lab) == '0') 'normal' else 'disabled'
+		tkconfigure(en.Xlab, state = stateXLab)
+	})
+
+	tkbind(chk.Ylab, "<Button-1>", function(){
+		stateYLab <- if(tclvalue(is.yaxis.lab) == '0') 'normal' else 'disabled'
+		tkconfigure(en.Ylab, state = stateYLab)
+	})
+
+	#####################
+	tkgrid(frameColkey, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frameLevel, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frameMapTitle, row = 2, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frameColKeyLab, row = 3, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frameGraphAxLabs, row = 4, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#####################
+	bt.opt.OK <- tkbutton(frButt, text = "OK") 
+	bt.opt.CA <- tkbutton(frButt, text = "Cancel") 
+
+	tkconfigure(bt.opt.OK, command = function(){
+		spiVizOpt$presetCol$color <<- str_trim(tclvalue(preset.color))
+		spiVizOpt$presetCol$reverse <<- switch(tclvalue(reverse.color), '0' = FALSE, '1' = TRUE)
+		spiVizOpt$userCol$custom <<- switch(tclvalue(custom.color), '0' = FALSE, '1' = TRUE)
+		spiVizOpt$userLvl$custom <<- switch(tclvalue(custom.level), '0' = FALSE, '1' = TRUE)
+		spiVizOpt$userLvl$equidist <<- switch(tclvalue(equidist.level), '0' = FALSE, '1' = TRUE)
+		if(spiVizOpt$userLvl$custom){
+			vlevel <- tclvalue(tkget(textLevel, "0.0", "end"))
+			vlevel <- gsub("[\t\r\n]", "", vlevel)
+			vlevel <- gsub('\\s+', '', vlevel)
+			vlevel <- strsplit(vlevel, ",")[[1]]
+			vlevel <- vlevel[!is.na(vlevel) | vlevel != '']
+			if(length(vlevel) < 2){
+				tkmessageBox(message = "Invalid Levels", icon = "warning", type = "ok")
+				tkwait.window(tt)
+			}
+			spiVizOpt$userLvl$levels <<- as.numeric(vlevel)
+		}
+		spiVizOpt$title$user <<- switch(tclvalue(user.title), '0' = FALSE, '1' = TRUE)
+		spiVizOpt$title$title <<- str_trim(tclvalue(text.title))
+		spiVizOpt$colkeyLab$user <<- switch(tclvalue(user.clLab), '0' = FALSE, '1' = TRUE)
+		spiVizOpt$colkeyLab$label <<- str_trim(tclvalue(text.clLab))
+
+		spiVizOpt$axislabs$is.xlab <<- switch(tclvalue(is.xaxis.lab), '0' = FALSE, '1' = TRUE)
+		spiVizOpt$axislabs$is.ylab <<- switch(tclvalue(is.yaxis.lab), '0' = FALSE, '1' = TRUE)
+		spiVizOpt$axislabs$xlab <<- gsub('\\\\n', '\n', str_trim(tclvalue(xaxis.lab)))
+		spiVizOpt$axislabs$ylab <<- gsub('\\\\n', '\n', str_trim(tclvalue(yaxis.lab)))
+
+		tkgrab.release(tt)
+		tkdestroy(tt)
+		tkfocus(parent.win)
+	})
+
+	tkconfigure(bt.opt.CA, command = function(){
+		tkgrab.release(tt)
+		tkdestroy(tt)
+		tkfocus(parent.win)
+	})
+
+	tkgrid(bt.opt.OK, row = 0, column = 0, padx = 5, pady = 1, ipadx = 5, sticky = 'w')
+	tkgrid(bt.opt.CA, row = 0, column = 1, padx = 5, pady = 1, ipadx = 1, sticky = 'e')
+
+	###############################################################	
+
+	tkgrid(frDialog, row = 0, column = 0, sticky = 'nswe', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid(frButt, row = 1, column = 1, sticky = 'se', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	tkwm.withdraw(tt)
+	tcl('update')
+	tt.w <- as.integer(tkwinfo("reqwidth", tt))
+	tt.h <- as.integer(tkwinfo("reqheight", tt))
+	tt.x <- as.integer(width.scr*0.5 - tt.w*0.5)
+	tt.y <- as.integer(height.scr*0.5 - tt.h*0.5)
+	tkwm.geometry(tt, paste0('+', tt.x, '+', tt.y))
+	tkwm.transient(tt)
+	tkwm.title(tt, "Options")
+	tkwm.deiconify(tt)
+
+	##################################################################	
+	tkfocus(tt)
+	tkbind(tt, "<Destroy>", function(){
+		tkgrab.release(tt)
+		tkfocus(parent.win)
+	})
+	tkwait.window(tt)
+	return(spiVizOpt)
+}
+
+#######################################################################################################
+

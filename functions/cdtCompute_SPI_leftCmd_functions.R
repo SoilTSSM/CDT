@@ -10,7 +10,6 @@ SPICalcPanelCmd <- function(){
 		largeur3 <- 20
 		largeur4 <- 26
 		largeur5 <- 20
-		# largeur6 <- 22
 	}else{
 		wscrlwin <- w.scale(27)
 		hscrlwin <- h.scale(48.5)
@@ -20,10 +19,7 @@ SPICalcPanelCmd <- function(){
 		largeur3 <- 15
 		largeur4 <- 20
 		largeur5 <- 14
-		# largeur6 <- 14
 	}
-
-	# GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'ClimatoAnalysis.json'))
 
 	GeneralParameters <- list(intstep = "dekadal", data.type = "cdtstation", 
 							cdtstation = "", cdtdataset = "",
@@ -40,12 +36,16 @@ SPICalcPanelCmd <- function(){
 	tkgrid(tknote.cmd, sticky = 'nwes')
 	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
 
-	cmd.tab1 <- bwAddTab(tknote.cmd, text = "Input")
-	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Plot")
+	cmd.tab1 <- bwAddTab(tknote.cmd, text = "SPI")
+	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Maps")
+	cmd.tab3 <- bwAddTab(tknote.cmd, text = "Graphs")
+	cmd.tab4 <- bwAddTab(tknote.cmd, text = "Boundaries")
 
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
 	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab3, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab4, 0, weight = 1)
 
 	#######################################################################################################
 
@@ -473,8 +473,12 @@ SPICalcPanelCmd <- function(){
 
 					###################
 
-					# widgets.Station.Pixel()
+					widgets.Station.Pixel()
+					ret <- try(set.Data.Scales(), silent = TRUE)
+					if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
 
+					ret <- try(set.Data.Dates(), silent = TRUE)
+					if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
 				}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 			}else InsertMessagesTxt(main.txt.out, msg1, format = TRUE)
 		})
@@ -503,26 +507,25 @@ SPICalcPanelCmd <- function(){
 
 		##############################################
 
-		frameSPIDat <- ttklabelframe(subfr2, text = "SPI data", relief = 'groove')
+		frameDataExist <- ttklabelframe(subfr2, text = "SPI data", relief = 'groove')
 
 		EnvSPICalcPlot$DirExist <- tclVar(0)
-		file.Stat <- tclVar()
+		file.dataIndex <- tclVar()
 
-		statedirStat <- if(tclvalue(EnvSPICalcPlot$DirExist) == "1") "normal" else "disabled"
+		stateExistData <- if(tclvalue(EnvSPICalcPlot$DirExist) == "1") "normal" else "disabled"
 
-		chk.dirStat <- tkcheckbutton(frameSPIDat, variable = EnvSPICalcPlot$DirExist, text = "SPI data already computed", anchor = 'w', justify = 'left')
-		en.dirStat <- tkentry(frameSPIDat, textvariable = file.Stat, width = largeur2, state = statedirStat)
-		bt.dirStat <- tkbutton(frameSPIDat, text = "...", state = statedirStat)
+		chk.dataIdx <- tkcheckbutton(frameDataExist, variable = EnvSPICalcPlot$DirExist, text = "SPI data already computed", anchor = 'w', justify = 'left')
+		en.dataIdx <- tkentry(frameDataExist, textvariable = file.dataIndex, width = largeur2, state = stateExistData)
+		bt.dataIdx <- tkbutton(frameDataExist, text = "...", state = stateExistData)
 
-		tkconfigure(bt.dirStat, command = function(){
+		tkconfigure(bt.dataIdx, command = function(){
 			filetypes <- "{{R Objects} {.rds .RDS .RData}} {{All files} *}"
 			path.Stat <- tclvalue(tkgetOpenFile(initialdir = getwd(), initialfile = "", filetypes = filetypes))
 			if(path.Stat%in%c("", "NA") | is.na(path.Stat)) return(NULL)
-			tclvalue(file.Stat) <- path.Stat
+			tclvalue(file.dataIndex) <- path.Stat
 
-
-			if(file.exists(str_trim(tclvalue(file.Stat)))){
-				OutSPIdata <- try(readRDS(str_trim(tclvalue(file.Stat))), silent = TRUE)
+			if(file.exists(str_trim(tclvalue(file.dataIndex)))){
+				OutSPIdata <- try(readRDS(str_trim(tclvalue(file.dataIndex))), silent = TRUE)
 				if(inherits(OutSPIdata, "try-error")){
 					InsertMessagesTxt(main.txt.out, 'Unable to load SPI data', format = TRUE)
 					InsertMessagesTxt(main.txt.out, gsub('[\r\n]', '', OutSPIdata[1]), format = TRUE)
@@ -534,25 +537,30 @@ SPICalcPanelCmd <- function(){
 				}
 
 				EnvSPICalcPlot$output <- OutSPIdata
-				EnvSPICalcPlot$PathSPI <- dirname(str_trim(tclvalue(file.Stat)))
+				EnvSPICalcPlot$PathData <- dirname(str_trim(tclvalue(file.dataIndex)))
 
 				###################
 
 				widgets.Station.Pixel()
-			}
+				ret <- try(set.Data.Scales(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
 
+				ret <- try(set.Data.Dates(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+			}
 		})
 
 
-		tkgrid(chk.dirStat, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(en.dirStat, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(bt.dirStat, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(chk.dataIdx, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 5, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(en.dataIdx, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(bt.dataIdx, row = 1, column = 4, sticky = 'w', rowspan = 1, columnspan = 1, padx = 0, pady = 1, ipadx = 1, ipady = 1)
 
 		###############
-		tkbind(chk.dirStat, "<Button-1>", function(){
-			statedirStat <- if(tclvalue(EnvSPICalcPlot$DirExist) == '1') 'disabled' else 'normal'
-			tkconfigure(en.dirStat, state = statedirStat)
-			tkconfigure(bt.dirStat, state = statedirStat)
+
+		tkbind(chk.dataIdx, "<Button-1>", function(){
+			stateExistData <- if(tclvalue(EnvSPICalcPlot$DirExist) == '1') 'disabled' else 'normal'
+			tkconfigure(en.dataIdx, state = stateExistData)
+			tkconfigure(bt.dataIdx, state = stateExistData)
 			stateCaclBut <- if(tclvalue(EnvSPICalcPlot$DirExist) == '1') 'normal' else 'disabled'
 			tkconfigure(calculateBut, state = stateCaclBut)
 		})
@@ -571,7 +579,81 @@ SPICalcPanelCmd <- function(){
 		bt.spi.Date.next <- ttkbutton(frameSPIMap, text = ">>", width = 3)
 		bt.spi.MapOpt <- ttkbutton(frameSPIMap, text = "Options", width = 7)
 
+		###############
 
+		EnvSPICalcPlot$dataMapOp <- list(presetCol = list(color = 'tim.colors', reverse = TRUE),
+											userCol = list(custom = FALSE, color = NULL),
+											userLvl = list(custom = TRUE, levels = c(-2, -1.5, -1, 0, 1, 1.5, 2), equidist = TRUE),
+											title = list(user = FALSE, title = ''),
+											colkeyLab = list(user = FALSE, label = ''),
+											scalebar = list(add = FALSE, pos = 'bottomleft'))
+
+		tkconfigure(bt.spi.MapOpt, command = function(){
+			if(!is.null(EnvSPICalcPlot$varData$map)){
+				atlevel <- pretty(EnvSPICalcPlot$varData$map$z, n = 10, min.n = 7)
+				if(is.null(EnvSPICalcPlot$dataMapOp$userLvl$levels)){
+					EnvSPICalcPlot$dataMapOp$userLvl$levels <- atlevel
+				}else{
+					if(!EnvSPICalcPlot$dataMapOp$userLvl$custom)
+						EnvSPICalcPlot$dataMapOp$userLvl$levels <- atlevel
+				}
+			}
+			EnvSPICalcPlot$dataMapOp <- MapGraph.MapOptions(main.win, EnvSPICalcPlot$dataMapOp)
+		})
+
+		###############
+
+		EnvSPICalcPlot$notebookTab.dataMap <- NULL
+
+		tkconfigure(bt.spi.maps, command = function(){
+			if(str_trim(tclvalue(EnvSPICalcPlot$spi.date)) != "" &
+				!is.null(EnvSPICalcPlot$varData))
+			{
+				get.Data.Map()
+
+				imgContainer <- SPICalc.Display.Maps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSPICalcPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
+				EnvSPICalcPlot$notebookTab.dataMap <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		tkconfigure(bt.spi.Date.prev, command = function(){
+			if(str_trim(tclvalue(EnvSPICalcPlot$spi.date)) != ""){
+				donDates <- EnvSPICalcPlot$varData$ts$dates
+				idaty <- which(donDates == str_trim(tclvalue(EnvSPICalcPlot$spi.date)))
+				idaty <- idaty-1
+				if(idaty < 1) idaty <- length(donDates)
+				tclvalue(EnvSPICalcPlot$spi.date) <- donDates[idaty]
+				get.Data.Map()
+
+				imgContainer <- SPICalc.Display.Maps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSPICalcPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
+				EnvSPICalcPlot$notebookTab.dataMap <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		tkconfigure(bt.spi.Date.next, command = function(){
+			if(str_trim(tclvalue(EnvSPICalcPlot$spi.date)) != ""){
+				donDates <- EnvSPICalcPlot$varData$ts$dates
+				idaty <- which(donDates == str_trim(tclvalue(EnvSPICalcPlot$spi.date)))
+				idaty <- idaty+1
+				if(idaty > length(donDates)) idaty <- 1
+				tclvalue(EnvSPICalcPlot$spi.date) <- donDates[idaty]
+				get.Data.Map()
+
+				imgContainer <- SPICalc.Display.Maps(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSPICalcPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
+				EnvSPICalcPlot$notebookTab.dataMap <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		###############
 		tkgrid(cb.spi.maps, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(bt.spi.maps, row = 0, column = 4, sticky = '', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(bt.spi.Date.prev, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
@@ -579,35 +661,165 @@ SPICalcPanelCmd <- function(){
 		tkgrid(bt.spi.Date.next, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		tkgrid(bt.spi.MapOpt, row = 1, column = 4, sticky = 'we', rowspan = 1, columnspan = 2, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
+		###############
+		tkbind(cb.spi.maps, "<<ComboboxSelected>>", function(){
+			ret <- try(set.Data.Dates(), silent = TRUE)
+			if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+		})
+
 		##############################################
 
-		frameSPITS <- ttklabelframe(subfr2, text = "SPI Graph", relief = 'groove')
+		tkgrid(frameDataExist, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameSPIMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
 
-		typeTSPLOT <- c("Line", "Barplot")
-		EnvSPICalcPlot$graph$typeTSp <- tclVar("Line")
+	#######################################################################################################
 
-		cb.typeTSp <- ttkcombobox(frameSPITS, values = typeTSPLOT, textvariable = EnvSPICalcPlot$graph$typeTSp, width = largeur5)
-		bt.TsGraph.plot <- ttkbutton(frameSPITS, text = "PLOT", width = 7)
-		bt.TSGraphOpt <- ttkbutton(frameSPITS, text = "Options", width = 8)
+	#Tab3
+	frTab3 <- tkframe(cmd.tab3)
+	tkgrid(frTab3, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab3, 0, weight = 1)
 
-		frTS2 <- tkframe(frameSPITS)
-		EnvSPICalcPlot$graph$lonLOC <- tclVar()
-		EnvSPICalcPlot$graph$latLOC <- tclVar()
-		EnvSPICalcPlot$graph$stnIDTSp <- tclVar()
+	scrw3 <- bwScrolledWindow(frTab3)
+	tkgrid(scrw3)
+	tkgrid.columnconfigure(scrw3, 0, weight = 1)
+	subfr3 <- bwScrollableFrame(scrw3, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr3, 0, weight = 1)
 
+		##############################################
 
+		frameDataTS <- ttklabelframe(subfr3, text = "SPI Graph", relief = 'groove')
+
+		typeTSPLOT <- c("Bar-Line", "Polygon")
+		EnvSPICalcPlot$graph$typeTSp <- tclVar("Bar-Line")
+
+		cb.typeTSp <- ttkcombobox(frameDataTS, values = typeTSPLOT, textvariable = EnvSPICalcPlot$graph$typeTSp, width = largeur5)
+		bt.TsGraph.plot <- ttkbutton(frameDataTS, text = "PLOT", width = 7)
+		bt.TSGraphOpt <- ttkbutton(frameDataTS, text = "Options", width = 8)
+
+		#################
+
+		EnvSPICalcPlot$TSGraphOp <- list(
+							bar.line = list(
+								xlim = list(is.min = FALSE, min = "1981-1-1", is.max = FALSE, max = "2017-12-3"),
+								ylim = list(is.min = FALSE, min = -10, is.max = FALSE, max = 10),
+								userYTcks = list(custom = TRUE, ticks = c(-2, -1.5, -1, 0, 1, 1.5, 2)),
+								axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = FALSE, ylab = ''),
+								title = list(is.title = FALSE, title = '', position = 'top'),
+								colors = list(y0 = 0, negative = "#CF661C", positive = "#157040"),
+								line = list(plot = FALSE, col = "black", lwd = 1.5)
+							)
+						)
+
+		tkconfigure(bt.TSGraphOpt, command = function(){
+			suffix.fun <- switch(str_trim(tclvalue(EnvSPICalcPlot$graph$typeTSp)),
+									"Bar-Line" = "Bar.Line",
+									"Polygon" = "Bar.Line")
+			plot.fun <- match.fun(paste0("MapGraph.GraphOptions.", suffix.fun))
+			EnvSPICalcPlot$TSGraphOp <- plot.fun(main.win, EnvSPICalcPlot$TSGraphOp)
+		})
+
+		#########
+		EnvSPICalcPlot$notebookTab.dataGraph <- NULL
+
+		tkconfigure(bt.TsGraph.plot, command = function(){
+			if(!is.null(EnvSPICalcPlot$varData)){
+				imgContainer <- SPICalc.Display.Graph(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSPICalcPlot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
+				EnvSPICalcPlot$notebookTab.dataGraph <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		#################
 
 		tkgrid(cb.typeTSp, row = 0, column = 0, sticky = 'we', pady = 1, columnspan = 1)
 		tkgrid(bt.TSGraphOpt, row = 0, column = 1, sticky = 'we', padx = 4, pady = 1, columnspan = 1)
 		tkgrid(bt.TsGraph.plot, row = 0, column = 2, sticky = 'we', pady = 1, columnspan = 1)
-		tkgrid(frTS2, row = 1, column = 0, sticky = 'e', pady = 1, columnspan = 3)
-
 
 		##############################################
 
-		frameSHP <- ttklabelframe(subfr2, text = "Boundaries", relief = 'groove')
+		frameSTNCrds <- ttklabelframe(subfr3, text = "Station/Coordinates", relief = 'groove')
 
-		EnvSPICalcPlot$shp$add.shp <- tclVar(0)
+		frTS2 <- tkframe(frameSTNCrds)
+		EnvSPICalcPlot$graph$lonLOC <- tclVar()
+		EnvSPICalcPlot$graph$latLOC <- tclVar()
+		EnvSPICalcPlot$graph$stnIDTSp <- tclVar()
+
+		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
+
+		##############################################
+
+		frameVizTS <- tkframe(subfr3, relief = 'groove', borderwidth = 2)
+
+		EnvSPICalcPlot$spiViz$max.tscale <- tclVar(12)
+
+		bt.VizTS <- ttkbutton(frameVizTS, text = "Visualizing time-scales")
+		bt.VizOpt <- ttkbutton(frameVizTS, text = "Options")
+		txt.VizTS <- tklabel(frameVizTS, text = "Maximum time-scale", anchor = 'e', justify = 'right')
+		en.VizTS <- tkentry(frameVizTS, textvariable = EnvSPICalcPlot$spiViz$max.tscale, width = 3)
+
+		###############
+
+		EnvSPICalcPlot$spiVizOp <- list(presetCol = list(color = 'spi.colors', reverse = FALSE),
+										userCol = list(custom = FALSE, color = NULL),
+										userLvl = list(custom = TRUE, levels = c(-2, -1.5, -1, 0, 1, 1.5, 2), equidist = TRUE),
+										title = list(user = FALSE, title = ''),
+										colkeyLab = list(user = FALSE, label = ''),
+										axislabs = list(is.xlab = FALSE, xlab = '', is.ylab = TRUE, ylab = 'Time-scale (months)'))
+
+		tkconfigure(bt.VizOpt, command = function(){
+			EnvSPICalcPlot$spiVizOp <- MapGraph.SpiVizOptions(main.win, EnvSPICalcPlot$spiVizOp)
+		})
+
+		###############
+
+		EnvSPICalcPlot$notebookTab.spiViz <- NULL
+
+		tkconfigure(bt.VizTS, command = function(){
+			if(!is.null(EnvSPICalcPlot$varData)){
+				ret <- try(get.Data.spiViz(), silent = TRUE)
+				if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
+
+				imgContainer <- SPICalc.Display.VizTS(tknotes)
+				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSPICalcPlot$notebookTab.spiViz, AllOpenTabType, AllOpenTabData)
+				EnvSPICalcPlot$notebookTab.spiViz <- retNBTab$notebookTab
+				AllOpenTabType <<- retNBTab$AllOpenTabType
+				AllOpenTabData <<- retNBTab$AllOpenTabData
+			}
+		})
+
+		###############
+
+		tkgrid(bt.VizTS, row = 0, column = 0, sticky = 'we', padx = 3, ipadx = 1, pady = 1)
+		tkgrid(bt.VizOpt, row = 0, column = 1, sticky = 'we', padx = 3, ipadx = 1, pady = 1)
+		tkgrid(txt.VizTS, row = 1, column = 0, sticky = 'e', padx = 3, ipadx = 1, pady = 1)
+		tkgrid(en.VizTS, row = 1, column = 1, sticky = 'w', padx = 3, ipadx = 1, pady = 1)
+
+		##############################################
+
+		tkgrid(frameDataTS, row = 0, column = 0, sticky = 'we', pady = 1)
+		tkgrid(frameSTNCrds, row = 1, column = 0, sticky = '', pady = 3)
+		tkgrid(frameVizTS, row = 2, column = 0, sticky = '', pady = 3)
+
+	#######################################################################################################
+
+	#Tab4
+	frTab4 <- tkframe(cmd.tab4)
+	tkgrid(frTab4, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab4, 0, weight = 1)
+
+	scrw4 <- bwScrolledWindow(frTab4)
+	tkgrid(scrw4)
+	tkgrid.columnconfigure(scrw4, 0, weight = 1)
+	subfr4 <- bwScrollableFrame(scrw4, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr4, 0, weight = 1)
+
+		##############################################
+
+		frameSHP <- ttklabelframe(subfr4, text = "Boundaries", relief = 'groove')
+
+		EnvSPICalcPlot$shp$add.shp <- tclVar(FALSE)
 		file.plotShp <- tclVar()
 		stateSHP <- "disabled"
 
@@ -661,37 +873,223 @@ SPICalcPanelCmd <- function(){
 			tkconfigure(bt.addshpOpt, state = stateSHP)
 		})
 
-
 		##############################################
 
-		tkgrid(frameSPIDat, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(frameSPIMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-		tkgrid(frameSPITS, row = 2, column = 0, sticky = 'we', padx = 1, pady = 3, ipadx = 1, ipady = 1)
-		tkgrid(frameSHP, row = 3, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameSHP, row = 0, column = 0, sticky = 'we', pady = 1)
 
 	#######################################################################################################
 
 	widgets.Station.Pixel <- function(){
 		tkdestroy(frTS2)
-		frTS2 <<- tkframe(frameSPITS)
+		frTS2 <<- tkframe(frameSTNCrds)
 
 		if(EnvSPICalcPlot$output$params$data.type == "cdtstation"){
-			stnIDTSPLOT <- EnvSPICalcPlot$output$index$id
-			txt.stnID <- tklabel(frTS2, text = "Station", anchor = 'e', justify = 'right')
+			stnIDTSPLOT <- EnvSPICalcPlot$output$data$id
+			txt.stnSel <- tklabel(frTS2, text = "Select a station to plot")
+			bt.stnID.prev <- ttkbutton(frTS2, text = "<<", width = 6)
+			bt.stnID.next <- ttkbutton(frTS2, text = ">>", width = 6)
 			cb.stnID <- ttkcombobox(frTS2, values = stnIDTSPLOT, textvariable = EnvSPICalcPlot$graph$stnIDTSp, width = largeur5)
 			tclvalue(EnvSPICalcPlot$graph$stnIDTSp) <- stnIDTSPLOT[1]
-			tkgrid(txt.stnID, cb.stnID)
+
+			tkconfigure(bt.stnID.prev, command = function(){
+				if(!is.null(EnvSPICalcPlot$varData)){
+					istn <- which(stnIDTSPLOT == str_trim(tclvalue(EnvSPICalcPlot$graph$stnIDTSp)))
+					istn <- istn-1
+					if(istn < 1) istn <- length(stnIDTSPLOT)
+					tclvalue(EnvSPICalcPlot$graph$stnIDTSp) <- stnIDTSPLOT[istn]
+
+					imgContainer <- SPICalc.Display.Graph(tknotes)
+					retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSPICalcPlot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
+					EnvSPICalcPlot$notebookTab.dataGraph <- retNBTab$notebookTab
+					AllOpenTabType <<- retNBTab$AllOpenTabType
+					AllOpenTabData <<- retNBTab$AllOpenTabData
+				}
+			})
+
+			tkconfigure(bt.stnID.next, command = function(){
+				if(!is.null(EnvSPICalcPlot$varData)){
+					istn <- which(stnIDTSPLOT == str_trim(tclvalue(EnvSPICalcPlot$graph$stnIDTSp)))
+					istn <- istn+1
+					if(istn > length(stnIDTSPLOT)) istn <- 1
+					tclvalue(EnvSPICalcPlot$graph$stnIDTSp) <- stnIDTSPLOT[istn]
+
+					imgContainer <- SPICalc.Display.Graph(tknotes)
+					retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvSPICalcPlot$notebookTab.dataGraph, AllOpenTabType, AllOpenTabData)
+					EnvSPICalcPlot$notebookTab.dataGraph <- retNBTab$notebookTab
+					AllOpenTabType <<- retNBTab$AllOpenTabType
+					AllOpenTabData <<- retNBTab$AllOpenTabData
+				}
+			})
+
+			tkgrid(txt.stnSel, row = 0, column = 0, sticky = '', rowspan = 1, columnspan = 3, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(bt.stnID.prev, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(cb.stnID, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(bt.stnID.next, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		}else{
+			txt.crdSel <- tklabel(frTS2, text = "Enter longitude and latitude to plot", anchor = 'w', justify = 'left')
 			txt.lonLoc <- tklabel(frTS2, text = "Longitude", anchor = 'e', justify = 'right')
 			en.lonLoc <- tkentry(frTS2, textvariable = EnvSPICalcPlot$graph$lonLOC, width = 8)
 			txt.latLoc <- tklabel(frTS2, text = "Latitude", anchor = 'e', justify = 'right')
 			en.latLoc <- tkentry(frTS2, textvariable = EnvSPICalcPlot$graph$latLOC, width = 8)
-			tkgrid(txt.lonLoc, en.lonLoc, txt.latLoc, en.latLoc)
 			stnIDTSPLOT <- ""
 			tclvalue(EnvSPICalcPlot$graph$stnIDTSp) <- ""
+
+			tkgrid(txt.crdSel, row = 0, column = 0, sticky = 'we', rowspan = 1, columnspan = 4, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.lonLoc, row = 1, column = 0, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(en.lonLoc, row = 1, column = 1, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(txt.latLoc, row = 1, column = 2, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
+			tkgrid(en.latLoc, row = 1, column = 3, sticky = 'we', rowspan = 1, columnspan = 1, padx = 1, pady = 1, ipadx = 1, ipady = 1)
 		}
 
-		tkgrid(frTS2, row = 1, column = 0, sticky = 'e', pady = 1, columnspan = 3)
+		tkgrid(frTS2, row = 0, column = 0, sticky = 'e', pady = 1)
+		return(0)
+	}
+
+	#################
+
+	set.Data.Scales <- function(){
+		path.data <- file.path(EnvSPICalcPlot$PathData, "CDTDATASET")
+		spi.tscales <- list.files(path.data, "SPI_.+")
+		if(length(spi.tscales) == 0){
+			InsertMessagesTxt(main.txt.out, 'No SPI data found', format = TRUE)
+			return(NULL)
+		}
+		if(EnvSPICalcPlot$output$params$data.type == "cdtstation")
+			spi.tscales <- file_path_sans_ext(spi.tscales)
+
+		nch <- nchar(spi.tscales)
+		tsc <- str_pad(substr(spi.tscales, 5, nch-3), 2, pad = "0")
+		scales <- substr(spi.tscales, nch-2, nch)
+
+		spi.tscalesF <- spi.tscales[order(paste0(scales, tsc))]
+		spi.tscales <- paste0("SPI-", as.numeric(tsc), "-", ifelse(scales == "dek", "Dekad", "Month"))
+		spi.tscales <- spi.tscales[order(paste0(scales, tsc))]
+
+		EnvSPICalcPlot$varData$spi$disp <- spi.tscales
+		EnvSPICalcPlot$varData$spi$dataF <- spi.tscalesF
+
+		tkconfigure(cb.spi.maps, values = spi.tscales)
+		tclvalue(EnvSPICalcPlot$spi.tscale) <- spi.tscales[1]
+		return(0)
+	}
+
+	#################
+
+	set.Data.Dates <- function(){
+		path.data <- file.path(EnvSPICalcPlot$PathData, "CDTDATASET")
+		spi_scale <- str_trim(tclvalue(EnvSPICalcPlot$spi.tscale))
+
+		ipos <- which(EnvSPICalcPlot$varData$spi$disp %in% spi_scale)
+		tscale.data <- EnvSPICalcPlot$varData$spi$dataF[ipos]
+		file.index <- if(EnvSPICalcPlot$output$params$data.type == "cdtstation")
+			file.path(path.data, paste0(tscale.data, ".rds"))
+			else file.path(path.data, tscale.data, paste0(tscale.data, ".rds"))
+
+		if(!file.exists(file.index)){
+			InsertMessagesTxt(main.txt.out, paste(file.index, 'not found'), format = TRUE)
+			return(NULL)
+		}
+
+		read.cdt.dataIdx <- TRUE
+		if(!is.null(EnvSPICalcPlot$cdtdataset))
+			if(!is.null(EnvSPICalcPlot$file.index))
+				if(EnvSPICalcPlot$file.index == file.index) read.cdt.dataIdx <- FALSE
+		if(read.cdt.dataIdx){
+			cdtdataset <- readRDS(file.index)
+			daty <- if(EnvSPICalcPlot$output$params$data.type == "cdtstation") cdtdataset$date else cdtdataset$dateInfo$date
+
+			tkconfigure(cb.spi.Date, values = daty)
+			tclvalue(EnvSPICalcPlot$spi.date) <- daty[length(daty)]
+
+			EnvSPICalcPlot$varData$ts$step <- strsplit(spi_scale, "-")[[1]][3]
+			EnvSPICalcPlot$varData$ts$dates <- daty
+			EnvSPICalcPlot$cdtdataset <- cdtdataset
+			EnvSPICalcPlot$cdtdataset$fileInfo <- file.index
+			EnvSPICalcPlot$file.index <- file.index
+		}
+
+		return(0)
+	}
+
+	#################
+
+	get.Data.Map <- function(){
+		tkconfigure(main.win, cursor = 'watch')
+		tcl('update')
+		on.exit({
+			tkconfigure(main.win, cursor = '')
+			tcl('update')
+		})
+
+		this.daty <- str_trim(tclvalue(EnvSPICalcPlot$spi.date))
+
+		readVarData <- TRUE
+		if(!is.null(EnvSPICalcPlot$varData))
+			if(!is.null(EnvSPICalcPlot$varData$spi$this.daty))
+				if(EnvSPICalcPlot$varData$spi$this.daty == this.daty) readVarData <- FALSE
+
+		if(readVarData){
+			if(EnvSPICalcPlot$output$params$data.type == "cdtstation"){
+				idt <- which(EnvSPICalcPlot$cdtdataset$date == this.daty)
+				x <- EnvSPICalcPlot$output$data$lon
+				y <- EnvSPICalcPlot$output$data$lat
+				tmp <- as.numeric(EnvSPICalcPlot$cdtdataset$spi[idt, ])
+
+				nx <- nx_ny_as.image(diff(range(x)))
+				ny <- nx_ny_as.image(diff(range(y)))
+
+				tmp <- cdt.as.image(tmp, nx = nx, ny = ny, pts.xy = cbind(x, y))
+				EnvSPICalcPlot$varData$map$x <- tmp$x
+				EnvSPICalcPlot$varData$map$y <- tmp$y
+				EnvSPICalcPlot$varData$map$z <- tmp$z
+			}else{
+				ipos <- which(EnvSPICalcPlot$varData$spi$disp %in% str_trim(tclvalue(EnvSPICalcPlot$spi.tscale)))
+				tscale.data <- EnvSPICalcPlot$varData$spi$dataF[ipos]
+
+				nc.file <- file.path(EnvSPICalcPlot$PathData, "DATA_NetCDF", tscale.data, paste0("spi_", this.daty, ".nc"))
+				nc <- nc_open(nc.file)
+				EnvSPICalcPlot$varData$map$x <- nc$dim[[1]]$vals
+				EnvSPICalcPlot$varData$map$y <- nc$dim[[2]]$vals
+				EnvSPICalcPlot$varData$map$z <- ncvar_get(nc, varid = nc$var[[1]]$name)
+				nc_close(nc)
+			}
+
+			EnvSPICalcPlot$varData$spi$this.daty <- this.daty
+		}
+	}
+
+	#################
+
+	get.Data.spiViz <- function(){
+		file.mon <- file.path(EnvSPICalcPlot$PathData, "MONTHLY_data")
+		file.dek <- file.path(EnvSPICalcPlot$PathData, "DEKADAL_data")
+
+		if(file.exists(file.mon)){
+			file.index <- file.mon
+			viztstep <- "monthly"
+		}else{
+			if(file.exists(file.dek)){
+				file.index <- file.dek
+				viztstep <- "dekadal"
+			}else{
+				InsertMessagesTxt(main.txt.out, 'No dekadal or monthly data found', format = TRUE)
+				return(NULL)
+			}
+		}
+
+		readspiVizData <- TRUE
+		if(!is.null(EnvSPICalcPlot$spiViz))
+			if(!is.null(EnvSPICalcPlot$spiViz$tstep))
+				if(EnvSPICalcPlot$spiViz$tstep == viztstep) readspiVizData <- FALSE
+
+		if(readspiVizData){
+			file.index <- file.path(file.index, paste0(basename(file.index), ".rds"))
+			EnvSPICalcPlot$spiViz$cdtdataset <- readRDS(file.index)
+			EnvSPICalcPlot$spiViz$cdtdataset$fileInfo <- file.index
+			EnvSPICalcPlot$spiViz$tstep <- viztstep
+		}
+
+		return(0)
 	}
 
 	#######################################################################################################

@@ -284,3 +284,30 @@ getGradientColor <- function(listCol, cW){
 	return(gradientColor)
 }
 
+##################################################################################
+#SPI Color
+
+spi.colors <- function(n = 20){
+	kolor <- c('#B12126', '#CF661C', '#F8DDB3', '#FEFFFF',
+				'#FEFFFF', '#99F99C', '#3DB272', '#157040')
+	kolorFonction <- colorRampPalette(kolor)
+	kolorFonction(n)
+}
+
+# spi.colors <- function(n = 20){
+# 	kolor <- c('#B12126', '#CF661C', '#F8DDB3', '#FEFFFF',
+# 				'#FEFFFF', '#99F99C', '#3DB272', '#157040')
+# 	rgb.mat <- t(col2rgb(kolor))
+# 	temp <- matrix(NA, ncol = 3, nrow = n)
+# 	x <- seq(0, 1, length.out = 8)
+# 	xg <- seq(0, 1, length.out = n)
+# 	for(k in 1:3){
+# 		hold <- splint(x, rgb.mat[, k], xg)
+# 		hold[hold < 0] <- 0
+# 		hold[hold > 255] <- 255
+# 		temp[, k] <- round(hold)
+# 	}
+# 	rgb(temp[, 1], temp[, 2], temp[, 3], maxColorValue = 255)
+# }
+
+
