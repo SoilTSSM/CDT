@@ -53,7 +53,13 @@ CDTdataset.Plot.Graph <- function(){
 	don <- rowMeans(don$data, na.rm = TRUE)
 
 	daty <- cdtdataset$dateInfo$date[cdtdataset$dateInfo$index]
-	known.data.tstep <- cdtdataset$TimeStep%in%c("daily", "pentad", "dekadal", "monthly")
+	nchar.daty <- nchar(daty[1])
+	known.data.tstep <- switch(cdtdataset$TimeStep,
+							"daily" = nchar.daty == 8,
+							"pentad" = nchar.daty == 7,
+							"dekadal" = nchar.daty == 7,
+							"monthly" = nchar.daty == 6,
+							FALSE)
 	if(known.data.tstep){
 		if(cdtdataset$TimeStep == "daily") daty <- as.Date(daty, "%Y%m%d")
 		if(cdtdataset$TimeStep == "pentad"){

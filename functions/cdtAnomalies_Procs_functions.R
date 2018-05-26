@@ -747,7 +747,7 @@ anomaliesCalcProcs <- function(GeneralParameters){
 			for(j in seq_along(daty0)){
 				anom <- dat.anom[j, ]
 				dim(anom) <- c(nx, ny)
-				anom[is.na(anom)] <- -9999
+				anom[is.na(anom) | is.nan(anom) | is.infinite(anom)] <- -9999
 
 				filenc <- file.path(ncdfOUT3, paste0("anomaly_", daty0[j], ".nc"))
 				nc <- nc_create(filenc, nc.grd)

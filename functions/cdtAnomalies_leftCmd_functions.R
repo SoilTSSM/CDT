@@ -9,18 +9,14 @@ anomaliesCalcPanelCmd <- function(){
 		largeur2 <- as.integer(w.scale(29)/sfont0)
 		largeur3 <- 20
 		largeur4 <- 21
-		# largeur5 <- 30
-		# largeur6 <- 22
 	}else{
 		wscrlwin <- w.scale(27)
-		hscrlwin <- h.scale(47)
+		hscrlwin <- h.scale(48)
 		largeur0 <- as.integer(w.scale(18)/sfont0)
 		largeur1 <- as.integer(w.scale(22)/sfont0)
 		largeur2 <- as.integer(w.scale(23)/sfont0)
 		largeur3 <- 15
 		largeur4 <- 14
-		# largeur5 <- 22
-		# largeur6 <- 14
 	}
 
 	# GeneralParameters <- fromJSON(file.path(apps.dir, 'init_params', 'ClimatoAnalysis.json'))

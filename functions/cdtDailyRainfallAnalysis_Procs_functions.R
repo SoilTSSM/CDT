@@ -208,6 +208,7 @@ dailyRainAnalysisCalcProcs <- function(GeneralParameters){
 												'nb.dry.spell' = "spells")
 			index.out$varInfo$longname <- paste(stats.prefix, ":", stats.season, ";", stats.params)
 			
+			index.out$TimeStep <- "seasonal"
 			index.out$dateInfo$date <- out.daty
 			index.out$dateInfo$index <- seq_along(index$date)
 

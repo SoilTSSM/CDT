@@ -74,7 +74,6 @@ HOValidation.plotStatMaps <- function(){
 	return(list(par = c(plt, usr)))
 }
 
-
 ###############################
 
 HOValidation.plotGraph <- function(){
@@ -132,7 +131,7 @@ HOValidation.plotGraph <- function(){
 		legendlab <- c('Station', 'Estimate')
 	}
 	if(plotType == "Lines"){
-		xlim <- NA
+		xlim <- range(EnvHOValidation$opDATA$temps, na.rm = TRUE)
 		ylim <- c(xmin, xmax)
 
 		xlab <- ""
@@ -170,10 +169,19 @@ HOValidation.plotGraph <- function(){
 	if(plotType == "Lines"){
 		layout(matrix(1:2, ncol = 1), widths = 1, heights = c(0.9, 0.1), respect = FALSE)
 		op <- par(mar = c(3, 4, 2, 2))
-		plot(EnvHOValidation$opDATA$temps, x, ylim = ylim, type = 'n', xlab = xlab, ylab = ylab, main = title)
+		plot(EnvHOValidation$opDATA$temps, x, xlim = xlim, ylim = ylim, type = 'n', xaxt = 'n', xlab = xlab, ylab = ylab, main = title)
+
 		abline(h = axTicks(2), col = "lightgray", lty = "dotted")
-		# abline(v = axTicks(1), col = "lightgray", lty = "dotted")
-		abline(v = axTicks.Date(EnvHOValidation$opDATA$temps, 1), col = "lightgray", lty = "dotted")
+
+		xTck <- axTicks.Date(EnvHOValidation$opDATA$temps, 1)
+		if(as.numeric(diff(xlim)) > 1095){
+			xminor <- seq(as.Date(paste0(format(xlim[1], "%Y"), "-01-01")),
+						as.Date(paste0(as.numeric(format(xlim[2], "%Y"))+1, "-01-01")), "year")
+			xminor <- xminor[!xminor%in%xTck]
+		}else xminor <- NULL
+		abline(v = xTck, col = "lightgray", lty = "dotted")
+		axis.Date(1, at = xTck, font = 1, cex.axis = 1)
+		if(length(xminor) > 0) axis.Date(1, at = xminor, labels = NA, tcl = par("tcl")*0.5)
 
 		lines(EnvHOValidation$opDATA$temps, x, lwd = 2, col = 'blue', type = 'l')
 		lines(EnvHOValidation$opDATA$temps, y, lwd = 2, col = 'red', type = 'l')

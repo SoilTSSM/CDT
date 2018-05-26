@@ -9,7 +9,7 @@ PlotCDTDatasetCmd <- function(){
 		largeur2 <- 20
 	}else{
 		wscrlwin <- w.scale(27)
-		hscrlwin <- h.scale(48)
+		hscrlwin <- h.scale(48.5)
 		largeur0 <- as.integer(w.scale(23)/sfont0)
 		largeur1 <- as.integer(w.scale(22)/sfont0)
 		largeur2 <- 14
@@ -24,9 +24,11 @@ PlotCDTDatasetCmd <- function(){
 	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "Plot CDT Dataset")
+	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Graphs")
 
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
 
 	#######################################################################################################
 
@@ -175,9 +177,27 @@ PlotCDTDatasetCmd <- function(){
 			if(inherits(ret, "try-error") | is.null(ret)) return(NULL)
 		})
 
+		############################################
+
+		tkgrid(frameData, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameSHP, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#######################################################################################################
+
+	#Tab2
+	frTab2 <- tkframe(cmd.tab2)
+	tkgrid(frTab2, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab2, 0, weight = 1)
+
+	scrw2 <- bwScrolledWindow(frTab2)
+	tkgrid(scrw2)
+	tkgrid.columnconfigure(scrw2, 0, weight = 1)
+	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr2, 0, weight = 1)
+
 		##############################################
 
-		frameGraph <- ttklabelframe(subfr1, text = "Graph", relief = 'groove')
+		frameGraph <- ttklabelframe(subfr2, text = "Graph", relief = 'groove')
 
 		#################
 
@@ -288,9 +308,7 @@ PlotCDTDatasetCmd <- function(){
 
 		############################################
 
-		tkgrid(frameData, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(frameSHP, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(frameGraph, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameGraph, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#######################################################################################################
 

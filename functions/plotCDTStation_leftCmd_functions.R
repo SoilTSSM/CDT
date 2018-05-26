@@ -3,14 +3,14 @@ PlotCDTStationCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(26)
-		hscrlwin <- h.scale(46)
+		hscrlwin <- h.scale(46.5)
 		largeur0 <- as.integer(w.scale(18)/sfont0)
 		largeur1 <- as.integer(w.scale(26)/sfont0)
 		largeur3 <- 20
 		largeur4 <- 26
 	}else{
 		wscrlwin <- w.scale(27)
-		hscrlwin <- h.scale(48.5)
+		hscrlwin <- h.scale(50.5)
 		largeur0 <- as.integer(w.scale(14)/sfont0)
 		largeur1 <- as.integer(w.scale(21)/sfont0)
 		largeur3 <- 14
@@ -29,9 +29,11 @@ PlotCDTStationCmd <- function(){
 	tkgrid.columnconfigure(tknote.cmd, 0, weight = 1)
 
 	cmd.tab1 <- bwAddTab(tknote.cmd, text = "Plot CDT Station Data")
+	cmd.tab2 <- bwAddTab(tknote.cmd, text = "Boundaries")
 
 	bwRaiseTab(tknote.cmd, cmd.tab1)
 	tkgrid.columnconfigure(cmd.tab1, 0, weight = 1)
+	tkgrid.columnconfigure(cmd.tab2, 0, weight = 1)
 
 	#######################################################################################################
 
@@ -102,20 +104,14 @@ PlotCDTStationCmd <- function(){
 
 		tkbind(cb.cdtdata1, "<<ComboboxSelected>>", function(){
 			tkdestroy(frTS1)
-			frTS1 <<- tkframe(frameMap)
+			frTS1 <<- tkframe(frTS0)
 
 			if(str_trim(tclvalue(timeSteps)) == 'Others'){
 				txt.other <- tklabel(frTS1, text = 'Dates or Index')
-				# en.other <- tkentry(frTS1, width = 16, textvariable = date.other, justify = "center")
-				cb.other <- ttkcombobox(frTS1, values = "", textvariable = date.other, width = 16)
-				bt.date.prev <- ttkbutton(frTS1, text = "<<", width = 6)
-				bt.date.next <- ttkbutton(frTS1, text = ">>", width = 6)
+				cb.other <<- ttkcombobox(frTS1, values = "", textvariable = date.other, width = 16)
 
-				tkgrid(txt.other, row = 0, column = 1, sticky = 'we', pady = 1, padx = 1)
-				tkgrid(bt.date.prev, row = 1, column = 0, sticky = 'we', pady = 1, padx = 1)
-				# tkgrid(en.other, row = 1, column = 1, sticky = 'we', pady = 1, padx = 1)
-				tkgrid(cb.other, row = 1, column = 1, sticky = 'we', pady = 1, padx = 1)
-				tkgrid(bt.date.next, row = 1, column = 2, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(txt.other, row = 0, column = 0, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(cb.other, row = 1, column = 0, sticky = 'we', pady = 1, padx = 1)
 			}else{
 				stateday <- if(str_trim(tclvalue(timeSteps)) == 'Monthly data') 'disabled' else 'normal'
 
@@ -128,134 +124,20 @@ PlotCDTStationCmd <- function(){
 				en.yrs <- tkentry(frTS1, width = 5, textvariable = date.year, justify = "center")
 				en.mon <- tkentry(frTS1, width = 5, textvariable = date.mon, justify = "center")
 				en.day <- tkentry(frTS1, width = 5, textvariable = date.day, justify = "center", state = stateday)
-				bt.date.prev <- ttkbutton(frTS1, text = "<<", width = 6)
-				bt.date.next <- ttkbutton(frTS1, text = ">>", width = 6)
 
 				##############
-				tkgrid(txt.yrs, row = 0, column = 1, sticky = 'we', pady = 1, padx = 1)
-				tkgrid(txt.mon, row = 0, column = 2, sticky = 'we', pady = 1, padx = 1)
-				tkgrid(txt.day, row = 0, column = 3, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(txt.yrs, row = 0, column = 0, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(txt.mon, row = 0, column = 1, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(txt.day, row = 0, column = 2, sticky = 'we', pady = 1, padx = 1)
 
-				tkgrid(bt.date.prev, row = 1, column = 0, sticky = 'we', pady = 1, padx = 1)
-				tkgrid(en.yrs, row = 1, column = 1, sticky = 'we', pady = 1, padx = 1)
-				tkgrid(en.mon, row = 1, column = 2, sticky = 'we', pady = 1, padx = 1)
-				tkgrid(en.day, row = 1, column = 3, sticky = 'we', pady = 1, padx = 1)
-				tkgrid(bt.date.next, row = 1, column = 4, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(en.yrs, row = 1, column = 0, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(en.mon, row = 1, column = 1, sticky = 'we', pady = 1, padx = 1)
+				tkgrid(en.day, row = 1, column = 2, sticky = 'we', pady = 1, padx = 1)
 			}
 
 			##############
-			tkconfigure(bt.date.prev, command = function(){
-				if(is.null(EnvCDTStationPlot$don)) return(NULL) 
-				temps <- str_trim(tclvalue(timeSteps))
-
-				if(temps == 'Others'){
-					##
-				}else{
-					yrs <- as.numeric(str_trim(tclvalue(date.year)))
-					mon <- as.numeric(str_trim(tclvalue(date.mon)))
-					dpk <- as.numeric(str_trim(tclvalue(date.day)))
-
-					if(temps == 'Daily data') todaty <- paste(yrs, mon, dpk, sep = '-')
-					if(temps == 'Pentad data'){
-						if(is.na(dpk) | dpk < 1 | dpk > 6){
-							InsertMessagesTxt(main.txt.out, "Pentad must be  between 1 and 6", format = TRUE)
-							return(NULL)
-						}
-						todaty <- paste(yrs, mon, dpk, sep = '-')
-					}
-					if(temps == 'Dekadal data'){
-						if(is.na(dpk) | dpk < 1 | dpk > 3){
-							InsertMessagesTxt(main.txt.out, "Dekad must be 1, 2 or 3", format = TRUE)
-							return(NULL)
-						}
-						todaty <- paste(yrs, mon, dpk, sep = '-')
-					}
-					if(temps == 'Monthly data') todaty <- paste(yrs, mon, 1, sep = '-')
-
-					daty <- try(as.Date(todaty), silent = TRUE)
-					if(inherits(daty, "try-error") | is.na(daty)){
-						InsertMessagesTxt(main.txt.out, paste("Date invalid", todaty), format = TRUE)
-						return(NULL)
-					}
-					if(temps == 'Daily data') daty <- daty-1
-					if(temps == 'Pentad data') daty <- addPentads(daty, -1)
-					if(temps == 'Dekadal data') daty <- addDekads(daty, -1)
-					if(temps == 'Monthly data') daty <- addMonths(daty, -1)
-
-					if(daty < EnvCDTStationPlot$first.date) daty <- EnvCDTStationPlot$last.date
-					daty <- format(daty, '%Y%m%d')
-					tclvalue(date.year) <- as.numeric(substr(daty, 1, 4))
-					tclvalue(date.mon) <- as.numeric(substr(daty, 5, 6))
-					tclvalue(date.day) <- as.numeric(substr(daty, 7, 8))
-				}
-
-				######
-				getStnMap()
-
-				####
-				imgContainer <- CDTdataStation.Display.Maps(tknotes)
-				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTStationPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
-				EnvCDTStationPlot$notebookTab.dataMap <- retNBTab$notebookTab
-				AllOpenTabType <<- retNBTab$AllOpenTabType
-				AllOpenTabData <<- retNBTab$AllOpenTabData
-			})
-
-			tkconfigure(bt.date.next, command = function(){
-				if(is.null(EnvCDTStationPlot$don)) return(NULL) 
-				temps <- str_trim(tclvalue(timeSteps))
-
-				if(temps == 'Others'){
-					##
-				}else{
-					yrs <- as.numeric(str_trim(tclvalue(date.year)))
-					mon <- as.numeric(str_trim(tclvalue(date.mon)))
-					dpk <- as.numeric(str_trim(tclvalue(date.day)))
-
-					if(temps == 'Pentad data'){
-						if(is.na(dpk) | dpk < 1 | dpk > 6){
-							InsertMessagesTxt(main.txt.out, "Pentad must be  between 1 and 6", format = TRUE)
-							return(NULL)
-						}
-					}
-					if(temps == 'Dekadal data'){
-						if(is.na(dpk) | dpk < 1 | dpk > 3){
-							InsertMessagesTxt(main.txt.out, "Dekad must be 1, 2 or 3", format = TRUE)
-							return(NULL)
-						}
-					}
-					if(temps == 'Monthly data') dpk <- 1
-
-					todaty <- paste(yrs, mon, dpk, sep = '-')
-					daty <- try(as.Date(todaty), silent = TRUE)
-					if(inherits(daty, "try-error") | is.na(daty)){
-						InsertMessagesTxt(main.txt.out, paste("Invalid date", todaty), format = TRUE)
-						return(NULL)
-					}
-					if(temps == 'Daily data') daty <- daty+1
-					if(temps == 'Pentad data') daty <- addPentads(daty, 1)
-					if(temps == 'Dekadal data') daty <- addDekads(daty, 1)
-					if(temps == 'Monthly data') daty <- addMonths(daty, 1)
-
-					if(daty > EnvCDTStationPlot$last.date) daty <- EnvCDTStationPlot$first.date
-					daty <- format(daty, '%Y%m%d')
-					tclvalue(date.year) <- as.numeric(substr(daty, 1, 4))
-					tclvalue(date.mon) <- as.numeric(substr(daty, 5, 6))
-					tclvalue(date.day) <- as.numeric(substr(daty, 7, 8))
-				}
-
-				######
-				getStnMap()
-
-				####
-				imgContainer <- CDTdataStation.Display.Maps(tknotes)
-				retNBTab <- imageNotebookTab_unik(tknotes, imgContainer, EnvCDTStationPlot$notebookTab.dataMap, AllOpenTabType, AllOpenTabData)
-				EnvCDTStationPlot$notebookTab.dataMap <- retNBTab$notebookTab
-				AllOpenTabType <<- retNBTab$AllOpenTabType
-				AllOpenTabData <<- retNBTab$AllOpenTabData
-			})
-
-				tkgrid(frTS1, row = 1, column = 0, sticky = '', pady = 1, columnspan = 3)
-			})
+			tkgrid(frTS1, row = 0, column = 1, sticky = 'we', pady = 1, rowspan = 2, columnspan = 1)
+		})
 
 		tkbind(cb.cdtdata2, "<<ComboboxSelected>>", function(){
 			ret <- try(splitStnData(), silent = TRUE)
@@ -277,6 +159,7 @@ PlotCDTStationCmd <- function(){
 		cb.Map.type <- ttkcombobox(frameMap, values = typeMapPLOT, textvariable = EnvCDTStationPlot$map$typeMap, width = largeur3)
 		bt.Map.plot <- ttkbutton(frameMap, text = "PLOT", width = 7)
 		bt.Map.Opt <- ttkbutton(frameMap, text = "Options", width = 8)
+		frTS0 <- tkframe(frameMap)
 
 		##############
 		EnvCDTStationPlot$dataMapOp <- list(presetCol = list(color = 'tim.colors', reverse = FALSE),
@@ -327,8 +210,11 @@ PlotCDTStationCmd <- function(){
 
 		##############
 
-		frTS1 <- tkframe(frameMap)
+		bt.date.prev <- ttkbutton(frTS0, text = "<<", width = 6)
+		bt.date.next <- ttkbutton(frTS0, text = ">>", width = 6)
+		frTS1 <- tkframe(frTS0)
 
+		##############
 		date.year <- tclVar(GeneralParameters$date$year)
 		date.mon <- tclVar(GeneralParameters$date$mon)
 		date.day <- tclVar(GeneralParameters$date$day)
@@ -337,13 +223,9 @@ PlotCDTStationCmd <- function(){
 		if(GeneralParameters$intstep == 'others'){
 			txt.other <- tklabel(frTS1, text = 'Dates or Index')
 			cb.other <- ttkcombobox(frTS1, values = "", textvariable = date.other, width = 16)
-			bt.date.prev <- ttkbutton(frTS1, text = "<<", width = 6)
-			bt.date.next <- ttkbutton(frTS1, text = ">>", width = 6)
 
-			tkgrid(txt.other, row = 0, column = 1, sticky = 'we', pady = 1, padx = 1)
-			tkgrid(bt.date.prev, row = 1, column = 0, sticky = 'we', pady = 1, padx = 1)
-			tkgrid(cb.other, row = 1, column = 1, sticky = 'we', pady = 1, padx = 1)
-			tkgrid(bt.date.next, row = 1, column = 2, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(txt.other, row = 0, column = 0, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(cb.other, row = 1, column = 0, sticky = 'we', pady = 1, padx = 1)
 		}else{
 			txtdek <- switch(GeneralParameters$intstep, 'dekadal' = 'Dek', 'pentad' = 'Pen', 'Day')
 			day.txtVar <- tclVar(txtdek)
@@ -355,19 +237,15 @@ PlotCDTStationCmd <- function(){
 			en.yrs <- tkentry(frTS1, width = 5, textvariable = date.year, justify = "center")
 			en.mon <- tkentry(frTS1, width = 5, textvariable = date.mon, justify = "center")
 			en.day <- tkentry(frTS1, width = 5, textvariable = date.day, justify = "center", state = stateday)
-			bt.date.prev <- ttkbutton(frTS1, text = "<<", width = 6)
-			bt.date.next <- ttkbutton(frTS1, text = ">>", width = 6)
 
 			##############
-			tkgrid(txt.yrs, row = 0, column = 1, sticky = 'we', pady = 1, padx = 1)
-			tkgrid(txt.mon, row = 0, column = 2, sticky = 'we', pady = 1, padx = 1)
-			tkgrid(txt.day, row = 0, column = 3, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(txt.yrs, row = 0, column = 0, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(txt.mon, row = 0, column = 1, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(txt.day, row = 0, column = 2, sticky = 'we', pady = 1, padx = 1)
 
-			tkgrid(bt.date.prev, row = 1, column = 0, sticky = 'we', pady = 1, padx = 1)
-			tkgrid(en.yrs, row = 1, column = 1, sticky = 'we', pady = 1, padx = 1)
-			tkgrid(en.mon, row = 1, column = 2, sticky = 'we', pady = 1, padx = 1)
-			tkgrid(en.day, row = 1, column = 3, sticky = 'we', pady = 1, padx = 1)
-			tkgrid(bt.date.next, row = 1, column = 4, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(en.yrs, row = 1, column = 0, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(en.mon, row = 1, column = 1, sticky = 'we', pady = 1, padx = 1)
+			tkgrid(en.day, row = 1, column = 2, sticky = 'we', pady = 1, padx = 1)
 		}
 
 		##############
@@ -488,10 +366,15 @@ PlotCDTStationCmd <- function(){
 		})
 
 		##############
+		tkgrid(frTS1, row = 0, column = 1, sticky = 'we', pady = 1, rowspan = 2, columnspan = 1)
+		tkgrid(bt.date.prev, row = 1, column = 0, sticky = 'we', padx = 4, pady = 1, columnspan = 1)
+		tkgrid(bt.date.next, row = 1, column = 2, sticky = 'we', padx = 4, pady = 1, columnspan = 1)
+
+		##############
 		tkgrid(cb.Map.type, row = 0, column = 0, sticky = 'we', pady = 1, columnspan = 1)
 		tkgrid(bt.Map.Opt, row = 0, column = 1, sticky = 'we', padx = 4, pady = 1, columnspan = 1)
 		tkgrid(bt.Map.plot, row = 0, column = 2, sticky = 'we', pady = 1, columnspan = 1)
-		tkgrid(frTS1, row = 1, column = 0, sticky = '', pady = 1, columnspan = 3)
+		tkgrid(frTS0, row = 1, column = 0, sticky = '', pady = 1, columnspan = 3)
 
 		##############################################
 
@@ -597,9 +480,28 @@ PlotCDTStationCmd <- function(){
 		tkgrid(bt.TsGraph.plot, row = 0, column = 2, sticky = 'we', pady = 1, columnspan = 1)
 		tkgrid(frTS2, row = 1, column = 0, sticky = '', pady = 1, columnspan = 3)
 
+		############################################
+
+		tkgrid(frameCDTdata, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameGraph, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+
+	#######################################################################################################
+
+	#Tab2
+	frTab2 <- tkframe(cmd.tab2)
+	tkgrid(frTab2, padx = 0, pady = 1, ipadx = 1, ipady = 1)
+	tkgrid.columnconfigure(frTab2, 0, weight = 1)
+
+	scrw2 <- bwScrolledWindow(frTab2)
+	tkgrid(scrw2)
+	tkgrid.columnconfigure(scrw2, 0, weight = 1)
+	subfr2 <- bwScrollableFrame(scrw2, width = wscrlwin, height = hscrlwin)
+	tkgrid.columnconfigure(subfr2, 0, weight = 1)
+
 		##############################################
 
-		frameSHP <- ttklabelframe(subfr1, text = "Boundaries", relief = 'groove')
+		frameSHP <- ttklabelframe(subfr2, text = "Boundaries", relief = 'groove')
 
 		EnvCDTStationPlot$shp$add.shp <- tclVar(0)
 		file.plotShp <- tclVar()
@@ -657,10 +559,7 @@ PlotCDTStationCmd <- function(){
 
 		############################################
 
-		tkgrid(frameCDTdata, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(frameMap, row = 1, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(frameGraph, row = 2, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
-		tkgrid(frameSHP, row = 3, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
+		tkgrid(frameSHP, row = 0, column = 0, sticky = 'we', padx = 1, pady = 1, ipadx = 1, ipady = 1)
 
 	#######################################################################################################
 

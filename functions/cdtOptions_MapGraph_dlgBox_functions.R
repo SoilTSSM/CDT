@@ -2853,10 +2853,10 @@ MapGraph.GraphOptions.LineSHP <- function(parent.win, shpLineOpt){
 
 MapGraph.GraphOptions.Bar.Line <- function(parent.win, climGraphOpt){
 	if(Sys.info()["sysname"] == "Windows"){
-		largeur1 <- 30
-		largeur2 <- 34
-		largeur3 <- 31
-		width.col <- 3
+		largeur1 <- 31
+		largeur2 <- 35
+		largeur3 <- 28
+		width.col <- 4
 		width.spin <- 4
 
 	}else{

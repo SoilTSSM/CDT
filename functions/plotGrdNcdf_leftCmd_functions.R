@@ -3,12 +3,12 @@ PlotGriddedNcdfCmd <- function(){
 	listOpenFiles <- openFile_ttkcomboList()
 	if(Sys.info()["sysname"] == "Windows"){
 		wscrlwin <- w.scale(26)
-		hscrlwin <- h.scale(46)
+		hscrlwin <- h.scale(46.5)
 		largeur0 <- as.integer(w.scale(28)/sfont0)
 		largeur1 <- 18
 	}else{
 		wscrlwin <- w.scale(27)
-		hscrlwin <- h.scale(50)
+		hscrlwin <- h.scale(50.5)
 		largeur0 <- as.integer(w.scale(22)/sfont0)
 		largeur1 <- 16
 	}
