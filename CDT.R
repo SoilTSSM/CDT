@@ -32,7 +32,7 @@ if(length(new.pkgs) > 0){
 				geos_config <- gsub("^\\s+|\\s+$", "", geos_config)
 				if(geos_config  == "") geos_config <- '/opt/local/bin/geos-config'
 				if(!file.exists(geos_config)) stop('geos-config: command not found')
-				install.packages('rgeos', type = "source", configure.args = paste('--with-geos-config=', geos_config, sep = ''))
+				install.packages('rgeos', type = "source", configure.args = paste0('--with-geos-config=', geos_config))
 			}
 			if('rgdal'%in%new.pkgs){
 				gdal_config <- readline(prompt = "Path to gdal-config ('/opt/local/bin/gdal-config'): ")
@@ -48,9 +48,9 @@ if(length(new.pkgs) > 0){
 				if(proj_lib  == "") proj_lib <- '/opt/local/lib'
 				if(!file.exists(proj_lib)) stop('PROJ installation not found')
 				install.packages('rgdal', type = "source", 
-						 configure.args = c(paste('--with-proj-include=', proj_include, sep = ''),
-											paste('--with-proj-lib=', proj_lib, sep = ''),
-											paste('--with-gdal-config=', gdal_config, sep = '')))
+						 configure.args = c(paste0('--with-proj-include=', proj_include),
+											paste0('--with-proj-lib=', proj_lib),
+											paste0('--with-gdal-config=', gdal_config)))
 			}
 		}
 	}
