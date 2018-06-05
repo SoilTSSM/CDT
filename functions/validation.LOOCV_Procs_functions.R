@@ -1,5 +1,4 @@
 
-
 LOOCValidationDataProcs <- function(GeneralParameters){
 
 	if(tclvalue(EnvLOOCValidationplot$loocv) == "1"){
